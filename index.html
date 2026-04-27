@@ -2,23 +2,89 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>El Atlas - Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Atlas — Cartografías del desarrollo</title>
   <style>
+    * { box-sizing: border-box; }
     body {
-      font-family: Georgia, serif;
-      max-width: 600px;
-      margin: 80px auto;
-      padding: 20px;
-      text-align: center;
-      color: #222;
+      font-family: Georgia, "Times New Roman", serif;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 80px 24px 60px;
+      color: #1a1a1a;
+      line-height: 1.6;
+      background: #fafaf7;
     }
-    h1 { font-size: 28px; }
-    p { color: #666; }
+    h1 {
+      font-size: 42px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      letter-spacing: -0.5px;
+    }
+    .subtitle {
+      font-size: 20px;
+      color: #555;
+      font-style: italic;
+      margin: 0 0 48px;
+    }
+    .lang-block {
+      margin-bottom: 40px;
+      padding-bottom: 32px;
+      border-bottom: 1px solid #e0ddd5;
+    }
+    .lang-block:last-child {
+      border-bottom: none;
+    }
+    .lang-label {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 12px;
+    }
+    p {
+      margin: 0 0 14px;
+      font-size: 17px;
+    }
+    .author {
+      margin-top: 56px;
+      font-size: 14px;
+      color: #888;
+      text-align: center;
+    }
+    a {
+      color: #1a1a1a;
+      text-decoration: underline;
+      text-decoration-color: #c4b896;
+      text-underline-offset: 3px;
+    }
+    a:hover {
+      text-decoration-color: #1a1a1a;
+    }
   </style>
 </head>
 <body>
-  <h1>El Atlas</h1>
-  <p>Cartografías del desarrollo</p>
-  <p><em>Sitio en construcción</em></p>
+
+  <div class="lang-block">
+    <div class="lang-label">Español</div>
+    <h1>El Atlas</h1>
+    <p class="subtitle">Cartografías del desarrollo</p>
+    <p>Repositorio de visualizaciones interactivas del Substack <em>El Atlas</em>, escrito por Daniel Schteingart. Los gráficos exploran cómo América Latina se compara con el resto del mundo en distintas dimensiones del desarrollo.</p>
+    <p>Cada visualización incluye los datos descargables en formato CSV.</p>
+  </div>
+
+  <div class="lang-block">
+    <div class="lang-label">English</div>
+    <h1>The Atlas</h1>
+    <p class="subtitle">Mapping development</p>
+    <p>Interactive visualizations from <em>The Atlas</em>, a Substack by Daniel Schteingart. The charts explore how Latin America compares to the rest of the world across different dimensions of development.</p>
+    <p>Each visualization includes downloadable data in CSV format.</p>
+  </div>
+
+  <div class="author">
+    Daniel Schteingart · Buenos Aires
+  </div>
+
 </body>
 </html>
