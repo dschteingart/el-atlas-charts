@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — Bienestar y PIB per cápita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 1</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block">
+    <h2 class="chart-title" data-i18n="c1-title">Bienestar subjetivo vs. PIB per cápita</h2>
+    <p class="chart-subtitle" data-i18n="c1-subtitle">Los países latinoamericanos viven, en promedio, por encima de lo que su nivel de ingreso predeciría.</p>
+
+    <div class="controls">
+      <div class="ctrl-group">
+        <span class="ctrl-label" data-i18n="ctrl-x">Eje X</span>
+        <div class="toggle" data-target="scaleX1">
+          <button data-scale="linear" data-i18n="ctrl-linear">Lineal</button>
+          <button data-scale="log" class="active" data-i18n="ctrl-log">Log</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="region-filters" data-chart="1"></div>
+
+    <div class="chart-svg-wrap">
+      <svg id="chart1" viewBox="0 0 760 470" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip1"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p data-i18n="c1-sources">
+      Datos: Banco Mundial (PIB per cápita PPP, dólares internacionales constantes 2021) y World Happiness Report (satisfacción con la vida, escala 0–10). Año más reciente disponible por país (2019–2025). Procesados por Our World in Data.
+    </p>
+    <p>
+      <button class="download" data-chart="1" data-i18n="footer-download">Descargar datos (CSV)</button>
+    </p>
+  </div>
+
+</div>
+
+<script src="../lib/regions.js"></script>
+<script src="../lib/i18n.js"></script>
+<script src="./i18n-issue.js"></script>
+<script src="./utils.js"></script>
+<script src="./data-scatter.js"></script>
+<script src="./scatter.js"></script>
+<script>
+state[1] = { scaleX: 'log', scaleY: 'linear', activeRegions: new Set(REGION_ORDER), hoverRegion: null };
+renderRegionFilters(1);
+drawChart(1);
+applyI18n();
+setupLangToggle(() => {
+  renderRegionFilters(1);
+  drawChart(1);
+});
+</script>
+</body>
+</html>
