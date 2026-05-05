@@ -30,6 +30,7 @@ const ISSUE_I18N = {
     'c3-sources': 'Datos: UNODC (tasa de homicidios cada 100.000 habitantes), serie temporal 2000–2024. Procesados por Our World in Data.',
     'footer-download-snapshot': 'Descargar snapshot por país (CSV)',
     'footer-download-timeseries': 'Descargar serie temporal de homicidios (CSV)',
+    'footer-download-png': 'Descargar PNG',
     'footer-signature': 'El Atlas · Daniel Schteingart · 2026',
     'axis-x': 'PIB per cápita PPP (USD constantes 2021)',
     'axis-y-1': 'Satisfacción con la vida (0–10)',
@@ -62,6 +63,7 @@ const ISSUE_I18N = {
     'c3-sources': 'Data: UNODC (homicide rate per 100,000 population), time series 2000–2024. Processed by Our World in Data.',
     'footer-download-snapshot': 'Download cross-country snapshot (CSV)',
     'footer-download-timeseries': 'Download homicide time series (CSV)',
+    'footer-download-png': 'Download PNG',
     'footer-signature': 'The Atlas · Daniel Schteingart · 2026',
     'axis-x': 'GDP per capita PPP (constant 2021 USD)',
     'axis-y-1': 'Life satisfaction (0–10)',
@@ -93,6 +95,12 @@ function applyI18n() {
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.dataset.i18nPlaceholder;
     if (I18N[LANG][key]) el.placeholder = I18N[LANG][key];
+  });
+  // data-i18n-href: cambia el href según idioma (atribución apunta a
+  // distintos Substacks ES/EN).
+  document.querySelectorAll('[data-i18n-href]').forEach(el => {
+    const key = el.dataset.i18nHref;
+    if (I18N[LANG][key]) el.setAttribute('href', I18N[LANG][key]);
   });
 }
 
