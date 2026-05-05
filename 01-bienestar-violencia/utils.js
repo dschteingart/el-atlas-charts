@@ -47,6 +47,11 @@ function niceLinearTicks(min, max, target=6) {
 }
 
 function fmtTickGDP(v) {
-  if (v >= 1000) return '$' + (v / 1000).toFixed(v >= 10000 ? 0 : 1) + 'k';
+  if (v >= 1000) {
+    const n = v / 1000;
+    // Sin decimal cuando es entero ($1k, $10k, $100k); decimal solo si lo
+    // necesita ($1.5k para ticks intermedios poco habituales).
+    return '$' + (Number.isInteger(n) ? n : n.toFixed(1)) + 'k';
+  }
   return '$' + v;
 }

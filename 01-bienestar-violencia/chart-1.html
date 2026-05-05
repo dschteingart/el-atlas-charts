@@ -45,12 +45,16 @@
   </section>
 
   <div class="footer">
-    <p data-i18n="c1-sources">
-      Datos: Banco Mundial (PIB per cápita PPP, dólares internacionales constantes 2021) y World Happiness Report (satisfacción con la vida, escala 0–10). Año más reciente disponible por país (2019–2025). Procesados por Our World in Data.
-    </p>
     <p>
       <button class="download" data-chart="1" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="1" data-i18n="footer-download-png">Descargar PNG</button>
     </p>
+    <div class="footer-row">
+      <p class="sources" data-i18n="c1-sources">
+        Datos: Banco Mundial (PIB per cápita PPP, dólares internacionales constantes 2021) y World Happiness Report (satisfacción con la vida, escala 0–10). Año más reciente disponible por país (2019–2025). Procesados por Our World in Data.
+      </p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
   </div>
 
 </div>
@@ -61,6 +65,7 @@
 <script src="./utils.js"></script>
 <script src="./data-scatter.js"></script>
 <script src="./scatter.js"></script>
+<script src="./png-export.js"></script>
 <script>
 state[1] = { scaleX: 'log', scaleY: 'linear', activeRegions: new Set(REGION_ORDER), hoverRegion: null };
 renderRegionFilters(1);

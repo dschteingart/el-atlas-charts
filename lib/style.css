@@ -588,6 +588,34 @@
     font-size: 12px;
     color: var(--ink-soft);
   }
+  /* Última línea del footer: fuente a la izquierda, atribución editorial
+     (link al Substack) a la derecha, alineadas al pie. */
+  .footer-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 24px;
+    margin-top: 6px;
+  }
+  .footer-row .sources {
+    flex: 1;
+    margin: 0;
+  }
+  .attribution {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: none;
+    letter-spacing: 0.1px;
+  }
+  .attribution:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--accent);
+    text-underline-offset: 2px;
+  }
 
   @media (max-width: 540px) {
     .wrap { padding: 18px 14px 24px; }
