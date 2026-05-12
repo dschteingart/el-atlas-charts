@@ -21,6 +21,7 @@ const ISSUE_I18N = {
     'c3-legend-latam': 'América Latina y el Caribe',
     'c3-legend-world': 'Mundo',
     'c3-hint': '— Pasá el cursor por una línea de fondo para ver cada país',
+    'c3-hint-mobile': '— Buscá un país para destacarlo en el gráfico',
     'c3-axis-y': 'Homicidios cada 100.000 habitantes',
     'c3-tt-latam': 'Latam+Caribe',
     'c3-tt-world': 'Mundo',
@@ -54,6 +55,7 @@ const ISSUE_I18N = {
     'c3-legend-latam': 'Latin America and the Caribbean',
     'c3-legend-world': 'World',
     'c3-hint': '— Hover over a background line to see each country',
+    'c3-hint-mobile': '— Search for a country to highlight it in the chart',
     'c3-axis-y': 'Homicides per 100,000 people',
     'c3-tt-latam': 'Latam+Caribbean',
     'c3-tt-world': 'World',
@@ -88,9 +90,14 @@ const t = (key) => I18N[LANG][key] || key;
 const state = {};
 
 function applyI18n() {
+  // En dispositivos sin hover (mobile/tablet) preferimos la versión "-mobile"
+  // de la key si existe (ej. c3-hint-mobile en lugar de c3-hint).
+  const useMobile = typeof HAS_HOVER !== 'undefined' && !HAS_HOVER;
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.dataset.i18n;
-    if (I18N[LANG][key]) el.innerHTML = I18N[LANG][key];
+    const mobileKey = key + '-mobile';
+    const chosen = (useMobile && I18N[LANG][mobileKey]) ? mobileKey : key;
+    if (I18N[LANG][chosen]) el.innerHTML = I18N[LANG][chosen];
   });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
     const key = el.dataset.i18nPlaceholder;

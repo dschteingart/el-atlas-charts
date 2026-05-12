@@ -79,14 +79,19 @@ function renderRegionFilters(chartId) {
       renderRegionFilters(chartId);
       drawChart(chartId);
     });
-    chip.addEventListener('mouseenter', () => {
-      state[chartId].hoverRegion = reg;
-      drawChart(chartId);
-    });
-    chip.addEventListener('mouseleave', () => {
-      state[chartId].hoverRegion = null;
-      drawChart(chartId);
-    });
+    // Hover-preview de región: solo en dispositivos con mouse. En mobile el
+    // tap dispara mouseenter pero nunca mouseleave, dejando la región
+    // "destacada" pegada hasta que el usuario tap otra región.
+    if (HAS_HOVER) {
+      chip.addEventListener('mouseenter', () => {
+        state[chartId].hoverRegion = reg;
+        drawChart(chartId);
+      });
+      chip.addEventListener('mouseleave', () => {
+        state[chartId].hoverRegion = null;
+        drawChart(chartId);
+      });
+    }
     container.appendChild(chip);
   });
 }
@@ -421,11 +426,19 @@ function drawChart(chartId) {
     svg.appendChild(regLine);
   }
 
-  // Estado de visibilidad y hover
+  // Estado de visibilidad, hover y spotlight pegado.
+  // spotlightCountry: cuando el usuario hace click (o tap en mobile) en un
+  // punto, ese país queda destacado y el resto atenuado al 12% hasta que se
+  // limpie (click en zona vacía o nuevo click sobre el mismo punto).
   const visibleRegions = state[chartId].activeRegions;
   const hoverReg = state[chartId].hoverRegion;
+  const spotCountry = state[chartId].spotlightCountry || null;
   const drawnRegions = new Set(visibleRegions);
   if (hoverReg) drawnRegions.add(hoverReg);
+  if (spotCountry) {
+    const spotPoint = allPoints.find(d => d.country === spotCountry);
+    if (spotPoint) drawnRegions.add(spotPoint.region);
+  }
 
   const ptsG = document.createElementNS(ns, 'g');
   ptsG.setAttribute('clip-path', `url(#${clipId})`);
@@ -455,22 +468,27 @@ function drawChart(chartId) {
     const cy = yScale(yval);
 
     const isLatam = d.region === 'Latin America';
+    const isSpotlight = spotCountry && d.country === spotCountry;
     const isHovered = hoverReg && d.region === hoverReg;
-    const noHoverActive = !hoverReg;
+    const noHoverNorSpot = !hoverReg && !spotCountry;
 
     // Tamaño y borde:
-    // - Sin hover: LATAM grande con borde (protagonista del Atlas), demás chicos
-    // - Con hover: la región hovereada queda grande con borde
+    // - Con spotlight: el país en spotlight queda muy destacado, el resto atenuado.
+    // - Con hover sobre región (solo desktop): la región hovereada destacada.
+    // - Sin nada: LATAM grande con borde (protagonista del Atlas), demás chicos.
     let r, fillOpacity, stroke, strokeWidth;
-    if (isHovered) {
+    if (isSpotlight) {
+      r = 7; fillOpacity = 1; stroke = '#1A1A1A'; strokeWidth = 1.3;
+    } else if (isHovered && !spotCountry) {
       r = 5.5; fillOpacity = 0.95; stroke = '#1A1A1A'; strokeWidth = 0.9;
-    } else if (isLatam && noHoverActive) {
+    } else if (isLatam && noHoverNorSpot) {
       r = 5; fillOpacity = 0.92; stroke = '#1A1A1A'; strokeWidth = 0.7;
     } else {
       r = 3.8; fillOpacity = 0.7; stroke = 'white'; strokeWidth = 0.5;
     }
 
-    const isDimmed = hoverReg && !isHovered;
+    const isDimmed = (hoverReg && !isHovered && !isSpotlight)
+                  || (spotCountry && !isSpotlight);
     if (!isDimmed) {
       pointPositions.push({ cx, cy, r, region: d.region });
     }
@@ -518,16 +536,43 @@ function drawChart(chartId) {
     c.addEventListener('mouseleave', () => {
       tooltip.style.opacity = '0';
     });
+    // Click (tap en mobile) = toggle spotlight pegado. El stopPropagation
+    // impide que el click burbujee al SVG y se limpie inmediatamente.
+    c.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      if (state[chartId].spotlightCountry === d.country) {
+        state[chartId].spotlightCountry = null;
+        tooltip.style.opacity = '0';
+      } else {
+        state[chartId].spotlightCountry = d.country;
+      }
+      drawChart(chartId);
+    });
     ptsG.appendChild(c);
   });
 
+  // Click en zona vacía del SVG limpia spotlight y tooltip pegados.
+  // onclick (no addEventListener) para no acumular handlers en cada redraw.
+  svg.onclick = (ev) => {
+    if (ev.target.tagName !== 'circle') {
+      if (state[chartId].spotlightCountry) {
+        state[chartId].spotlightCountry = null;
+        drawChart(chartId);
+      }
+      tooltip.style.opacity = '0';
+    }
+  };
+
   // Etiquetas
-  // - Sin hover: solo países LATAM (con los 5 grandes garantizados; el resto si entra).
-  // - Con hover sobre región: todos los países de esa región (con los garantizados
-  //   de esa región como Tier 0 — ej. al hacer hover sobre "Europa Occidental",
-  //   Alemania, Francia, UK, España e Italia son los Tier 0).
+  // - Con spotlight: solo el país en spotlight (forzado a entrar).
+  // - Sin spotlight, con hover sobre región: todos los países de esa región
+  //   (con los garantizados de esa región como Tier 0 — ej. al hover en
+  //   "Europa Occidental", Alemania, Francia, UK, España e Italia son Tier 0).
+  // - Sin nada: solo países LATAM (los 5 grandes garantizados; el resto si entra).
   let labelTargets;
-  if (hoverReg) {
+  if (spotCountry) {
+    labelTargets = orderedDrawables.filter(d => d.country === spotCountry);
+  } else if (hoverReg) {
     labelTargets = orderedDrawables.filter(d => d.region === hoverReg);
   } else {
     labelTargets = orderedDrawables.filter(d => d.region === 'Latin America');
