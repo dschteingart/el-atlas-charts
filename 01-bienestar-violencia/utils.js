@@ -2,6 +2,12 @@
 // Específicos del N°1; eventualmente migrarán a lib/utils.js.
 // Depende de LANG (definido en i18n-issue.js, cargado antes).
 
+// Detección de dispositivo con hover (desktop con mouse) vs solo touch (mobile).
+// En mobile el hover no funciona bien — los handlers mouseenter/mouseleave
+// quedan pegados después del tap. Cuando HAS_HOVER es false, los charts
+// adaptan la interacción a tap-toggle en lugar de hover persistente.
+const HAS_HOVER = window.matchMedia('(hover: hover)').matches;
+
 const fmt = (n, dec=0) => {
   if (n === null || n === undefined || isNaN(n)) return '—';
   const locale = LANG === 'es' ? 'es-AR' : 'en-US';

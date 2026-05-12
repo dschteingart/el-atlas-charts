@@ -132,8 +132,8 @@
 <script src="./scatter.js"></script>
 <script src="./timeseries.js"></script>
 <script>
-state[1] = { scaleX: 'log', scaleY: 'linear', activeRegions: new Set(REGION_ORDER), hoverRegion: null };
-state[2] = { scaleX: 'log', scaleY: 'linear', activeRegions: new Set(REGION_ORDER), hoverRegion: null };
+state[1] = { scaleX: 'log', scaleY: 'linear', activeRegions: new Set(REGION_ORDER), hoverRegion: null, spotlightCountry: null };
+state[2] = { scaleX: 'log', scaleY: 'linear', activeRegions: new Set(REGION_ORDER), hoverRegion: null, spotlightCountry: null };
 state[3] = { scaleY: 'log', selectedCountries: new Map(), hoverCountry: null };
 renderRegionFilters(1);
 renderRegionFilters(2);
