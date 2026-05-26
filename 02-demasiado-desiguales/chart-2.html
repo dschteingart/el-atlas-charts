@@ -31,6 +31,14 @@
     margin-bottom: 8px;
     flex-wrap: wrap;
   }
+  /* Cada label + toggle se mantiene en una unidad inseparable. Sin esto,
+     en mobile el flex-wrap separa el label arriba y los buttons abajo. */
+  .m-ctrl-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
   .m-ctrl-label {
     font-family: var(--sans);
     font-size: 11px;
@@ -355,20 +363,26 @@
     <p class="chart-subtitle">América Latina es 14% más desigual de lo esperado para su nivel de desarrollo.</p>
 
     <div class="m-controls">
-      <span class="m-ctrl-label" data-i18n="c2-toggle-model-label">Modelo</span>
-      <div class="m-mode-toggle" data-toggle="model">
-        <button class="active" data-model="linear" data-i18n="c2-toggle-linear">Lineal</button>
-        <button data-model="quadratic" data-i18n="c2-toggle-quadratic">Cuadrática</button>
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c2-toggle-model-label">Modelo</span>
+        <div class="m-mode-toggle" data-toggle="model">
+          <button class="active" data-model="linear" data-i18n="c2-toggle-linear">Lineal</button>
+          <button data-model="quadratic" data-i18n="c2-toggle-quadratic">Cuadrática</button>
+        </div>
       </div>
-      <span class="m-ctrl-label" data-i18n="c2-toggle-gini-label">Gini</span>
-      <div class="m-mode-toggle" data-toggle="gini">
-        <button data-mode="raw" data-i18n="c2-toggle-gini-raw">Original</button>
-        <button class="active" data-mode="adj" data-i18n="c2-toggle-gini-adj">Ajustado</button>
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c2-toggle-gini-label">Gini</span>
+        <div class="m-mode-toggle" data-toggle="gini">
+          <button data-mode="raw" data-i18n="c2-toggle-gini-raw">Original</button>
+          <button class="active" data-mode="adj" data-i18n="c2-toggle-gini-adj">Ajustado</button>
+        </div>
       </div>
-      <span class="m-ctrl-label" data-i18n="c2-toggle-scale-label">Escala X</span>
-      <div class="m-mode-toggle" data-toggle="scaleX">
-        <button class="active" data-scale="log" data-i18n="c2-toggle-scale-log">Log</button>
-        <button data-scale="linear" data-i18n="c2-toggle-scale-linear">Lineal</button>
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c2-toggle-scale-label">Escala X</span>
+        <div class="m-mode-toggle" data-toggle="scaleX">
+          <button class="active" data-scale="log" data-i18n="c2-toggle-scale-log">Log</button>
+          <button data-scale="linear" data-i18n="c2-toggle-scale-linear">Lineal</button>
+        </div>
       </div>
       <div class="m-slider-block">
         <button class="m-play-btn" id="s-play" aria-label="Reproducir"></button>

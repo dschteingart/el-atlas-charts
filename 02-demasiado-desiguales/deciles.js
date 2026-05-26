@@ -333,10 +333,13 @@ function drawDeciles() {
         c.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
         c.addEventListener('mousemove', (e) => d_positionTooltip(e, tooltip));
       } else {
-        // En mobile: tap muestra tooltip
+        // Mobile: tap muestra el tooltip y queda visible hasta que el
+        // usuario haga tap en otro marker (cambia) o en otro lugar
+        // (handler global en document que cierra). stopPropagation evita
+        // que el global cierre el recién abierto.
         c.addEventListener('click', (e) => {
+          e.stopPropagation();
           d_showTooltip(e, country, p.d, tooltip);
-          setTimeout(() => { tooltip.style.opacity = '0'; }, 2500);
         });
       }
       linesG.appendChild(c);
@@ -502,9 +505,12 @@ function setupDecilesToggles() {
 }
 
 function updateScaleToggleVisibility() {
-  const scaleBlock = document.getElementById('d-scale-block');
-  if (!scaleBlock) return;
-  scaleBlock.style.display = state[3].yMode === 'income' ? '' : 'none';
+  // Ocultar/mostrar el grupo entero (label + toggle) — no solo el toggle —
+  // para que cuando el modo es percentile el label "Escala" no quede
+  // huérfano. El wrapper #d-scale-group contiene ambos.
+  const scaleGroup = document.getElementById('d-scale-group');
+  if (!scaleGroup) return;
+  scaleGroup.style.display = state[3].yMode === 'income' ? '' : 'none';
 }
 
 // =================== Buscador + chips ===================
@@ -761,4 +767,14 @@ function initDeciles() {
   setupDecilesToggles();
   setupDecilesSearch();
   setupDecilesDownloadCSV();
+  // Mobile: handler global que cierra el tooltip al tap fuera de los
+  // markers. Los markers hacen stopPropagation así que un tap sobre uno
+  // no llega acá. Solo registramos una vez (singleton).
+  if (!HAS_HOVER && !initDeciles._tooltipGlobalRegistered) {
+    initDeciles._tooltipGlobalRegistered = true;
+    document.addEventListener('click', () => {
+      const tt = document.getElementById('tooltip3');
+      if (tt) tt.style.opacity = '0';
+    });
+  }
 }

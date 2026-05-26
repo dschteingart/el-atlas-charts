@@ -28,6 +28,14 @@
     margin-bottom: 8px;
     flex-wrap: wrap;
   }
+  /* Cada label + toggle se mantiene en una unidad inseparable. Sin esto,
+     en mobile el flex-wrap separa el label arriba y los buttons abajo. */
+  .m-ctrl-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
   .m-ctrl-label {
     font-family: var(--sans);
     font-size: 11px;
@@ -281,15 +289,19 @@
     <p class="chart-subtitle" data-i18n="c3-subtitle">El ingreso de los hogares ricos de América Latina se acerca al de Europa. El de los hogares pobres, no.</p>
 
     <div class="m-controls">
-      <span class="m-ctrl-label" data-i18n="c3-toggle-y-label">Eje Y</span>
-      <div class="d-mode-toggle" data-toggle="yMode">
-        <button class="active" data-ymode="income" data-i18n="c3-toggle-income">Ingreso PPP/día</button>
-        <button data-ymode="percentile" data-i18n="c3-toggle-percentile">Percentil mundial</button>
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c3-toggle-y-label">Eje Y</span>
+        <div class="d-mode-toggle" data-toggle="yMode">
+          <button class="active" data-ymode="income" data-i18n="c3-toggle-income">Ingreso PPP/día</button>
+          <button data-ymode="percentile" data-i18n="c3-toggle-percentile">Percentil mundial</button>
+        </div>
       </div>
-      <span class="m-ctrl-label" id="d-scale-label" data-i18n="c3-toggle-scale-label">Escala</span>
-      <div class="d-mode-toggle" data-toggle="yScale" id="d-scale-block">
-        <button data-yscale="linear" data-i18n="c3-toggle-scale-linear">Lineal</button>
-        <button class="active" data-yscale="log" data-i18n="c3-toggle-scale-log">Log</button>
+      <div class="m-ctrl-group" id="d-scale-group">
+        <span class="m-ctrl-label" data-i18n="c3-toggle-scale-label">Escala</span>
+        <div class="d-mode-toggle" data-toggle="yScale" id="d-scale-block">
+          <button data-yscale="linear" data-i18n="c3-toggle-scale-linear">Lineal</button>
+          <button class="active" data-yscale="log" data-i18n="c3-toggle-scale-log">Log</button>
+        </div>
       </div>
       <div class="m-slider-block">
         <button class="m-play-btn" id="d-play" aria-label="Reproducir"></button>
