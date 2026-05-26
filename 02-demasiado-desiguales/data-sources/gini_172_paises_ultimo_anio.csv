@@ -1,0 +1,173 @@
+﻿country_code,country_name,region_name,year,welfare_type,reporting_level,gini
+ALB,Albania,Europa y Asia central,2020,consumo,national,29.42
+DZA,Algeria,"Medio Oriente, Norte de África, Afganistán y Pakistán",2011,consumo,national,27.62
+AGO,Angola,África subsahariana,2018,consumo,national,51.26
+ARG,Argentina,América Latina y Caribe,2024,ingreso,urban,42.35
+ARM,Armenia,Europa y Asia central,2024,consumo,national,27.44
+AUS,Australia,Asia oriental y Pacífico,2020,ingreso,national,33.83
+AUT,Austria,Europa y Asia central,2023,ingreso,national,31.2
+AZE,Azerbaijan,Europa y Asia central,2005,consumo,national,26.55
+BGD,Bangladesh,Asia del sur,2022,consumo,national,30.93
+BRB,Barbados,América Latina y Caribe,2016,consumo,national,34.07
+BLR,Belarus,Europa y Asia central,2020,consumo,national,24.38
+BEL,Belgium,Europa y Asia central,2023,ingreso,national,26.82
+BLZ,Belize,América Latina y Caribe,2018,consumo,national,39.95
+BEN,Benin,África subsahariana,2021,consumo,national,34.4
+BTN,Bhutan,Asia del sur,2022,consumo,national,28.45
+BOL,Bolivia,América Latina y Caribe,2024,ingreso,national,40.87
+BIH,Bosnia and Herzegovina,Europa y Asia central,2021,consumo,national,30.31
+BWA,Botswana,África subsahariana,2015,consumo,national,54.91
+BRA,Brazil,América Latina y Caribe,2024,ingreso,national,50.26
+BGR,Bulgaria,Europa y Asia central,2023,ingreso,national,39.47
+BFA,Burkina Faso,África subsahariana,2021,consumo,national,37.39
+BDI,Burundi,África subsahariana,2020,consumo,national,37.46
+CPV,Cabo Verde,África subsahariana,2015,consumo,national,42.38
+CMR,Cameroon,África subsahariana,2021,consumo,national,42.18
+CAN,Canada,América del Norte,2022,ingreso,national,31.5
+CAF,Central African Republic,África subsahariana,2021,consumo,national,43.03
+TCD,Chad,África subsahariana,2022,consumo,national,37.36
+CHL,Chile,América Latina y Caribe,2024,ingreso,national,43.02
+CHN,China,Asia oriental y Pacífico,2022,consumo,national,36.02
+COL,Colombia,América Latina y Caribe,2024,ingreso,national,54.38
+COM,Comoros,África subsahariana,2024,consumo,national,30.31
+COD,"Congo, Dem. Rep.",África subsahariana,2020,consumo,national,44.67
+COG,"Congo, Rep.",África subsahariana,2011,consumo,national,48.94
+CRI,Costa Rica,América Latina y Caribe,2025,ingreso,national,45.46
+HRV,Croatia,Europa y Asia central,2023,ingreso,national,30.11
+CYP,Cyprus,Europa y Asia central,2023,ingreso,national,31.84
+CZE,Czechia,Europa y Asia central,2023,ingreso,national,25.71
+CIV,Côte d'Ivoire,África subsahariana,2021,consumo,national,35.28
+DNK,Denmark,Europa y Asia central,2023,ingreso,national,29.92
+DJI,Djibouti,"Medio Oriente, Norte de África, Afganistán y Pakistán",2017,consumo,national,41.59
+DOM,Dominican Republic,América Latina y Caribe,2024,ingreso,national,38.97
+ECU,Ecuador,América Latina y Caribe,2025,ingreso,national,45.92
+EGY,"Egypt, Arab Rep.","Medio Oriente, Norte de África, Afganistán y Pakistán",2021,consumo,national,28.48
+SLV,El Salvador,América Latina y Caribe,2023,ingreso,national,39.8
+GNQ,Equatorial Guinea,África subsahariana,2022,consumo,national,38.54
+EST,Estonia,Europa y Asia central,2023,ingreso,national,30.71
+SWZ,Eswatini,África subsahariana,2016,consumo,national,54.58
+ETH,Ethiopia,África subsahariana,2021,consumo,national,31.14
+FJI,Fiji,Asia oriental y Pacífico,2019,consumo,national,30.71
+FIN,Finland,Europa y Asia central,2023,ingreso,national,27.4
+FRA,France,Europa y Asia central,2023,ingreso,national,31.81
+GAB,Gabon,África subsahariana,2017,consumo,national,38.02
+GMB,"Gambia, The",África subsahariana,2020,consumo,national,38.76
+GEO,Georgia,Europa y Asia central,2024,consumo,national,33.85
+DEU,Germany,Europa y Asia central,2022,ingreso,national,33.66
+GHA,Ghana,África subsahariana,2016,consumo,national,43.51
+GRC,Greece,Europa y Asia central,2023,ingreso,national,33.44
+GRD,Grenada,América Latina y Caribe,2018,consumo,national,43.82
+GTM,Guatemala,América Latina y Caribe,2023,ingreso,national,45.21
+GIN,Guinea,África subsahariana,2018,consumo,national,29.59
+GNB,Guinea-Bissau,África subsahariana,2021,consumo,national,33.44
+GUY,Guyana,América Latina y Caribe,1998,ingreso,national,45.05
+HTI,Haiti,América Latina y Caribe,2012,consumo,national,41.1
+HND,Honduras,América Latina y Caribe,2024,ingreso,national,45.68
+HUN,Hungary,Europa y Asia central,2017,ingreso,national,30.58
+ISL,Iceland,Europa y Asia central,2019,ingreso,national,26.8
+IND,India,Asia del sur,2022,consumo,national,25.51
+IDN,Indonesia,Asia oriental y Pacífico,2025,consumo,national,34.43
+IRN,"Iran, Islamic Rep.","Medio Oriente, Norte de África, Afganistán y Pakistán",2023,consumo,national,35.88
+IRQ,Iraq,"Medio Oriente, Norte de África, Afganistán y Pakistán",2023,consumo,national,29.77
+IRL,Ireland,Europa y Asia central,2023,ingreso,national,28.97
+ISR,Israel,"Medio Oriente, Norte de África, Afganistán y Pakistán",2022,ingreso,national,38.31
+ITA,Italy,Europa y Asia central,2023,ingreso,national,34.34
+JAM,Jamaica,América Latina y Caribe,2021,consumo,national,39.87
+JPN,Japan,Asia oriental y Pacífico,2020,ingreso,national,32.34
+JOR,Jordan,"Medio Oriente, Norte de África, Afganistán y Pakistán",2010,consumo,national,33.66
+KAZ,Kazakhstan,Europa y Asia central,2021,consumo,national,29.19
+KEN,Kenya,África subsahariana,2022,consumo,national,38.53
+KIR,Kiribati,Asia oriental y Pacífico,2023,consumo,national,24.74
+KOR,"Korea, Rep.",Asia oriental y Pacífico,2021,ingreso,national,32.91
+XKX,Kosovo,Europa y Asia central,2022,ingreso,national,38.31
+KGZ,Kyrgyz Republic,Europa y Asia central,2024,consumo,national,27.55
+LAO,Lao PDR,Asia oriental y Pacífico,2024,consumo,national,34.75
+LVA,Latvia,Europa y Asia central,2023,ingreso,national,33.97
+LBN,Lebanon,"Medio Oriente, Norte de África, Afganistán y Pakistán",2022,consumo,national,35.48
+LSO,Lesotho,África subsahariana,2017,consumo,national,44.88
+LBR,Liberia,África subsahariana,2016,consumo,national,35.27
+LTU,Lithuania,Europa y Asia central,2023,ingreso,national,35.96
+LUX,Luxembourg,Europa y Asia central,2023,ingreso,national,33.59
+MDG,Madagascar,África subsahariana,2021,consumo,national,36.82
+MWI,Malawi,África subsahariana,2019,consumo,national,38.54
+MYS,Malaysia,Asia oriental y Pacífico,2021,ingreso,national,40.67
+MDV,Maldives,Asia del sur,2019,consumo,national,29.29
+MLI,Mali,África subsahariana,2021,consumo,national,35.65
+MLT,Malta,"Medio Oriente, Norte de África, Afganistán y Pakistán",2023,ingreso,national,31.78
+MHL,Marshall Islands,Asia oriental y Pacífico,2019,consumo,national,35.48
+MRT,Mauritania,África subsahariana,2019,consumo,national,32.0
+MUS,Mauritius,África subsahariana,2017,consumo,national,36.76
+MEX,Mexico,América Latina y Caribe,2024,ingreso,national,42.63
+FSM,"Micronesia, Fed. Sts.",Asia oriental y Pacífico,2013,consumo,national,40.05
+MDA,Moldova,Europa y Asia central,2023,consumo,national,26.76
+MNG,Mongolia,Asia oriental y Pacífico,2022,consumo,national,31.42
+MNE,Montenegro,Europa y Asia central,2021,ingreso,national,34.3
+MAR,Morocco,"Medio Oriente, Norte de África, Afganistán y Pakistán",2013,consumo,national,39.55
+MOZ,Mozambique,África subsahariana,2022,consumo,national,49.56
+MMR,Myanmar,Asia oriental y Pacífico,2017,consumo,national,30.7
+NAM,Namibia,África subsahariana,2015,consumo,national,59.07
+NRU,Nauru,Asia oriental y Pacífico,2012,consumo,national,32.36
+NPL,Nepal,Asia del sur,2022,consumo,national,30.02
+NLD,Netherlands,Europa y Asia central,2021,ingreso,national,25.74
+NIC,Nicaragua,América Latina y Caribe,2014,ingreso,national,46.16
+NER,Niger,África subsahariana,2021,consumo,national,32.86
+NGA,Nigeria,África subsahariana,2022,consumo,national,33.89
+MKD,North Macedonia,Europa y Asia central,2019,ingreso,national,33.51
+NOR,Norway,Europa y Asia central,2023,ingreso,national,26.53
+PAK,Pakistan,"Medio Oriente, Norte de África, Afganistán y Pakistán",2024,consumo,national,33.54
+PAN,Panama,América Latina y Caribe,2024,ingreso,national,49.73
+PNG,Papua New Guinea,Asia oriental y Pacífico,2009,consumo,national,41.85
+PRY,Paraguay,América Latina y Caribe,2024,ingreso,national,44.25
+PER,Peru,América Latina y Caribe,2024,ingreso,national,40.13
+PHL,Philippines,Asia oriental y Pacífico,2023,consumo,national,35.2
+POL,Poland,Europa y Asia central,2023,ingreso,national,28.47
+PRT,Portugal,Europa y Asia central,2023,ingreso,national,33.85
+QAT,Qatar,"Medio Oriente, Norte de África, Afganistán y Pakistán",2017,ingreso,national,35.13
+ROU,Romania,Europa y Asia central,2023,ingreso,national,29.83
+RUS,Russian Federation,Europa y Asia central,2023,ingreso,national,33.01
+RWA,Rwanda,África subsahariana,2023,consumo,national,39.36
+WSM,Samoa,Asia oriental y Pacífico,2013,consumo,national,38.74
+SEN,Senegal,África subsahariana,2021,consumo,national,36.16
+SRB,Serbia,Europa y Asia central,2023,ingreso,national,32.82
+SYC,Seychelles,África subsahariana,2018,ingreso,national,32.13
+SLE,Sierra Leone,África subsahariana,2018,consumo,national,35.69
+SVK,Slovak Republic,Europa y Asia central,2023,ingreso,national,23.82
+SVN,Slovenia,Europa y Asia central,2023,ingreso,national,24.68
+SLB,Solomon Islands,Asia oriental y Pacífico,2012,consumo,national,37.05
+ZAF,South Africa,África subsahariana,2022,consumo,national,54.05
+SSD,South Sudan,África subsahariana,2016,consumo,national,44.05
+ESP,Spain,Europa y Asia central,2023,ingreso,national,33.41
+LKA,Sri Lanka,Asia del sur,2019,consumo,national,37.66
+LCA,St. Lucia,América Latina y Caribe,2015,consumo,national,43.69
+SDN,Sudan,África subsahariana,2014,consumo,national,34.24
+SUR,Suriname,América Latina y Caribe,2022,consumo,national,39.18
+SWE,Sweden,Europa y Asia central,2023,ingreso,national,29.28
+CHE,Switzerland,Europa y Asia central,2022,ingreso,national,33.8
+SYR,Syrian Arab Republic,"Medio Oriente, Norte de África, Afganistán y Pakistán",2022,consumo,national,26.37
+STP,São Tomé and Príncipe,África subsahariana,2017,consumo,national,40.73
+TWN,"Taiwan, China",Asia oriental y Pacífico,2021,ingreso,national,31.57
+TJK,Tajikistan,Europa y Asia central,2024,consumo,national,36.11
+TZA,Tanzania,África subsahariana,2018,consumo,national,40.49
+THA,Thailand,Asia oriental y Pacífico,2024,consumo,national,33.32
+TLS,Timor-Leste,Asia oriental y Pacífico,2014,consumo,national,28.65
+TGO,Togo,África subsahariana,2021,consumo,national,37.86
+TON,Tonga,Asia oriental y Pacífico,2021,consumo,national,27.1
+TTO,Trinidad and Tobago,América Latina y Caribe,1992,ingreso,national,40.19
+TUN,Tunisia,"Medio Oriente, Norte de África, Afganistán y Pakistán",2021,consumo,national,33.72
+TKM,Turkmenistan,Europa y Asia central,1998,consumo,national,40.81
+TUV,Tuvalu,Asia oriental y Pacífico,2010,consumo,national,39.14
+TUR,Türkiye,Europa y Asia central,2023,ingreso,national,43.68
+UGA,Uganda,África subsahariana,2019,consumo,national,42.7
+UKR,Ukraine,Europa y Asia central,2020,consumo,national,25.63
+ARE,United Arab Emirates,"Medio Oriente, Norte de África, Afganistán y Pakistán",2018,ingreso,national,26.4
+GBR,United Kingdom,Europa y Asia central,2021,ingreso,national,32.42
+USA,United States,América del Norte,2024,ingreso,national,41.76
+URY,Uruguay,América Latina y Caribe,2024,ingreso,national,39.98
+UZB,Uzbekistan,Europa y Asia central,2025,ingreso,national,32.66
+VUT,Vanuatu,Asia oriental y Pacífico,2019,consumo,national,32.32
+VEN,"Venezuela, RB",América Latina y Caribe,2006,ingreso,national,44.7
+VNM,Viet Nam,Asia oriental y Pacífico,2022,consumo,national,36.09
+PSE,West Bank and Gaza,"Medio Oriente, Norte de África, Afganistán y Pakistán",2023,consumo,national,36.38
+YEM,"Yemen, Rep.","Medio Oriente, Norte de África, Afganistán y Pakistán",2014,consumo,national,36.71
+ZMB,Zambia,África subsahariana,2022,consumo,national,51.48
+ZWE,Zimbabwe,África subsahariana,2019,consumo,national,50.26
