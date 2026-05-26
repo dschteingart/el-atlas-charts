@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — Distribución de ingreso por decil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<style>
+  /* === Estilos específicos del chart 3 (deciles) === */
+  /* Reusamos las clases .m-* de chart 1/2 para controles + chips + buscador.
+     Las clases .d-* son propias del chart de deciles. */
+  .wrap-wide { max-width: 1100px; }
+
+  .wrap-wide { padding: 10px 20px 16px; }
+  .wrap-wide header { padding-bottom: 8px; margin-bottom: 10px; }
+  .wrap-wide .chart-block { margin: 10px 0 4px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; }
+  .wrap-wide .chart-subtitle { margin: 0 0 8px; font-size: 13.5px; }
+
+  /* === Controles (idénticos en estilo a chart 1 y 2) === */
+  .m-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .m-ctrl-label {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+  }
+  /* Clases d-mode-toggle son alias visuales de m-mode-toggle pero con su
+     propio data-toggle attribute para que el JS las separe sin colisionar
+     con los toggles de los charts 1 y 2 cuando se monten juntos. */
+  .d-mode-toggle, .m-mode-toggle {
+    display: flex;
+    gap: 4px;
+    padding: 3px;
+    background: var(--bg-soft);
+    border-radius: 7px;
+  }
+  .d-mode-toggle button, .m-mode-toggle button {
+    background: transparent;
+    border: none;
+    padding: 6px 14px;
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.18s ease;
+    font-weight: 500;
+  }
+  .d-mode-toggle button:hover, .m-mode-toggle button:hover { color: var(--ink); }
+  .d-mode-toggle button.active, .m-mode-toggle button.active {
+    background: var(--bg);
+    color: var(--ink);
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+  .m-slider-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 280px;
+  }
+  .m-play-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid var(--accent);
+    background: var(--bg);
+    color: var(--accent);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    padding: 0;
+  }
+  .m-play-btn:hover { background: var(--accent); color: var(--bg); }
+  .m-play-btn::before { content: '▶'; }
+  .m-play-btn.playing::before { content: '⏸'; }
+  .m-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--grid);
+    border-radius: 2px;
+    outline: none;
+  }
+  .m-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+  }
+  .m-slider::-moz-range-thumb {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+  }
+  .m-year-display {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    min-width: 46px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* === SVG: grid, ticks, líneas, markers === */
+  .d-grid-line { stroke: var(--grid); stroke-width: 1; opacity: 0.55; }
+  .d-axis-line { stroke: var(--ink-muted); stroke-width: 1; fill: none; }
+  .d-vguide {
+    stroke: var(--grid);
+    stroke-width: 1;
+    opacity: 0.35;
+  }
+  .d-tick {
+    font-family: var(--sans);
+    font-size: 11px;
+    fill: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  /* Aclaración chica debajo de D1 y D10 (10% más pobre / 10% más rico) */
+  .d-tick-extra {
+    font-family: var(--sans);
+    font-size: 9.5px;
+    fill: var(--ink-muted);
+    font-style: italic;
+  }
+  .d-axis-title {
+    font-family: var(--sans);
+    font-size: 11.5px;
+    fill: var(--ink-soft);
+    font-weight: 500;
+  }
+  .d-line {
+    fill: none;
+    stroke-width: 2.2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  .d-marker {
+    cursor: pointer;
+    transition: r 0.15s;
+  }
+  .d-marker:hover {
+    r: 5;
+  }
+  .d-end-label {
+    font-family: var(--sans);
+    font-size: 11.5px;
+    font-weight: 600;
+    pointer-events: none;
+  }
+
+  /* === Buscador + chips (reusando .m-* de chart 1) === */
+  .m-search-wrap {
+    position: relative;
+    margin: 8px 0 4px;
+    max-width: 360px;
+  }
+  .m-search-input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    background: var(--bg);
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+  }
+  .m-search-input:focus { border-color: var(--accent); }
+  .m-search-results {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0; right: 0;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 30;
+    display: none;
+  }
+  .m-search-results.open { display: block; }
+  .m-search-result {
+    padding: 7px 10px;
+    font-family: var(--sans);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--grid);
+  }
+  .m-search-result:last-child { border-bottom: none; }
+  .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
+  .m-search-result.m-already { opacity: 0.5; font-style: italic; }
+  .m-search-region {
+    color: var(--ink-muted);
+    font-size: 11.5px;
+    flex-shrink: 0;
+  }
+  .m-selected-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 4px 0 6px;
+    min-height: 0;
+  }
+  .m-selected-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 4px 3px 10px;
+    border-radius: 12px;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 500;
+    color: white;
+  }
+  .m-chip-x {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.25);
+    color: white;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  .m-chip-x:hover { background: rgba(255,255,255,0.45); }
+
+  @media (max-width: 600px) {
+    .d-end-label { font-size: 10px; }
+    .m-search-wrap { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 2</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="3">
+    <h2 class="chart-title" data-i18n="c3-title">Las élites cerca, los pobres lejos</h2>
+    <p class="chart-subtitle" data-i18n="c3-subtitle">El ingreso de los hogares ricos de América Latina se acerca al de Europa. El de los hogares pobres, no.</p>
+
+    <div class="m-controls">
+      <span class="m-ctrl-label" data-i18n="c3-toggle-y-label">Eje Y</span>
+      <div class="d-mode-toggle" data-toggle="yMode">
+        <button class="active" data-ymode="income" data-i18n="c3-toggle-income">Ingreso PPP/día</button>
+        <button data-ymode="percentile" data-i18n="c3-toggle-percentile">Percentil mundial</button>
+      </div>
+      <span class="m-ctrl-label" id="d-scale-label" data-i18n="c3-toggle-scale-label">Escala</span>
+      <div class="d-mode-toggle" data-toggle="yScale" id="d-scale-block">
+        <button data-yscale="linear" data-i18n="c3-toggle-scale-linear">Lineal</button>
+        <button class="active" data-yscale="log" data-i18n="c3-toggle-scale-log">Log</button>
+      </div>
+      <div class="m-slider-block">
+        <button class="m-play-btn" id="d-play" aria-label="Reproducir"></button>
+        <span class="m-ctrl-label" data-i18n="slider-year-label">Año</span>
+        <input type="range" class="m-slider" id="d-slider" min="1990" max="2025" value="2025" step="1">
+        <span class="m-year-display" id="d-year-display">2025</span>
+      </div>
+    </div>
+
+    <div class="m-search-wrap">
+      <input type="text" id="d-search" class="m-search-input" data-i18n-placeholder="c3-search-placeholder" placeholder="Buscar país…" autocomplete="off">
+      <div id="d-search-results" class="m-search-results"></div>
+    </div>
+    <div class="m-selected-chips" id="d-selected-chips"></div>
+
+    <div class="chart-svg-wrap">
+      <svg id="chart3" viewBox="0 0 1100 470" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip3"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" data-chart="3-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="3" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources" data-i18n="c3-sources">
+        Datos: Banco Mundial — Poverty and Inequality Platform (PIP).
+      </p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="../lib/regions.js"></script>
+<script src="../lib/i18n.js"></script>
+<script src="./regions-wb.js"></script>
+<script src="./i18n-issue.js"></script>
+<script src="./utils.js"></script>
+<script src="./country-names.js"></script>
+<script src="./data-deciles.js"></script>
+<script src="./deciles.js"></script>
+<script src="./png-export.js"></script>
+<script>
+state[3] = {
+  yMode: 'income',
+  yScale: 'log',
+  year: (typeof DATA_DECILES !== 'undefined' && DATA_DECILES.latest_year) || 2025,
+  playing: false,
+  selectedCountries: ['NOR', 'PRT', 'CHL', 'ARG', 'BRA', 'NER'],
+  spotlightCountry: null
+};
+initDeciles();
+applyI18n();
+setupLangToggle(() => {
+  renderDecilesSelectedChips();
+  drawDeciles();
+});
+</script>
+</body>
+</html>
