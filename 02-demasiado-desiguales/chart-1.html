@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — Ranking mundial de la desigualdad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<style>
+  /* === Estilos específicos del marimekko (chart 1 del N°2) === */
+  /* El marimekko necesita más ancho que el default del .wrap (760px) */
+  .wrap-wide { max-width: 1100px; }
+
+  /* Compactamos paddings/margins arriba del SVG para que el chart entero
+     entre en pantalla sin scrollear. Solo aplica a este HTML standalone. */
+  .wrap-wide { padding: 10px 20px 16px; }
+  .wrap-wide header { padding-bottom: 8px; margin-bottom: 10px; }
+  .wrap-wide .chart-block { margin: 10px 0 4px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; }
+  .wrap-wide .chart-subtitle { margin: 0 0 8px; font-size: 13.5px; }
+
+  /* Controles: toggle Gini + slider con play */
+  .m-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .m-ctrl-label {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+  }
+  .m-mode-toggle {
+    display: flex;
+    gap: 4px;
+    padding: 3px;
+    background: var(--bg-soft);
+    border-radius: 7px;
+  }
+  .m-mode-toggle button {
+    background: transparent;
+    border: none;
+    padding: 6px 14px;
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    border-radius: 5px;
+    transition: all 0.18s ease;
+    font-weight: 500;
+  }
+  .m-mode-toggle button:hover { color: var(--ink); }
+  .m-mode-toggle button.active {
+    background: var(--bg);
+    color: var(--ink);
+    font-weight: 600;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+  }
+  .m-slider-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 280px;
+  }
+  .m-play-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid var(--accent);
+    background: var(--bg);
+    color: var(--accent);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+    flex-shrink: 0;
+    padding: 0;
+  }
+  .m-play-btn:hover { background: var(--accent); color: var(--bg); }
+  .m-play-btn::before { content: '▶'; }
+  .m-play-btn.playing::before { content: '⏸'; }
+  .m-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: var(--grid);
+    border-radius: 2px;
+    outline: none;
+  }
+  .m-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+  }
+  .m-slider::-moz-range-thumb {
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+  }
+  .m-year-display {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--ink);
+    min-width: 46px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* SVG y barras */
+  .m-grid-line { stroke: var(--grid); stroke-width: 1; opacity: 0.55; }
+  .m-axis-line { stroke: var(--ink-muted); stroke-width: 1; fill: none; }
+  .m-tick {
+    font-family: var(--sans);
+    font-size: 11px;
+    fill: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .m-axis-label {
+    font-family: var(--sans);
+    font-size: 10.5px;
+    fill: var(--ink-muted);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .m-bar {
+    transition: opacity 0.2s;
+    cursor: pointer;
+  }
+  .m-bar.m-dim { opacity: 0.15; }
+  .m-bar.m-spotlight { /* país seleccionado vía buscador — destacado */ }
+  .m-country-label {
+    font-family: var(--sans);
+    font-size: 9.5px;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .m-country-label.m-dim { opacity: 0.2; }
+  .m-country-label.m-spotlight-label {
+    font-weight: 700;
+  }
+  .m-label-tick {
+    stroke-width: 0.6;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .m-label-tick.m-dim { opacity: 0.2; }
+
+  /* Líneas verticales punteadas de promedio regional.
+     Por default ocultas; se muestran solo cuando tienen .m-active (hover de
+     región). El hook onBeforePngExport muestra las 7 simultáneamente en PNG. */
+  .m-region-avg-line {
+    display: none;
+    pointer-events: none;
+  }
+  .m-region-avg-line.m-active { display: inline; }
+  .m-region-avg-label {
+    display: none;
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    pointer-events: none;
+    paint-order: stroke;
+    stroke: var(--bg);
+    stroke-width: 3px;
+    stroke-linejoin: round;
+  }
+  .m-region-avg-label.m-active { display: inline; }
+
+  /* Legend interactivo (chips de región) */
+  .m-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 4px;
+    padding: 0 4px;
+  }
+  .m-legend-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.15s;
+  }
+  .m-legend-swatch {
+    width: 12px; height: 12px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+  .m-legend-label {}
+
+  /* === Buscador + chips de selección === */
+  .m-search-wrap {
+    position: relative;
+    margin: 8px 0 4px;
+    max-width: 360px;
+  }
+  .m-search-input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    background: var(--bg);
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+  }
+  .m-search-input:focus { border-color: var(--accent); }
+  .m-search-results {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0; right: 0;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 30;
+    display: none;
+  }
+  .m-search-results.open { display: block; }
+  .m-search-result {
+    padding: 7px 10px;
+    font-family: var(--sans);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--grid);
+  }
+  .m-search-result:last-child { border-bottom: none; }
+  .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
+  .m-search-result.m-already { opacity: 0.5; font-style: italic; }
+  .m-search-region {
+    color: var(--ink-muted);
+    font-size: 11.5px;
+    flex-shrink: 0;
+  }
+  .m-selected-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 4px 0 6px;
+    min-height: 0;
+  }
+  .m-selected-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 4px 3px 10px;
+    border-radius: 12px;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 500;
+    color: white;
+  }
+  .m-chip-x {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.25);
+    color: white;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  .m-chip-x:hover { background: rgba(255,255,255,0.45); }
+
+  @media (max-width: 600px) {
+    .m-country-label { font-size: 8px; }
+    .m-region-avg-label { font-size: 10px; }
+    .m-search-wrap { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 2</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="1">
+    <h2 class="chart-title" data-i18n="c1-title">El ranking mundial de la desigualdad</h2>
+    <p class="chart-subtitle" data-i18n="c1-subtitle-raw">Coeficiente de Gini por país, tal como aparece en las fuentes originales: América Latina por encima de África subsahariana.</p>
+
+    <div class="m-controls">
+      <span class="m-ctrl-label" data-i18n="c1-toggle-label">Medición</span>
+      <div class="m-mode-toggle">
+        <button class="active" data-mode="raw" data-i18n="c1-toggle-raw">Gini original</button>
+        <button data-mode="adj" data-i18n="c1-toggle-adj">Gini ajustado</button>
+      </div>
+      <div class="m-slider-block">
+        <button class="m-play-btn" id="m-play" aria-label="Reproducir"></button>
+        <span class="m-ctrl-label" data-i18n="slider-year-label">Año</span>
+        <input type="range" class="m-slider" id="m-slider" min="2000" max="2024" value="2024" step="1">
+        <span class="m-year-display" id="m-year-display">2024</span>
+      </div>
+    </div>
+
+    <div class="m-legend" data-chart="1"></div>
+
+    <div class="m-search-wrap">
+      <input type="text" id="m-search" class="m-search-input" data-i18n-placeholder="c3-search-placeholder" placeholder="Buscar país…" autocomplete="off">
+      <div id="m-search-results" class="m-search-results"></div>
+    </div>
+    <div class="m-selected-chips" id="m-selected-chips"></div>
+
+    <div class="chart-svg-wrap">
+      <svg id="chart1" viewBox="0 0 1100 470" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip1"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" data-chart="1-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="1" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources" data-i18n="c1-sources">
+        Datos: Banco Mundial — Poverty and Inequality Platform (PIP).
+      </p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="../lib/regions.js"></script>
+<script src="../lib/i18n.js"></script>
+<script src="./regions-wb.js"></script>
+<script src="./i18n-issue.js"></script>
+<script src="./utils.js"></script>
+<script src="./country-names.js"></script>
+<script src="./data-marimekko.js"></script>
+<script src="./marimekko.js"></script>
+<script src="./png-export.js"></script>
+<script>
+state[1] = { mode: 'raw', year: 2024, activeRegion: null, playing: false };
+initMarimekko();
+applyI18n();
+setupLangToggle(() => {
+  renderMarimekkoLegend();
+  drawMarimekko();
+});
+</script>
+</body>
+</html>
