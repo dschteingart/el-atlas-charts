@@ -45,6 +45,14 @@
     margin-bottom: 8px;
     flex-wrap: wrap;
   }
+  /* Cada label + toggle se mantiene en una unidad inseparable. Sin esto,
+     en mobile el flex-wrap separa el label arriba y los buttons abajo. */
+  .m-ctrl-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
   .m-ctrl-label {
     font-family: var(--sans);
     font-size: 11px;
@@ -501,10 +509,12 @@
     <p class="chart-subtitle" data-i18n="c1-subtitle-raw">Coeficiente de Gini por país, tal como aparece en las fuentes originales: América Latina por encima de África subsahariana.</p>
 
     <div class="m-controls">
-      <span class="m-ctrl-label" data-i18n="c1-toggle-label">Medición</span>
-      <div class="m-mode-toggle">
-        <button class="active" data-mode="raw" data-i18n="c1-toggle-raw">Gini original</button>
-        <button data-mode="adj" data-i18n="c1-toggle-adj">Gini ajustado</button>
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c1-toggle-label">Medición</span>
+        <div class="m-mode-toggle">
+          <button class="active" data-mode="raw" data-i18n="c1-toggle-raw">Gini original</button>
+          <button data-mode="adj" data-i18n="c1-toggle-adj">Gini ajustado</button>
+        </div>
       </div>
       <div class="m-slider-block">
         <button class="m-play-btn" id="m-play" aria-label="Reproducir"></button>
@@ -548,20 +558,26 @@
     <p class="chart-subtitle">América Latina es 14% más desigual de lo esperado para su nivel de desarrollo.</p>
 
     <div class="m-controls">
-      <span class="m-ctrl-label" data-i18n="c2-toggle-model-label">Modelo</span>
-      <div class="m-mode-toggle" data-toggle="model">
-        <button class="active" data-model="linear" data-i18n="c2-toggle-linear">Lineal</button>
-        <button data-model="quadratic" data-i18n="c2-toggle-quadratic">Cuadrática</button>
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c2-toggle-model-label">Modelo</span>
+        <div class="m-mode-toggle" data-toggle="model">
+          <button class="active" data-model="linear" data-i18n="c2-toggle-linear">Lineal</button>
+          <button data-model="quadratic" data-i18n="c2-toggle-quadratic">Cuadrática</button>
+        </div>
       </div>
-      <span class="m-ctrl-label" data-i18n="c2-toggle-gini-label">Gini</span>
-      <div class="m-mode-toggle" data-toggle="gini">
-        <button data-mode="raw" data-i18n="c2-toggle-gini-raw">Original</button>
-        <button class="active" data-mode="adj" data-i18n="c2-toggle-gini-adj">Ajustado</button>
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c2-toggle-gini-label">Gini</span>
+        <div class="m-mode-toggle" data-toggle="gini">
+          <button data-mode="raw" data-i18n="c2-toggle-gini-raw">Original</button>
+          <button class="active" data-mode="adj" data-i18n="c2-toggle-gini-adj">Ajustado</button>
+        </div>
       </div>
-      <span class="m-ctrl-label" data-i18n="c2-toggle-scale-label">Escala X</span>
-      <div class="m-mode-toggle" data-toggle="scaleX">
-        <button class="active" data-scale="log" data-i18n="c2-toggle-scale-log">Log</button>
-        <button data-scale="linear" data-i18n="c2-toggle-scale-linear">Lineal</button>
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c2-toggle-scale-label">Escala X</span>
+        <div class="m-mode-toggle" data-toggle="scaleX">
+          <button class="active" data-scale="log" data-i18n="c2-toggle-scale-log">Log</button>
+          <button data-scale="linear" data-i18n="c2-toggle-scale-linear">Lineal</button>
+        </div>
       </div>
       <div class="m-slider-block">
         <button class="m-play-btn" id="s-play" aria-label="Reproducir"></button>
@@ -607,15 +623,19 @@
     <p class="chart-subtitle" data-i18n="c3-subtitle">El ingreso de los hogares ricos de América Latina se acerca al de Europa. El de los hogares pobres, no.</p>
 
     <div class="m-controls">
-      <span class="m-ctrl-label" data-i18n="c3-toggle-y-label">Eje Y</span>
-      <div class="d-mode-toggle" data-toggle="yMode">
-        <button class="active" data-ymode="income" data-i18n="c3-toggle-income">Ingreso PPP/día</button>
-        <button data-ymode="percentile" data-i18n="c3-toggle-percentile">Percentil mundial</button>
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c3-toggle-y-label">Eje Y</span>
+        <div class="d-mode-toggle" data-toggle="yMode">
+          <button class="active" data-ymode="income" data-i18n="c3-toggle-income">Ingreso PPP/día</button>
+          <button data-ymode="percentile" data-i18n="c3-toggle-percentile">Percentil mundial</button>
+        </div>
       </div>
-      <span class="m-ctrl-label" id="d-scale-label" data-i18n="c3-toggle-scale-label">Escala</span>
-      <div class="d-mode-toggle" data-toggle="yScale" id="d-scale-block">
-        <button data-yscale="linear" data-i18n="c3-toggle-scale-linear">Lineal</button>
-        <button class="active" data-yscale="log" data-i18n="c3-toggle-scale-log">Log</button>
+      <div class="m-ctrl-group" id="d-scale-group">
+        <span class="m-ctrl-label" data-i18n="c3-toggle-scale-label">Escala</span>
+        <div class="d-mode-toggle" data-toggle="yScale" id="d-scale-block">
+          <button data-yscale="linear" data-i18n="c3-toggle-scale-linear">Lineal</button>
+          <button class="active" data-yscale="log" data-i18n="c3-toggle-scale-log">Log</button>
+        </div>
       </div>
       <div class="m-slider-block">
         <button class="m-play-btn" id="d-play" aria-label="Reproducir"></button>

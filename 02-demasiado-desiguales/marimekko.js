@@ -397,11 +397,25 @@ function drawMarimekko() {
     rect.setAttribute('class', 'm-bar' + (isDimmed ? ' m-dim' : '') + (isSelected ? ' m-spotlight' : ''));
     rect.dataset.code = d.code;
     rect.dataset.region = d.region;
-    rect.addEventListener('mouseenter', (e) => m_showTooltip(e, d, tooltip));
-    rect.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
-    rect.addEventListener('mousemove', (e) => m_positionTooltip(e, tooltip));
-    // Click en barra = toggle selección (mismo efecto que el buscador).
-    rect.addEventListener('click', () => m_toggleCountrySelection(d.code));
+    if (HAS_HOVER) {
+      // Desktop: tooltip aparece al hover, sigue al cursor, se cierra al
+      // salir. El click toggle la selección.
+      rect.addEventListener('mouseenter', (e) => m_showTooltip(e, d, tooltip));
+      rect.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
+      rect.addEventListener('mousemove', (e) => m_positionTooltip(e, tooltip));
+      rect.addEventListener('click', () => m_toggleCountrySelection(d.code));
+    } else {
+      // Mobile: tap muestra el tooltip Y toggle la selección. El tooltip
+      // queda visible hasta que el usuario haga tap en otra barra (cambia
+      // de tooltip) o en cualquier otro lugar (handler global en document).
+      // El stopPropagation evita que el handler global cierre el recién
+      // abierto.
+      rect.addEventListener('click', (e) => {
+        e.stopPropagation();
+        m_showTooltip(e, d, tooltip);
+        m_toggleCountrySelection(d.code);
+      });
+    }
     barsG.appendChild(rect);
   });
 
@@ -793,6 +807,16 @@ function initMarimekko() {
   setupMarimekkoSearch();
   renderMarimekkoSelectedChips();
   setupMarimekkoDownloadCSV();
+  // Mobile: handler global que cierra el tooltip al tap fuera de las
+  // barras. Las barras hacen stopPropagation así que un tap sobre una
+  // barra no llega acá. Solo registramos una vez (singleton).
+  if (!HAS_HOVER && !initMarimekko._tooltipGlobalRegistered) {
+    initMarimekko._tooltipGlobalRegistered = true;
+    document.addEventListener('click', () => {
+      const tt = document.getElementById('tooltip1');
+      if (tt) tt.style.opacity = '0';
+    });
+  }
 }
 
 // =================== Buscador + chips de país seleccionado ===================
