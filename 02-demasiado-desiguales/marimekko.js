@@ -105,7 +105,8 @@ function m_measureText(text, fontSize) {
 }
 
 // Devuelve los iso3 a etiquetar en modo default (sin selección activa).
-// Usa la lista curada por Daniel (15 países editorialmente relevantes).
+// Usa la lista curada por Daniel (15 países editorialmente relevantes)
+// más los extremos del ranking del año/modo actual (rank 1 y rank último).
 // Filtra a los que están presentes en sortedData (algunos años pueden no
 // tener ciertos países si su última observación cae fuera de la ventana 15a).
 function m_defaultLabelCodes(sortedData) {
@@ -114,7 +115,22 @@ function m_defaultLabelCodes(sortedData) {
     'ESP', 'JPN', 'USA', 'CAN', 'DEU', 'NOR', 'SVK'
   ];
   const present = new Set(sortedData.map(d => d.code));
-  return new Set(priority.filter(c => present.has(c)));
+  const result = new Set(priority.filter(c => present.has(c)));
+  // Extremos del ranking — siempre presentes, sean quienes sean cada año.
+  if (sortedData.length > 0) {
+    result.add(sortedData[0].code);
+    result.add(sortedData[sortedData.length - 1].code);
+  }
+  return result;
+}
+
+// Devuelve los iso3 de los extremos del ranking actual (rank 1 y último).
+// Estos tienen tratamiento especial en el algoritmo de placement: si no
+// entran en la fase 1 (sin overflow), se reintenta con allowOverflow para
+// garantizar que siempre se rendereen.
+function m_extremeCodes(sortedData) {
+  if (sortedData.length === 0) return new Set();
+  return new Set([sortedData[0].code, sortedData[sortedData.length - 1].code]);
 }
 
 // Algoritmo de etiquetas estilo OWID. Devuelve array de objetos
@@ -127,6 +143,7 @@ function m_defaultLabelCodes(sortedData) {
 //     primero (greedy) para que conserven su posición ideal.
 function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes) {
   const priorityCodes = m_defaultLabelCodes(sortedData);
+  const extremeCodes = m_extremeCodes(sortedData);
   const selSet = new Set(selectedCodes || []);
   const codesToShow = new Set([...priorityCodes, ...selSet]);
 
@@ -152,6 +169,7 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes) {
     const projW = cos * textW + sin * fontSize + 2;
     const isSel = selSet.has(d.code);
     const isPri = priorityCodes.has(d.code);
+    const isExtreme = extremeCodes.has(d.code);
     anchors.push({
       code: d.code,
       text,
@@ -159,7 +177,8 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes) {
       barX: plotArea.left + i * barWidth + barWidth / 2,
       textW, projW,
       source: isSel ? (isPri ? 'both' : 'selected') : 'priority',
-      isSelected: isSel
+      isSelected: isSel,
+      isExtreme
     });
   });
 
@@ -286,19 +305,21 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes) {
   }
 
   // Fase 1: sin overflow (palitos y S dentro del plot).
-  const notPlacedSelected = [];
+  const notPlacedForced = [];
   orderedAnchors.forEach(a => {
     const p = tryPlace(a, false);
     if (p) commit(p);
-    else if (a.isSelected) notPlacedSelected.push(a);
-    // Las priority que no entran se descartan silenciosamente — no son
-    // críticas. Solo garantizamos colocación de las seleccionadas.
+    else if (a.isSelected || a.isExtreme) notPlacedForced.push(a);
+    // Las priority "comunes" que no entran se descartan silenciosamente.
+    // Garantizamos colocación de: (a) las seleccionadas por el usuario y
+    // (b) los extremos del ranking (rank 1 y rank último) que son
+    // editorialmente clave para entender el rango.
   });
 
-  // Fase 2: seleccionadas que no entraron con allowOverflow (la patita
-  // puede extenderse fuera del rightBound). Garantiza que NUNCA se omite
-  // una selección del usuario.
-  notPlacedSelected.forEach(a => {
+  // Fase 2: forzar colocación con allowOverflow (la patita puede
+  // extenderse fuera del rightBound). NUNCA se omiten selecciones ni
+  // extremos.
+  notPlacedForced.forEach(a => {
     const p = tryPlace(a, true);
     if (p) commit(p);
   });
