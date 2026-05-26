@@ -164,26 +164,46 @@
   }
   .m-label-tick.m-dim { opacity: 0.2; }
 
-  /* Líneas verticales punteadas de promedio regional.
-     Por default ocultas; se muestran solo cuando tienen .m-active (hover de
-     región). El hook onBeforePngExport muestra las 7 simultáneamente en PNG. */
-  .m-region-avg-line {
-    display: none;
+  /* Tabla de promedios regionales (arriba-derecha del chart).
+     Reemplaza las líneas verticales punteadas. Siempre visible; hover sobre
+     chip de región pone la fila correspondiente en bold. */
+  .m-table-title {
+    font-family: var(--sans);
+    font-size: 10px;
+    font-weight: 600;
+    fill: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     pointer-events: none;
   }
-  .m-region-avg-line.m-active { display: inline; }
-  .m-region-avg-label {
-    display: none;
+  .m-table-rule {
+    stroke: var(--rule);
+    stroke-width: 1;
+  }
+  .m-table-swatch {
+    pointer-events: none;
+  }
+  .m-table-label, .m-table-value {
     font-family: var(--sans);
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
+    fill: var(--ink);
     pointer-events: none;
-    paint-order: stroke;
-    stroke: var(--bg);
-    stroke-width: 3px;
-    stroke-linejoin: round;
   }
-  .m-region-avg-label.m-active { display: inline; }
+  .m-table-value {
+    font-variant-numeric: tabular-nums;
+  }
+  .m-table-row-active.m-table-label,
+  .m-table-row-active.m-table-value {
+    font-weight: 700;
+  }
+  /* Cuando hay una región activa, las demás filas se atenúan para que el
+     contraste con la fila destacada sea bien visible. */
+  .m-table-row-dimmed.m-table-label,
+  .m-table-row-dimmed.m-table-value,
+  .m-table-row-dimmed.m-table-swatch {
+    opacity: 0.25;
+  }
 
   /* Legend interactivo (chips de región) */
   .m-legend {

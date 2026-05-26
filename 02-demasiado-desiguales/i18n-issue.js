@@ -26,6 +26,7 @@ const ISSUE_I18N = {
     'c1-tt-welfare-income':      'Ingreso',
     'c1-tt-welfare-consumption': 'Consumo',
     'c1-avg-prefix':       'Promedio regional',
+    'c1-avg-table-title':  'Gini promedio por región',
 
     // Chart 2 — Scatter Gini vs PIB
     'c2-title':            'América Latina es demasiado desigual para su nivel de desarrollo',
@@ -114,6 +115,7 @@ const ISSUE_I18N = {
     'c1-tt-welfare-income':      'Income',
     'c1-tt-welfare-consumption': 'Consumption',
     'c1-avg-prefix':       'Regional average',
+    'c1-avg-table-title':  'Average Gini by region',
 
     // Chart 2
     'c2-title':            'Latin America is too unequal for its level of development',

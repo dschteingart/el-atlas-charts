@@ -163,12 +163,13 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes) {
     });
   });
 
-  // 2. Greedy left→right por barX, priorizando seleccionados (van primero
-  //    para conservar tx=barX si pueden).
-  const orderedAnchors = [
-    ...anchors.filter(a => a.isSelected).sort((a, b) => a.barX - b.barX),
-    ...anchors.filter(a => !a.isSelected).sort((a, b) => a.barX - b.barX)
-  ];
+  // 2. Greedy left→right por barX SIN priorizar seleccionados.
+  //    Procesamos todas en orden por posición de barra. Esto evita que un
+  //    seleccionado conserve "palito recto" (tx=barX) y obligue a las
+  //    priority adyacentes a hacer Z muy largas — todas siguen las mismas
+  //    reglas geométricas. Para garantizar que los seleccionados nunca se
+  //    omiten, hacemos un retry con allowOverflow si no entran sin él.
+  const orderedAnchors = anchors.slice().sort((a, b) => a.barX - b.barX);
 
   // Boxes de colisión ya colocados:
   //   - text footprints: huella horizontal del texto en y=yAnchor (todos
@@ -285,16 +286,19 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes) {
   }
 
   // Fase 1: sin overflow (palitos y S dentro del plot).
-  const notPlaced = [];
+  const notPlacedSelected = [];
   orderedAnchors.forEach(a => {
     const p = tryPlace(a, false);
     if (p) commit(p);
-    else notPlaced.push(a);
+    else if (a.isSelected) notPlacedSelected.push(a);
+    // Las priority que no entran se descartan silenciosamente — no son
+    // críticas. Solo garantizamos colocación de las seleccionadas.
   });
 
-  // Fase 2: los que no entraron, con overflow permitido (típicamente
-  // seleccionados en la zona congestionada del final del ranking).
-  notPlaced.forEach(a => {
+  // Fase 2: seleccionadas que no entraron con allowOverflow (la patita
+  // puede extenderse fuera del rightBound). Garantiza que NUNCA se omite
+  // una selección del usuario.
+  notPlacedSelected.forEach(a => {
     const p = tryPlace(a, true);
     if (p) commit(p);
   });
@@ -320,11 +324,18 @@ function drawMarimekko() {
   const barInner = Math.max(1.2, barWidth - 0.4);
 
   // === Grid Y + labels ===
+  // Si la grid line atraviesa la zona vertical de la tabla regional
+  // (arriba-derecha), la recortamos antes de la tabla para que no la cruce
+  // visualmente. La línea del eje (y=0) llega siempre hasta el final.
+  const tableTopY = M_TABLE_Y_TITLE - 10;
+  const tableBottomY = M_TABLE_Y_FIRST + 7 * M_TABLE_ROW_H;
   M_Y_TICKS.forEach(tv => {
     const y = m_yScale(tv);
     const line = m_ns('line');
     line.setAttribute('x1', M_MARGIN.left);
-    line.setAttribute('x2', M_MARGIN.left + M_PLOT_W);
+    const crossesTable = tv !== 0 && y >= tableTopY && y <= tableBottomY;
+    const x2 = crossesTable ? M_TABLE_X - 10 : M_MARGIN.left + M_PLOT_W;
+    line.setAttribute('x2', x2);
     line.setAttribute('y1', y); line.setAttribute('y2', y);
     line.setAttribute('class', tv === 0 ? 'm-axis-line' : 'm-grid-line');
     svg.appendChild(line);
@@ -430,74 +441,97 @@ function drawMarimekko() {
     labelsG.appendChild(txt);
   });
 
-  // === Líneas verticales punteadas de promedio regional ===
-  // Las 7 líneas se dibujan SIEMPRE, con display:none por default (CSS).
-  // En interactivo: solo la región activa se muestra (.m-active).
-  // En PNG: el hook onBeforePngExport las muestra todas simultáneamente.
-  //
-  // Los labels se distribuyen en 2 filas con anti-colisión greedy: si dos
-  // labels (ordenados por X) están demasiado cerca en X, el segundo cae a
-  // la fila B (más arriba). Esto evita el solape de "MENA + Afg./Pak."
-  // con "Asia del sur" o "América del Norte" cuando sus promedios están
-  // cerca en el ranking.
-  const avgG = m_ns('g');
-  avgG.setAttribute('id', 'm-region-avg-lines');
-  svg.appendChild(avgG);
+  // === Tabla de promedios regionales (arriba-derecha del chart) ===
+  // Reemplaza las líneas verticales punteadas que mostraban los promedios
+  // de cada región intercalados en el ranking. Ubicada en la zona vacía
+  // sobre las barras de la derecha (las de Gini más bajo). Filas ordenadas
+  // por promedio descendente. Hover sobre chip de región → fila en bold.
   const regAvg = DATA_MARIMEKKO.regional_avg[year]?.[mode] || {};
-
-  // 1. Recolectar candidatos {region, x, avg, label} para los que tienen avg.
-  const labelChars = (s) => s.length * 6;  // ancho aprox por char a 11px
-  const regionLabelData = REGION_WB_ORDER
+  const tableRows = REGION_WB_ORDER
     .filter(reg => regAvg[reg] !== undefined)
-    .map(reg => {
-      const avg = regAvg[reg];
-      const x = m_rankPositionX(sortedData, valKey, avg, barWidth);
-      const short = t('reg-short.' + reg);
-      const text = `${short}: ${avg.toFixed(1)}`;
-      return { region: reg, x, avg, text, width: labelChars(text) };
-    });
+    .map(reg => ({
+      region: reg,
+      color: REGION_WB_COLORS[reg],
+      label: t('reg.' + reg),
+      value: regAvg[reg]
+    }))
+    .sort((a, b) => b.value - a.value);
 
-  // 2. Ordenar por X (left → right) y asignar filas A (y_top) / B (y_top - 18)
-  const Y_ROW_A = M_MARGIN.top - 12;
-  const Y_ROW_B = M_MARGIN.top - 30;
-  const COLLISION_PAD = 8;
-  const sortedByX = [...regionLabelData].sort((a, b) => a.x - b.x);
-  const rowAEnds = [];  // x derecho de cada label colocado en fila A
-  sortedByX.forEach(item => {
-    const halfW = item.width / 2;
-    const leftEdge = item.x - halfW;
-    const collidesA = rowAEnds.some(e => leftEdge < e + COLLISION_PAD);
-    if (!collidesA) {
-      item.row = 'A'; item.y = Y_ROW_A;
-      rowAEnds.push(item.x + halfW);
-    } else {
-      item.row = 'B'; item.y = Y_ROW_B;
-    }
-  });
+  drawRegionalAvgTable(svg, tableRows, s1.activeRegion);
+}
 
-  // 3. Dibujar líneas + labels
-  regionLabelData.forEach(item => {
-    const isActive = s1.activeRegion === item.region;
-    const lineColor = REGION_WB_LABEL_COLORS[item.region];
-    const line = m_ns('line');
-    line.setAttribute('class', 'm-region-avg-line' + (isActive ? ' m-active' : ''));
-    line.setAttribute('data-region', item.region);
-    line.setAttribute('x1', item.x); line.setAttribute('x2', item.x);
-    line.setAttribute('y1', M_MARGIN.top); line.setAttribute('y2', M_MARGIN.top + M_PLOT_H);
-    line.setAttribute('stroke', lineColor);
-    line.setAttribute('stroke-dasharray', '4 3');
-    line.setAttribute('stroke-width', item.region === 'Latin America & Caribbean' ? '1.6' : '1.1');
-    line.setAttribute('opacity', '0.85');
-    avgG.appendChild(line);
-    const lbl = m_ns('text');
-    lbl.setAttribute('class', 'm-region-avg-label' + (isActive ? ' m-active' : ''));
-    lbl.setAttribute('data-region', item.region);
-    lbl.setAttribute('x', item.x);
-    lbl.setAttribute('y', item.y);
-    lbl.setAttribute('text-anchor', 'middle');
-    lbl.setAttribute('fill', lineColor);
-    lbl.textContent = item.text;
-    avgG.appendChild(lbl);
+// =================== Tabla de promedios regionales ===================
+// Renderiza arriba-derecha del chart. Cada fila: swatch de color + nombre
+// de región + valor (Gini promedio). El título arriba dice "PROMEDIO GINI
+// POR REGIÓN". La fila correspondiente al activeRegion va en bold 700.
+const M_TABLE_X      = 720;   // x_start (izquierda de la tabla)
+const M_TABLE_W      = 348;   // ancho total (hasta plotArea.right ≈ 1068)
+const M_TABLE_Y_TITLE = 64;   // y de la línea baseline del título
+const M_TABLE_Y_FIRST = 84;   // y de la baseline de la primera fila
+const M_TABLE_ROW_H  = 16;
+const M_TABLE_SWATCH = 9;
+const M_TABLE_SWATCH_GAP = 7;
+
+function drawRegionalAvgTable(svg, rows, activeRegion) {
+  const g = m_ns('g');
+  g.setAttribute('id', 'm-avg-table');
+  svg.appendChild(g);
+
+  // Título
+  const title = m_ns('text');
+  title.setAttribute('class', 'm-table-title');
+  title.setAttribute('x', M_TABLE_X);
+  title.setAttribute('y', M_TABLE_Y_TITLE);
+  title.textContent = t('c1-avg-table-title');
+  g.appendChild(title);
+
+  // Línea sutil bajo el título
+  const rule = m_ns('line');
+  rule.setAttribute('class', 'm-table-rule');
+  rule.setAttribute('x1', M_TABLE_X);
+  rule.setAttribute('x2', M_TABLE_X + M_TABLE_W);
+  rule.setAttribute('y1', M_TABLE_Y_TITLE + 6);
+  rule.setAttribute('y2', M_TABLE_Y_TITLE + 6);
+  g.appendChild(rule);
+
+  rows.forEach((row, i) => {
+    const y = M_TABLE_Y_FIRST + i * M_TABLE_ROW_H;
+    const isActive = activeRegion === row.region;
+    const isDimmed = activeRegion && !isActive;
+    const stateClass =
+        (isActive ? ' m-table-row-active' : '')
+      + (isDimmed ? ' m-table-row-dimmed' : '');
+
+    // Swatch (cuadrito de color) — también se atenúa cuando otra región
+    // está activa, para que el contraste con la fila activa sea claro.
+    const swatch = m_ns('rect');
+    swatch.setAttribute('class', 'm-table-swatch' + stateClass);
+    swatch.setAttribute('data-region', row.region);
+    swatch.setAttribute('x', M_TABLE_X);
+    swatch.setAttribute('y', y - M_TABLE_SWATCH + 1);
+    swatch.setAttribute('width', M_TABLE_SWATCH);
+    swatch.setAttribute('height', M_TABLE_SWATCH);
+    swatch.setAttribute('fill', row.color);
+    g.appendChild(swatch);
+
+    // Nombre región
+    const labelEl = m_ns('text');
+    labelEl.setAttribute('class', 'm-table-label' + stateClass);
+    labelEl.setAttribute('data-region', row.region);
+    labelEl.setAttribute('x', M_TABLE_X + M_TABLE_SWATCH + M_TABLE_SWATCH_GAP);
+    labelEl.setAttribute('y', y);
+    labelEl.textContent = row.label;
+    g.appendChild(labelEl);
+
+    // Valor (promedio Gini)
+    const valueEl = m_ns('text');
+    valueEl.setAttribute('class', 'm-table-value' + stateClass);
+    valueEl.setAttribute('data-region', row.region);
+    valueEl.setAttribute('x', M_TABLE_X + M_TABLE_W);
+    valueEl.setAttribute('y', y);
+    valueEl.setAttribute('text-anchor', 'end');
+    valueEl.textContent = row.value.toFixed(1);
+    g.appendChild(valueEl);
   });
 }
 
@@ -653,47 +687,51 @@ window.onBeforePngExport = (svgClone, chartId) => {
   });
   const vb = svgClone.viewBox.baseVal;
   const canvasLabels = [];
-  if (!hasSelection) {
-    // PNG sin selección: barras + 7 líneas regionales con promedios arriba.
-    // Las LINES quedan en el SVG (no dependen de fonts). Los TEXTOS los
-    // sacamos del SVG y los devolvemos para que png-export los pinte
-    // directamente en canvas — el contexto aislado del <img> SVG no tiene
-    // acceso a las webfonts del documento padre y los textos del SVG salen
-    // con la tipografía equivocada (Segoe UI 600 en lugar de Source Sans 3
-    // 600 → tracking visiblemente distinto).
-    svgClone.querySelectorAll('.m-region-avg-line').forEach(el => {
-      el.style.display = '';
-    });
-    svgClone.querySelectorAll('.m-region-avg-label').forEach(el => {
-      const text = el.textContent;
-      const x = parseFloat(el.getAttribute('x'));
-      const y = parseFloat(el.getAttribute('y'));
-      const fill = el.getAttribute('fill') || getComputedStyle(el).fill;
+
+  // Tabla de promedios regionales: la TABLA va siempre (con y sin selección).
+  // Los swatches (rects de color) y la línea del título quedan en el SVG.
+  // Los TEXTOS (título + labels de región + valores) se sacan y se mandan a
+  // canvas — el contexto aislado del <img> SVG no resuelve bien las
+  // webfonts (Source Sans 3) y los textos salen con tracking equivocado.
+  // PNG es estado actual sin "activeRegion" (no hay hover en estático).
+  const tableEl = svgClone.querySelector('#m-avg-table');
+  if (tableEl) {
+    // Título
+    const titleEl = tableEl.querySelector('.m-table-title');
+    if (titleEl) {
       canvasLabels.push({
-        x, y, text, fill,
+        x: parseFloat(titleEl.getAttribute('x')),
+        y: parseFloat(titleEl.getAttribute('y')),
+        text: titleEl.textContent.toUpperCase(),
+        fill: '#8A8579',
         weight: '600',
+        size: 10,
+        textAnchor: 'start'
+      });
+      titleEl.style.display = 'none';
+    }
+    // Filas: labels + values. Quitamos la clase activa (PNG es sin hover).
+    tableEl.querySelectorAll('.m-table-label, .m-table-value').forEach(el => {
+      canvasLabels.push({
+        x: parseFloat(el.getAttribute('x')),
+        y: parseFloat(el.getAttribute('y')),
+        text: el.textContent,
+        fill: '#1A1A1A',
+        weight: '500',
         size: 11,
-        textAnchor: 'middle',
-        halo: '#FAF8F3'
+        textAnchor: el.getAttribute('text-anchor') || 'start'
       });
       el.style.display = 'none';
     });
-    // Como NO hay labels priority en el bottom, el espacio reservado para
-    // ellas (M_MARGIN.bottom) queda vacío y produce un gap grande entre el
-    // eje X y la leyenda. Recortamos hasta dejar 8px bajo el eje X.
+  }
+
+  if (!hasSelection) {
+    // PNG sin selección: solo barras + tabla regional arriba.
     const bottomKeep = M_MARGIN.top + M_PLOT_H + 8;
     const cropFromBottom = Math.max(0, vb.height - bottomKeep);
     svgClone.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.width} ${vb.height - cropFromBottom}`);
   } else {
-    // PNG con selección: barras + labels seleccionadas + callouts.
-    // Todas las labels tienen ancla en (tx, yAnchor) = posición de la
-    // ÚLTIMA letra. El texto se proyecta HACIA ABAJO-IZQUIERDA desde ahí
-    // (rotate -45 + text-anchor:end). La primera letra cae en
-    // (tx - cos*textW, yAnchor + sin*textW), o sea ~0.707*textW abajo
-    // del ancla. Para textos típicos (~80px), eso son ~56px adicionales.
-    svgClone.querySelectorAll('.m-region-avg-line, .m-region-avg-label').forEach(el => {
-      el.style.display = 'none';
-    });
+    // PNG con selección: barras + labels seleccionadas + callouts + tabla.
     // Recortamos dejando bottomKeep = yAnchor + 60 (margen para la
     // primera letra). Textos muy largos pueden cortarse 1-2px abajo.
     const bottomKeep = M_MARGIN.top + M_PLOT_H + M_LABEL_ANCHOR_Y_OFFSET + 60;
