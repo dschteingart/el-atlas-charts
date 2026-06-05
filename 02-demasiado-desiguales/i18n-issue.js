@@ -13,8 +13,8 @@ const ISSUE_I18N = {
 
     // Chart 1 — Marimekko ranking Gini
     'c1-title':            'El ranking mundial de la desigualdad',
-    'c1-subtitle-raw':     'Coeficiente de Gini por país, tal como aparece en las fuentes originales: América Latina por encima de África Subsahariana.',
-    'c1-subtitle-adj':     'Gini comparable por método de medición: los Ginis de consumo se multiplican por 1,13 para aproximarlos a Ginis de ingreso. Con este ajuste, África Subsahariana queda por encima de América Latina.',
+    'c1-subtitle-raw':     'Coeficiente de Gini por país, tal como aparece en las fuentes originales: América Latina por encima de África Subsahariana. Cada barra es un país y el color muestra su región.',
+    'c1-subtitle-adj':     'Gini comparable por método de medición: los Ginis de consumo se multiplican por 1,13 para aproximarlos a Ginis de ingreso. Con este ajuste, África Subsahariana queda por encima de América Latina. Cada barra es un país y el color muestra su región.',
     'c1-toggle-label':     'Medición',
     'c1-toggle-raw':       'Gini original',
     'c1-toggle-adj':       'Gini ajustado',
@@ -91,6 +91,17 @@ const ISSUE_I18N = {
     'slider-play':               'Reproducir',
     'slider-pause':              'Pausar',
 
+    // Controles mobile: botones tuerca + "Seleccionar" que pliegan
+    // toggles + buscador detrás de un tap (estilo OWID). Solo visibles en
+    // pantallas ≤ 768px; en desktop los controles se ven inline.
+    'ctrl-options':              'Opciones',
+    'ctrl-select':               'Seleccionar',
+    // Colapsables mobile: la nota metodológica y la tabla de promedios
+    // regionales (chart 1) quedan detrás de un toggle en pantallas ≤768px
+    // para liberar espacio vertical para el SVG.
+    'ctrl-show-method':          'Ver metodología y fuentes',
+    'c1-show-avg-table':         'Ver promedios regionales',
+
     // Nombres traducidos de las 7 regiones del Banco Mundial.
     // Convención: puntos cardinales en mayúscula cuando forman parte del
     // nombre regional ("América del Norte", "Asia del Sur", "Asia Oriental",
@@ -129,8 +140,8 @@ const ISSUE_I18N = {
 
     // Chart 1
     'c1-title':            'The world ranking of inequality',
-    'c1-subtitle-raw':     'Gini coefficient by country, as reported in original sources: Latin America above Sub-Saharan Africa.',
-    'c1-subtitle-adj':     'Gini made comparable by measurement method: consumption Ginis are multiplied by 1.13 to approximate income Ginis. With this adjustment, Sub-Saharan Africa moves above Latin America.',
+    'c1-subtitle-raw':     'Gini coefficient by country, as reported in original sources: Latin America above Sub-Saharan Africa. Each bar is a country and the color shows its region.',
+    'c1-subtitle-adj':     'Gini made comparable by measurement method: consumption Ginis are multiplied by 1.13 to approximate income Ginis. With this adjustment, Sub-Saharan Africa moves above Latin America. Each bar is a country and the color shows its region.',
     'c1-toggle-label':     'Measurement',
     'c1-toggle-raw':       'Original Gini',
     'c1-toggle-adj':       'Adjusted Gini',
@@ -201,6 +212,16 @@ const ISSUE_I18N = {
     'slider-play':               'Play',
     'slider-pause':              'Pause',
 
+    // Mobile controls: gear + "Select" buttons that collapse the toggles +
+    // search behind a tap (OWID-style). Only visible on screens ≤ 768px;
+    // on desktop the controls show inline.
+    'ctrl-options':              'Options',
+    'ctrl-select':               'Select',
+    // Mobile collapsibles: methodology note and chart-1 regional averages
+    // table collapse behind a toggle on ≤768px to free vertical room for SVG.
+    'ctrl-show-method':          'Methodology and sources',
+    'c1-show-avg-table':         'Show regional averages',
+
     // Sources
     // Traducciones de las 7 regiones del Banco Mundial
     'reg.Latin America & Caribbean':                          'Latin America & Caribbean',
@@ -254,6 +275,11 @@ function applyI18n() {
   document.querySelectorAll('[data-i18n-href]').forEach(el => {
     const key = el.dataset.i18nHref;
     if (I18N[LANG][key]) el.setAttribute('href', I18N[LANG][key]);
+  });
+  // Aria-labels traducibles (botones tuerca, otros controles solo-ícono)
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+    const key = el.dataset.i18nAria;
+    if (I18N[LANG][key]) el.setAttribute('aria-label', I18N[LANG][key]);
   });
 }
 

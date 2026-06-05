@@ -35,19 +35,32 @@
 
   const VIEWBOX_RIGHT_EXTENSION = {};
 
-  // Charts 1 (marimekko) y 2 (scatter) llevan leyenda regional de 7 regiones
-  // Banco Mundial. El chart 3 (deciles) tiene labels in-line por país, no
-  // necesita leyenda separada.
-  const SHOWS_LEGEND = chartId => chartId === '1' || chartId === '2';
+  // Solo el chart 2 (scatter) lleva leyenda canvas de 7 regiones.
+  // El chart 1 (marimekko) tenía leyenda en versiones anteriores, pero la
+  // correspondencia color→región vive ahora en la TABLA REGIONAL arriba-
+  // derecha (`#m-avg-table` con swatches + nombres + Gini promedio) — la
+  // leyenda de abajo era redundante. Solo se la quita del PNG; en pantalla
+  // (`.m-legend` renderada por renderMarimekkoLegend) sigue como está.
+  // El chart 3 (deciles) tiene labels in-line por país, sin leyenda.
+  const SHOWS_LEGEND = chartId => chartId === '2';
 
   // Props CSS que aplican a SVG y necesitamos preservar al rasterizar.
+  // Esta lista es el "cinturón" — además, embebemos el CSS del documento
+  // dentro del SVG (buildEmbeddedDocCss) que es el "tirador". Mantener
+  // ambos es defensivo: si embedDocCss falla por algún CORS o si una regla
+  // tiene una selectora rara, el inline-style sigue capturando lo esencial.
+  // Incluimos text-transform / letter-spacing / font-variant-numeric / etc.
+  // porque eran las que se perdían (clases .m-axis-label .m-table-title con
+  // text-transform: uppercase y letter-spacing).
   const SVG_STYLE_PROPS = [
     'fill', 'fill-opacity',
     'stroke', 'stroke-width', 'stroke-opacity', 'stroke-dasharray',
     'stroke-linejoin', 'stroke-linecap',
     'opacity',
     'font-family', 'font-size', 'font-weight', 'font-style',
-    'text-anchor', 'paint-order',
+    'font-variant', 'font-variant-numeric', 'font-feature-settings',
+    'text-anchor', 'text-transform', 'letter-spacing', 'word-spacing',
+    'paint-order', 'dominant-baseline', 'alignment-baseline',
     'display', 'visibility'
   ];
 
@@ -55,6 +68,16 @@
   // vez por sesión (la primera descarga de PNG tarda más, las siguientes
   // son inmediatas).
   let cachedEmbeddedFontCss = null;
+
+  // Cache del CSS del documento (style tags + same-origin stylesheets).
+  // Construido bajo demanda. Lo embebemos dentro del SVG clonado para que
+  // las reglas que aplican a clases (.m-axis-label, .m-table-title,
+  // .m-country-label, etc.) se resuelvan en el contexto aislado del
+  // <img src="blob:..."> donde el browser rasteriza el SVG.
+  // Sin esto: text-transform, letter-spacing, font-feature-settings y
+  // cualquier otra prop que no está en SVG_STYLE_PROPS o en presentation
+  // attributes se PIERDE — los textos salen en lowercase, sin tracking, etc.
+  let cachedEmbeddedDocCss = null;
 
   // Construye un CSS con todas las @font-face de Google Fonts pero con las
   // URLs reemplazadas por data: base64. Necesario para que el SVG
@@ -103,6 +126,62 @@
     }
     cachedEmbeddedFontCss = allCss;
     return allCss;
+  }
+
+  // Construye un CSS con TODAS las reglas del documento (los <style> inline
+  // del <head> y las hojas same-origin tipo lib/style.css y editor.css).
+  // Lo inyectamos como <style> dentro del SVG clonado, así el SVG cuando se
+  // renderea como <img src="blob:..."> tiene acceso a las reglas por clase
+  // (.m-axis-label, .m-country-label, .m-table-title…) que aplican
+  // text-transform: uppercase, letter-spacing, font-feature-settings, etc.
+  // Sin embebido, esas props se pierden y los textos salen en lowercase sin
+  // tracking, como reportó Daniel ("COEFICIENTE DE GINI" → "coeficiente de gini").
+  //
+  // Filtramos las @media queries: el SVG rasterizado tiene tamaño fijo y
+  // no responde al viewport del browser. Si dejamos las media queries del
+  // padre, una @media (max-width: 600px) que setea .m-country-label
+  // {font-size: 8px} podría aplicarse incorrectamente o no aplicarse según
+  // el tamaño del <img>, generando inconsistencias.
+  //
+  // También skippeamos las hojas cross-origin (Google Fonts) — esas las
+  // maneja buildEmbeddedFontCss() con data URLs.
+  function buildEmbeddedDocCss() {
+    if (cachedEmbeddedDocCss !== null) return cachedEmbeddedDocCss;
+    let css = '';
+    // 1. <style> inline del documento (incluye el bloque en chart-1.html).
+    document.querySelectorAll('style').forEach(styleEl => {
+      // Skippeamos el <style> que NOSOTROS mismos hayamos inyectado en SVGs
+      // previos (defensivo — los <style> dentro de <svg> también matchean
+      // el querySelectorAll). querySelectorAll('style') solo agarra style
+      // tags del HTML, no de SVGs hijos, pero por las dudas.
+      if (styleEl.closest('svg')) return;
+      css += styleEl.textContent + '\n';
+    });
+    // 2. Hojas externas same-origin (lib/style.css, editor.css). Necesarias
+    //    para que las CSS variables (--ink-soft, --rule, --sans) se
+    //    resuelvan dentro del SVG: cuando el SVG está en un contexto
+    //    aislado, no ve el :root del documento padre.
+    Array.from(document.styleSheets).forEach(sheet => {
+      try {
+        if (sheet.href) {
+          // Skip cross-origin (Google Fonts → buildEmbeddedFontCss).
+          const url = new URL(sheet.href, window.location.href);
+          if (url.origin !== window.location.origin) return;
+        }
+        const rules = sheet.cssRules || [];
+        for (const rule of rules) {
+          // Skippeamos @media queries: el SVG rasterizado tiene tamaño
+          // fijo y no responde a viewport queries. Las reglas no-media
+          // (incluyendo :root con CSS variables) van todas.
+          if (rule.type === CSSRule.MEDIA_RULE) continue;
+          css += rule.cssText + '\n';
+        }
+      } catch (e) {
+        // Hojas inaccesibles por CORS — las skippeamos en silencio.
+      }
+    });
+    cachedEmbeddedDocCss = css;
+    return css;
   }
 
   // Pre-carga de webfonts para canvas (legend + textos compuestos en canvas).
@@ -251,10 +330,43 @@
     return rows.length * LEGEND_LINE_H;
   }
 
-  async function downloadChartPNG(chartId) {
+  async function downloadChartPNG(chartId, options) {
+    options = options || {};
     const svg = document.getElementById('chart' + chartId);
     if (!svg) return;
     const block = svg.closest('.chart-block');
+
+    // Determinar el formato. WYSIWYG: el SVG en pantalla YA está renderado
+    // con el viewBox/margins del formato que el editor eligió. Acá solo
+    // leemos el formato para saber el tamaño del canvas final (nominalW ×
+    // nominalH del PNG_FORMATS). NO re-renderizamos el chart.
+    //
+    // Prioridad:
+    //   1. window.AtlasEditor.getConfig().format si el editor está activo
+    //      (body.ae-ever-activated) → el SVG en pantalla ya está en ese
+    //      formato. Leemos las dims nominales para el canvas.
+    //   2. Sin editor activo → format=null. El canvas usa default W=1600
+    //      y el SVG se rasteriza con el viewBox que tiene en pantalla (que
+    //      es el desktop default). Esto es lo que el usuario ve.
+    //
+    // Históricamente había un atajo Shift+Click → newsletter. Lo quitamos:
+    // el dropdown del editor es el único camino para elegir formato. Sin
+    // editor activo, descarga el "público" = lo que ves en pantalla.
+    let format = null;
+    if (
+      window.AtlasEditor &&
+      typeof window.AtlasEditor.getConfig === 'function' &&
+      document.body.classList.contains('ae-ever-activated')
+    ) {
+      const cfg = window.AtlasEditor.getConfig();
+      if (cfg && cfg.format && PNG_FORMATS[cfg.format]) format = cfg.format;
+    }
+
+    // No hay re-render forzado: el SVG en pantalla es la única fuente de
+    // verdad. WYSIWYG.
+    const isNewsletter = format === 'newsletter';
+    const isSquare     = format === 'square';
+    const isMobilePng  = format === 'mobile';
 
     // Forzar carga de webfonts ANTES de medir/dibujar en canvas. El canvas
     // tiene un font-cache aparte que no siempre se sincroniza con
@@ -293,8 +405,15 @@
     const attribText = attribEl ? attribEl.textContent.trim() : '';
 
     // === Dimensiones del canvas ===
-    const W = 1600;
-    const padX = 42;
+    // El ancho W (nominalW) viene de PNG_FORMATS[format]:
+    //   - public:     1600 (landscape para uso general).
+    //   - newsletter: 1000 (cuadrado-ish para Substack).
+    //   - square:     1200 (cuadrado puro, redes sociales).
+    //   - mobile:     800  (vertical para Stories / WhatsApp).
+    // Si no hay formato del editor (uso público sin sidebar), default 1600
+    // y el canvas usa el viewBox del SVG visible (que es desktop landscape).
+    const W = format && PNG_FORMATS[format] ? PNG_FORMATS[format].nominalW : 1600;
+    const padX = (isNewsletter || isMobilePng) ? 32 : 42;
     const padTop = 36;
     const padBottom = 36;
     const titleSize = 36, titleLineH = 48;
@@ -303,18 +422,44 @@
     const attribSize = 14;
     const attribGap = 30;  // gap entre fuente y atribución en la última línea
     const gapTitleSub  = 6;
-    const gapBeforeSvg = 28;
-    const gapAfterSvg  = 4;   // ajustado: la leyenda casi pegada al chart
+    // Mobile PNG (portrait alto 800×1200): gap reducido entre el subtítulo y
+    // el SVG para que el plot suba en el canvas. En portrait el chrome
+    // arriba (padTop + título + subt + gap) consume ~140-148 canvas-px;
+    // reducir gapBeforeSvg de 28 a 12 sube el plot 16px (~1.3% del canvas)
+    // y deja más espacio vertical para las barras. Otros formatos
+    // (public/newsletter/square) mantienen 28 — el plot ahí no compite con
+    // un viewport tan vertical.
+    const gapBeforeSvg = isMobilePng ? 12 : 28;
+    const gapAfterSvgBase  = 4;   // ajustado: la leyenda casi pegada al chart
     const gapAfterLegend = 12;
     const innerW = W - 2 * padX;
 
-    // SVG escalado al ancho disponible, considerando extensión de viewBox para chart 3
+    // Hook opcional para chart-specific extra gap entre SVG y leyenda. Usado
+    // por el marimekko (chart 1) cuando hay editor format activo: las
+    // etiquetas de país rotadas -45° viven dentro del bottom margin del
+    // SVG; el gapAfterSvgBase=4 no era suficiente para evitar que la
+    // leyenda canvas se "pegara" visualmente a la huella de los textos
+    // colgantes. El chart calcula cuántos canvas-px de buffer necesita
+    // según el formato (más en mobile/portrait donde scaleY<1) y los
+    // devuelve. Se preserva la versión pública sin editor: si format=null,
+    // el hook devuelve 0 y el gap original (4) se mantiene intacto.
+    let extraGapBelowSvg = 0;
+    if (typeof window.onBeforePngExportGetExtraGap === 'function') {
+      try {
+        const g = window.onBeforePngExportGetExtraGap(chartId, format);
+        if (typeof g === 'number' && g > 0) extraGapBelowSvg = g;
+      } catch (_) {}
+    }
+    const gapAfterSvg = gapAfterSvgBase + extraGapBelowSvg;
+
+    // SVG: aspect ratio del viewBox (lo que se rasteriza). Cuando hay
+    // extension (chart 3 con end-labels al margen derecho), el viewBox
+    // efectivo es más ancho que el del SVG en pantalla.
     const vb = svg.viewBox.baseVal;
     const extension = VIEWBOX_RIGHT_EXTENSION[chartId] || 0;
     const effectiveVbW = (vb && vb.width) ? vb.width + extension : 760 + extension;
     const effectiveVbH = (vb && vb.height) ? vb.height : 470;
-    const svgW = innerW;
-    const svgH = svgW * (effectiveVbH / effectiveVbW);
+    const svgAspect = effectiveVbW / effectiveVbH;
 
     // Pre-medir wraps en un canvas temporal con la fuente correcta
     const measureCanvas = document.createElement('canvas');
@@ -322,6 +467,12 @@
 
     mctx.font = `italic ${subSize}px "Source Serif 4", Georgia, serif`;
     const subLines = subtitleText ? countWrapLines(mctx, subtitleText, innerW) : 0;
+
+    // Calcular si el título necesita wrap (más probable en newsletter por
+    // el W reducido a 1000). En el PNG público (W=1600) el título cabe
+    // normalmente en una línea, pero igual aplicamos wrap por consistencia.
+    mctx.font = `700 ${titleSize}px "Source Serif 4", Georgia, serif`;
+    const titleLines = titleText ? countWrapLines(mctx, titleText, innerW) : 0;
 
     // Reservar espacio para la atribución en la última línea de la fuente.
     // Si la atribución no entra en la misma línea que la fuente, va sola en
@@ -337,16 +488,54 @@
     const legendRows = showLegend ? layoutLegend(mctx, legendItems(), innerW).length : 0;
     const legendH = legendRows * LEGEND_LINE_H;
 
-    const titleH = titleText ? titleLineH : 0;
+    const titleH = titleText ? titleLines * titleLineH : 0;
     const subH = subLines * subLineH;
     const sourceH = sourceLines * sourceLineH;
 
-    let H = padTop + titleH;
-    if (subH) H += gapTitleSub + subH;
-    H += gapBeforeSvg + svgH;
-    if (legendH) H += gapAfterSvg + legendH;
-    if (sourceH) H += (legendH ? gapAfterLegend : gapAfterSvg) + sourceH;
-    H += padBottom;
+    // Espacio que ocupan los "non-svg" (chrome arriba y abajo del SVG):
+    const chromeAbove = padTop + titleH + (subH ? gapTitleSub + subH : 0) + gapBeforeSvg;
+    const chromeBelow = (legendH ? gapAfterSvg + legendH : 0)
+                     + (sourceH ? (legendH ? gapAfterLegend : gapAfterSvg) + sourceH : 0)
+                     + padBottom;
+
+    // === Altura del canvas ===
+    // Dos modos:
+    //   A. CON formato del editor → H = nominalH (FIJO). El SVG se
+    //      redimensiona al espacio disponible (innerW × (nominalH - chrome)),
+    //      manteniendo su aspect ratio (letterboxing horizontal si hace
+    //      falta). El PNG sale exactamente al tamaño esperado (ej. mobile
+    //      = 800×1200 estricto), sin huecos muertos arriba.
+    //
+    //   B. SIN formato (público desktop default) → H dinámico (calculado
+    //      como suma — comportamiento histórico, sin cambios).
+    let svgW, svgH, svgX, H;
+    if (format && PNG_FORMATS[format]) {
+      H = PNG_FORMATS[format].nominalH;
+      const availH = Math.max(50, H - chromeAbove - chromeBelow);
+      const availW = innerW;
+      // Fit del aspect del viewBox al rectángulo disponible.
+      // Si availW / availH > svgAspect, la altura manda; SVG menos ancho.
+      if (availW / availH > svgAspect) {
+        svgH = availH;
+        svgW = availH * svgAspect;
+      } else {
+        svgW = availW;
+        svgH = availW / svgAspect;
+      }
+      // Centrar horizontalmente cuando el SVG es más angosto que innerW.
+      svgX = padX + (availW - svgW) / 2;
+    } else {
+      // Modo histórico: SVG full-width, H se suma.
+      svgW = innerW;
+      svgH = svgW / svgAspect;
+      svgX = padX;
+      H = padTop + titleH;
+      if (subH) H += gapTitleSub + subH;
+      H += gapBeforeSvg + svgH;
+      if (legendH) H += gapAfterSvg + legendH;
+      if (sourceH) H += (legendH ? gapAfterLegend : gapAfterSvg) + sourceH;
+      H += padBottom;
+    }
 
     // === Rasterizar el SVG (con viewBox extendido si corresponde) ===
     const svgClone = svg.cloneNode(true);
@@ -367,14 +556,23 @@
     if (!svgClone.getAttribute('xmlns'))       svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
     if (!svgClone.getAttribute('xmlns:xlink')) svgClone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
 
-    // Embeber las webfonts como data URLs DENTRO del SVG, en un <style>
-    // dentro de <defs>. Sin esto, cuando el browser carga el SVG vía
-    // <img src="blob:..."> lo hace en un contexto aislado que no tiene
-    // acceso a las webfonts cargadas en el documento padre — los <text>
-    // del SVG (labels regionales, ticks, etc.) caen al fallback del
-    // sistema y se ven con tracking/tipografía equivocada.
-    const embeddedCss = await buildEmbeddedFontCss();
-    if (embeddedCss) {
+    // Embeber CSS DENTRO del SVG, en un <style> dentro del clone. Dos
+    // capas que se concatenan en orden:
+    //
+    //   1. Webfonts como data URLs (buildEmbeddedFontCss). Sin esto, las
+    //      fonts Source Serif / Source Sans no están disponibles en el
+    //      contexto aislado de <img src="blob:...">.
+    //   2. CSS del documento (buildEmbeddedDocCss): :root con CSS variables
+    //      + estilos por clase (.m-axis-label uppercase + letter-spacing,
+    //      .m-table-title uppercase, .m-country-label font-family, etc.).
+    //      Sin esto, las clases no aplican y los textos salen en lowercase,
+    //      sin tracking, con fallback de sistema. Fix de raíz para que el
+    //      PNG sea fiel a lo que se ve en pantalla — ninguna prop CSS se
+    //      pierde por estar definida en una clase y no inline.
+    const embeddedFontCss = await buildEmbeddedFontCss();
+    const embeddedDocCss  = buildEmbeddedDocCss();
+    const embeddedCss = embeddedFontCss + '\n' + embeddedDocCss;
+    if (embeddedCss.trim()) {
       const SVG_NS = 'http://www.w3.org/2000/svg';
       const styleEl = document.createElementNS(SVG_NS, 'style');
       styleEl.setAttribute('type', 'text/css');
@@ -410,7 +608,7 @@
       ctx.fillStyle = PALETTE.ink;
       ctx.font = `700 ${titleSize}px "Source Serif 4", Georgia, serif`;
       ctx.textBaseline = 'top';
-      ctx.fillText(titleText, padX, y);
+      wrapText(ctx, titleText, padX, y, innerW, titleLineH);
       y += titleH;
     }
 
@@ -424,7 +622,9 @@
 
     y += gapBeforeSvg;
     const svgTopY = y;
-    ctx.drawImage(img, padX, svgTopY, svgW, svgH);
+    // svgX (en lugar de padX) — cuando hay formato del editor el SVG puede
+    // estar centrado horizontalmente si el aspect ratio no llena el ancho.
+    ctx.drawImage(img, svgX, svgTopY, svgW, svgH);
     y += svgH;
 
     // Si el chart pidió pintar labels en canvas (en vez de dejarlos en el
@@ -437,7 +637,7 @@
       const scaleX = svgW / cloneVbW;
       const scaleY = svgH / cloneVbH;
       hookResult.canvasLabels.forEach(lbl => {
-        const cx = padX + lbl.x * scaleX;
+        const cx = svgX + lbl.x * scaleX;
         const cy = svgTopY + lbl.y * scaleY;
         const size = (lbl.size || 11) * scaleX;
         const weight = lbl.weight || '400';
@@ -499,6 +699,14 @@
     } else {
       filename = FILENAMES[chartId]?.[lang] || `el-atlas-02-chart-${chartId}.png`;
     }
+    // Sufijo según formato. "public" no agrega sufijo (es el default).
+    const fmtSuffix =
+      isNewsletter ? '-nl' :
+      isSquare     ? '-sq' :
+      isMobilePng  ? '-mb' : '';
+    if (fmtSuffix) {
+      filename = filename.replace(/\.png$/i, fmtSuffix + '.png');
+    }
     canvas.toBlob(blob => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -513,6 +721,9 @@
 
   document.querySelectorAll('button[data-png]').forEach(btn => {
     btn.addEventListener('click', () => {
+      // Click: respeta el formato del dropdown del editor (o usa el SVG
+      // visible si el editor no está activo). WYSIWYG — lo que ves se
+      // rasteriza.
       downloadChartPNG(btn.dataset.png).catch(err => {
         console.error('PNG export failed:', err);
         alert('No se pudo generar el PNG. Mirá la consola para detalles.');

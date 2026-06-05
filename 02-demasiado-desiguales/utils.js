@@ -9,6 +9,115 @@
 // adaptan la interacción a tap-toggle en lugar de hover persistente.
 const HAS_HOVER = window.matchMedia('(hover: hover)').matches;
 
+// Detección de viewport mobile (≤768px de ancho). Usado para alternar
+// dimensiones de SVG entre layout horizontal (desktop) y portrait-ish
+// (mobile) que ocupa más del viewport.
+//
+// IMPORTANTE: cuando el editor está activo con un formato seleccionado,
+// el chart adopta el viewBox del formato y este flag se IGNORA — el
+// editor controla todo. Sin editor activo, el chart sigue su layout
+// responsive normal (mobile portrait alto vs desktop landscape).
+//
+// Evaluado dinámicamente en cada render para que cambios de orientación o
+// resize disparen el layout correcto.
+function isMobileViewport() {
+  return window.matchMedia('(max-width: 768px)').matches;
+}
+
+// =============================================================
+// PNG_FORMATS — viewBoxes y canvas sizes por formato del editor
+// =============================================================
+// Una sola fuente de verdad: lo que el usuario ve en pantalla cuando elige
+// un formato (newsletter / square / mobile / public) es exactamente lo que
+// el PNG export rasteriza. El SVG en pantalla adopta el aspect ratio del
+// formato (via .ae-format-wrapper + --ae-aspect) y los charts dibujan con
+// el viewBox correspondiente. PNG export clona el SVG actual y lo rasteriza
+// a nominalW × nominalH — sin re-render forzado.
+//
+// vbW/vbH: dimensiones del viewBox del SVG en pantalla (también del clone
+//   rasterizado). Mantenemos vbW=1100 para que las constantes de cada
+//   chart (tablas, anclas, padding) sigan compatibles; varía vbH según
+//   el ratio del formato.
+// nominalW/nominalH: tamaño del canvas final del PNG. Es lo que se ve en
+//   el filename "1000×1100" y lo que pide la newsletter / red social.
+//
+// Ratios:
+//   public:     16:9  = 1.78   landscape
+//   newsletter: 10:11 = 0.91   cuadrado-ish leve portrait
+//   square:     1:1   = 1.00   cuadrado puro
+//   mobile:      2:3  = 0.67   portrait alto (Stories / WhatsApp)
+const PNG_FORMATS = {
+  public:     { vbW: 1100, vbH: 619,  nominalW: 1600, nominalH: 900  },
+  newsletter: { vbW: 1100, vbH: 1210, nominalW: 1000, nominalH: 1100 },
+  square:     { vbW: 1100, vbH: 1100, nominalW: 1200, nominalH: 1200 },
+  mobile:     { vbW: 1100, vbH: 1650, nominalW: 800,  nominalH: 1200 }
+};
+
+// Devuelve el formato activo del editor o null si:
+//   - el editor no está montado,
+//   - el editor está montado pero el sidebar nunca se abrió (la pestaña
+//     lateral no aparece) Y no hay localStorage previo,
+//   - de otra forma el chart se ve igual que la versión pública sin editor.
+//
+// Cuando devuelve un format → el chart usa PNG_FORMATS[format] para viewBox
+// y getMargins(format) para margins (ignora isMobileViewport).
+// Cuando devuelve null → el chart usa sus dimensiones default (desktop o
+// mobile responsive según isMobileViewport).
+function getActivePngFormat() {
+  if (!window.AtlasEditor || typeof window.AtlasEditor.getConfig !== 'function') {
+    return null;
+  }
+  const cfg = window.AtlasEditor.getConfig();
+  if (!cfg || !cfg.format) return null;
+  // El editor está activo SOLO si el body tiene la clase ae-ever-activated
+  // (se setea al abrir el panel por primera vez, o al detectar localStorage
+  // previo en init). Sin esa marca, el chart se ve idéntico a la versión
+  // pública aunque el editor.js esté cargado.
+  if (!document.body.classList.contains('ae-ever-activated')) return null;
+  return PNG_FORMATS[cfg.format] ? cfg.format : null;
+}
+
+// Aplica el wrapper CSS .ae-format-wrapper al .chart-svg-wrap del chart
+// activo, seteando --ae-aspect al ratio del formato. Si format=null,
+// quita la clase y restaura el comportamiento default.
+//
+// Esto hace que el SVG en pantalla se vea con el aspect ratio del formato
+// (sin distorsionar — preserveAspectRatio en el SVG se encarga del fit),
+// permitiendo WYSIWYG: lo que ves es lo que se rasteriza al PNG.
+function applyFormatWrapper(svgEl, format) {
+  if (!svgEl) return;
+  const wrap = svgEl.closest('.chart-svg-wrap');
+  if (!wrap) return;
+  if (format && PNG_FORMATS[format]) {
+    const f = PNG_FORMATS[format];
+    wrap.classList.add('ae-format-wrapper');
+    wrap.style.setProperty('--ae-aspect', (f.vbW / f.vbH).toFixed(4));
+  } else {
+    wrap.classList.remove('ae-format-wrapper');
+    wrap.style.removeProperty('--ae-aspect');
+  }
+}
+
+// Wire a resize listener that re-draws the 3 charts on viewport-class
+// changes (cross 768px boundary). Throttle vía requestAnimationFrame para
+// no martillar el render durante el drag de resize.
+let _lastIsMobile = isMobileViewport();
+let _resizeRaf = null;
+window.addEventListener('resize', () => {
+  if (_resizeRaf) return;
+  _resizeRaf = requestAnimationFrame(() => {
+    _resizeRaf = null;
+    const nowMobile = isMobileViewport();
+    if (nowMobile === _lastIsMobile) return;
+    _lastIsMobile = nowMobile;
+    // Llamamos a los draws si existen. Cada chart sólo redibuja si su SVG
+    // está presente en el DOM (chart-N.html standalone trae solo uno).
+    if (typeof drawMarimekko === 'function' && document.getElementById('chart1')) drawMarimekko();
+    if (typeof drawScatter   === 'function' && document.getElementById('chart2')) drawScatter();
+    if (typeof drawDeciles   === 'function' && document.getElementById('chart3')) drawDeciles();
+  });
+});
+
 const fmt = (n, dec=0) => {
   if (n === null || n === undefined || isNaN(n)) return '—';
   const locale = LANG === 'es' ? 'es-AR' : 'en-US';
@@ -61,4 +170,43 @@ function fmtTickGDP(v) {
     return '$' + (Number.isInteger(n) ? n : n.toFixed(1)) + 'k';
   }
   return '$' + v;
+}
+
+// ============================================================
+// Mobile UX: botones "tuerca" (.m-controls-trigger) y "Seleccionar"
+// (.m-search-trigger) que pliegan/despliegan los toggles y el buscador
+// dentro del mismo .chart-block. Estilo OWID: en ≤ 768px ocupan menos
+// chrome arriba del SVG. En desktop los botones están display:none vía
+// CSS, así que esta función no tiene efecto visible ahí.
+//
+// Scope: cada botón opera SOLO sobre los nodos de su propio .chart-block
+// (vía closest()), así en el index.html con los 3 charts juntos no se
+// pisan entre sí. Singleton: registramos los listeners una sola vez aun
+// si esta función se invoca desde múltiples init*().
+// ============================================================
+function setupMobileControlToggles() {
+  if (setupMobileControlToggles._done) return;
+  setupMobileControlToggles._done = true;
+
+  document.querySelectorAll('.m-controls-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const block = btn.closest('.chart-block');
+      const panel = block && block.querySelector('.m-controls-panel');
+      if (panel) panel.classList.toggle('open');
+    });
+  });
+  document.querySelectorAll('.m-search-trigger').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const block = btn.closest('.chart-block');
+      const wrap = block && block.querySelector('.m-search-wrap');
+      if (!wrap) return;
+      wrap.classList.toggle('open');
+      const input = wrap.querySelector('input');
+      if (input && wrap.classList.contains('open')) {
+        // focus diferido para que el teclado mobile aparezca después
+        // del repaint, evitando jumps de layout.
+        setTimeout(() => input.focus(), 0);
+      }
+    });
+  });
 }

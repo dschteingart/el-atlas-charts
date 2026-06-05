@@ -20,12 +20,57 @@
 // REGION_WB_LABEL_COLORS, LANG, t, state[1].
 
 // =================== Constantes ===================
-const M_W = 1100, M_H = 470;
+// Dimensiones desktop default (cuando NO hay formato del editor activo).
+// En mobile interactivo (≤768px sin editor) el render usa viewBox portrait
+// alto (1100×1500) cuyo aspect ratio (≈0.73) matchea el container portrait
+// (≈412×540, ratio ≈0.76). Sin esto, preserveAspectRatio="xMidYMid meet"
+// dejaba bandas de ~250-300px arriba/abajo.
+//
+// Cuando hay un formato del editor activo (newsletter / square / mobile /
+// public), las dimensiones vienen de PNG_FORMATS[format] en utils.js. La
+// función m_getMargins(format) devuelve los margins ajustados a cada
+// viewBox. El PNG export rasteriza el SVG visible — no fuerza re-render.
+const M_W_DESKTOP = 1100, M_H_DESKTOP = 470;
+const M_W_MOBILE  = 1100, M_H_MOBILE  = 1500;
 // Top: 50px para 2 filas de labels de promedio regional con anti-colisión.
 // Bottom: 110px — espacio para callout (palito o S) + texto rotado bajo el
 // eje X. El texto se proyecta hasta yAnchor + ~0.707*textW; textos típicos
 // de los priority (~80px) ocupan ~57px hacia abajo desde yAnchor=414.
-const M_MARGIN = { top: 50, right: 32, bottom: 110, left: 56 };
+const M_MARGIN_DESKTOP = { top: 50, right: 32, bottom: 110, left: 56 };
+// Mobile interactivo (≤768px sin editor): plot tres veces más alto que
+// desktop → margins escaladas acorde. La tabla regional NO se renderea en
+// SVG (va como HTML colapsable).
+//   - top 110: separa el eje del título sin bandas excesivas.
+//   - left 130: tick labels Y escalados (32px SVG) necesitan más ancho.
+//   - bottom 200: más espacio bajo el eje para callouts + texto rotado a
+//     32px (font 32 + diagonal proyectada ≈ 90-110px de huella vertical).
+//   - right 30: mínimo para que las barras de Gini bajo no toquen el borde.
+// Plot area = 1500 - 110 - 200 = 1190px (~79% del viewBox).
+const M_MARGIN_MOBILE  = { top: 110, right: 30, bottom: 200, left: 130 };
+
+// Margins por formato del editor (cuando el editor está activo).
+// Iterables si encontramos problemas geométricos al cambiar de formato.
+// Si format=null o desconocido → usar margins desktop default.
+function m_getMargins(format) {
+  switch (format) {
+    case 'public':     return { top: 50, right: 32, bottom: 130, left: 56 };
+    case 'newsletter': return { top: 60, right: 30, bottom: 220, left: 70 };
+    case 'square':     return { top: 60, right: 30, bottom: 260, left: 70 };
+    // mobile: top reducido (40) — el formato mobile NO renderea tabla
+    // regional dentro del SVG (va abajo del chart como HTML colapsable),
+    // así que la zona superior solo necesita espacio para el título del
+    // eje Y. Con top=100 quedaba una banda blanca grande arriba en el PNG
+    // mobile (entre el subtítulo y la primera barra). bottom 300 se
+    // mantiene para que los callouts y textos rotados respiren.
+    case 'mobile':     return { top: 40,  right: 30, bottom: 300, left: 100 };
+    default:           return { ...M_MARGIN_DESKTOP };
+  }
+}
+
+// Constantes "live" — se reasignan en cada drawMarimekko según el viewport
+// activo (editor format > mobile responsive > desktop default).
+let M_W = M_W_DESKTOP, M_H = M_H_DESKTOP;
+let M_MARGIN = { ...M_MARGIN_DESKTOP };
 
 // Configuración del algoritmo de etiquetas estilo OWID.
 //
@@ -52,16 +97,40 @@ const M_MARGIN = { top: 50, right: 32, bottom: 110, left: 56 };
 //      puede extenderse fuera del plot a la derecha.
 const M_LABEL_ANGLE_RAD = 45 * Math.PI / 180;
 const M_LABEL_FONT_SIZE = 10;
+// Mobile: 28px en unidades SVG. Con viewBox 1100 → render ≈412px de ancho,
+// el factor de escala SVG→pantalla es ~0.375, así que 28×0.375 ≈ 10.5px
+// de tamaño efectivo en pantalla (legible para labels rotadas).
+const M_LABEL_FONT_SIZE_MOBILE = 28;
 const M_LABEL_ANCHOR_Y_OFFSET = 50;   // distancia eje X → fin de línea guía
+// Mobile: con plot 3× más alto y font SVG 3× más grande, el callout
+// también precisa más espacio bajo el eje para que la patita respire y
+// las labels rotadas no se pisen entre sí.
+const M_LABEL_ANCHOR_Y_OFFSET_MOBILE = 90;
 const M_BEND_ROW_COUNT = 5;
 const M_BEND_ROW_GAP = 8;             // separación vertical entre filas de bend
 const M_BEND_ROW_OFFSET = 6;          // distancia eje X → primera fila de bend
 const M_LABEL_MIN_GAP_X = 5;          // gap mínimo entre huellas horizontales
 const M_CALLOUT_PAD = 2;              // separación mínima entre segmentos de callouts distintos
-const M_PLOT_W = M_W - M_MARGIN.left - M_MARGIN.right;
-const M_PLOT_H = M_H - M_MARGIN.top - M_MARGIN.bottom;
-const M_Y_MIN = 0, M_Y_MAX = 75;
+// Plot area: recalculado al inicio de cada drawMarimekko() (depende de
+// M_W/M_H/M_MARGIN que cambian según viewport).
+let M_PLOT_W = M_W - M_MARGIN.left - M_MARGIN.right;
+let M_PLOT_H = M_H - M_MARGIN.top - M_MARGIN.bottom;
+const M_Y_MIN = 0;
+const M_Y_MAX_DESKTOP = 75;
+// Portrait (mobilePng): el max real del dataset ronda ~63 (Sudáfrica) y
+// los ticks visibles van hasta 60. Con max=75 quedaba ~20% de banda
+// blanca arriba del gráfico (entre la barra más alta y el techo del
+// plot) que en el PNG vertical se ve como un hueco grande entre el
+// subtítulo y las barras. max=65 deja headroom mínimo para outliers
+// (Sudáfrica ~63 año peor) sin desperdiciar alto — antes 68 dejaba
+// ~17% de plot vacío arriba, ahora ~3%.
+const M_Y_MAX_PORTRAIT = 65;
+// M_Y_MAX se reasigna en drawMarimekko según el formato activo.
+let M_Y_MAX = M_Y_MAX_DESKTOP;
 const M_Y_TICKS = [0, 10, 20, 30, 40, 50, 60, 70];
+// Mobile: subset más legible — 4 ticks redondos. El plot es más alto
+// pero el eje sigue dando lecturas inmediatas (0/20/40/60).
+const M_Y_TICKS_MOBILE = [0, 20, 40, 60];
 
 // Países cuyas etiquetas tienen prioridad en el anti-colisión (greedy).
 // Lista curada editorialmente por Daniel para que se vean por default.
@@ -105,15 +174,28 @@ function m_measureText(text, fontSize) {
 }
 
 // Devuelve los iso3 a etiquetar en modo default (sin selección activa).
-// Usa la lista curada por Daniel (15 países editorialmente relevantes)
-// más los extremos del ranking del año/modo actual (rank 1 y rank último).
-// Filtra a los que están presentes en sortedData (algunos años pueden no
-// tener ciertos países si su última observación cae fuera de la ventana 15a).
+// Usa la lista curada por Daniel (15 países editorialmente relevantes en
+// desktop; ~10 en mobile) más los extremos del ranking del año/modo
+// actual (rank 1 y rank último). Filtra a los que están presentes en
+// sortedData (algunos años pueden no tener ciertos países si su última
+// observación cae fuera de la ventana 15a).
+//
+// En mobile el ancho horizontal es chico (~360px) — con 160 barras de
+// 2px cada una las labels rotadas a 45° se solapan. Lista reducida así
+// las priority sí caben y son legibles.
 function m_defaultLabelCodes(sortedData) {
-  const priority = [
-    'NAM', 'COL', 'BRA', 'CHL', 'ARG', 'MEX', 'CHN', 'NER',
-    'ESP', 'JPN', 'USA', 'CAN', 'DEU', 'NOR', 'SVK'
-  ];
+  // mobile = pantalla chica Y editor sin formato activo. Si el editor
+  // tiene un formato seleccionado, ese controla todo (ignoramos viewport).
+  const editorFormat = typeof getActivePngFormat === 'function'
+    ? getActivePngFormat() : null;
+  const mobile = !editorFormat
+    && typeof isMobileViewport === 'function' && isMobileViewport();
+  const priority = mobile
+    ? ['NAM', 'COL', 'BRA', 'ARG', 'MEX', 'CHN', 'USA', 'DEU', 'NOR', 'SVK']
+    : [
+        'NAM', 'COL', 'BRA', 'CHL', 'ARG', 'MEX', 'CHN', 'NER',
+        'ESP', 'JPN', 'USA', 'CAN', 'DEU', 'NOR', 'SVK'
+      ];
   const present = new Set(sortedData.map(d => d.code));
   const result = new Set(priority.filter(c => present.has(c)));
   // Extremos del ranking — siempre presentes, sean quienes sean cada año.
@@ -141,19 +223,56 @@ function m_extremeCodes(sortedData) {
 //   - default: 15 países priority (lista curada de Daniel).
 //   - con selección: priority + seleccionados. Los seleccionados se procesan
 //     primero (greedy) para que conserven su posición ideal.
-function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes) {
-  const priorityCodes = m_defaultLabelCodes(sortedData);
+function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, editorCodes) {
+  // Si el editor pasa una lista explícita (editorCodes), esa REEMPLAZA la
+  // priority list curada de Daniel (m_defaultLabelCodes). Los extremos del
+  // ranking siguen forzados — son editorialmente importantes para entender
+  // el rango aún cuando el usuario configure un subset distinto.
+  const present = new Set(sortedData.map(d => d.code));
+  // Array.isArray distingue [] (editor activo con lista vacía → no dibujar
+  // labels) de null/undefined (editor inactivo → fallback hardcoded).
+  const priorityCodes = Array.isArray(editorCodes)
+    ? new Set(editorCodes.filter(c => present.has(c)))
+    : m_defaultLabelCodes(sortedData);
   const extremeCodes = m_extremeCodes(sortedData);
   const selSet = new Set(selectedCodes || []);
   const codesToShow = new Set([...priorityCodes, ...selSet]);
 
+  // Detectar formato del editor (controla todo cuando está presente).
+  const editorFormat = typeof getActivePngFormat === 'function'
+    ? getActivePngFormat() : null;
+  const newsletter = editorFormat === 'newsletter';
+  const square     = editorFormat === 'square';
+  const mobilePng  = editorFormat === 'mobile';
+  const publicFmt  = editorFormat === 'public';
+  // mobile interactivo solo si no hay formato del editor activo y el
+  // browser está en viewport pequeño. El editor controla todo cuando
+  // tiene un format seleccionado.
+  const mobile = !editorFormat
+    && typeof isMobileViewport === 'function' && isMobileViewport();
   const angle = M_LABEL_ANGLE_RAD;
   const cos = Math.cos(angle), sin = Math.sin(angle);  // ambos ≈ 0.707
-  const fontSize = M_LABEL_FONT_SIZE;
+  // Si el editor proveyó un override de slider "labels", lo respetamos
+  // SOBRE el default del formato. Esto permite a Daniel ajustar el tamaño
+  // de las etiquetas de país sin importar el formato elegido.
+  const aeCfg2 = (window.AtlasEditor && window.AtlasEditor.getConfig)
+    ? window.AtlasEditor.getConfig() : null;
+  const aeLabelSize = aeCfg2?.sizes?.labels;
+  const fmtDefaultFontSize = newsletter ? 16
+    : square ? 17
+    : mobilePng ? 26
+    : mobile ? M_LABEL_FONT_SIZE_MOBILE
+    : M_LABEL_FONT_SIZE;
+  const fontSize = aeLabelSize ?? fmtDefaultFontSize;
+  // anchorYOffset: distancia eje X → fin de línea guía. En viewports altos
+  // (mobile/mobilePng) más espacio para que las labels respiren.
+  const anchorYOffset = (mobile || mobilePng)
+    ? M_LABEL_ANCHOR_Y_OFFSET_MOBILE
+    : M_LABEL_ANCHOR_Y_OFFSET;
   const minGap = M_LABEL_MIN_GAP_X;
   const leftBound  = plotArea.left + 2;
   const rightBound = plotArea.right - 4;
-  const yLine = plotArea.bottom + M_LABEL_ANCHOR_Y_OFFSET;       // fin de línea guía
+  const yLine = plotArea.bottom + anchorYOffset;       // fin de línea guía
   const yAnchor = yLine + 4;  // pequeño gap entre fin de guía y "a" final
 
   // 1. Construir anchors. (tx, ty=yAnchor) será la posición de la ÚLTIMA letra
@@ -332,7 +451,193 @@ function drawMarimekko() {
   const svg = document.getElementById('chart1');
   if (!svg) return;
   svg.innerHTML = '';
+
+  // Editor hook: si el sidebar editorial está activo, leemos su config.
+  // Aplicamos overrides de SIZES (font-sizes), texts (título/subtítulo/
+  // caption) y countries (lista de iso3 a etiquetar reemplazando los
+  // priority defaults). El editor.js carga ANTES que este script, así que
+  // window.AtlasEditor ya existe; getConfig() devuelve null si el editor
+  // nunca se montó (ej. en index.html sin data-editor-id).
+  const aeCfg = (window.AtlasEditor && window.AtlasEditor.getConfig)
+    ? window.AtlasEditor.getConfig() : null;
+  const aeSizes = aeCfg?.sizes;
+  // Cuando el editor está activo, su lista de countries manda — incluso si
+  // está vacía. Que esté vacía es una elección del usuario: "no mostrar
+  // ningún label". Solo cae al fallback hardcoded (priority + extremos) si
+  // el editor NO está activo (versión pública). Sin esta distinción, cuando
+  // el usuario destildaba todos, caíamos al fallback y se dibujaban las
+  // líneas + textos de los priority, pero luego el branch !hasSelection
+  // cropeaba el viewBox y solo se veían las "rayitas huérfanas" (primeros
+  // 8px de las líneas) sin nombres.
+  const aeCountries = aeCfg
+    ? (aeCfg.countries || [])
+    : null;
+
+  // Decidir dimensiones según el formato del editor (si está activo) o
+  // según el viewport del browser (sin editor activo). Tres situaciones:
+  //
+  //   1. Editor activo con formato → viewBox de PNG_FORMATS[format] +
+  //      margins de m_getMargins(format). El SVG en pantalla se ve con
+  //      el aspect ratio del formato (gracias al wrapper .ae-format-
+  //      wrapper que setea aspect-ratio en CSS). El PNG export rasteriza
+  //      exactamente esto. WYSIWYG.
+  //
+  //   2. Sin editor activo + mobile (≤768px): viewBox 1100×1500 portrait,
+  //      sin tabla regional (HTML colapsable abajo del chart).
+  //
+  //   3. Sin editor activo + desktop: viewBox 1100×470 landscape (default).
+  //
+  // El editor controla TODO cuando tiene un format. isMobileViewport() se
+  // ignora — no hay "responsive mobile" si el editor decide newsletter.
+  const editorFormat = typeof getActivePngFormat === 'function'
+    ? getActivePngFormat() : null;
+  const newsletter = editorFormat === 'newsletter';
+  const square     = editorFormat === 'square';
+  const mobilePng  = editorFormat === 'mobile';
+  const publicFmt  = editorFormat === 'public';
+  const mobile = !editorFormat
+    && typeof isMobileViewport === 'function' && isMobileViewport();
+  if (editorFormat) {
+    const f = PNG_FORMATS[editorFormat];
+    M_W = f.vbW; M_H = f.vbH;
+    M_MARGIN = m_getMargins(editorFormat);
+  } else if (mobile) {
+    M_W = M_W_MOBILE; M_H = M_H_MOBILE;
+    M_MARGIN = { ...M_MARGIN_MOBILE };
+  } else {
+    M_W = M_W_DESKTOP; M_H = M_H_DESKTOP;
+    M_MARGIN = { ...M_MARGIN_DESKTOP };
+  }
+  // Y max por formato: mobilePng (formato del editor, 800×1200 vertical)
+  // usa M_Y_MAX_PORTRAIT — apenas por encima del data max — para que las
+  // barras llenen el plot vertical y no quede una banda blanca grande entre
+  // el techo del plot y la barra más alta. Mobile interactivo (sin editor)
+  // y desktop siguen en 75 para no cambiar la versión pública.
+  M_Y_MAX = mobilePng ? M_Y_MAX_PORTRAIT : M_Y_MAX_DESKTOP;
+
+  // === Bottom margin dinámico (P A) ===
+  // El bottom default de cada formato (m_getMargins) era una conjetura
+  // estática. Si Daniel tilda un país con nombre largo (ej. "República
+  // Centroafricana") la huella vertical del texto rotado a -45° excede el
+  // bottom estático y queda cortado.
+  //
+  // Algoritmo: simular el subset de labels que va a renderearse, calcular
+  // la máxima huella proyectada (sin45 × textW + descender), y agrandar
+  // M_MARGIN.bottom para que entre cómodo. Aplica SOLO cuando hay editor
+  // format activo (public/newsletter/square/mobile del editor) o mobile
+  // responsive. La versión pública sin editor (desktop default) mantiene
+  // el M_MARGIN_DESKTOP histórico — no queremos que el layout cambie en
+  // /index.html ni en chart-1.html sin editor.
+  if (editorFormat || mobile) {
+    const sin45 = Math.SQRT1_2;
+    // SIZES.label aún no está computado en este punto del flujo —
+    // reproducimos la fórmula (FMT_SIZES.label salvo override del editor).
+    const fmtLabelDefault = newsletter ? 16
+      : square ? 17
+      : mobilePng ? 26
+      : publicFmt ? 11
+      : mobile ? M_LABEL_FONT_SIZE_MOBILE
+      : M_LABEL_FONT_SIZE;
+    const labelFontSize = aeSizes?.labels ?? fmtLabelDefault;
+    const aOff = (mobile || mobilePng)
+      ? M_LABEL_ANCHOR_Y_OFFSET_MOBILE
+      : M_LABEL_ANCHOR_Y_OFFSET;
+    // Subset que va a etiquetarse: priority (editor o curado) + selección +
+    // extremos del ranking. Replica m_layoutCountryLabels — necesitamos los
+    // mismos códigos para calcular requiredBottom antes de fijar M_PLOT_H.
+    // Inlineamos state[1] porque s1 se declara más abajo en drawMarimekko.
+    const s1pre = state[1] || { mode: 'raw', year: 2024, selectedCountries: [] };
+    const data0 = DATA_MARIMEKKO.data_by_year[String(s1pre.year)] || [];
+    const valKey0 = s1pre.mode === 'raw' ? 'gini_raw' : 'gini_adj';
+    const sorted0 = [...data0].sort((a, b) => b[valKey0] - a[valKey0]);
+    const present0 = new Set(sorted0.map(d => d.code));
+    const priorityCodes0 = Array.isArray(aeCountries)
+      ? new Set(aeCountries.filter(c => present0.has(c)))
+      : m_defaultLabelCodes(sorted0);
+    const extremeCodes0 = m_extremeCodes(sorted0);
+    const selSet0 = new Set(s1pre.selectedCountries || []);
+    const codesToShow0 = new Set([...priorityCodes0, ...selSet0, ...extremeCodes0]);
+    let maxTextW = 0;
+    sorted0.forEach(d => {
+      if (!codesToShow0.has(d.code)) return;
+      const txt = m_displayName(d);
+      const w = Math.max(22, m_measureText(txt, labelFontSize));
+      if (w > maxTextW) maxTextW = w;
+    });
+    if (maxTextW > 0) {
+      // Huella vertical del texto rotado -45°: yAnchor + sin45 × (textW +
+      // descender). Descender ~ 0.3 × fontSize.
+      //
+      // safety = colchón EXTRA bajo el último pixel del texto y la base del
+      // viewBox del SVG. Subido de 16 → 30 SVG units para que las etiquetas
+      // queden bien adentro del SVG: en png-export.js el canvas pinta la
+      // leyenda regional justo después del bottom del SVG rasterizado
+      // (gapAfterSvgBase=4). Sin colchón generoso, en formatos donde
+      // scaleY<1 (mobile vbH=1650 → scaleY≈0.55) los 16 SVG units se
+      // proyectan a solo ~9 canvas-px, y los nombres colgantes terminan
+      // visualmente pegados a los chips de la leyenda. Con 30 → 17-32 canvas-
+      // px de buffer dentro del SVG según el formato. Combinado con el
+      // extraGapBelowSvg que el hook abajo le pide a png-export, garantizamos
+      // ≥30 canvas-px de separación visible entre la última letra del país
+      // y el primer puntito de la leyenda en los 4 formatos del editor.
+      const projVert = sin45 * (maxTextW + labelFontSize * 0.3);
+      const safety = 30;
+      const requiredBottom = aOff + 4 + projVert + safety;
+      if (M_MARGIN.bottom < requiredBottom) {
+        M_MARGIN.bottom = Math.ceil(requiredBottom);
+      }
+    }
+  }
+
+  M_PLOT_W = M_W - M_MARGIN.left - M_MARGIN.right;
+  M_PLOT_H = M_H - M_MARGIN.top - M_MARGIN.bottom;
+
   svg.setAttribute('viewBox', `0 0 ${M_W} ${M_H}`);
+  // Aplicar/quitar wrapper CSS según el formato del editor.
+  if (typeof applyFormatWrapper === 'function') {
+    applyFormatWrapper(svg, editorFormat);
+  }
+
+  // Font sizes en unidades SVG. En mobile interactivo el SVG se escala a
+  // ~412px de ancho en pantalla (factor ≈0.375), así que multiplicamos los
+  // tamaños por ~3 para que el render efectivo en pantalla quede en 9-13px.
+  // Sin esto los textos en mobile salen a ~3.6-4px (ilegibles).
+  // Estos overrides ganan sobre los font-size de los CSS classes porque
+  // se aplican inline (attribute font-size).
+  //
+  // Cuando el editor está activo con un formato, el SVG se ve en pantalla
+  // con el aspect ratio del formato (no escalado a mobile viewport) — los
+  // sizes son los que tunean newsletter/square/mobilePng/public. WYSIWYG:
+  // el PNG rasteriza el SVG exactamente como se ve.
+  //
+  // SIZES base por viewport. En desktop el editor puede sobreescribir cada
+  // bucket (ticks/labels/axisTitle/special) vía el panel; los formatos
+  // newsletter, square, mobilePng y public se mantienen pinned a sus
+  // valores tuneados (el editor sirve para afinar desktop default y para
+  // elegir formato — los sizes del formato son fijos).
+  // Defaults por formato: el editor PUEDE sobreescribir cada bucket vía los
+  // sliders (ticks/labels/axisTitle/special). Si el slider está en su default
+  // de DEFAULT_SIZES, sale el valor pinned al formato; si Daniel mueve el
+  // slider, su valor gana — incluso en newsletter/square/mobilePng/public.
+  // Esto asegura que el slider "Etiquetas país" tenga efecto siempre.
+  const FMT_SIZES = newsletter
+    ? { tick: 20, axisLabel: 20, label: 16, tableTitle: 16, tableLabel: 20 }
+    : square
+    ? { tick: 20, axisLabel: 20, label: 17, tableTitle: 16, tableLabel: 20 }
+    : mobilePng
+    ? { tick: 30, axisLabel: 26, label: 26, tableTitle: 26, tableLabel: 28 }
+    : publicFmt
+    ? { tick: 14, axisLabel: 13, label: 11, tableTitle: 11, tableLabel: 13 }
+    : mobile
+    ? { tick: 32, axisLabel: 28, label: 28, tableTitle: 28, tableLabel: 30 }
+    : { tick: 11, axisLabel: 10.5, label: M_LABEL_FONT_SIZE, tableTitle: 10, tableLabel: 11 };
+  const SIZES = {
+    tick:        aeSizes?.ticks     ?? FMT_SIZES.tick,
+    axisLabel:   aeSizes?.axisTitle ?? FMT_SIZES.axisLabel,
+    label:       aeSizes?.labels    ?? FMT_SIZES.label,
+    tableTitle:  aeSizes?.special   ?? FMT_SIZES.tableTitle,
+    tableLabel:  aeSizes?.special   ?? FMT_SIZES.tableLabel
+  };
 
   const s1 = state[1];
   const year = String(s1.year);
@@ -345,17 +650,37 @@ function drawMarimekko() {
   const barInner = Math.max(1.2, barWidth - 0.4);
 
   // === Grid Y + labels ===
-  // Si la grid line atraviesa la zona vertical de la tabla regional
+  // Desktop: si la grid line atraviesa la zona vertical de la tabla regional
   // (arriba-derecha), la recortamos antes de la tabla para que no la cruce
   // visualmente. La línea del eje (y=0) llega siempre hasta el final.
-  const tableTopY = M_TABLE_Y_TITLE - 10;
-  const tableBottomY = M_TABLE_Y_FIRST + 7 * M_TABLE_ROW_H;
-  M_Y_TICKS.forEach(tv => {
+  // Mobile: NO hay tabla en el SVG, así que las grids van hasta el final.
+  // Mobile usa un set reducido de ticks (0/20/40/60) para que se lean a 11px.
+  //
+  // mobilePng: las coords de la tabla son distintas (más a la izquierda y
+  // más alta verticalmente) — usamos las mismas que drawRegionalAvgTable
+  // calcula para mobilePng (tableX=520, top=80-10=70, bottom=110+7*56=502).
+  const tableTopY = mobilePng ? 70 : (M_TABLE_Y_TITLE - 10);
+  const tableBottomY = mobilePng ? 502 : (M_TABLE_Y_FIRST + 7 * M_TABLE_ROW_H);
+  const tableLeftX = mobilePng ? 520 : M_TABLE_X;
+  // En viewports altos (mobile / mobilePng) usamos un subset reducido
+  // de ticks Y para que la grilla no se vea apretada.
+  const yTicksToRender = (mobile || mobilePng) ? M_Y_TICKS_MOBILE : M_Y_TICKS;
+  // Tabla regional en SVG:
+  //   - desktop / public / newsletter / square: arriba-derecha del plot.
+  //   - mobilePng: arriba-derecha del plot también, con coords ampliadas
+  //     para que entren los nombres a 28pt sin pisar las barras altas de la
+  //     izquierda (que solo llegan hasta el medio del ranking).
+  //   - mobile interactivo (≤768px sin editor): NO en SVG — se renderea
+  //     como HTML colapsable abajo del chart (drawRegionalAvgTableHTML).
+  //     El viewport en pantalla es muy chico y la tabla SVG quedaría
+  //     ilegible o tapando barras.
+  const tableVisible = !mobile;
+  yTicksToRender.forEach(tv => {
     const y = m_yScale(tv);
     const line = m_ns('line');
     line.setAttribute('x1', M_MARGIN.left);
-    const crossesTable = tv !== 0 && y >= tableTopY && y <= tableBottomY;
-    const x2 = crossesTable ? M_TABLE_X - 10 : M_MARGIN.left + M_PLOT_W;
+    const crossesTable = tableVisible && tv !== 0 && y >= tableTopY && y <= tableBottomY;
+    const x2 = crossesTable ? tableLeftX - 10 : M_MARGIN.left + M_PLOT_W;
     line.setAttribute('x2', x2);
     line.setAttribute('y1', y); line.setAttribute('y2', y);
     line.setAttribute('class', tv === 0 ? 'm-axis-line' : 'm-grid-line');
@@ -363,14 +688,29 @@ function drawMarimekko() {
     const tx = m_ns('text');
     tx.setAttribute('x', M_MARGIN.left - 8); tx.setAttribute('y', y + 4);
     tx.setAttribute('text-anchor', 'end'); tx.setAttribute('class', 'm-tick');
+    // Style inline (no attribute) para sobrescribir el font-size del CSS class:
+    // los CSS rules ganan a los presentation attributes en SVG.
+    tx.style.fontSize = SIZES.tick + 'px';
     tx.textContent = tv;
     svg.appendChild(tx);
   });
-  // Label "Gini" arriba del eje
+  // Label del eje Y. Rotado 90° (leído de abajo hacia arriba) y centrado
+  // verticalmente en el plot area. Posicionado a la izquierda del eje (sin
+  // pisar los ticks). Esto permite títulos largos ("Coeficiente de Gini")
+  // sin que se salgan del SVG.
+  // Si el editor define un axisY custom no vacío, lo aplicamos; si no,
+  // usamos el default del i18n key c1-axis-y.
   const yLab = m_ns('text');
-  yLab.setAttribute('x', M_MARGIN.left - 8); yLab.setAttribute('y', M_MARGIN.top - 8);
-  yLab.setAttribute('text-anchor', 'end'); yLab.setAttribute('class', 'm-axis-label');
-  yLab.textContent = t('c1-axis-y');
+  const yLabX = M_MARGIN.left - 35;
+  const yLabY = M_MARGIN.top + M_PLOT_H / 2;
+  yLab.setAttribute('x', yLabX);
+  yLab.setAttribute('y', yLabY);
+  yLab.setAttribute('text-anchor', 'middle');
+  yLab.setAttribute('transform', `rotate(-90, ${yLabX}, ${yLabY})`);
+  yLab.setAttribute('class', 'm-axis-label');
+  yLab.style.fontSize = SIZES.axisLabel + 'px';
+  const customAxisY = (aeCfg?.texts?.[LANG]?.axisY || '').trim();
+  yLab.textContent = customAxisY || t('c1-axis-y');
   svg.appendChild(yLab);
 
   // === Barras ===
@@ -431,9 +771,9 @@ function drawMarimekko() {
     bottom: M_MARGIN.top + M_PLOT_H
   };
   const placedLabels = m_layoutCountryLabels(
-    sortedData, barWidth, plotArea, s1.selectedCountries || []
+    sortedData, barWidth, plotArea, s1.selectedCountries || [], aeCountries
   );
-  const fontSize = M_LABEL_FONT_SIZE;
+  const fontSize = SIZES.label;
   placedLabels.forEach(l => {
     // Callout (línea guía) estilo OWID:
     //   - Sin displacement: VERTICAL puro desde la base de la barra hasta
@@ -470,7 +810,12 @@ function drawMarimekko() {
     txt.setAttribute('transform', `rotate(-45 ${l.tx} ${l.ty})`);
     txt.setAttribute('text-anchor', 'end');
     txt.setAttribute('fill', l.color);
-    txt.setAttribute('font-size', fontSize);
+    // font-size INLINE (no via setAttribute) porque la regla CSS
+    // .m-country-label { font-size: 9.5px } gana sobre el presentation
+    // attribute font-size en SVG. Sin inline, el SVG en pantalla y en el PNG
+    // se rendereaba a 9.5px (casi invisible al rasterizar 1100×1650 en
+    // 800×1200) y el slider "Etiquetas país" no tenía efecto.
+    txt.style.fontSize = fontSize + 'px';
     txt.setAttribute('font-weight', l.isSelected ? '700' : '500');
     txt.textContent = l.text;
     labelsG.appendChild(txt);
@@ -492,7 +837,81 @@ function drawMarimekko() {
     }))
     .sort((a, b) => b.value - a.value);
 
-  drawRegionalAvgTable(svg, tableRows, s1.activeRegion);
+  // Desktop / public / newsletter / square / mobilePng: tabla en SVG.
+  // Mobile interactivo (≤768px sin editor): NO en SVG; va como HTML
+  // colapsable abajo del chart.
+  if (tableVisible) {
+    drawRegionalAvgTable(svg, tableRows, s1.activeRegion, SIZES, mobilePng);
+  }
+  drawRegionalAvgTableHTML(tableRows, s1.activeRegion);
+
+  // Editor overrides de textos editoriales (título/subtítulo/caption).
+  // Aplicados POSTrender: applyI18n() sobrescribe estos elementos cada
+  // vez que cambia el idioma o el toggle raw/adj, así que el editor
+  // tiene que pisarlos después. Strings vacíos = usa el default i18n.
+  m_applyEditorTexts(aeCfg);
+}
+
+// Aplica los textos custom del editor a título/subtítulo/caption del chart.
+// Llamado al final de drawMarimekko (después de que applyI18n y los
+// handlers de toggle hayan dejado los textos default).
+//
+// Caption: si el editor lo dejó vacío (trim) → restauramos el default del
+// i18n key c1-sources. Esto permite que el usuario "borre" un caption
+// custom y vuelva al automático sin tener que limpiar localStorage.
+function m_applyEditorTexts(aeCfg) {
+  // LANG es un global de i18n-issue.js (declarado con `let`, no es prop
+  // de window). Accedemos por lookup léxico; aeCfg.lang prevalece para los
+  // overrides de texto pero el caption default se lee del LANG del DOM.
+  const docLang = typeof LANG !== 'undefined' ? LANG : 'es';
+  const lang = aeCfg?.lang || docLang;
+  const t = aeCfg?.texts?.[lang] || {};
+  const block = document.querySelector('.chart-block[data-chart="1"]');
+  if (!block) return;
+  const customTitle    = (t.title    || '').trim();
+  const customSubtitle = (t.subtitle || '').trim();
+  const customCaption  = (t.caption  || '').trim();
+  if (customTitle) {
+    const el = block.querySelector('.chart-title');
+    if (el) el.textContent = customTitle;
+  }
+  if (customSubtitle) {
+    const el = block.querySelector('.chart-subtitle');
+    if (el) el.textContent = customSubtitle;
+  }
+  // Caption desktop vive en .footer p[data-i18n="c1-sources"]; en mobile
+  // duplicado dentro de un <details>. Si hay caption custom no vacío, lo
+  // aplicamos a AMBOS. Si está vacío, restauramos el default del i18n key.
+  const captionEls = document.querySelectorAll(
+    '.footer p[data-i18n="c1-sources"], .footer details[class*="mobile-collapse"] p[data-i18n="c1-sources"]'
+  );
+  if (customCaption) {
+    captionEls.forEach(el => { el.textContent = customCaption; });
+  } else if (typeof I18N !== 'undefined' && I18N[docLang] && I18N[docLang]['c1-sources']) {
+    // applyI18n setea innerHTML (el string puede tener <strong>), así que
+    // restauramos igual con innerHTML para no perder formatting.
+    captionEls.forEach(el => { el.innerHTML = I18N[docLang]['c1-sources']; });
+  }
+}
+
+// Tabla HTML colapsable (solo visible en mobile vía CSS). Se renderea
+// SIEMPRE; el CSS la oculta en desktop. Idempotente — limpia y rebuilds.
+function drawRegionalAvgTableHTML(rows, activeRegion) {
+  const container = document.querySelector('#m-avg-table-mobile');
+  if (!container) return;
+  const html = rows.map(row => {
+    const isActive = activeRegion === row.region;
+    const isDimmed = activeRegion && !isActive;
+    const cls = 'm-mt-row'
+      + (isActive ? ' m-mt-row-active' : '')
+      + (isDimmed ? ' m-mt-row-dimmed' : '');
+    return `<div class="${cls}">
+      <span class="m-mt-swatch" style="background:${row.color}"></span>
+      <span class="m-mt-label">${row.label}</span>
+      <span class="m-mt-value">${row.value.toFixed(1)}</span>
+    </div>`;
+  }).join('');
+  container.innerHTML = html;
 }
 
 // =================== Tabla de promedios regionales ===================
@@ -507,7 +926,40 @@ const M_TABLE_ROW_H  = 16;
 const M_TABLE_SWATCH = 9;
 const M_TABLE_SWATCH_GAP = 7;
 
-function drawRegionalAvgTable(svg, rows, activeRegion) {
+function drawRegionalAvgTable(svg, rows, activeRegion, SIZES, mobilePng) {
+  // mobilePng: el viewBox es portrait alto (1100×1650) y la tabla va arriba-
+  // derecha, sobre las barras de Gini bajo (que en el ranking del 2024 ocupan
+  // la mitad derecha del plot, con tops a y≥620 cuando M_Y_MAX=65). Para
+  // que los nombres regionales a 28pt entren sin pisar las barras altas
+  // (que están a la izquierda), ampliamos M_TABLE_W y desplazamos el TABLE_X
+  // a la izquierda para tener más ancho horizontal. Row height más grande
+  // para que el font 28 respire.
+  const titleSize = SIZES?.tableTitle;
+  const labelSize = SIZES?.tableLabel;
+  // Escala TODO proporcionalmente al font de las filas (lo que controla el
+  // slider "Tabla regional" en el editor). A labelSize=11 (default) los
+  // valores coinciden con los antiguos hardcoded (rowH 16, swatch 9, gap 7).
+  // A labelSize=28 (slider al máximo), rowH=40.6 → filas no se encimean.
+  // Aplica a TODOS los formatos: pantalla y PNG quedan sincronizados.
+  const rowFactor    = 1.45;
+  const swatchFactor = 0.82;
+  const gapFactor    = 0.64;
+  const base = labelSize ?? M_TABLE_ROW_H / rowFactor;  // ~11 si no hay SIZES
+  const rowH       = base * rowFactor;
+  const swatchSize = base * swatchFactor;
+  const swatchGap  = base * gapFactor;
+  const yFirst = mobilePng ? 110
+               : M_TABLE_Y_FIRST;
+  // Posición horizontal/vertical del header de la tabla.
+  // mobilePng usa coords propias: arriba-derecha del plot, ancho 540 SVG
+  // units (vs 348 default) para alojar "Latinoamérica y el Caribe" a 28pt.
+  // tableX=520 deja desde x=520 hasta x=1060, dentro del plot (left=100,
+  // right=30) y por encima de las barras de Gini medio-alto (que llegan a
+  // y≈620 en x=600 para Gini 36). Sin pisar las barras altas (izquierda).
+  const tableX = mobilePng ? 520 : M_TABLE_X;
+  const tableW = mobilePng ? 540 : M_TABLE_W;
+  const tableYTitle = mobilePng ? 80 : M_TABLE_Y_TITLE;
+  const ruleY = mobilePng ? tableYTitle + 12 : M_TABLE_Y_TITLE + 6;
   const g = m_ns('g');
   g.setAttribute('id', 'm-avg-table');
   svg.appendChild(g);
@@ -515,22 +967,23 @@ function drawRegionalAvgTable(svg, rows, activeRegion) {
   // Título
   const title = m_ns('text');
   title.setAttribute('class', 'm-table-title');
-  title.setAttribute('x', M_TABLE_X);
-  title.setAttribute('y', M_TABLE_Y_TITLE);
+  title.setAttribute('x', tableX);
+  title.setAttribute('y', tableYTitle);
+  if (titleSize) title.style.fontSize = titleSize + 'px';
   title.textContent = t('c1-avg-table-title');
   g.appendChild(title);
 
   // Línea sutil bajo el título
   const rule = m_ns('line');
   rule.setAttribute('class', 'm-table-rule');
-  rule.setAttribute('x1', M_TABLE_X);
-  rule.setAttribute('x2', M_TABLE_X + M_TABLE_W);
-  rule.setAttribute('y1', M_TABLE_Y_TITLE + 6);
-  rule.setAttribute('y2', M_TABLE_Y_TITLE + 6);
+  rule.setAttribute('x1', tableX);
+  rule.setAttribute('x2', tableX + tableW);
+  rule.setAttribute('y1', ruleY);
+  rule.setAttribute('y2', ruleY);
   g.appendChild(rule);
 
   rows.forEach((row, i) => {
-    const y = M_TABLE_Y_FIRST + i * M_TABLE_ROW_H;
+    const y = yFirst + i * rowH;
     const isActive = activeRegion === row.region;
     const isDimmed = activeRegion && !isActive;
     const stateClass =
@@ -542,10 +995,10 @@ function drawRegionalAvgTable(svg, rows, activeRegion) {
     const swatch = m_ns('rect');
     swatch.setAttribute('class', 'm-table-swatch' + stateClass);
     swatch.setAttribute('data-region', row.region);
-    swatch.setAttribute('x', M_TABLE_X);
-    swatch.setAttribute('y', y - M_TABLE_SWATCH + 1);
-    swatch.setAttribute('width', M_TABLE_SWATCH);
-    swatch.setAttribute('height', M_TABLE_SWATCH);
+    swatch.setAttribute('x', tableX);
+    swatch.setAttribute('y', y - swatchSize + 1);
+    swatch.setAttribute('width', swatchSize);
+    swatch.setAttribute('height', swatchSize);
     swatch.setAttribute('fill', row.color);
     g.appendChild(swatch);
 
@@ -553,8 +1006,9 @@ function drawRegionalAvgTable(svg, rows, activeRegion) {
     const labelEl = m_ns('text');
     labelEl.setAttribute('class', 'm-table-label' + stateClass);
     labelEl.setAttribute('data-region', row.region);
-    labelEl.setAttribute('x', M_TABLE_X + M_TABLE_SWATCH + M_TABLE_SWATCH_GAP);
+    labelEl.setAttribute('x', tableX + swatchSize + swatchGap);
     labelEl.setAttribute('y', y);
+    if (labelSize) labelEl.style.fontSize = labelSize + 'px';
     labelEl.textContent = row.label;
     g.appendChild(labelEl);
 
@@ -562,7 +1016,8 @@ function drawRegionalAvgTable(svg, rows, activeRegion) {
     const valueEl = m_ns('text');
     valueEl.setAttribute('class', 'm-table-value' + stateClass);
     valueEl.setAttribute('data-region', row.region);
-    valueEl.setAttribute('x', M_TABLE_X + M_TABLE_W);
+    if (labelSize) valueEl.style.fontSize = labelSize + 'px';
+    valueEl.setAttribute('x', tableX + tableW);
     valueEl.setAttribute('y', y);
     valueEl.setAttribute('text-anchor', 'end');
     valueEl.textContent = row.value.toFixed(1);
@@ -713,13 +1168,19 @@ function setupMarimekkoToggle() {
 // el PNG (en interactivo solo se ve la hovereada).
 window.onBeforePngExport = (svgClone, chartId) => {
   if (chartId !== '1') return;
-  const hasSelection = state[1]?.selectedCountries?.length > 0;
-  // En el PNG nunca van las labels priority — son ruido en la versión
-  // estática. PNG es o "panorámico con líneas regionales" (sin selección)
-  // o "enfocado en los países elegidos" (con selección).
-  svgClone.querySelectorAll('[data-source="priority"]').forEach(el => {
-    el.style.display = 'none';
-  });
+  // BUG histórico (8 rondas): hasSelection leía SOLO state[1].selectedCountries
+  // (la lista que se llena vía search/click del propio chart). Pero cuando el
+  // usuario tilda países desde los checkboxes del EDITOR, esa selección vive
+  // en AtlasEditor.getConfig().countries — no en state[1]. Resultado: con el
+  // editor activo y países tildados ahí, hasSelection era false, el branch
+  // sin selección cropeaba el viewBox a +8px abajo del eje X, y los textos
+  // rotados de los nombres caían FUERA del viewBox → no se rasterizaban.
+  // Lo único visible eran los primeros 8px de las líneas conectoras (las
+  // "rayitas cortas" que Daniel observó).
+  // Fix: también activar el branch sin crop cuando el editor tiene países.
+  const editorCfg = window.AtlasEditor?.getConfig?.();
+  const hasEditorSelection = Array.isArray(editorCfg?.countries) && editorCfg.countries.length > 0;
+  const hasSelection = (state[1]?.selectedCountries?.length > 0) || hasEditorSelection;
   const vb = svgClone.viewBox.baseVal;
   const canvasLabels = [];
 
@@ -731,6 +1192,15 @@ window.onBeforePngExport = (svgClone, chartId) => {
   // PNG es estado actual sin "activeRegion" (no hay hover en estático).
   const tableEl = svgClone.querySelector('#m-avg-table');
   if (tableEl) {
+    // BUG histórico: `size: 10` y `size: 11` eran HARDCODED acá. Eso
+    // ignoraba el slider "Tabla regional" del editor (que sí se aplica al
+    // SVG en pantalla vía drawRegionalAvgTable → style.fontSize). Fix:
+    // leer el font-size del <text> que ya viene calibrado con el slider.
+    // Fallback al hardcoded original si por algún motivo no hay inline.
+    const readFontSize = (el, fallback) => {
+      const v = parseFloat(el.style.fontSize);
+      return Number.isFinite(v) && v > 0 ? v : fallback;
+    };
     // Título
     const titleEl = tableEl.querySelector('.m-table-title');
     if (titleEl) {
@@ -740,7 +1210,7 @@ window.onBeforePngExport = (svgClone, chartId) => {
         text: titleEl.textContent.toUpperCase(),
         fill: '#8A8579',
         weight: '600',
-        size: 10,
+        size: readFontSize(titleEl, 10),
         textAnchor: 'start'
       });
       titleEl.style.display = 'none';
@@ -753,7 +1223,7 @@ window.onBeforePngExport = (svgClone, chartId) => {
         text: el.textContent,
         fill: '#1A1A1A',
         weight: '500',
-        size: 11,
+        size: readFontSize(el, 11),
         textAnchor: el.getAttribute('text-anchor') || 'start'
       });
       el.style.display = 'none';
@@ -767,22 +1237,67 @@ window.onBeforePngExport = (svgClone, chartId) => {
     svgClone.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.width} ${vb.height - cropFromBottom}`);
   } else {
     // PNG con selección: barras + labels seleccionadas + callouts + tabla.
-    // Recortamos dejando bottomKeep = yAnchor + 60 (margen para la
-    // primera letra). Textos muy largos pueden cortarse 1-2px abajo.
-    const bottomKeep = M_MARGIN.top + M_PLOT_H + M_LABEL_ANCHOR_Y_OFFSET + 60;
-    const cropFromBottom = Math.max(0, vb.height - bottomKeep);
-    svgClone.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.width} ${vb.height - cropFromBottom}`);
+    // El texto rotado -45° tiene la PRIMERA letra abajo-izquierda del ancla
+    // (yAnchor). La proyección vertical hacia abajo es ~cos(45°)*textW +
+    // sin(45°)*fontSize ≈ 0.707*(textW + fontSize). No cropeamos: dejamos
+    // que el viewBox conserve toda la M_MARGIN.bottom — los margins por
+    // formato ya están dimensionados para alojar callouts y textos rotados
+    // (especialmente mobile/portrait con bottom 200-300). Cualquier crop
+    // adicional acá termina cortando la primera letra de los países más
+    // largos ("República Centroafricana", "Trinidad y Tobago", etc.).
+    // No reasignamos viewBox: usamos el original tal cual.
   }
   // Devolver labels que png-export debe pintar directamente en canvas para
   // garantizar la tipografía correcta.
   return { canvasLabels };
 };
 
+// Hook adicional: pedirle a png-export.js que reserve canvas-px EXTRA entre
+// el bottom del SVG rasterizado y el top de la leyenda regional. Necesario
+// porque las etiquetas de país rotadas -45° viven INSIDE el bottom margin
+// del SVG (dentro del viewBox, gracias al bottom dinámico). El SVG se
+// rasteriza entero pero el gapAfterSvgBase=4 dejaba la leyenda canvas
+// "pegada" visualmente a la huella de los textos colgantes. Este extra
+// se suma a chromeBelow al calcular svgH (con WYSIWYG el SVG se achica un
+// poquito) y se aplica al posicionar la leyenda. Solo pedimos extra cuando
+// hay editor format activo — la versión pública sin editor mantiene el
+// comportamiento histórico (gap=4) intacto, como Daniel explícitamente
+// pidió.
+window.onBeforePngExportGetExtraGap = (chartId, format) => {
+  if (chartId !== '1') return 0;
+  if (!format) return 0;  // versión pública sin editor: NO tocar.
+  // Valores por formato calibrados para garantizar separación visible:
+  //   - public (scaleY≈1.06): 16 canvas-px adicionales → total visible ~50.
+  //   - newsletter (scaleY≈0.69): 24 canvas-px adicionales.
+  //   - square (scaleY≈0.87): 20 canvas-px adicionales.
+  //   - mobile (scaleY≈0.55): 32 canvas-px adicionales (más por scaleY chico).
+  switch (format) {
+    case 'public':     return 16;
+    case 'newsletter': return 24;
+    case 'square':     return 20;
+    case 'mobile':     return 32;
+    default:           return 0;
+  }
+};
+
 // Hook adicional: el caption del PNG cambia según el modo activo (raw/adj).
 // El interactivo sigue mostrando el c1-sources general (que menciona ambos
 // modos); el PNG usa la versión específica del modo.
+//
+// IMPORTANTE: si el editor tiene un caption custom no vacío, respetamos ESO
+// — el override del modo es solo para la versión "default automática". Sin
+// esto, el caption editado por Daniel en el sidebar nunca aparecía en el PNG.
 window.onBeforePngExportGetSourceText = (chartId) => {
   if (chartId !== '1') return null;
+  // Editor custom caption gana sobre el mode-specific default.
+  try {
+    const aeCfg = window.AtlasEditor?.getConfig?.();
+    if (aeCfg) {
+      const lang = aeCfg.lang || (typeof LANG !== 'undefined' ? LANG : 'es');
+      const customCaption = (aeCfg.texts?.[lang]?.caption || '').trim();
+      if (customCaption) return customCaption;
+    }
+  } catch (_) {}
   const key = state[1]?.mode === 'adj' ? 'c1-sources-adj' : 'c1-sources-raw';
   const html = I18N[LANG]?.[key];
   if (!html) return null;
@@ -800,6 +1315,19 @@ function initMarimekko() {
   } else if (!state[1].selectedCountries) {
     state[1].selectedCountries = [];
   }
+  // Editor sidebar: re-render cuando el usuario edita textos/sizes/países.
+  // CRÍTICO que se wire ANTES del primer drawMarimekko: el inline-script de
+  // chart-1.html corre SINCRÓNICAMENTE antes de DOMContentLoaded, así que la
+  // primera llamada a drawMarimekko ocurre antes de que editor.js monte el
+  // panel y setee body.ae-ever-activated. El re-render correcto sucede
+  // cuando editor.js emite atlas-editor-change post-mount → el listener
+  // debe estar wireado ya. Singleton vía initMarimekko._editorWired por si
+  // este init se llama varias veces (ej. desde el index.html que monta los
+  // 3 charts en la misma página).
+  if (!initMarimekko._editorWired) {
+    initMarimekko._editorWired = true;
+    window.addEventListener('atlas-editor-change', () => drawMarimekko());
+  }
   renderMarimekkoLegend();
   drawMarimekko();
   setupMarimekkoSlider();
@@ -807,6 +1335,9 @@ function initMarimekko() {
   setupMarimekkoSearch();
   renderMarimekkoSelectedChips();
   setupMarimekkoDownloadCSV();
+  // Mobile (≤768px): botones tuerca + "Seleccionar". Singleton — si ya
+  // lo llamó otro init en el index.html, no hace nada.
+  if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   // Mobile: handler global que cierra el tooltip al tap fuera de las
   // barras. Las barras hacen stopPropagation así que un tap sobre una
   // barra no llega acá. Solo registramos una vez (singleton).

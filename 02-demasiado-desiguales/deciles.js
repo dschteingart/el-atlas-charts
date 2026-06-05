@@ -16,10 +16,40 @@
 // COUNTRY_NAMES, LANG, t, state[3], HAS_HOVER.
 
 // =================== Constantes ===================
-const D_W = 1100, D_H = 470;
-const D_MARGIN = { top: 24, right: 180, bottom: 56, left: 70 };
-const D_PLOT_W = D_W - D_MARGIN.left - D_MARGIN.right;
-const D_PLOT_H = D_H - D_MARGIN.top - D_MARGIN.bottom;
+// Dimensiones desktop default (sin editor activo). Mobile interactivo
+// (≤768px sin editor) usa portrait alto (1100×1500) cuyo aspect ratio
+// matchea el container portrait (~412×540, ratio ≈0.76).
+//
+// Cuando hay un formato del editor activo (newsletter / square / mobile /
+// public), las dimensiones vienen de PNG_FORMATS[format] en utils.js y los
+// margins de d_getMargins(format). El PNG export rasteriza el SVG visible
+// — no fuerza re-render.
+const D_W_DESKTOP = 1100, D_H_DESKTOP = 470;
+const D_W_MOBILE  = 1100, D_H_MOBILE  = 1500;
+// Margin right grande en desktop (180px) para los end-labels al final de
+// cada línea. En mobile usamos right 200 — los end-labels van escaladas
+// (font 28 SVG) y necesitan espacio horizontal para textos típicos
+// ("Argentina", "Noruega"...) que en mobile ocupan ~150-180px SVG.
+// Bottom 240 da aire para el axis-x: "Decil N" en dos líneas a 32px.
+// Left 140 para los ticks Y escalados ("$1k", "$10k", "$100k").
+const D_MARGIN_DESKTOP = { top: 24, right: 180, bottom: 56, left: 70 };
+const D_MARGIN_MOBILE  = { top: 110, right: 200, bottom: 240, left: 140 };
+
+// Margins por formato del editor (cuando el editor está activo).
+function d_getMargins(format) {
+  switch (format) {
+    case 'public':     return { top: 40, right: 200, bottom: 100, left: 80 };
+    case 'newsletter': return { top: 40, right: 200, bottom: 130, left: 80 };
+    case 'square':     return { top: 50, right: 200, bottom: 140, left: 80 };
+    case 'mobile':     return { top: 80, right: 180, bottom: 220, left: 100 };
+    default:           return { ...D_MARGIN_DESKTOP };
+  }
+}
+
+let D_W = D_W_DESKTOP, D_H = D_H_DESKTOP;
+let D_MARGIN = { ...D_MARGIN_DESKTOP };
+let D_PLOT_W = D_W - D_MARGIN.left - D_MARGIN.right;
+let D_PLOT_H = D_H - D_MARGIN.top - D_MARGIN.bottom;
 
 const D_DECILES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
@@ -159,13 +189,21 @@ function d_formatYTick(v, yMode) {
 // estarian a < D_END_LABEL_GAP px. Si la label se desplaza > 1px de su
 // ideal, se dibuja una guia corta.
 function d_placeEndLabels(labels) {
+  // Gap vertical entre end-labels. Escala con el viewport para que las
+  // labels no se pisen aún cuando el SVG se renderea más grande.
+  const editorFormat = typeof getActivePngFormat === 'function'
+    ? getActivePngFormat() : null;
+  const mobile = !editorFormat
+    && typeof isMobileViewport === 'function' && isMobileViewport();
+  const mobilePng = editorFormat === 'mobile';
+  const gap = mobilePng ? 30 : mobile ? 34 : D_END_LABEL_GAP;
   labels.sort((a, b) => a.idealY - b.idealY);
   // Forward sweep: empujar hacia abajo si choca con la previa.
   labels.forEach((l, i) => {
     if (i === 0) {
       l.y = l.idealY;
     } else {
-      l.y = Math.max(l.idealY, labels[i - 1].y + D_END_LABEL_GAP);
+      l.y = Math.max(l.idealY, labels[i - 1].y + gap);
     }
   });
   // Backward sweep: si la ultima quedo muy lejos, empujamos para arriba al
@@ -177,11 +215,11 @@ function d_placeEndLabels(labels) {
     let overflow = labels[labels.length - 1].y - plotBottom;
     for (let i = labels.length - 1; i >= 0 && overflow > 0; i--) {
       const target = labels[i].y - overflow;
-      if (i === 0 || target > labels[i - 1].y + D_END_LABEL_GAP) {
+      if (i === 0 || target > labels[i - 1].y + gap) {
         labels[i].y = target;
         overflow = 0;
       } else {
-        const minY = labels[i - 1].y + D_END_LABEL_GAP;
+        const minY = labels[i - 1].y + gap;
         const moved = labels[i].y - minY;
         labels[i].y = minY;
         overflow -= moved;
@@ -199,7 +237,78 @@ function drawDeciles() {
   const svg = document.getElementById('chart3');
   if (!svg) return;
   svg.innerHTML = '';
+
+  // Editor sidebar: leemos config si el panel está activo. Overrides:
+  //   - SIZES desktop (font-sizes).
+  //   - Texts editoriales (título, subtítulo, caption).
+  //   - Countries: la lista del editor SE SINCRONIZA con
+  //     state[3].selectedCountries (son la misma cosa — el editor las
+  //     escribe directamente al togglear el checkbox, y acá las leemos
+  //     de state[3]). Si el editor cargó un config nuevo, ya sincronizó
+  //     state[3] en su init / handler de import.
+  const aeCfg = (window.AtlasEditor && window.AtlasEditor.getConfig)
+    ? window.AtlasEditor.getConfig() : null;
+  const aeSizes = aeCfg?.sizes;
+
+  // Decidir dimensiones según el formato del editor (si está activo) o
+  // según el viewport del browser (sin editor activo). Cuando hay format:
+  // viewBox de PNG_FORMATS[format] + margins de d_getMargins(format). El
+  // PNG export rasteriza exactamente esto. WYSIWYG.
+  const editorFormat = typeof getActivePngFormat === 'function'
+    ? getActivePngFormat() : null;
+  const newsletter = editorFormat === 'newsletter';
+  const square     = editorFormat === 'square';
+  const mobilePng  = editorFormat === 'mobile';
+  const publicFmt  = editorFormat === 'public';
+  const mobile = !editorFormat
+    && typeof isMobileViewport === 'function' && isMobileViewport();
+  if (editorFormat) {
+    const f = PNG_FORMATS[editorFormat];
+    D_W = f.vbW; D_H = f.vbH;
+    D_MARGIN = d_getMargins(editorFormat);
+  } else if (mobile) {
+    D_W = D_W_MOBILE; D_H = D_H_MOBILE;
+    D_MARGIN = { ...D_MARGIN_MOBILE };
+  } else {
+    D_W = D_W_DESKTOP; D_H = D_H_DESKTOP;
+    D_MARGIN = { ...D_MARGIN_DESKTOP };
+  }
+  D_PLOT_W = D_W - D_MARGIN.left - D_MARGIN.right;
+  D_PLOT_H = D_H - D_MARGIN.top - D_MARGIN.bottom;
+
   svg.setAttribute('viewBox', `0 0 ${D_W} ${D_H}`);
+  // Aplicar/quitar wrapper CSS según el formato del editor.
+  if (typeof applyFormatWrapper === 'function') {
+    applyFormatWrapper(svg, editorFormat);
+  }
+
+  // Font sizes en unidades SVG. En mobile interactivo el SVG se renderea
+  // a ~412px de ancho efectivo (factor ≈0.375 sobre viewBox 1100), así
+  // que multiplicamos los tamaños desktop por ~3 para que en pantalla
+  // queden en 9-13px. Aplicados inline (atributo font-size) sobrescriben
+  // los valores de los CSS classes.
+  //
+  // Cuando el editor está activo con un formato, el SVG se ve en pantalla
+  // con el aspect ratio del formato y los sizes son los pineados de
+  // newsletter/square/mobilePng/public. WYSIWYG.
+  //
+  // SIZES base por viewport. En desktop el editor puede sobreescribir cada
+  // bucket; newsletter/square/mobilePng/mobile siguen pinned. El bucket
+  // "special" del editor aplica al endLabel (nombres al final de la línea).
+  const SIZES = newsletter
+    ? { tick: 18, tickExtra: 15, axisTitle: 19, endLabel: 18 }
+    : square
+    ? { tick: 18, tickExtra: 15, axisTitle: 19, endLabel: 18 }
+    : mobilePng
+    ? { tick: 28, tickExtra: 22, axisTitle: 30, endLabel: 24 }
+    : mobile
+    ? { tick: 32, tickExtra: 26, axisTitle: 34, endLabel: 28 }
+    : {
+        tick:      aeSizes?.ticks     ?? 11,
+        tickExtra: aeSizes?.ticks ? Math.max(8, aeSizes.ticks - 1.5) : 9.5,
+        axisTitle: aeSizes?.axisTitle ?? 11.5,
+        endLabel:  aeSizes?.special   ?? D_LABEL_FONT_SIZE
+      };
 
   const s3 = state[3];
   const year = String(s3.year);
@@ -237,22 +346,49 @@ function drawDeciles() {
     txt.setAttribute('y', y + 4);
     txt.setAttribute('text-anchor', 'end');
     txt.setAttribute('class', 'd-tick');
+    txt.setAttribute('font-size', SIZES.tick);
     txt.textContent = d_formatYTick(tv, yMode);
     svg.appendChild(txt);
   });
 
-  // Y axis title
+  // Y axis title — el offset depende del margin disponible. En viewports
+  // con margins grandes (mobile / mobilePng) el title se aleja más para no
+  // pisar los ticks Y escalados.
+  const yTitleOffsetX = (mobile || mobilePng) ? D_MARGIN.left - 80 : D_MARGIN.left - 50;
   const yTitle = d_ns('text');
   yTitle.setAttribute('class', 'd-axis-title');
   yTitle.setAttribute('text-anchor', 'middle');
+  yTitle.setAttribute('font-size', SIZES.axisTitle);
   yTitle.setAttribute(
     'transform',
-    `translate(${D_MARGIN.left - 50}, ${D_MARGIN.top + D_PLOT_H / 2}) rotate(-90)`
+    `translate(${yTitleOffsetX}, ${D_MARGIN.top + D_PLOT_H / 2}) rotate(-90)`
   );
-  yTitle.textContent = yMode === 'income'
+  // Editor: si hay axisY custom no vacío, lo aplicamos; si no, default
+  // según el modo activo (income/percentile + log).
+  const customAxisY = (aeCfg?.texts?.[LANG]?.axisY || '').trim();
+  yTitle.textContent = customAxisY || (yMode === 'income'
     ? t('c3-axis-y-income') + (yScale === 'log' ? ' (log)' : '')
-    : t('c3-axis-y-percentile');
+    : t('c3-axis-y-percentile'));
   svg.appendChild(yTitle);
+
+  // Editor: axisX. El chart por default NO muestra title del eje X (los
+  // ticks ya dicen "Decil 1"..."Decil 10"). Si el usuario define un axisX
+  // custom no vacío, lo agregamos centrado debajo del eje. Si está vacío
+  // → no se renderea (comportamiento default).
+  const customAxisX = (aeCfg?.texts?.[LANG]?.axisX || '').trim();
+  if (customAxisX) {
+    const xTitle = d_ns('text');
+    xTitle.setAttribute('class', 'd-axis-title');
+    xTitle.setAttribute('text-anchor', 'middle');
+    xTitle.setAttribute('font-size', SIZES.axisTitle);
+    xTitle.setAttribute('x', D_MARGIN.left + D_PLOT_W / 2);
+    // Position: bajo los ticks "Decil N" + aclaración. Los ticks ocupan
+    // ~xExtraOffset px; el axis-title va ~25px más abajo.
+    const xExtraOffset = mobile ? 88 : mobilePng ? 76 : 36;
+    xTitle.setAttribute('y', D_MARGIN.top + D_PLOT_H + xExtraOffset + 26);
+    xTitle.textContent = customAxisX;
+    svg.appendChild(xTitle);
+  }
 
   // === Eje X (deciles "Decil 1" ... "Decil 10") ===
   // Cada tick dice "Decil N" en lugar de "DN" — más explícito, ya no se
@@ -263,18 +399,24 @@ function drawDeciles() {
     const x = d_xScale(d);
     const txt = d_ns('text');
     txt.setAttribute('x', x);
-    txt.setAttribute('y', D_MARGIN.top + D_PLOT_H + 22);
+    // Las dos líneas (decile prefix + aclaración) necesitan separación
+    // proporcional al font-size del viewport.
+    const xLabelOffset = mobile ? 50 : mobilePng ? 42 : 22;
+    txt.setAttribute('y', D_MARGIN.top + D_PLOT_H + xLabelOffset);
     txt.setAttribute('text-anchor', 'middle');
     txt.setAttribute('class', 'd-tick');
+    txt.setAttribute('font-size', SIZES.tick);
     txt.textContent = t('c3-decile-prefix') + ' ' + d;
     svg.appendChild(txt);
     // Aclaración para extremos en segunda línea.
     if (d === 1 || d === 10) {
       const extra = d_ns('text');
       extra.setAttribute('x', x);
-      extra.setAttribute('y', D_MARGIN.top + D_PLOT_H + 36);
+      const xExtraOffset = mobile ? 88 : mobilePng ? 76 : 36;
+      extra.setAttribute('y', D_MARGIN.top + D_PLOT_H + xExtraOffset);
       extra.setAttribute('text-anchor', 'middle');
       extra.setAttribute('class', 'd-tick-extra');
+      extra.setAttribute('font-size', SIZES.tickExtra);
       extra.textContent = d === 1 ? t('c3-decile-poorest') : t('c3-decile-richest');
       svg.appendChild(extra);
     }
@@ -360,7 +502,7 @@ function drawDeciles() {
       color,
       idealY,
       lineEndX: d_xScale(10),
-      textW: d_measureText(text, D_LABEL_FONT_SIZE, D_LABEL_FONT_WEIGHT),
+      textW: d_measureText(text, SIZES.endLabel, D_LABEL_FONT_WEIGHT),
     };
   });
   d_placeEndLabels(endLabels);
@@ -388,9 +530,46 @@ function drawDeciles() {
     txt.setAttribute('y', l.y + 4);  // baseline offset
     txt.setAttribute('class', 'd-end-label');
     txt.setAttribute('fill', l.color);
+    // Font-size inline: mobile escala 3× vs desktop para que en pantalla
+    // queden ~10.5px (legibles). Sin esto los end-labels en mobile salen
+    // a ~4.3px (ilegibles).
+    txt.setAttribute('font-size', SIZES.endLabel);
     txt.textContent = l.text;
     endLabelsG.appendChild(txt);
   });
+
+  // Editor: pisamos textos editoriales (título/subtítulo/caption) al final.
+  d_applyEditorTexts(aeCfg);
+}
+
+// Caption: si el editor lo dejó vacío (trim) → restauramos el default del
+// i18n key c3-sources. Esto permite que el usuario "borre" un caption
+// custom y vuelva al automático sin tener que limpiar localStorage.
+function d_applyEditorTexts(aeCfg) {
+  const docLang = typeof LANG !== 'undefined' ? LANG : 'es';
+  const lang = aeCfg?.lang || docLang;
+  const t = aeCfg?.texts?.[lang] || {};
+  const block = document.querySelector('.chart-block[data-chart="3"]');
+  if (!block) return;
+  const customTitle    = (t.title    || '').trim();
+  const customSubtitle = (t.subtitle || '').trim();
+  const customCaption  = (t.caption  || '').trim();
+  if (customTitle) {
+    const el = block.querySelector('.chart-title');
+    if (el) el.textContent = customTitle;
+  }
+  if (customSubtitle) {
+    const el = block.querySelector('.chart-subtitle');
+    if (el) el.textContent = customSubtitle;
+  }
+  const captionEls = document.querySelectorAll(
+    '.footer p[data-i18n="c3-sources"], .footer details[class*="mobile-collapse"] p[data-i18n="c3-sources"]'
+  );
+  if (customCaption) {
+    captionEls.forEach(el => { el.textContent = customCaption; });
+  } else if (typeof I18N !== 'undefined' && I18N[docLang] && I18N[docLang]['c3-sources']) {
+    captionEls.forEach(el => { el.innerHTML = I18N[docLang]['c3-sources']; });
+  }
 }
 
 // =================== Tooltip ===================
@@ -543,6 +722,29 @@ function d_toggleCountrySelection(code) {
   else arr.push(code);
   renderDecilesSelectedChips();
   drawDeciles();
+  // Sincronizar con el editor sidebar: la lista del editor refleja
+  // state[3].selectedCountries (son la misma cosa). Si hay un panel
+  // abierto, su checkbox UI debe actualizarse a tildado/destildado.
+  d_notifyEditor();
+}
+
+// Si el editor está montado, escribe state[3].selectedCountries en
+// config.countries y dispara un re-render del panel + chart. Es idempotente
+// y no-op si el editor nunca se montó (window.AtlasEditor existe siempre,
+// pero getConfig() devuelve null si no hay chart-block con data-editor-id).
+function d_notifyEditor() {
+  if (!window.AtlasEditor) return;
+  const cfg = window.AtlasEditor.getConfig();
+  if (!cfg || cfg.chartId !== 'deciles') return;
+  cfg.countries = (state[3].selectedCountries || []).slice();
+  try {
+    localStorage.setItem('atlas-editor-deciles', JSON.stringify(cfg));
+  } catch (_) {}
+  // reloadFromStorage rebuilds the country-list UI con los checkboxes
+  // actualizados. Llama syncUI internamente.
+  if (typeof window.AtlasEditor.reloadFromStorage === 'function') {
+    window.AtlasEditor.reloadFromStorage();
+  }
 }
 
 function renderDecilesSelectedChips() {
@@ -767,6 +969,28 @@ function initDeciles() {
   setupDecilesToggles();
   setupDecilesSearch();
   setupDecilesDownloadCSV();
+  // Editor sidebar: re-render del chart cuando el usuario edita textos/
+  // sizes/países en el panel. Tambien re-sync de state[3] con la lista del
+  // editor, por si el evento vino de un import o reset.
+  if (!initDeciles._editorWired) {
+    initDeciles._editorWired = true;
+    window.addEventListener('atlas-editor-change', () => {
+      const cfg = window.AtlasEditor?.getConfig?.();
+      if (cfg && cfg.chartId === 'deciles' && Array.isArray(cfg.countries)) {
+        // Solo sincronizamos si la lista cambió (evita loops).
+        const current = state[3].selectedCountries || [];
+        if (current.length !== cfg.countries.length ||
+            current.some((c, i) => c !== cfg.countries[i])) {
+          state[3].selectedCountries = cfg.countries.slice();
+          renderDecilesSelectedChips();
+        }
+      }
+      drawDeciles();
+    });
+  }
+  // Mobile (≤768px): botones tuerca + "Seleccionar". Singleton — si ya
+  // lo llamó otro init en el index.html, no hace nada.
+  if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   // Mobile: handler global que cierra el tooltip al tap fuera de los
   // markers. Los markers hacen stopPropagation así que un tap sobre uno
   // no llega acá. Solo registramos una vez (singleton).
