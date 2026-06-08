@@ -65,6 +65,19 @@ const ISSUE_I18N = {
     'footer-download':       'Descargar datos (CSV)',
     'footer-download-png':   'Descargar PNG',
     'c1-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (ratings Elo de selecciones nacionales, promedio anual ponderado por días); FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Confederaciones según afiliación FIFA actual. Los puntos del gráfico representan el promedio de cada variable sobre el rango de años seleccionado, considerando solo países con datos en ambas variables.',
+
+    // Chart 2 — Mapa coroplético "antigüedad de los clubes"
+    'c2-title':              'Dónde nació el fútbol moderno',
+    'c2-subtitle':           'Año mediano de fundación de los clubes de cada país, ponderado por su relevancia en Wikipedia. Tonos más oscuros = tradición futbolística más profunda.',
+    'c2-search-placeholder': 'Buscar país…',
+    'c2-legend-label':       'Año mediano',
+    'c2-legend-nodata':      'Sin dato',
+    'c2-reset-zoom':         'Restablecer zoom',
+    'c2-tt-year':            'Año mediano (pond.)',
+    'c2-tt-clubs':           'Clubes',
+    'c2-tt-with-date':       'Con fecha de creación identificada',
+    'c2-tt-nodata':          'Sin clubes en el universo Wikidata',
+    'c2-sources':            'Datos: Wikidata (clubes de fútbol como instancias de <em>association football club</em>, ~41.894 clubes); año de fundación (P571) y número de Wikipedias con artículo (sitelinks) para ponderar relevancia.',
   },
   en: {
     'issue-num':  'N° 3',
@@ -117,6 +130,19 @@ const ISSUE_I18N = {
     'footer-download':       'Download data (CSV)',
     'footer-download-png':   'Download PNG',
     'c1-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo ratings of national teams, annual averages weighted by days at each rating); IMF — World Economic Outlook (total GDP PPP, constant international USD). Confederations follow current FIFA affiliation. Each point represents the average of both variables over the selected year range, restricted to countries with data for both.',
+
+    // Chart 2 — Choropleth map "age of clubs"
+    'c2-title':              'Where modern football was born',
+    'c2-subtitle':           'Median founding year of each country\'s clubs, weighted by their relevance on Wikipedia. Darker tones = deeper footballing tradition.',
+    'c2-search-placeholder': 'Search country…',
+    'c2-legend-label':       'Median year',
+    'c2-legend-nodata':      'No data',
+    'c2-reset-zoom':         'Reset zoom',
+    'c2-tt-year':            'Median year (weighted)',
+    'c2-tt-clubs':           'Clubs',
+    'c2-tt-with-date':       'With identified founding date',
+    'c2-tt-nodata':          'No clubs in the Wikidata universe',
+    'c2-sources':            'Data: Wikidata (football clubs as instances of <em>association football club</em>, ~41,894 clubs); founding year (P571) and number of Wikipedias with an article (sitelinks) for relevance weighting.',
   }
 };
 

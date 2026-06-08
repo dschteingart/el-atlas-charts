@@ -20,6 +20,14 @@ const COUNTRY_NAMES = {
     "en": "Angola",
     "es": "Angola"
   },
+  "AIA": {
+    "en": "Anguilla",
+    "es": "Anguila"
+  },
+  "ALA": {
+    "en": "Åland Islands",
+    "es": "Islas Åland"
+  },
   "ALB": {
     "en": "Albania",
     "es": "Albania"
@@ -39,6 +47,22 @@ const COUNTRY_NAMES = {
   "ARM": {
     "en": "Armenia",
     "es": "Armenia"
+  },
+  "ASM": {
+    "en": "American Samoa",
+    "es": "Samoa Americana"
+  },
+  "ATA": {
+    "en": "Antarctica",
+    "es": "Antártida"
+  },
+  "ATC": {
+    "en": "Ashmore and Cartier Islands",
+    "es": "Islas Ashmore y Cartier"
+  },
+  "ATF": {
+    "en": "French Southern Territories",
+    "es": "Tierras Australes Francesas"
   },
   "ATG": {
     "en": "Antigua and Barbuda",
@@ -92,6 +116,10 @@ const COUNTRY_NAMES = {
     "en": "Bosnia and Herzegovina",
     "es": "Bosnia y Herzegovina"
   },
+  "BLM": {
+    "en": "Saint Barthélemy",
+    "es": "San Bartolomé"
+  },
   "BLR": {
     "en": "Belarus",
     "es": "Bielorrusia"
@@ -99,6 +127,10 @@ const COUNTRY_NAMES = {
   "BLZ": {
     "en": "Belize",
     "es": "Belice"
+  },
+  "BMU": {
+    "en": "Bermuda",
+    "es": "Bermudas"
   },
   "BOL": {
     "en": "Bolivia",
@@ -160,6 +192,10 @@ const COUNTRY_NAMES = {
     "en": "Congo",
     "es": "Congo"
   },
+  "COK": {
+    "en": "Cook Islands",
+    "es": "Islas Cook"
+  },
   "COL": {
     "en": "Colombia",
     "es": "Colombia"
@@ -176,9 +212,21 @@ const COUNTRY_NAMES = {
     "en": "Costa Rica",
     "es": "Costa Rica"
   },
+  "CUB": {
+    "en": "Cuba",
+    "es": "Cuba"
+  },
   "CUW": {
     "en": "Curacao",
     "es": "Curazao"
+  },
+  "CYM": {
+    "en": "Cayman Islands",
+    "es": "Islas Caimán"
+  },
+  "CYN": {
+    "en": "Northern Cyprus",
+    "es": "Chipre del Norte"
   },
   "CYP": {
     "en": "Cyprus",
@@ -220,6 +268,14 @@ const COUNTRY_NAMES = {
     "en": "Egypt",
     "es": "Egipto"
   },
+  "ERI": {
+    "en": "Eritrea",
+    "es": "Eritrea"
+  },
+  "ESH": {
+    "en": "Western Sahara",
+    "es": "Sahara Occidental"
+  },
   "ESP": {
     "en": "Spain",
     "es": "España"
@@ -244,6 +300,10 @@ const COUNTRY_NAMES = {
     "en": "France",
     "es": "Francia"
   },
+  "FRO": {
+    "en": "Faroe Islands",
+    "es": "Islas Feroe"
+  },
   "FSM": {
     "en": "Micronesia",
     "es": "Micronesia"
@@ -260,6 +320,10 @@ const COUNTRY_NAMES = {
     "en": "Georgia",
     "es": "Georgia"
   },
+  "GGY": {
+    "en": "Guernsey",
+    "es": "Guernsey"
+  },
   "GHA": {
     "en": "Ghana",
     "es": "Ghana"
@@ -267,6 +331,10 @@ const COUNTRY_NAMES = {
   "GIN": {
     "en": "Guinea",
     "es": "Guinea"
+  },
+  "GLP": {
+    "en": "Guadeloupe",
+    "es": "Guadalupe"
   },
   "GMB": {
     "en": "Gambia",
@@ -288,9 +356,21 @@ const COUNTRY_NAMES = {
     "en": "Grenada",
     "es": "Granada"
   },
+  "GRL": {
+    "en": "Greenland",
+    "es": "Groenlandia"
+  },
   "GTM": {
     "en": "Guatemala",
     "es": "Guatemala"
+  },
+  "GUF": {
+    "en": "French Guiana",
+    "es": "Guayana Francesa"
+  },
+  "GUM": {
+    "en": "Guam",
+    "es": "Guam"
   },
   "GUY": {
     "en": "Guyana",
@@ -299,6 +379,10 @@ const COUNTRY_NAMES = {
   "HKG": {
     "en": "Hong Kong",
     "es": "Hong Kong"
+  },
+  "HMD": {
+    "en": "Heard and McDonald Islands",
+    "es": "Islas Heard y McDonald"
   },
   "HND": {
     "en": "Honduras",
@@ -320,9 +404,17 @@ const COUNTRY_NAMES = {
     "en": "Indonesia",
     "es": "Indonesia"
   },
+  "IMN": {
+    "en": "Isle of Man",
+    "es": "Isla de Man"
+  },
   "IND": {
     "en": "India",
     "es": "India"
+  },
+  "IOT": {
+    "en": "British Indian Ocean Territory",
+    "es": "Territorio Británico del Océano Índico"
   },
   "IRL": {
     "en": "Ireland",
@@ -352,6 +444,10 @@ const COUNTRY_NAMES = {
     "en": "Jamaica",
     "es": "Jamaica"
   },
+  "JEY": {
+    "en": "Jersey",
+    "es": "Jersey"
+  },
   "JOR": {
     "en": "Jordan",
     "es": "Jordania"
@@ -359,6 +455,10 @@ const COUNTRY_NAMES = {
   "JPN": {
     "en": "Japan",
     "es": "Japón"
+  },
+  "KAS": {
+    "en": "Kashmir (disputed)",
+    "es": "Cachemira (disputado)"
   },
   "KAZ": {
     "en": "Kazakhstan",
@@ -412,6 +512,10 @@ const COUNTRY_NAMES = {
     "en": "Saint Lucia",
     "es": "Santa Lucía"
   },
+  "LIE": {
+    "en": "Liechtenstein",
+    "es": "Liechtenstein"
+  },
   "LKA": {
     "en": "Sri Lanka",
     "es": "Sri Lanka"
@@ -436,9 +540,17 @@ const COUNTRY_NAMES = {
     "en": "Macao",
     "es": "Macao"
   },
+  "MAF": {
+    "en": "Saint Martin",
+    "es": "San Martín"
+  },
   "MAR": {
     "en": "Morocco",
     "es": "Marruecos"
+  },
+  "MCO": {
+    "en": "Monaco",
+    "es": "Mónaco"
   },
   "MDA": {
     "en": "Moldova",
@@ -484,6 +596,10 @@ const COUNTRY_NAMES = {
     "en": "Mongolia",
     "es": "Mongolia"
   },
+  "MNP": {
+    "en": "Northern Mariana Islands",
+    "es": "Islas Marianas del Norte"
+  },
   "MOZ": {
     "en": "Mozambique",
     "es": "Mozambique"
@@ -491,6 +607,14 @@ const COUNTRY_NAMES = {
   "MRT": {
     "en": "Mauritania",
     "es": "Mauritania"
+  },
+  "MSR": {
+    "en": "Montserrat",
+    "es": "Montserrat"
+  },
+  "MTQ": {
+    "en": "Martinique",
+    "es": "Martinica"
   },
   "MUS": {
     "en": "Mauritius",
@@ -504,13 +628,25 @@ const COUNTRY_NAMES = {
     "en": "Malaysia",
     "es": "Malasia"
   },
+  "MYT": {
+    "en": "Mayotte",
+    "es": "Mayotte"
+  },
   "NAM": {
     "en": "Namibia",
     "es": "Namibia"
   },
+  "NCL": {
+    "en": "New Caledonia",
+    "es": "Nueva Caledonia"
+  },
   "NER": {
     "en": "Niger",
     "es": "Níger"
+  },
+  "NFK": {
+    "en": "Norfolk Island",
+    "es": "Isla Norfolk"
   },
   "NGA": {
     "en": "Nigeria",
@@ -519,6 +655,10 @@ const COUNTRY_NAMES = {
   "NIC": {
     "en": "Nicaragua",
     "es": "Nicaragua"
+  },
+  "NIU": {
+    "en": "Niue",
+    "es": "Niue"
   },
   "NLD": {
     "en": "Netherlands",
@@ -552,6 +692,10 @@ const COUNTRY_NAMES = {
     "en": "Panama",
     "es": "Panamá"
   },
+  "PCN": {
+    "en": "Pitcairn Islands",
+    "es": "Islas Pitcairn"
+  },
   "PER": {
     "en": "Peru",
     "es": "Perú"
@@ -559,6 +703,10 @@ const COUNTRY_NAMES = {
   "PHL": {
     "en": "Philippines",
     "es": "Filipinas"
+  },
+  "PLW": {
+    "en": "Palau",
+    "es": "Palaos"
   },
   "PNG": {
     "en": "Papua New Guinea",
@@ -572,6 +720,10 @@ const COUNTRY_NAMES = {
     "en": "Puerto Rico",
     "es": "Puerto Rico"
   },
+  "PRK": {
+    "en": "North Korea",
+    "es": "Corea del Norte"
+  },
   "PRT": {
     "en": "Portugal",
     "es": "Portugal"
@@ -584,9 +736,17 @@ const COUNTRY_NAMES = {
     "en": "Palestine",
     "es": "Palestina"
   },
+  "PYF": {
+    "en": "French Polynesia",
+    "es": "Polinesia Francesa"
+  },
   "QAT": {
     "en": "Qatar",
     "es": "Catar"
+  },
+  "REU": {
+    "en": "Réunion",
+    "es": "Reunión"
   },
   "ROU": {
     "en": "Romania",
@@ -616,6 +776,14 @@ const COUNTRY_NAMES = {
     "en": "Singapore",
     "es": "Singapur"
   },
+  "SGS": {
+    "en": "South Georgia and South Sandwich Islands",
+    "es": "Georgia del Sur"
+  },
+  "SHN": {
+    "en": "Saint Helena",
+    "es": "Santa Helena"
+  },
   "SLB": {
     "en": "Solomon Islands",
     "es": "Islas Salomón"
@@ -632,9 +800,17 @@ const COUNTRY_NAMES = {
     "en": "San Marino",
     "es": "San Marino"
   },
+  "SOL": {
+    "en": "Somaliland",
+    "es": "Somalilandia"
+  },
   "SOM": {
     "en": "Somalia",
     "es": "Somalia"
+  },
+  "SPM": {
+    "en": "Saint Pierre and Miquelon",
+    "es": "San Pedro y Miquelón"
   },
   "SRB": {
     "en": "Serbia",
@@ -668,6 +844,10 @@ const COUNTRY_NAMES = {
     "en": "Eswatini",
     "es": "Esuatini"
   },
+  "SXM": {
+    "en": "Sint Maarten",
+    "es": "Sint Maarten"
+  },
   "SYC": {
     "en": "Seychelles",
     "es": "Seychelles"
@@ -675,6 +855,10 @@ const COUNTRY_NAMES = {
   "SYR": {
     "en": "Syria",
     "es": "Siria"
+  },
+  "TCA": {
+    "en": "Turks and Caicos",
+    "es": "Turcas y Caicos"
   },
   "TCD": {
     "en": "Chad",
@@ -691,6 +875,10 @@ const COUNTRY_NAMES = {
   "TJK": {
     "en": "Tajikistan",
     "es": "Tayikistán"
+  },
+  "TKL": {
+    "en": "Tokelau",
+    "es": "Tokelau"
   },
   "TKM": {
     "en": "Turkmenistan",
@@ -748,6 +936,10 @@ const COUNTRY_NAMES = {
     "en": "Uzbekistan",
     "es": "Uzbekistán"
   },
+  "VAT": {
+    "en": "Vatican City",
+    "es": "Ciudad del Vaticano"
+  },
   "VCT": {
     "en": "Saint Vincent and the Grenadines",
     "es": "San Vicente y las Granadinas"
@@ -756,6 +948,14 @@ const COUNTRY_NAMES = {
     "en": "Venezuela",
     "es": "Venezuela"
   },
+  "VGB": {
+    "en": "British Virgin Islands",
+    "es": "Islas Vírgenes Británicas"
+  },
+  "VIR": {
+    "en": "US Virgin Islands",
+    "es": "Islas Vírgenes (EEUU)"
+  },
   "VNM": {
     "en": "Vietnam",
     "es": "Vietnam"
@@ -763,6 +963,10 @@ const COUNTRY_NAMES = {
   "VUT": {
     "en": "Vanuatu",
     "es": "Vanuatu"
+  },
+  "WLF": {
+    "en": "Wallis and Futuna",
+    "es": "Wallis y Futuna"
   },
   "WSM": {
     "en": "Samoa",
