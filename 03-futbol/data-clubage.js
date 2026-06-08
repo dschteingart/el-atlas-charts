@@ -26,16 +26,16 @@ const DATA_CLUBAGE = {
   "AGO": {
     "name": "Angola",
     "confed": "CAF",
-    "year": 1976,
-    "n": 80,
-    "nf": 40
+    "year": 1975,
+    "n": 89,
+    "nf": 43
   },
   "ALB": {
     "name": "Albania",
     "confed": "UEFA",
     "year": 1930,
-    "n": 126,
-    "nf": 77
+    "n": 127,
+    "nf": 78
   },
   "AND": {
     "name": "Andorra",
@@ -54,37 +54,37 @@ const DATA_CLUBAGE = {
   "ARG": {
     "name": "Argentina",
     "confed": "CONMEBOL",
-    "year": 1912,
-    "n": 355,
-    "nf": 258
+    "year": 1911,
+    "n": 587,
+    "nf": 451
   },
   "ARM": {
     "name": "Armenia",
     "confed": "UEFA",
     "year": 1989,
-    "n": 92,
-    "nf": 62
+    "n": 93,
+    "nf": 63
   },
   "ATG": {
     "name": "Antigua y Barbuda",
     "confed": "CONCACAF",
     "year": 1973,
-    "n": 15,
-    "nf": 10
+    "n": 18,
+    "nf": 11
   },
   "AUS": {
     "name": "Australia",
     "confed": "AFC",
     "year": 1977,
-    "n": 588,
-    "nf": 509
+    "n": 595,
+    "nf": 513
   },
   "AUT": {
     "name": "Austria",
     "confed": "UEFA",
     "year": 1921,
-    "n": 260,
-    "nf": 162
+    "n": 407,
+    "nf": 199
   },
   "AZE": {
     "name": "Azerbaiyán",
@@ -97,21 +97,21 @@ const DATA_CLUBAGE = {
     "name": "Burundi",
     "confed": "CAF",
     "year": 1986,
-    "n": 40,
+    "n": 42,
     "nf": 11
   },
   "BEL": {
     "name": "Bélgica",
     "confed": "UEFA",
     "year": 1921,
-    "n": 1047,
-    "nf": 354
+    "n": 1257,
+    "nf": 386
   },
   "BEN": {
     "name": "Benín",
     "confed": "CAF",
     "year": 1975,
-    "n": 51,
+    "n": 53,
     "nf": 8
   },
   "BFA": {
@@ -125,64 +125,64 @@ const DATA_CLUBAGE = {
     "name": "Bangladés",
     "confed": "AFC",
     "year": 1994,
-    "n": 84,
-    "nf": 34
+    "n": 85,
+    "nf": 35
   },
   "BGR": {
     "name": "Bulgaria",
     "confed": "UEFA",
     "year": 1928,
-    "n": 306,
-    "nf": 147
+    "n": 314,
+    "nf": 151
   },
   "BHR": {
     "name": "Baréin",
     "confed": "AFC",
     "year": 1945,
-    "n": 18,
-    "nf": 14
+    "n": 19,
+    "nf": 15
   },
   "BHS": {
     "name": "Bahamas",
     "confed": "CONCACAF",
     "year": 1988,
-    "n": 13,
-    "nf": 5
+    "n": 14,
+    "nf": 6
   },
   "BIH": {
     "name": "Bosnia y Herzegovina",
     "confed": "UEFA",
     "year": 1945,
-    "n": 132,
-    "nf": 107
+    "n": 143,
+    "nf": 108
   },
   "BLR": {
     "name": "Bielorrusia",
     "confed": "UEFA",
     "year": 1986,
-    "n": 220,
-    "nf": 120
+    "n": 221,
+    "nf": 121
   },
   "BLZ": {
     "name": "Belice",
     "confed": "CONCACAF",
     "year": 2004,
-    "n": 38,
-    "nf": 27
+    "n": 40,
+    "nf": 28
   },
   "BOL": {
     "name": "Bolivia",
     "confed": "CONMEBOL",
-    "year": 1948,
-    "n": 88,
-    "nf": 59
+    "year": 1949,
+    "n": 98,
+    "nf": 64
   },
   "BRA": {
     "name": "Brasil",
     "confed": "CONMEBOL",
-    "year": 1939,
-    "n": 1738,
-    "nf": 1173
+    "year": 1940,
+    "n": 2353,
+    "nf": 1301
   },
   "BRB": {
     "name": "Barbados",
@@ -193,7 +193,7 @@ const DATA_CLUBAGE = {
   },
   "BRN": {
     "name": "Brunéi",
-    "confed": "AFC",
+    "confed": "",
     "year": 1988,
     "n": 22,
     "nf": 11
@@ -209,7 +209,7 @@ const DATA_CLUBAGE = {
     "name": "Botsuana",
     "confed": "CAF",
     "year": 1968,
-    "n": 38,
+    "n": 40,
     "nf": 20
   },
   "CAF": {
@@ -223,35 +223,35 @@ const DATA_CLUBAGE = {
     "name": "Canadá",
     "confed": "CONCACAF",
     "year": 2005,
-    "n": 249,
+    "n": 251,
     "nf": 142
   },
   "CHE": {
     "name": "Suiza",
     "confed": "UEFA",
     "year": 1903,
-    "n": 245,
-    "nf": 218
+    "n": 425,
+    "nf": 397
   },
   "CHL": {
     "name": "Chile",
     "confed": "CONMEBOL",
-    "year": 1946,
-    "n": 169,
-    "nf": 135
+    "year": 1947,
+    "n": 194,
+    "nf": 156
   },
   "CHN": {
     "name": "China",
     "confed": "AFC",
     "year": 1997,
-    "n": 279,
-    "nf": 199
+    "n": 280,
+    "nf": 200
   },
   "CIV": {
     "name": "Costa de Marfil",
     "confed": "CAF",
     "year": 1952,
-    "n": 64,
+    "n": 66,
     "nf": 36
   },
   "CMR": {
@@ -265,19 +265,26 @@ const DATA_CLUBAGE = {
     "name": "República Democrática del Congo",
     "confed": "CAF",
     "year": 1937,
-    "n": 67,
-    "nf": 20
+    "n": 72,
+    "nf": 21
+  },
+  "COG": {
+    "name": "Congo",
+    "confed": "",
+    "year": 1951,
+    "n": 38,
+    "nf": 14
   },
   "COL": {
     "name": "Colombia",
     "confed": "CONMEBOL",
     "year": 1953,
-    "n": 96,
-    "nf": 83
+    "n": 134,
+    "nf": 103
   },
   "COM": {
     "name": "Comoras",
-    "confed": "CAF",
+    "confed": "",
     "year": 1966,
     "n": 23,
     "nf": 13
@@ -286,113 +293,127 @@ const DATA_CLUBAGE = {
     "name": "Cabo Verde",
     "confed": "CAF",
     "year": 1975,
-    "n": 101,
-    "nf": 76
+    "n": 103,
+    "nf": 78
   },
   "CRI": {
     "name": "Costa Rica",
     "confed": "CONCACAF",
     "year": 1947,
-    "n": 91,
-    "nf": 66
+    "n": 107,
+    "nf": 81
+  },
+  "CUB": {
+    "name": "Cuba",
+    "confed": "",
+    "year": 1977,
+    "n": 23,
+    "nf": 10
   },
   "CYP": {
     "name": "Chipre",
     "confed": "UEFA",
-    "year": 1953,
-    "n": 334,
-    "nf": 290
+    "year": 1951,
+    "n": 345,
+    "nf": 299
   },
   "CZE": {
     "name": "República Checa",
     "confed": "UEFA",
     "year": 1923,
-    "n": 676,
-    "nf": 596
+    "n": 689,
+    "nf": 605
   },
   "DEU": {
     "name": "Alemania",
     "confed": "UEFA",
-    "year": 1908,
-    "n": 2217,
-    "nf": 1764
+    "year": 1909,
+    "n": 6532,
+    "nf": 5903
   },
   "DJI": {
     "name": "Yibuti",
     "confed": "CAF",
     "year": 1981,
-    "n": 20,
-    "nf": 7
+    "n": 22,
+    "nf": 8
   },
   "DMA": {
     "name": "Dominica",
     "confed": "CONCACAF",
     "year": 1981,
-    "n": 15,
-    "nf": 4
+    "n": 17,
+    "nf": 5
   },
   "DNK": {
     "name": "Dinamarca",
     "confed": "UEFA",
-    "year": 1938,
-    "n": 399,
-    "nf": 221
+    "year": 1936,
+    "n": 498,
+    "nf": 249
   },
   "DOM": {
     "name": "República Dominicana",
     "confed": "CONCACAF",
     "year": 1999,
-    "n": 16,
-    "nf": 11
+    "n": 18,
+    "nf": 12
   },
   "DZA": {
     "name": "Argelia",
     "confed": "CAF",
     "year": 1942,
-    "n": 217,
-    "nf": 149
+    "n": 218,
+    "nf": 150
   },
   "ECU": {
     "name": "Ecuador",
     "confed": "CONMEBOL",
     "year": 1962,
-    "n": 163,
-    "nf": 107
+    "n": 201,
+    "nf": 137
   },
   "EGY": {
     "name": "Egipto",
     "confed": "CAF",
     "year": 1948,
-    "n": 131,
-    "nf": 57
+    "n": 135,
+    "nf": 60
+  },
+  "ERI": {
+    "name": "Eritrea",
+    "confed": "",
+    "year": 1944,
+    "n": 17,
+    "nf": 4
   },
   "ESP": {
     "name": "España",
     "confed": "UEFA",
     "year": 1934,
-    "n": 1768,
-    "nf": 1326
+    "n": 1934,
+    "nf": 1460
   },
   "EST": {
     "name": "Estonia",
     "confed": "UEFA",
     "year": 1990,
-    "n": 209,
-    "nf": 114
+    "n": 215,
+    "nf": 116
   },
   "ETH": {
     "name": "Etiopía",
     "confed": "CAF",
     "year": 1975,
-    "n": 52,
+    "n": 53,
     "nf": 19
   },
   "FIN": {
     "name": "Finlandia",
     "confed": "UEFA",
-    "year": 1947,
-    "n": 247,
-    "nf": 186
+    "year": 1946,
+    "n": 393,
+    "nf": 242
   },
   "FJI": {
     "name": "Fiyi",
@@ -405,12 +426,12 @@ const DATA_CLUBAGE = {
     "name": "Francia",
     "confed": "UEFA",
     "year": 1927,
-    "n": 1863,
-    "nf": 1605
+    "n": 1887,
+    "nf": 1624
   },
   "FSM": {
     "name": "Estados Federados de Micronesia",
-    "confed": "OFC",
+    "confed": "",
     "year": 1982,
     "n": 2,
     "nf": 1
@@ -419,15 +440,15 @@ const DATA_CLUBAGE = {
     "name": "Gabón",
     "confed": "CAF",
     "year": 1974,
-    "n": 42,
-    "nf": 23
+    "n": 45,
+    "nf": 25
   },
   "GBR": {
     "name": "Reino Unido",
     "confed": "UEFA",
     "year": 1895,
-    "n": 3662,
-    "nf": 2550
+    "n": 3677,
+    "nf": 2554
   },
   "GEO": {
     "name": "Georgia",
@@ -440,8 +461,8 @@ const DATA_CLUBAGE = {
     "name": "Ghana",
     "confed": "CAF",
     "year": 1994,
-    "n": 130,
-    "nf": 59
+    "n": 131,
+    "nf": 60
   },
   "GIN": {
     "name": "Guinea",
@@ -461,7 +482,7 @@ const DATA_CLUBAGE = {
     "name": "Guinea-Bisáu",
     "confed": "CAF",
     "year": 1946,
-    "n": 41,
+    "n": 42,
     "nf": 12
   },
   "GNQ": {
@@ -471,60 +492,67 @@ const DATA_CLUBAGE = {
     "n": 22,
     "nf": 8
   },
+  "GRC": {
+    "name": "Grecia",
+    "confed": "",
+    "year": 1951,
+    "n": 680,
+    "nf": 604
+  },
   "GRD": {
     "name": "Granada",
     "confed": "CONCACAF",
     "year": 1986,
-    "n": 12,
+    "n": 13,
     "nf": 5
   },
   "GTM": {
     "name": "Guatemala",
     "confed": "CONCACAF",
     "year": 1950,
-    "n": 50,
-    "nf": 36
+    "n": 61,
+    "nf": 38
   },
   "GUY": {
     "name": "Guyana",
     "confed": "CONCACAF",
     "year": 1971,
-    "n": 17,
-    "nf": 9
+    "n": 20,
+    "nf": 10
   },
   "HND": {
     "name": "Honduras",
     "confed": "CONCACAF",
     "year": 1954,
-    "n": 101,
-    "nf": 45
+    "n": 106,
+    "nf": 47
   },
   "HRV": {
     "name": "Croacia",
     "confed": "UEFA",
     "year": 1928,
-    "n": 200,
-    "nf": 157
+    "n": 1098,
+    "nf": 188
   },
   "HTI": {
     "name": "Haití",
     "confed": "CONCACAF",
     "year": 1969,
-    "n": 40,
-    "nf": 27
+    "n": 44,
+    "nf": 28
   },
   "HUN": {
     "name": "Hungría",
     "confed": "UEFA",
     "year": 1911,
-    "n": 276,
-    "nf": 189
+    "n": 303,
+    "nf": 211
   },
   "IDN": {
     "name": "Indonesia",
     "confed": "AFC",
     "year": 1975,
-    "n": 922,
+    "n": 925,
     "nf": 200
   },
   "IND": {
@@ -532,21 +560,21 @@ const DATA_CLUBAGE = {
     "confed": "AFC",
     "year": 2010,
     "n": 141,
-    "nf": 94
+    "nf": 95
   },
   "IRL": {
     "name": "Irlanda",
     "confed": "UEFA",
     "year": 1927,
-    "n": 190,
+    "n": 191,
     "nf": 132
   },
   "IRN": {
     "name": "Irán",
     "confed": "AFC",
     "year": 1979,
-    "n": 277,
-    "nf": 215
+    "n": 282,
+    "nf": 216
   },
   "IRQ": {
     "name": "Irak",
@@ -558,23 +586,23 @@ const DATA_CLUBAGE = {
   "ISL": {
     "name": "Islandia",
     "confed": "UEFA",
-    "year": 1928,
-    "n": 66,
-    "nf": 41
+    "year": 1933,
+    "n": 122,
+    "nf": 66
   },
   "ISR": {
     "name": "Israel",
     "confed": "UEFA",
     "year": 1948,
-    "n": 276,
-    "nf": 264
+    "n": 279,
+    "nf": 266
   },
   "ITA": {
     "name": "Italia",
     "confed": "UEFA",
     "year": 1918,
-    "n": 1264,
-    "nf": 1107
+    "n": 1293,
+    "nf": 1121
   },
   "JAM": {
     "name": "Jamaica",
@@ -587,28 +615,28 @@ const DATA_CLUBAGE = {
     "name": "Jordania",
     "confed": "AFC",
     "year": 1964,
-    "n": 43,
-    "nf": 28
+    "n": 44,
+    "nf": 29
   },
   "JPN": {
     "name": "Japón",
     "confed": "AFC",
     "year": 1981,
-    "n": 454,
-    "nf": 275
+    "n": 456,
+    "nf": 276
   },
   "KAZ": {
     "name": "Kazajistán",
     "confed": "UEFA",
     "year": 1967,
-    "n": 88,
-    "nf": 65
+    "n": 92,
+    "nf": 68
   },
   "KEN": {
     "name": "Kenia",
     "confed": "CAF",
     "year": 1984,
-    "n": 78,
+    "n": 80,
     "nf": 43
   },
   "KGZ": {
@@ -622,7 +650,7 @@ const DATA_CLUBAGE = {
     "name": "Camboya",
     "confed": "AFC",
     "year": 2000,
-    "n": 39,
+    "n": 41,
     "nf": 11
   },
   "KIR": {
@@ -643,15 +671,15 @@ const DATA_CLUBAGE = {
     "name": "Corea del Sur",
     "confed": "AFC",
     "year": 2003,
-    "n": 164,
-    "nf": 153
+    "n": 166,
+    "nf": 154
   },
   "KWT": {
     "name": "Kuwait",
     "confed": "AFC",
     "year": 1963,
-    "n": 16,
-    "nf": 15
+    "n": 17,
+    "nf": 16
   },
   "LAO": {
     "name": "Laos",
@@ -671,7 +699,7 @@ const DATA_CLUBAGE = {
     "name": "Liberia",
     "confed": "CAF",
     "year": 1990,
-    "n": 42,
+    "n": 44,
     "nf": 25
   },
   "LBY": {
@@ -685,8 +713,8 @@ const DATA_CLUBAGE = {
     "name": "Santa Lucía",
     "confed": "CONCACAF",
     "year": 1995,
-    "n": 16,
-    "nf": 8
+    "n": 17,
+    "nf": 9
   },
   "LIE": {
     "name": "Liechtenstein",
@@ -704,7 +732,7 @@ const DATA_CLUBAGE = {
   },
   "LSO": {
     "name": "Lesoto",
-    "confed": "CAF",
+    "confed": "",
     "year": 1933,
     "n": 29,
     "nf": 11
@@ -713,42 +741,49 @@ const DATA_CLUBAGE = {
     "name": "Lituania",
     "confed": "UEFA",
     "year": 2000,
-    "n": 500,
-    "nf": 85
+    "n": 514,
+    "nf": 92
   },
   "LUX": {
     "name": "Luxemburgo",
     "confed": "UEFA",
-    "year": 1926,
-    "n": 86,
-    "nf": 72
+    "year": 1924,
+    "n": 92,
+    "nf": 74
   },
   "LVA": {
     "name": "Letonia",
     "confed": "UEFA",
     "year": 1998,
-    "n": 141,
-    "nf": 88
+    "n": 143,
+    "nf": 89
   },
   "MAR": {
     "name": "Marruecos",
     "confed": "CAF",
     "year": 1947,
-    "n": 206,
-    "nf": 102
+    "n": 208,
+    "nf": 103
+  },
+  "MCO": {
+    "name": "Mónaco",
+    "confed": "",
+    "year": 1924,
+    "n": 1,
+    "nf": 1
   },
   "MDA": {
     "name": "Moldavia",
     "confed": "UEFA",
     "year": 1994,
-    "n": 88,
-    "nf": 78
+    "n": 90,
+    "nf": 79
   },
   "MDG": {
     "name": "Madagascar",
     "confed": "CAF",
     "year": 1997,
-    "n": 51,
+    "n": 52,
     "nf": 16
   },
   "MDV": {
@@ -761,9 +796,9 @@ const DATA_CLUBAGE = {
   "MEX": {
     "name": "México",
     "confed": "CONCACAF",
-    "year": 1969,
-    "n": 441,
-    "nf": 318
+    "year": 1970,
+    "n": 500,
+    "nf": 355
   },
   "MKD": {
     "name": "Macedonia del Norte",
@@ -776,19 +811,19 @@ const DATA_CLUBAGE = {
     "name": "Mali",
     "confed": "CAF",
     "year": 1962,
-    "n": 36,
-    "nf": 21
+    "n": 38,
+    "nf": 22
   },
   "MLT": {
     "name": "Malta",
     "confed": "UEFA",
     "year": 1942,
-    "n": 78,
+    "n": 80,
     "nf": 69
   },
   "MMR": {
     "name": "Birmania",
-    "confed": "AFC",
+    "confed": "",
     "year": 2008,
     "n": 31,
     "nf": 24
@@ -804,15 +839,15 @@ const DATA_CLUBAGE = {
     "name": "Mongolia",
     "confed": "AFC",
     "year": 2000,
-    "n": 34,
+    "n": 35,
     "nf": 15
   },
   "MOZ": {
     "name": "Mozambique",
     "confed": "CAF",
-    "year": 1942,
-    "n": 58,
-    "nf": 31
+    "year": 1947,
+    "n": 60,
+    "nf": 33
   },
   "MRT": {
     "name": "Mauritania",
@@ -839,14 +874,14 @@ const DATA_CLUBAGE = {
     "name": "Malasia",
     "confed": "AFC",
     "year": 1971,
-    "n": 166,
+    "n": 169,
     "nf": 73
   },
   "NAM": {
     "name": "Namibia",
     "confed": "CAF",
     "year": 1962,
-    "n": 43,
+    "n": 48,
     "nf": 22
   },
   "NER": {
@@ -867,22 +902,22 @@ const DATA_CLUBAGE = {
     "name": "Nicaragua",
     "confed": "CONCACAF",
     "year": 1983,
-    "n": 36,
-    "nf": 24
+    "n": 42,
+    "nf": 28
   },
   "NLD": {
     "name": "Países Bajos",
     "confed": "UEFA",
     "year": 1923,
-    "n": 2893,
-    "nf": 434
+    "n": 3030,
+    "nf": 464
   },
   "NOR": {
     "name": "Noruega",
     "confed": "UEFA",
-    "year": 1917,
-    "n": 539,
-    "nf": 446
+    "year": 1918,
+    "n": 1170,
+    "nf": 906
   },
   "NPL": {
     "name": "Nepal",
@@ -895,15 +930,15 @@ const DATA_CLUBAGE = {
     "name": "Nueva Zelanda",
     "confed": "OFC",
     "year": 1995,
-    "n": 178,
+    "n": 181,
     "nf": 144
   },
   "OMN": {
     "name": "Omán",
     "confed": "AFC",
     "year": 1971,
-    "n": 34,
-    "nf": 23
+    "n": 36,
+    "nf": 24
   },
   "PAK": {
     "name": "Pakistán",
@@ -916,26 +951,26 @@ const DATA_CLUBAGE = {
     "name": "Panamá",
     "confed": "CONCACAF",
     "year": 1985,
-    "n": 47,
-    "nf": 40
+    "n": 52,
+    "nf": 42
   },
   "PER": {
     "name": "Perú",
     "confed": "CONMEBOL",
     "year": 1949,
-    "n": 327,
-    "nf": 190
+    "n": 435,
+    "nf": 220
   },
   "PHL": {
     "name": "Filipinas",
     "confed": "AFC",
     "year": 2000,
-    "n": 62,
-    "nf": 37
+    "n": 64,
+    "nf": 38
   },
   "PLW": {
     "name": "Palaos",
-    "confed": "OFC",
+    "confed": "",
     "year": 2007,
     "n": 15,
     "nf": 7
@@ -944,29 +979,43 @@ const DATA_CLUBAGE = {
     "name": "Papúa Nueva Guinea",
     "confed": "OFC",
     "year": 2002,
-    "n": 54,
-    "nf": 9
+    "n": 55,
+    "nf": 10
   },
   "POL": {
     "name": "Polonia",
     "confed": "UEFA",
-    "year": 1932,
-    "n": 523,
-    "nf": 422
+    "year": 1934,
+    "n": 796,
+    "nf": 689
+  },
+  "PRK": {
+    "name": "Corea del Norte",
+    "confed": "",
+    "year": 1955,
+    "n": 27,
+    "nf": 10
   },
   "PRT": {
     "name": "Portugal",
     "confed": "UEFA",
     "year": 1927,
-    "n": 617,
-    "nf": 344
+    "n": 646,
+    "nf": 357
   },
   "PRY": {
     "name": "Paraguay",
     "confed": "CONMEBOL",
     "year": 1916,
-    "n": 93,
-    "nf": 50
+    "n": 106,
+    "nf": 51
+  },
+  "PSE": {
+    "name": "Palestina",
+    "confed": "",
+    "year": 1971,
+    "n": 60,
+    "nf": 15
   },
   "QAT": {
     "name": "Catar",
@@ -979,28 +1028,28 @@ const DATA_CLUBAGE = {
     "name": "Rumania",
     "confed": "UEFA",
     "year": 1947,
-    "n": 416,
-    "nf": 285
+    "n": 422,
+    "nf": 288
   },
   "RUS": {
     "name": "Rusia",
     "confed": "UEFA",
-    "year": 1960,
-    "n": 806,
-    "nf": 569
+    "year": 1959,
+    "n": 833,
+    "nf": 580
   },
   "RWA": {
     "name": "Ruanda",
     "confed": "CAF",
     "year": 1992,
-    "n": 37,
-    "nf": 15
+    "n": 38,
+    "nf": 16
   },
   "SAU": {
     "name": "Arabia Saudí",
     "confed": "AFC",
     "year": 1957,
-    "n": 199,
+    "n": 202,
     "nf": 83
   },
   "SDN": {
@@ -1014,7 +1063,7 @@ const DATA_CLUBAGE = {
     "name": "Senegal",
     "confed": "CAF",
     "year": 1979,
-    "n": 70,
+    "n": 71,
     "nf": 50
   },
   "SGP": {
@@ -1042,8 +1091,8 @@ const DATA_CLUBAGE = {
     "name": "El Salvador",
     "confed": "CONCACAF",
     "year": 1950,
-    "n": 133,
-    "nf": 71
+    "n": 134,
+    "nf": 72
   },
   "SMR": {
     "name": "San Marino",
@@ -1063,8 +1112,8 @@ const DATA_CLUBAGE = {
     "name": "Serbia",
     "confed": "UEFA",
     "year": 1926,
-    "n": 279,
-    "nf": 197
+    "n": 286,
+    "nf": 202
   },
   "SSD": {
     "name": "Sudán del Sur",
@@ -1077,36 +1126,36 @@ const DATA_CLUBAGE = {
     "name": "Santo Tomé y Príncipe",
     "confed": "CAF",
     "year": 1975,
-    "n": 37,
+    "n": 38,
     "nf": 8
   },
   "SUR": {
     "name": "Surinam",
     "confed": "CONCACAF",
     "year": 1945,
-    "n": 59,
+    "n": 60,
     "nf": 16
   },
   "SVK": {
     "name": "Eslovaquia",
     "confed": "UEFA",
     "year": 1920,
-    "n": 235,
-    "nf": 184
+    "n": 241,
+    "nf": 188
   },
   "SVN": {
     "name": "Eslovenia",
     "confed": "UEFA",
     "year": 1947,
-    "n": 160,
-    "nf": 145
+    "n": 166,
+    "nf": 149
   },
   "SWE": {
     "name": "Suecia",
     "confed": "UEFA",
-    "year": 1924,
-    "n": 1026,
-    "nf": 853
+    "year": 1923,
+    "n": 1548,
+    "nf": 1287
   },
   "SWZ": {
     "name": "Suazilandia",
@@ -1122,26 +1171,33 @@ const DATA_CLUBAGE = {
     "n": 20,
     "nf": 8
   },
+  "SYR": {
+    "name": "Siria",
+    "confed": "",
+    "year": 1948,
+    "n": 41,
+    "nf": 38
+  },
   "TCD": {
     "name": "Chad",
     "confed": "CAF",
     "year": 1971,
-    "n": 15,
+    "n": 16,
     "nf": 7
   },
   "TGO": {
     "name": "Togo",
     "confed": "CAF",
     "year": 1973,
-    "n": 32,
-    "nf": 17
+    "n": 34,
+    "nf": 18
   },
   "THA": {
     "name": "Tailandia",
     "confed": "AFC",
     "year": 2005,
-    "n": 264,
-    "nf": 221
+    "n": 266,
+    "nf": 223
   },
   "TJK": {
     "name": "Tayikistán",
@@ -1159,10 +1215,10 @@ const DATA_CLUBAGE = {
   },
   "TLS": {
     "name": "Timor Oriental",
-    "confed": "AFC",
+    "confed": "",
     "year": 2005,
-    "n": 52,
-    "nf": 31
+    "n": 60,
+    "nf": 33
   },
   "TON": {
     "name": "Tonga",
@@ -1178,12 +1234,19 @@ const DATA_CLUBAGE = {
     "n": 26,
     "nf": 17
   },
+  "TUN": {
+    "name": "Túnez",
+    "confed": "",
+    "year": 1938,
+    "n": 162,
+    "nf": 118
+  },
   "TUR": {
     "name": "Turquía",
     "confed": "UEFA",
     "year": 1964,
-    "n": 507,
-    "nf": 279
+    "n": 552,
+    "nf": 303
   },
   "TUV": {
     "name": "Tuvalu",
@@ -1210,50 +1273,57 @@ const DATA_CLUBAGE = {
     "name": "Uganda",
     "confed": "CAF",
     "year": 1974,
-    "n": 202,
+    "n": 207,
     "nf": 39
   },
   "UKR": {
     "name": "Ucrania",
     "confed": "UEFA",
-    "year": 1962,
-    "n": 732,
-    "nf": 377
+    "year": 1960,
+    "n": 833,
+    "nf": 410
   },
   "URY": {
     "name": "Uruguay",
     "confed": "CONMEBOL",
     "year": 1920,
-    "n": 123,
-    "nf": 98
+    "n": 134,
+    "nf": 108
   },
   "USA": {
     "name": "Estados Unidos",
     "confed": "CONCACAF",
     "year": 2003,
-    "n": 1455,
-    "nf": 1090
+    "n": 1484,
+    "nf": 1105
   },
   "UZB": {
     "name": "Uzbekistán",
     "confed": "AFC",
     "year": 1977,
-    "n": 105,
+    "n": 109,
     "nf": 61
+  },
+  "VAT": {
+    "name": "Ciudad del Vaticano",
+    "confed": "",
+    "year": null,
+    "n": 1,
+    "nf": 0
   },
   "VCT": {
     "name": "San Vicente y las Granadinas",
     "confed": "CONCACAF",
     "year": 1994,
-    "n": 14,
+    "n": 15,
     "nf": 12
   },
   "VEN": {
     "name": "Venezuela",
     "confed": "CONMEBOL",
-    "year": 1984,
-    "n": 166,
-    "nf": 99
+    "year": 1986,
+    "n": 200,
+    "nf": 114
   },
   "VNM": {
     "name": "Vietnam",
@@ -1276,6 +1346,13 @@ const DATA_CLUBAGE = {
     "n": 16,
     "nf": 6
   },
+  "XKS": {
+    "name": "Kosovo",
+    "confed": "",
+    "year": 1946,
+    "n": 41,
+    "nf": 32
+  },
   "YEM": {
     "name": "Yemen",
     "confed": "AFC",
@@ -1294,14 +1371,14 @@ const DATA_CLUBAGE = {
     "name": "Zambia",
     "confed": "CAF",
     "year": 1964,
-    "n": 45,
+    "n": 46,
     "nf": 18
   },
   "ZWE": {
     "name": "Zimbabue",
     "confed": "CAF",
     "year": 1983,
-    "n": 50,
-    "nf": 22
+    "n": 51,
+    "nf": 23
   }
 };

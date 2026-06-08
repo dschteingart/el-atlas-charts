@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — Talento deportivo y antigüedad de clubes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<link rel="stylesheet" href="./editor.css">
+<style>
+  .wrap-wide { max-width: 1100px; padding: 6px 20px 10px; }
+  .wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
+  .wrap-wide .chart-block { margin: 4px 0 2px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+  .wrap-wide .chart-subtitle { margin: 0 0 4px; font-size: 13.5px; line-height: 1.35; }
+
+  /* Controles */
+  .m-controls {
+    display: flex; align-items: center; gap: 16px; margin: 6px 0 4px;
+    flex-wrap: wrap;
+  }
+  .m-ctrl-group { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .m-ctrl-label {
+    font-family: var(--sans); font-size: 11px; color: var(--ink-muted);
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500;
+  }
+
+  /* Slider rango (mismo patrón del chart 1 y chart 2) */
+  .sc-range-block { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 280px; }
+  .sc-range-slider { position: relative; flex: 1; height: 20px; min-width: 200px; }
+  .sc-range-track {
+    position: absolute; top: 50%; left: 0; right: 0;
+    height: 4px; background: var(--grid); border-radius: 2px;
+    transform: translateY(-50%); pointer-events: none;
+  }
+  .sc-range-track-active {
+    position: absolute; top: 50%; height: 4px;
+    background: var(--accent); border-radius: 2px;
+    transform: translateY(-50%); pointer-events: none;
+  }
+  .sc-range-slider input[type="range"] {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 20px; margin: 0;
+    -webkit-appearance: none; appearance: none;
+    background: transparent; pointer-events: none; outline: none;
+  }
+  .sc-range-slider input[type="range"]::-webkit-slider-thumb {
+    pointer-events: auto; -webkit-appearance: none; appearance: none;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent); cursor: pointer;
+    border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+  }
+  .sc-range-slider input[type="range"]::-moz-range-thumb {
+    pointer-events: auto; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent); cursor: pointer; border: 2px solid var(--bg);
+  }
+  .sc-range-slider input[type="range"]::-moz-range-track { background: transparent; border: none; }
+  .sc-range-display {
+    font-family: var(--serif); font-size: 16px; font-weight: 700;
+    color: var(--ink); min-width: 110px; font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  /* Toggle checkbox + min N */
+  .sc-toggle-label {
+    font-family: var(--sans); font-size: 12px; color: var(--ink-soft);
+    display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  }
+  .sc-toggle-label input { cursor: pointer; }
+  /* Iconito de info al lado del label del toggle — el title nativo del
+     browser muestra la explicación al hover. Sin librería de tooltip. */
+  .sc-hint {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 1px solid var(--rule-strong); color: var(--ink-muted);
+    font-size: 10px; font-style: normal; cursor: help;
+    margin-left: 2px;
+  }
+  .sc-hint:hover { color: var(--ink); border-color: var(--ink-soft); }
+  .sc-min-input {
+    font-family: var(--sans); font-size: 12.5px;
+    padding: 4px 8px; border: 1px solid var(--rule);
+    border-radius: 4px; background: var(--bg); color: var(--ink);
+    width: 64px; font-variant-numeric: tabular-nums;
+  }
+  .sc-min-input:focus { border-color: var(--accent); outline: none; }
+
+  /* Buscador + chips (mismo patrón del chart 1) */
+  .m-search-wrap {
+    position: relative; margin: 4px 0 2px; max-width: 320px;
+  }
+  .m-search-input {
+    width: 100%; padding: 7px 10px;
+    border: 1px solid var(--rule); border-radius: 5px;
+    background: var(--bg); font-family: var(--sans);
+    font-size: 13px; color: var(--ink); outline: none;
+  }
+  .m-search-input:focus { border-color: var(--accent); }
+  .m-search-results {
+    position: absolute; top: calc(100% + 2px); left: 0; right: 0;
+    background: var(--bg); border: 1px solid var(--rule);
+    border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    max-height: 240px; overflow-y: auto; z-index: 30; display: none;
+  }
+  .m-search-results.open { display: block; }
+  .m-search-result {
+    padding: 7px 10px; font-family: var(--sans); font-size: 13px;
+    cursor: pointer; display: flex; justify-content: space-between;
+    gap: 12px; border-bottom: 1px solid var(--grid);
+  }
+  .m-search-result:last-child { border-bottom: none; }
+  .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
+  .m-search-result.m-already { opacity: 0.5; font-style: italic; }
+  .m-search-region {
+    color: var(--ink-muted); font-size: 11.5px; flex-shrink: 0;
+  }
+  .m-selected-chips {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin: 2px 0 6px; min-height: 0;
+  }
+  .m-selected-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 4px 3px 10px; border-radius: 12px;
+    font-family: var(--sans); font-size: 12px; font-weight: 500; color: white;
+  }
+  .m-chip-x {
+    width: 18px; height: 18px; border-radius: 50%; border: none;
+    background: rgba(255,255,255,0.25); color: white;
+    font-size: 13px; line-height: 1; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+  }
+  .m-chip-x:hover { background: rgba(255,255,255,0.45); }
+
+  /* Leyenda chips (mismo del chart 1) */
+  .m-legend { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; padding: 0 4px; }
+  .m-legend-chip {
+    display: flex; align-items: center; gap: 6px;
+    font-family: var(--sans); font-size: 12px; color: var(--ink-soft);
+    cursor: pointer; user-select: none; transition: opacity 0.15s;
+  }
+  .m-legend-chip.inactive {
+    opacity: 0.55; text-decoration: line-through;
+    text-decoration-color: var(--ink-muted); color: var(--ink-muted);
+  }
+  .m-legend-chip.inactive .m-legend-swatch { opacity: 0.45; }
+  .m-legend-swatch { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
+  /* Banner stats (sobre el SVG) */
+  .s-banner {
+    display: flex; flex-wrap: wrap; align-items: baseline;
+    gap: 8px 14px; margin: 6px 0 0; padding: 6px 12px;
+    background: var(--bg-soft); border-radius: 6px;
+    font-family: var(--sans); font-size: 13px; color: var(--ink);
+  }
+  .s-banner-item { display: inline-flex; align-items: baseline; gap: 6px; }
+  .s-banner-key {
+    font-size: 11px; color: var(--ink-muted);
+    text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500;
+  }
+  .s-banner-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .s-banner-sep { color: var(--ink-muted); opacity: 0.6; }
+
+  /* SVG estilos */
+  .s-point { transition: opacity 0.2s, r 0.15s; cursor: pointer; }
+  .s-point.s-dim { opacity: 0.18; }
+  .s-country-label, .s-labeled-label {
+    font-family: var(--sans); font-size: 10.5px; font-weight: 500;
+    pointer-events: none; paint-order: stroke;
+    stroke: var(--bg); stroke-width: 2.5px; stroke-linejoin: round;
+  }
+  .s-labeled-label { font-weight: 600; }
+
+  .chart-svg-wrap { position: relative; margin-top: 4px; }
+  #chart1 { width: 100%; height: auto; display: block; }
+
+  /* Tooltip */
+  .tooltip {
+    position: absolute; pointer-events: none;
+    background: #FFFFFF; border: 1px solid rgba(0,0,0,0.18);
+    border-radius: 5px; padding: 10px 13px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+    font-family: var(--sans); font-size: 12px; color: var(--ink);
+    opacity: 0; transition: opacity 0.12s; z-index: 40;
+    max-width: 280px; min-width: 200px;
+  }
+  .tooltip strong {
+    font-family: var(--serif); font-size: 14px; font-weight: 700;
+    color: var(--ink); display: block; margin-bottom: 4px; line-height: 1.15;
+  }
+  .tooltip .tt-region {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.06em; margin-bottom: 6px;
+  }
+  .tooltip .tt-row {
+    display: flex; justify-content: space-between; gap: 12px;
+    font-variant-numeric: tabular-nums; margin-top: 3px; line-height: 1.3;
+  }
+  .tooltip .tt-row span:first-child { color: var(--ink-muted); }
+  .tooltip .tt-row span:last-child  { font-weight: 600; color: var(--ink); }
+  .tooltip .tt-row-sub {
+    margin-top: 5px; font-style: italic; font-size: 11px; line-height: 1.25;
+  }
+  .tooltip .tt-row-sub span:first-child, .tooltip .tt-row-sub span:last-child {
+    color: var(--ink-muted); font-weight: 500;
+  }
+
+  .footer { margin-top: 6px; }
+  .footer p { margin: 2px 0; }
+  .m-mobile-collapse { display: none; }
+  .m-mobile-collapse > summary {
+    font-family: var(--sans); font-size: 11px; color: var(--accent);
+    cursor: pointer; padding: 6px 0; list-style: none;
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+  }
+  .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
+  .m-mobile-collapse > summary::before { content: '+ '; }
+  .m-mobile-collapse[open] > summary::before { content: '− '; }
+  .m-mobile-collapse > p {
+    margin: 4px 0 8px; font-family: var(--sans); font-size: 11px;
+    color: var(--ink-soft); line-height: 1.45;
+  }
+  @media (max-width: 768px) {
+    .m-mobile-collapse { display: block; }
+    .m-desktop-only { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 3</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="4" data-editor-id="talento-clubes">
+    <h2 class="chart-title" data-i18n="c4-title">Sudamérica: alto share de fútbol y clubes muy antiguos</h2>
+    <p class="chart-subtitle" data-i18n="c4-subtitle">Cada punto es un país. En el eje horizontal, qué porcentaje de los deportistas físicos notables se dedicó al fútbol. En el vertical, qué tan antiguos son sus clubes. El cluster sudamericano (terracota) ocupa la esquina superior-derecha: alta concentración futbolística e historia institucional larga.</p>
+
+    <div class="m-controls">
+      <!-- Slider rango birth year -->
+      <div class="sc-range-block">
+        <span class="m-ctrl-label" data-i18n="c4-slider-label">Año de nacimiento</span>
+        <div class="sc-range-slider">
+          <div class="sc-range-track"></div>
+          <div class="sc-range-track-active" id="sc-range-track-active"></div>
+          <input type="range" id="sc-slider-from" min="1900" max="2010" value="1900" step="1" aria-label="Desde">
+          <input type="range" id="sc-slider-to"   min="1900" max="2010" value="2010" step="1" aria-label="Hasta">
+        </div>
+        <span class="sc-range-display" id="sc-range-display">1900–2010</span>
+      </div>
+
+      <!-- Toggle filtro views. Pantheon trackea page views por figura en
+           Wikipedias no-inglesas (`non_en_page_views`). El toggle filtra
+           figuras con menos de 5.000 visitas — los J-League menores con
+           artículos auto-generados por bots quedan fuera. -->
+      <label class="sc-toggle-label">
+        <input type="checkbox" id="sc-hi-views">
+        <span data-i18n="c4-hi-views">Solo figuras con +5.000 visitas en Wikipedia</span>
+        <span class="sc-hint" data-i18n-title="c4-hi-views-hint" title="Page views totales en Wikipedias no-inglesas (Pantheon, campo non_en_page_views). Filtra perfiles con artículo en muchas Wikipedias pero pocas lecturas reales.">ⓘ</span>
+      </label>
+
+      <!-- Mínimo deportistas -->
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c4-min-n">Mín. deportistas</span>
+        <input type="number" class="sc-min-input" id="sc-min-n" min="3" max="200" step="5" value="20">
+      </div>
+    </div>
+
+    <!-- Buscador de país -->
+    <div class="m-search-wrap">
+      <input type="text" id="sc-search" class="m-search-input" data-i18n-placeholder="c4-search-placeholder" placeholder="Buscar país…" autocomplete="off">
+      <div id="sc-search-results" class="m-search-results"></div>
+    </div>
+    <div class="m-selected-chips" id="sc-selected-chips"></div>
+
+    <!-- Leyenda confederaciones -->
+    <div class="m-legend" data-chart="4"></div>
+
+    <!-- SVG -->
+    <div class="chart-svg-wrap">
+      <svg id="chart1" viewBox="0 0 1100 540" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip1"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" data-chart="4-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="4" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources m-desktop-only" data-i18n="c4-sources">
+        Eje X: <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon (MIT Media Lab)</a> edición 2025 — deportistas físicos notables por país de nacimiento. El toggle "+5.000 visitas en Wikipedia" filtra perfiles con artículo en muchas Wikipedias pero pocas lecturas reales. Eje Y: Wikidata (clubes de fútbol: <em>association football club</em> + <em>sports club</em> con deporte=fútbol, ~51.573 clubes); año de fundación (P571) y sitelinks de Wikipedia para ponderar la mediana.
+      </p>
+      <details class="m-mobile-collapse">
+        <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+        <p data-i18n="c4-sources">Datos: Pantheon MIT (deportistas) y Wikidata (clubes de fútbol).</p>
+      </details>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="../lib/regions.js"></script>
+<script src="../lib/i18n.js"></script>
+<script src="./regions-fifa.js"></script>
+<script src="./i18n-issue.js"></script>
+<script src="./utils.js"></script>
+<script src="./country-names.js"></script>
+<script src="./data-sports.js"></script>
+<script src="./editor.js"></script>
+<script src="./talento-clubes.js"></script>
+<script src="./png-export.js"></script>
+<script>
+  applyI18n();
+  initTalentoClubes();
+  setupLangToggle(() => {
+    if (typeof renderTalentoClubesLegend === 'function') renderTalentoClubesLegend();
+    if (typeof drawTalentoClubes === 'function') drawTalentoClubes();
+  });
+</script>
+</body>
+</html>

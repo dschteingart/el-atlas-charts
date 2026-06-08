@@ -228,18 +228,29 @@ function s_ols(pts) {
 
 // Residuo medio por confederación. Toma cada punto, calcula su residuo
 // (elo real - elo predicho por la regresión global) y promedia por confed.
-// Devuelve {CONMEBOL: +273, UEFA: +145, ...}. Si una confed no tiene
-// puntos, no aparece en el objeto.
+// Devuelve {CONMEBOL: {abs: +273, pct: +18.5}, UEFA: {...}, ...}.
+//   - abs: residuo medio en puntos Elo (escala original).
+//   - pct: residuo medio relativo al Elo esperado, en porcentaje.
+// El % se promedia por país (no se calcula sobre las medias) — es la
+// lectura editorial natural: "el país promedio CONMEBOL sobre-rinde 18%".
 function s_residualsByConf(pts, reg) {
   if (!reg) return {};
-  const acc = {};
+  const accAbs = {}, accPct = {};
   for (const p of pts) {
-    const resid = p.elo - (reg.a + reg.b * p.x);
-    p.resid = resid;  // se guarda en el punto para el tooltip
-    (acc[p.confed] = acc[p.confed] || []).push(resid);
+    const expected = reg.a + reg.b * p.x;
+    const resid = p.elo - expected;
+    p.resid = resid;                          // se guarda en el punto para el tooltip
+    p.residPct = expected > 0 ? (resid / expected) * 100 : null;
+    (accAbs[p.confed] = accAbs[p.confed] || []).push(resid);
+    if (p.residPct != null) (accPct[p.confed] = accPct[p.confed] || []).push(p.residPct);
   }
   const out = {};
-  for (const c in acc) out[c] = s_mean(acc[c]);
+  for (const c in accAbs) {
+    out[c] = {
+      abs: s_mean(accAbs[c]),
+      pct: (accPct[c] && accPct[c].length) ? s_mean(accPct[c]) : null,
+    };
+  }
   return out;
 }
 
@@ -812,8 +823,9 @@ function updateLegendResiduals() {
     const span = chip.querySelector('.m-legend-rz');
     if (!span) return;
     const rz = (typeof s_residByConf !== 'undefined') ? s_residByConf[conf] : null;
-    span.textContent = (rz == null) ? '—' : ((rz >= 0 ? '+' : '') + Math.round(rz));
-    span.style.color = (rz == null) ? 'var(--ink-muted)' : (rz >= 0 ? '#3E6B47' : '#A23B2A');
+    const pct = (rz && typeof rz === 'object') ? rz.pct : null;
+    span.textContent = (pct == null) ? '—' : ((pct >= 0 ? '+' : '') + pct.toFixed(1) + '%');
+    span.style.color = (pct == null) ? 'var(--ink-muted)' : (pct >= 0 ? '#3E6B47' : '#A23B2A');
   });
 }
 
@@ -840,9 +852,14 @@ function s_updateBanner() {
 
   const n = s_reg ? s_reg.n : 0;
   const r2 = s_reg ? s_reg.r2.toFixed(2) : '–';
-  const sign = rz == null ? '' : (rz >= 0 ? '+' : '');
-  const rzStr = rz == null ? '—' : `${sign}${Math.round(rz)}`;
-  const rzColor = rz == null ? 'var(--ink)' : (rz >= 0 ? '#3E6B47' : '#A23B2A');
+  // rz puede ser {abs, pct} (formato nuevo) o number (formato viejo). Toleramos
+  // ambos por compatibilidad.
+  const rzPct = (rz && typeof rz === 'object') ? rz.pct : null;
+  const rzAbs = (rz && typeof rz === 'object') ? rz.abs : rz;
+  const sign = (v) => (v == null) ? '' : (v >= 0 ? '+' : '');
+  const rzPctStr = rzPct == null ? '—' : `${sign(rzPct)}${rzPct.toFixed(1)}%`;
+  const rzAbsStr = rzAbs == null ? '' : `${sign(rzAbs)}${Math.round(rzAbs)} Elo`;
+  const rzColor = rzPct == null ? 'var(--ink)' : (rzPct >= 0 ? '#3E6B47' : '#A23B2A');
 
   const bt = (k, fallback) => (typeof t === 'function' ? t(k) : fallback);
   el.innerHTML = `
@@ -850,7 +867,11 @@ function s_updateBanner() {
     <span class="s-banner-sep">·</span>
     <span class="s-banner-item"><span class="s-banner-key">${bt('c1-banner-r2', 'R²')}</span><span class="s-banner-val">${r2}</span></span>
     <span class="s-banner-sep">·</span>
-    <span class="s-banner-item"><span class="s-banner-key">${bt('c1-banner-residual', 'Residuo medio')} · ${conf}</span><span class="s-banner-val" style="color:${rzColor}">${rzStr}</span></span>
+    <span class="s-banner-item">
+      <span class="s-banner-key">${bt('c1-banner-residual', 'Residuo medio')} · ${conf}</span>
+      <span class="s-banner-val" style="color:${rzColor}">${rzPctStr}</span>
+      <span class="s-banner-sub" style="color:${rzColor};opacity:.65;font-size:.85em;font-style:italic;margin-left:2px">${rzAbsStr}</span>
+    </span>
     <span class="s-banner-sep">·</span>
     <span class="s-banner-item"><span class="s-banner-key">${bt('c1-banner-period', 'Período')}</span><span class="s-banner-val">${period[0]}–${period[1]}</span></span>
   `;
@@ -881,9 +902,14 @@ function s_applyEditorOverrides(aeCfg, aeSizes) {
 
 // =================== Tooltip ===================
 function s_showTooltip(e, d, tooltip) {
-  const residStr = d.resid == null
-    ? '—'
-    : (d.resid >= 0 ? '+' : '') + Math.round(d.resid);
+  // Residuo en % grande + Elo chiquito en italic al lado (decisión editorial:
+  // el % es más interpretable para el lector general, el valor en puntos Elo
+  // es contexto técnico).
+  const pct = d.residPct;
+  const abs = d.resid;
+  const sign = v => (v == null) ? '' : (v >= 0 ? '+' : '');
+  const pctStr = pct == null ? '—' : `${sign(pct)}${pct.toFixed(1)}%`;
+  const absStr = abs == null ? '' : `${sign(abs)}${Math.round(abs)} Elo`;
   const confColor = CONF_FIFA_COLORS[d.confed] || '#888';
 
   const tt = (k, fallback) => (typeof t === 'function' ? t(k) : fallback);
@@ -892,7 +918,7 @@ function s_showTooltip(e, d, tooltip) {
     <div class="tt-region" style="color:${confColor}">${d.confed}</div>
     <div class="tt-row"><span>${tt('c1-tt-elo', 'ELO prom')}</span><span>${Math.round(d.elo)}</span></div>
     <div class="tt-row"><span>${tt('c1-tt-gdp', 'PIB')}</span><span>${s_fmtMoney(d.gdp)}</span></div>
-    <div class="tt-row"><span>${tt('c1-tt-residual', 'Residuo')}</span><span>${residStr}</span></div>
+    <div class="tt-row"><span>${tt('c1-tt-residual', 'Residuo')}</span><span>${pctStr} <span style="font-size:.85em;opacity:.65;font-style:italic;margin-left:2px">${absStr}</span></span></div>
   `;
   tooltip.style.display = 'block';
   tooltip.style.opacity = '1';

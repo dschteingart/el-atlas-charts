@@ -22,11 +22,15 @@
 from pathlib import Path
 import csv
 import json
+import re
 import sys
 
 REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 CSV_IN = REPO_ROOT / "_handoff-futbol" / "data" / "futbol_paises.csv"
 JS_OUT = REPO_ROOT / "03-futbol" / "data-clubage.js"
+# Para enriquecer con `confederacion` (no viene en clubs_wikidata_por_pais_v2),
+# leemos el data-sports.js que sí tiene {iso3, confed, ...} por país.
+SPORTS_JS = REPO_ROOT / "03-futbol" / "data-sports.js"
 
 
 def _safe_int(s: str):
@@ -40,29 +44,55 @@ def _safe_int(s: str):
         return None
 
 
+def _load_confed_map():
+    """Lee data-sports.js (formato window.SPORTS=[{iso3,confed,...},...]) y
+    devuelve {iso3: confed}. Si el archivo no existe o no parsea, devuelve
+    diccionario vacío y los países quedan con confed=''."""
+    if not SPORTS_JS.exists():
+        return {}
+    txt = SPORTS_JS.read_text(encoding="utf-8")
+    # Extraer el array JSON entre 'window.SPORTS=' y ';' siguiente.
+    m = re.search(r"window\.SPORTS\s*=\s*(\[.*?\]);", txt, flags=re.S)
+    if not m:
+        return {}
+    try:
+        arr = json.loads(m.group(1))
+    except json.JSONDecodeError:
+        return {}
+    return {d.get("iso3"): (d.get("confed") or "") for d in arr if d.get("iso3")}
+
+
 def main() -> int:
     if not CSV_IN.exists():
         print(f"ERROR: no encontre {CSV_IN}", file=sys.stderr)
         return 1
 
+    confed_by_iso = _load_confed_map()
+
     rows = []
-    with CSV_IN.open(encoding="utf-8") as fh:
+    with CSV_IN.open(encoding="utf-8-sig") as fh:
         rdr = csv.DictReader(fh)
         for r in rdr:
             iso3 = (r.get("iso3") or "").strip()
             if len(iso3) != 3:
                 continue
             year = _safe_int(r.get("mediana_fundacion_pond"))
+            # Nombres de columna: el CSV de Daniel cambió en la actualización
+            # de junio (51.573 clubes vs 41.894). Aceptamos los dos schemas.
+            n_clubs = _safe_int(r.get("clubes_total")) or _safe_int(r.get("clubes"))
+            n_with_date = (_safe_int(r.get("clubes_con_fecha"))
+                           or _safe_int(r.get("n_fecha_valida")))
+            country_name = ((r.get("pais") or "").strip()
+                            or (r.get("country") or "").strip())
             rows.append({
                 "iso3": iso3,
-                "name": (r.get("pais") or "").strip(),
-                "confed": (r.get("confederacion") or "").strip(),
-                # year_median_pond: AÑO mediano (no antigüedad). Es el campo
-                # que pinta el color del mapa. Puede ser None si el país no
-                # tiene ningun club con fecha conocida.
+                "name": country_name,
+                # confederacion no viene en el CSV nuevo — la traemos del
+                # data-sports.js (que sí la mantiene por país).
+                "confed": (r.get("confederacion") or "").strip() or confed_by_iso.get(iso3, ""),
                 "year_median_pond": year,
-                "n_clubs":     _safe_int(r.get("clubes_total")),
-                "n_with_date": _safe_int(r.get("clubes_con_fecha")),
+                "n_clubs":     n_clubs,
+                "n_with_date": n_with_date,
             })
 
     rows.sort(key=lambda d: d["iso3"])

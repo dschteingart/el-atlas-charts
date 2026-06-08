@@ -38,22 +38,22 @@ const M_PLOT_H = M_H - M_MARGIN.top  - M_MARGIN.bottom;
 const M_YEAR_MIN = 1880;
 const M_YEAR_MAX = 2020;
 
-// Paleta DIVERGENTE tipo OWID — 7 bins por intervalos de 20 años.
-// Sentido editorial: tradición futbolística PROFUNDA (rojo terracota
-// oscuro, izquierda) ↔ países EMERGENTES (azul-gris frío, derecha), con
-// un beige neutro en el medio del siglo XX. La divergencia ayuda a
-// contar la historia "viejo vs nuevo" en vez de "más o menos viejo".
+// Paleta DIVERGENTE tipo OWID — 6 bins por cuartos de siglo.
+// Punto editorial de inflexión: 1950. Lo pre-1950 = terracotas (tradición
+// futbolística profunda); lo post-1950 = azules (países que se subieron
+// más tarde al fútbol institucionalizado). Sin neutro intermedio: la
+// transición es directa en el 1950 para reforzar la lectura "viejo vs
+// nuevo" sin zona gris.
 //
-// Breakpoints (en años): 1900, 1920, 1940, 1960, 1980, 2000.
-// Bins:           [<1900, 1900-1919, 1920-1939, 1940-1959, 1960-1979, 1980-1999, ≥2000]
-const M_COLOR_BINS_BREAKS = [1900, 1920, 1940, 1960, 1980, 2000];
+// Breakpoints (en años): 1900, 1925, 1950, 1975, 2000.
+// Bins:           [<1900, 1900-1924, 1925-1949, 1950-1974, 1975-1999, ≥2000]
+const M_COLOR_BINS_BREAKS = [1900, 1925, 1950, 1975, 2000];
 const M_COLOR_BINS_RANGE  = [
   '#5A2818',  // <1900   terracota muy oscuro — pioneros (Inglaterra, etc.)
-  '#A03D21',  // 1900-19 terracota oscuro
-  '#D2855B',  // 1920-39 terracota claro
-  '#E8DCC7',  // 1940-59 beige neutro — punto medio editorial
-  '#A5BFD0',  // 1960-79 azul claro
-  '#5E7E96',  // 1980-99 azul medio
+  '#9B3D24',  // 1900-24 terracota oscuro
+  '#D2855B',  // 1925-49 terracota claro
+  '#A5BFD0',  // 1950-74 azul claro
+  '#5E7E96',  // 1975-99 azul medio
   '#2D4256',  // ≥2000   azul oscuro — países emergentes
 ];
 const M_COLOR_NO_DATA = '#D8D3C8'; // gris cálido neutral para "sin dato"

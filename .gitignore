@@ -5,3 +5,9 @@
 # Los archivos comprimidos del usuario están en C:/Users/.../Downloads/
 # y se descomprimen acá solo para análisis y para correr build_talento_data.py.
 _handoff-futbol/pantheon_compare/
+
+# Extracts de los zips de update de Daniel (handoff-futbol-update.zip y
+# variantes). Son caches locales — los archivos finales útiles ya están
+# en 03-futbol/ y _handoff-futbol/data/.
+_handoff-futbol/update_extract/
+_handoff-futbol/update2_extract/
