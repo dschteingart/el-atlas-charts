@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — Excepcionalidad futbolística</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+<link href="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/nouislider@15.7.1/dist/nouislider.min.js"></script>
+<style>
+  :root{
+    --bg:#FAF8F3; --bg-soft:#F4F1E8; --ink:#1A1A1A; --ink-soft:#4A4A4A; --ink-muted:#8A8579;
+    --rule:#E0DCC8; --rule-strong:#C9C2B2; --accent:#BE5D32; --grid:#ECE7D8;
+    --serif:'Source Serif 4',Georgia,serif; --sans:'Source Sans 3',-apple-system,Segoe UI,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--serif);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:820px;margin:0 auto;padding:22px 20px 30px}
+  header{border-bottom:1px solid var(--rule);padding-bottom:16px;margin-bottom:20px}
+  .brand{font-family:var(--sans);font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink-soft);font-weight:500;margin-bottom:10px}
+  .brand-em{color:var(--ink);font-weight:600}
+  h1{font-family:var(--serif);font-size:29px;line-height:1.18;margin:0;font-weight:700;letter-spacing:-0.4px}
+  .lede{font-family:var(--serif);font-size:15.5px;color:var(--ink-soft);margin:6px 0 0;font-style:italic}
+  .accent-rule{width:36px;height:2.5px;background:var(--accent);margin:12px 0 0}
+  .chart-subtitle{font-family:var(--serif);font-size:14.5px;color:var(--ink-soft);margin:2px 0 16px;line-height:1.5}
+  .stats{display:flex;flex-wrap:wrap;gap:30px;align-items:flex-start;margin:0 0 14px;padding:12px 0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .stat{display:flex;flex-direction:column;gap:2px}
+  .stat .lbl{font-family:var(--sans);color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.9px;font-size:9.5px;font-weight:500}
+  .stat .big{font-family:var(--serif);font-size:24px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums}
+  .slider-row{display:flex;align-items:center;gap:18px;margin:4px 0 16px}
+  #slider{flex:1;max-width:560px;height:6px}
+  #yrs{font-family:var(--sans);font-weight:600;font-variant-numeric:tabular-nums;font-size:13px;min-width:104px}
+  .ctrl-label{font-family:var(--sans);color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.9px;font-size:9.5px;font-weight:500}
+  .noUi-connect{background:var(--accent)} .noUi-handle{border-radius:3px;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .noUi-target{background:var(--bg-soft);border:1px solid var(--rule-strong);box-shadow:none}
+  /* buscador */
+  .search-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:0 0 10px}
+  .search-wrap{position:relative;display:inline-block}
+  .search-input{font-family:var(--sans);font-size:12.5px;padding:6px 11px;border:1px solid var(--rule-strong);border-radius:4px;background:var(--bg);color:var(--ink);width:210px;outline:none}
+  .search-input:focus{border-color:var(--ink-soft)}
+  .search-results{position:absolute;top:100%;left:0;z-index:20;background:var(--bg);border:1px solid var(--grid);border-radius:4px;max-height:240px;overflow-y:auto;width:240px;margin-top:2px;display:none;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+  .search-results.open{display:block}
+  .search-result{padding:6px 10px;font-family:var(--sans);font-size:12.5px;color:var(--ink);cursor:pointer;border-bottom:1px solid #EFEAE0}
+  .search-result:last-child{border-bottom:none}
+  .search-result:hover,.search-result.active{background:#F0EBDF}
+  .search-result .reg{font-size:10.5px;color:var(--ink-muted);margin-left:5px}
+  .sel-chips{display:inline-flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .sel-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 6px 3px 10px;border-radius:12px;font-family:var(--sans);font-size:11.5px;font-weight:500;color:#fff}
+  .sel-chip-x{width:15px;height:15px;border-radius:50%;background:rgba(255,255,255,.28);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;line-height:1;border:none;color:inherit;padding:0}
+  .sel-chip-x:hover{background:rgba(255,255,255,.5)}
+  /* leyenda */
+  .legend{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}
+  .chip{font-family:var(--sans);font-size:11px;padding:4px 12px;border:1px solid transparent;border-radius:12px;cursor:pointer;transition:all .13s;user-select:none;font-weight:500;color:#fff;display:inline-flex;align-items:center;gap:6px}
+  .chip .rz{font-variant-numeric:tabular-nums;opacity:.85;font-size:10.5px}
+  .chip.off{background:transparent!important;color:var(--ink-muted)!important;text-decoration:line-through;text-decoration-color:var(--ink-muted)}
+  .chip.hovering{box-shadow:0 0 0 2px var(--ink)}
+  .legend-hint{font-family:var(--sans);font-size:11px;color:var(--ink-muted);font-style:italic;margin:8px 0 4px}
+  /* svg */
+  svg{width:100%;height:auto;display:block;overflow:visible}
+  .chart-svg-wrap{position:relative;margin:6px 0 0}
+  .axis text{font-family:var(--sans);font-size:11px;fill:var(--ink-soft)}
+  .axis line,.axis path{stroke:var(--ink-muted);stroke-width:.6;fill:none}
+  .axis-title{font-family:var(--sans);font-size:11.5px;fill:var(--ink);font-weight:600}
+  .grid line{stroke:var(--grid);stroke-width:.6}
+  .regression{stroke:var(--ink);stroke-width:1.3;fill:none;stroke-dasharray:4 3;opacity:.7}
+  .pt{transition:opacity .15s}
+  .plabel{font-family:var(--sans);font-size:10px;pointer-events:none;font-weight:500;paint-order:stroke;stroke:var(--bg);stroke-width:2.6px;stroke-linejoin:round}
+  .tooltip{position:absolute;background:var(--ink);color:#fff;padding:9px 12px;border-radius:4px;font-family:var(--sans);font-size:11.5px;line-height:1.5;pointer-events:none;opacity:0;transition:opacity .12s;z-index:10;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+  .tooltip strong{display:block;font-size:13px;margin-bottom:3px;font-family:var(--serif)}
+  .tooltip .tt-reg{color:var(--rule-strong);font-size:9.5px;text-transform:uppercase;letter-spacing:.9px;margin-bottom:5px}
+  .tooltip .tt-row{display:flex;justify-content:space-between;gap:16px}
+  .tooltip .tt-row span:first-child{color:var(--rule-strong)}
+  .footer{margin-top:26px;padding-top:14px;border-top:1px solid var(--rule);font-family:var(--sans);font-size:11px;color:var(--ink-muted);line-height:1.6}
+  .footer em{font-family:var(--serif);font-style:italic}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><span class="brand-em">El Atlas</span> · Cartografías del desarrollo · N° 3 — Fútbol</div>
+    <h1>Más fútbol del que su economía explicaría</h1>
+    <p class="lede">Sudamérica rinde en las canchas muy por encima de lo que predice el tamaño de su economía.</p>
+    <div class="accent-rule"></div>
+  </header>
+
+  <p class="chart-subtitle">Cada punto es una selección nacional. Eje vertical: ELO promedio en el período elegido. Eje horizontal: PIB total (PPA, US$ internacionales constantes), escala logarítmica. La recta es la regresión global; el <em>residuo</em> mide cuánto se aparta cada confederación de lo esperable por su economía.</p>
+
+  <div class="stats">
+    <div class="stat"><span class="lbl">Países (n)</span><span class="big" id="nval">–</span></div>
+    <div class="stat"><span class="lbl">R² (log PIB → ELO)</span><span class="big" id="r2val">–</span></div>
+    <div class="stat"><span class="lbl" id="residlbl">Residuo medio · CONMEBOL</span><span class="big" id="residval">–</span></div>
+    <div class="stat"><span class="lbl">Período</span><span class="big" id="perval">–</span></div>
+  </div>
+
+  <div class="slider-row">
+    <span class="ctrl-label">Período</span>
+    <div id="slider"></div>
+    <span id="yrs"></span>
+  </div>
+
+  <div class="search-row">
+    <span class="ctrl-label">Buscar país</span>
+    <div class="search-wrap">
+      <input type="text" id="search" class="search-input" placeholder="Escribí un país…" autocomplete="off">
+      <div id="search-results" class="search-results"></div>
+    </div>
+    <div class="sel-chips" id="sel-chips"></div>
+  </div>
+
+  <div class="legend" id="legend"></div>
+  <p class="legend-hint">Pasá el cursor por una confederación para resaltarla y ver su residuo · Clic para mostrarla u ocultarla</p>
+
+  <div class="chart-svg-wrap">
+    <svg id="chart" viewBox="0 0 820 500" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="tooltip" id="tip"></div>
+  </div>
+
+  <div class="footer">
+    <p>Fuentes: <em>World Football Elo Ratings</em> (eloratings.net, 1980–2026) · PIB PPA constante: FMI, <em>World Economic Outlook</em> (abril 2026; 2025–26 son estimaciones). Selecciones de Estados desaparecidos heredadas por su sucesor FIFA (URSS→Rusia, Yugoslavia→Serbia, etc.). Confederación según afiliación FIFA.</p>
+    <p class="signature" style="font-family:var(--serif);font-style:italic;color:var(--ink-soft)">El Atlas · Daniel Schteingart</p>
+  </div>
+</div>
+
+<script src="elo_gdp_data.js"></script>
+<script>
+const DATA=window.DATA;
+const CONF_ORDER=['CONMEBOL','UEFA','CONCACAF','CAF','AFC','OFC'];
+const COLORS={CONMEBOL:'#BE5D32',UEFA:'#3E5A6E',CAF:'#6B8E5A',AFC:'#C99A3B',CONCACAF:'#8B5A8C',OFC:'#4A9BA8'};
+const byIso={}; DATA.forEach(d=>byIso[d.iso3]=d);
+const hidden=new Set();
+let hoverConf=null, period=[2000,2026];
+// etiquetados por default = CONMEBOL; el buscador agrega/quita
+const labeled=new Set(DATA.filter(d=>d.confed==='CONMEBOL').map(d=>d.iso3));
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'');
+
+const VB_W=820,VB_H=500, margin={top:14,right:96,bottom:62,left:58};
+const iw=VB_W-margin.left-margin.right, ih=VB_H-margin.top-margin.bottom;
+const svg=d3.select('#chart');
+const g=svg.append('g').attr('transform',`translate(${margin.left},${margin.top})`);
+const gGrid=g.append('g'), gx=g.append('g').attr('class','axis').attr('transform',`translate(0,${ih})`), gy=g.append('g').attr('class','axis');
+const gReg=g.append('g'), gPts=g.append('g'), gLbl=g.append('g');
+g.append('text').attr('class','axis-title').attr('x',iw/2).attr('y',ih+44).attr('text-anchor','middle').text('PIB (PPA, US$ int. constantes) — escala log · mil M = miles de millones · bill. = billones (10¹²)');
+g.append('text').attr('class','axis-title').attr('transform','rotate(-90)').attr('x',-ih/2).attr('y',-42).attr('text-anchor','middle').text('ELO promedio del período');
+const tip=d3.select('#tip');
+
+function mean(a){return a.reduce((s,v)=>s+v,0)/a.length;}
+function fmtMoney(v){ if(v>=1e12)return '$'+(v/1e12).toFixed(v<1e13?1:0)+' bill.'; if(v>=1e9)return '$'+(v/1e9).toFixed(0)+' mil M'; if(v>=1e6)return '$'+(v/1e6).toFixed(0)+' M'; return '$'+d3.format(',')(Math.round(v)); }
+
+function computePoints(){
+  const [y0,y1]=period, pts=[];
+  for(const d of DATA){
+    const es=[],gs=[];
+    for(let y=y0;y<=y1;y++){ if(d.elo[y]!=null)es.push(d.elo[y]); if(d.gdp[y]!=null)gs.push(d.gdp[y]); }
+    if(!es.length||!gs.length)continue;
+    const gdp=mean(gs);
+    pts.push({iso3:d.iso3,name:d.name,confed:d.confed,elo:mean(es),gdp,x:Math.log10(gdp)});
+  }
+  return pts;
+}
+function regress(pts){
+  const n=pts.length; if(n<2)return null;
+  const mx=mean(pts.map(p=>p.x)),my=mean(pts.map(p=>p.elo));
+  let sxy=0,sxx=0,syy=0;
+  for(const p of pts){const dx=p.x-mx,dy=p.elo-my;sxy+=dx*dy;sxx+=dx*dx;syy+=dy*dy;}
+  const b=sxy/sxx,a=my-b*mx; let ssr=0; for(const p of pts){const e=p.elo-(a+b*p.x);ssr+=e*e;}
+  return {a,b,r2:1-ssr/syy,n};
+}
+
+let allPts=[],reg=null,residByConf={},ptByIso={};
+const x=d3.scaleLinear().range([0,iw]), y=d3.scaleLinear().range([ih,0]);
+
+// recompute SOLO depende del periodo (slider). El toggle de chips / buscador NO lo llaman.
+function recompute(){
+  allPts=computePoints(); ptByIso={}; allPts.forEach(p=>ptByIso[p.iso3]=p);
+  x.domain(d3.extent(allPts,p=>p.x)).nice();
+  y.domain(d3.extent(allPts,p=>p.elo)).nice();
+  reg=regress(allPts);
+  residByConf={};
+  if(reg){ const acc={}; for(const p of allPts){ p.resid=p.elo-(reg.a+reg.b*p.x); (acc[p.confed]=acc[p.confed]||[]).push(p.resid);} for(const c in acc)residByConf[c]=mean(acc[c]); }
+  drawAxes(); draw(); updateBanner(); updateLegend();
+}
+function drawAxes(){
+  gx.call(d3.axisBottom(x).ticks(6).tickFormat(v=>fmtMoney(Math.pow(10,v))));
+  gy.call(d3.axisLeft(y).ticks(6));
+  gGrid.selectAll('line').data(y.ticks(6)).join('line').attr('class','grid').attr('x1',0).attr('x2',iw).attr('y1',d=>y(d)).attr('y2',d=>y(d));
+  gGrid.lower();
+}
+// draw es INSTANTANEO (sin transiciones D3) -> sin lag al mover el slider; la opacidad la anima CSS
+function draw(){
+  const vis=allPts.filter(p=>!hidden.has(p.confed));
+  gReg.selectAll('line').data(reg?[reg]:[]).join('line').attr('class','regression')
+    .attr('x1',0).attr('y1',d=>y(d.a+d.b*x.invert(0))).attr('x2',iw).attr('y2',d=>y(d.a+d.b*x.invert(iw)));
+  gPts.selectAll('circle').data(vis,d=>d.iso3).join(
+    en=>en.append('circle').attr('class','pt').attr('stroke','#fff').attr('stroke-width',.8)
+      .on('mousemove',function(ev,d){ tip.style('opacity',1).style('left',(ev.offsetX+18)+'px').style('top',(ev.offsetY+8)+'px')
+        .html(`<strong>${d.name}</strong><div class="tt-reg">${d.confed}</div><div class="tt-row"><span>ELO prom</span><span>${Math.round(d.elo)}</span></div><div class="tt-row"><span>PIB</span><span>${fmtMoney(d.gdp)}</span></div><div class="tt-row"><span>Residuo</span><span>${d.resid>=0?'+':''}${Math.round(d.resid)}</span></div>`); })
+      .on('mouseleave',()=>tip.style('opacity',0))
+      .on('click',(ev,d)=>{ toggleLabel(d.iso3); }),
+    up=>up, ex=>ex.remove()
+  ).attr('cx',d=>x(d.x)).attr('cy',d=>y(d.elo))
+    .attr('r',d=>labeled.has(d.iso3)?7:5.5)
+    .attr('fill',d=>COLORS[d.confed]).style('cursor','pointer')
+    .attr('opacity',d=>(hoverConf&&d.confed!==hoverConf&&!labeled.has(d.iso3))?0.1:0.85);
+  // etiquetas: labeled (persistente) + confed en hover
+  const lblSet=new Set(labeled);
+  if(hoverConf) vis.filter(p=>p.confed===hoverConf).forEach(p=>lblSet.add(p.iso3));
+  const lblData=vis.filter(p=>lblSet.has(p.iso3));
+  gLbl.selectAll('text').data(lblData,d=>d.iso3).join('text').attr('class','plabel')
+    .attr('x',d=>x(d.x)+8).attr('y',d=>y(d.elo)+3).attr('fill',d=>d3.color(COLORS[d.confed]).darker(1.4)).text(d=>d.name);
+}
+function updateBanner(){
+  document.getElementById('nval').textContent=reg?reg.n:'–';
+  document.getElementById('r2val').textContent=reg?reg.r2.toFixed(2):'–';
+  document.getElementById('perval').textContent=period[0]+'–'+period[1];
+  const c=hoverConf||'CONMEBOL', rz=residByConf[c];
+  document.getElementById('residlbl').textContent='Residuo medio · '+c;
+  const el=document.getElementById('residval');
+  if(rz==null){el.textContent='–';el.style.color='var(--ink)';}
+  else{el.textContent=(rz>=0?'+':'')+Math.round(rz); el.style.color=rz>=0?'#3E6B47':'#A23B2A';}
+}
+function updateLegend(){
+  d3.select('#legend').selectAll('.chip').data(CONF_ORDER,d=>d).join(
+    en=>{const c=en.append('div').attr('class','chip')
+      .on('mouseenter',(ev,cf)=>{ if(!hidden.has(cf)){hoverConf=cf; d3.select(ev.currentTarget).classed('hovering',true); draw(); updateBanner();} })
+      .on('mouseleave',(ev)=>{ hoverConf=null; d3.select(ev.currentTarget).classed('hovering',false); draw(); updateBanner(); })
+      .on('click',(ev,cf)=>{ if(hidden.has(cf))hidden.delete(cf); else hidden.add(cf); hoverConf=null; draw(); updateLegend(); });
+      c.append('span').attr('class','nm'); c.append('span').attr('class','rz'); return c; },
+    up=>up
+  ).style('background',c=>COLORS[c]).classed('off',c=>hidden.has(c))
+   .each(function(c){ this.querySelector('.nm').textContent=c; const r=residByConf[c]; this.querySelector('.rz').textContent=(hidden.has(c)||r==null)?'':`${r>=0?'+':''}${Math.round(r)}`; });
+}
+
+// ===== etiquetas seleccionables (clic en punto o buscador) =====
+function toggleLabel(iso){ if(labeled.has(iso))labeled.delete(iso); else labeled.add(iso); draw(); renderSelChips(); }
+function renderSelChips(){
+  const cont=document.getElementById('sel-chips'); cont.innerHTML='';
+  Array.from(labeled).map(iso=>byIso[iso]).filter(Boolean)
+    .sort((a,b)=>a.name.localeCompare(b.name)).forEach(d=>{
+    const chip=document.createElement('span'); chip.className='sel-chip'; chip.style.background=COLORS[d.confed]; chip.textContent=d.name;
+    const x=document.createElement('button'); x.className='sel-chip-x'; x.innerHTML='×'; x.onclick=()=>toggleLabel(d.iso3);
+    chip.appendChild(x); cont.appendChild(chip);
+  });
+}
+(function setupSearch(){
+  const input=document.getElementById('search'), results=document.getElementById('search-results');
+  let matches=[], idx=-1;
+  function getMatches(q){ const qn=norm(q.trim()); if(!qn)return []; return DATA.filter(d=>norm(d.name).includes(qn)).sort((a,b)=>a.name.localeCompare(b.name)).slice(0,8); }
+  function render(){
+    if(!matches.length){ results.innerHTML='<div class="search-result" style="cursor:default;color:var(--ink-muted)">Sin resultados</div>'; results.classList.add('open'); return; }
+    results.innerHTML=matches.map((d,i)=>`<div class="search-result${i===idx?' active':''}" data-iso="${d.iso3}">${d.name}<span class="reg">${d.confed}</span></div>`).join('');
+    results.classList.add('open');
+    results.querySelectorAll('.search-result[data-iso]').forEach(el=>el.onclick=()=>{ toggleLabel(el.dataset.iso); input.value=''; results.classList.remove('open'); input.focus(); });
+  }
+  input.addEventListener('input',()=>{ matches=getMatches(input.value); idx=matches.length?0:-1; render(); });
+  input.addEventListener('keydown',ev=>{
+    if(!results.classList.contains('open'))return;
+    if(ev.key==='ArrowDown'){ev.preventDefault(); if(matches.length){idx=(idx+1)%matches.length; render();}}
+    else if(ev.key==='ArrowUp'){ev.preventDefault(); if(matches.length){idx=(idx-1+matches.length)%matches.length; render();}}
+    else if(ev.key==='Enter'){ev.preventDefault(); if(idx>=0&&matches[idx]){ toggleLabel(matches[idx].iso3); input.value=''; results.classList.remove('open'); }}
+    else if(ev.key==='Escape'){ results.classList.remove('open'); input.blur(); }
+  });
+  document.addEventListener('click',ev=>{ if(!ev.target.closest('.search-wrap')) results.classList.remove('open'); });
+})();
+
+const slider=document.getElementById('slider');
+noUiSlider.create(slider,{start:[2000,2026],connect:true,step:1,margin:1,range:{min:1980,max:2026},format:{to:v=>Math.round(v),from:v=>Math.round(v)}});
+slider.noUiSlider.on('update',(vals)=>{ const a=+vals[0],b=+vals[1]; period=[a,b]; document.getElementById('yrs').textContent=a+' – '+b; recompute(); });
+renderSelChips();
+</script>
+</body>
+</html>

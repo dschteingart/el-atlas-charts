@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — Elo vs PIB total</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<link rel="stylesheet" href="./editor.css">
+<style>
+  /* === Estilos específicos del scatter (chart 1 del N°3) === */
+  /* Mismo ancho que el scatter del N°2 — el chart respira mejor a 1100px. */
+  .wrap-wide { max-width: 1100px; }
+  /* Padding y márgenes apretados — toda la página tiene que entrar en
+     una vista de ~1080px sin scroll en desktop. */
+  .wrap-wide { padding: 6px 20px 10px; }
+  .wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
+  .wrap-wide .chart-block { margin: 4px 0 2px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+  .wrap-wide .chart-subtitle { margin: 0 0 4px; font-size: 13.5px; line-height: 1.35; }
+
+  /* Apretamos los gaps verticales de los bloques intermedios para
+     ganar 30-40px y que el SVG + banner + footer entren en pantalla. */
+  .m-search-wrap { margin: 0; }
+  .m-selected-chips { margin: 2px 0 4px; }
+  .m-legend { margin-top: 2px; }
+  .chart-svg-wrap { margin-top: 2px; }
+  .s-banner { margin: 0; padding: 6px 12px; }
+  .footer { margin-top: 6px; }
+  .footer p { margin: 2px 0; }
+
+  /* === Fila superior: buscador (izq) + banner stats (der) ============
+     El banner se coloca al lado del buscador en lugar de debajo del SVG.
+     - Buscador: flex 0 1 360px (mismo ancho máximo que tenía antes).
+     - Banner: flex 0 1 auto, gracias a `margin-left:auto` se pega a la
+       derecha del contenedor.
+     - align-items: flex-start porque el banner tiene altura distinta al
+       buscador (el padding interno lo hace ~28px vs ~32px del input);
+       alinearlos al top evita que el banner "flote" raro.
+     - En mobile (≤768px) se apilan verticalmente; el buscador
+       además sigue ocultándose detrás del botón "Seleccionar" como
+       antes, así que en mobile el banner pasa a verse arriba solo. */
+  .s-top-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 16px;
+    margin: 4px 0 2px;
+  }
+  .s-top-row .m-search-wrap {
+    flex: 0 1 360px;
+    max-width: 360px;
+    margin: 0;
+  }
+  .s-top-row .s-banner {
+    flex: 0 1 auto;
+    margin-left: auto; /* empuja el banner a la derecha del contenedor */
+    align-self: center;
+  }
+  @media (max-width: 768px) {
+    .s-top-row {
+      flex-direction: column;
+      gap: 6px;
+    }
+    .s-top-row .m-search-wrap,
+    .s-top-row .s-banner {
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+    }
+  }
+
+  /* === Controles === */
+  /* En el N°3 el bloque de controles es más simple que el N°2: no hay
+     toggles (modelo/escala/ajuste) — solo el slider de rango y el
+     buscador. Mantengo .m-controls para preservar el layout y el comportamiento
+     mobile (tuerca + buscador colapsado). */
+  .m-controls {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .m-ctrl-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .m-ctrl-label {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+  }
+
+  /* === Slider de rango (2 thumbs) =================================
+     Dos inputs type="range" superpuestos en absoluto. El truco clásico:
+     - El contenedor recibe los clicks vía pointer-events:none en los inputs,
+       pero los thumbs los reactivan con pointer-events:auto. Así pasa el
+       click al thumb más cercano sin importar cuál input está "encima" en
+       el orden del DOM.
+     - El track gris es un elemento aparte porque queremos pintar el rango
+       activo en color (entre los dos thumbs) y los inputs no permiten eso
+       solo con CSS estándar.
+     - clamp con min 5 años se hace en JS (scatter.js, no acá). */
+  .s-range-block {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 280px;
+  }
+  .s-range-slider {
+    position: relative;
+    flex: 1;
+    height: 20px;
+    min-width: 200px;
+  }
+  .s-range-track {
+    position: absolute;
+    top: 50%;
+    left: 0; right: 0;
+    height: 4px;
+    background: var(--grid);
+    border-radius: 2px;
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+  .s-range-track-active {
+    position: absolute;
+    top: 50%;
+    height: 4px;
+    background: var(--accent);
+    border-radius: 2px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    /* left/right los seteamos por JS según los thumbs */
+  }
+  .s-range-slider input[type="range"] {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 20px;
+    margin: 0;
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    pointer-events: none; /* track ignora clicks; los thumbs los reactivan */
+    outline: none;
+  }
+  .s-range-slider input[type="range"]::-webkit-slider-thumb {
+    pointer-events: auto;
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+    /* margin-top compensa porque el thumb se centra sobre la línea
+       del input (que es alto 20px), no sobre el track de 4px */
+    margin-top: 0;
+  }
+  .s-range-slider input[type="range"]::-moz-range-thumb {
+    pointer-events: auto;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    background: var(--accent);
+    cursor: pointer;
+    border: 2px solid var(--bg);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+  }
+  .s-range-slider input[type="range"]::-moz-range-track {
+    background: transparent;
+    border: none;
+  }
+  .s-range-display {
+    font-family: var(--serif);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    min-width: 110px;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  /* === SVG, ejes, grid, puntos === */
+  .s-grid-line { stroke: var(--grid); stroke-width: 1; opacity: 0.55; }
+  .s-axis-line { stroke: var(--ink-muted); stroke-width: 1; fill: none; }
+  .s-tick {
+    font-family: var(--sans);
+    font-size: 11px;
+    fill: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .s-axis-title {
+    font-family: var(--sans);
+    font-size: 11.5px;
+    fill: var(--ink-soft);
+    font-weight: 500;
+  }
+  .s-point {
+    transition: opacity 0.2s, r 0.15s;
+    cursor: pointer;
+  }
+  .s-point.s-dim { opacity: 0.18; }
+  .s-country-label,
+  .s-labeled-label {
+    font-family: var(--sans);
+    font-size: 10.5px;
+    font-weight: 500;
+    pointer-events: none;
+    paint-order: stroke;
+    stroke: var(--bg);
+    stroke-width: 2.5px;
+    stroke-linejoin: round;
+  }
+  .s-labeled-label.s-selected-label { font-weight: 600; }
+  .s-regression { pointer-events: none; }
+
+  /* === Legend interactivo (chips de confederación) === */
+  .m-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 4px;
+    padding: 0 4px;
+  }
+  .m-legend-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.15s;
+  }
+  .m-legend-chip.inactive {
+    opacity: 0.55;
+    text-decoration: line-through;
+    text-decoration-color: var(--ink-muted);
+    text-decoration-thickness: 1px;
+    color: var(--ink-muted);
+  }
+  .m-legend-chip.inactive .m-legend-swatch { opacity: 0.45; }
+  .m-legend-swatch {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .m-legend-label {}
+  /* Residuo medio de cada confederación, inline al lado del nombre.
+     Verde si es positivo (sobre-rinde), rojo si negativo. Tipografía
+     tabular para que los signos alineen entre chips. */
+  .m-legend-rz {
+    font-size: 11.5px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    margin-left: 2px;
+  }
+  .m-legend-chip.inactive .m-legend-rz { opacity: 0.45; }
+
+  /* Hint debajo de la leyenda — explicita la affordance hover/click */
+  .m-legend-hint {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink-muted);
+    margin: 2px 4px 0;
+    line-height: 1.3;
+  }
+  @media (max-width: 768px) {
+    .m-legend-hint { display: none; }
+  }
+
+  /* === Buscador + chips de selección === */
+  .m-search-wrap {
+    position: relative;
+    margin: 8px 0 4px;
+    max-width: 360px;
+  }
+  .m-search-input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    background: var(--bg);
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+  }
+  .m-search-input:focus { border-color: var(--accent); }
+  .m-search-results {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0; right: 0;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 30;
+    display: none;
+  }
+  .m-search-results.open { display: block; }
+  .m-search-result {
+    padding: 7px 10px;
+    font-family: var(--sans);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--grid);
+  }
+  .m-search-result:last-child { border-bottom: none; }
+  .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
+  .m-search-result.m-already { opacity: 0.5; font-style: italic; }
+  .m-search-region {
+    color: var(--ink-muted);
+    font-size: 11.5px;
+    flex-shrink: 0;
+  }
+  .m-selected-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 4px 0 6px;
+    min-height: 0;
+  }
+  .m-selected-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 4px 3px 10px;
+    border-radius: 12px;
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 500;
+    color: white;
+  }
+  .m-chip-x {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.25);
+    color: white;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+  .m-chip-x:hover { background: rgba(255,255,255,0.45); }
+
+  /* === Banner regional === */
+  /* [N: 162]  ·  [R²: 0.42]  ·  [Residuo CONMEBOL: +120 Elo]  ·  [Período: 2000-2026] */
+  .s-banner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 14px;
+    margin: 8px 0 0;
+    padding: 8px 12px;
+    background: var(--bg-soft);
+    border-radius: 6px;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .s-banner-item {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .s-banner-key {
+    font-size: 11px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+  .s-banner-val {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .s-banner-region-name { font-weight: 500; }
+  .s-banner-sep {
+    color: var(--ink-muted);
+    opacity: 0.6;
+  }
+
+  @media (max-width: 600px) {
+    .s-country-label, .s-labeled-label { font-size: 9px; }
+    .m-search-wrap { max-width: 100%; }
+    .s-banner { font-size: 12px; }
+  }
+
+  /* ============================================================
+     Mobile UX (≤768px): mismos triggers OWID-style del N°2.
+     ============================================================ */
+  .m-controls-trigger, .m-search-trigger {
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: 6px 10px;
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .m-controls-trigger { font-size: 16px; padding: 4px 9px; line-height: 1; }
+  .m-controls-trigger:hover, .m-search-trigger:hover {
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+  .m-search-trigger-icon { font-size: 14px; }
+
+  @media (max-width: 768px) {
+    .m-controls-trigger, .m-search-trigger { display: inline-flex; }
+    .m-controls {
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .m-controls-trigger, .m-search-trigger {
+      flex-shrink: 0;
+      padding: 4px 8px;
+    }
+    .m-search-trigger-label { display: none; }
+
+    /* En el N°3 no hay panel de toggles, así que el m-controls-trigger
+       arranca oculto incluso en mobile (no hay nada que abrir). Lo dejo
+       en el DOM por consistencia, pero con display:none vía data-attr. */
+    .m-controls-trigger { display: none; }
+
+    .m-search-wrap {
+      display: none;
+      width: 100%;
+      max-width: 100%;
+      margin-top: 8px;
+      order: 100;
+    }
+    .m-search-wrap.open { display: block; }
+
+    .m-selected-chips { width: 100%; order: 101; }
+    .s-range-block { flex: 1 1 auto; min-width: 0; gap: 6px; }
+    .s-range-block .m-ctrl-label { display: none; }
+    .s-range-display {
+      font-size: 13px;
+      font-family: var(--sans);
+      font-weight: 600;
+      min-width: 76px;
+    }
+
+    .m-selected-chip {
+      font-size: 11px;
+      padding: 2px 4px 2px 8px;
+    }
+
+    /* Leyenda en 2 columnas (3 filas de 2 confederaciones) */
+    .m-legend {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 12px;
+      margin-top: 2px;
+    }
+    .m-legend-chip { font-size: 10px; gap: 5px; line-height: 1.2; }
+    .m-legend-swatch { width: 8px; height: 8px; }
+
+    .wrap-wide .chart-title {
+      font-size: 19px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin: 0 0 4px;
+    }
+    .wrap-wide .chart-subtitle {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--ink-muted);
+      line-height: 1.4;
+      margin: 0 0 8px;
+    }
+    .wrap-wide .chart-block { margin: 8px 0 4px; }
+  }
+
+  /* Colapsable mobile (estilo OWID) para metodología/fuentes */
+  .m-mobile-collapse { display: none; }
+  .m-mobile-collapse > summary {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 6px 0;
+    list-style: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+  .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
+  .m-mobile-collapse > summary::before { content: '+ '; }
+  .m-mobile-collapse[open] > summary::before { content: '− '; }
+  .m-mobile-collapse > p {
+    margin: 4px 0 8px;
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+  @media (max-width: 768px) {
+    .m-mobile-collapse { display: block; }
+    .m-desktop-only { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 3</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="1" data-editor-id="scatter-elo-pib">
+    <h2 class="chart-title" data-i18n="c1-title">Sudamérica juega en otra liga</h2>
+    <!-- El subtítulo es dinámico: scatter.js lo reescribe con los años del slider. -->
+    <p class="chart-subtitle" data-i18n="c1-subtitle">Las 10 selecciones de la CONMEBOL aparecen sistemáticamente por encima de la regresión: rinden más de lo que el tamaño de su economía predeciría.</p>
+
+    <div class="m-controls">
+      <!-- Botón tuerca: oculto en el N°3 (no hay toggles), lo dejo por
+           consistencia con el .m-controls del N°2 por si más adelante
+           agregamos un panel. -->
+      <button class="m-controls-trigger" aria-label="Opciones" data-i18n-aria="ctrl-options">⚙</button>
+
+      <!-- Botón "Seleccionar": solo visible en mobile. Abre el buscador. -->
+      <button class="m-search-trigger" aria-label="Seleccionar">
+        <span class="m-search-trigger-icon" aria-hidden="true">👁</span>
+        <span class="m-search-trigger-label" data-i18n="ctrl-select">Seleccionar</span>
+      </button>
+
+      <!-- Slider de RANGO: dos inputs superpuestos para from y to.
+           El min se ajusta dinámicamente en JS según el dataset. -->
+      <div class="s-range-block">
+        <span class="m-ctrl-label" data-i18n="c1-slider-period-label">Período</span>
+        <div class="s-range-slider" id="s-range-slider">
+          <div class="s-range-track"></div>
+          <div class="s-range-track-active" id="s-range-track-active"></div>
+          <input type="range" id="s-slider-from" min="1980" max="2026" value="2000" step="1" aria-label="Desde" data-i18n-aria="c1-slider-from-label">
+          <input type="range" id="s-slider-to"   min="1980" max="2026" value="2026" step="1" aria-label="Hasta" data-i18n-aria="c1-slider-to-label">
+        </div>
+        <span class="s-range-display" id="s-range-display">2000–2026</span>
+      </div>
+    </div>
+
+    <!-- Leyenda interactiva: scatter.js la populates con un chip por confederación FIFA.
+         Cada chip incluye el residuo medio de su confed inline. -->
+    <div class="m-legend" data-chart="1"></div>
+    <p class="m-legend-hint" data-i18n="c1-legend-hint">Pasá el cursor por una confederación para resaltarla · Clic para mostrarla/ocultarla</p>
+
+    <!-- Buscador (izq) + banner de stats (der) en la misma fila.
+         Banner queda al lado del buscador, no debajo del SVG — gana espacio
+         vertical y deja N/R²/Residuo a la altura editorial. En mobile vuelven
+         a apilarse vertical via @media. -->
+    <div class="s-top-row">
+      <div class="m-search-wrap">
+        <input type="text" id="s-search" class="m-search-input" data-i18n-placeholder="c1-search-placeholder" placeholder="Buscar selección…" autocomplete="off">
+        <div id="s-search-results" class="m-search-results"></div>
+      </div>
+      <!-- Banner: scatter.js lo populates con N, R², Residuo CONMEBOL, Período. -->
+      <div class="s-banner" id="s-banner"></div>
+    </div>
+    <div class="m-selected-chips" id="s-selected-chips"></div>
+
+    <div class="chart-svg-wrap">
+      <!-- ViewBox 1100×460. El SVG hereda preserveAspectRatio=xMidYMid meet —
+           lo cambiamos a "none" cuando estamos exportando un PNG con formato
+           no-default, via el wrapper de utils.js. -->
+      <svg id="chart1" viewBox="0 0 1100 460" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip1"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" data-chart="1-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="1" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources m-desktop-only" data-i18n="c1-sources">
+        Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (ratings Elo de selecciones nacionales, promedio anual ponderado por días); FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Confederaciones según afiliación FIFA actual.
+      </p>
+      <details class="m-mobile-collapse">
+        <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+        <p data-i18n="c1-sources">Datos: eloratings.net (Elo selecciones nacionales) y Banco Mundial — WDI (PIB pc PPA constantes 2021).</p>
+      </details>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- Orden de scripts:
+     1. lib/regions.js  — para tener el set de helpers compartido (aunque acá no
+        usemos regiones WB, png-export.js puede tocar funciones de la lib).
+     2. lib/i18n.js     — BASE_I18N
+     3. ./regions-fifa.js  — las 6 confederaciones + colores
+     4. ./i18n-issue.js — ISSUE_I18N, merge con BASE, applyI18n, setupLangToggle, state
+     5. ./utils.js      — PNG_FORMATS, getActivePngFormat, applyFormatWrapper, etc
+     6. ./country-names.js — COUNTRY_NAMES[iso3][LANG]
+     7. ./data-elo-pib.js  — DATA_ELO_PIB (184 países con elo[year]/gdp[year])
+     8. ./editor.js     — window.AtlasEditor (sidebar editorial)
+     9. ./scatter.js    — initScatter, drawScatter, render*, etc
+     10. ./png-export.js — engancha el botón data-png="1"
+-->
+<script src="../lib/regions.js"></script>
+<script src="../lib/i18n.js"></script>
+<script src="./regions-fifa.js"></script>
+<script src="./i18n-issue.js"></script>
+<script src="./utils.js"></script>
+<script src="./country-names.js"></script>
+<script src="./data-elo-pib.js"></script>
+<script src="./editor.js"></script>
+<script src="./scatter.js"></script>
+<script src="./png-export.js"></script>
+<script>
+  // Estado inicial del chart 1 (scatter Elo vs PIB).
+  // Mismo patrón que state[2] del N°2 chart 2:
+  //  - selectedCountries arranca VACÍO: los CONMEBOL se etiquetan por lógica
+  //    intrínseca del chart, no por estado. Solo aparece chip cuando el user
+  //    los suma manualmente desde el buscador.
+  //  - period, hoverConf, hiddenConfs: estado UI normal.
+  state[1] = {
+    period: [2000, 2026],
+    hoverConf: null,
+    // stickyConf: la última confed sobre la que se posó el mouse. El banner
+    // de residuo se queda en esta confed aunque el mouse salga del chip.
+    // Arranca en CONMEBOL (protagonista del número).
+    stickyConf: 'CONMEBOL',
+    hiddenConfs: new Set(),
+    selectedCountries: new Set(),
+    playing: false
+  };
+
+  initScatter();
+  applyI18n();
+  setupLangToggle(() => {
+    if (typeof renderScatterLegend === 'function') renderScatterLegend();
+    if (typeof renderScatterSelectedChips === 'function') renderScatterSelectedChips();
+    if (typeof drawScatter === 'function') drawScatter();
+  });
+</script>
+</body>
+</html>

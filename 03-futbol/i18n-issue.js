@@ -1,0 +1,174 @@
+// Strings específicos del N°3 + helpers de i18n.
+// BASE_I18N (compartido entre números) viene de lib/i18n.js, cargado antes.
+// state global declarado acá; cada HTML populates state[N] según los charts que tenga.
+
+//==================================================================
+//  I18N — específico del N°3 "El fútbol y el desarrollo"
+//==================================================================
+const ISSUE_I18N = {
+  es: {
+    'issue-num':  'N° 3',
+    'page-title': 'El fútbol no respeta al PIB',
+    'page-lede':  'La excepcionalidad sudamericana en el fútbol — selecciones competitivas con economías relativamente chicas — sigue siendo una rareza estadística.',
+
+    // Chart 1 — Scatter ELO vs PIB total
+    'c1-title':            'Sudamérica juega en otra liga',
+    'c1-subtitle':         'Las 10 selecciones de la CONMEBOL aparecen sistemáticamente por encima de la regresión: rinden más de lo que el tamaño de su economía predeciría.',
+    'c1-axis-x':           'PIB total promedio del período (PPA, US$ int. constantes) — escala log',
+    'c1-axis-y':           'Índice de fortaleza futbolística (rating Elo, promedio del período)',
+    'c1-search-placeholder': 'Buscar selección…',
+    'c1-no-results':       'Sin resultados',
+    'c1-legend-hint':      'Pasá el cursor por una confederación para resaltarla · Clic para mostrarla/ocultarla',
+
+    // Slider rango
+    'c1-slider-period-label':  'Período',
+    'c1-slider-from-label':    'Desde',
+    'c1-slider-to-label':      'Hasta',
+
+    // Banner (etiquetas + plantillas)
+    'c1-banner-n':              'Países (n)',
+    'c1-banner-r2':             'R²',
+    'c1-banner-residual':       'Residuo medio',
+    'c1-banner-period':         'Período',
+
+    // Tooltip
+    'c1-tt-elo':             'ELO prom',
+    'c1-tt-gdp':              'PIB',
+    'c1-tt-confed':          'Confederación',
+    'c1-tt-period':          'Período',
+    'c1-tt-residual':        'Residuo',
+
+    // Aria / accesibilidad
+    'chip-remove':           'Quitar',
+
+    // Confederaciones FIFA — nombres mostrados en chips y banner
+    'conf.CONMEBOL':         'CONMEBOL',
+    'conf.UEFA':             'UEFA',
+    'conf.CONCACAF':         'CONCACAF',
+    'conf.CAF':              'CAF',
+    'conf.AFC':              'AFC',
+    'conf.OFC':              'OFC',
+    // Nombres largos (descripción regional)
+    'conf-long.CONMEBOL':    'Sudamérica',
+    'conf-long.UEFA':        'Europa',
+    'conf-long.CONCACAF':    'Norte y Centroamérica + Caribe',
+    'conf-long.CAF':         'África',
+    'conf-long.AFC':         'Asia',
+    'conf-long.OFC':         'Oceanía',
+
+    // Controles compartidos (override de los de BASE_I18N para terminología propia)
+    'ctrl-options':          'Opciones',
+    'ctrl-select':           'Seleccionar',
+    'ctrl-show-method':      'Ver metodología y fuentes',
+
+    // Footer
+    'footer-download':       'Descargar datos (CSV)',
+    'footer-download-png':   'Descargar PNG',
+    'c1-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (ratings Elo de selecciones nacionales, promedio anual ponderado por días); FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Confederaciones según afiliación FIFA actual. Los puntos del gráfico representan el promedio de cada variable sobre el rango de años seleccionado, considerando solo países con datos en ambas variables.',
+  },
+  en: {
+    'issue-num':  'N° 3',
+    'page-title': 'Football doesn\'t bow to GDP',
+    'page-lede':  'South America\'s footballing exceptionalism — strong national teams from relatively small economies — remains a statistical oddity.',
+
+    // Chart 1 — Scatter ELO vs total GDP
+    'c1-title':            'South America plays in a different league',
+    'c1-subtitle':         'CONMEBOL\'s 10 national teams systematically sit above the regression line: they outperform what their economy\'s size would predict.',
+    'c1-axis-x':           'Average total GDP over the period (PPP, constant int\'l USD) — log scale',
+    'c1-axis-y':           'Footballing strength index (Elo rating, period average)',
+    'c1-search-placeholder': 'Search team…',
+    'c1-no-results':       'No results',
+    'c1-legend-hint':      'Hover a confederation to highlight it · Click to show/hide',
+
+    'c1-slider-period-label':  'Period',
+    'c1-slider-from-label':    'From',
+    'c1-slider-to-label':      'To',
+
+    'c1-banner-n':              'Countries (n)',
+    'c1-banner-r2':             'R²',
+    'c1-banner-residual':       'Mean residual',
+    'c1-banner-period':         'Period',
+
+    'c1-tt-elo':             'Avg Elo',
+    'c1-tt-gdp':             'GDP',
+    'c1-tt-confed':          'Confederation',
+    'c1-tt-period':          'Period',
+    'c1-tt-residual':        'Residual',
+
+    'chip-remove':           'Remove',
+
+    'conf.CONMEBOL':         'CONMEBOL',
+    'conf.UEFA':             'UEFA',
+    'conf.CONCACAF':         'CONCACAF',
+    'conf.CAF':              'CAF',
+    'conf.AFC':              'AFC',
+    'conf.OFC':              'OFC',
+    'conf-long.CONMEBOL':    'South America',
+    'conf-long.UEFA':        'Europe',
+    'conf-long.CONCACAF':    'North & Central America + Caribbean',
+    'conf-long.CAF':         'Africa',
+    'conf-long.AFC':         'Asia',
+    'conf-long.OFC':         'Oceania',
+
+    'ctrl-options':          'Options',
+    'ctrl-select':           'Select',
+    'ctrl-show-method':      'View methodology and sources',
+
+    'footer-download':       'Download data (CSV)',
+    'footer-download-png':   'Download PNG',
+    'c1-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo ratings of national teams, annual averages weighted by days at each rating); IMF — World Economic Outlook (total GDP PPP, constant international USD). Confederations follow current FIFA affiliation. Each point represents the average of both variables over the selected year range, restricted to countries with data for both.',
+  }
+};
+
+// Merge shared base (loaded from ../lib/i18n.js) with issue overrides.
+const I18N = {
+  es: { ...(typeof BASE_I18N !== 'undefined' ? BASE_I18N.es : {}), ...ISSUE_I18N.es },
+  en: { ...(typeof BASE_I18N !== 'undefined' ? BASE_I18N.en : {}), ...ISSUE_I18N.en }
+};
+
+let LANG = 'es';
+const t = (key) => (I18N[LANG] && I18N[LANG][key]) || key;
+
+// state global, indexado por chart (state[1] = scatter elo/pib)
+const state = {};
+
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (I18N[LANG][key]) el.innerHTML = I18N[LANG][key];
+  });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.dataset.i18nPlaceholder;
+    if (I18N[LANG][key]) el.placeholder = I18N[LANG][key];
+  });
+  document.querySelectorAll('[data-i18n-href]').forEach(el => {
+    const key = el.dataset.i18nHref;
+    if (I18N[LANG][key]) el.setAttribute('href', I18N[LANG][key]);
+  });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+    const key = el.dataset.i18nAria;
+    if (I18N[LANG][key]) el.setAttribute('aria-label', I18N[LANG][key]);
+  });
+}
+
+// Resolver idioma desde URL (?lang=en o ?lang=es)
+(function initLang() {
+  const urlLang = new URLSearchParams(location.search).get('lang');
+  if (urlLang === 'en' || urlLang === 'es') LANG = urlLang;
+  document.documentElement.lang = LANG;
+})();
+
+function setupLangToggle(onLangChange) {
+  document.querySelectorAll('.lang-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      LANG = btn.dataset.lang;
+      document.documentElement.lang = LANG;
+      document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('active', b.dataset.lang === LANG));
+      applyI18n();
+      if (onLangChange) onLangChange();
+    });
+  });
+  document.querySelectorAll('.lang-toggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === LANG);
+  });
+}
