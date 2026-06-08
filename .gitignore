@@ -1,0 +1,7 @@
+# Carpetas locales de trabajo
+.claude/
+
+# Pantheon raw CSV — pesado (~40 MB), se redescarga de pantheon.world.
+# Los archivos comprimidos del usuario están en C:/Users/.../Downloads/
+# y se descomprimen acá solo para análisis y para correr build_talento_data.py.
+_handoff-futbol/pantheon_compare/

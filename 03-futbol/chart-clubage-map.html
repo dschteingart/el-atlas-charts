@@ -244,24 +244,24 @@
     </div>
   </header>
 
-  <section class="chart-block" data-chart="2" data-editor-id="mapa-clubage">
-    <h2 class="chart-title" data-i18n="c2-title">Dónde nació el fútbol moderno</h2>
-    <p class="chart-subtitle" data-i18n="c2-subtitle">Año mediano de fundación de los clubes de cada país, ponderado por su relevancia en Wikipedia. Tonos más oscuros = tradición futbolística más profunda.</p>
+  <section class="chart-block" data-chart="3" data-editor-id="mapa-clubage">
+    <h2 class="chart-title" data-i18n="c3-title">Dónde nació el fútbol moderno</h2>
+    <p class="chart-subtitle" data-i18n="c3-subtitle">Año mediano de fundación de los clubes de cada país, ponderado por su relevancia en Wikipedia. Tonos más oscuros = tradición futbolística más profunda.</p>
 
     <!-- Buscador (izq) + leyenda gradient + reset zoom (der) -->
     <div class="m-top-row">
       <div class="m-search-wrap">
-        <input type="text" id="m-search-input" class="m-search-input" data-i18n-placeholder="c2-search-placeholder" placeholder="Buscar país…" autocomplete="off">
+        <input type="text" id="m-search-input" class="m-search-input" data-i18n-placeholder="c3-search-placeholder" placeholder="Buscar país…" autocomplete="off">
         <div id="m-search-results" class="m-search-results"></div>
       </div>
       <div class="m-legend-block">
-        <span class="m-legend-label" data-i18n="c2-legend-label">Año mediano</span>
+        <span class="m-legend-label" data-i18n="c3-legend-label">Año mediano</span>
         <div class="m-legend-grad-wrap">
           <!-- Banda de bins + chip "Sin dato" en un solo SVG (lo renderea
                drawLegend en clubage-map.js). Ambos hovereables. -->
           <svg id="m-legend-grad" preserveAspectRatio="xMidYMid meet"></svg>
         </div>
-        <button class="m-reset-zoom" id="m-reset-zoom" data-i18n="c2-reset-zoom">Restablecer zoom</button>
+        <button class="m-reset-zoom" id="m-reset-zoom" data-i18n="c3-reset-zoom">Restablecer zoom</button>
       </div>
     </div>
 
@@ -276,16 +276,16 @@
 
   <div class="footer">
     <p>
-      <button class="download" data-chart="2-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
-      <button class="download" data-png="2" data-i18n="footer-download-png">Descargar PNG</button>
+      <button class="download" data-chart="3-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="3" data-i18n="footer-download-png">Descargar PNG</button>
     </p>
     <div class="footer-row">
-      <p class="sources m-desktop-only" data-i18n="c2-sources">
+      <p class="sources m-desktop-only" data-i18n="c3-sources">
         Datos: Wikidata (clubes de fútbol como instancias de <em>association football club</em>, ~41.894 clubes); año de fundación (P571) y número de Wikipedias con artículo (sitelinks) para ponderar relevancia.
       </p>
       <details class="m-mobile-collapse">
         <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
-        <p data-i18n="c2-sources">Datos: Wikidata — clubes con año de fundación (P571), ponderados por sitelinks de Wikipedia.</p>
+        <p data-i18n="c3-sources">Datos: Wikidata — clubes con año de fundación (P571), ponderados por sitelinks de Wikipedia.</p>
       </details>
       <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
     </div>
@@ -312,9 +312,9 @@
 <script src="./png-export.js"></script>
 <script>
   // Estado mínimo para el chart 2 (mapa). El renderer maneja casi todo
-  // como variables del módulo (m_geo, m_path, m_zoom). state[2] solo se
+  // como variables del módulo (m_geo, m_path, m_zoom). state[3] solo se
   // usa por el editor sidebar para guardar la selección de países.
-  state[2] = {
+  state[3] = {
     selectedCountries: []
   };
 

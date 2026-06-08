@@ -11,9 +11,9 @@
 // No vanilla porque la matemática de Robinson + zoom + bounds-from-path
 // vale la pena delegar.
 //
-// API pública (state[2] global):
-//   - state[2].hoveredIso: iso3 con hover (null si nada)
-//   - state[2].searchedIso: iso3 al que el user buscó (para zoom)
+// API pública (state[3] global):
+//   - state[3].hoveredIso: iso3 con hover (null si nada)
+//   - state[3].searchedIso: iso3 al que el user buscó (para zoom)
 //
 // DOM hooks que espera el HTML:
 //   - #chart1 svg (viewBox 0 0 1100 580)
@@ -307,12 +307,12 @@ function m_showTooltip(event, d) {
   if (!v || v.year == null) {
     tooltip.innerHTML = `
       <strong>${name}</strong>
-      <div class="tt-row tt-muted">${tt('c2-tt-nodata', 'Sin clubes en el universo Wikidata')}</div>
+      <div class="tt-row tt-muted">${tt('c3-tt-nodata', 'Sin clubes en el universo Wikidata')}</div>
     `;
   } else {
-    const yearLbl = tt('c2-tt-year', 'Año mediano (pond.)');
-    const nLbl    = tt('c2-tt-clubs', 'Clubes');
-    const nfLbl   = tt('c2-tt-with-date', 'Con fecha de creación identificada');
+    const yearLbl = tt('c3-tt-year', 'Año mediano (pond.)');
+    const nLbl    = tt('c3-tt-clubs', 'Clubes');
+    const nfLbl   = tt('c3-tt-with-date', 'Con fecha de creación identificada');
     // La fila "Con fecha de creación identificada" es metodológica
     // (cuántos clubes tienen P571 conocida) — se diferencia visualmente
     // con tt-row-sub: italic + tipografía más chica.
@@ -418,7 +418,7 @@ function drawLegend() {
   // Chip "Sin dato" — separado por gap, mismo height que la banda.
   // Hovereable: destaca los países sin year en el mapa.
   const nodataX = W_MAIN + GAP;
-  const nodataLabel = (typeof t === 'function' ? t('c2-legend-nodata') : 'Sin dato');
+  const nodataLabel = (typeof t === 'function' ? t('c3-legend-nodata') : 'Sin dato');
   legSvg.append('rect')
     .attr('x', nodataX)
     .attr('y', 0)
