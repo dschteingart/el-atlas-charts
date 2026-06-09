@@ -38,13 +38,45 @@
 // REGION_WB_LABEL_COLORS, COUNTRY_NAMES, LANG, t, state[2].
 
 // =================== Constantes ===================
-const S_W = 1100, S_H = 540;
+// Dimensiones desktop default (sin editor activo). Mobile interactivo
+// (≤768px sin editor) usa viewBox portrait alto (1100×1500) cuyo aspect
+// ratio matchea el container portrait (~412×540, ratio ≈0.76).
+//
+// Cuando hay un formato del editor activo (newsletter / square / mobile /
+// public), las dimensiones vienen de PNG_FORMATS[format] en utils.js y los
+// margins de s_getMargins(format). El PNG export rasteriza el SVG visible
+// — no fuerza re-render.
+const S_W_DESKTOP = 1100, S_H_DESKTOP = 540;
+const S_W_MOBILE  = 1100, S_H_MOBILE  = 1500;
 // Margin: top 30 (subtítulo va en HTML, no en SVG), bottom 60 (eje X +
 // label), left 60 (eje Y + label), right 32 (padding para labels que
 // caen al borde derecho).
-const S_MARGIN = { top: 30, right: 32, bottom: 60, left: 60 };
-const S_PLOT_W = S_W - S_MARGIN.left - S_MARGIN.right;
-const S_PLOT_H = S_H - S_MARGIN.top - S_MARGIN.bottom;
+const S_MARGIN_DESKTOP = { top: 30, right: 32, bottom: 60, left: 60 };
+// Mobile interactivo (≤768px sin editor): plot ~3× más alto → margins
+// escaladas.
+//   - left 140: ticks Y a 32px SVG necesitan más ancho.
+//   - bottom 240: axis title rotado + ticks rotados + banner = mucha más
+//     altura bajo el plot (las etiquetas X log "$1k/$10k/$100k" tienen
+//     ~28-30px SVG cada una).
+//   - top 110: subtítulo en HTML, dejamos aire arriba.
+//   - right 30: mínimo para que los puntos cercanos al máximo no toquen.
+const S_MARGIN_MOBILE  = { top: 110, right: 30, bottom: 240, left: 140 };
+
+// Margins por formato del editor (cuando el editor está activo).
+function s_getMargins(format) {
+  switch (format) {
+    case 'public':     return { top: 40, right: 32, bottom: 100, left: 70 };
+    case 'newsletter': return { top: 40, right: 40, bottom: 130, left: 70 };
+    case 'square':     return { top: 40, right: 40, bottom: 130, left: 70 };
+    case 'mobile':     return { top: 60,  right: 36, bottom: 220, left: 110 };
+    default:           return { ...S_MARGIN_DESKTOP };
+  }
+}
+
+let S_W = S_W_DESKTOP, S_H = S_H_DESKTOP;
+let S_MARGIN = { ...S_MARGIN_DESKTOP };
+let S_PLOT_W = S_W - S_MARGIN.left - S_MARGIN.right;
+let S_PLOT_H = S_H - S_MARGIN.top - S_MARGIN.bottom;
 
 // Eje Y fijo: Gini suele ir entre 18 y 65. Dejamos un margen editorial
 // arriba y abajo para que los puntos no choquen contra los bordes.
@@ -427,7 +459,77 @@ function drawScatter() {
   const svg = document.getElementById('chart2');
   if (!svg) return;
   svg.innerHTML = '';
+
+  // Editor sidebar: leemos config si el panel está activo. Overrides:
+  //   - SIZES (font-sizes desktop).
+  //   - Texts (título, subtítulo, caption editorial).
+  //   - Countries: lista que se etiqueta SIEMPRE (reemplazando el priority
+  //     de Latam puro + non-Latam globales). Si está, prevalece sobre la
+  //     lógica hover/default.
+  const aeCfg = (window.AtlasEditor && window.AtlasEditor.getConfig)
+    ? window.AtlasEditor.getConfig() : null;
+  const aeSizes = aeCfg?.sizes;
+  const aeCountries = (aeCfg?.countries && aeCfg.countries.length > 0)
+    ? new Set(aeCfg.countries) : null;
+
+  // Decidir dimensiones según el formato del editor (si está activo) o
+  // según el viewport del browser (sin editor activo). Cuando hay format:
+  // viewBox de PNG_FORMATS[format] + margins de s_getMargins(format). El
+  // PNG export rasteriza exactamente esto. WYSIWYG.
+  const editorFormat = typeof getActivePngFormat === 'function'
+    ? getActivePngFormat() : null;
+  const newsletter = editorFormat === 'newsletter';
+  const square     = editorFormat === 'square';
+  const mobilePng  = editorFormat === 'mobile';
+  const publicFmt  = editorFormat === 'public';
+  const mobile = !editorFormat
+    && typeof isMobileViewport === 'function' && isMobileViewport();
+  if (editorFormat) {
+    const f = PNG_FORMATS[editorFormat];
+    S_W = f.vbW; S_H = f.vbH;
+    S_MARGIN = s_getMargins(editorFormat);
+  } else if (mobile) {
+    S_W = S_W_MOBILE; S_H = S_H_MOBILE;
+    S_MARGIN = { ...S_MARGIN_MOBILE };
+  } else {
+    S_W = S_W_DESKTOP; S_H = S_H_DESKTOP;
+    S_MARGIN = { ...S_MARGIN_DESKTOP };
+  }
+  S_PLOT_W = S_W - S_MARGIN.left - S_MARGIN.right;
+  S_PLOT_H = S_H - S_MARGIN.top - S_MARGIN.bottom;
+
   svg.setAttribute('viewBox', `0 0 ${S_W} ${S_H}`);
+  // Aplicar/quitar wrapper CSS según el formato del editor.
+  if (typeof applyFormatWrapper === 'function') {
+    applyFormatWrapper(svg, editorFormat);
+  }
+
+  // Font sizes en unidades SVG. En mobile interactivo el SVG se renderea
+  // a ~412px de ancho efectivo (factor ≈0.375 sobre viewBox 1100), así que
+  // multiplicamos los tamaños desktop por ~3 para que en pantalla queden
+  // en 9-13px. Aplicados inline (atributo font-size) sobrescriben los
+  // valores de los CSS classes.
+  //
+  // Cuando el editor está activo con un formato, el SVG se ve en pantalla
+  // con el aspect ratio del formato (gracias al wrapper aspect-ratio CSS)
+  // y los sizes son los pineados de newsletter/square/mobilePng/public.
+  // WYSIWYG: lo que ves es lo que el PNG rasteriza.
+  // El bucket "special" del editor en este chart aplica al BANNER (cifras
+  // N / R² / Residuo). El banner es HTML, así que su font-size se aplica
+  // en s_applyEditorOverrides via inline style — no en SIZES (que es SVG).
+  const SIZES = newsletter
+    ? { tick: 18, axisTitle: 19, label: 17 }
+    : square
+    ? { tick: 18, axisTitle: 19, label: 17 }
+    : mobilePng
+    ? { tick: 28, axisTitle: 30, label: 24 }
+    : mobile
+    ? { tick: 32, axisTitle: 34, label: 28 }
+    : {
+        tick:      aeSizes?.ticks     ?? 11,
+        axisTitle: aeSizes?.axisTitle ?? 11.5,
+        label:     aeSizes?.labels    ?? 10.5
+      };
 
   const s2 = state[2];
   const year = String(s2.year);
@@ -484,9 +586,13 @@ function drawScatter() {
     gridG.appendChild(line);
     const lbl = s_ns('text');
     lbl.setAttribute('x', x);
-    lbl.setAttribute('y', S_MARGIN.top + S_PLOT_H + 18);
+    // En viewports con ticks grandes (mobile / mobilePng) más espacio bajo
+    // el axis-line; en desktop/newsletter/square 18px alcanza.
+    const xTickGap = mobile ? 44 : mobilePng ? 38 : 18;
+    lbl.setAttribute('y', S_MARGIN.top + S_PLOT_H + xTickGap);
     lbl.setAttribute('text-anchor', 'middle');
     lbl.setAttribute('class', 's-tick');
+    lbl.setAttribute('font-size', SIZES.tick);
     lbl.textContent = fmtTickGDP(v);
     axisG.appendChild(lbl);
   });
@@ -506,6 +612,7 @@ function drawScatter() {
     lbl.setAttribute('y', y + 4);
     lbl.setAttribute('text-anchor', 'end');
     lbl.setAttribute('class', 's-tick');
+    lbl.setAttribute('font-size', SIZES.tick);
     lbl.textContent = Math.round(v);
     axisG.appendChild(lbl);
   });
@@ -526,18 +633,34 @@ function drawScatter() {
   const xT = s_ns('text');
   xT.setAttribute('class', 's-axis-title');
   xT.setAttribute('x', S_MARGIN.left + S_PLOT_W / 2);
-  xT.setAttribute('y', S_H - 14);
+  // En mobile el axis-title queda ~70px arriba del fondo del viewBox
+  // para evitar que el banner HTML lo tape; en desktop, 14px de margen.
+  // Position del axis-x title: en viewports altos (mobile / mobilePng)
+  // separamos del fondo del viewBox para que el banner HTML no lo tape.
+  const xTitleY = mobile ? S_H - 70 : mobilePng ? S_H - 60 : S_H - 14;
+  xT.setAttribute('y', xTitleY);
   xT.setAttribute('text-anchor', 'middle');
-  xT.textContent = scaleX === 'log' ? t('c2-axis-x-log') : t('c2-axis-x-linear');
+  xT.setAttribute('font-size', SIZES.axisTitle);
+  // Editor: si hay axisX/Y custom no vacíos, los aplicamos. Si no, default
+  // del i18n key (que cambia con el toggle scaleX o mode).
+  const customAxisX = (aeCfg?.texts?.[LANG]?.axisX || '').trim();
+  const customAxisY = (aeCfg?.texts?.[LANG]?.axisY || '').trim();
+  xT.textContent = customAxisX
+    || (scaleX === 'log' ? t('c2-axis-x-log') : t('c2-axis-x-linear'));
   svg.appendChild(xT);
 
   const yT = s_ns('text');
   yT.setAttribute('class', 's-axis-title');
   yT.setAttribute('x', -(S_MARGIN.top + S_PLOT_H / 2));
-  yT.setAttribute('y', 16);
+  // En mobile el yT rotado necesita más espacio a la izquierda porque
+  // los ticks Y son ~3× más anchos. Lo posicionamos a 32px del borde
+  // izquierdo del viewBox (vs 16 en desktop).
+  yT.setAttribute('y', (mobile || mobilePng) ? 36 : 16);
   yT.setAttribute('transform', 'rotate(-90)');
   yT.setAttribute('text-anchor', 'middle');
-  yT.textContent = mode === 'raw' ? t('c2-axis-y-raw') : t('c2-axis-y-adj');
+  yT.setAttribute('font-size', SIZES.axisTitle);
+  yT.textContent = customAxisY
+    || (mode === 'raw' ? t('c2-axis-y-raw') : t('c2-axis-y-adj'));
   svg.appendChild(yT);
 
   // === Línea de regresión ===
@@ -696,7 +819,10 @@ function drawScatter() {
     seenCodes.add(d.code);
     const text = s_displayName(d);
     const isSel = selectedSet.has(d.code);
-    const textW = s_measureText(text, 10.5, isSel ? 600 : 500) + 2;
+    // Medimos a SIZES.label para que el layout (gaps/colisión) use el
+    // ancho real del texto en pantalla. En mobile (font 28) los textos
+    // son ~3× más anchos, así que el greedy descarta más overlaps.
+    const textW = s_measureText(text, SIZES.label, isSel ? 600 : 500) + 2;
     labelItems.push({
       cx: xScale(d.gdp_pc),
       cy: yScale(d[yKey]),
@@ -720,7 +846,16 @@ function drawScatter() {
   if (extremeMax) addLabelItem(extremeMax, true, 0);
   if (extremeMin) addLabelItem(extremeMin, true, 0);
 
-  if (hoverReg) {
+  // Editor: lista explícita de iso3 a etiquetar (en addition a selección y
+  // extremos). Cuando el editor define countries, REEMPLAZAMOS la lógica
+  // default (Latam puro + non-Latam globales). El hover sigue agregando
+  // su región si está activo (no excluyente).
+  if (aeCountries && aeCountries.size > 0) {
+    aeCountries.forEach(code => {
+      const d = pts.find(p => p.code === code);
+      if (d) addLabelItem(d, true, 0);
+    });
+  } else if (hoverReg) {
     // Modo hover-región: etiquetar países de ESA región. Dentro de la
     // región, las anclas globales hardcoded (USA, DEU, etc.) son Tier 0;
     // el resto es Tier 1. Si la región hovered ES Latam, Big Five sigue
@@ -758,6 +893,7 @@ function drawScatter() {
     txt.setAttribute('y', l.ly);
     txt.setAttribute('text-anchor', l.anchor);
     txt.setAttribute('fill', REGION_WB_LABEL_COLORS[l.region] || '#444');
+    txt.setAttribute('font-size', SIZES.label);
     txt.textContent = l.text;
     labelsG.appendChild(txt);
   });
@@ -774,6 +910,50 @@ function drawScatter() {
   // === Actualizar subtítulo dinámico y banner regional ===
   s_updateSubtitle(model);
   s_updateBanner(model);
+
+  // Editor: aplicar font-size del bucket "special" al banner HTML, y los
+  // textos editoriales (título/subtítulo/caption) si el usuario los editó.
+  // Posterior a s_updateSubtitle/s_updateBanner para pisar lo dinámico.
+  s_applyEditorOverrides(aeCfg, aeSizes);
+}
+
+// Pisa título/subtítulo/caption con valores del editor (si los hay) y
+// aplica font-size del bucket "special" al banner regional HTML.
+//
+// Caption: si el editor lo dejó vacío (trim) → restauramos el default del
+// i18n key c2-sources. Esto permite que el usuario "borre" un caption
+// custom y vuelva al automático sin tener que limpiar localStorage.
+function s_applyEditorOverrides(aeCfg, aeSizes) {
+  // Font del banner (HTML): bucket "special" del editor. Aplicado inline
+  // para sobreescribir el CSS class .s-banner (font-size: 13px).
+  const banner = document.getElementById('s-banner');
+  if (banner && aeSizes && typeof aeSizes.special === 'number') {
+    banner.style.fontSize = aeSizes.special + 'px';
+  }
+  const docLang = typeof LANG !== 'undefined' ? LANG : 'es';
+  const lang = aeCfg?.lang || docLang;
+  const t = aeCfg?.texts?.[lang] || {};
+  const block = document.querySelector('.chart-block[data-chart="2"]');
+  if (!block) return;
+  const customTitle    = (t.title    || '').trim();
+  const customSubtitle = (t.subtitle || '').trim();
+  const customCaption  = (t.caption  || '').trim();
+  if (customTitle) {
+    const el = block.querySelector('.chart-title');
+    if (el) el.textContent = customTitle;
+  }
+  if (customSubtitle) {
+    const el = block.querySelector('.chart-subtitle');
+    if (el) el.textContent = customSubtitle;
+  }
+  const captionEls = document.querySelectorAll(
+    '.footer p[data-i18n="c2-sources"], .footer details[class*="mobile-collapse"] p[data-i18n="c2-sources"]'
+  );
+  if (customCaption) {
+    captionEls.forEach(el => { el.textContent = customCaption; });
+  } else if (typeof I18N !== 'undefined' && I18N[docLang] && I18N[docLang]['c2-sources']) {
+    captionEls.forEach(el => { el.innerHTML = I18N[docLang]['c2-sources']; });
+  }
 }
 
 // =================== Tooltip ===================
@@ -1215,4 +1395,12 @@ function initScatter() {
   setupScatterSearch();
   renderScatterSelectedChips();
   setupScatterDownloadCSV();
+  // Editor sidebar: re-render cuando el usuario edita textos/sizes/países.
+  if (!initScatter._editorWired) {
+    initScatter._editorWired = true;
+    window.addEventListener('atlas-editor-change', () => drawScatter());
+  }
+  // Mobile (≤768px): botones tuerca + "Seleccionar". Singleton — si ya
+  // lo llamó otro init en el index.html, no hace nada.
+  if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
 }

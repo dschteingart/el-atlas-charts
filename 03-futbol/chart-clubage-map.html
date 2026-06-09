@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — Antigüedad de los clubes de fútbol</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<link rel="stylesheet" href="./editor.css">
+<style>
+  /* === Layout general (mismo wrap-wide que el scatter del N°3) === */
+  .wrap-wide { max-width: 1100px; }
+  .wrap-wide { padding: 6px 20px 10px; }
+  .wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
+  .wrap-wide .chart-block { margin: 4px 0 2px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+  .wrap-wide .chart-subtitle { margin: 0 0 4px; font-size: 13.5px; line-height: 1.35; }
+
+  /* === Fila superior: buscador (izq) + leyenda + reset zoom (der) === */
+  .m-top-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 4px 0 4px;
+    flex-wrap: wrap;
+  }
+  .m-top-row .m-search-wrap {
+    position: relative;
+    flex: 0 1 280px;
+    max-width: 280px;
+    margin: 0;
+  }
+  .m-top-row .m-legend-block {
+    flex: 0 1 auto;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .m-legend-label {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+  .m-legend-grad-wrap {
+    /* viewBox del SVG: 360 (banda 7 bins) + 12 (gap) + 14 ("Sin dato") = 386.
+       Le damos 390px para asegurar que entre todo a aspect ratio nativo. */
+    width: 390px; height: 28px;
+  }
+  .m-legend-grad-wrap svg { display: block; width: 100%; height: 100%; }
+  .m-reset-zoom {
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: 4px 9px;
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .m-reset-zoom:hover { border-color: var(--accent); color: var(--ink); }
+
+  /* === Buscador (mismo estilo que el N°2/N°3 scatter, prefijo m-) === */
+  .m-search-input {
+    width: 100%;
+    padding: 7px 10px;
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    background: var(--bg);
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+  }
+  .m-search-input:focus { border-color: var(--accent); }
+  .m-search-results {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0; right: 0;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    max-height: 240px;
+    overflow-y: auto;
+    z-index: 30;
+    display: none;
+  }
+  .m-search-results.open { display: block; }
+  .m-search-result {
+    padding: 7px 10px;
+    font-family: var(--sans);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--grid);
+  }
+  .m-search-result:last-child { border-bottom: none; }
+  .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
+  .m-search-region {
+    color: var(--ink-muted);
+    font-size: 11.5px;
+    flex-shrink: 0;
+  }
+
+  /* === SVG mapa === */
+  .chart-svg-wrap {
+    position: relative;
+    margin-top: 4px;
+    /* Cursor grab para invitar al pan. */
+    cursor: grab;
+  }
+  .chart-svg-wrap:active { cursor: grabbing; }
+  #chart1 {
+    width: 100%;
+    /* Sin altura fija — el aspect ratio del viewBox manda. */
+    height: auto;
+    display: block;
+    /* Fondo blanco para el área de océano. */
+    background: #FBF8F2;
+    /* CRÍTICO: clipea el contenido cuando el zoom escala los paths más
+       allá del viewBox. Sin esto, los países "se escapan" del SVG y
+       tapan la leyenda, los botones y el header. */
+    overflow: hidden;
+  }
+  .m-country { transition: stroke 0.12s; }
+
+  /* === Tooltip ===
+     Background BLANCO PURO sólido (no var(--bg) — el SVG está pintado de
+     #FBF8F2, sobre el mismo crema el tooltip se vuelve ilegible). Border
+     y sombra más marcadas para que despegue del mapa. */
+  .tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.18);
+    border-radius: 5px;
+    padding: 10px 13px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink);
+    opacity: 0;
+    transition: opacity 0.12s;
+    z-index: 40;
+    max-width: 260px;
+    min-width: 180px;
+  }
+  .tooltip strong {
+    font-family: var(--serif);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 6px;
+    line-height: 1.15;
+  }
+  .tooltip .tt-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    font-variant-numeric: tabular-nums;
+    margin-top: 3px;
+    line-height: 1.3;
+  }
+  .tooltip .tt-row span:first-child { color: var(--ink-muted); }
+  .tooltip .tt-row span:last-child  { font-weight: 600; color: var(--ink); }
+  .tooltip .tt-muted { color: var(--ink-muted); font-style: italic; margin-top: 2px; font-size: 11.5px; }
+  /* Fila metodológica (ej. "Con fecha de creación identificada"):
+     italic + ligeramente más chica + ambos spans en color atenuado.
+     Sugiere "esto es info de soporte, no la métrica principal". */
+  .tooltip .tt-row-sub {
+    margin-top: 5px;
+    font-style: italic;
+    font-size: 11px;
+    line-height: 1.25;
+  }
+  .tooltip .tt-row-sub span:first-child,
+  .tooltip .tt-row-sub span:last-child {
+    color: var(--ink-muted);
+    font-weight: 500;
+  }
+
+  /* === Footer === */
+  .footer { margin-top: 6px; }
+  .footer p { margin: 2px 0; }
+
+  /* === Mobile === */
+  @media (max-width: 768px) {
+    .m-top-row { flex-direction: column; align-items: stretch; }
+    .m-top-row .m-search-wrap { max-width: 100%; }
+    .m-top-row .m-legend-block { margin-left: 0; flex-wrap: wrap; }
+    .m-legend-grad-wrap { width: 100%; max-width: 390px; }
+    .wrap-wide .chart-title { font-size: 19px; }
+    .wrap-wide .chart-subtitle { font-size: 12px; color: var(--ink-muted); }
+  }
+
+  /* Colapsable mobile (estilo OWID) para metodología/fuentes */
+  .m-mobile-collapse { display: none; }
+  .m-mobile-collapse > summary {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 6px 0;
+    list-style: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+  .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
+  .m-mobile-collapse > summary::before { content: '+ '; }
+  .m-mobile-collapse[open] > summary::before { content: '− '; }
+  .m-mobile-collapse > p {
+    margin: 4px 0 8px;
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+  @media (max-width: 768px) {
+    .m-mobile-collapse { display: block; }
+    .m-desktop-only { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 3</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="3" data-editor-id="mapa-clubage">
+    <h2 class="chart-title" data-i18n="c3-title">Dónde nació el fútbol moderno</h2>
+    <p class="chart-subtitle" data-i18n="c3-subtitle">Año mediano de fundación de los clubes de cada país. Tonos más oscuros = tradición futbolística más profunda.</p>
+
+    <!-- Buscador (izq) + leyenda gradient + reset zoom (der) -->
+    <div class="m-top-row">
+      <div class="m-search-wrap">
+        <input type="text" id="m-search-input" class="m-search-input" data-i18n-placeholder="c3-search-placeholder" placeholder="Buscar país…" autocomplete="off">
+        <div id="m-search-results" class="m-search-results"></div>
+      </div>
+      <div class="m-legend-block">
+        <span class="m-legend-label" data-i18n="c3-legend-label">Año mediano</span>
+        <div class="m-legend-grad-wrap">
+          <!-- Banda de bins + chip "Sin dato" en un solo SVG (lo renderea
+               drawLegend en clubage-map.js). Ambos hovereables. -->
+          <svg id="m-legend-grad" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+        <button class="m-reset-zoom" id="m-reset-zoom" data-i18n="c3-reset-zoom">Restablecer zoom</button>
+      </div>
+    </div>
+
+    <!-- Mapa -->
+    <div class="chart-svg-wrap">
+      <!-- viewBox 1100×580 con relación ~1.9:1, cerca del aspect natural de
+           una proyección Robinson worldwide. -->
+      <svg id="chart1" viewBox="0 0 1100 580" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip1"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" data-chart="3-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="3" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources m-desktop-only" data-i18n="c3-sources">
+        Año mediano de fundación de los clubes según Wikidata, ponderado por la relevancia global del club (medida a partir de la cantidad de idiomas a los que está traducido el artículo en Wikipedia).
+      </p>
+      <details class="m-mobile-collapse">
+        <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+        <p data-i18n="c3-sources">Año mediano de fundación de los clubes según Wikidata, ponderado por la relevancia global del club.</p>
+      </details>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- D3 v7 + d3-geo-projection v4 (para Robinson). Topojson NO necesario
+     porque el shape ya viene como GeoJSON simplificado. -->
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
+
+<!-- Atlas libs y módulos del N°3 -->
+<script src="../lib/regions.js"></script>
+<script src="../lib/i18n.js"></script>
+<script src="./regions-fifa.js"></script>
+<script src="./i18n-issue.js"></script>
+<script src="./utils.js"></script>
+<script src="./country-names.js"></script>
+<script src="./data-clubage.js"></script>
+<script src="./data-country-geo.js"></script>
+<script src="./editor.js"></script>
+<script src="./clubage-map.js"></script>
+<script src="./png-export.js"></script>
+<script src="./svg-export.js"></script>
+<script>
+  // Estado mínimo para el chart 2 (mapa). El renderer maneja casi todo
+  // como variables del módulo (m_geo, m_path, m_zoom). state[3] solo se
+  // usa por el editor sidebar para guardar la selección de países.
+  state[3] = {
+    selectedCountries: []
+  };
+
+  // Init: applyI18n primero (textos del DOM), después initMap (async fetch
+  // del GeoJSON + render), después setupLangToggle.
+  applyI18n();
+  initMap();
+  setupLangToggle(() => {
+    if (typeof redrawMapOnLangChange === 'function') redrawMapOnLangChange();
+  });
+</script>
+</body>
+</html>

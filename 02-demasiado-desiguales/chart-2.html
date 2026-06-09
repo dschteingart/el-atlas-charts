@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../lib/style.css">
+<link rel="stylesheet" href="./editor.css">
 <style>
   /* === Estilos específicos del scatter (chart 2 del N°2) === */
   /* El scatter necesita más ancho que el default del .wrap (760px) */
@@ -342,6 +343,162 @@
     .m-search-wrap { max-width: 100%; }
     .s-banner { font-size: 12px; }
   }
+
+  /* ============================================================
+     Mobile UX (≤768px): los toggles y el buscador se esconden detrás
+     de botones tuerca + "Seleccionar" estilo OWID. En desktop estos
+     botones no se ven (display:none) y todo sigue inline.
+     ============================================================ */
+  .m-controls-trigger, .m-search-trigger {
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: 6px 10px;
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .m-controls-trigger { font-size: 16px; padding: 4px 9px; line-height: 1; }
+  .m-controls-trigger:hover, .m-search-trigger:hover {
+    border-color: var(--accent);
+    color: var(--ink);
+  }
+  .m-search-trigger-icon { font-size: 14px; }
+
+  @media (max-width: 768px) {
+    .m-controls-trigger, .m-search-trigger { display: inline-flex; }
+
+    /* Controles en UNA sola fila apretada en mobile:
+       [⚙] [👁] [▶] [——slider——] [2025]
+       Mantenemos flex-wrap:wrap para que cuando .m-controls-panel o
+       .m-search-wrap abren salten abajo (order:99/100 + width:100%). */
+    .m-controls {
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .m-controls-trigger, .m-search-trigger {
+      flex-shrink: 0;
+      padding: 4px 8px;
+    }
+    .m-search-trigger-label { display: none; }
+
+    .m-controls-panel {
+      display: none;
+      width: 100%;
+      flex-direction: column;
+      gap: 10px;
+      padding: 12px;
+      margin-top: 8px;
+      background: var(--bg-soft);
+      border-radius: 6px;
+      order: 99;
+    }
+    .m-controls-panel.open { display: flex; }
+
+    .m-search-wrap {
+      display: none;
+      width: 100%;
+      max-width: 100%;
+      margin-top: 8px;
+      order: 100;
+    }
+    .m-search-wrap.open { display: block; }
+
+    .m-selected-chips { width: 100%; order: 101; }
+    .m-slider-block { flex: 1 1 auto; min-width: 0; gap: 6px; }
+    .m-slider-block .m-ctrl-label { display: none; }
+    .m-year-display {
+      font-size: 13px;
+      font-family: var(--sans);
+      font-weight: 600;
+      min-width: 32px;
+    }
+
+    .m-selected-chip {
+      font-size: 11px;
+      padding: 2px 4px 2px 8px;
+    }
+
+    /* Leyenda en 2 columnas (grilla) — entran ~4 filas de 2, sin
+       desbordar a una 3ra fila como antes. */
+    .m-legend {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 12px;
+      margin-top: 2px;
+    }
+    .m-legend-chip { font-size: 10px; gap: 5px; line-height: 1.2; }
+    .m-legend-swatch { width: 8px; height: 8px; }
+
+    /* Header jerarquía: título dominante 19px bold, subtítulo subordinado. */
+    .wrap-wide .chart-title {
+      font-size: 19px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin: 0 0 4px;
+    }
+    .wrap-wide .chart-subtitle {
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--ink-muted);
+      line-height: 1.4;
+      margin: 0 0 8px;
+    }
+    .wrap-wide .chart-block { margin: 8px 0 4px; }
+
+    .chart-svg-wrap svg {
+      width: 100%;
+      height: min(65vh, 540px);
+      display: block;
+    }
+
+    .footer .sources, .footer .attribution { font-size: 10.5px; }
+    .footer .download { font-size: 11px; padding: 6px 10px; }
+  }
+
+  @media (min-width: 769px) {
+    .m-controls-panel {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+  }
+
+  /* Colapsables mobile (estilo OWID): metodología. */
+  .m-mobile-collapse { display: none; }
+  .m-mobile-collapse > summary {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--accent);
+    cursor: pointer;
+    padding: 6px 0;
+    list-style: none;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+  .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
+  .m-mobile-collapse > summary::before { content: '+ '; }
+  .m-mobile-collapse[open] > summary::before { content: '− '; }
+  .m-mobile-collapse > p {
+    margin: 4px 0 8px;
+    font-family: var(--sans);
+    font-size: 11px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+  }
+  @media (max-width: 768px) {
+    .m-mobile-collapse { display: block; }
+    .m-desktop-only { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -357,33 +514,47 @@
     </div>
   </header>
 
-  <section class="chart-block" data-chart="2">
+  <section class="chart-block" data-chart="2" data-editor-id="scatter-gini-pib">
     <h2 class="chart-title" data-i18n="c2-title">América Latina es demasiado desigual para su nivel de desarrollo</h2>
     <!-- Subtítulo dinámico: el JS lo populates al render con el residuo % de Latam. -->
     <p class="chart-subtitle">América Latina es 14% más desigual de lo esperado para su nivel de desarrollo.</p>
 
     <div class="m-controls">
-      <div class="m-ctrl-group">
-        <span class="m-ctrl-label" data-i18n="c2-toggle-model-label">Modelo</span>
-        <div class="m-mode-toggle" data-toggle="model">
-          <button class="active" data-model="linear" data-i18n="c2-toggle-linear">Lineal</button>
-          <button data-model="quadratic" data-i18n="c2-toggle-quadratic">Cuadrática</button>
+      <!-- Botón tuerca: solo visible en mobile (≤768px). Abre el panel con los 3 toggles. -->
+      <button class="m-controls-trigger" aria-label="Opciones" data-i18n-aria="ctrl-options">⚙</button>
+
+      <!-- Panel con los 3 toggles: inline en desktop, colapsable en mobile -->
+      <div class="m-controls-panel">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c2-toggle-model-label">Modelo</span>
+          <div class="m-mode-toggle" data-toggle="model">
+            <button class="active" data-model="linear" data-i18n="c2-toggle-linear">Lineal</button>
+            <button data-model="quadratic" data-i18n="c2-toggle-quadratic">Cuadrática</button>
+          </div>
+        </div>
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c2-toggle-gini-label">Gini</span>
+          <div class="m-mode-toggle" data-toggle="gini">
+            <button data-mode="raw" data-i18n="c2-toggle-gini-raw">Original</button>
+            <button class="active" data-mode="adj" data-i18n="c2-toggle-gini-adj">Ajustado</button>
+          </div>
+        </div>
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c2-toggle-scale-label">Escala X</span>
+          <div class="m-mode-toggle" data-toggle="scaleX">
+            <button class="active" data-scale="log" data-i18n="c2-toggle-scale-log">Log</button>
+            <button data-scale="linear" data-i18n="c2-toggle-scale-linear">Lineal</button>
+          </div>
         </div>
       </div>
-      <div class="m-ctrl-group">
-        <span class="m-ctrl-label" data-i18n="c2-toggle-gini-label">Gini</span>
-        <div class="m-mode-toggle" data-toggle="gini">
-          <button data-mode="raw" data-i18n="c2-toggle-gini-raw">Original</button>
-          <button class="active" data-mode="adj" data-i18n="c2-toggle-gini-adj">Ajustado</button>
-        </div>
-      </div>
-      <div class="m-ctrl-group">
-        <span class="m-ctrl-label" data-i18n="c2-toggle-scale-label">Escala X</span>
-        <div class="m-mode-toggle" data-toggle="scaleX">
-          <button class="active" data-scale="log" data-i18n="c2-toggle-scale-log">Log</button>
-          <button data-scale="linear" data-i18n="c2-toggle-scale-linear">Lineal</button>
-        </div>
-      </div>
+
+      <!-- Botón "Seleccionar": solo visible en mobile. Abre el input del buscador. -->
+      <button class="m-search-trigger" aria-label="Seleccionar">
+        <span class="m-search-trigger-icon" aria-hidden="true">👁</span>
+        <span class="m-search-trigger-label" data-i18n="ctrl-select">Seleccionar</span>
+      </button>
+
+      <!-- Slider con play: siempre visible -->
       <div class="m-slider-block">
         <button class="m-play-btn" id="s-play" aria-label="Reproducir"></button>
         <span class="m-ctrl-label" data-i18n="slider-year-label">Año</span>
@@ -416,9 +587,13 @@
       <button class="download" data-png="2" data-i18n="footer-download-png">Descargar PNG</button>
     </p>
     <div class="footer-row">
-      <p class="sources" data-i18n="c2-sources">
+      <p class="sources m-desktop-only" data-i18n="c2-sources">
         Datos: Banco Mundial — Poverty and Inequality Platform (PIP) y World Development Indicators.
       </p>
+      <details class="m-mobile-collapse">
+        <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+        <p data-i18n="c2-sources">Datos: Banco Mundial — Poverty and Inequality Platform (PIP) y World Development Indicators.</p>
+      </details>
       <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
     </div>
   </div>
@@ -432,6 +607,7 @@
 <script src="./utils.js"></script>
 <script src="./country-names.js"></script>
 <script src="./data-scatter.js"></script>
+<script src="./editor.js"></script>
 <script src="./scatter.js"></script>
 <script src="./png-export.js"></script>
 <script>
