@@ -246,7 +246,7 @@
 
   <section class="chart-block" data-chart="3" data-editor-id="mapa-clubage">
     <h2 class="chart-title" data-i18n="c3-title">Dónde nació el fútbol moderno</h2>
-    <p class="chart-subtitle" data-i18n="c3-subtitle">Año mediano de fundación de los clubes de cada país, ponderado por su relevancia en Wikipedia. Tonos más oscuros = tradición futbolística más profunda.</p>
+    <p class="chart-subtitle" data-i18n="c3-subtitle">Año mediano de fundación de los clubes de cada país. Tonos más oscuros = tradición futbolística más profunda.</p>
 
     <!-- Buscador (izq) + leyenda gradient + reset zoom (der) -->
     <div class="m-top-row">
@@ -281,11 +281,11 @@
     </p>
     <div class="footer-row">
       <p class="sources m-desktop-only" data-i18n="c3-sources">
-        Datos: Wikidata (clubes de fútbol como instancias de <em>association football club</em>, ~41.894 clubes); año de fundación (P571) y número de Wikipedias con artículo (sitelinks) para ponderar relevancia.
+        Año mediano de fundación de los clubes según Wikidata, ponderado por la relevancia global del club (medida a partir de la cantidad de idiomas a los que está traducido el artículo en Wikipedia).
       </p>
       <details class="m-mobile-collapse">
         <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
-        <p data-i18n="c3-sources">Datos: Wikidata — clubes con año de fundación (P571), ponderados por sitelinks de Wikipedia.</p>
+        <p data-i18n="c3-sources">Año mediano de fundación de los clubes según Wikidata, ponderado por la relevancia global del club.</p>
       </details>
       <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
     </div>
@@ -310,6 +310,7 @@
 <script src="./editor.js"></script>
 <script src="./clubage-map.js"></script>
 <script src="./png-export.js"></script>
+<script src="./svg-export.js"></script>
 <script>
   // Estado mínimo para el chart 2 (mapa). El renderer maneja casi todo
   // como variables del módulo (m_geo, m_path, m_zoom). state[3] solo se

@@ -588,12 +588,16 @@
     font-size: 12px;
     color: var(--ink-soft);
   }
-  /* Última línea del footer: fuente a la izquierda, atribución editorial
-     (link al Substack) a la derecha, alineadas al pie. */
+  /* Última línea del footer: fuente a la izquierda (bloque multi-línea),
+     atribución editorial a la derecha (link al Substack).
+     align-items: center — la atribución se centra VERTICALMENTE con
+     respecto al bloque de fuente, así si hay 3 renglones queda alineada
+     con el centro (mitad del segundo renglón). Antes era flex-end y la
+     atribución quedaba pegada al bottom, lo que se veía desalineado. */
   .footer-row {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
     gap: 24px;
     margin-top: 6px;
   }

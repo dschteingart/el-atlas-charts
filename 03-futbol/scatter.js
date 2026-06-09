@@ -50,7 +50,7 @@
 // Cuando hay un formato del editor activo (newsletter / square / mobile /
 // public), las dimensiones vienen de PNG_FORMATS[format] en utils.js y
 // los margins de s_getMargins(format). Mismo patrón que el N°2.
-const S_W_DESKTOP = 1100, S_H_DESKTOP = 460;
+const S_W_DESKTOP = 1100, S_H_DESKTOP = 500;
 const S_W_MOBILE  = 1100, S_H_MOBILE  = 1500;
 const S_MARGIN_DESKTOP = { top: 30, right: 36, bottom: 60, left: 60 };
 const S_MARGIN_MOBILE  = { top: 110, right: 30, bottom: 240, left: 140 };

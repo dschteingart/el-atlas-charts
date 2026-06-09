@@ -241,8 +241,8 @@
   </header>
 
   <section class="chart-block" data-chart="4" data-editor-id="talento-clubes">
-    <h2 class="chart-title" data-i18n="c4-title">Sudamérica: alto share de fútbol y clubes muy antiguos</h2>
-    <p class="chart-subtitle" data-i18n="c4-subtitle">Cada punto es un país. En el eje horizontal, qué porcentaje de los deportistas físicos notables se dedicó al fútbol. En el vertical, qué tan antiguos son sus clubes. El cluster sudamericano (terracota) ocupa la esquina superior-derecha: alta concentración futbolística e historia institucional larga.</p>
+    <h2 class="chart-title" data-i18n="c4-title">Sudamérica: clubes muy antiguos y talento monopolizado por el fútbol</h2>
+    <p class="chart-subtitle" data-i18n="c4-subtitle">En la región se combina una tradición institucional larga con una concentración inusual del talento deportivo en una sola disciplina.</p>
 
     <div class="m-controls">
       <!-- Slider rango birth year -->
@@ -286,7 +286,7 @@
 
     <!-- SVG -->
     <div class="chart-svg-wrap">
-      <svg id="chart1" viewBox="0 0 1100 540" preserveAspectRatio="xMidYMid meet"></svg>
+      <svg id="chart1" viewBox="0 0 1100 420" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="tooltip" id="tooltip1"></div>
     </div>
   </section>
@@ -298,7 +298,7 @@
     </p>
     <div class="footer-row">
       <p class="sources m-desktop-only" data-i18n="c4-sources">
-        Eje X: <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon (MIT Media Lab)</a> edición 2025 — deportistas físicos notables por país de nacimiento. El toggle "+5.000 visitas en Wikipedia" filtra perfiles con artículo en muchas Wikipedias pero pocas lecturas reales. Eje Y: Wikidata (clubes de fútbol: <em>association football club</em> + <em>sports club</em> con deporte=fútbol, ~51.573 clubes); año de fundación (P571) y sitelinks de Wikipedia para ponderar la mediana.
+        Eje X: <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon (MIT Media Lab)</a> edición 2025 — deportistas físicos notables por país de nacimiento. El toggle "+5.000 visitas en Wikipedia" filtra figuras con muy pocas lecturas reales (sobre todo, J-League menores que inflan el conteo japonés). Eje Y: año mediano de fundación de los clubes según Wikidata, ponderado por la relevancia global del club (medida a partir de la cantidad de idiomas a los que está traducido el artículo en Wikipedia).
       </p>
       <details class="m-mobile-collapse">
         <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
@@ -320,6 +320,7 @@
 <script src="./editor.js"></script>
 <script src="./talento-clubes.js"></script>
 <script src="./png-export.js"></script>
+<script src="./svg-export.js"></script>
 <script>
   applyI18n();
   initTalentoClubes();

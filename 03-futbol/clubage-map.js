@@ -713,3 +713,115 @@ function initMap() {
 function redrawMapOnLangChange() {
   if (m_loaded) drawMap();
 }
+
+// Hook que png-export.js invoca antes de rasterizar el SVG clonado.
+// Sanitización + inyección de leyenda vertical en el océano Pacífico.
+window.onBeforePngExport = function(svgClone, chartId) {
+  if (chartId !== '3') return;
+
+  // === Sanitización ===
+  // 1. Quitar clip-path del .m-map-root. url(#m-viewport-clip) a veces
+  //    no resuelve fuera del documento padre → todo el mapa queda
+  //    recortado a cero.
+  const root = svgClone.querySelector('.m-map-root');
+  if (root) root.removeAttribute('clip-path');
+  // 2. Aplanar el zoom transform.
+  const zoomGroup = svgClone.querySelector('.m-zoom-group');
+  if (zoomGroup) zoomGroup.removeAttribute('transform');
+  // 3. Eliminar defs entero (ya no necesitamos el clipPath).
+  const defs = svgClone.querySelector('defs');
+  if (defs) defs.remove();
+  // 4. Forzar overflow visible.
+  svgClone.setAttribute('overflow', 'visible');
+
+  // === Leyenda vertical embebida (en el océano Pacífico, izquierda) ===
+  // Panel posicionado en el Pacífico Norte+Sur, más arriba y más angosto
+  // que la primera iteración para evitar overlap con Sudamérica.
+  const NS = 'http://www.w3.org/2000/svg';
+  const lg = document.createElementNS(NS, 'g');
+  lg.setAttribute('class', 'm-png-legend');
+
+  // Sin fondo. La leyenda va directo sobre el mar (color crema #FBF8F2
+  // del SVG) — más limpio y permite acercarla más al borde sin caja
+  // visual obstructiva. Las labels SVG usan paint-order: stroke con
+  // stroke crema para legibilidad si en algún momento el panel se
+  // superpone con tierra (no debería con PANEL_X = 18).
+  // PANEL_Y bajado de 70 → 160 para asegurar que esté en mar puro: a 70
+  // empezaba sobre Groenlandia/Canadá. A 160 arranca cerca del trópico
+  // norte, debajo del Caribe — pleno océano Pacífico Norte/Central.
+  const PANEL_X = 18, PANEL_Y = 160;
+  const SWATCH_W = 20, SWATCH_H = 20;
+  const ROW_H = 30;
+
+  // Título del panel.
+  const title = document.createElementNS(NS, 'text');
+  title.setAttribute('x', PANEL_X + 14);
+  title.setAttribute('y', PANEL_Y + 22);
+  title.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+  title.setAttribute('font-size', 13);
+  title.setAttribute('font-weight', '600');
+  title.setAttribute('fill', '#1A1A1A');
+  title.setAttribute('letter-spacing', '0.04em');
+  title.textContent = (typeof t === 'function')
+    ? t('c3-legend-label')
+    : 'Año mediano';
+  lg.appendChild(title);
+
+  // Items en orden DE MENOR A MAYOR año. Sin símbolos < / ≥ — texto
+  // explícito ("Antes de", "Desde") para que sea evidente en el PNG.
+  const items = [
+    { color: '#5A2818', label: 'Antes de 1900' },
+    { color: '#9B3D24', label: '1900–1924' },
+    { color: '#D2855B', label: '1925–1949' },
+    { color: '#A5BFD0', label: '1950–1974' },
+    { color: '#5E7E96', label: '1975–1999' },
+    { color: '#2D4256', label: 'Desde 2000' },
+  ];
+  const FIRST_ROW_Y = PANEL_Y + 38;
+  items.forEach((it, i) => {
+    const yi = FIRST_ROW_Y + i * ROW_H;
+    const sw = document.createElementNS(NS, 'rect');
+    sw.setAttribute('x', PANEL_X + 14);
+    sw.setAttribute('y', yi);
+    sw.setAttribute('width', SWATCH_W);
+    sw.setAttribute('height', SWATCH_H);
+    sw.setAttribute('fill', it.color);
+    sw.setAttribute('stroke', 'rgba(0,0,0,0.12)');
+    sw.setAttribute('stroke-width', 0.5);
+    lg.appendChild(sw);
+    const lbl = document.createElementNS(NS, 'text');
+    lbl.setAttribute('x', PANEL_X + 14 + SWATCH_W + 10);
+    lbl.setAttribute('y', yi + 16);
+    lbl.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+    lbl.setAttribute('font-size', 12.5);
+    lbl.setAttribute('fill', '#3A3530');
+    lbl.setAttribute('font-variant-numeric', 'tabular-nums');
+    lbl.textContent = it.label;
+    lg.appendChild(lbl);
+  });
+
+  // "Sin dato" debajo, separado por un gap pequeño.
+  const nodataY = FIRST_ROW_Y + items.length * ROW_H + 8;
+  const nsw = document.createElementNS(NS, 'rect');
+  nsw.setAttribute('x', PANEL_X + 14);
+  nsw.setAttribute('y', nodataY);
+  nsw.setAttribute('width', SWATCH_W);
+  nsw.setAttribute('height', SWATCH_H);
+  nsw.setAttribute('fill', '#D8D3C8');
+  nsw.setAttribute('stroke', 'rgba(0,0,0,0.12)');
+  nsw.setAttribute('stroke-width', 0.5);
+  lg.appendChild(nsw);
+  const nlbl = document.createElementNS(NS, 'text');
+  nlbl.setAttribute('x', PANEL_X + 14 + SWATCH_W + 10);
+  nlbl.setAttribute('y', nodataY + 16);
+  nlbl.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+  nlbl.setAttribute('font-size', 12.5);
+  nlbl.setAttribute('fill', '#3A3530');
+  nlbl.textContent = (typeof t === 'function')
+    ? t('c3-legend-nodata')
+    : 'Sin dato';
+  lg.appendChild(nlbl);
+
+  // Lo agregamos al final → queda encima del mapa.
+  svgClone.appendChild(lg);
+};

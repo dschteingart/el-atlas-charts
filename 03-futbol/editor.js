@@ -753,235 +753,46 @@
       URL.revokeObjectURL(url);
     });
 
-    // ----- Descargar SVG (chart-1 marimekko por ahora) -----
-    // Solo aparece en chart-1. Toma el <svg> del DOM TAL CUAL (no pasa por
-    // png-export.js, no llama onBeforePngExport, no recorta el viewBox).
-    // Clona, inlinea estilos computados (font-family/fill/stroke/etc.) para
-    // que viajen al editor de vectores (Figma, Illustrator), y aplica
-    // text-transform: uppercase al textContent (porque no es atributo SVG
-    // estándar y Figma lo ignora como CSS). El resto del SVG queda como en
-    // pantalla — mismo viewBox, mismas posiciones, sin recortes.
+    // ----- Descargar SVG -----
+    // El botón en el panel del editor (sección Avanzado) delega a
+    // window.downloadChartSVG(chartId) — la implementación vive en
+    // svg-export.js. Mapeamos el chartId editorial ('scatter-elo-pib',
+    // etc.) al chartId numérico ('1', '2', '3', '4') que usa el módulo.
+    //
+    // El SVG sale con título / subtítulo / sources / atribución como
+    // <text> editables al fin del viewBox extendido — lo que Daniel
+    // necesita para refinar en Figma (alineaciones, exportar PNG final
+    // con su estética para redes).
+    const SVG_CHART_NUMERIC = {
+      'scatter-elo-pib':      '1',
+      'talento-futbolistico': '2',
+      'mapa-clubage':         '3',
+      'talento-clubes':       '4',
+    };
     const svgExportBtn = panel.querySelector('[data-ae-svg-export]');
     if (svgExportBtn) {
-      // Solo visible para marimekko-gini (por ahora).
-      // Visible en los 3 charts del N°2. El handler es genérico: clona el
-      // <svg> del DOM, inlinea estilos, extiende viewBox para alojar título/
-      // subtítulo/caption/atribución. Lo único chart-específico es el
-      // filename (ver más abajo).
-      if (['marimekko-gini', 'scatter-gini-pib', 'deciles'].includes(ae.chartId)) {
+      if (SVG_CHART_NUMERIC[ae.chartId]) {
         svgExportBtn.style.display = '';
       }
       svgExportBtn.addEventListener('click', () => {
-        // 1. Identificar el <svg> en pantalla según el chart activo.
-        const svgIdMap = {
-          'marimekko-gini': 'chart1',
-          'scatter-gini-pib': 'chart2',
-          'deciles': 'chart3'
-        };
-        const svg = document.getElementById(svgIdMap[ae.chartId]);
-        if (!svg) { alert('No se encontró el SVG en pantalla.'); return; }
-
-        // 2. Clonar (no modificamos el original de pantalla).
-        const clone = svg.cloneNode(true);
-
-        // 3. Inlinear estilos computados leyendo del SOURCE original.
-        //    El clone está fuera del DOM y no resuelve reglas CSS por sí
-        //    mismo; getComputedStyle en cada source nos da el valor final.
-        const STYLE_PROPS = [
-          'font-family', 'font-size', 'font-weight', 'font-style',
-          'font-variant', 'font-variant-numeric', 'font-feature-settings',
-          'letter-spacing', 'word-spacing',
-          'text-anchor', 'paint-order', 'dominant-baseline',
-          'fill', 'fill-opacity',
-          'stroke', 'stroke-width', 'stroke-opacity', 'stroke-dasharray',
-          'stroke-linejoin', 'stroke-linecap',
-          'opacity'
-        ];
-        const srcEls = svg.querySelectorAll('*');
-        const dstEls = clone.querySelectorAll('*');
-        for (let i = 0; i < srcEls.length; i++) {
-          const src = srcEls[i];
-          const dst = dstEls[i];
-          if (!dst) continue;
-          const cs = window.getComputedStyle(src);
-          // Construir un string style inline. Si el clone ya tenía style
-          // propio (por ej. style.fontSize del slider), lo preservamos
-          // agregándolo al final (último gana en CSS).
-          let inline = '';
-          STYLE_PROPS.forEach(prop => {
-            const v = cs.getPropertyValue(prop);
-            if (v) inline += prop + ':' + v + ';';
-          });
-          const prev = dst.getAttribute('style') || '';
-          dst.setAttribute('style', inline + prev);
-          // text-transform: uppercase no es atributo SVG estándar y Figma
-          // lo ignora como CSS inline. Aplicamos el uppercase al
-          // textContent directamente para que el texto en el SVG salga ya
-          // en mayúsculas (matchea lo que se ve en pantalla).
-          if (src.tagName === 'text' &&
-              cs.getPropertyValue('text-transform') === 'uppercase') {
-            dst.textContent = src.textContent.toUpperCase();
-          }
+        // Delegar al módulo svg-export.js, que ya hace clone, inline
+        // styles, viewBox extendido, título/subtítulo/sources/atribución
+        // como <text>, xmlns y descarga. NO duplicamos esa lógica acá.
+        const num = SVG_CHART_NUMERIC[ae.chartId];
+        if (!num) {
+          alert('Chart no habilitado para export SVG: ' + ae.chartId);
+          return;
         }
-
-        // 4. Asegurar xmlns para que sea standalone (Figma lo necesita).
-        if (!clone.getAttribute('xmlns')) {
-          clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        if (typeof window.downloadChartSVG !== 'function') {
+          alert('svg-export.js no está cargado.');
+          return;
         }
-        if (!clone.getAttribute('xmlns:xlink')) {
-          clone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+        try {
+          window.downloadChartSVG(num);
+        } catch (err) {
+          console.error('[editor] SVG export falló:', err);
+          alert('No se pudo generar el SVG. Mirá la consola.');
         }
-
-        // 4.5. Extender el viewBox para alojar título/subtítulo arriba y
-        //      caption/atribución abajo, como elementos <text> editables.
-        //      Approach: envolvemos el contenido existente en un <g> con
-        //      translate(0, 140) y crecemos el viewBox en alto (140 arriba +
-        //      120 abajo). No tocamos NINGUNA posición del chart — todo el
-        //      contenido se desplaza como bloque y el viewBox lo acompaña.
-        const TOP_MARGIN = 140;
-        const BOTTOM_MARGIN = 120;
-        const NS = 'http://www.w3.org/2000/svg';
-        const vb = clone.viewBox.baseVal;
-        const vbX = vb.x, vbY = vb.y, vbW = vb.width, vbH = vb.height;
-        // Mover todo lo existente a un <g> con translate(0, TOP_MARGIN).
-        const wrap = document.createElementNS(NS, 'g');
-        wrap.setAttribute('transform', 'translate(0,' + TOP_MARGIN + ')');
-        // Pasar todos los children del clone (excepto <defs>/<style> que
-        // dejamos arriba) al wrap.
-        const movables = [];
-        for (let i = 0; i < clone.childNodes.length; i++) {
-          const ch = clone.childNodes[i];
-          if (ch.nodeType !== 1) continue;
-          if (ch.tagName === 'defs' || ch.tagName === 'style') continue;
-          movables.push(ch);
-        }
-        movables.forEach(ch => wrap.appendChild(ch));
-        clone.appendChild(wrap);
-        // Crecer el viewBox.
-        const newH = vbH + TOP_MARGIN + BOTTOM_MARGIN;
-        clone.setAttribute('viewBox', vbX + ' ' + vbY + ' ' + vbW + ' ' + newH);
-        // Si tenía width/height en pixeles fijos, los borramos (que el SVG
-        // se escale al viewBox completo; Figma lo abre con esas medidas).
-        clone.removeAttribute('width');
-        clone.removeAttribute('height');
-
-        // 4.6. Leer textos del editor (con fallback al DOM del idioma activo).
-        const cfg = (typeof getConfig === 'function') ? getConfig() : ae.config;
-        const lang = cfg?.lang || ae.config?.lang || 'es';
-        const titleSrc = document.querySelector('.chart-title');
-        const subSrc   = document.querySelector('.chart-subtitle');
-        const capSrc   = document.querySelector('.footer .sources, .footer p[data-i18n^="c1-sources"]')
-                      || document.querySelector('.sources.m-desktop-only')
-                      || document.querySelector('p.sources');
-        const attrSrc  = document.querySelector('.attribution');
-        const customTitle = (cfg?.texts?.[lang]?.title || '').trim();
-        const customSub   = (cfg?.texts?.[lang]?.subtitle || '').trim();
-        const customCap   = (cfg?.texts?.[lang]?.caption || '').trim();
-        const titleText = customTitle || (titleSrc?.textContent || '').trim();
-        const subText   = customSub   || (subSrc?.textContent   || '').trim();
-        const capText   = customCap   || (capSrc?.textContent   || '').trim();
-        const attrText  = (attrSrc?.textContent || 'El Atlas · Daniel Schteingart').trim();
-
-        // 4.7. Wrap manual para el caption (~110 chars por línea).
-        function wrapWords(text, maxChars) {
-          const words = text.split(/\s+/);
-          const lines = [];
-          let cur = '';
-          for (let i = 0; i < words.length; i++) {
-            const w = words[i];
-            const test = cur ? cur + ' ' + w : w;
-            if (test.length > maxChars && cur) {
-              lines.push(cur);
-              cur = w;
-            } else {
-              cur = test;
-            }
-          }
-          if (cur) lines.push(cur);
-          return lines;
-        }
-
-        // 4.8. Helper para crear un <text> editable con estilos inline.
-        function makeText(content, x, y, fontFamily, fontSize, fontWeight, fill, opts) {
-          const t = document.createElementNS(NS, 'text');
-          t.setAttribute('x', x);
-          t.setAttribute('y', y);
-          t.setAttribute('style',
-            'font-family:' + fontFamily + ';' +
-            'font-size:' + fontSize + 'px;' +
-            'font-weight:' + fontWeight + ';' +
-            (opts?.fontStyle ? 'font-style:' + opts.fontStyle + ';' : '') +
-            'fill:' + fill + ';' +
-            (opts?.textAnchor ? 'text-anchor:' + opts.textAnchor + ';' : '')
-          );
-          t.textContent = content;
-          return t;
-        }
-
-        // 4.9. Insertar título y subtítulo arriba.
-        const padLeft = 20;
-        if (titleText) {
-          const titleEl = makeText(titleText, padLeft, 50,
-            '"Source Serif 4", Georgia, serif', 36, 700, '#1A1A1A');
-          clone.appendChild(titleEl);
-        }
-        if (subText) {
-          const subEl = makeText(subText, padLeft, 90,
-            '"Source Serif 4", Georgia, serif', 18, 400, '#4A4A4A',
-            { fontStyle: 'italic' });
-          clone.appendChild(subEl);
-        }
-
-        // 4.10. Insertar caption (multilínea) y atribución abajo.
-        const capStartY = vbY + TOP_MARGIN + vbH + 40;
-        if (capText) {
-          const lines = wrapWords(capText, 110);
-          lines.forEach((line, idx) => {
-            const capEl = makeText(line, padLeft, capStartY + idx * 18,
-              '"Source Sans 3", -apple-system, sans-serif', 13, 400, '#4A4A4A');
-            clone.appendChild(capEl);
-          });
-        }
-        if (attrText) {
-          const attrY = vbY + TOP_MARGIN + vbH + BOTTOM_MARGIN - 30;
-          const attrEl = makeText(attrText, vbX + vbW - padLeft, attrY,
-            '"Source Sans 3", -apple-system, sans-serif', 14, 600, '#BE5D32',
-            { textAnchor: 'end' });
-          clone.appendChild(attrEl);
-        }
-
-        // 5. Serializar y descargar.
-        const svgString = new XMLSerializer().serializeToString(clone);
-        // Filename por chart, leyendo del state del chart activo. Si no hay
-        // state (improbable post-mount), cae al chartId pelado.
-        let filename = `${ae.chartId}.svg`;
-        if (typeof state !== 'undefined') {
-          if (ae.chartId === 'marimekko-gini' && state[1]) {
-            const year = state[1].year || 2024;
-            const mode = state[1].mode || 'raw';
-            filename = `marimekko-gini-${year}-${mode}.svg`;
-          } else if (ae.chartId === 'scatter-gini-pib' && state[2]) {
-            // year, mode (raw/adj), regression (linear/quadratic), scaleX (log/linear)
-            const year = state[2].year || 2024;
-            const mode = state[2].mode || 'adj';
-            const reg  = state[2].regression || 'linear';
-            filename = `scatter-gini-pib-${year}-${mode}-${reg}.svg`;
-          } else if (ae.chartId === 'deciles' && state[3]) {
-            // year, yMode (income/percentile), yScale (linear/log)
-            const year = state[3].year || 2024;
-            const yMode = state[3].yMode || 'income';
-            const yScale = state[3].yScale || 'log';
-            filename = `deciles-${year}-${yMode}-${yScale}.svg`;
-          }
-        }
-        const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
       });
     }
 

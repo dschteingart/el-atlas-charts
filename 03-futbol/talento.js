@@ -36,12 +36,15 @@ const TA_BAR_GAP = 5;
 const TA_COLOR_CONMEBOL = '#BE5D32';
 const TA_COLOR_OTHER    = '#5E7E96';
 const TA_COLOR_AXIS     = '#9C928A';
+// Las 10 selecciones de la CONMEBOL con sus ISO 3166-1 alpha-3 oficiales.
+// OJO: Paraguay es PRY, no PAR (PAR es el IOC code, no el ISO 3166-1).
+// El chart 1 (scatter.js) usa la misma lista — debe quedar sincronizada.
 const TA_CONMEBOL_ISOS = new Set([
-  'ARG','BOL','BRA','CHL','COL','ECU','PAR','PER','URY','VEN'
+  'ARG','BOL','BRA','CHL','COL','ECU','PER','PRY','URY','VEN'
 ]);
 
 const TA_TOP_N_OPTIONS = [1000, 5000, 10000];
-const TA_PERIOD_DEFAULT = [1900, 2010];
+const TA_PERIOD_DEFAULT = [1850, 2015];
 const TA_PERIOD_MIN = 1850;
 const TA_PERIOD_MAX = 2015;
 const TA_MIN_WINDOW = 5;  // mínimo 5 años entre thumbs
@@ -138,10 +141,30 @@ function ta_computeRates() {
 //==================================================================
 //  Renderer SVG (barras horizontales)
 //==================================================================
+// Actualiza el subtítulo del HTML con los años del slider y el top N.
+// Forma: "Futbolistas célebres del top 1.000 mundial nacidos entre 1900
+// y 2010 por millón de habitantes." Se llama al inicio y en cada cambio
+// del slider o del toggle topN. El PNG es WYSIWYG → este mismo texto va
+// al PNG, sin necesidad de un hook aparte.
+function ta_updateSubtitle() {
+  const el = document.querySelector('.chart-subtitle[data-i18n="c2-subtitle"]');
+  if (!el) return;
+  const s = state[2];
+  const [y0, y1] = s.period;
+  const N = s.topN;
+  const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
+  const tt = (k, fb) => (typeof t === 'function' ? t(k) : fb);
+  const fmtN = N.toLocaleString(lang === 'en' ? 'en-US' : 'es-AR');
+  const tpl = tt('c2-subtitle-tpl',
+    'Futbolistas célebres del top {N} mundial nacidos entre {Y0} y {Y1} por millón de habitantes.');
+  el.textContent = tpl.replace('{N}', fmtN).replace('{Y0}', y0).replace('{Y1}', y1);
+}
+
 function drawTalento() {
   const svg = document.getElementById('chart1');
   if (!svg) return;
   svg.innerHTML = '';
+  ta_updateSubtitle();
 
   const mobile = ta_isMobile();
   const TA_MARGIN = mobile ? TA_MARGIN_MOBILE : TA_MARGIN_DESKTOP;

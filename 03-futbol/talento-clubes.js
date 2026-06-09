@@ -29,7 +29,7 @@
 //==================================================================
 //  Constantes
 //==================================================================
-const SC_W = 1100, SC_H = 540;
+const SC_W = 1100, SC_H = 420;
 const SC_MARGIN_DESKTOP = { top: 24, right: 110, bottom: 60, left: 64 };
 const SC_MARGIN_MOBILE  = { top: 90, right: 40, bottom: 220, left: 130 };
 
@@ -303,9 +303,13 @@ function drawTalentoClubes() {
   xT.setAttribute('font-size', mobile ? 15 : 11.5);
   xT.setAttribute('font-weight', 500);
   xT.setAttribute('fill', '#7A6E62');
-  xT.textContent = (typeof t === 'function')
-    ? t('c4-axis-x')
-    : '% del talento deportivo masculino que es fútbol';
+  // Eje X dinámico: incluye el período del slider. Más preciso que un
+  // genérico "% del talento que es fútbol".
+  const [y0, y1] = state[4].period;
+  const xTpl = (typeof t === 'function')
+    ? t('c4-axis-x-tpl')
+    : '% del talento deportivo masculino nacido entre {Y0} y {Y1} que se dedicó al fútbol';
+  xT.textContent = xTpl.replace('{Y0}', y0).replace('{Y1}', y1);
   svg.appendChild(xT);
 
   const yT = sc_ns('text');
@@ -832,4 +836,13 @@ function initTalentoClubes() {
     window.addEventListener('atlas-editor-change', () => drawTalentoClubes());
   }
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
+
+  // Hook para el PNG export: sources distinto según el toggle "+5k views".
+  // Sin esto, el PNG default (con toggle OFF) mostraba el texto largo
+  // explicando el toggle — confunde porque el toggle NO se aplicó.
+  window.onBeforePngExportGetSourceText = function(chartId) {
+    if (chartId !== '4') return null;
+    const key = state[4].hiViews ? 'c4-sources-with-filter' : 'c4-sources-no-filter';
+    return (typeof t === 'function') ? t(key) : null;
+  };
 }

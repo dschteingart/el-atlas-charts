@@ -317,7 +317,7 @@
   </header>
 
   <section class="chart-block" data-chart="2" data-editor-id="talento-futbolistico">
-    <h2 class="chart-title" data-i18n="c2-title">Uruguay produce más futbolistas célebres por millón que cualquier país del mundo</h2>
+    <h2 class="chart-title" data-i18n="c2-title">Uruguay produce más futbolistas célebres per cápita que cualquier país del mundo</h2>
     <p class="chart-subtitle" data-i18n="c2-subtitle">Futbolistas en el top 1000 mundial por HPI (Pantheon MIT) dividido por la población promedio del país en el período de nacimiento seleccionado.</p>
 
     <div class="m-controls">
@@ -327,10 +327,10 @@
         <div class="ta-range-slider" id="ta-range-slider">
           <div class="ta-range-track"></div>
           <div class="ta-range-track-active" id="ta-range-track-active"></div>
-          <input type="range" id="ta-slider-from" min="1850" max="2015" value="1900" step="1" aria-label="Desde">
-          <input type="range" id="ta-slider-to"   min="1850" max="2015" value="2010" step="1" aria-label="Hasta">
+          <input type="range" id="ta-slider-from" min="1850" max="2015" value="1850" step="1" aria-label="Desde">
+          <input type="range" id="ta-slider-to"   min="1850" max="2015" value="2015" step="1" aria-label="Hasta">
         </div>
-        <span class="ta-range-display" id="ta-range-display">1900–2010</span>
+        <span class="ta-range-display" id="ta-range-display">1850–2015</span>
       </div>
 
       <!-- Toggle top N -->
@@ -387,6 +387,7 @@
 <script src="./editor.js"></script>
 <script src="./talento.js"></script>
 <script src="./png-export.js"></script>
+<script src="./svg-export.js"></script>
 <script>
   applyI18n();
   initTalento();

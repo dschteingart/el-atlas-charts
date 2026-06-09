@@ -18,11 +18,22 @@
     attribution:'#BE5D32'  // terracota del Atlas (--accent en style.css)
   };
 
+  // Detectamos si estamos en N°3 (fútbol) por presencia de las constantes
+  // de regions-fifa.js. Si están: usamos los filenames + legend del N°3.
+  // Si no: caemos al N°2 (regiones WB + filenames de gini/deciles).
+  const IS_N3 = typeof CONF_FIFA_ORDER !== 'undefined'
+             && typeof CONF_FIFA_COLORS !== 'undefined';
+
   // Filenames bilingües por chart.
-  // El chart 1 (marimekko) cambia con el toggle: el filename refleja el modo
-  // activo (raw|adj) además del idioma. Daniel exporta 2 PNGs distintos
-  // moviendo el toggle: 1a (raw) y 1b (adj).
-  const FILENAMES = {
+  // El chart 1 del N°2 (marimekko) cambia con el toggle: el filename refleja
+  // el modo activo (raw|adj) además del idioma. Daniel exporta 2 PNGs
+  // distintos moviendo el toggle: 1a (raw) y 1b (adj).
+  const FILENAMES = IS_N3 ? {
+    '1': { es: 'el-atlas-03-elo-vs-pib.png',         en: 'the-atlas-03-elo-vs-gdp.png'         },
+    '2': { es: 'el-atlas-03-talento-per-capita.png', en: 'the-atlas-03-talent-per-million.png' },
+    '3': { es: 'el-atlas-03-mapa-clubes.png',        en: 'the-atlas-03-map-clubs.png'          },
+    '4': { es: 'el-atlas-03-talento-vs-clubes.png',  en: 'the-atlas-03-talent-vs-clubs.png'    }
+  } : {
     '1': {
       es_raw: 'el-atlas-02-gini-ranking-original.png',
       es_adj: 'el-atlas-02-gini-ranking-ajustado.png',
@@ -35,14 +46,16 @@
 
   const VIEWBOX_RIGHT_EXTENSION = {};
 
-  // Solo el chart 2 (scatter) lleva leyenda canvas de 7 regiones.
-  // El chart 1 (marimekko) tenía leyenda en versiones anteriores, pero la
-  // correspondencia color→región vive ahora en la TABLA REGIONAL arriba-
-  // derecha (`#m-avg-table` con swatches + nombres + Gini promedio) — la
-  // leyenda de abajo era redundante. Solo se la quita del PNG; en pantalla
-  // (`.m-legend` renderada por renderMarimekkoLegend) sigue como está.
-  // El chart 3 (deciles) tiene labels in-line por país, sin leyenda.
-  const SHOWS_LEGEND = chartId => chartId === '2';
+  // Charts que llevan leyenda en el PNG:
+  //   - N°2 chart 2 (scatter Gini): 7 regiones WB.
+  //   - N°3 chart 1 (scatter Elo/PIB): 6 confederaciones FIFA.
+  //   - N°3 chart 4 (talento-clubes): 6 confederaciones FIFA.
+  // Los charts con leyenda inline en el SVG (mapa con gradient bar,
+  // talento per cápita con etiquetas en barras) NO necesitan leyenda
+  // extra del PNG.
+  const SHOWS_LEGEND = chartId => IS_N3
+    ? (chartId === '1' || chartId === '4')
+    : (chartId === '2');
 
   // Props CSS que aplican a SVG y necesitamos preservar al rasterizar.
   // Esta lista es el "cinturón" — además, embebemos el CSS del documento
@@ -278,7 +291,15 @@
   const LEGEND_CIRCLE_TEXT_GAP = 7;
 
   function legendItems() {
-    // Para el N°2 usamos las 7 regiones del Banco Mundial (regions-wb.js).
+    // N°3: confederaciones FIFA (CONMEBOL, UEFA, CONCACAF, CAF, AFC, OFC).
+    // Comparten paleta entre charts 1 y 4 — definida en regions-fifa.js.
+    if (IS_N3) {
+      return CONF_FIFA_ORDER.map(conf => ({
+        color: CONF_FIFA_COLORS[conf],
+        label: conf
+      }));
+    }
+    // N°2: 7 regiones del Banco Mundial (regions-wb.js).
     // Los nombres traducidos viven en ISSUE_I18N con las keys 'reg.<wb-name>'.
     return REGION_WB_ORDER.map(reg => ({
       color: REGION_WB_COLORS[reg],
@@ -332,8 +353,21 @@
 
   async function downloadChartPNG(chartId, options) {
     options = options || {};
-    const svg = document.getElementById('chart' + chartId);
-    if (!svg) return;
+    // Selector flexible: en el N°2 los SVGs tenían id "chart1", "chart2",
+    // "chart3" coincidiendo con el chartId. En el N°3, cada HTML es
+    // standalone y el SVG principal SIEMPRE usa id="chart1" (no hay
+    // conflicto porque solo uno está en el DOM a la vez).
+    // CRÍTICO: el block.querySelector('svg') NO sirve como fallback
+    // porque el .chart-block puede contener SVGs auxiliares (leyenda
+    // gradient en el mapa, etc.) y agarraría el primero que aparece.
+    // El bug del chart 3 PNG era exactamente ese: tomaba #m-legend-grad
+    // en vez de #chart1 (el mapa).
+    let svg = document.getElementById('chart' + chartId);
+    if (!svg) svg = document.getElementById('chart1');  // standalone N°3
+    if (!svg) {
+      console.error('[png-export] no SVG found for chartId', chartId);
+      return;
+    }
     const block = svg.closest('.chart-block');
 
     // Determinar el formato. WYSIWYG: el SVG en pantalla YA está renderado
@@ -419,8 +453,15 @@
     const titleSize = 36, titleLineH = 48;
     const subSize   = 20, subLineH   = 30;
     const sourceSize = 14, sourceLineH = 20;
-    const attribSize = 14;
+    // Atribución duplicada respecto del default histórico (14 → 28) para
+    // que el branding del Atlas resalte como firma del PNG. La acomodamos
+    // alineada al borde derecho como antes.
+    const attribSize = 28;
     const attribGap = 30;  // gap entre fuente y atribución en la última línea
+    // Sources con caja más angosta: límite duro al 70% del ancho útil.
+    // Sin esto, el bloque de fuente queda como una sola línea muy larga
+    // que se lee mal y compite visualmente con la atribución agrandada.
+    const SOURCE_MAX_RATIO = 0.70;
     const gapTitleSub  = 6;
     // Mobile PNG (portrait alto 800×1200): gap reducido entre el subtítulo y
     // el SVG para que el plot suba en el canvas. En portrait el chrome
@@ -430,7 +471,11 @@
     // (public/newsletter/square) mantienen 28 — el plot ahí no compite con
     // un viewport tan vertical.
     const gapBeforeSvg = isMobilePng ? 12 : 28;
-    const gapAfterSvgBase  = 4;   // ajustado: la leyenda casi pegada al chart
+    // gapAfterSvg subido de 4 → 32: los ejes del gráfico necesitan
+    // respirar antes del bloque de sources / atribución. Empuja la nota
+    // y el "El Atlas · Daniel Schteingart" más abajo, dejando aire entre
+    // el último tick del eje X y la fuente.
+    const gapAfterSvgBase  = 32;
     const gapAfterLegend = 12;
     const innerW = W - 2 * padX;
 
@@ -479,7 +524,11 @@
     // una línea adicional debajo.
     mctx.font = `600 ${attribSize}px "Source Sans 3", -apple-system, sans-serif`;
     const attribW = attribText ? mctx.measureText(attribText).width : 0;
-    const sourceMaxW = attribText ? Math.max(200, innerW - attribW - attribGap) : innerW;
+    // Caja angosta: respetar el ratio + asegurar que NO se solape con la
+    // atribución (más grande ahora). El min() agarra el más restrictivo.
+    const sourceMaxW = attribText
+      ? Math.min(innerW * SOURCE_MAX_RATIO, innerW - attribW - attribGap)
+      : innerW * SOURCE_MAX_RATIO;
 
     mctx.font = `400 ${sourceSize}px "Source Sans 3", -apple-system, sans-serif`;
     const sourceLines = sourceText ? countWrapLines(mctx, sourceText, sourceMaxW) : 0;
@@ -490,12 +539,23 @@
 
     const titleH = titleText ? titleLines * titleLineH : 0;
     const subH = subLines * subLineH;
-    const sourceH = sourceLines * sourceLineH;
+    // sourceH: la última línea del sources comparte la vertical con la
+    // atribución (alineadas por baseline). Si la atribución es más alta
+    // (28 px vs 20 del sourceLineH), la última línea necesita ese espacio
+    // para no comerse el padBottom.
+    const lastLineH = Math.max(sourceLineH, attribSize * 1.15);
+    const sourceH = sourceLines > 0
+      ? (sourceLines - 1) * sourceLineH + lastLineH
+      : 0;
+    // Si no hay sources, la atribución igual ocupa su propio bloque.
+    const attribOnlyH = attribText ? attribSize * 1.15 : 0;
 
     // Espacio que ocupan los "non-svg" (chrome arriba y abajo del SVG):
     const chromeAbove = padTop + titleH + (subH ? gapTitleSub + subH : 0) + gapBeforeSvg;
     const chromeBelow = (legendH ? gapAfterSvg + legendH : 0)
-                     + (sourceH ? (legendH ? gapAfterLegend : gapAfterSvg) + sourceH : 0)
+                     + (sourceH
+                          ? (legendH ? gapAfterLegend : gapAfterSvg) + sourceH
+                          : (attribOnlyH ? gapAfterSvg + attribOnlyH : 0))
                      + padBottom;
 
     // === Altura del canvas ===
@@ -543,6 +603,12 @@
     if (extension > 0 && vb) {
       svgClone.setAttribute('viewBox', `${vb.x} ${vb.y} ${effectiveVbW} ${effectiveVbH}`);
     }
+    // Setear width/height explícitos en el clone. Sin esto, algunos
+    // browsers cargan el <img> con dimensiones intrínsecas de 0×0 cuando
+    // el SVG original solo declara viewBox (sin width/height inline).
+    // Resultado: drawImage rasteriza sobre un canvas vacío.
+    svgClone.setAttribute('width',  effectiveVbW);
+    svgClone.setAttribute('height', effectiveVbH);
     // Hook opcional: cada chart puede modificar el clone antes de rasterizarse.
     // Usado por el marimekko (chart 1) para mostrar las 7 líneas promedio
     // regionales en el PNG (en interactivo solo se muestra la hovereada).
@@ -672,32 +738,41 @@
       wrapText(ctx, sourceText, padX, y, sourceMaxW, sourceLineH);
     }
 
-    // Atribución editorial alineada al borde derecho, en la línea más baja
-    // (misma vertical que la última línea de la fuente).
+    // Atribución alineada al borde derecho y CENTRADA VERTICALMENTE con
+    // respecto al bloque de fuente.
+    //   - Si el sources tiene 3 renglones, la atribución queda alineada
+    //     con la mitad del segundo (el centro del bloque).
+    //   - Si tiene 1 renglón, queda alineada con el centro de esa línea.
+    //   - Si no hay sources, reserva su propio espacio centrado.
+    // Truco: textBaseline='middle' posiciona el texto centrado vertical
+    // alrededor del y dado.
     if (attribText) {
-      const lastLineY = sourceText
-        ? y + (sourceLines - 1) * sourceLineH
-        : y + (showLegend ? gapAfterLegend : gapAfterSvg);
+      const sourcesCenterY = sourceText
+        ? y + sourceH / 2
+        : y + (showLegend ? gapAfterLegend : gapAfterSvg) + attribSize / 2;
       ctx.fillStyle = PALETTE.attribution;
       ctx.textAlign = 'right';
-      ctx.textBaseline = 'top';
+      ctx.textBaseline = 'middle';
       ctx.font = `600 ${attribSize}px "Source Sans 3", -apple-system, sans-serif`;
-      ctx.fillText(attribText, W - padX, lastLineY);
-      ctx.textAlign = 'left';  // restaurar default
+      ctx.fillText(attribText, W - padX, sourcesCenterY);
+      ctx.textAlign = 'left';   // restaurar defaults
+      ctx.textBaseline = 'top';
     }
 
     URL.revokeObjectURL(svgUrl);
 
     // === Trigger download ===
     const lang = (typeof LANG !== 'undefined' && LANG === 'en') ? 'en' : 'es';
-    // Para el chart 1, el filename depende además del modo del toggle (raw/adj).
-    // Leemos state[1].mode si existe; default a 'raw'.
+    // En el N°2 el chart 1 (marimekko) varía con el toggle raw/adj y el
+    // filename refleja el modo. En el N°3 no hay toggle similar — se usa
+    // FILENAMES[chartId][lang] directo.
     let filename;
-    if (chartId === '1' && state && state[1]) {
+    if (!IS_N3 && chartId === '1' && state && state[1]) {
       const mode = state[1].mode || 'raw';  // 'raw' | 'adj'
       filename = FILENAMES['1']?.[`${lang}_${mode}`] || `el-atlas-02-chart-1-${mode}.png`;
     } else {
-      filename = FILENAMES[chartId]?.[lang] || `el-atlas-02-chart-${chartId}.png`;
+      const prefix = IS_N3 ? 'el-atlas-03' : 'el-atlas-02';
+      filename = FILENAMES[chartId]?.[lang] || `${prefix}-chart-${chartId}.png`;
     }
     // Sufijo según formato. "public" no agrega sufijo (es el default).
     const fmtSuffix =
