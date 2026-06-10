@@ -56,7 +56,12 @@ const PNG_FORMATS = {
   public:     { vbW: 1100, vbH: 619,  nominalW: 1600, nominalH: 900  },
   newsletter: { vbW: 1100, vbH: 760,  nominalW: 1080, nominalH: 1080 },
   square:     { vbW: 1100, vbH: 760,  nominalW: 1200, nominalH: 1200 },
-  mobile:     { vbW: 1100, vbH: 1100, nominalW: 1000, nominalH: 1500 }
+  mobile:     { vbW: 1100, vbH: 1100, nominalW: 1000, nominalH: 1500 },
+  // Mapamundi: el mapa es ancho (Robinson ~1.9:1). Un cuadrado le deja medio
+  // canvas vacío abajo. Este formato lo ajusta: ancho completo, alto justo
+  // para título + mapa + nota (sin desperdicio). Lo usa el chart 3 vía
+  // __atlasDefaultPngFormat. Igual es mobile-first (chrome grande).
+  worldmap:   { vbW: 1100, vbH: 580,  nominalW: 1200, nominalH: 920  }
 };
 
 // Devuelve el formato activo del editor o null si:

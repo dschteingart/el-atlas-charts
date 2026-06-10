@@ -415,7 +415,11 @@
       if (cfg && cfg.format && PNG_FORMATS[cfg.format]) format = cfg.format;
       else format = 'square';  // editor activo sin formato elegido → square
     } else if (window.__atlasSupportsFormats) {
-      format = 'square';
+      // Default mobile-first. Cada chart puede pedir un formato propio vía
+      // __atlasDefaultPngFormat (ej. el mapa usa 'worldmap', apaisado, porque
+      // un cuadrado le deja medio canvas vacío). El resto usa 'square'.
+      const def = window.__atlasDefaultPngFormat;
+      format = (def && PNG_FORMATS[def]) ? def : 'square';
     }
 
     // ── Forzar el re-render del gráfico en el formato target ───────────
@@ -446,6 +450,7 @@
     const isNewsletter = format === 'newsletter';
     const isSquare     = format === 'square';
     const isMobilePng  = format === 'mobile';
+    const isWorldmap   = format === 'worldmap';
 
     // Forzar carga de webfonts ANTES de medir/dibujar en canvas. El canvas
     // tiene un font-cache aparte que no siempre se sincroniza con
@@ -468,7 +473,15 @@
     ]);
 
     const titleText    = block.querySelector('.chart-title')?.textContent.trim()    || '';
-    const subtitleText = block.querySelector('.chart-subtitle')?.textContent.trim() || '';
+    let   subtitleText = block.querySelector('.chart-subtitle')?.textContent.trim() || '';
+    // Hook opcional: el chart puede dar un subtítulo distinto para el PNG (más
+    // corto que el del HTML — ej. el mapa, donde la leyenda ya explica el color).
+    if (typeof window.onBeforePngExportGetSubtitle === 'function') {
+      try {
+        const ov = window.onBeforePngExportGetSubtitle(chartId);
+        if (ov) subtitleText = ov;
+      } catch (_) {}
+    }
     const sourceEl = document.querySelector('.footer p[data-i18n$="sources"]');
     let sourceText = sourceEl ? sourceEl.textContent.trim() : '';
     // Hook opcional: el chart puede devolver una variante del sourceText
@@ -497,14 +510,14 @@
     // Mobile-first: nota + atribución MÁS cerca del borde inferior (Daniel).
     // El espacio que se libera abajo se lo damos al gráfico (vbH más alto)
     // y a equidistribuir los gaps leyenda/nota/eje-x.
-    const padBottom = (isSquare || isNewsletter || isMobilePng) ? 24 : 36;
+    const padBottom = (isSquare || isNewsletter || isMobilePng || isWorldmap) ? 24 : 36;
 
     // ¿Es un formato mobile-first? (cuadrado/newsletter/portrait). En esos
     // el PNG se ve a un tercio en el celu, así que TODO el chrome (título,
     // subtítulo, nota, leyenda, atribución) va sobredimensionado. En el
     // monitor parece grande; en el celu se lee. El formato "public"
     // (apaisado, para desktop) y el N°2 mantienen los tamaños históricos.
-    const mobileFirst = isNewsletter || isSquare || isMobilePng;
+    const mobileFirst = isNewsletter || isSquare || isMobilePng || isWorldmap;
 
     const titleSize  = mobileFirst ? 52 : 36, titleLineH  = mobileFirst ? 64 : 48;
     const subSize    = mobileFirst ? 32 : 20, subLineH    = mobileFirst ? 42 : 30;

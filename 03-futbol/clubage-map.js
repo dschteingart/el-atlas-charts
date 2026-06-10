@@ -707,6 +707,20 @@ function initMap() {
     initMap._editorWired = true;
     window.addEventListener('atlas-editor-change', () => drawMap());
   }
+
+  // Soporte de formato PNG: png-export usa 'square' por default al clic. El
+  // mapa no cambia por formato (siempre el mundo entero); registrar __atlasRedraw
+  // permite que png-export componga el PNG cuadrado mobile-first (título +
+  // mapa de ancho completo + leyenda agrandada, ver onBeforePngExport).
+  window.__atlasSupportsFormats = true;
+  window.__atlasRedraw = drawMap;
+  // El mapa usa un formato propio (apaisado) en vez del cuadrado por default.
+  window.__atlasDefaultPngFormat = 'worldmap';
+  // Subtítulo más corto para el PNG (la leyenda ya explica el color).
+  window.onBeforePngExportGetSubtitle = function(chartId) {
+    if (chartId !== '3') return null;
+    return (typeof t === 'function') ? t('c3-subtitle-png') : null;
+  };
 }
 
 // Engancha el draw al lang-toggle (lo llama setupLangToggle desde el HTML).
@@ -718,6 +732,13 @@ function redrawMapOnLangChange() {
 // Sanitización + inyección de leyenda vertical en el océano Pacífico.
 window.onBeforePngExport = function(svgClone, chartId) {
   if (chartId !== '3') return;
+
+  // Escala de la leyenda embebida según el formato del PNG. En mobile-first
+  // (square/newsletter/mobile) la leyenda se agranda ~1.9x para que sea
+  // legible cuando el PNG se reduce al ancho del celular.
+  const fmt = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
+  const bigFmt = fmt === 'square' || fmt === 'newsletter' || fmt === 'mobile' || fmt === 'worldmap';
+  const SC = bigFmt ? 1.5 : 1;   // un poco más chica (no debe tocar América)
 
   // === Sanitización ===
   // 1. Quitar clip-path del .m-map-root. url(#m-viewport-clip) a veces
@@ -749,16 +770,19 @@ window.onBeforePngExport = function(svgClone, chartId) {
   // PANEL_Y bajado de 70 → 160 para asegurar que esté en mar puro: a 70
   // empezaba sobre Groenlandia/Canadá. A 160 arranca cerca del trópico
   // norte, debajo del Caribe — pleno océano Pacífico Norte/Central.
-  const PANEL_X = 18, PANEL_Y = 160;
-  const SWATCH_W = 20, SWATCH_H = 20;
-  const ROW_H = 30;
+  const PANEL_X = bigFmt ? 6 : 18, PANEL_Y = bigFmt ? 150 : 160;
+  const SWATCH_W = 20 * SC, SWATCH_H = 20 * SC;
+  const ROW_H = 30 * SC;
+  const PAD = 14 * SC;             // sangría interna
+  const GAP = 10 * SC;             // gap swatch → label
+  const TITLE_FONT = 13 * SC, LABEL_FONT = 12.5 * SC;
 
   // Título del panel.
   const title = document.createElementNS(NS, 'text');
-  title.setAttribute('x', PANEL_X + 14);
-  title.setAttribute('y', PANEL_Y + 22);
+  title.setAttribute('x', PANEL_X + PAD);
+  title.setAttribute('y', PANEL_Y + 22 * SC);
   title.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-  title.setAttribute('font-size', 13);
+  title.setAttribute('font-size', TITLE_FONT);
   title.setAttribute('font-weight', '600');
   title.setAttribute('fill', '#1A1A1A');
   title.setAttribute('letter-spacing', '0.04em');
@@ -777,23 +801,23 @@ window.onBeforePngExport = function(svgClone, chartId) {
     { color: '#5E7E96', label: '1975–1999' },
     { color: '#2D4256', label: 'Desde 2000' },
   ];
-  const FIRST_ROW_Y = PANEL_Y + 38;
+  const FIRST_ROW_Y = PANEL_Y + 38 * SC;
   items.forEach((it, i) => {
     const yi = FIRST_ROW_Y + i * ROW_H;
     const sw = document.createElementNS(NS, 'rect');
-    sw.setAttribute('x', PANEL_X + 14);
+    sw.setAttribute('x', PANEL_X + PAD);
     sw.setAttribute('y', yi);
     sw.setAttribute('width', SWATCH_W);
     sw.setAttribute('height', SWATCH_H);
     sw.setAttribute('fill', it.color);
     sw.setAttribute('stroke', 'rgba(0,0,0,0.12)');
-    sw.setAttribute('stroke-width', 0.5);
+    sw.setAttribute('stroke-width', 0.5 * SC);
     lg.appendChild(sw);
     const lbl = document.createElementNS(NS, 'text');
-    lbl.setAttribute('x', PANEL_X + 14 + SWATCH_W + 10);
-    lbl.setAttribute('y', yi + 16);
+    lbl.setAttribute('x', PANEL_X + PAD + SWATCH_W + GAP);
+    lbl.setAttribute('y', yi + SWATCH_H * 0.8);
     lbl.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-    lbl.setAttribute('font-size', 12.5);
+    lbl.setAttribute('font-size', LABEL_FONT);
     lbl.setAttribute('fill', '#3A3530');
     lbl.setAttribute('font-variant-numeric', 'tabular-nums');
     lbl.textContent = it.label;
@@ -801,21 +825,21 @@ window.onBeforePngExport = function(svgClone, chartId) {
   });
 
   // "Sin dato" debajo, separado por un gap pequeño.
-  const nodataY = FIRST_ROW_Y + items.length * ROW_H + 8;
+  const nodataY = FIRST_ROW_Y + items.length * ROW_H + 8 * SC;
   const nsw = document.createElementNS(NS, 'rect');
-  nsw.setAttribute('x', PANEL_X + 14);
+  nsw.setAttribute('x', PANEL_X + PAD);
   nsw.setAttribute('y', nodataY);
   nsw.setAttribute('width', SWATCH_W);
   nsw.setAttribute('height', SWATCH_H);
   nsw.setAttribute('fill', '#D8D3C8');
   nsw.setAttribute('stroke', 'rgba(0,0,0,0.12)');
-  nsw.setAttribute('stroke-width', 0.5);
+  nsw.setAttribute('stroke-width', 0.5 * SC);
   lg.appendChild(nsw);
   const nlbl = document.createElementNS(NS, 'text');
-  nlbl.setAttribute('x', PANEL_X + 14 + SWATCH_W + 10);
-  nlbl.setAttribute('y', nodataY + 16);
+  nlbl.setAttribute('x', PANEL_X + PAD + SWATCH_W + GAP);
+  nlbl.setAttribute('y', nodataY + SWATCH_H * 0.8);
   nlbl.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-  nlbl.setAttribute('font-size', 12.5);
+  nlbl.setAttribute('font-size', LABEL_FONT);
   nlbl.setAttribute('fill', '#3A3530');
   nlbl.textContent = (typeof t === 'function')
     ? t('c3-legend-nodata')
