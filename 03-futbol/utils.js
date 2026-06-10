@@ -46,11 +46,17 @@ function isMobileViewport() {
 //   newsletter: 10:11 = 0.91   cuadrado-ish leve portrait
 //   square:     1:1   = 1.00   cuadrado puro
 //   mobile:      2:3  = 0.67   portrait alto (Stories / WhatsApp)
+// vbW/vbH = viewBox del SVG (la proporción del GRÁFICO en sí).
+// nominalW/nominalH = canvas final del PNG (incluye título arriba + nota
+//   abajo). square produce un PNG cuadrado (1200×1200) pero el gráfico
+//   adentro es APAISADO (vbH 720, aspect ~1.5) para que llene el ancho;
+//   el título grande arriba y la nota abajo completan el cuadrado. Sin
+//   esto el gráfico cuadrado se achicaba al centro dejando bandas.
 const PNG_FORMATS = {
   public:     { vbW: 1100, vbH: 619,  nominalW: 1600, nominalH: 900  },
-  newsletter: { vbW: 1100, vbH: 1210, nominalW: 1000, nominalH: 1100 },
-  square:     { vbW: 1100, vbH: 1100, nominalW: 1200, nominalH: 1200 },
-  mobile:     { vbW: 1100, vbH: 1650, nominalW: 800,  nominalH: 1200 }
+  newsletter: { vbW: 1100, vbH: 760,  nominalW: 1080, nominalH: 1080 },
+  square:     { vbW: 1100, vbH: 760,  nominalW: 1200, nominalH: 1200 },
+  mobile:     { vbW: 1100, vbH: 1100, nominalW: 1000, nominalH: 1500 }
 };
 
 // Devuelve el formato activo del editor o null si:
@@ -64,6 +70,13 @@ const PNG_FORMATS = {
 // Cuando devuelve null → el chart usa sus dimensiones default (desktop o
 // mobile responsive según isMobileViewport).
 function getActivePngFormat() {
+  // Override del exportador PNG: cuando png-export.js va a generar la imagen
+  // sin editor activo, fuerza un formato (por default 'square' mobile-first)
+  // seteando window.__atlasPngFormatOverride. Tiene prioridad sobre todo:
+  // permite "default cuadrado al clic" sin tocar el estado del editor.
+  if (window.__atlasPngFormatOverride && PNG_FORMATS[window.__atlasPngFormatOverride]) {
+    return window.__atlasPngFormatOverride;
+  }
   if (!window.AtlasEditor || typeof window.AtlasEditor.getConfig !== 'function') {
     return null;
   }

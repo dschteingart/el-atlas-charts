@@ -237,7 +237,14 @@
         if (val) inline += `${prop}:${val};`;
       });
       const prevStyle = targetNodes[i].getAttribute('style') || '';
-      targetNodes[i].setAttribute('style', inline + prevStyle);
+      // ORDEN CRÍTICO: el estilo COMPUTED (resuelto) va ÚLTIMO para que GANE
+      // al inline original. El inline original puede tener var(--bg) (ej. el
+      // stroke/halo de las etiquetas de país); var() NO resuelve dentro del
+      // SVG rasterizado como <img> → stroke caía a 'none' y el halo
+      // desaparecía (el texto se fundía con los puntos del mismo color y los
+      // puntos parecían quedar arriba). Con computed último, el stroke queda
+      // como rgb() resuelto y el halo se rasteriza igual que en pantalla.
+      targetNodes[i].setAttribute('style', prevStyle + ';' + inline);
     }
   }
 
@@ -280,15 +287,17 @@
   }
 
   // === Leyenda de regiones (charts 1 y 2) ===
-  // Configuración compartida entre count y draw.
-  // Font 15 es el sweet spot: 14 quedaba chico contra el título 36px del PNG;
-  // 17 daba "estirado" porque las palabras largas (ej. "Latinoamérica y el
-  // Caribe") empujaban los gaps entre items y se veían diluidas.
-  const LEGEND_FONT_SIZE = 15;
-  const LEGEND_LINE_H = 24;
-  const LEGEND_ITEM_GAP = 20;     // separación horizontal entre items
-  const LEGEND_CIRCLE_R = 5;
-  const LEGEND_CIRCLE_TEXT_GAP = 7;
+  // Configuración de la leyenda canvas. Son LET (no const) porque en
+  // formatos mobile-first las escalamos ~1.9x: el PNG se reduce a un tercio
+  // en el celu, y a 15px la leyenda quedaba en ~5px (ilegible).
+  // downloadChartPNG las ajusta según el formato antes de medir/dibujar.
+  let LEGEND_FONT_SIZE = 15;
+  let LEGEND_LINE_H = 24;
+  let LEGEND_ITEM_GAP = 20;     // separación horizontal entre items
+  let LEGEND_CIRCLE_R = 5;
+  let LEGEND_CIRCLE_TEXT_GAP = 7;
+  // Valores base para poder resetear (cada export recalcula desde la base).
+  const LEGEND_BASE = { font: 15, lineH: 24, gap: 20, r: 5, textGap: 7 };
 
   function legendItems() {
     // N°3: confederaciones FIFA (CONMEBOL, UEFA, CONCACAF, CAF, AFC, OFC).
@@ -386,18 +395,54 @@
     // Históricamente había un atajo Shift+Click → newsletter. Lo quitamos:
     // el dropdown del editor es el único camino para elegir formato. Sin
     // editor activo, descarga el "público" = lo que ves en pantalla.
+    // ── Determinar el formato target ──────────────────────────────────
+    // 1. Editor activo (ae-ever-activated, o sea ?nl=1 alguna vez) →
+    //    respeta el formato del dropdown del editor.
+    // 2. Sin editor → default mobile-first CUADRADO.
     let format = null;
-    if (
+    // El editor manda SOLO si abriste con ?nl en la URL. Antes alcanzaba
+    // con ae-ever-activated (que persiste en localStorage de sesiones
+    // viejas con ?nl=1) — eso hacía que un PNG "normal" tomara el formato
+    // guardado en vez del default cuadrado. Daniel: "default cuadrado al
+    // clic, con ?nl=1 poder elegir". El gate correcto es la URL.
+    const urlHasEditor = new URLSearchParams(location.search).has('nl');
+    const editorActive =
+      urlHasEditor &&
       window.AtlasEditor &&
-      typeof window.AtlasEditor.getConfig === 'function' &&
-      document.body.classList.contains('ae-ever-activated')
-    ) {
+      typeof window.AtlasEditor.getConfig === 'function';
+    if (editorActive) {
       const cfg = window.AtlasEditor.getConfig();
       if (cfg && cfg.format && PNG_FORMATS[cfg.format]) format = cfg.format;
+      else format = 'square';  // editor activo sin formato elegido → square
+    } else if (window.__atlasSupportsFormats) {
+      format = 'square';
     }
 
-    // No hay re-render forzado: el SVG en pantalla es la única fuente de
-    // verdad. WYSIWYG.
+    // ── Forzar el re-render del gráfico en el formato target ───────────
+    // CRÍTICO (bug encontrado con Daniel): antes, en el camino "editor
+    // activo" NO se re-renderizaba — se asumía WYSIWYG (que el SVG en
+    // pantalla ya estaba en ese formato). Pero si el editor quedó marcado
+    // como activo por localStorage de una sesión previa (?nl=1 antes), el
+    // gráfico en pantalla podía estar en DESKTOP mientras el PNG usaba
+    // formato cuadrado → chrome grande pero gráfico chico. Ahora SIEMPRE
+    // re-renderizamos en el formato target antes de rasterizar (vía el
+    // override que lee getActivePngFormat), y restauramos al terminar.
+    let pngOverrideApplied = false;
+    if (format && window.__atlasSupportsFormats && typeof window.__atlasRedraw === 'function') {
+      window.__atlasPngFormatOverride = format;
+      pngOverrideApplied = true;
+      window.__atlasRedraw();  // re-render síncrono del #chart1 en `format`
+    }
+
+    // Helper para restaurar el render de pantalla al terminar (o si algo
+    // falla). Idempotente.
+    function restorePngFormat() {
+      if (!pngOverrideApplied) return;
+      pngOverrideApplied = false;
+      window.__atlasPngFormatOverride = null;
+      if (typeof window.__atlasRedraw === 'function') window.__atlasRedraw();
+    }
+
     const isNewsletter = format === 'newsletter';
     const isSquare     = format === 'square';
     const isMobilePng  = format === 'mobile';
@@ -449,14 +494,41 @@
     const W = format && PNG_FORMATS[format] ? PNG_FORMATS[format].nominalW : 1600;
     const padX = (isNewsletter || isMobilePng) ? 32 : 42;
     const padTop = 36;
-    const padBottom = 36;
-    const titleSize = 36, titleLineH = 48;
-    const subSize   = 20, subLineH   = 30;
-    const sourceSize = 14, sourceLineH = 20;
-    // Atribución duplicada respecto del default histórico (14 → 28) para
-    // que el branding del Atlas resalte como firma del PNG. La acomodamos
-    // alineada al borde derecho como antes.
-    const attribSize = 28;
+    // Mobile-first: nota + atribución MÁS cerca del borde inferior (Daniel).
+    // El espacio que se libera abajo se lo damos al gráfico (vbH más alto)
+    // y a equidistribuir los gaps leyenda/nota/eje-x.
+    const padBottom = (isSquare || isNewsletter || isMobilePng) ? 24 : 36;
+
+    // ¿Es un formato mobile-first? (cuadrado/newsletter/portrait). En esos
+    // el PNG se ve a un tercio en el celu, así que TODO el chrome (título,
+    // subtítulo, nota, leyenda, atribución) va sobredimensionado. En el
+    // monitor parece grande; en el celu se lee. El formato "public"
+    // (apaisado, para desktop) y el N°2 mantienen los tamaños históricos.
+    const mobileFirst = isNewsletter || isSquare || isMobilePng;
+
+    const titleSize  = mobileFirst ? 52 : 36, titleLineH  = mobileFirst ? 64 : 48;
+    const subSize    = mobileFirst ? 32 : 20, subLineH    = mobileFirst ? 42 : 30;
+    // Datos: más chico que antes (Daniel) — la nota es info de soporte, no
+    // debe competir con el gráfico. 18 mobile-first (~6px en celu, leíble
+    // como pie de página), 14 desktop.
+    const sourceSize = mobileFirst ? 18 : 14, sourceLineH = mobileFirst ? 24 : 20;
+    // Atribución: firma del Atlas. Se dibuja en DOS renglones en
+    // mobile-first ("El Atlas" / "Daniel Schteingart") — ver más abajo.
+    const attribSize = mobileFirst ? 34 : 28;
+    const attribLineH = Math.round(attribSize * 1.15);
+
+    // Escalar la leyenda canvas para mobile-first (~1.9x sobre la base).
+    if (mobileFirst) {
+      LEGEND_FONT_SIZE      = Math.round(LEGEND_BASE.font    * 1.9);  // ~29
+      LEGEND_LINE_H         = Math.round(LEGEND_BASE.lineH   * 1.9);  // ~46
+      LEGEND_ITEM_GAP       = Math.round(LEGEND_BASE.gap     * 1.6);  // ~32
+      LEGEND_CIRCLE_R       = Math.round(LEGEND_BASE.r       * 1.8);  // ~9
+      LEGEND_CIRCLE_TEXT_GAP= Math.round(LEGEND_BASE.textGap * 1.6);  // ~11
+    } else {
+      LEGEND_FONT_SIZE = LEGEND_BASE.font; LEGEND_LINE_H = LEGEND_BASE.lineH;
+      LEGEND_ITEM_GAP = LEGEND_BASE.gap;   LEGEND_CIRCLE_R = LEGEND_BASE.r;
+      LEGEND_CIRCLE_TEXT_GAP = LEGEND_BASE.textGap;
+    }
     const attribGap = 30;  // gap entre fuente y atribución en la última línea
     // Sources con caja más angosta: límite duro al 70% del ancho útil.
     // Sin esto, el bloque de fuente queda como una sola línea muy larga
@@ -476,7 +548,11 @@
     // y el "El Atlas · Daniel Schteingart" más abajo, dejando aire entre
     // el último tick del eje X y la fuente.
     const gapAfterSvgBase  = 32;
-    const gapAfterLegend = 12;
+    // Mobile-first: gap leyenda→nota agrandado para EQUIDISTAR con el gap
+    // eje-x→leyenda (Daniel). Antes 12 (la nota quedaba pegada a la leyenda);
+    // ahora ~38 para que la leyenda quede centrada entre el título del eje X
+    // y la nota de abajo.
+    const gapAfterLegend = (isSquare || isNewsletter || isMobilePng) ? 38 : 12;
     const innerW = W - 2 * padX;
 
     // Hook opcional para chart-specific extra gap entre SVG y leyenda. Usado
@@ -751,10 +827,34 @@
         ? y + sourceH / 2
         : y + (showLegend ? gapAfterLegend : gapAfterSvg) + attribSize / 2;
       ctx.fillStyle = PALETTE.attribution;
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
-      ctx.font = `600 ${attribSize}px "Source Sans 3", -apple-system, sans-serif`;
-      ctx.fillText(attribText, W - padX, sourcesCenterY);
+      const attribParts = mobileFirst ? attribText.split('·').map(s => s.trim()).filter(Boolean) : [attribText];
+      if (attribParts.length >= 2) {
+        // Mobile-first: bloque de dos renglones CENTRADOS entre sí
+        // ("El Atlas" arriba, "Daniel Schteingart" abajo, más chico).
+        // El bloque se ancla por su borde derecho en W - padX; las dos
+        // líneas se centran respecto del ancho del bloque (la más ancha).
+        const line1 = attribParts[0];
+        const line2 = attribParts.slice(1).join(' · ');
+        const size1 = attribSize;
+        const size2 = Math.round(attribSize * 0.78);  // Daniel Schteingart más chico
+        ctx.font = `700 ${size1}px "Source Sans 3", -apple-system, sans-serif`;
+        const w1 = ctx.measureText(line1).width;
+        ctx.font = `600 ${size2}px "Source Sans 3", -apple-system, sans-serif`;
+        const w2 = ctx.measureText(line2).width;
+        const blockW = Math.max(w1, w2);
+        const cx = W - padX - blockW / 2;  // centro del bloque, pegado a la derecha
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `700 ${size1}px "Source Sans 3", -apple-system, sans-serif`;
+        ctx.fillText(line1, cx, sourcesCenterY - attribLineH * 0.42);
+        ctx.font = `600 ${size2}px "Source Sans 3", -apple-system, sans-serif`;
+        ctx.fillText(line2, cx, sourcesCenterY + attribLineH * 0.42);
+      } else {
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.font = `600 ${attribSize}px "Source Sans 3", -apple-system, sans-serif`;
+        ctx.fillText(attribParts[0], W - padX, sourcesCenterY);
+      }
       ctx.textAlign = 'left';   // restaurar defaults
       ctx.textBaseline = 'top';
     }
@@ -774,11 +874,13 @@
       const prefix = IS_N3 ? 'el-atlas-03' : 'el-atlas-02';
       filename = FILENAMES[chartId]?.[lang] || `${prefix}-chart-${chartId}.png`;
     }
-    // Sufijo según formato. "public" no agrega sufijo (es el default).
-    const fmtSuffix =
+    // Sufijo según formato. El default mobile-first (square por override,
+    // sin editor) NO lleva sufijo — es la imagen principal. Los formatos
+    // elegidos a mano en el editor sí llevan sufijo para distinguirlos.
+    const fmtSuffix = pngOverrideApplied ? '' : (
       isNewsletter ? '-nl' :
       isSquare     ? '-sq' :
-      isMobilePng  ? '-mb' : '';
+      isMobilePng  ? '-mb' : '');
     if (fmtSuffix) {
       filename = filename.replace(/\.png$/i, fmtSuffix + '.png');
     }
@@ -791,6 +893,8 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      // Restaurar el render de pantalla (deshace el override de square).
+      restorePngFormat();
     }, 'image/png');
   }
 
@@ -802,6 +906,13 @@
       downloadChartPNG(btn.dataset.png).catch(err => {
         console.error('PNG export failed:', err);
         alert('No se pudo generar el PNG. Mirá la consola para detalles.');
+        // Fallback: si el export se cortó antes de restaurar, limpiamos el
+        // override de formato y re-renderizamos a pantalla para no dejar el
+        // chart trabado en cuadrado.
+        if (window.__atlasPngFormatOverride) {
+          window.__atlasPngFormatOverride = null;
+          if (typeof window.__atlasRedraw === 'function') window.__atlasRedraw();
+        }
       });
     });
   });

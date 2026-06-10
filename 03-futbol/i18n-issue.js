@@ -13,9 +13,11 @@ const ISSUE_I18N = {
 
     // Chart 1 — Scatter ELO vs PIB total
     'c1-title':            'Sudamérica juega en otra liga',
-    'c1-subtitle':         'Las 10 selecciones de la CONMEBOL aparecen sistemáticamente por encima de la regresión: juegan mejor de lo que el tamaño de su economía predeciría.',
-    'c1-axis-x':           'PIB total promedio del período (PPA, US$ int. constantes) — escala log',
-    'c1-axis-y':           'Índice de fortaleza futbolística (rating Elo, promedio del período)',
+    'c1-subtitle':         'Las 10 selecciones de la CONMEBOL juegan mejor de lo que el tamaño de su economía predeciría.',
+    // Regla del N°3: títulos de eje SIMPLES; la aclaración metodológica
+    // (qué es el Elo, qué PPA, etc.) va en la nota de Datos.
+    'c1-axis-x':           'PIB',
+    'c1-axis-y':           'Índice de fortaleza futbolística',
     'c1-search-placeholder': 'Buscar selección…',
     'c1-no-results':       'Sin resultados',
     'c1-legend-hint':      'Pasá el cursor por una confederación para resaltarla · Clic para mostrarla/ocultarla',
@@ -65,7 +67,11 @@ const ISSUE_I18N = {
     'footer-download':       'Descargar datos (CSV)',
     'footer-download-png':   'Descargar PNG',
     'footer-download-svg':   'Descargar SVG',
-    'c1-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (ratings Elo de selecciones nacionales, promedio anual ponderado por días); FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Confederaciones según afiliación FIFA actual. Los puntos del gráfico representan el promedio de cada variable sobre el rango de años seleccionado, considerando solo países con datos en ambas variables.',
+    'c1-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo de selecciones nacionales) y FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Los datos muestran el promedio del período seleccionado para ambas variables.',
+    // Plantilla PLANA (sin <a>) para la nota del PNG: el hook
+    // onBeforePngExportGetSourceText reemplaza {period} por los años reales
+    // del slider, para que la nota diga explícitamente a qué promedio refiere.
+    'c1-sources-tpl':        'Datos: eloratings.net (Elo de selecciones nacionales) y FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Los datos muestran el promedio {period} para ambas variables.',
 
     // Chart 2 — Talento futbolístico por millón de habitantes
     'c2-title':              'Uruguay produce más futbolistas célebres per cápita que cualquier país del mundo',
@@ -125,9 +131,9 @@ const ISSUE_I18N = {
 
     // Chart 1 — Scatter ELO vs total GDP
     'c1-title':            'South America plays in a different league',
-    'c1-subtitle':         'CONMEBOL\'s 10 national teams systematically sit above the regression line: they play better than what their economy\'s size would predict.',
-    'c1-axis-x':           'Average total GDP over the period (PPP, constant int\'l USD) — log scale',
-    'c1-axis-y':           'Footballing strength index (Elo rating, period average)',
+    'c1-subtitle':         'CONMEBOL\'s 10 national teams play better than what their economy\'s size would predict.',
+    'c1-axis-x':           'GDP',
+    'c1-axis-y':           'Footballing strength index',
     'c1-search-placeholder': 'Search team…',
     'c1-no-results':       'No results',
     'c1-legend-hint':      'Hover a confederation to highlight it · Click to show/hide',
@@ -169,7 +175,8 @@ const ISSUE_I18N = {
     'footer-download':       'Download data (CSV)',
     'footer-download-png':   'Download PNG',
     'footer-download-svg':   'Download SVG',
-    'c1-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo ratings of national teams, annual averages weighted by days at each rating); IMF — World Economic Outlook (total GDP PPP, constant international USD). Confederations follow current FIFA affiliation. Each point represents the average of both variables over the selected year range, restricted to countries with data for both.',
+    'c1-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo of national teams) and IMF — World Economic Outlook (total GDP PPP, constant international USD). Values show the average over the selected period for both variables.',
+    'c1-sources-tpl':        'Data: eloratings.net (Elo of national teams) and IMF — World Economic Outlook (total GDP PPP, constant international USD). Values show the {period} average for both variables.',
 
     // Chart 2 — Footballing talent per million inhabitants
     'c2-title':              'Uruguay produces more famous footballers per capita than any country in the world',
