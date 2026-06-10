@@ -308,6 +308,13 @@
   @media (max-width: 768px) {
     .m-mobile-collapse { display: block; }
     .m-desktop-only { display: none; }
+    /* Los chips (18 por default) armaban ~6 filas y empujaban el gráfico muy
+       abajo. En mobile los acotamos a ~3 filas scrolleables. */
+    .m-selected-chips {
+      max-height: 92px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
   }
 </style>
 </head>
