@@ -81,7 +81,7 @@ const ISSUE_I18N = {
     'c2-title':              'Uruguay produce más futbolistas célebres per cápita que cualquier país del mundo',
     // Neutral (cuando el usuario cambia período/topN/selección): solo el
     // título cambia; el subtítulo ya es descriptivo.
-    'c2-title-neutral':      'Futbolistas célebres por millón de habitantes',
+    'c2-title-neutral':      'Talento futbolístico ajustado por población',
     'c2-subtitle':           'Futbolistas en el top mundial por HPI (Pantheon MIT, con visibilidad global mínima) dividido por la población promedio del país en el período de nacimiento seleccionado.',
     'c2-subtitle-tpl':       'Futbolistas célebres del top {N} mundial nacidos entre {Y0} y {Y1} por millón de habitantes.',
     'c2-axis-x':             'Futbolistas célebres por millón de habitantes',
@@ -199,7 +199,7 @@ const ISSUE_I18N = {
 
     // Chart 2 — Footballing talent per million inhabitants
     'c2-title':              'Uruguay produces more famous footballers per capita than any country in the world',
-    'c2-title-neutral':      'Famous footballers per million inhabitants',
+    'c2-title-neutral':      'Footballing talent adjusted for population',
     'c2-subtitle':           'Footballers in the global top by HPI (Pantheon MIT, minimum global visibility) divided by the country\'s average population over the selected birth-year period.',
     'c2-subtitle-tpl':       'Famous footballers in the global top {N} born between {Y0} and {Y1}, per million inhabitants.',
     'c2-axis-x':             'Famous footballers per million inhabitants',
