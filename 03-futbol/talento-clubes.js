@@ -33,6 +33,18 @@ const SC_W = 1100, SC_H = 420;
 const SC_MARGIN_DESKTOP = { top: 24, right: 110, bottom: 60, left: 64 };
 const SC_MARGIN_MOBILE  = { top: 90, right: 40, bottom: 220, left: 130 };
 
+// Márgenes por formato de PNG (mobile-first). Mismo criterio que el scatter
+// Elo/PIB: el cluster sudamericano cae arriba-derecha → margen derecho amplio
+// para que las etiquetas respiren.
+function sc_getMargins(format) {
+  switch (format) {
+    case 'newsletter': return { top: 40, right: 80, bottom: 72, left: 92 };
+    case 'square':     return { top: 40, right: 80, bottom: 72, left: 92 };
+    case 'mobile':     return { top: 60, right: 40, bottom: 220, left: 110 };
+    default:           return null;
+  }
+}
+
 const SC_PERIOD_DEFAULT = [1900, 2010];
 const SC_PERIOD_MIN = 1900;
 const SC_PERIOD_MAX = 2010;
@@ -197,6 +209,106 @@ function sc_niceTicks(min, max, target) {
 //==================================================================
 //  Renderer
 //==================================================================
+// Caja de un label colocado. Maneja anchor (start/end/middle) en X y baseline
+// (central/alphabetic) en Y — chart 4 usa ambos.
+function sc_labelBox(l, labelH) {
+  let x1, x2;
+  if (l.anchor === 'middle')    { x1 = l.lx - l.textW / 2; x2 = l.lx + l.textW / 2; }
+  else if (l.anchor === 'end')  { x1 = l.lx - l.textW;     x2 = l.lx; }
+  else                          { x1 = l.lx;               x2 = l.lx + l.textW; }
+  let y1, y2;
+  if (l.baseline === 'central') { y1 = l.ly - labelH * 0.5;  y2 = l.ly + labelH * 0.5; }
+  else                          { y1 = l.ly - labelH * 0.78; y2 = l.ly + labelH * 0.22; }
+  return { x1, x2, y1, y2, cx: (x1 + x2) / 2, cy: (y1 + y2) / 2 };
+}
+
+// Relajación anti-colisión 2D + repulsión de puntos (mismo criterio que el
+// scatter Elo/PIB). Separa labels que se pisan (ej. Perú/Chile) y los corre
+// de encima de su punto; se reconectan con línea guía gris en el draw.
+function sc_relaxLabels(placed, labelH, plotBox, passes, obstacles) {
+  const PAD = 6, PT_PAD = 4;
+  for (let p = 0; p < passes; p++) {
+    let moved = false;
+    for (let i = 0; i < placed.length; i++) {
+      for (let j = i + 1; j < placed.length; j++) {
+        const a = sc_labelBox(placed[i], labelH);
+        const b = sc_labelBox(placed[j], labelH);
+        const ox = Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1) + PAD;
+        const oy = Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1) + PAD;
+        if (ox > 0 && oy > 0) {
+          if (oy <= ox) {
+            const push = oy / 2;
+            if (a.cy <= b.cy) { placed[i].ly -= push; placed[j].ly += push; }
+            else              { placed[i].ly += push; placed[j].ly -= push; }
+          } else {
+            const push = ox / 2;
+            if (a.cx <= b.cx) { placed[i].lx -= push; placed[j].lx += push; }
+            else              { placed[i].lx += push; placed[j].lx -= push; }
+          }
+          moved = true;
+        }
+      }
+    }
+    if (obstacles && obstacles.length) {
+      for (let i = 0; i < placed.length; i++) {
+        const a = sc_labelBox(placed[i], labelH);
+        for (let k = 0; k < obstacles.length; k++) {
+          const ob = obstacles[k];
+          const nx = Math.max(a.x1, Math.min(ob.x, a.x2));
+          const ny = Math.max(a.y1, Math.min(ob.y, a.y2));
+          const R = ob.r + PT_PAD;
+          const d = Math.hypot(nx - ob.x, ny - ob.y);
+          if (d < R) {
+            const overlap = R - d;
+            let ux = a.cx - ob.x, uy = a.cy - ob.y;
+            const ul = Math.hypot(ux, uy) || 1; ux /= ul; uy /= ul;
+            placed[i].lx += ux * overlap;
+            placed[i].ly += uy * overlap;
+            moved = true;
+          }
+        }
+      }
+    }
+    if (!moved) break;
+  }
+  // Pasada FINAL solo-punto: garantiza que ningún label tape su círculo
+  // (Daniel: los puntos tienen que verse enteros). Tiene prioridad sobre la
+  // separación label↔label — el halo crema cubre cualquier roce menor que
+  // esto pueda reintroducir entre etiquetas.
+  if (obstacles && obstacles.length) {
+    for (let p = 0; p < 100; p++) {
+      let moved = false;
+      for (let i = 0; i < placed.length; i++) {
+        const a = sc_labelBox(placed[i], labelH);
+        for (let k = 0; k < obstacles.length; k++) {
+          const ob = obstacles[k];
+          const nx = Math.max(a.x1, Math.min(ob.x, a.x2));
+          const ny = Math.max(a.y1, Math.min(ob.y, a.y2));
+          const R = ob.r + PT_PAD;
+          const d = Math.hypot(nx - ob.x, ny - ob.y);
+          if (d < R) {
+            const overlap = R - d;
+            let ux = a.cx - ob.x, uy = a.cy - ob.y;
+            const ul = Math.hypot(ux, uy) || 1; ux /= ul; uy /= ul;
+            placed[i].lx += ux * overlap;
+            placed[i].ly += uy * overlap;
+            moved = true;
+          }
+        }
+      }
+      if (!moved) break;
+    }
+  }
+  // Clamp al área de plot.
+  placed.forEach(l => {
+    const b = sc_labelBox(l, labelH);
+    if (b.x1 < plotBox.x1) l.lx += plotBox.x1 - b.x1;
+    if (b.x2 > plotBox.x2) l.lx -= b.x2 - plotBox.x2;
+    if (b.y1 < plotBox.y1) l.ly += plotBox.y1 - b.y1;
+    if (b.y2 > plotBox.y2) l.ly -= b.y2 - plotBox.y2;
+  });
+}
+
 function drawTalentoClubes() {
   const svg = document.getElementById('chart1');
   if (!svg) return;
@@ -209,11 +321,40 @@ function drawTalentoClubes() {
   const aeCountries = (aeCfg?.countries && aeCfg.countries.length > 0)
     ? new Set(aeCfg.countries) : null;
 
-  const mobile = sc_isMobile();
-  const SC_MARGIN = mobile ? SC_MARGIN_MOBILE : SC_MARGIN_DESKTOP;
+  // Formato activo del PNG (square por default al descargar). Igual que el
+  // scatter Elo/PIB: viewBox + márgenes + tamaños cambian según el formato.
+  const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
+  const newsletter = editorFormat === 'newsletter';
+  const square     = editorFormat === 'square';
+  const mobilePng  = editorFormat === 'mobile';
+  const mobile = !editorFormat && sc_isMobile();
+  const bigFmt = newsletter || square || mobilePng || mobile;
+
+  let SC_W, SC_H, SC_MARGIN;
+  if (editorFormat) {
+    const f = PNG_FORMATS[editorFormat];
+    SC_W = f.vbW; SC_H = f.vbH; SC_MARGIN = sc_getMargins(editorFormat);
+  } else if (mobile) {
+    SC_W = 1100; SC_H = 1500; SC_MARGIN = { ...SC_MARGIN_MOBILE };
+  } else {
+    SC_W = 1100; SC_H = 420;  SC_MARGIN = { ...SC_MARGIN_DESKTOP };
+  }
   const PLOT_W = SC_W - SC_MARGIN.left - SC_MARGIN.right;
   const PLOT_H = SC_H - SC_MARGIN.top - SC_MARGIN.bottom;
   svg.setAttribute('viewBox', `0 0 ${SC_W} ${SC_H}`);
+
+  // Tamaños mobile-first. CLAVE: se aplican como ESTILO INLINE (no atributo),
+  // porque las clases CSS .s-tick / .s-axis-title / .s-country-label tienen
+  // font-size propio que le gana al atributo en SVG (mismo bug que el scatter
+  // Elo/PIB). El estilo inline le gana a la clase.
+  const SIZES = (newsletter || square || mobilePng)
+    ? { tick: 22, axisTitle: 26, label: 26 }
+    : mobile
+    ? { tick: 20, axisTitle: 24, label: 22 }
+    : { tick: 11, axisTitle: 11.5, label: 10.5 };
+  // Escala de radios de punto: en mobile-first los puntos chicos desaparecen
+  // al reducir la imagen al celu.
+  const ptScale = (square || newsletter) ? 1.8 : (mobilePng || mobile) ? 2.0 : 1;
 
   const pts = sc_computePoints();
   if (pts.length === 0) {
@@ -255,10 +396,10 @@ function drawTalentoClubes() {
     gridG.appendChild(line);
     const lbl = sc_ns('text');
     lbl.setAttribute('x', x);
-    lbl.setAttribute('y', SC_MARGIN.top + PLOT_H + (mobile ? 38 : 18));
+    lbl.setAttribute('y', SC_MARGIN.top + PLOT_H + (bigFmt ? 36 : 18));
     lbl.setAttribute('text-anchor', 'middle');
     lbl.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-    lbl.setAttribute('font-size', mobile ? 14 : 11);
+    lbl.style.fontSize = SIZES.tick + 'px';   // inline gana a .s-tick
     lbl.setAttribute('fill', '#7A6E62');
     lbl.setAttribute('font-variant-numeric', 'tabular-nums');
     lbl.textContent = Math.round(v * 100) + '%';
@@ -287,7 +428,7 @@ function drawTalentoClubes() {
     lbl.setAttribute('text-anchor', 'end');
     lbl.setAttribute('dominant-baseline', 'central');
     lbl.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-    lbl.setAttribute('font-size', mobile ? 14 : 11);
+    lbl.style.fontSize = SIZES.tick + 'px';   // inline gana a .s-tick
     lbl.setAttribute('fill', '#7A6E62');
     lbl.setAttribute('font-variant-numeric', 'tabular-nums');
     lbl.textContent = Math.round(v);
@@ -297,28 +438,26 @@ function drawTalentoClubes() {
   // Títulos de ejes
   const xT = sc_ns('text');
   xT.setAttribute('x', SC_MARGIN.left + PLOT_W / 2);
-  xT.setAttribute('y', SC_MARGIN.top + PLOT_H + (mobile ? 70 : 44));
+  xT.setAttribute('y', SC_MARGIN.top + PLOT_H + (bigFmt ? 66 : 44));
   xT.setAttribute('text-anchor', 'middle');
   xT.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-  xT.setAttribute('font-size', mobile ? 15 : 11.5);
+  xT.style.fontSize = SIZES.axisTitle + 'px';   // inline gana a .s-axis-title
   xT.setAttribute('font-weight', 500);
   xT.setAttribute('fill', '#7A6E62');
-  // Eje X dinámico: incluye el período del slider. Más preciso que un
-  // genérico "% del talento que es fútbol".
-  const [y0, y1] = state[4].period;
-  const xTpl = (typeof t === 'function')
-    ? t('c4-axis-x-tpl')
-    : '% del talento deportivo masculino nacido entre {Y0} y {Y1} que se dedicó al fútbol';
-  xT.textContent = xTpl.replace('{Y0}', y0).replace('{Y1}', y1);
+  // Eje X simple (regla del N°3: ejes simples, metodología + período en la
+  // nota de Datos). El período del slider se inyecta en la nota del PNG.
+  xT.textContent = (typeof t === 'function')
+    ? t('c4-axis-x')
+    : '% del talento que se dedicó al fútbol';
   svg.appendChild(xT);
 
   const yT = sc_ns('text');
   yT.setAttribute('x', -(SC_MARGIN.top + PLOT_H / 2));
-  yT.setAttribute('y', mobile ? 36 : 18);
+  yT.setAttribute('y', (mobile || mobilePng) ? 36 : (square || newsletter) ? 30 : 18);
   yT.setAttribute('transform', 'rotate(-90)');
   yT.setAttribute('text-anchor', 'middle');
   yT.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-  yT.setAttribute('font-size', mobile ? 15 : 11.5);
+  yT.style.fontSize = SIZES.axisTitle + 'px';   // inline gana a .s-axis-title
   yT.setAttribute('font-weight', 500);
   yT.setAttribute('fill', '#7A6E62');
   yT.textContent = (typeof t === 'function')
@@ -334,6 +473,10 @@ function drawTalentoClubes() {
     ? s4.selectedCountries
     : new Set(s4.selectedCountries || []);
   s4.selectedCountries = selectedSet;
+  // Al elegir país(es) (chip/clic), los preseleccionados por default
+  // (CONMEBOL + SC_DEFAULT_LABELED) se desinflan y el realce pasa a los chips
+  // (misma lógica que el scatter Elo/PIB).
+  const hasSelection = selectedSet.size > 0;
 
   const drawables = pts.filter(p =>
     !hiddenConfs.has(p.confed) || selectedSet.has(p.iso3) || p.confed === hoverConf
@@ -359,19 +502,19 @@ function drawTalentoClubes() {
     const cx = xScale(d.share);
     const cy = yScale(d.clubAge);
     const isSel = selectedSet.has(d.iso3);
-    const isAuto = d.confed === 'CONMEBOL';
+    const isAuto = d.confed === 'CONMEBOL' && !hasSelection;  // desinfla con chips
     const isHov = hoverConf && d.confed === hoverConf;
     const isDim = hoverConf && !isHov && !isSel;
 
     let r, op, stroke, sw;
     if (isSel) {
-      r = SC_POINT_R_SELECTED; op = 0.95; stroke = '#1A1A1A'; sw = 1.1;
+      r = SC_POINT_R_SELECTED * ptScale; op = 0.95; stroke = '#1A1A1A'; sw = 1.1;
     } else if (isAuto) {
-      r = SC_POINT_R_LABELED; op = 0.95; stroke = '#1A1A1A'; sw = 0.9;
+      r = SC_POINT_R_LABELED * ptScale; op = 0.95; stroke = '#1A1A1A'; sw = 0.9;
     } else if (isHov) {
-      r = 5.5; op = 0.9; stroke = '#1A1A1A'; sw = 0.7;
+      r = 5.5 * ptScale; op = 0.9; stroke = '#1A1A1A'; sw = 0.7;
     } else {
-      r = SC_POINT_R_OTHER; op = 0.78; stroke = 'white'; sw = 0.5;
+      r = SC_POINT_R_OTHER * ptScale; op = 0.78; stroke = 'white'; sw = 0.5;
     }
     const c = sc_ns('circle');
     c.setAttribute('class', 's-point' + (isDim ? ' s-dim' : ''));
@@ -411,7 +554,8 @@ function drawTalentoClubes() {
       const isConmebolAuto = d.confed === 'CONMEBOL' && !hiddenConfs.has('CONMEBOL');
       const isDefaultLabeled = SC_DEFAULT_LABELED.has(d.iso3)
         && !hiddenConfs.has(d.confed);
-      if (isConmebolAuto || isDefaultLabeled) labelTargets.push(d);
+      // Los preseleccionados (CONMEBOL + default) solo si NO hay chips.
+      if ((isConmebolAuto || isDefaultLabeled) && !hasSelection) labelTargets.push(d);
       else if (selectedSet.has(d.iso3)) labelTargets.push(d);
       else if (hoverConf && d.confed === hoverConf) labelTargets.push(d);
     });
@@ -424,7 +568,7 @@ function drawTalentoClubes() {
   //   3. Diagonales: NE, SE, NO, SO.
   // Si ninguna entra sin pisar, usamos la primera (default) y aceptamos
   // el solapamiento — es preferible mostrar la etiqueta a esconderla.
-  const fontSize = mobile ? 13 : 10.5;
+  const fontSize = SIZES.label;
   const placed = [];  // bboxes ya colocadas
 
   // Sort para priorizar CONMEBOL y selected al ubicar primero (les damos
@@ -462,6 +606,20 @@ function drawTalentoClubes() {
              a.y + a.h + 1 < b.y || b.y + b.h + 1 < a.y);
   }
 
+  // Caja de clamp: los labels pueden usar el MARGEN DERECHO (vacío, justo
+  // para eso) y un poco del superior, pero no el izquierdo (eje Y) ni el
+  // inferior (eje X). CLAVE para Bolivia/Uruguay, que caen al borde derecho:
+  // sin esto, el clamp al área de plot los devolvía encima de su punto.
+  const clampBox = { x1: SC_MARGIN.left, y1: 10,
+                     x2: SC_W - 6, y2: SC_MARGIN.top + PLOT_H };
+  const inClamp = (bb) => bb.x >= clampBox.x1 && bb.x + bb.w <= clampBox.x2
+                       && bb.y >= clampBox.y1 && bb.y + bb.h <= clampBox.y2;
+
+  // Pass 1: posición greedy (elige el offset que menos pisa Y entra en límites).
+  // En formato grande el punto es ~2x más grande (ptScale): escalamos el
+  // offset para que el label ARRANQUE despejado del círculo, no encima.
+  const OFF_SCALE = bigFmt ? 2.4 : 1;
+  const labelObjs = [];
   labelTargets.forEach(d => {
     const text = sc_displayName(d);
     const cx = xScale(d.share);
@@ -469,27 +627,70 @@ function drawTalentoClubes() {
     const w = sc_measureText(text, fontSize, selectedSet.has(d.iso3) ? 600 : 500) + 2;
     let chosen = OFFSETS[0];
     for (const o of OFFSETS) {
-      const bb = bboxOf(text, cx + o.dx, cy + o.dy, o, w);
-      const hit = placed.some(p => overlaps(bb, p));
-      if (!hit) { chosen = o; break; }
+      const bb = bboxOf(text, cx + o.dx * OFF_SCALE, cy + o.dy * OFF_SCALE, o, w);
+      // Solo elegir si no pisa Y (en grande) entra en la caja de clamp.
+      if (!placed.some(p => overlaps(bb, p)) && (!bigFmt || inClamp(bb))) { chosen = o; break; }
     }
-    placed.push(bboxOf(text, cx + chosen.dx, cy + chosen.dy, chosen, w));
+    placed.push(bboxOf(text, cx + chosen.dx * OFF_SCALE, cy + chosen.dy * OFF_SCALE, chosen, w));
+    labelObjs.push({
+      d, text, cx, cy, textW: w,
+      lx: cx + chosen.dx * OFF_SCALE, ly: cy + chosen.dy * OFF_SCALE,
+      anchor: chosen.anchor, baseline: chosen.baseline,
+      isSelected: selectedSet.has(d.iso3),
+    });
+  });
 
+  // Radio real del punto de cada label (para repulsión y línea guía).
+  const labelPtR = (l) => l.isSelected ? SC_POINT_R_SELECTED * ptScale
+    : (l.d.confed === 'CONMEBOL' && !hasSelection) ? SC_POINT_R_LABELED * ptScale
+    : SC_POINT_R_OTHER * ptScale;
+
+  // Pass 2 (formatos grandes): anti-colisión 2D + repulsión de puntos (corre
+  // los labels de encima de los puntos, ej. Perú/Chile, Bolivia/Uruguay).
+  if (bigFmt) {
+    const obstacles = labelObjs.map(l => ({ x: l.cx, y: l.cy, r: labelPtR(l) }));
+    sc_relaxLabels(labelObjs, fontSize, clampBox, 260, obstacles);
+
+    // Pass 3a: líneas guía grises (van bajo los labels, sobre los puntos).
+    const leaderG = sc_ns('g'); svg.insertBefore(leaderG, labelsG);
+    labelObjs.forEach(l => {
+      const B = sc_labelBox(l, fontSize);
+      const Px = l.cx, Py = l.cy, r = labelPtR(l);
+      const nx = Math.max(B.x1, Math.min(Px, B.x2));
+      const ny = Math.max(B.y1, Math.min(Py, B.y2));
+      const dx = nx - Px, dy = ny - Py, dist = Math.hypot(dx, dy);
+      if (dist > r + 7) {
+        const ux = dx / dist, uy = dy / dist;
+        const line = sc_ns('line');
+        line.setAttribute('x1', Px + ux * r); line.setAttribute('y1', Py + uy * r);
+        line.setAttribute('x2', nx - ux * 2); line.setAttribute('y2', ny - uy * 2);
+        line.setAttribute('stroke', '#9a9488');
+        line.setAttribute('stroke-width', 1.4);
+        line.setAttribute('stroke-opacity', 0.7);
+        line.setAttribute('stroke-linecap', 'round');
+        leaderG.appendChild(line);
+      }
+    });
+  }
+
+  // Pass 3b: dibujar los textos.
+  labelObjs.forEach(l => {
+    const d = l.d;
     const txt = sc_ns('text');
-    txt.setAttribute('class', 's-country-label' + (selectedSet.has(d.iso3) ? ' s-labeled-label' : ''));
-    txt.setAttribute('x', cx + chosen.dx);
-    txt.setAttribute('y', cy + chosen.dy);
-    txt.setAttribute('text-anchor', chosen.anchor);
-    if (chosen.baseline === 'central') txt.setAttribute('dominant-baseline', 'central');
+    txt.setAttribute('class', 's-country-label' + (l.isSelected ? ' s-labeled-label' : ''));
+    txt.setAttribute('x', l.lx);
+    txt.setAttribute('y', l.ly);
+    txt.setAttribute('text-anchor', l.anchor);
+    if (l.baseline === 'central') txt.setAttribute('dominant-baseline', 'central');
     txt.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-    txt.setAttribute('font-size', fontSize);
-    txt.setAttribute('font-weight', selectedSet.has(d.iso3) ? 600 : 500);
+    txt.style.fontSize = fontSize + 'px';   // inline gana a .s-country-label
+    txt.style.fontWeight = (l.isSelected || bigFmt) ? 700 : 500;
     txt.setAttribute('fill', SC_CONF_LABEL_COLORS[d.confed] || '#444');
-    txt.setAttribute('paint-order', 'stroke');
-    txt.setAttribute('stroke', 'var(--bg)');
-    txt.setAttribute('stroke-width', '2.5px');
-    txt.setAttribute('stroke-linejoin', 'round');
-    txt.textContent = text;
+    txt.style.stroke = 'var(--bg)';
+    txt.style.strokeWidth = (bigFmt ? 6 : 2.5) + 'px';   // halo fuerte en grande
+    txt.style.paintOrder = 'stroke';
+    txt.style.strokeLinejoin = 'round';
+    txt.textContent = l.text;
     labelsG.appendChild(txt);
   });
 
@@ -837,12 +1038,26 @@ function initTalentoClubes() {
   }
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
 
+  // Soporte de formato PNG: png-export usa 'square' por default al clic y
+  // fuerza el re-render en ese formato vía estos globals (mismo patrón que el
+  // scatter Elo/PIB → ahora el PNG del chart 4 también sale cuadrado).
+  window.__atlasSupportsFormats = true;
+  window.__atlasRedraw = drawTalentoClubes;
+
   // Hook para el PNG export: sources distinto según el toggle "+5k views".
   // Sin esto, el PNG default (con toggle OFF) mostraba el texto largo
   // explicando el toggle — confunde porque el toggle NO se aplicó.
   window.onBeforePngExportGetSourceText = function(chartId) {
     if (chartId !== '4') return null;
     const key = state[4].hiViews ? 'c4-sources-with-filter' : 'c4-sources-no-filter';
-    return (typeof t === 'function') ? t(key) : null;
+    const base = (typeof t === 'function') ? t(key) : '';
+    if (!base) return null;
+    // El eje X se simplificó: el período de nacimiento (años del slider) se
+    // explicita acá, en la nota.
+    const p = state[4].period || SC_PERIOD_DEFAULT;
+    const periodTxt = (typeof LANG !== 'undefined' && LANG === 'en')
+      ? ' Birth period: ' + p[0] + '–' + p[1] + '.'
+      : ' Período de nacimiento: ' + p[0] + '–' + p[1] + '.';
+    return base + periodTxt;
   };
 }
