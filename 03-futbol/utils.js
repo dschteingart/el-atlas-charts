@@ -3,6 +3,31 @@
 // promoverlos a lib/utils.js para tener una sola copia.
 // Depende de LANG (definido en i18n-issue.js, cargado antes).
 
+// Título/subtítulo dinámicos: insight editorial en el estado por DEFAULT;
+// versión NEUTRAL apenas el usuario cambia algo en el interactivo. El PNG
+// hereda el texto del DOM, así que el export por default (estado default)
+// mantiene el insight, y si el usuario customiza y exporta, sale neutral.
+//   keys = { title, titleNeutral, subtitle?, subtitleNeutral? }
+// Si subtitle/subtitleNeutral faltan, NO toca el subtítulo (ej. chart 2, que
+// tiene subtítulo descriptivo propio que se actualiza aparte).
+// Respeta el título/subtítulo CUSTOM del editor (?nl) si está seteado.
+function atlasSetHeading(chartId, isDefault, keys) {
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig)
+    ? window.AtlasEditor.getConfig() : null;
+  const lang = (ae && ae.lang) || (typeof LANG !== 'undefined' ? LANG : 'es');
+  const tx = (ae && ae.texts && ae.texts[lang]) || {};
+  const tt = (k) => (typeof t === 'function' && k) ? t(k) : (k || '');
+  const block = document.querySelector('.chart-block[data-chart="' + chartId + '"]') || document;
+  const titleEl = block.querySelector('.chart-title');
+  if (titleEl && keys.title && keys.titleNeutral && !(tx.title || '').trim()) {
+    titleEl.textContent = isDefault ? tt(keys.title) : tt(keys.titleNeutral);
+  }
+  const subEl = block.querySelector('.chart-subtitle');
+  if (subEl && keys.subtitle && keys.subtitleNeutral && !(tx.subtitle || '').trim()) {
+    subEl.textContent = isDefault ? tt(keys.subtitle) : tt(keys.subtitleNeutral);
+  }
+}
+
 // Detección de dispositivo con hover (desktop con mouse) vs solo touch (mobile).
 // En mobile el hover no funciona bien — los handlers mouseenter/mouseleave
 // quedan pegados después del tap. Cuando HAS_HOVER es false, los charts
@@ -46,11 +71,22 @@ function isMobileViewport() {
 //   newsletter: 10:11 = 0.91   cuadrado-ish leve portrait
 //   square:     1:1   = 1.00   cuadrado puro
 //   mobile:      2:3  = 0.67   portrait alto (Stories / WhatsApp)
+// vbW/vbH = viewBox del SVG (la proporción del GRÁFICO en sí).
+// nominalW/nominalH = canvas final del PNG (incluye título arriba + nota
+//   abajo). square produce un PNG cuadrado (1200×1200) pero el gráfico
+//   adentro es APAISADO (vbH 720, aspect ~1.5) para que llene el ancho;
+//   el título grande arriba y la nota abajo completan el cuadrado. Sin
+//   esto el gráfico cuadrado se achicaba al centro dejando bandas.
 const PNG_FORMATS = {
   public:     { vbW: 1100, vbH: 619,  nominalW: 1600, nominalH: 900  },
-  newsletter: { vbW: 1100, vbH: 1210, nominalW: 1000, nominalH: 1100 },
-  square:     { vbW: 1100, vbH: 1100, nominalW: 1200, nominalH: 1200 },
-  mobile:     { vbW: 1100, vbH: 1650, nominalW: 800,  nominalH: 1200 }
+  newsletter: { vbW: 1100, vbH: 760,  nominalW: 1080, nominalH: 1080 },
+  square:     { vbW: 1100, vbH: 760,  nominalW: 1200, nominalH: 1200 },
+  mobile:     { vbW: 1100, vbH: 1100, nominalW: 1000, nominalH: 1500 },
+  // Mapamundi: el mapa es ancho (Robinson ~1.9:1). Un cuadrado le deja medio
+  // canvas vacío abajo. Este formato lo ajusta: ancho completo, alto justo
+  // para título + mapa + nota (sin desperdicio). Lo usa el chart 3 vía
+  // __atlasDefaultPngFormat. Igual es mobile-first (chrome grande).
+  worldmap:   { vbW: 1100, vbH: 580,  nominalW: 1200, nominalH: 920  }
 };
 
 // Devuelve el formato activo del editor o null si:
@@ -64,6 +100,13 @@ const PNG_FORMATS = {
 // Cuando devuelve null → el chart usa sus dimensiones default (desktop o
 // mobile responsive según isMobileViewport).
 function getActivePngFormat() {
+  // Override del exportador PNG: cuando png-export.js va a generar la imagen
+  // sin editor activo, fuerza un formato (por default 'square' mobile-first)
+  // seteando window.__atlasPngFormatOverride. Tiene prioridad sobre todo:
+  // permite "default cuadrado al clic" sin tocar el estado del editor.
+  if (window.__atlasPngFormatOverride && PNG_FORMATS[window.__atlasPngFormatOverride]) {
+    return window.__atlasPngFormatOverride;
+  }
   if (!window.AtlasEditor || typeof window.AtlasEditor.getConfig !== 'function') {
     return null;
   }

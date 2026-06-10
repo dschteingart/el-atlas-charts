@@ -60,6 +60,17 @@ const TA_DEFAULT_SELECTED = [
 const TA_SVG_NS = 'http://www.w3.org/2000/svg';
 const ta_ns = (tag) => document.createElementNS(TA_SVG_NS, tag);
 
+// Márgenes por formato de PNG (mobile-first). Left amplio para los nombres de
+// país a tamaño grande; right para los valores.
+function ta_getMargins(format) {
+  switch (format) {
+    case 'newsletter': return { top: 40, right: 96, bottom: 84, left: 210 };
+    case 'square':     return { top: 40, right: 96, bottom: 84, left: 210 };
+    case 'mobile':     return { top: 28, right: 60, bottom: 56, left: 150 };
+    default:           return null;
+  }
+}
+
 //==================================================================
 //  Helpers
 //==================================================================
@@ -166,14 +177,42 @@ function drawTalento() {
   svg.innerHTML = '';
   ta_updateSubtitle();
 
-  const mobile = ta_isMobile();
-  const TA_MARGIN = mobile ? TA_MARGIN_MOBILE : TA_MARGIN_DESKTOP;
+  // Formato activo del PNG (square por default al descargar).
+  const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
+  const square = editorFormat === 'square';
+  const newsletter = editorFormat === 'newsletter';
+  const mobilePng = editorFormat === 'mobile';
+  const mobile = !editorFormat && ta_isMobile();
+  const bigFmt = square || newsletter || mobilePng || mobile;
 
-  // Altura dinámica del SVG: depende de la cantidad de países seleccionados.
   const data = ta_computeRates();
   const n = data.length;
-  const plotH = n * (TA_BAR_H + TA_BAR_GAP) - TA_BAR_GAP;
-  const totalH = TA_MARGIN.top + plotH + TA_MARGIN.bottom;
+
+  // Tamaños mobile-first (inline style). Los nombres de país son el label
+  // protagonista → los más grandes.
+  const SIZES = (square || newsletter || mobilePng)
+    ? { tick: 22, axisTitle: 26, name: 28, value: 26 }
+    : mobile
+    ? { tick: 20, axisTitle: 24, name: 24, value: 22 }
+    : { tick: 11, axisTitle: 11.5, name: 12.5, value: 12 };
+
+  // En formato PNG la altura es FIJA (vbH) y el grosor de barra se calcula
+  // para llenar el alto disponible con las n barras. En pantalla, al revés:
+  // grosor fijo y altura dinámica (comportamiento original).
+  let TA_W, TA_MARGIN, TA_BAR_H, TA_BAR_GAP, totalH, plotH;
+  if (editorFormat) {
+    const f = PNG_FORMATS[editorFormat];
+    TA_W = f.vbW; totalH = f.vbH; TA_MARGIN = ta_getMargins(editorFormat);
+    TA_BAR_GAP = Math.max(6, Math.round(110 / n));
+    plotH = totalH - TA_MARGIN.top - TA_MARGIN.bottom;
+    TA_BAR_H = (plotH - (n - 1) * TA_BAR_GAP) / n;
+  } else {
+    TA_W = 1100;
+    TA_MARGIN = mobile ? { ...TA_MARGIN_MOBILE } : { ...TA_MARGIN_DESKTOP };
+    TA_BAR_H = 20; TA_BAR_GAP = 5;
+    plotH = n * (TA_BAR_H + TA_BAR_GAP) - TA_BAR_GAP;
+    totalH = TA_MARGIN.top + plotH + TA_MARGIN.bottom;
+  }
   svg.setAttribute('viewBox', `0 0 ${TA_W} ${totalH}`);
 
   const plotW = TA_W - TA_MARGIN.left - TA_MARGIN.right;
@@ -207,10 +246,10 @@ function drawTalento() {
     gridG.appendChild(line);
     const lbl = ta_ns('text');
     lbl.setAttribute('x', x);
-    lbl.setAttribute('y', TA_MARGIN.top + plotH + 16);
+    lbl.setAttribute('y', TA_MARGIN.top + plotH + (bigFmt ? 32 : 16));
     lbl.setAttribute('text-anchor', 'middle');
     lbl.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-    lbl.setAttribute('font-size', mobile ? 12 : 11);
+    lbl.style.fontSize = SIZES.tick + 'px';
     lbl.setAttribute('fill', '#7A6E62');
     lbl.setAttribute('font-variant-numeric', 'tabular-nums');
     lbl.textContent = v.toFixed(v < 10 ? 1 : 0);
@@ -220,10 +259,10 @@ function drawTalento() {
   // Eje X título
   const xTitle = ta_ns('text');
   xTitle.setAttribute('x', TA_MARGIN.left + plotW / 2);
-  xTitle.setAttribute('y', TA_MARGIN.top + plotH + 38);
+  xTitle.setAttribute('y', TA_MARGIN.top + plotH + (bigFmt ? 64 : 38));
   xTitle.setAttribute('text-anchor', 'middle');
   xTitle.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-  xTitle.setAttribute('font-size', mobile ? 13 : 11.5);
+  xTitle.style.fontSize = SIZES.axisTitle + 'px';
   xTitle.setAttribute('fill', '#7A6E62');
   xTitle.setAttribute('font-weight', 500);
   xTitle.textContent = (typeof t === 'function')
@@ -246,7 +285,7 @@ function drawTalento() {
     nameTxt.setAttribute('text-anchor', 'end');
     nameTxt.setAttribute('dominant-baseline', 'central');
     nameTxt.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-    nameTxt.setAttribute('font-size', mobile ? 13 : 12.5);
+    nameTxt.style.fontSize = SIZES.name + 'px';
     nameTxt.setAttribute('font-weight', isCon ? 600 : 500);
     nameTxt.setAttribute('fill', isCon ? '#8B4220' : '#3A3530');
     nameTxt.textContent = ta_displayName(d.iso);
@@ -281,7 +320,7 @@ function drawTalento() {
     valTxt.setAttribute('y', y + TA_BAR_H / 2);
     valTxt.setAttribute('dominant-baseline', 'central');
     valTxt.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-    valTxt.setAttribute('font-size', mobile ? 13 : 12);
+    valTxt.style.fontSize = SIZES.value + 'px';
     valTxt.setAttribute('font-weight', 600);
     valTxt.setAttribute('fill', '#3A3530');
     valTxt.setAttribute('font-variant-numeric', 'tabular-nums');
@@ -299,6 +338,19 @@ function drawTalento() {
   zeroLine.setAttribute('stroke', TA_COLOR_AXIS);
   zeroLine.setAttribute('stroke-width', 1);
   svg.appendChild(zeroLine);
+
+  // Título dinámico: el insight ("Uruguay produce más…") solo en el estado
+  // por default; neutral si el usuario cambió período, top N o la selección.
+  // El subtítulo ya es descriptivo, no cambia.
+  const s2 = state[2];
+  const selDefault = s2.selected.length === TA_DEFAULT_SELECTED.length
+    && TA_DEFAULT_SELECTED.every(iso => s2.selected.includes(iso));
+  const isDefaultView = selDefault
+    && s2.period[0] === TA_PERIOD_DEFAULT[0] && s2.period[1] === TA_PERIOD_DEFAULT[1]
+    && s2.topN === 1000;
+  if (typeof atlasSetHeading === 'function') {
+    atlasSetHeading('2', isDefaultView, { title: 'c2-title', titleNeutral: 'c2-title-neutral' });
+  }
 }
 
 //==================================================================
@@ -460,8 +512,13 @@ function renderTalentoChips() {
     const isCon = TA_CONMEBOL_ISOS.has(iso);
     const chip = document.createElement('span');
     chip.className = 'm-selected-chip';
-    chip.style.background = isCon ? TA_COLOR_CONMEBOL : TA_COLOR_OTHER;
-    chip.textContent = ta_displayName(iso);
+    // Chip neutro con un puntito del color de la barra (terracota CONMEBOL /
+    // azul resto). Más sobrio que el fondo de color completo.
+    const dot = document.createElement('span');
+    dot.className = 'm-chip-dot';
+    dot.style.background = isCon ? TA_COLOR_CONMEBOL : TA_COLOR_OTHER;
+    chip.appendChild(dot);
+    chip.appendChild(document.createTextNode(ta_displayName(iso)));
     const x = document.createElement('button');
     x.className = 'm-chip-x';
     x.innerHTML = '×';
@@ -678,4 +735,22 @@ function initTalento() {
     window.addEventListener('atlas-editor-change', () => drawTalento());
   }
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
+
+  // Soporte de formato PNG: png-export usa 'square' por default al clic y
+  // fuerza el re-render vía estos globals (el PNG del chart 2 sale cuadrado).
+  window.__atlasSupportsFormats = true;
+  window.__atlasRedraw = drawTalento;
+
+  // Nota "Datos" del PNG: versión estilizada y corta (fuentes + métrica +
+  // período + aclaración del terracota). El detalle metodológico queda en el
+  // footer del HTML. Inyecta el top N y los años del slider.
+  window.onBeforePngExportGetSourceText = function(chartId) {
+    if (chartId !== '2') return null;
+    const tpl = (typeof t === 'function') ? t('c2-sources-tpl') : '';
+    if (!tpl) return null;
+    const p = state[2].period || TA_PERIOD_DEFAULT;
+    const lang = (typeof LANG !== 'undefined' && LANG === 'en') ? 'en-US' : 'es-AR';
+    const N = (state[2].topN || 1000).toLocaleString(lang);
+    return tpl.replace('{N}', N).replace('{Y0}', p[0]).replace('{Y1}', p[1]);
+  };
 }

@@ -59,8 +59,8 @@ const S_MARGIN_MOBILE  = { top: 110, right: 30, bottom: 240, left: 140 };
 function s_getMargins(format) {
   switch (format) {
     case 'public':     return { top: 40, right: 36, bottom: 100, left: 70 };
-    case 'newsletter': return { top: 40, right: 44, bottom: 130, left: 70 };
-    case 'square':     return { top: 40, right: 44, bottom: 130, left: 70 };
+    case 'newsletter': return { top: 40, right: 44, bottom: 105, left: 92 };
+    case 'square':     return { top: 40, right: 44, bottom: 70,  left: 92 };
     case 'mobile':     return { top: 60, right: 36, bottom: 220, left: 110 };
     default:           return { ...S_MARGIN_DESKTOP };
   }
@@ -397,6 +397,86 @@ function s_layoutLabels(items, plotBox) {
   return out;
 }
 
+// Caja real de un label colocado, según su anchor + ancho medido + alto de
+// fuente. labelH ≈ tamaño de fuente; el texto se ancla por baseline, así que
+// el alto se reparte ~0.78 arriba (ascendentes) / ~0.22 abajo (descendentes).
+function s_labelBox(l, labelH) {
+  let x1, x2;
+  if (l.anchor === 'start')      { x1 = l.lx;            x2 = l.lx + l.textW; }
+  else if (l.anchor === 'end')   { x1 = l.lx - l.textW;  x2 = l.lx; }
+  else                           { x1 = l.lx - l.textW/2; x2 = l.lx + l.textW/2; }
+  const y1 = l.ly - labelH * 0.78, y2 = l.ly + labelH * 0.22;
+  return { x1, x2, y1, y2, cx: (x1 + x2) / 2, cy: (y1 + y2) / 2 };
+}
+
+// Relajación anti-colisión 2D. Para formatos grandes (PNG mobile-first), el
+// placement greedy deja los labels CONMEBOL apiñados y encima de sus puntos.
+// Esta pasada empuja iterativamente:
+//   (a) cada par de labels solapado por su eje de MENOR solape, y
+//   (b) cada label que cubra un PUNTO (obstáculo) lo corre para despejarlo.
+// Así se reparten en 2D Y se sacan de encima de los puntos marrones; quedan
+// reconectados con una línea guía gris (dibujada en drawScatter). Bounded por
+// `passes`; clamp al área de plot.
+function s_relaxLabels(placed, labelH, plotBox, passes, obstacles) {
+  const PAD = 8;       // colchón mínimo entre cajas
+  const PT_PAD = 4;    // separación mínima entre caja de label y punto
+  for (let p = 0; p < passes; p++) {
+    let moved = false;
+    // (a) label ↔ label
+    for (let i = 0; i < placed.length; i++) {
+      for (let j = i + 1; j < placed.length; j++) {
+        const a = s_labelBox(placed[i], labelH);
+        const b = s_labelBox(placed[j], labelH);
+        const ox = Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1) + PAD;
+        const oy = Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1) + PAD;
+        if (ox > 0 && oy > 0) {
+          if (oy <= ox) {            // menor solape vertical → empujar en Y
+            const push = oy / 2;
+            if (a.cy <= b.cy) { placed[i].ly -= push; placed[j].ly += push; }
+            else              { placed[i].ly += push; placed[j].ly -= push; }
+          } else {                   // menor solape horizontal → empujar en X
+            const push = ox / 2;
+            if (a.cx <= b.cx) { placed[i].lx -= push; placed[j].lx += push; }
+            else              { placed[i].lx += push; placed[j].lx -= push; }
+          }
+          moved = true;
+        }
+      }
+    }
+    // (b) label ↔ punto: si la caja del label invade el círculo de un punto,
+    // empujar el label en la dirección punto→centro-de-la-caja hasta despejar.
+    if (obstacles && obstacles.length) {
+      for (let i = 0; i < placed.length; i++) {
+        const a = s_labelBox(placed[i], labelH);
+        for (let k = 0; k < obstacles.length; k++) {
+          const ob = obstacles[k];
+          const nx = Math.max(a.x1, Math.min(ob.x, a.x2));
+          const ny = Math.max(a.y1, Math.min(ob.y, a.y2));
+          const R = ob.r + PT_PAD;
+          const d = Math.hypot(nx - ob.x, ny - ob.y);
+          if (d < R) {
+            const overlap = R - d;
+            let ux = a.cx - ob.x, uy = a.cy - ob.y;
+            const ul = Math.hypot(ux, uy) || 1; ux /= ul; uy /= ul;
+            placed[i].lx += ux * overlap;
+            placed[i].ly += uy * overlap;
+            moved = true;
+          }
+        }
+      }
+    }
+    if (!moved) break;
+  }
+  // Mantener cada label dentro del área de plot.
+  const up = labelH * 0.78, dn = labelH * 0.22;
+  placed.forEach(l => {
+    l.ly = Math.max(plotBox.y1 + up, Math.min(plotBox.y2 - dn, l.ly));
+    if (l.anchor === 'start')    l.lx = Math.max(plotBox.x1, Math.min(plotBox.x2 - l.textW, l.lx));
+    else if (l.anchor === 'end') l.lx = Math.max(plotBox.x1 + l.textW, Math.min(plotBox.x2, l.lx));
+    else                         l.lx = Math.max(plotBox.x1 + l.textW/2, Math.min(plotBox.x2 - l.textW/2, l.lx));
+  });
+}
+
 // =================== Render principal ===================
 function drawScatter() {
   const svg = document.getElementById('chart1');
@@ -438,20 +518,34 @@ function drawScatter() {
     applyFormatWrapper(svg, editorFormat);
   }
 
-  // Font sizes (idéntico al N°2: viewBox 1100 → escalados por formato).
+  // Font sizes (viewBox 1100 → escalados por formato).
+  // CLAVE mobile-first: el PNG de 1200px se ve a ~380px en el celu (÷3).
+  // Y el SVG ocupa ~0.8 del canvas. O sea reducción total ~0.25. Para que
+  // un tick se lea (~10px en el celu) necesita ~36-40 units acá. Por eso
+  // square/newsletter llevan fuentes MUCHO más grandes que el desktop —
+  // parecen exageradas en el monitor, pero es lo que se lee en el celular.
+  // Tamaños para PNG mobile-first. Bajados de 40/64/52 → 26/30/32: a 40/64
+  // se encimaban (ticks del eje X) y rebalsaban (títulos de eje, labels de
+  // país). 26/30/32 quedan legibles en el celu (÷~3) sin pisarse. El eje X
+  // además se ralea a potencias de 10 en estos formatos (ver xTicksRaw).
   const SIZES = newsletter
-    ? { tick: 18, axisTitle: 19, label: 17 }
+    ? { tick: 22, axisTitle: 26, label: 26 }
     : square
-    ? { tick: 18, axisTitle: 19, label: 17 }
+    ? { tick: 22, axisTitle: 26, label: 26 }
     : mobilePng
-    ? { tick: 28, axisTitle: 30, label: 24 }
+    ? { tick: 22, axisTitle: 26, label: 26 }
     : mobile
-    ? { tick: 32, axisTitle: 34, label: 28 }
+    ? { tick: 22, axisTitle: 26, label: 22 }
     : {
         tick:      aeSizes?.ticks     ?? 11,
         axisTitle: aeSizes?.axisTitle ?? 11.5,
         label:     aeSizes?.labels    ?? 10.5
       };
+
+  // Escala de los radios de punto según formato. En mobile-first los
+  // puntos chicos (3.5 units) desaparecen al reducir a celu; los
+  // sobredimensionamos.
+  const ptScale = (square || newsletter) ? 1.8 : (mobilePng || mobile) ? 2.0 : 1;
 
   const s1 = state[1];
   const period = s1.period;
@@ -467,6 +561,14 @@ function drawScatter() {
     ? s1.selectedCountries
     : new Set(s1.selectedCountries || []);
   s1.selectedCountries = selectedSet; // normaliza por si vino como array
+
+  // Cuando el USER elige países (chips), el realce automático de CONMEBOL se
+  // "desinfla": los CONMEBOL vuelven a puntos normales (sin label ni círculo
+  // agrandado) y el realce pasa a los seleccionados — misma lógica de render
+  // que CONMEBOL por default, pero aplicada a los chips. Sin chips, CONMEBOL
+  // resaltado como contexto editorial del número (comportamiento original).
+  const hasSelection = selectedSet.size > 0;
+  const conmebolAuto = (d) => d.confed === 'CONMEBOL' && !hasSelection;
 
   // === Recalcular puntos / regresión / residuos ===
   // (depende SOLO del slider — handler del slider llama drawScatter, lo
@@ -507,10 +609,19 @@ function drawScatter() {
   const axisG = s_ns('g'); axisG.setAttribute('class', 's-axis'); svg.appendChild(axisG);
 
   // Filtramos los ticks fijos al dominio actual.
-  const xTicksRaw = S_X_TICKS_RAW.filter(v => {
+  let xTicksRaw = S_X_TICKS_RAW.filter(v => {
     const logV = Math.log10(v);
     return logV >= xDomain[0] - 0.001 && logV <= xDomain[1] + 0.001;
   });
+  // En formatos grandes (PNG mobile-first), ralear a POTENCIAS DE 10
+  // (1e8, 1e9, 1e10, …) descartando los intermedios (3e8, 3e9, …). Con la
+  // tipografía agrandada, 12 etiquetas largas ("$100 mil M") se encimaban;
+  // con 6 entran holgadas. En desktop se mantienen los 12 ticks.
+  const bigFmt = newsletter || square || mobilePng || mobile;
+  if (bigFmt) {
+    xTicksRaw = xTicksRaw.filter(v =>
+      Math.abs(Math.log10(v) - Math.round(Math.log10(v))) < 0.01);
+  }
   xTicksRaw.forEach(v => {
     const x = xScale(Math.log10(v));
     const line = s_ns('line');
@@ -524,7 +635,11 @@ function drawScatter() {
     lbl.setAttribute('y', S_MARGIN.top + S_PLOT_H + xTickGap);
     lbl.setAttribute('text-anchor', 'middle');
     lbl.setAttribute('class', 's-tick');
-    lbl.setAttribute('font-size', SIZES.tick);
+    // font-size como ESTILO INLINE (no atributo): la clase CSS .s-tick tiene
+    // font-size:11px, que le gana al atributo font-size en SVG. El estilo
+    // inline le gana a la clase → el tamaño de SIZES manda en pantalla Y en
+    // el PNG. (Bug raíz del "gráfico chico en el PNG".)
+    lbl.style.fontSize = SIZES.tick + 'px';
     lbl.textContent = s_fmtMoney(v);
     axisG.appendChild(lbl);
   });
@@ -544,7 +659,11 @@ function drawScatter() {
     lbl.setAttribute('y', y + 4);
     lbl.setAttribute('text-anchor', 'end');
     lbl.setAttribute('class', 's-tick');
-    lbl.setAttribute('font-size', SIZES.tick);
+    // font-size como ESTILO INLINE (no atributo): la clase CSS .s-tick tiene
+    // font-size:11px, que le gana al atributo font-size en SVG. El estilo
+    // inline le gana a la clase → el tamaño de SIZES manda en pantalla Y en
+    // el PNG. (Bug raíz del "gráfico chico en el PNG".)
+    lbl.style.fontSize = SIZES.tick + 'px';
     lbl.textContent = Math.round(v);
     axisG.appendChild(lbl);
   });
@@ -565,10 +684,14 @@ function drawScatter() {
   const xT = s_ns('text');
   xT.setAttribute('class', 's-axis-title');
   xT.setAttribute('x', S_MARGIN.left + S_PLOT_W / 2);
-  const xTitleY = mobile ? S_H - 70 : mobilePng ? S_H - 60 : S_H - 14;
+  // Posicionar el título del eje X JUSTO debajo de los ticks (no pegado al
+  // fondo del SVG). Antes quedaba ~98px de aire entre el tick y el título.
+  // Lo anclamos al tick: posición-del-tick + alto-del-tick + gap chico.
+  const _xTickGap = mobile ? 44 : mobilePng ? 38 : 18;
+  const xTitleY = S_MARGIN.top + S_PLOT_H + _xTickGap + SIZES.tick + 16;
   xT.setAttribute('y', xTitleY);
   xT.setAttribute('text-anchor', 'middle');
-  xT.setAttribute('font-size', SIZES.axisTitle);
+  xT.style.fontSize = SIZES.axisTitle + 'px';  // inline gana a la clase CSS
   const customAxisX = (aeCfg?.texts?.[(aeCfg?.lang || 'es')]?.axisX || '').trim();
   const customAxisY = (aeCfg?.texts?.[(aeCfg?.lang || 'es')]?.axisY || '').trim();
   xT.textContent = customAxisX || (typeof t === 'function' ? t('c1-axis-x') : 'PIB total (PPA, US$ int. constantes) — escala log');
@@ -577,10 +700,14 @@ function drawScatter() {
   const yT = s_ns('text');
   yT.setAttribute('class', 's-axis-title');
   yT.setAttribute('x', -(S_MARGIN.top + S_PLOT_H / 2));
-  yT.setAttribute('y', (mobile || mobilePng) ? 36 : 16);
+  // y (post rotate(-90)) = posición horizontal de la baseline del título.
+  // En formatos grandes el título es de 24px: con y=16 los trazos
+  // ascendentes se salían por el borde izquierdo (x<0) → se veía cortado.
+  // Lo corremos a 30 (ascendentes a ~11px del borde, sin pisar los ticks).
+  yT.setAttribute('y', (mobile || mobilePng) ? 36 : (square || newsletter) ? 30 : 16);
   yT.setAttribute('transform', 'rotate(-90)');
   yT.setAttribute('text-anchor', 'middle');
-  yT.setAttribute('font-size', SIZES.axisTitle);
+  yT.style.fontSize = SIZES.axisTitle + 'px';  // inline gana a la clase CSS
   yT.textContent = customAxisY || (typeof t === 'function' ? t('c1-axis-y') : 'ELO promedio del período');
   svg.appendChild(yT);
 
@@ -629,7 +756,7 @@ function drawScatter() {
   const ordered = drawables.slice().sort((a, b) => {
     const score = (d) => {
       let s = 0;
-      if (d.confed === 'CONMEBOL') s += 1;
+      if (conmebolAuto(d)) s += 1;
       if (hoverConf && d.confed === hoverConf) s += 5;
       if (selectedSet.has(d.iso3)) s += 10;
       return s;
@@ -643,7 +770,7 @@ function drawScatter() {
     const cx = xScale(d.x);
     const cy = yScale(d.elo);
     const isSelected   = selectedSet.has(d.iso3);
-    const isAutoLabel  = d.confed === 'CONMEBOL';
+    const isAutoLabel  = conmebolAuto(d);   // CONMEBOL agrandado solo si NO hay chips
     const isHovered    = hoverConf && d.confed === hoverConf;
     const hasHover     = !!hoverConf;
     // Dim solo se aplica cuando hay hover y este punto no es ni el hovered
@@ -651,18 +778,20 @@ function drawScatter() {
     // que LATAM en el N°2 cuando hovereás otra región.
     const isDimmed = hasHover && !isHovered && !isSelected;
 
-    // Tres tamaños — selected > auto-labeled (CONMEBOL) > otros:
+    // Tres tamaños — selected > auto-labeled (CONMEBOL) > otros.
+    // Multiplicados por ptScale para que en mobile-first los puntos no
+    // desaparezcan al reducir la imagen al celu.
     let r, fillOp, stroke, strokeW;
     if (isSelected) {
       // Selected manualmente (chip): círculo grande con outline negro.
-      r = S_POINT_R_SELECTED; fillOp = 0.95; stroke = '#1A1A1A'; strokeW = 1.1;
+      r = S_POINT_R_SELECTED * ptScale; fillOp = 0.95; stroke = '#1A1A1A'; strokeW = 1.1;
     } else if (isAutoLabel) {
       // CONMEBOL default: tamaño mediano, outline gris oscuro.
-      r = S_POINT_R_LABELED; fillOp = 0.95; stroke = '#1A1A1A'; strokeW = 0.9;
+      r = S_POINT_R_LABELED * ptScale; fillOp = 0.95; stroke = '#1A1A1A'; strokeW = 0.9;
     } else if (isHovered) {
-      r = 5; fillOp = 0.9; stroke = '#1A1A1A'; strokeW = 0.7;
+      r = 5 * ptScale; fillOp = 0.9; stroke = '#1A1A1A'; strokeW = 0.7;
     } else {
-      r = S_POINT_R_OTHER; fillOp = 0.78; stroke = 'white'; strokeW = 0.5;
+      r = S_POINT_R_OTHER * ptScale; fillOp = 0.78; stroke = 'white'; strokeW = 0.5;
     }
 
     const c = s_ns('circle');
@@ -714,7 +843,7 @@ function drawScatter() {
     seenCodes.add(d.iso3);
     const text = s_displayName(d);
     const isSelected  = selectedSet.has(d.iso3);
-    const isAutoLabel = d.confed === 'CONMEBOL';
+    const isAutoLabel = conmebolAuto(d);
     // Bold (600) solo para selected manual; auto-labeled mantiene weight 500
     // para distinguir visualmente "viene por default" vs "el user lo eligió".
     const textW = s_measureText(text, SIZES.label, isSelected ? 600 : 500) + 2;
@@ -732,11 +861,11 @@ function drawScatter() {
     });
   }
 
-  // 1. Auto-labeled (CONMEBOL): default editorial, label SIEMPRE visible.
-  //    Buscan en s_allPts por si la confed CONMEBOL está oculta en hiddenConfs
-  //    — en ese caso queremos respetar el hide y NO etiquetarlos.
+  // 1. Auto-labeled (CONMEBOL): default editorial, label visible SOLO si no
+  //    hay selección manual. Con chips, los CONMEBOL se desinflan (sin label)
+  //    y el realce pasa a los seleccionados (paso 2). Respeta hiddenConfs.
   s_allPts.forEach(d => {
-    if (d.confed === 'CONMEBOL' && !hiddenConfs.has('CONMEBOL')) {
+    if (conmebolAuto(d) && !hiddenConfs.has('CONMEBOL')) {
       addLabelItem(d, true, 0);
     }
   });
@@ -772,19 +901,70 @@ function drawScatter() {
   }
 
   const placed = s_layoutLabels(labelItems, plotBox);
+  // En formatos grandes (PNG) los labels caen apiñados y encima de sus puntos.
+  // Relajamos con anti-colisión label↔label + repulsión de los PUNTOS para
+  // sacarlos de encima de los marrones; después los reconectamos con una línea
+  // guía gris (abajo). En desktop no se toca.
+  const ptR = (l) => (l.isSelected ? S_POINT_R_SELECTED : S_POINT_R_LABELED) * ptScale;
+  if (bigFmt) {
+    const obstacles = placed.map(l => ({ x: l.cx, y: l.cy, r: ptR(l) }));
+    s_relaxLabels(placed, SIZES.label, plotBox, 260, obstacles);
+  }
+
+  // En mobile-first los labels deben SALTAR a la vista: peso bold y halo
+  // (stroke) grueso. Antes, con halo fino (2.5) y weight 500, al reducir
+  // la imagen al celu las etiquetas terracota sobre crema se perdían
+  // ("no se ven nada"). Seteamos inline para pisar el CSS de la clase.
+  const isBigFmt = newsletter || square || mobilePng || mobile;
+  // Halo grueso (cream) = el label queda visualmente como CAPA SUPERIOR
+  // sobre los puntos terracota del mismo color (z-order ya es correcto, pero
+  // sin halo fuerte el texto se confundía con los puntos). 6px en grande.
+  const labelHalo = isBigFmt ? 6 : 2.5;
+  const labelWeight = isBigFmt ? 700 : null;  // null = usa el de la clase
+
+  // Líneas guía grises: conectan cada label corrido con su punto. Van DESPUÉS
+  // de los puntos (por encima) y ANTES de los labels (por debajo del halo).
+  // Solo en formatos grandes y si el label quedó claramente separado.
+  if (bigFmt) {
+    const leaderG = s_ns('g'); svg.appendChild(leaderG);
+    placed.forEach(l => {
+      const B = s_labelBox(l, SIZES.label);
+      const Px = l.cx, Py = l.cy, r = ptR(l);
+      const nx = Math.max(B.x1, Math.min(Px, B.x2));   // borde de la caja más cercano
+      const ny = Math.max(B.y1, Math.min(Py, B.y2));
+      const dx = nx - Px, dy = ny - Py;
+      const dist = Math.hypot(dx, dy);
+      if (dist > r + 7) {
+        const ux = dx / dist, uy = dy / dist;
+        const line = s_ns('line');
+        line.setAttribute('x1', Px + ux * r);   // arranca en el borde del punto
+        line.setAttribute('y1', Py + uy * r);
+        line.setAttribute('x2', nx - ux * 2);   // termina junto a la caja del label
+        line.setAttribute('y2', ny - uy * 2);
+        line.setAttribute('stroke', '#9a9488');  // gris cálido (matchea ejes)
+        line.setAttribute('stroke-width', 1.4);
+        line.setAttribute('stroke-opacity', 0.7);
+        line.setAttribute('stroke-linecap', 'round');
+        leaderG.appendChild(line);
+      }
+    });
+  }
 
   const labelsG = s_ns('g'); svg.appendChild(labelsG);
   placed.forEach(l => {
     const txt = s_ns('text');
-    // Clase s-labeled-label solo para selected manualmente — auto-labeled
-    // (CONMEBOL) usa s-country-label "neutra" (weight 500). Consistente con
-    // el N°2 chart 2 donde LATAM default no lleva el modifier.
     txt.setAttribute('class', 's-country-label' + (l.isSelected ? ' s-labeled-label' : ''));
     txt.setAttribute('x', l.lx);
     txt.setAttribute('y', l.ly);
     txt.setAttribute('text-anchor', l.anchor);
     txt.setAttribute('fill', CONF_FIFA_LABEL_COLORS[l.confed] || '#444');
-    txt.setAttribute('font-size', SIZES.label);
+    txt.style.fontSize = SIZES.label + 'px';  // inline gana a .s-country-label
+    // Halo grueso para legibilidad sobre puntos del mismo color.
+    txt.style.stroke = 'var(--bg)';
+    txt.style.strokeWidth = labelHalo + 'px';
+    txt.style.paintOrder = 'stroke';
+    txt.style.strokeLinejoin = 'round';
+    if (labelWeight) txt.style.fontWeight = labelWeight;
     txt.textContent = l.text;
     labelsG.appendChild(txt);
   });
@@ -805,6 +985,20 @@ function drawScatter() {
   // mouseenter llama drawScatter, drawScatter recrea chips, etc.
   // updateLegendResiduals muta los textContent in-place; no toca handlers.
   updateLegendResiduals();
+
+  // Título/subtítulo dinámicos: insight en el estado por default; neutral si
+  // el usuario cambió la selección, el período o el filtro de confederaciones.
+  // El hover NO cuenta (es transitorio). El editor pisa esto si tiene texto
+  // custom (corre después).
+  const _p = s1.period || [2000, 2026];
+  const isDefaultView = selectedSet.size === 0 && hiddenConfs.size === 0
+    && _p[0] === 2000 && _p[1] === 2026;
+  if (typeof atlasSetHeading === 'function') {
+    atlasSetHeading('1', isDefaultView, {
+      title: 'c1-title', titleNeutral: 'c1-title-neutral',
+      subtitle: 'c1-subtitle', subtitleNeutral: 'c1-subtitle-neutral'
+    });
+  }
 
   // Editor overrides al final para pisar lo dinámico.
   s_applyEditorOverrides(aeCfg, aeSizes);
@@ -1302,4 +1496,24 @@ function initScatter() {
     window.addEventListener('atlas-editor-change', () => drawScatter());
   }
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
+
+  // PNG mobile-first: este chart SOPORTA re-render por formato (square,
+  // newsletter, etc.) vía getActivePngFormat(). Lo registramos para que
+  // png-export.js use 'square' por default al clic (sin editor) y pueda
+  // forzar el re-render. __atlasRedraw es la función que rasteriza el
+  // chart en el formato activo.
+  window.__atlasSupportsFormats = true;
+  window.__atlasRedraw = drawScatter;
+
+  // Nota "Datos" del PNG: inyecta el PERÍODO real (años del slider) en la
+  // plantilla c1-sources-tpl. Daniel: la nota tiene que decir explícitamente
+  // a qué promedio refiere ("el promedio 2000–2026"). Texto plano (sin <a>)
+  // porque se pinta en canvas. Si el período cambia con el slider, la nota
+  // del PNG lo refleja.
+  window.onBeforePngExportGetSourceText = function(chartId) {
+    if (String(chartId) !== '1') return null;
+    const p = (state[1] && state[1].period) || [2000, 2026];
+    const tpl = (typeof t === 'function' ? t('c1-sources-tpl') : '') || '';
+    return tpl ? tpl.replace('{period}', p[0] + '–' + p[1]) : null;
+  };
 }

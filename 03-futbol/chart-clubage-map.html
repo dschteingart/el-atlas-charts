@@ -195,7 +195,9 @@
   /* === Mobile === */
   @media (max-width: 768px) {
     .m-top-row { flex-direction: column; align-items: stretch; }
-    .m-top-row .m-search-wrap { max-width: 100%; }
+    /* En columna, flex-basis:280px del buscador se aplicaba al ALTO → hueco
+       de 280px. Lo reseteamos a auto para que mida solo su contenido. */
+    .m-top-row .m-search-wrap { max-width: 100%; flex: 0 0 auto; }
     .m-top-row .m-legend-block { margin-left: 0; flex-wrap: wrap; }
     .m-legend-grad-wrap { width: 100%; max-width: 390px; }
     .wrap-wide .chart-title { font-size: 19px; }
@@ -299,18 +301,18 @@
 <script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
 
 <!-- Atlas libs y módulos del N°3 -->
-<script src="../lib/regions.js"></script>
-<script src="../lib/i18n.js"></script>
-<script src="./regions-fifa.js"></script>
-<script src="./i18n-issue.js"></script>
-<script src="./utils.js"></script>
-<script src="./country-names.js"></script>
-<script src="./data-clubage.js"></script>
-<script src="./data-country-geo.js"></script>
-<script src="./editor.js"></script>
-<script src="./clubage-map.js"></script>
-<script src="./png-export.js"></script>
-<script src="./svg-export.js"></script>
+<script src="../lib/regions.js?v=8"></script>
+<script src="../lib/i18n.js?v=8"></script>
+<script src="./regions-fifa.js?v=8"></script>
+<script src="./i18n-issue.js?v=8"></script>
+<script src="./utils.js?v=8"></script>
+<script src="./country-names.js?v=8"></script>
+<script src="./data-clubage.js?v=8"></script>
+<script src="./data-country-geo.js?v=8"></script>
+<script src="./editor.js?v=8"></script>
+<script src="./clubage-map.js?v=8"></script>
+<script src="./png-export.js?v=8"></script>
+<script src="./svg-export.js?v=8"></script>
 <script>
   // Estado mínimo para el chart 2 (mapa). El renderer maneja casi todo
   // como variables del módulo (m_geo, m_path, m_zoom). state[3] solo se

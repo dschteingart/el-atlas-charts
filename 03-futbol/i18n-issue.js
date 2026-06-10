@@ -13,9 +13,15 @@ const ISSUE_I18N = {
 
     // Chart 1 — Scatter ELO vs PIB total
     'c1-title':            'Sudamérica juega en otra liga',
-    'c1-subtitle':         'Las 10 selecciones de la CONMEBOL aparecen sistemáticamente por encima de la regresión: juegan mejor de lo que el tamaño de su economía predeciría.',
-    'c1-axis-x':           'PIB total promedio del período (PPA, US$ int. constantes) — escala log',
-    'c1-axis-y':           'Índice de fortaleza futbolística (rating Elo, promedio del período)',
+    'c1-subtitle':         'Las 10 selecciones de la CONMEBOL juegan mejor de lo que el tamaño de su economía predeciría.',
+    // Versión NEUTRAL (cuando el usuario cambia la selección/período en el
+    // interactivo): título/subtítulo descriptivos, sin el claim editorial.
+    'c1-title-neutral':    'Fortaleza futbolística y tamaño de la economía',
+    'c1-subtitle-neutral': 'Índice Elo promedio de cada selección contra el PIB total del país.',
+    // Regla del N°3: títulos de eje SIMPLES; la aclaración metodológica
+    // (qué es el Elo, qué PPA, etc.) va en la nota de Datos.
+    'c1-axis-x':           'PIB',
+    'c1-axis-y':           'Índice de fortaleza futbolística',
     'c1-search-placeholder': 'Buscar selección…',
     'c1-no-results':       'Sin resultados',
     'c1-legend-hint':      'Pasá el cursor por una confederación para resaltarla · Clic para mostrarla/ocultarla',
@@ -65,10 +71,17 @@ const ISSUE_I18N = {
     'footer-download':       'Descargar datos (CSV)',
     'footer-download-png':   'Descargar PNG',
     'footer-download-svg':   'Descargar SVG',
-    'c1-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (ratings Elo de selecciones nacionales, promedio anual ponderado por días); FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Confederaciones según afiliación FIFA actual. Los puntos del gráfico representan el promedio de cada variable sobre el rango de años seleccionado, considerando solo países con datos en ambas variables.',
+    'c1-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo de selecciones nacionales) y FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Los datos muestran el promedio del período seleccionado para ambas variables.',
+    // Plantilla PLANA (sin <a>) para la nota del PNG: el hook
+    // onBeforePngExportGetSourceText reemplaza {period} por los años reales
+    // del slider, para que la nota diga explícitamente a qué promedio refiere.
+    'c1-sources-tpl':        'Datos: eloratings.net (Elo de selecciones nacionales) y FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Los datos muestran el promedio {period} para ambas variables.',
 
     // Chart 2 — Talento futbolístico por millón de habitantes
     'c2-title':              'Uruguay produce más futbolistas célebres per cápita que cualquier país del mundo',
+    // Neutral (cuando el usuario cambia período/topN/selección): solo el
+    // título cambia; el subtítulo ya es descriptivo.
+    'c2-title-neutral':      'Talento futbolístico ajustado por población',
     'c2-subtitle':           'Futbolistas en el top mundial por HPI (Pantheon MIT, con visibilidad global mínima) dividido por la población promedio del país en el período de nacimiento seleccionado.',
     'c2-subtitle-tpl':       'Futbolistas célebres del top {N} mundial nacidos entre {Y0} y {Y1} por millón de habitantes.',
     'c2-axis-x':             'Futbolistas célebres por millón de habitantes',
@@ -78,15 +91,23 @@ const ISSUE_I18N = {
     'c2-tt-count':           'Cantidad de futbolistas célebres',
     'c2-tt-pop':             'Población promedio',
     'c2-tt-rate':            'Futbolistas célebres por millón',
-    'c2-sources':            'Datos: <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon (MIT Media Lab)</a> — figuras memorables de Wikipedia con HPI (Historical Popularity Index), edición 2025, filtrado a la ocupación SOCCER PLAYER y al género masculino. Restringido a jugadores con al menos 5.000 vistas en Wikipedias no-inglesas, para evitar el sesgo de artículos auto-generados en Wikidata (J-League). <a href="https://ourworldindata.org/grapher/population" target="_blank" rel="noopener">Our World in Data</a> para población anual histórica. País de nacimiento según Pantheon.',
+    'c2-sources':            'Datos: <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon (MIT Media Lab)</a> — figuras memorables de Wikipedia con HPI (Historical Popularity Index), edición 2025, filtrado a la ocupación SOCCER PLAYER y al género masculino. Restringido a jugadores con al menos 15 traducciones en Wikipedia y 5.000 vistas en Wikipedias no-inglesas, para evitar el sesgo de artículos auto-generados en Wikidata (J-League). <a href="https://ourworldindata.org/grapher/population" target="_blank" rel="noopener">Our World in Data</a> para población anual histórica. País de nacimiento según Pantheon. En terracota, países de la CONMEBOL.',
+    // Plantilla PLANA y CORTA para la nota del PNG (estilizada). El hook
+    // onBeforePngExportGetSourceText reemplaza {N}/{Y0}/{Y1} por el top N y los
+    // años del slider. Aclara el color terracota. La metodología detallada
+    // (filtro SOCCER PLAYER, sesgo J-League) queda en el footer del HTML.
+    'c2-sources-tpl':        'Datos: Pantheon (MIT Media Lab) y Our World in Data — futbolistas del top {N} mundial por su Historical Popularity Index (HPI), nacidos entre {Y0} y {Y1}, por millón de habitantes. En terracota, países de la CONMEBOL. Restringido a jugadores con al menos 15 traducciones en Wikipedia y más de 5.000 vistas.',
 
     // Chart 4 — Scatter: share fútbol vs antigüedad de clubes
     'c4-title':              'Sudamérica: clubes muy antiguos y talento monopolizado por el fútbol',
     'c4-subtitle':           'En la región se combina una tradición institucional larga con una concentración inusual del talento deportivo en una sola disciplina.',
-    'c4-axis-x':             '% del talento deportivo masculino que se dedicó al fútbol',
+    // Neutral (cuando el usuario cambia selección/período/filtros).
+    'c4-title-neutral':      'Antigüedad de los clubes y especialización en el fútbol',
+    'c4-subtitle-neutral':   'Año mediano de fundación de los clubes vs. % del talento deportivo dedicado al fútbol.',
+    'c4-axis-x':             '% del talento que se dedicó al fútbol',
     'c4-axis-x-tpl':         '% del talento deportivo masculino nacido entre {Y0} y {Y1} que se dedicó al fútbol',
     'c4-search-placeholder': 'Buscar país…',
-    'c4-axis-y':             'Año mediano de fundación de los clubes (ponderado por relevancia)',
+    'c4-axis-y':             'Año mediano de fundación de los clubes',
     'c4-slider-label':       'Año de nacimiento',
     'c4-hi-views':           'Solo figuras con +5.000 visitas en Wikipedia',
     'c4-min-n':              'Mín. deportistas',
@@ -108,6 +129,8 @@ const ISSUE_I18N = {
     // Chart 3 — Mapa coroplético "antigüedad de los clubes"
     'c3-title':              'Dónde nació el fútbol moderno',
     'c3-subtitle':           'Año mediano de fundación de los clubes de cada país. Tonos más oscuros = tradición futbolística más profunda.',
+    // Subtítulo más corto para el PNG (la leyenda ya explica el color).
+    'c3-subtitle-png':       'Año mediano de fundación de los clubes de cada país',
     'c3-search-placeholder': 'Buscar país…',
     'c3-legend-label':       'Año mediano',
     'c3-legend-nodata':      'Sin dato',
@@ -125,9 +148,11 @@ const ISSUE_I18N = {
 
     // Chart 1 — Scatter ELO vs total GDP
     'c1-title':            'South America plays in a different league',
-    'c1-subtitle':         'CONMEBOL\'s 10 national teams systematically sit above the regression line: they play better than what their economy\'s size would predict.',
-    'c1-axis-x':           'Average total GDP over the period (PPP, constant int\'l USD) — log scale',
-    'c1-axis-y':           'Footballing strength index (Elo rating, period average)',
+    'c1-subtitle':         'CONMEBOL\'s 10 national teams play better than what their economy\'s size would predict.',
+    'c1-title-neutral':    'Footballing strength and economy size',
+    'c1-subtitle-neutral': 'Each team\'s average Elo rating against the country\'s total GDP.',
+    'c1-axis-x':           'GDP',
+    'c1-axis-y':           'Footballing strength index',
     'c1-search-placeholder': 'Search team…',
     'c1-no-results':       'No results',
     'c1-legend-hint':      'Hover a confederation to highlight it · Click to show/hide',
@@ -169,10 +194,12 @@ const ISSUE_I18N = {
     'footer-download':       'Download data (CSV)',
     'footer-download-png':   'Download PNG',
     'footer-download-svg':   'Download SVG',
-    'c1-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo ratings of national teams, annual averages weighted by days at each rating); IMF — World Economic Outlook (total GDP PPP, constant international USD). Confederations follow current FIFA affiliation. Each point represents the average of both variables over the selected year range, restricted to countries with data for both.',
+    'c1-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo of national teams) and IMF — World Economic Outlook (total GDP PPP, constant international USD). Values show the average over the selected period for both variables.',
+    'c1-sources-tpl':        'Data: eloratings.net (Elo of national teams) and IMF — World Economic Outlook (total GDP PPP, constant international USD). Values show the {period} average for both variables.',
 
     // Chart 2 — Footballing talent per million inhabitants
     'c2-title':              'Uruguay produces more famous footballers per capita than any country in the world',
+    'c2-title-neutral':      'Footballing talent adjusted for population',
     'c2-subtitle':           'Footballers in the global top by HPI (Pantheon MIT, minimum global visibility) divided by the country\'s average population over the selected birth-year period.',
     'c2-subtitle-tpl':       'Famous footballers in the global top {N} born between {Y0} and {Y1}, per million inhabitants.',
     'c2-axis-x':             'Famous footballers per million inhabitants',
@@ -182,15 +209,18 @@ const ISSUE_I18N = {
     'c2-tt-count':           'Famous footballers',
     'c2-tt-pop':             'Average population',
     'c2-tt-rate':            'Famous footballers per million',
-    'c2-sources':            'Data: <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon (MIT Media Lab)</a> — Wikipedia memorable figures with HPI (Historical Popularity Index), 2025 release, filtered to occupation SOCCER PLAYER and male gender. Restricted to players with at least 5,000 views on non-English Wikipedias, to avoid the bias from Wikidata-autogenerated articles (J-League). <a href="https://ourworldindata.org/grapher/population" target="_blank" rel="noopener">Our World in Data</a> for annual population. Country of birth per Pantheon.',
+    'c2-sources':            'Data: <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon (MIT Media Lab)</a> — Wikipedia memorable figures with HPI (Historical Popularity Index), 2025 release, filtered to occupation SOCCER PLAYER and male gender. Restricted to players with at least 15 Wikipedia translations and 5,000 views on non-English Wikipedias, to avoid the bias from Wikidata-autogenerated articles (J-League). <a href="https://ourworldindata.org/grapher/population" target="_blank" rel="noopener">Our World in Data</a> for annual population. Country of birth per Pantheon. In terracotta, CONMEBOL (South American) countries.',
+    'c2-sources-tpl':        'Data: Pantheon (MIT Media Lab) and Our World in Data — footballers in the global top {N} by their Historical Popularity Index (HPI), born between {Y0} and {Y1}, per million inhabitants. In terracotta, CONMEBOL (South American) countries. Restricted to players with at least 15 Wikipedia translations and more than 5,000 views.',
 
     // Chart 4 — Scatter: football share vs club age
     'c4-title':              'South America: very old clubs and talent monopolised by football',
     'c4-subtitle':           'The region combines a long institutional tradition with an unusual concentration of sporting talent in a single discipline.',
-    'c4-axis-x':             '% of male sports talent that became footballers',
+    'c4-title-neutral':      'Club age and specialization in football',
+    'c4-subtitle-neutral':   'Median founding year of clubs vs. % of sports talent devoted to football.',
+    'c4-axis-x':             '% of talent that chose football',
     'c4-axis-x-tpl':         '% of male sports talent born between {Y0} and {Y1} who became footballers',
     'c4-search-placeholder': 'Search country…',
-    'c4-axis-y':             'Median founding year of clubs (weighted by relevance)',
+    'c4-axis-y':             'Median founding year of clubs',
     'c4-slider-label':       'Birth year',
     'c4-hi-views':           'Only figures with +5,000 Wikipedia views',
     'c4-min-n':              'Min. athletes',
@@ -209,6 +239,7 @@ const ISSUE_I18N = {
     // Chart 3 — Choropleth map "age of clubs"
     'c3-title':              'Where modern football was born',
     'c3-subtitle':           'Median founding year of each country\'s clubs. Darker tones = deeper footballing tradition.',
+    'c3-subtitle-png':       'Median founding year of each country\'s clubs',
     'c3-search-placeholder': 'Search country…',
     'c3-legend-label':       'Median year',
     'c3-legend-nodata':      'No data',
