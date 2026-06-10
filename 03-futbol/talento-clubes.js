@@ -697,6 +697,18 @@ function drawTalentoClubes() {
   // NO re-renderizamos la leyenda acá: recrearla durante el draw genera el
   // bug del hover "pegado" — el browser dispara mouseenter en el chip
   // recién recreado bajo el cursor y mouseleave del viejo se pierde.
+
+  // Título/subtítulo dinámicos: insight en el estado por default; neutral si
+  // el usuario cambió selección, período, filtro de vistas o mín. deportistas.
+  const isDefaultView = selectedSet.size === 0 && hiddenConfs.size === 0
+    && s4.hiViews === SC_HI_VIEWS_DEFAULT && s4.minN === SC_MIN_N_DEFAULT
+    && s4.period[0] === SC_PERIOD_DEFAULT[0] && s4.period[1] === SC_PERIOD_DEFAULT[1];
+  if (typeof atlasSetHeading === 'function') {
+    atlasSetHeading('4', isDefaultView, {
+      title: 'c4-title', titleNeutral: 'c4-title-neutral',
+      subtitle: 'c4-subtitle', subtitleNeutral: 'c4-subtitle-neutral'
+    });
+  }
 }
 
 //==================================================================

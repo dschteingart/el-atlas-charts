@@ -3,6 +3,31 @@
 // promoverlos a lib/utils.js para tener una sola copia.
 // Depende de LANG (definido en i18n-issue.js, cargado antes).
 
+// Título/subtítulo dinámicos: insight editorial en el estado por DEFAULT;
+// versión NEUTRAL apenas el usuario cambia algo en el interactivo. El PNG
+// hereda el texto del DOM, así que el export por default (estado default)
+// mantiene el insight, y si el usuario customiza y exporta, sale neutral.
+//   keys = { title, titleNeutral, subtitle?, subtitleNeutral? }
+// Si subtitle/subtitleNeutral faltan, NO toca el subtítulo (ej. chart 2, que
+// tiene subtítulo descriptivo propio que se actualiza aparte).
+// Respeta el título/subtítulo CUSTOM del editor (?nl) si está seteado.
+function atlasSetHeading(chartId, isDefault, keys) {
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig)
+    ? window.AtlasEditor.getConfig() : null;
+  const lang = (ae && ae.lang) || (typeof LANG !== 'undefined' ? LANG : 'es');
+  const tx = (ae && ae.texts && ae.texts[lang]) || {};
+  const tt = (k) => (typeof t === 'function' && k) ? t(k) : (k || '');
+  const block = document.querySelector('.chart-block[data-chart="' + chartId + '"]') || document;
+  const titleEl = block.querySelector('.chart-title');
+  if (titleEl && keys.title && keys.titleNeutral && !(tx.title || '').trim()) {
+    titleEl.textContent = isDefault ? tt(keys.title) : tt(keys.titleNeutral);
+  }
+  const subEl = block.querySelector('.chart-subtitle');
+  if (subEl && keys.subtitle && keys.subtitleNeutral && !(tx.subtitle || '').trim()) {
+    subEl.textContent = isDefault ? tt(keys.subtitle) : tt(keys.subtitleNeutral);
+  }
+}
+
 // Detección de dispositivo con hover (desktop con mouse) vs solo touch (mobile).
 // En mobile el hover no funciona bien — los handlers mouseenter/mouseleave
 // quedan pegados después del tap. Cuando HAS_HOVER es false, los charts

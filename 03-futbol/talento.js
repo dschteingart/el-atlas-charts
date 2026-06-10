@@ -338,6 +338,19 @@ function drawTalento() {
   zeroLine.setAttribute('stroke', TA_COLOR_AXIS);
   zeroLine.setAttribute('stroke-width', 1);
   svg.appendChild(zeroLine);
+
+  // Título dinámico: el insight ("Uruguay produce más…") solo en el estado
+  // por default; neutral si el usuario cambió período, top N o la selección.
+  // El subtítulo ya es descriptivo, no cambia.
+  const s2 = state[2];
+  const selDefault = s2.selected.length === TA_DEFAULT_SELECTED.length
+    && TA_DEFAULT_SELECTED.every(iso => s2.selected.includes(iso));
+  const isDefaultView = selDefault
+    && s2.period[0] === TA_PERIOD_DEFAULT[0] && s2.period[1] === TA_PERIOD_DEFAULT[1]
+    && s2.topN === 1000;
+  if (typeof atlasSetHeading === 'function') {
+    atlasSetHeading('2', isDefaultView, { title: 'c2-title', titleNeutral: 'c2-title-neutral' });
+  }
 }
 
 //==================================================================

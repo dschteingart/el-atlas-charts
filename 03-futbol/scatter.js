@@ -986,6 +986,20 @@ function drawScatter() {
   // updateLegendResiduals muta los textContent in-place; no toca handlers.
   updateLegendResiduals();
 
+  // Título/subtítulo dinámicos: insight en el estado por default; neutral si
+  // el usuario cambió la selección, el período o el filtro de confederaciones.
+  // El hover NO cuenta (es transitorio). El editor pisa esto si tiene texto
+  // custom (corre después).
+  const _p = s1.period || [2000, 2026];
+  const isDefaultView = selectedSet.size === 0 && hiddenConfs.size === 0
+    && _p[0] === 2000 && _p[1] === 2026;
+  if (typeof atlasSetHeading === 'function') {
+    atlasSetHeading('1', isDefaultView, {
+      title: 'c1-title', titleNeutral: 'c1-title-neutral',
+      subtitle: 'c1-subtitle', subtitleNeutral: 'c1-subtitle-neutral'
+    });
+  }
+
   // Editor overrides al final para pisar lo dinámico.
   s_applyEditorOverrides(aeCfg, aeSizes);
 }

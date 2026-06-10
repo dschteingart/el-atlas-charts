@@ -14,6 +14,10 @@ const ISSUE_I18N = {
     // Chart 1 — Scatter ELO vs PIB total
     'c1-title':            'Sudamérica juega en otra liga',
     'c1-subtitle':         'Las 10 selecciones de la CONMEBOL juegan mejor de lo que el tamaño de su economía predeciría.',
+    // Versión NEUTRAL (cuando el usuario cambia la selección/período en el
+    // interactivo): título/subtítulo descriptivos, sin el claim editorial.
+    'c1-title-neutral':    'Fortaleza futbolística y tamaño de la economía',
+    'c1-subtitle-neutral': 'Índice Elo promedio de cada selección contra el PIB total del país.',
     // Regla del N°3: títulos de eje SIMPLES; la aclaración metodológica
     // (qué es el Elo, qué PPA, etc.) va en la nota de Datos.
     'c1-axis-x':           'PIB',
@@ -75,6 +79,9 @@ const ISSUE_I18N = {
 
     // Chart 2 — Talento futbolístico por millón de habitantes
     'c2-title':              'Uruguay produce más futbolistas célebres per cápita que cualquier país del mundo',
+    // Neutral (cuando el usuario cambia período/topN/selección): solo el
+    // título cambia; el subtítulo ya es descriptivo.
+    'c2-title-neutral':      'Futbolistas célebres por millón de habitantes',
     'c2-subtitle':           'Futbolistas en el top mundial por HPI (Pantheon MIT, con visibilidad global mínima) dividido por la población promedio del país en el período de nacimiento seleccionado.',
     'c2-subtitle-tpl':       'Futbolistas célebres del top {N} mundial nacidos entre {Y0} y {Y1} por millón de habitantes.',
     'c2-axis-x':             'Futbolistas célebres por millón de habitantes',
@@ -94,6 +101,9 @@ const ISSUE_I18N = {
     // Chart 4 — Scatter: share fútbol vs antigüedad de clubes
     'c4-title':              'Sudamérica: clubes muy antiguos y talento monopolizado por el fútbol',
     'c4-subtitle':           'En la región se combina una tradición institucional larga con una concentración inusual del talento deportivo en una sola disciplina.',
+    // Neutral (cuando el usuario cambia selección/período/filtros).
+    'c4-title-neutral':      'Antigüedad de los clubes y especialización en el fútbol',
+    'c4-subtitle-neutral':   'Año mediano de fundación de los clubes vs. % del talento deportivo dedicado al fútbol.',
     'c4-axis-x':             '% del talento que se dedicó al fútbol',
     'c4-axis-x-tpl':         '% del talento deportivo masculino nacido entre {Y0} y {Y1} que se dedicó al fútbol',
     'c4-search-placeholder': 'Buscar país…',
@@ -139,6 +149,8 @@ const ISSUE_I18N = {
     // Chart 1 — Scatter ELO vs total GDP
     'c1-title':            'South America plays in a different league',
     'c1-subtitle':         'CONMEBOL\'s 10 national teams play better than what their economy\'s size would predict.',
+    'c1-title-neutral':    'Footballing strength and economy size',
+    'c1-subtitle-neutral': 'Each team\'s average Elo rating against the country\'s total GDP.',
     'c1-axis-x':           'GDP',
     'c1-axis-y':           'Footballing strength index',
     'c1-search-placeholder': 'Search team…',
@@ -187,6 +199,7 @@ const ISSUE_I18N = {
 
     // Chart 2 — Footballing talent per million inhabitants
     'c2-title':              'Uruguay produces more famous footballers per capita than any country in the world',
+    'c2-title-neutral':      'Famous footballers per million inhabitants',
     'c2-subtitle':           'Footballers in the global top by HPI (Pantheon MIT, minimum global visibility) divided by the country\'s average population over the selected birth-year period.',
     'c2-subtitle-tpl':       'Famous footballers in the global top {N} born between {Y0} and {Y1}, per million inhabitants.',
     'c2-axis-x':             'Famous footballers per million inhabitants',
@@ -202,6 +215,8 @@ const ISSUE_I18N = {
     // Chart 4 — Scatter: football share vs club age
     'c4-title':              'South America: very old clubs and talent monopolised by football',
     'c4-subtitle':           'The region combines a long institutional tradition with an unusual concentration of sporting talent in a single discipline.',
+    'c4-title-neutral':      'Club age and specialization in football',
+    'c4-subtitle-neutral':   'Median founding year of clubs vs. % of sports talent devoted to football.',
     'c4-axis-x':             '% of talent that chose football',
     'c4-axis-x-tpl':         '% of male sports talent born between {Y0} and {Y1} who became footballers',
     'c4-search-placeholder': 'Search country…',
