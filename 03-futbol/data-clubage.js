@@ -270,7 +270,7 @@ const DATA_CLUBAGE = {
   },
   "COG": {
     "name": "Congo",
-    "confed": "",
+    "confed": "CAF",
     "year": 1951,
     "n": 38,
     "nf": 14
@@ -305,7 +305,7 @@ const DATA_CLUBAGE = {
   },
   "CUB": {
     "name": "Cuba",
-    "confed": "",
+    "confed": "CONCACAF",
     "year": 1977,
     "n": 23,
     "nf": 10
@@ -382,7 +382,7 @@ const DATA_CLUBAGE = {
   },
   "ERI": {
     "name": "Eritrea",
-    "confed": "",
+    "confed": "CAF",
     "year": 1944,
     "n": 17,
     "nf": 4
@@ -494,7 +494,7 @@ const DATA_CLUBAGE = {
   },
   "GRC": {
     "name": "Grecia",
-    "confed": "",
+    "confed": "UEFA",
     "year": 1951,
     "n": 680,
     "nf": 604
@@ -991,7 +991,7 @@ const DATA_CLUBAGE = {
   },
   "PRK": {
     "name": "Corea del Norte",
-    "confed": "",
+    "confed": "AFC",
     "year": 1955,
     "n": 27,
     "nf": 10
@@ -1173,7 +1173,7 @@ const DATA_CLUBAGE = {
   },
   "SYR": {
     "name": "Siria",
-    "confed": "",
+    "confed": "AFC",
     "year": 1948,
     "n": 41,
     "nf": 38
@@ -1236,7 +1236,7 @@ const DATA_CLUBAGE = {
   },
   "TUN": {
     "name": "Túnez",
-    "confed": "",
+    "confed": "CAF",
     "year": 1938,
     "n": 162,
     "nf": 118
@@ -1348,7 +1348,7 @@ const DATA_CLUBAGE = {
   },
   "XKS": {
     "name": "Kosovo",
-    "confed": "",
+    "confed": "UEFA",
     "year": 1946,
     "n": 41,
     "nf": 32
