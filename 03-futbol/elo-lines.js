@@ -176,22 +176,28 @@ function tl_toggleSelect(iso3) {
   drawLines();
 }
 
-// Ticks "lindos" para el eje X (años) según el span y el formato.
-function tl_yearTicks(y0, y1, bigFmt) {
+// Ticks del eje X (años). Regla:
+//   1. SIEMPRE mostrar el primer año (y0) y el último (y1) del rango visible.
+//   2. Entre medio, ticks "redondos" (múltiplos de un step elegido por el span,
+//      apuntando a ~5-6 ticks).
+//   3. Sacar un tick redondo si queda demasiado pegado (< 0.4·step) al primero
+//      o al último, para que no se encimen las etiquetas.
+// Ej.: 1990-2026 → 1990, 2000, 2010, 2020, 2026.  1980-2026 → +1980.
+function tl_yearTicks(y0, y1) {
   const span = y1 - y0;
   let step;
-  if (span <= 12) step = bigFmt ? 4 : 2;
-  else if (span <= 25) step = bigFmt ? 10 : 5;
-  else if (span <= 60) step = bigFmt ? 20 : 10;
-  else step = bigFmt ? 30 : 20;
-  const ticks = [];
-  // Arrancamos en el primer múltiplo de step >= y0.
-  let start = Math.ceil(y0 / step) * step;
-  for (let y = start; y <= y1; y += step) ticks.push(y);
-  // Garantizamos que el último año (y1) tenga su marca si no cae en step.
-  if (ticks.length === 0 || ticks[ticks.length - 1] !== y1) {
-    if (y1 - (ticks[ticks.length - 1] || y0) >= step / 2) ticks.push(y1);
+  if (span <= 8)        step = 2;
+  else if (span <= 18)  step = 5;
+  else if (span <= 55)  step = 10;
+  else if (span <= 110) step = 20;
+  else                  step = 25;
+  const minGap = step * 0.4;
+  const ticks = [y0];
+  const firstRound = Math.ceil(y0 / step) * step;
+  for (let y = firstRound; y < y1; y += step) {
+    if (y - y0 >= minGap && y1 - y >= minGap) ticks.push(y);
   }
+  ticks.push(y1);
   return ticks;
 }
 
@@ -239,7 +245,16 @@ function drawLines() {
 
   if (editorFormat) {
     const f = PNG_FORMATS[editorFormat];
-    TL_W = f.vbW; TL_H = f.vbH;
+    TL_W = f.vbW;
+    // Line chart: para los formatos cuadrados del PNG usamos un viewBox MÁS
+    // ALTO que el base (square/newsletter rondan vbH 760). png-export hace
+    // aspect-fit del SVG dentro del rectángulo disponible; con el aspect
+    // apaisado del line chart el SVG quedaba limitado por el ANCHO y dejaba un
+    // hueco vertical abajo (entre el eje X y la nota). Subiendo el alto del
+    // viewBox el gráfico pasa a estar limitado por el ALTO y llena el canvas.
+    TL_H = editorFormat === 'square'     ? 910
+         : editorFormat === 'newsletter' ? 860
+         : f.vbH;
     TL_MARGIN = tl_getMargins(editorFormat);
   } else if (mobile) {
     TL_W = TL_W_MOBILE; TL_H = TL_H_MOBILE;
@@ -248,7 +263,7 @@ function drawLines() {
     TL_W = TL_W_DESKTOP; TL_H = TL_H_DESKTOP;
     TL_MARGIN = { ...TL_MARGIN_DESKTOP };
   }
-  const PLOT_W = TL_W - TL_MARGIN.left - TL_MARGIN.right;
+  let PLOT_W = TL_W - TL_MARGIN.left - TL_MARGIN.right;
   const PLOT_H = TL_H - TL_MARGIN.top - TL_MARGIN.bottom;
 
   svg.setAttribute('viewBox', `0 0 ${TL_W} ${TL_H}`);
@@ -268,6 +283,27 @@ function drawLines() {
   // Países seleccionados (en orden de colorIdx para estabilidad visual).
   const sel = tl_selMap();
   const selected = Array.from(sel.keys()).filter(iso => tl_byIso[iso]);
+
+  // Margen derecho DINÁMICO: las etiquetas de fin de línea (nombres de país)
+  // viven en el margen derecho. Un nombre largo (ej. "Bosnia and Herzegovina")
+  // se sale del viewBox y el PNG lo recorta. Medimos la etiqueta más ancha de
+  // los seleccionados y, si no entra en el margen base, lo agrandamos (achica
+  // el plot, pero el label queda dentro). Tope para no comerse medio gráfico.
+  const labelOffset = bigFmt ? 12 : 6;
+  let maxLabelW = 0;
+  selected.forEach(iso => {
+    const w = tl_measureText(tl_displayName(tl_byIso[iso]), SIZES.label, bigFmt ? 700 : 600);
+    if (w > maxLabelW) maxLabelW = w;
+  });
+  if (maxLabelW > 0) {
+    const neededRight = labelOffset + maxLabelW + (bigFmt ? 16 : 8);
+    const maxRight = Math.round(TL_W * 0.42);   // tope: no más del 42% del ancho
+    const newRight = Math.min(maxRight, Math.max(TL_MARGIN.right, neededRight));
+    if (newRight !== TL_MARGIN.right) {
+      TL_MARGIN.right = newRight;
+      PLOT_W = TL_W - TL_MARGIN.left - TL_MARGIN.right;
+    }
+  }
 
   //--------------------------------------------------------------
   // Escalas
@@ -313,7 +349,7 @@ function drawLines() {
   //--------------------------------------------------------------
   // Grid + eje X
   //--------------------------------------------------------------
-  const xTicks = tl_yearTicks(y0, y1, bigFmt);
+  const xTicks = tl_yearTicks(y0, y1);
   xTicks.forEach(yr => {
     const x = xScale(yr);
     const gl = tl_el('line');
@@ -835,12 +871,32 @@ function initLines() {
   window.__atlasSupportsFormats = true;
   window.__atlasRedraw = drawLines;
 
-  // Nota "Datos" del PNG: inyecta período + modo.
+  // Nota "Datos" del PNG (texto fijo, ya sin período — el período va en el
+  // subtítulo del PNG, ver abajo).
   window.onBeforePngExportGetSourceText = function(chartId) {
     if (String(chartId) !== '5') return null;
-    const p = (state[5] && state[5].period) || TL_PERIOD_DEFAULT;
     const tpl = (typeof t === 'function' ? t('c5-sources-tpl') : '') || '';
-    return tpl ? tpl.replace('{period}', p[0] + '–' + p[1]) : null;
+    return tpl || null;
+  };
+
+  // Subtítulo del PNG: el del modo activo + el PERÍODO mostrado entre
+  // paréntesis (ej. "…según su rating Elo (1980–2026)."). Solo en el PNG; el
+  // subtítulo en pantalla queda sin el período. Respeta override del editor.
+  window.onBeforePngExportGetSubtitle = function(chartId) {
+    if (String(chartId) !== '5') return null;
+    const ae = (window.AtlasEditor && window.AtlasEditor.getConfig)
+      ? window.AtlasEditor.getConfig() : null;
+    const lang = (ae && ae.lang) || (typeof LANG !== 'undefined' ? LANG : 'es');
+    const aeSub = ae && ae.texts && ae.texts[lang] && ae.texts[lang].subtitle;
+    const mode = (state[5] && state[5].mode) || TL_MODE_DEFAULT;
+    const tt = (k, fb) => ((typeof t === 'function' ? t(k) : '') || fb);
+    const base = (aeSub && aeSub.trim())
+      ? aeSub.trim()
+      : (mode === 'rank'
+          ? tt('c5-subtitle-rank', 'Posición en el ranking mundial de selecciones según su rating Elo.')
+          : tt('c5-subtitle-elo', 'Rating Elo de las selecciones nacionales a lo largo del tiempo.'));
+    const p = (state[5] && state[5].period) || TL_PERIOD_DEFAULT;
+    return base.replace(/\s*\.?\s*$/, '') + ' (' + p[0] + '–' + p[1] + ').';
   };
 }
 
