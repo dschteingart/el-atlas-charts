@@ -176,22 +176,28 @@ function tl_toggleSelect(iso3) {
   drawLines();
 }
 
-// Ticks "lindos" para el eje X (años) según el span y el formato.
-function tl_yearTicks(y0, y1, bigFmt) {
+// Ticks del eje X (años). Regla:
+//   1. SIEMPRE mostrar el primer año (y0) y el último (y1) del rango visible.
+//   2. Entre medio, ticks "redondos" (múltiplos de un step elegido por el span,
+//      apuntando a ~5-6 ticks).
+//   3. Sacar un tick redondo si queda demasiado pegado (< 0.4·step) al primero
+//      o al último, para que no se encimen las etiquetas.
+// Ej.: 1990-2026 → 1990, 2000, 2010, 2020, 2026.  1980-2026 → +1980.
+function tl_yearTicks(y0, y1) {
   const span = y1 - y0;
   let step;
-  if (span <= 12) step = bigFmt ? 4 : 2;
-  else if (span <= 25) step = bigFmt ? 10 : 5;
-  else if (span <= 60) step = bigFmt ? 20 : 10;
-  else step = bigFmt ? 30 : 20;
-  const ticks = [];
-  // Arrancamos en el primer múltiplo de step >= y0.
-  let start = Math.ceil(y0 / step) * step;
-  for (let y = start; y <= y1; y += step) ticks.push(y);
-  // Garantizamos que el último año (y1) tenga su marca si no cae en step.
-  if (ticks.length === 0 || ticks[ticks.length - 1] !== y1) {
-    if (y1 - (ticks[ticks.length - 1] || y0) >= step / 2) ticks.push(y1);
+  if (span <= 8)        step = 2;
+  else if (span <= 18)  step = 5;
+  else if (span <= 55)  step = 10;
+  else if (span <= 110) step = 20;
+  else                  step = 25;
+  const minGap = step * 0.4;
+  const ticks = [y0];
+  const firstRound = Math.ceil(y0 / step) * step;
+  for (let y = firstRound; y < y1; y += step) {
+    if (y - y0 >= minGap && y1 - y >= minGap) ticks.push(y);
   }
+  ticks.push(y1);
   return ticks;
 }
 
@@ -343,7 +349,7 @@ function drawLines() {
   //--------------------------------------------------------------
   // Grid + eje X
   //--------------------------------------------------------------
-  const xTicks = tl_yearTicks(y0, y1, bigFmt);
+  const xTicks = tl_yearTicks(y0, y1);
   xTicks.forEach(yr => {
     const x = xScale(yr);
     const gl = tl_el('line');
