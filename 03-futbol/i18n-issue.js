@@ -153,7 +153,7 @@ const ISSUE_I18N = {
     'c5-axis-y-rank':        'Posición en el ranking',
     'c5-axis-y-elo':         'Puntaje Elo',
     'c5-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (rating Elo de selecciones nacionales, promedio anual ponderado por días; serie 1901-2026). La "posición en el ranking" es el ranking mundial de eloratings.net. Confederaciones según afiliación FIFA actual.',
-    'c5-sources-tpl':        'Datos: eloratings.net (rating Elo de selecciones nacionales, serie 1901-2026). Período mostrado: {period}. La posición es el ranking mundial de eloratings.net.',
+    'c5-sources-tpl':        'Datos: eloratings.net (rating Elo de selecciones nacionales, promedio anual).',
   },
   en: {
     'issue-num':  'N° 3',
@@ -276,7 +276,7 @@ const ISSUE_I18N = {
     'c5-axis-y-rank':        'World ranking position',
     'c5-axis-y-elo':         'Elo rating',
     'c5-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo ratings of national teams, days-weighted annual average; 1901-2026). "Ranking position" is the eloratings.net world ranking. Confederations per current FIFA affiliation.',
-    'c5-sources-tpl':        'Data: eloratings.net (Elo ratings of national teams, 1901-2026). Period shown: {period}. Position is the eloratings.net world ranking.',
+    'c5-sources-tpl':        'Data: eloratings.net (Elo rating of national teams, annual average).',
   }
 };
 
