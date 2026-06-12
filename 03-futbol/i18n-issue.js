@@ -140,6 +140,20 @@ const ISSUE_I18N = {
     'c3-tt-with-date':       'Con fecha de creación identificada',
     'c3-tt-nodata':          'Sin clubes en el universo Wikidata',
     'c3-sources':            'Año mediano de fundación de los clubes según Wikidata, ponderado por la relevancia global del club (medida a partir de la cantidad de idiomas a los que está traducido el artículo en Wikipedia).',
+
+    // Chart 5 — Line chart "trayectorias Elo"
+    'c5-title':              'Trayectorias de las selecciones',
+    'c5-subtitle-rank':      'Posición en el ranking mundial de selecciones según su rating Elo.',
+    'c5-subtitle-elo':       'Rating Elo de las selecciones nacionales a lo largo del tiempo.',
+    'c5-mode-label':         'Eje Y',
+    'c5-mode-rank':          'Ranking',
+    'c5-mode-elo':           'Elo',
+    'c5-slider-period-label':'Período',
+    'c5-search-placeholder': 'Buscar selección…',
+    'c5-axis-y-rank':        'Posición en el ranking',
+    'c5-axis-y-elo':         'Puntaje Elo',
+    'c5-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (rating Elo de selecciones nacionales, promedio anual ponderado por días; serie 1901-2026). La "posición en el ranking" es el ranking mundial de eloratings.net. Confederaciones según afiliación FIFA actual.',
+    'c5-sources-tpl':        'Datos: eloratings.net (rating Elo de selecciones nacionales, serie 1901-2026). Período mostrado: {period}. La posición es el ranking mundial de eloratings.net.',
   },
   en: {
     'issue-num':  'N° 3',
@@ -249,6 +263,20 @@ const ISSUE_I18N = {
     'c3-tt-with-date':       'With identified founding date',
     'c3-tt-nodata':          'No clubs in the Wikidata universe',
     'c3-sources':            'Median founding year of each country\'s clubs (Wikidata), weighted by each club\'s global relevance (measured as the number of languages with a Wikipedia article).',
+
+    // Chart 5 — Line chart "Elo trajectories"
+    'c5-title':              'National team trajectories',
+    'c5-subtitle-rank':      'World ranking position of national teams by their Elo rating.',
+    'c5-subtitle-elo':       'Elo rating of national teams over time.',
+    'c5-mode-label':         'Y axis',
+    'c5-mode-rank':          'Ranking',
+    'c5-mode-elo':           'Elo',
+    'c5-slider-period-label':'Period',
+    'c5-search-placeholder': 'Search team…',
+    'c5-axis-y-rank':        'World ranking position',
+    'c5-axis-y-elo':         'Elo rating',
+    'c5-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo ratings of national teams, days-weighted annual average; 1901-2026). "Ranking position" is the eloratings.net world ranking. Confederations per current FIFA affiliation.',
+    'c5-sources-tpl':        'Data: eloratings.net (Elo ratings of national teams, 1901-2026). Period shown: {period}. Position is the eloratings.net world ranking.',
   }
 };
 
