@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>South American Footballing Exceptionalism — El Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#FCFBF7;--ink:#1A1A1A;--ink-soft:#3C3C3C;--ink-mut:#7A766B;--rule:#D8D3C4;--rulek:#B8B2A0;--accent:#BE5D32;--serif:'Source Serif 4',Georgia,serif;--sans:'Source Sans 3',sans-serif}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);line-height:1.62;-webkit-font-smoothing:antialiased}
+  .paper{max-width:760px;margin:0 auto;padding:30px 26px 60px}
+  .langbar{position:sticky;top:0;background:var(--bg);padding:8px 0 10px;display:flex;justify-content:flex-end;gap:6px;border-bottom:1px solid var(--rule);margin-bottom:22px;z-index:10}
+  .langbar button{font-family:var(--sans);font-size:12px;font-weight:600;padding:4px 12px;border:1px solid var(--rulek);background:#fff;color:var(--ink-soft);border-radius:4px;cursor:pointer}
+  .langbar button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .head{font-family:var(--sans);font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--ink-mut);text-align:center;margin-bottom:14px}
+  h1{font-size:25px;line-height:1.22;text-align:center;font-weight:700;margin:0 0 6px;letter-spacing:-.3px}
+  .authors{text-align:center;font-size:14px;color:var(--ink-soft);font-style:italic;margin-bottom:22px}
+  .abstract{background:#F4F1E8;border:1px solid var(--rule);border-radius:6px;padding:14px 18px;font-size:14px;margin-bottom:8px}
+  .abstract .lbl{font-family:var(--sans);font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--ink-mut);display:block;margin-bottom:5px}
+  h2{font-size:15px;font-family:var(--sans);font-weight:700;margin:30px 0 8px;color:var(--ink);border-bottom:1px solid var(--rule);padding-bottom:4px}
+  p{margin:0 0 12px;font-size:15px}
+  .small{font-size:13.5px;color:var(--ink-soft)}
+  .tbox{overflow-x:auto;margin:6px 0 4px}
+  table{border-collapse:collapse;width:100%;font-family:var(--sans);font-variant-numeric:tabular-nums}
+  caption{caption-side:top;text-align:left;font-family:var(--serif);font-weight:600;font-size:14px;margin-bottom:7px}
+  th,td{padding:5px 6px;font-size:12px;text-align:center;vertical-align:bottom}
+  table.wide th,table.wide td{font-size:10.5px;padding:4px 4px}
+  th.l,td.l{text-align:left}
+  thead th{border-bottom:1px solid var(--ink)}
+  thead tr.sub th{border-bottom:1px solid var(--rulek);font-weight:500;color:var(--ink-mut);font-size:9.5px}
+  .toprule{border-top:1.5px solid var(--ink)}
+  .midrule td{border-top:1px solid var(--rulek)}
+  .botrule{border-bottom:1.5px solid var(--ink)}
+  .se{display:block;font-size:.82em;color:var(--ink-mut);font-weight:400}
+  .con td{background:rgba(190,93,50,.07);font-weight:700;color:var(--accent)}
+  .tnote{font-family:var(--sans);font-size:10.5px;color:var(--ink-mut);line-height:1.5;margin:4px 0 0}
+  .tnote b{color:var(--ink-soft)}
+  .hl{color:var(--accent);font-weight:600}
+  .boxwrap{margin:4px 0}
+  .bx-tip{position:fixed;background:#1A1A1A;color:#fff;padding:7px 10px;border-radius:5px;font-family:var(--sans);font-size:12px;pointer-events:none;opacity:0;transition:opacity .08s;z-index:50;box-shadow:0 3px 12px rgba(0,0,0,.25);line-height:1.45}
+  .bx-tip b{font-family:var(--serif)}
+  .bx-pt{cursor:pointer}
+  .eq{font-style:italic;text-align:center;margin:6px 0 14px;font-size:15px}
+  .en{display:none}
+  body.lang-en .es{display:none} body.lang-en .en{display:block}
+  body.lang-en span.en{display:inline}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+</head>
+<body class="lang-es">
+<div class="paper">
+  <div class="langbar"><button id="b-es" class="on" onclick="setLang('es')">Español</button><button id="b-en" onclick="setLang('en')">English</button></div>
+  <div class="head">El Atlas · Cartografías del desarrollo · N° 3 — Fútbol</div>
+
+  <!-- ====================== ESPAÑOL ====================== -->
+  <div class="es">
+    <h1>La excepcionalidad futbolística sudamericana:<br>antigüedad, monopolio del talento y un residuo persistente</h1>
+    <div class="authors">El Atlas — Daniel Schteingart · nota técnica</div>
+    <div class="abstract"><span class="lbl">Resumen</span>
+    Las selecciones de Sudamérica (Conmebol) rinden unos +273 puntos del índice ELO por encima de lo que predice el tamaño de su economía. Mostramos que ese excedente se debe, en buena medida, a dos factores: la antigüedad de los clubes y el monopolio del fútbol sobre el talento atlético dan cuenta de cerca del 70%. El residuo restante (~+75 puntos) no desaparece cuando se incluyen distintos tipos de controles. Interpretamos la antigüedad y el monopolio no como explicaciones que <i>compiten</i> con la identidad futbolística sudamericana, sino como los canales concretos por los que esa identidad se traduce en ventaja deportiva.</div>
+
+    <h2>1. La pregunta</h2>
+    <p>En un diagrama de dispersión entre el tamaño de la economía (PIB total, en escala logarítmica) y la fuerza de la selección (índice ELO, promedio 2000–2026), todos los países de la Conmebol quedan por encima de la recta de regresión. El residuo medio sudamericano es de <b>+273 puntos ELO</b> —el más alto del mundo—, equivalente a un <b>18% más</b> de lo previsible. La pregunta de este ejercicio es directa: ¿qué parte de ese excedente puede atribuirse a factores observables y qué parte permanece inexplicada?</p>
+
+    <figure style="margin:18px 0 4px"><figcaption style="font-family:Source Serif 4,serif;font-weight:600;font-size:14px;margin-bottom:8px">Figura 1. La distribución del ELO: dónde y cuánto</figcaption><div id="box-es" class="boxwrap"></div><p class="tnote" style="margin-top:8px">Cada punto es un país; las cajas resumen cuartiles (Q1–Q3), la línea interior la mediana y los bigotes el recorrido. <b>Pasá el cursor sobre cada punto</b> para ver el país, su ELO y su puesto mundial. La caja de la Conmebol está casi íntegramente por encima del tercer cuartil de las demás: su selección más débil (~1610) supera la mediana de todas las otras salvo la europea. Para dar escala: el ELO va de ~400 a ~2050 y el desvío típico entre países es de ~340 puntos. Por eso el “plus” de <b>+273</b> es enorme —cuatro quintos de un desvío, el 60% del rango intercuartílico—, mientras que el residuo de <b>+75</b> es modesto pero no trivial (~un quinto de desvío). La regla inferior dibuja ambas magnitudes a la misma escala del eje.</p></figure>
+    <h2>2. Datos y variables</h2>
+    <p class="small">Unidad de observación: el país (selección masculina). 184 países; 117 con datos completos en las cuatro dimensiones centrales. <b>Variable dependiente:</b> índice ELO promedio 2000–2026 (eloratings.net). <b>Regresores:</b> PIB total a paridad de poder adquisitivo (FMI, WEO); antigüedad de los clubes = año mediano de fundación, ponderado por relevancia de cada club según a cuántos idiomas está traducido en Wikipedia (Wikidata); monopolio del talento = proporción de futbolistas entre los deportistas notables del país (Pantheon, MIT); y una variable indicadora (<i>dummy</i>) para los países de la Conmebol. Controles adicionales: temperatura, consumo de carne (actual y de 1970–2000, el período de crianza de los futbolistas que luego jugaron en 2000–2026), desigualdad (Gini), legado (ex)comunista, desarrollo humano temprano (AHDI de Prados de la Escosura, 1900) y una <i>dummy</i> de latinidad para los países europeos latinos (España, Portugal, Francia e Italia).</p>
+
+    <h2>3. Estrategia</h2>
+    <p>Estimamos por mínimos cuadrados ordinarios (MCO) regresiones del ELO sobre bloques sucesivos de regresores, con errores estándar robustos a heterocedasticidad. El coeficiente de la variable Conmebol —el <span class="hl">“plus”</span>— mide cuántos puntos ELO de más tiene un país sudamericano frente a otro idéntico en todo lo demás. Seguimos ese coeficiente a medida que agregamos factores.</p>
+    <p class="eq">ELO = β₀ + β₁·log(PIB) + β₂·(antigüedad) + β₃·(monopolio) + δ·Conmebol + ε</p>
+
+    <h2>4. Resultado principal</h2>
+    <div class="tbox"><table>
+      <caption>Tabla 1. El excedente sudamericano frente a antigüedad y monopolio</caption>
+      <thead><tr class="toprule"><th class="l">Variable dep.: ELO 2000–26</th><th>(1)</th><th>(2)</th><th>(3)</th><th>(4)</th></tr></thead>
+      <tbody>
+        <tr><td class="l">PIB total (log₁₀)</td><td>135***<span class="se">(30)</span></td><td>133***<span class="se">(25)</span></td><td>165***<span class="se">(22)</span></td><td>543<span class="se">(534)</span></td></tr>
+        <tr><td class="l">PIB total al cuadrado</td><td>—</td><td>—</td><td>—</td><td>−16<span class="se">(23)</span></td></tr>
+        <tr><td class="l">Año mediano de clubes</td><td>—</td><td>−4,6***<span class="se">(0,6)</span></td><td>−3,7***<span class="se">(0,5)</span></td><td>−3,7***<span class="se">(0,5)</span></td></tr>
+        <tr><td class="l">Monopolio del talento (% fútbol)</td><td>—</td><td>—</td><td>324***<span class="se">(66)</span></td><td>325***<span class="se">(66)</span></td></tr>
+        <tr class="con midrule"><td class="l">Conmebol (el plus)</td><td>245***<span class="se">(44)</span></td><td>164***<span class="se">(32)</span></td><td>75**<span class="se">(37)</span></td><td>70*<span class="se">(38)</span></td></tr>
+        <tr class="midrule"><td class="l">R²</td><td>0,25</td><td>0,50</td><td>0,61</td><td>0,61</td></tr>
+        <tr class="botrule"><td class="l">N</td><td>117</td><td>117</td><td>117</td><td>117</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tnote"><b>Notas.</b> MCO; errores estándar robustos (HC3) entre paréntesis. *** p&lt;0,01, ** p&lt;0,05, * p&lt;0,1. El año mediano de clubes entra con signo negativo porque un año mayor significa clubes más nuevos: mayor antigüedad → mejor selección.</p>
+    <p>La columna (1) reproduce el punto de partida: a igualdad de tamaño económico, la Conmebol rinde <b>+245</b> puntos ELO (sobre los 117 países con datos completos; sobre los 184 del gráfico original son +273). Al incorporar la <b>antigüedad de los clubes</b> (columna 2), el plus cae a <b>+164</b>; al sumar el <b>monopolio del talento</b> (columna 3), cae a <b>+75</b>. Entre ambos factores explican alrededor del <span class="hl">70% de la excepcionalidad sudamericana</span>. La columna (4) agrega un término cuadrático del PIB para descartar no-linealidades: no es significativo y no altera el resultado. El plus residual (~+70–75) pierde significancia plena (p≈0,05): es pequeño y frágil.</p>
+
+    <h2>5. Robustez: ¿podría ser otra cosa?</h2>
+    <p>Cada columna repite el modelo (3) —economía, antigüedad y monopolio— y agrega un control distinto. Si el plus se mantiene, ese factor no explica la excepcionalidad. La última columna reestima el modelo (3) excluyendo a Argentina y Uruguay.</p>
+    <div class="tbox"><table class="wide">
+      <caption>Tabla 2. El plus frente a controles alternativos (sobre el modelo 3)</caption>
+      <thead>
+        <tr class="toprule"><th class="l">Var. dep.: ELO 2000–26</th><th>(5)</th><th>(6)</th><th>(7)</th><th>(8)</th><th>(9)</th><th>(10)</th><th>(11)</th><th>(12)</th></tr>
+        <tr class="sub"><th class="l"></th><th>+ Temp.</th><th>+ Carne act.</th><th>+ Carne 70-00</th><th>+ Gini</th><th>+ Comun.</th><th>+ Desarr. 1900</th><th>+ Latin.</th><th>sin ARG+URY</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="l">PIB total (log₁₀)</td><td>153***<span class="se">(19)</span></td><td>153***<span class="se">(24)</span></td><td>162***<span class="se">(24)</span></td><td>168***<span class="se">(21)</span></td><td>180***<span class="se">(21)</span></td><td>135***<span class="se">(29)</span></td><td>157***<span class="se">(22)</span></td><td>165***<span class="se">(21)</span></td></tr>
+        <tr><td class="l">Año mediano de clubes</td><td>−2,5***<span class="se">(0,5)</span></td><td>−3,0***<span class="se">(0,6)</span></td><td>−3,0***<span class="se">(0,7)</span></td><td>−3,5***<span class="se">(0,6)</span></td><td>−3,6***<span class="se">(0,5)</span></td><td>−3,1***<span class="se">(0,6)</span></td><td>−3,5***<span class="se">(0,5)</span></td><td>−3,7***<span class="se">(0,5)</span></td></tr>
+        <tr><td class="l">Monopolio del talento</td><td>407***<span class="se">(74)</span></td><td>379***<span class="se">(73)</span></td><td>379***<span class="se">(75)</span></td><td>326***<span class="se">(70)</span></td><td>379***<span class="se">(73)</span></td><td>362***<span class="se">(91)</span></td><td>315***<span class="se">(64)</span></td><td>324***<span class="se">(65)</span></td></tr>
+        <tr><td class="l">Temperatura</td><td>12,1<span class="se">(10,3)</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="l">Temperatura al cuadrado</td><td>−0,62**<span class="se">(0,29)</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="l">Carne — actual</td><td></td><td>1,75**<span class="se">(0,76)</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="l">Carne — crianza (1970-2000)</td><td></td><td></td><td>1,27<span class="se">(0,83)</span></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="l">Desigualdad (Gini)</td><td></td><td></td><td></td><td>−2,80<span class="se">(1,92)</span></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="l">Ex-comunista</td><td></td><td></td><td></td><td></td><td>102***<span class="se">(36)</span></td><td></td><td></td><td></td></tr>
+        <tr><td class="l">Desarrollo temprano (PIB pc 1900)</td><td></td><td></td><td></td><td></td><td></td><td>100***<span class="se">(29)</span></td><td></td><td></td></tr>
+        <tr><td class="l">Latinidad (ESP/PRT/ITA/FRA)</td><td></td><td></td><td></td><td></td><td></td><td></td><td>146***<span class="se">(37)</span></td><td></td></tr>
+        <tr class="con midrule"><td class="l">Conmebol (el plus)</td><td>80*<span class="se">(45)</span></td><td>50<span class="se">(37)</span></td><td>61*<span class="se">(37)</span></td><td>80**<span class="se">(40)</span></td><td>86**<span class="se">(35)</span></td><td>91*<span class="se">(47)</span></td><td>88**<span class="se">(35)</span></td><td>70*<span class="se">(39)</span></td></tr>
+        <tr class="midrule"><td class="l">R²</td><td>0,69</td><td>0,64</td><td>0,63</td><td>0,63</td><td>0,63</td><td>0,67</td><td>0,62</td><td>0,59</td></tr>
+        <tr class="botrule"><td class="l">N</td><td>116</td><td>115</td><td>112</td><td>109</td><td>117</td><td>74</td><td>117</td><td>115</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tnote"><b>Notas.</b> Cada columna agrega un control al modelo (3); la última excluye a Argentina y Uruguay. EE robustos (HC1) entre paréntesis. Convención de asteriscos como en la Tabla 1.</p>
+    <p>El plus <span class="hl">sobrevive</span> a temperatura, desigualdad, legado comunista, desarrollo temprano y latinidad: en todos los casos se mantiene en el rango +75/+91 y significativo. El <b>desarrollo temprano</b> merece énfasis: aunque el PIB per cápita de 1900 predice fuertemente la fuerza actual, no achica el plus (se mantiene en +91). El único control que lo atenúa es el <b>consumo de carne actual</b> (de ~+74 a +50); pero la carne de la <i>crianza</i> (1970–2000) —la relevante si el canal fuese formativo— no es significativa, de modo que la hipótesis nutricional queda debilitada. Excluyendo a Argentina y Uruguay (columna 12), el plus se mantiene (+70) y en el modelo solo-económico llega a +260: <span class="hl">la excepcionalidad es continental, no rioplatense</span>.</p>
+
+    <h2>6. Discusión</h2>
+    <p>Conviene distinguir el <b>efecto total</b> de ser sudamericano (sin controlar mecanismos: +245/+273) del <b>efecto directo</b> que queda tras controlar antigüedad y monopolio (+75). La diferencia entre ambos —unos 170 puntos ELO— no es un residuo que se desvanece sin explicación: es, justamente, <b>la porción de la excepcionalidad que sí logramos explicar</b>, y que tiene nombre: antigüedad y monopolio. Estos dos factores no son rivales de la identidad sudamericana, sino las <b>formas concretas</b> en que esa identidad opera —un siglo de instituciones futbolísticas y un mercado deportivo que canaliza casi todo el talento hacia un solo deporte—. Controlar por ellos es como explicar el buen rendimiento de un alumno y descontar cuánto estudió: el efecto directo se achica precisamente porque hemos nombrado el canal. Lo que resta —un excedente de unos 75 puntos ELO, pequeño y estadísticamente al límite— es el <b>residuo persistente</b>: lo que ni la economía, ni la historia, ni la cultura medible logran capturar.</p>
+  </div>
+
+  <!-- ====================== ENGLISH ====================== -->
+  <div class="en">
+    <h1>South American footballing exceptionalism:<br>tradition, talent monopoly, and a persistent residual</h1>
+    <div class="authors">El Atlas — Daniel Schteingart · technical note</div>
+    <div class="abstract"><span class="lbl">Abstract</span>
+    South American (Conmebol) national teams perform about +273 ELO points above what the size of their economy predicts. We show this surplus is largely due to two factors: the age of football clubs and football's monopoly over athletic talent account for roughly 70% of it. The remaining residual (~+75 points) does not vanish when various controls are added. We interpret tradition and monopoly not as explanations that <i>compete</i> with South American footballing identity, but as the concrete channels through which that identity translates into sporting advantage.</div>
+
+    <h2>1. The question</h2>
+    <p>In a scatter of economic size (total GDP, log scale) against national-team strength (ELO index, 2000–2026 average), every Conmebol country lies above the regression line. The mean South American residual is <b>+273 ELO points</b> —the highest in the world—, about <b>18% above</b> the predicted value. The question is simple: how much of that surplus can be attributed to observable factors, and how much remains unexplained?</p>
+
+    <figure style="margin:18px 0 4px"><figcaption style="font-family:Source Serif 4,serif;font-weight:600;font-size:14px;margin-bottom:8px">Figure 1. The ELO distribution: where and how much</figcaption><div id="box-en" class="boxwrap"></div><p class="tnote" style="margin-top:8px">Each dot is a country; boxes summarise quartiles (Q1–Q3), the inner line the median and whiskers the range. <b>Hover over any dot</b> to see the country, its ELO and its world ranking. The Conmebol box sits almost entirely above the third quartile of every other confederation: its weakest team (~1610) beats the median of all others except Europe. For scale: ELO ranges from ~400 to ~2050 and the typical between-country standard deviation is ~340 points. That is why the <b>+273</b> “plus” is large —four-fifths of a SD, 60% of the world interquartile range— while the <b>+75</b> residual is modest but not trivial (~one-fifth of a SD). The bottom ruler draws both magnitudes on the axis scale.</p></figure>
+    <h2>2. Data and variables</h2>
+    <p class="small">Unit of observation: the country (men's national team). 184 countries; 117 with complete data on the four core dimensions. <b>Dependent variable:</b> average ELO 2000–2026 (eloratings.net). <b>Regressors:</b> total GDP at purchasing-power parity (IMF, WEO); club tradition = median founding year, weighted by each club's relevance proxied by the number of Wikipedia language editions (Wikidata); talent monopoly = share of footballers among the country's notable athletes (Pantheon, MIT); and a dummy for Conmebol countries. Additional controls: temperature, meat consumption (current and 1970–2000, the childhood years of the players active in 2000–2026), inequality (Gini), (ex-)communist legacy, early human development (Prados de la Escosura's AHDI, 1900) and a latinity dummy for the Latin European countries (Spain, Portugal, France and Italy).</p>
+
+    <h2>3. Strategy</h2>
+    <p>We estimate, by ordinary least squares (OLS), regressions of ELO on successive blocks of regressors, with heteroskedasticity-robust standard errors. The coefficient on the Conmebol dummy —the <span class="hl">“plus”</span>— measures how many extra ELO points a South American country has relative to one identical in everything else. We track that coefficient as we add factors.</p>
+    <p class="eq">ELO = β₀ + β₁·log(GDP) + β₂·(tradition) + β₃·(monopoly) + δ·Conmebol + ε</p>
+
+    <h2>4. Main result</h2>
+    <div class="tbox"><table>
+      <caption>Table 1. The South American surplus against tradition and monopoly</caption>
+      <thead><tr class="toprule"><th class="l">Dep. var.: ELO 2000–26</th><th>(1)</th><th>(2)</th><th>(3)</th><th>(4)</th></tr></thead>
+      <tbody>
+        <tr><td class="l">Total GDP (log₁₀)</td><td>135***<span class="se">(30)</span></td><td>133***<span class="se">(25)</span></td><td>165***<span class="se">(22)</span></td><td>543<span class="se">(534)</span></td></tr>
+        <tr><td class="l">Total GDP squared</td><td>—</td><td>—</td><td>—</td><td>−16<span class="se">(23)</span></td></tr>
+        <tr><td class="l">Median club founding year</td><td>—</td><td>−4.6***<span class="se">(0.6)</span></td><td>−3.7***<span class="se">(0.5)</span></td><td>−3.7***<span class="se">(0.5)</span></td></tr>
+        <tr><td class="l">Talent monopoly (% football)</td><td>—</td><td>—</td><td>324***<span class="se">(66)</span></td><td>325***<span class="se">(66)</span></td></tr>
+        <tr class="con midrule"><td class="l">Conmebol (the plus)</td><td>245***<span class="se">(44)</span></td><td>164***<span class="se">(32)</span></td><td>75**<span class="se">(37)</span></td><td>70*<span class="se">(38)</span></td></tr>
+        <tr class="midrule"><td class="l">R²</td><td>0.25</td><td>0.50</td><td>0.61</td><td>0.61</td></tr>
+        <tr class="botrule"><td class="l">N</td><td>117</td><td>117</td><td>117</td><td>117</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tnote"><b>Notes.</b> OLS; heteroskedasticity-robust (HC3) standard errors in parentheses. *** p&lt;0.01, ** p&lt;0.05, * p&lt;0.1. The median club year enters negative because a higher year means newer clubs: more tradition → stronger team.</p>
+    <p>Column (1) gives the baseline: holding economic size constant, Conmebol performs <b>+245</b> ELO points higher (over the 117 countries with complete data; over the 184 in the original chart it is +273). Adding <b>club tradition</b> (column 2), the plus falls to <b>+164</b>; adding the <b>talent monopoly</b> (column 3), it falls to <b>+75</b>. Together these two factors explain about <span class="hl">70% of South American exceptionalism</span>. Column (4) adds a quadratic GDP term to rule out non-linearities: insignificant, and the result is unchanged. The residual plus (~+70–75) loses full significance (p≈0.05): it is small and fragile.</p>
+
+    <h2>5. Robustness: could it be something else?</h2>
+    <p>Each column repeats model (3) —economy, tradition and monopoly— and adds one control. If the plus holds, that factor does not explain the exceptionalism. The last column re-estimates model (3) excluding Argentina and Uruguay.</p>
+    <div class="tbox"><table class="wide">
+      <caption>Table 2. The plus against alternative controls (on model 3)</caption>
+      <thead>
+        <tr class="toprule"><th class="l">Dep. var.: ELO 2000–26</th><th>(5)</th><th>(6)</th><th>(7)</th><th>(8)</th><th>(9)</th><th>(10)</th><th>(11)</th><th>(12)</th></tr>
+        <tr class="sub"><th class="l"></th><th>+ Temp.</th><th>+ Meat cur.</th><th>+ Meat 70-00</th><th>+ Gini</th><th>+ Commun.</th><th>+ Devel. 1900</th><th>+ Latin.</th><th>no ARG+URY</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="l">Total GDP (log₁₀)</td><td>153***<span class="se">(19)</span></td><td>153***<span class="se">(24)</span></td><td>162***<span class="se">(24)</span></td><td>168***<span class="se">(21)</span></td><td>180***<span class="se">(21)</span></td><td>135***<span class="se">(29)</span></td><td>157***<span class="se">(22)</span></td><td>165***<span class="se">(21)</span></td></tr>
+        <tr><td class="l">Median club founding year</td><td>−2.5***<span class="se">(0.5)</span></td><td>−3.0***<span class="se">(0.6)</span></td><td>−3.0***<span class="se">(0.7)</span></td><td>−3.5***<span class="se">(0.6)</span></td><td>−3.6***<span class="se">(0.5)</span></td><td>−3.1***<span class="se">(0.6)</span></td><td>−3.5***<span class="se">(0.5)</span></td><td>−3.7***<span class="se">(0.5)</span></td></tr>
+        <tr><td class="l">Talent monopoly</td><td>407***<span class="se">(74)</span></td><td>379***<span class="se">(73)</span></td><td>379***<span class="se">(75)</span></td><td>326***<span class="se">(70)</span></td><td>379***<span class="se">(73)</span></td><td>362***<span class="se">(91)</span></td><td>315***<span class="se">(64)</span></td><td>324***<span class="se">(65)</span></td></tr>
+        <tr><td class="l">Temperature</td><td>12.1<span class="se">(10.3)</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="l">Temperature squared</td><td>−0.62**<span class="se">(0.29)</span></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="l">Meat — current</td><td></td><td>1.75**<span class="se">(0.76)</span></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="l">Meat — childhood (1970-2000)</td><td></td><td></td><td>1.27<span class="se">(0.83)</span></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="l">Inequality (Gini)</td><td></td><td></td><td></td><td>−2.80<span class="se">(1.92)</span></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td class="l">(Ex-)communist</td><td></td><td></td><td></td><td></td><td>102***<span class="se">(36)</span></td><td></td><td></td><td></td></tr>
+        <tr><td class="l">Early development (GDP pc 1900)</td><td></td><td></td><td></td><td></td><td></td><td>100***<span class="se">(29)</span></td><td></td><td></td></tr>
+        <tr><td class="l">Latinity (ESP/PRT/ITA/FRA)</td><td></td><td></td><td></td><td></td><td></td><td></td><td>146***<span class="se">(37)</span></td><td></td></tr>
+        <tr class="con midrule"><td class="l">Conmebol (the plus)</td><td>80*<span class="se">(45)</span></td><td>50<span class="se">(37)</span></td><td>61*<span class="se">(37)</span></td><td>80**<span class="se">(40)</span></td><td>86**<span class="se">(35)</span></td><td>91*<span class="se">(47)</span></td><td>88**<span class="se">(35)</span></td><td>70*<span class="se">(39)</span></td></tr>
+        <tr class="midrule"><td class="l">R²</td><td>0.69</td><td>0.64</td><td>0.63</td><td>0.63</td><td>0.63</td><td>0.67</td><td>0.62</td><td>0.59</td></tr>
+        <tr class="botrule"><td class="l">N</td><td>116</td><td>115</td><td>112</td><td>109</td><td>117</td><td>74</td><td>117</td><td>115</td></tr>
+      </tbody>
+    </table></div>
+    <p class="tnote"><b>Notes.</b> Each column adds one control to model (3); the last excludes Argentina and Uruguay. Robust (HC1) SE in parentheses. Stars as in Table 1.</p>
+    <p>The plus <span class="hl">survives</span> temperature, inequality, communist legacy, early development and latinity: in every case it stays in the +75/+91 range and significant. <b>Early development</b> is worth stressing: although 1900 GDP per capita strongly predicts current strength, it does not shrink the plus (it stays at +91). The only control that attenuates it is <b>current meat consumption</b> (from ~+74 to +50); but <i>childhood</i> meat (1970–2000) —the relevant one if the channel were formative— is insignificant, so the nutritional hypothesis is weakened. Excluding Argentina and Uruguay (column 12), the plus holds (+70), and in the economy-only model it reaches +260: <span class="hl">the exceptionalism is continental, not River Plate</span>.</p>
+
+    <h2>6. Discussion</h2>
+    <p>It helps to distinguish the <b>total effect</b> of being South American (without controlling for mechanisms: +245/+273) from the <b>direct effect</b> left after controlling for tradition and monopoly (+75). The gap between the two —about 170 ELO points— is not a residual that vanishes unexplained: it is precisely <b>the portion of the exceptionalism that we do manage to explain</b>, and it has a name: tradition and monopoly. These two factors are not rivals of South American identity, but the <b>concrete forms</b> in which that identity operates —a century of footballing institutions and a sporting market that funnels nearly all talent into a single sport—. Controlling for them is like explaining a student's good performance and netting out how much they studied: the direct effect shrinks precisely because we have named the channel. What remains —a surplus of about 75 ELO points, small and statistically borderline— is the <b>persistent residual</b>: what neither the economy, nor history, nor measurable culture manage to capture.</p>
+  </div>
+
+  <div class="tnote" style="margin-top:26px;border-top:1px solid var(--rule);padding-top:10px">
+    <span class="es"><b>Fuentes:</b> ELO (eloratings.net) · PIB PPA (FMI WEO) · clubes (Wikidata) · talento (Pantheon, MIT) · temperatura (Banco Mundial) · carne (FAO/OWID) · Gini (El Atlas N°2) · desarrollo temprano (AHDI, Prados de la Escosura). Datos y código replicable: <i>futbol_dataset.csv</i> + <i>correr_regresiones.do</i> (Stata).</span>
+    <span class="en"><b>Sources:</b> ELO (eloratings.net) · GDP PPP (IMF WEO) · clubs (Wikidata) · talent (Pantheon, MIT) · temperature (World Bank) · meat (FAO/OWID) · Gini (El Atlas #2) · early development (AHDI, Prados de la Escosura). Replicable data and code: <i>futbol_dataset.csv</i> + <i>correr_regresiones.do</i> (Stata).</span>
+  </div>
+</div>
+<script>window.ELO_DATA=[{"iso":"BRA","name":"Brasil","confed":"CONMEBOL","elo":2053,"rank":1},{"iso":"ESP","name":"España","confed":"UEFA","elo":2038,"rank":2},{"iso":"ARG","name":"Argentina","confed":"CONMEBOL","elo":2018,"rank":3},{"iso":"FRA","name":"Francia","confed":"UEFA","elo":2004,"rank":4},{"iso":"NLD","name":"Países Bajos","confed":"UEFA","elo":1988,"rank":5},{"iso":"DEU","name":"Alemania","confed":"UEFA","elo":1974,"rank":6},{"iso":"GBR","name":"Reino Unido","confed":"UEFA","elo":1961,"rank":7},{"iso":"PRT","name":"Portugal","confed":"UEFA","elo":1944,"rank":8},{"iso":"ITA","name":"Italia","confed":"UEFA","elo":1937,"rank":9},{"iso":"HRV","name":"Croacia","confed":"UEFA","elo":1879,"rank":10},{"iso":"URY","name":"Uruguay","confed":"CONMEBOL","elo":1878,"rank":11},{"iso":"COL","name":"Colombia","confed":"CONMEBOL","elo":1878,"rank":12},{"iso":"MEX","name":"México","confed":"CONCACAF","elo":1851,"rank":13},{"iso":"BEL","name":"Bélgica","confed":"UEFA","elo":1837,"rank":14},{"iso":"DNK","name":"Dinamarca","confed":"UEFA","elo":1837,"rank":15},{"iso":"CHE","name":"Suiza","confed":"UEFA","elo":1813,"rank":16},{"iso":"CZE","name":"República Checa","confed":"UEFA","elo":1809,"rank":17},{"iso":"SWE","name":"Suecia","confed":"UEFA","elo":1808,"rank":18},{"iso":"JPN","name":"Japón","confed":"AFC","elo":1796,"rank":19},{"iso":"ECU","name":"Ecuador","confed":"CONMEBOL","elo":1790,"rank":20},{"iso":"RUS","name":"Rusia","confed":"UEFA","elo":1788,"rank":21},{"iso":"TUR","name":"Turquía","confed":"UEFA","elo":1782,"rank":22},{"iso":"USA","name":"Estados Unidos","confed":"CONCACAF","elo":1782,"rank":23},{"iso":"CHL","name":"Chile","confed":"CONMEBOL","elo":1781,"rank":24},{"iso":"UKR","name":"Ucrania","confed":"UEFA","elo":1778,"rank":25},{"iso":"SRB","name":"Serbia","confed":"UEFA","elo":1777,"rank":26},{"iso":"PRY","name":"Paraguay","confed":"CONMEBOL","elo":1763,"rank":27},{"iso":"AUS","name":"Australia","confed":"AFC","elo":1758,"rank":28},{"iso":"IRN","name":"Irán","confed":"AFC","elo":1756,"rank":29},{"iso":"POL","name":"Polonia","confed":"UEFA","elo":1749,"rank":30},{"iso":"ROU","name":"Rumania","confed":"UEFA","elo":1749,"rank":31},{"iso":"IRL","name":"Irlanda","confed":"UEFA","elo":1747,"rank":32},{"iso":"KOR","name":"Corea del Sur","confed":"AFC","elo":1747,"rank":33},{"iso":"NOR","name":"Noruega","confed":"UEFA","elo":1742,"rank":34},{"iso":"PER","name":"Perú","confed":"CONMEBOL","elo":1722,"rank":35},{"iso":"AUT","name":"Austria","confed":"UEFA","elo":1702,"rank":36},{"iso":"CRI","name":"Costa Rica","confed":"CONCACAF","elo":1696,"rank":37},{"iso":"NGA","name":"Nigeria","confed":"CAF","elo":1696,"rank":38},{"iso":"SVK","name":"Eslovaquia","confed":"UEFA","elo":1680,"rank":39},{"iso":"VEN","name":"Venezuela","confed":"CONMEBOL","elo":1679,"rank":40},{"iso":"SEN","name":"Senegal","confed":"CAF","elo":1678,"rank":41},{"iso":"CIV","name":"Costa de Marfil","confed":"CAF","elo":1675,"rank":42},{"iso":"EGY","name":"Egipto","confed":"CAF","elo":1672,"rank":43},{"iso":"CMR","name":"Camerún","confed":"CAF","elo":1667,"rank":44},{"iso":"MAR","name":"Marruecos","confed":"CAF","elo":1665,"rank":45},{"iso":"HUN","name":"Hungría","confed":"UEFA","elo":1662,"rank":46},{"iso":"ISR","name":"Israel","confed":"UEFA","elo":1647,"rank":47},{"iso":"SVN","name":"Eslovenia","confed":"UEFA","elo":1646,"rank":48},{"iso":"FIN","name":"Finlandia","confed":"UEFA","elo":1640,"rank":49},{"iso":"HND","name":"Honduras","confed":"CONCACAF","elo":1632,"rank":50},{"iso":"BGR","name":"Bulgaria","confed":"UEFA","elo":1630,"rank":51},{"iso":"BIH","name":"Bosnia y Herzegovina","confed":"UEFA","elo":1628,"rank":52},{"iso":"CAN","name":"Canadá","confed":"CONCACAF","elo":1616,"rank":53},{"iso":"GHA","name":"Ghana","confed":"CAF","elo":1611,"rank":54},{"iso":"BOL","name":"Bolivia","confed":"CONMEBOL","elo":1609,"rank":55},{"iso":"SAU","name":"Arabia Saudí","confed":"AFC","elo":1595,"rank":56},{"iso":"PAN","name":"Panamá","confed":"CONCACAF","elo":1592,"rank":57},{"iso":"UZB","name":"Uzbekistán","confed":"AFC","elo":1591,"rank":58},{"iso":"DZA","name":"Argelia","confed":"CAF","elo":1587,"rank":59},{"iso":"MNE","name":"Montenegro","confed":"UEFA","elo":1586,"rank":60},{"iso":"JAM","name":"Jamaica","confed":"CONCACAF","elo":1579,"rank":61},{"iso":"IRQ","name":"Irak","confed":"AFC","elo":1576,"rank":62},{"iso":"ZAF","name":"Sudáfrica","confed":"CAF","elo":1567,"rank":63},{"iso":"ISL","name":"Islandia","confed":"UEFA","elo":1564,"rank":64},{"iso":"MLI","name":"Mali","confed":"CAF","elo":1549,"rank":65},{"iso":"CHN","name":"China","confed":"AFC","elo":1549,"rank":66},{"iso":"GEO","name":"Georgia","confed":"UEFA","elo":1544,"rank":67},{"iso":"ALB","name":"Albania","confed":"UEFA","elo":1544,"rank":68},{"iso":"QAT","name":"Catar","confed":"AFC","elo":1538,"rank":69},{"iso":"BLR","name":"Bielorrusia","confed":"UEFA","elo":1537,"rank":70},{"iso":"NZL","name":"Nueva Zelanda","confed":"OFC","elo":1537,"rank":71},{"iso":"JOR","name":"Jordania","confed":"AFC","elo":1529,"rank":72},{"iso":"MKD","name":"Macedonia del Norte","confed":"UEFA","elo":1527,"rank":73},{"iso":"OMN","name":"Omán","confed":"AFC","elo":1522,"rank":74},{"iso":"GTM","name":"Guatemala","confed":"CONCACAF","elo":1512,"rank":75},{"iso":"GIN","name":"Guinea","confed":"CAF","elo":1498,"rank":76},{"iso":"ARE","name":"Emiratos Árabes Unidos","confed":"AFC","elo":1495,"rank":77},{"iso":"COD","name":"República Democrática del Congo","confed":"CAF","elo":1494,"rank":78},{"iso":"BFA","name":"Burkina Faso","confed":"CAF","elo":1489,"rank":79},{"iso":"HTI","name":"Haití","confed":"CONCACAF","elo":1485,"rank":80},{"iso":"BHR","name":"Baréin","confed":"AFC","elo":1484,"rank":81},{"iso":"ZMB","name":"Zambia","confed":"CAF","elo":1479,"rank":82},{"iso":"TTO","name":"Trinidad y Tobago","confed":"CONCACAF","elo":1473,"rank":83},{"iso":"KWT","name":"Kuwait","confed":"AFC","elo":1457,"rank":84},{"iso":"SLV","name":"El Salvador","confed":"CONCACAF","elo":1457,"rank":85},{"iso":"GAB","name":"Gabón","confed":"CAF","elo":1454,"rank":86},{"iso":"ARM","name":"Armenia","confed":"UEFA","elo":1452,"rank":87},{"iso":"LBY","name":"Libia","confed":"CAF","elo":1450,"rank":88},{"iso":"AGO","name":"Angola","confed":"CAF","elo":1450,"rank":89},{"iso":"UGA","name":"Uganda","confed":"CAF","elo":1448,"rank":90},{"iso":"CYP","name":"Chipre","confed":"UEFA","elo":1429,"rank":91},{"iso":"EST","name":"Estonia","confed":"UEFA","elo":1426,"rank":92},{"iso":"LTU","name":"Lituania","confed":"UEFA","elo":1421,"rank":93},{"iso":"LVA","name":"Letonia","confed":"UEFA","elo":1417,"rank":94},{"iso":"CPV","name":"Cabo Verde","confed":"CAF","elo":1416,"rank":95},{"iso":"TGO","name":"Togo","confed":"CAF","elo":1411,"rank":96},{"iso":"ZWE","name":"Zimbabue","confed":"CAF","elo":1409,"rank":97},{"iso":"THA","name":"Tailandia","confed":"AFC","elo":1396,"rank":98},{"iso":"AZE","name":"Azerbaiyán","confed":"UEFA","elo":1381,"rank":99},{"iso":"KAZ","name":"Kazajistán","confed":"UEFA","elo":1379,"rank":100},{"iso":"BEN","name":"Benín","confed":"CAF","elo":1378,"rank":101},{"iso":"KEN","name":"Kenia","confed":"CAF","elo":1375,"rank":102},{"iso":"MDA","name":"Moldavia","confed":"UEFA","elo":1365,"rank":103},{"iso":"GMB","name":"Gambia","confed":"CAF","elo":1355,"rank":104},{"iso":"LBN","name":"Líbano","confed":"AFC","elo":1349,"rank":105},{"iso":"SDN","name":"Sudán","confed":"CAF","elo":1345,"rank":106},{"iso":"RWA","name":"Ruanda","confed":"CAF","elo":1329,"rank":107},{"iso":"MOZ","name":"Mozambique","confed":"CAF","elo":1329,"rank":108},{"iso":"SLE","name":"Sierra Leona","confed":"CAF","elo":1326,"rank":109},{"iso":"LBR","name":"Liberia","confed":"CAF","elo":1322,"rank":110},{"iso":"ETH","name":"Etiopía","confed":"CAF","elo":1321,"rank":111},{"iso":"MWI","name":"Malaui","confed":"CAF","elo":1318,"rank":112},{"iso":"TZA","name":"Tanzania","confed":"CAF","elo":1311,"rank":113},{"iso":"TKM","name":"Turkmenistán","confed":"AFC","elo":1309,"rank":114},{"iso":"NER","name":"Níger","confed":"CAF","elo":1299,"rank":115},{"iso":"TJK","name":"Tayikistán","confed":"AFC","elo":1298,"rank":116},{"iso":"NAM","name":"Namibia","confed":"CAF","elo":1297,"rank":117},{"iso":"MDG","name":"Madagascar","confed":"CAF","elo":1295,"rank":118},{"iso":"VNM","name":"Vietnam","confed":"AFC","elo":1294,"rank":119},{"iso":"BWA","name":"Botsuana","confed":"CAF","elo":1292,"rank":120},{"iso":"BDI","name":"Burundi","confed":"CAF","elo":1281,"rank":121},{"iso":"FJI","name":"Fiyi","confed":"OFC","elo":1277,"rank":122},{"iso":"SUR","name":"Surinam","confed":"CONCACAF","elo":1274,"rank":123},{"iso":"IDN","name":"Indonesia","confed":"AFC","elo":1268,"rank":124},{"iso":"GNQ","name":"Guinea Ecuatorial","confed":"CAF","elo":1265,"rank":125},{"iso":"GNB","name":"Guinea-Bisáu","confed":"CAF","elo":1259,"rank":126},{"iso":"CAF","name":"República Centroafricana","confed":"CAF","elo":1258,"rank":127},{"iso":"MRT","name":"Mauritania","confed":"CAF","elo":1244,"rank":128},{"iso":"MLT","name":"Malta","confed":"UEFA","elo":1233,"rank":129},{"iso":"TCD","name":"Chad","confed":"CAF","elo":1232,"rank":130},{"iso":"SLB","name":"Islas Salomón","confed":"OFC","elo":1228,"rank":131},{"iso":"LUX","name":"Luxemburgo","confed":"UEFA","elo":1225,"rank":132},{"iso":"GUY","name":"Guyana","confed":"CONCACAF","elo":1218,"rank":133},{"iso":"MYS","name":"Malasia","confed":"AFC","elo":1207,"rank":134},{"iso":"SGP","name":"Singapur","confed":"AFC","elo":1206,"rank":135},{"iso":"KGZ","name":"Kirguistán","confed":"AFC","elo":1204,"rank":136},{"iso":"LSO","name":"Lesoto","confed":"CAF","elo":1199,"rank":137},{"iso":"YEM","name":"Yemen","confed":"AFC","elo":1199,"rank":138},{"iso":"KNA","name":"San Cristóbal y Nieves","confed":"CONCACAF","elo":1197,"rank":139},{"iso":"VCT","name":"San Vicente y las Granadinas","confed":"CONCACAF","elo":1194,"rank":140},{"iso":"SWZ","name":"Suazilandia","confed":"CAF","elo":1193,"rank":141},{"iso":"GRD","name":"Granada","confed":"CONCACAF","elo":1186,"rank":142},{"iso":"VUT","name":"Vanuatu","confed":"OFC","elo":1177,"rank":143},{"iso":"BRB","name":"Barbados","confed":"CONCACAF","elo":1169,"rank":144},{"iso":"DOM","name":"República Dominicana","confed":"CONCACAF","elo":1162,"rank":145},{"iso":"IND","name":"India","confed":"AFC","elo":1153,"rank":146},{"iso":"ATG","name":"Antigua y Barbuda","confed":"CONCACAF","elo":1142,"rank":147},{"iso":"NIC","name":"Nicaragua","confed":"CONCACAF","elo":1138,"rank":148},{"iso":"LCA","name":"Santa Lucía","confed":"CONCACAF","elo":1119,"rank":149},{"iso":"BLZ","name":"Belice","confed":"CONCACAF","elo":1116,"rank":150},{"iso":"MUS","name":"Mauricio","confed":"CAF","elo":1109,"rank":151},{"iso":"LIE","name":"Liechtenstein","confed":"UEFA","elo":1105,"rank":152},{"iso":"SSD","name":"Sudán del Sur","confed":"CAF","elo":1094,"rank":153},{"iso":"PNG","name":"Papúa Nueva Guinea","confed":"OFC","elo":1082,"rank":154},{"iso":"STP","name":"Santo Tomé y Príncipe","confed":"CAF","elo":1067,"rank":155},{"iso":"MMR","name":"Birmania","confed":"AFC","elo":1058,"rank":156},{"iso":"AND","name":"Andorra","confed":"UEFA","elo":1048,"rank":157},{"iso":"DMA","name":"Dominica","confed":"CONCACAF","elo":1009,"rank":158},{"iso":"COM","name":"Comoras","confed":"CAF","elo":1008,"rank":159},{"iso":"PHL","name":"Filipinas","confed":"AFC","elo":989,"rank":160},{"iso":"MDV","name":"Maldivas","confed":"AFC","elo":981,"rank":161},{"iso":"SYC","name":"Seychelles","confed":"CAF","elo":973,"rank":162},{"iso":"AFG","name":"Afganistán","confed":"AFC","elo":971,"rank":163},{"iso":"SOM","name":"Somalia","confed":"CAF","elo":935,"rank":164},{"iso":"TWN","name":"Taiwán","confed":"AFC","elo":928,"rank":165},{"iso":"BGD","name":"Bangladés","confed":"AFC","elo":925,"rank":166},{"iso":"NPL","name":"Nepal","confed":"AFC","elo":900,"rank":167},{"iso":"SMR","name":"San Marino","confed":"UEFA","elo":881,"rank":168},{"iso":"PAK","name":"Pakistán","confed":"AFC","elo":879,"rank":169},{"iso":"BHS","name":"Bahamas","confed":"CONCACAF","elo":862,"rank":170},{"iso":"DJI","name":"Yibuti","confed":"CAF","elo":842,"rank":171},{"iso":"LKA","name":"Sri Lanka","confed":"AFC","elo":822,"rank":172},{"iso":"KHM","name":"Camboya","confed":"AFC","elo":813,"rank":173},{"iso":"LAO","name":"Laos","confed":"AFC","elo":804,"rank":174},{"iso":"MNG","name":"Mongolia","confed":"AFC","elo":763,"rank":175},{"iso":"TUV","name":"Tuvalu","confed":"OFC","elo":741,"rank":176},{"iso":"WSM","name":"Samoa","confed":"OFC","elo":695,"rank":177},{"iso":"BRN","name":"Brunéi","confed":"AFC","elo":661,"rank":178},{"iso":"TLS","name":"Timor Oriental","confed":"AFC","elo":627,"rank":179},{"iso":"TON","name":"Tonga","confed":"OFC","elo":621,"rank":180},{"iso":"BTN","name":"Bután","confed":"AFC","elo":579,"rank":181},{"iso":"FSM","name":"Estados Federados de Micronesia","confed":"OFC","elo":570,"rank":182},{"iso":"KIR","name":"Kiribati","confed":"OFC","elo":561,"rank":183},{"iso":"PLW","name":"Palaos","confed":"OFC","elo":403,"rank":184}];
+const BX_CONF=['CONMEBOL','UEFA','CONCACAF','CAF','AFC','OFC'];
+const BX_COL={CONMEBOL:'#BE5D32',UEFA:'#3E5A6E',CONCACAF:'#8B5A8C',CAF:'#6B8E5A',AFC:'#C99A3B',OFC:'#4A9BA8'};
+const BX_T={es:{med:'mediana mundial',rule:'magnitud en la misma escala del eje',elo:'ELO promedio',rank:'puesto',of:'de',plus:'+273 (plus crudo)',res:'+75 (residuo)'},
+            en:{med:'world median',rule:'magnitudes on the axis scale',elo:'Average ELO',rank:'rank',of:'of',plus:'+273 (raw plus)',res:'+75 (residual)'}};
+function bxHash(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))&0xffff;return (h%1000)/1000;}
+function bxQuant(arr,q){const a=[...arr].sort((x,y)=>x-y);const pos=(a.length-1)*q,b=Math.floor(pos),r=pos-b;return a[b+1]!==undefined?a[b]+r*(a[b+1]-a[b]):a[b];}
+let bxTip=document.querySelector('.bx-tip');
+if(!bxTip){bxTip=document.createElement('div');bxTip.className='bx-tip';document.body.appendChild(bxTip);}
+function drawBox(id,lang){
+  const el=document.getElementById(id); if(!el||el.__done)return; el.__done=1;
+  const T=BX_T[lang], D=window.ELO_DATA, N=D.length;
+  const W=680,H=362,ML=96,MR=18,MT=42,rowH=40, X0=380,X1=2100;
+  const x=v=>ML+(v-X0)/(X1-X0)*(W-ML-MR);
+  const svg=d3.select(el).append('svg').attr('viewBox',`0 0 ${W} ${H}`).attr('width','100%').style('height','auto').style('font-family','Source Sans 3,sans-serif');
+  // grid + eje
+  for(let t=400;t<=2000;t+=400){
+    svg.append('line').attr('x1',x(t)).attr('y1',MT-6).attr('x2',x(t)).attr('y2',MT+6*rowH).attr('stroke','#ECE7D8');
+    svg.append('text').attr('x',x(t)).attr('y',MT+6*rowH+16).attr('text-anchor','middle').attr('font-size',11).attr('fill','#7A766B').text(t);
+  }
+  const MEDW=d3.median(D,d=>d.elo);
+  svg.append('line').attr('x1',x(MEDW)).attr('y1',MT-14).attr('x2',x(MEDW)).attr('y2',MT+6*rowH).attr('stroke','#B8B2A0').attr('stroke-dasharray','3 3');
+  svg.append('text').attr('x',x(MEDW)).attr('y',MT-18).attr('text-anchor','middle').attr('font-size',9.5).attr('fill','#7A766B').text(T.med+' '+Math.round(MEDW));
+  BX_CONF.forEach((cf,i)=>{
+    const pts=D.filter(d=>d.confed===cf); if(!pts.length)return;
+    const col=BX_COL[cf], cy=MT+i*rowH+rowH/2, vals=pts.map(d=>d.elo);
+    const q1=bxQuant(vals,.25),med=bxQuant(vals,.5),q3=bxQuant(vals,.75),iqr=q3-q1;
+    const lo=Math.min(...vals.filter(v=>v>=q1-1.5*iqr)),hi=Math.max(...vals.filter(v=>v<=q3+1.5*iqr));
+    const big=cf==='CONMEBOL';
+    svg.append('text').attr('x',ML-8).attr('y',cy+4).attr('text-anchor','end').attr('font-size',11.5).attr('font-weight',big?700:600).attr('fill',big?col:'#3C3C3C').text(cf);
+    svg.append('line').attr('x1',x(lo)).attr('y1',cy).attr('x2',x(q1)).attr('y2',cy).attr('stroke',col).attr('stroke-width',1.2);
+    svg.append('line').attr('x1',x(q3)).attr('y1',cy).attr('x2',x(hi)).attr('y2',cy).attr('stroke',col).attr('stroke-width',1.2);
+    [lo,hi].forEach(w=>svg.append('line').attr('x1',x(w)).attr('y1',cy-5).attr('x2',x(w)).attr('y2',cy+5).attr('stroke',col).attr('stroke-width',1.2));
+    svg.append('rect').attr('x',x(q1)).attr('y',cy-11).attr('width',x(q3)-x(q1)).attr('height',22).attr('fill',col).attr('fill-opacity',big?.18:.10).attr('stroke',col).attr('stroke-width',big?2:1.2);
+    svg.append('line').attr('x1',x(med)).attr('y1',cy-11).attr('x2',x(med)).attr('y2',cy+11).attr('stroke',col).attr('stroke-width',big?3:2);
+    // puntos
+    svg.selectAll('c'+i).data(pts).join('circle').attr('class','bx-pt')
+      .attr('cx',d=>x(d.elo)).attr('cy',d=>cy+(bxHash(d.iso)-0.5)*16).attr('r',3).attr('fill',col).attr('fill-opacity',.55).attr('stroke','#fff').attr('stroke-width',.5)
+      .on('mousemove',(ev,d)=>{bxTip.style.opacity=1;bxTip.style.left=(ev.clientX+13)+'px';bxTip.style.top=(ev.clientY-10)+'px';
+        bxTip.innerHTML=`<b>${d.name}</b> · ${d.confed}<br>${T.elo}: ${d.elo}<br>${T.rank} ${d.rank} ${T.of} ${N}`;})
+      .on('mouseleave',()=>bxTip.style.opacity=0);
+  });
+  svg.append('line').attr('x1',ML).attr('y1',MT+6*rowH).attr('x2',W-MR).attr('y2',MT+6*rowH).attr('stroke','#7A766B').attr('stroke-width',.8);
+  // regla magnitud
+  const ry=MT+6*rowH+34, rx0=ML+10;
+  function seg(v,y,lab,col){const x2=rx0+(x(X0+v)-x(X0));
+    svg.append('line').attr('x1',rx0).attr('y1',y).attr('x2',x2).attr('y2',y).attr('stroke',col).attr('stroke-width',3);
+    [rx0,x2].forEach(xx=>svg.append('line').attr('x1',xx).attr('y1',y-4).attr('x2',xx).attr('y2',y+4).attr('stroke',col).attr('stroke-width',1.5));
+    svg.append('text').attr('x',x2+7).attr('y',y+4).attr('font-size',11).attr('font-weight',600).attr('fill',col).text(lab);}
+  svg.append('text').attr('x',rx0).attr('y',ry-10).attr('font-size',9.5).attr('fill','#7A766B').text(T.rule);
+  seg(273,ry,T.plus,'#BE5D32'); seg(75,ry+18,T.res,'#9B7B6B');
+}
+function bxRender(){const l=document.body.classList.contains('lang-en')?'en':'es'; drawBox('box-'+l,l);}
+bxRender();
+new MutationObserver(bxRender).observe(document.body,{attributes:true,attributeFilter:['class']});
+</script>
+<script>
+function setLang(l){
+  document.body.className='lang-'+l;
+  document.getElementById('b-es').classList.toggle('on',l==='es');
+  document.getElementById('b-en').classList.toggle('on',l==='en');
+  document.documentElement.lang=l;
+}
+</script>
+</body>
+</html>
