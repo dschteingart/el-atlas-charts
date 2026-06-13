@@ -644,7 +644,7 @@ function setupMapSearch() {
 // n_clubs, n_with_date, confed. Mismo patrón de localización que scatter:
 // nombre en EN/ES y filename localizado.
 function setupMapDownloadCSV() {
-  document.querySelectorAll('button.download[data-chart="2-csv"]').forEach(btn => {
+  document.querySelectorAll('button.download[data-chart="3-csv"]').forEach(btn => {
     btn.addEventListener('click', () => {
       if (typeof DATA_CLUBAGE === 'undefined') return;
       const rows = Object.keys(DATA_CLUBAGE)
