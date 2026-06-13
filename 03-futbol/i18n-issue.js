@@ -71,11 +71,11 @@ const ISSUE_I18N = {
     'footer-download':       'Descargar datos (CSV)',
     'footer-download-png':   'Descargar PNG',
     'footer-download-svg':   'Descargar SVG',
-    'c1-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo de selecciones nacionales) y FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Los datos muestran el promedio del período seleccionado para ambas variables.',
+    'c1-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo de selecciones nacionales, valor al cierre de cada año) y FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Los datos muestran el promedio del período seleccionado para ambas variables.',
     // Plantilla PLANA (sin <a>) para la nota del PNG: el hook
     // onBeforePngExportGetSourceText reemplaza {period} por los años reales
     // del slider, para que la nota diga explícitamente a qué promedio refiere.
-    'c1-sources-tpl':        'Datos: eloratings.net (Elo de selecciones nacionales) y FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Los datos muestran el promedio {period} para ambas variables.',
+    'c1-sources-tpl':        'Datos: eloratings.net (Elo de selecciones nacionales, valor al cierre de cada año) y FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Los datos muestran el promedio {period} para ambas variables.',
 
     // Chart 2 — Talento futbolístico por millón de habitantes
     'c2-title':              'Uruguay produce más futbolistas célebres per cápita que cualquier país del mundo',
@@ -152,8 +152,8 @@ const ISSUE_I18N = {
     'c5-search-placeholder': 'Buscar selección…',
     'c5-axis-y-rank':        'Posición en el ranking',
     'c5-axis-y-elo':         'Puntaje Elo',
-    'c5-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (rating Elo de selecciones nacionales, promedio anual ponderado por días; serie 1901-2026). La "posición en el ranking" es el ranking mundial de eloratings.net. Confederaciones según afiliación FIFA actual.',
-    'c5-sources-tpl':        'Datos: eloratings.net (rating Elo de selecciones nacionales, promedio anual).',
+    'c5-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (rating Elo de selecciones nacionales, valor al cierre de cada año —al 31 de diciembre; 2026, al 6 de junio—; serie 1901-2026). La "posición en el ranking" es el ranking mundial de eloratings.net. Confederaciones según afiliación FIFA actual.',
+    'c5-sources-tpl':        'Datos: eloratings.net (rating Elo de selecciones nacionales, valor al cierre de cada año).',
   },
   en: {
     'issue-num':  'N° 3',
@@ -208,8 +208,8 @@ const ISSUE_I18N = {
     'footer-download':       'Download data (CSV)',
     'footer-download-png':   'Download PNG',
     'footer-download-svg':   'Download SVG',
-    'c1-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo of national teams) and IMF — World Economic Outlook (total GDP PPP, constant international USD). Values show the average over the selected period for both variables.',
-    'c1-sources-tpl':        'Data: eloratings.net (Elo of national teams) and IMF — World Economic Outlook (total GDP PPP, constant international USD). Values show the {period} average for both variables.',
+    'c1-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo of national teams, year-end value) and IMF — World Economic Outlook (total GDP PPP, constant international USD). Values show the average over the selected period for both variables.',
+    'c1-sources-tpl':        'Data: eloratings.net (Elo of national teams, year-end value) and IMF — World Economic Outlook (total GDP PPP, constant international USD). Values show the {period} average for both variables.',
 
     // Chart 2 — Footballing talent per million inhabitants
     'c2-title':              'Uruguay produces more famous footballers per capita than any country in the world',
@@ -275,8 +275,8 @@ const ISSUE_I18N = {
     'c5-search-placeholder': 'Search team…',
     'c5-axis-y-rank':        'World ranking position',
     'c5-axis-y-elo':         'Elo rating',
-    'c5-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo ratings of national teams, days-weighted annual average; 1901-2026). "Ranking position" is the eloratings.net world ranking. Confederations per current FIFA affiliation.',
-    'c5-sources-tpl':        'Data: eloratings.net (Elo rating of national teams, annual average).',
+    'c5-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo ratings of national teams, year-end value —December 31; 2026 as of June 6—; 1901-2026). "Ranking position" is the eloratings.net world ranking. Confederations per current FIFA affiliation.',
+    'c5-sources-tpl':        'Data: eloratings.net (Elo rating of national teams, year-end value).',
   }
 };
 
