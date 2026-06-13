@@ -255,6 +255,12 @@ function setLang(l){
   document.getElementById('b-en').classList.toggle('on',l==='en');
   document.documentElement.lang=l;
 }
+// Idioma directo por URL: ?lang=en (o #en) abre el paper en inglés; sin
+// parámetro queda en español (default). Útil para linkear desde Substack.
+(function(){
+  var q = (new URLSearchParams(location.search).get('lang') || location.hash.replace(/^#/,'')).toLowerCase();
+  if (q === 'en' || q === 'es') setLang(q);
+})();
 </script>
 </body>
 </html>
