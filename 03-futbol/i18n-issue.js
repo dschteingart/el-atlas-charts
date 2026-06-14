@@ -154,6 +154,12 @@ const ISSUE_I18N = {
     'c5-axis-y-elo':         'Puntaje Elo',
     'c5-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (rating Elo de selecciones nacionales, valor al cierre de cada año —al 31 de diciembre; 2026, al 6 de junio—; serie 1901-2026). La "posición en el ranking" es el ranking mundial de eloratings.net. Confederaciones según afiliación FIFA actual.',
     'c5-sources-tpl':        'Datos: eloratings.net (rating Elo de selecciones nacionales, valor al cierre de cada año).',
+
+    // Index del número (landing)
+    'index-see':             'Ver gráfico →',
+    'index-paper-kicker':    'Nota técnica',
+    'index-paper-title':     'La excepcionalidad futbolística sudamericana: antigüedad, monopolio del talento y un residuo persistente',
+    'index-paper-go':        'Leer la nota →',
   },
   en: {
     'issue-num':  'N° 3',
@@ -277,6 +283,12 @@ const ISSUE_I18N = {
     'c5-axis-y-elo':         'Elo rating',
     'c5-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo ratings of national teams, year-end value —December 31; 2026 as of June 6—; 1901-2026). "Ranking position" is the eloratings.net world ranking. Confederations per current FIFA affiliation.',
     'c5-sources-tpl':        'Data: eloratings.net (Elo rating of national teams, year-end value).',
+
+    // Issue index (landing)
+    'index-see':             'View chart →',
+    'index-paper-kicker':    'Technical note',
+    'index-paper-title':     'South American footballing exceptionalism: club age, talent monopoly and a persistent residual',
+    'index-paper-go':        'Read the note →',
   }
 };
 
