@@ -164,6 +164,7 @@ const ISSUE_I18N = {
     'index-mundiales-sub':   'Gráficos exploratorios sobre cómo cambiaron los mundialistas entre 1930 y 2026.',
     'index-c6-kicker':       'Nacimiento',
     'index-c7-kicker':       'Clubes',
+    'index-c8-kicker':       'Cunas',
 
     // Chart 6 — Natividad de los mundialistas (anexo: mundiales)
     'c6-title':              'Cada vez más mundialistas nacieron fuera del país que representan',
@@ -190,6 +191,21 @@ const ISSUE_I18N = {
     'c7-search-placeholder': 'Agregar país de liga…',
     'c7-sources':            'Datos: base de mundialistas <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> (1930-2022) + Wikidata/Transfermarkt para los clubes, y FC Maps para 2026. El club se asigna al país donde está radicado; los clubes del Reino Unido (mayormente la Premier League inglesa) se agrupan como Reino Unido. El salto 2022→2026 incluye la ampliación del Mundial a 48 selecciones.',
     'c7-sources-tpl':        'Datos: jfjelstul/worldcup + Wikidata/Transfermarkt (clubes) + FC Maps (2026). Clubes del Reino Unido agrupados.',
+
+    // Chart 8 — Lugares de nacimiento de los mundialistas (anexo: mundiales)
+    'c8-title':              'De dónde salen los mundialistas',
+    'c8-subtitle':           'Ciudad de nacimiento de los jugadores de cada Mundial.',
+    'c8-tab-map':            'Mapa',
+    'c8-tab-bars':           'Ranking',
+    'c8-year-label':         'Mundial',
+    'c8-year-all':           'Todos los Mundiales',
+    'c8-scope-all':          'Todos los Mundiales (1930-2026)',
+    'c8-scope-year':         'Mundial de',
+    'c8-legend-size':        'Jugadores nacidos ahí',
+    'c8-tip-all':            'jugadores (todos los Mundiales)',
+    'c8-tip-year':           'jugadores en el Mundial',
+    'c8-sources':            'Datos: base de mundialistas <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> (1930-2022) + FC Maps para 2026; lugar de nacimiento (ciudad y coordenadas) de Wikidata y Pantheon. "Todos los Mundiales" cuenta jugadores únicos; al elegir un Mundial se cuentan los jugadores de ese plantel.',
+    'c8-sources-tpl':        'Datos: jfjelstul/worldcup + FC Maps (2026); lugar de nacimiento de Wikidata/Pantheon.',
   },
   en: {
     'issue-num':  'N° 3',
@@ -323,6 +339,7 @@ const ISSUE_I18N = {
     'index-mundiales-sub':   'Exploratory charts on how World Cup squads changed between 1930 and 2026.',
     'index-c6-kicker':       'Birthplace',
     'index-c7-kicker':       'Clubs',
+    'index-c8-kicker':       'Birthplaces',
 
     // Chart 6 — World Cup players' nativity (annex: World Cups)
     'c6-title':              'More and more World Cup players were born outside the country they represent',
@@ -349,6 +366,21 @@ const ISSUE_I18N = {
     'c7-search-placeholder': 'Add a league country…',
     'c7-sources':            'Data: <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> squads (1930-2022) + Wikidata/Transfermarkt for clubs, and FC Maps for 2026. A club is assigned to the country where it is based; UK clubs (mostly the English Premier League) are grouped as the United Kingdom. The 2022→2026 jump also reflects the World Cup\'s expansion to 48 teams.',
     'c7-sources-tpl':        'Data: jfjelstul/worldcup + Wikidata/Transfermarkt (clubs) + FC Maps (2026). UK clubs grouped.',
+
+    // Chart 8 — Where World Cup players are born (annex: World Cups)
+    'c8-title':              'Where World Cup players come from',
+    'c8-subtitle':           'Birth city of each World Cup\'s players.',
+    'c8-tab-map':            'Map',
+    'c8-tab-bars':           'Ranking',
+    'c8-year-label':         'World Cup',
+    'c8-year-all':           'All World Cups',
+    'c8-scope-all':          'All World Cups (1930-2026)',
+    'c8-scope-year':         'World Cup',
+    'c8-legend-size':        'Players born there',
+    'c8-tip-all':            'players (all World Cups)',
+    'c8-tip-year':           'players at World Cup',
+    'c8-sources':            'Data: <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> squads (1930-2022) + FC Maps for 2026; birthplace (city and coordinates) from Wikidata and Pantheon. "All World Cups" counts unique players; picking a World Cup counts the players in that squad.',
+    'c8-sources-tpl':        'Data: jfjelstul/worldcup + FC Maps (2026); birthplaces from Wikidata/Pantheon.',
   }
 };
 

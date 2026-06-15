@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — De dónde salen los mundialistas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<link rel="stylesheet" href="./editor.css">
+<style>
+  .wrap-wide { max-width: 1100px; padding: 6px 20px 10px; }
+  .wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
+  .wrap-wide .chart-block { margin: 4px 0 2px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+  .wrap-wide .chart-subtitle { margin: 0 0 4px; font-size: 13.5px; line-height: 1.35; }
+  .chart-svg-wrap { margin-top: 2px; }
+  .footer { margin-top: 6px; }
+  .footer p { margin: 2px 0; }
+
+  .m-controls { display: flex; align-items: center; gap: 14px; margin: 6px 0 6px; flex-wrap: wrap; }
+  .m-ctrl-label { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+
+  /* Pestañas Mapa / Ranking (segmentado) */
+  .lg-mode { display: inline-flex; border: 1px solid var(--rule); border-radius: 15px; overflow: hidden; }
+  .lg-seg { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 14px; background: var(--bg); color: var(--ink-soft); border: none; cursor: pointer; white-space: nowrap; transition: background 0.12s ease, color 0.12s ease; }
+  .lg-seg + .lg-seg { border-left: 1px solid var(--rule); }
+  .lg-seg.lg-seg-on { background: var(--accent); color: #fff; }
+
+  /* Selector de año */
+  .bp-year-wrap { display: inline-flex; align-items: center; gap: 8px; }
+  .bp-select { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 8px; padding: 6px 30px 6px 11px; cursor: pointer; outline: none; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23999' stroke-width='1.6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+  .bp-select:focus { border-color: var(--accent); }
+
+  #chart8 { width: 100%; height: auto; display: block; background: var(--bg); }
+
+  .m-mobile-collapse { display: none; }
+  .m-mobile-collapse > summary { font-family: var(--sans); font-size: 11px; color: var(--accent); cursor: pointer; padding: 6px 0; list-style: none; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
+  .m-mobile-collapse > summary::before { content: '+ '; }
+  .m-mobile-collapse[open] > summary::before { content: '− '; }
+  .m-mobile-collapse > p { margin: 4px 0 8px; font-family: var(--sans); font-size: 11px; color: var(--ink-soft); line-height: 1.45; }
+  @media (max-width: 768px) {
+    .m-mobile-collapse { display: block; } .m-desktop-only { display: none; }
+    .wrap-wide .chart-title { font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 4px; }
+    .wrap-wide .chart-subtitle { font-size: 12px; color: var(--ink-muted); line-height: 1.4; margin: 0 0 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 3</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="8" data-editor-id="birthplace">
+    <h2 class="chart-title" data-i18n="c8-title">De dónde salen los mundialistas</h2>
+    <p class="chart-subtitle" data-i18n="c8-subtitle">Ciudad de nacimiento de los jugadores de cada Mundial.</p>
+
+    <div class="m-controls">
+      <div class="lg-mode" role="group" aria-label="Vista">
+        <button type="button" class="lg-seg lg-seg-on" id="bp-tab-map" aria-pressed="true" data-i18n="c8-tab-map">Mapa</button>
+        <button type="button" class="lg-seg" id="bp-tab-bars" aria-pressed="false" data-i18n="c8-tab-bars">Ranking</button>
+      </div>
+      <div class="bp-year-wrap">
+        <span class="m-ctrl-label" data-i18n="c8-year-label">Mundial</span>
+        <select id="bp-year" class="bp-select" aria-label="Mundial"></select>
+      </div>
+    </div>
+
+    <div class="chart-svg-wrap">
+      <svg id="chart8" viewBox="0 0 1100 600" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip8"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" data-chart="8-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="8" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources m-desktop-only" data-i18n="c8-sources">
+        Datos: base de mundialistas <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> (1930-2022) + FC Maps para 2026; lugar de nacimiento (ciudad y coordenadas) de Wikidata y Pantheon. "Todos los Mundiales" cuenta jugadores únicos; al elegir un Mundial se cuentan los jugadores de ese plantel.
+      </p>
+      <details class="m-mobile-collapse">
+        <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+        <p data-i18n="c8-sources">Datos: jfjelstul/worldcup + FC Maps (2026); lugar de nacimiento de Wikidata/Pantheon.</p>
+      </details>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
+
+<script src="../lib/regions.js?v=8"></script>
+<script src="../lib/i18n.js?v=8"></script>
+<script src="./regions-fifa.js?v=8"></script>
+<script src="./i18n-issue.js?v=8"></script>
+<script src="./utils.js?v=8"></script>
+<script src="./country-names.js?v=8"></script>
+<script src="./data-birthplace.js?v=8"></script>
+<script src="./data-country-geo.js?v=8"></script>
+<script src="./editor.js?v=8"></script>
+<script src="./birthplace.js?v=8"></script>
+<script src="./png-export.js?v=8"></script>
+<script src="./svg-export.js?v=8"></script>
+<script>
+  state[8] = { view: 'map', year: 'all' };
+  applyI18n();
+  initBirthplace();
+  setupLangToggle(() => {
+    if (typeof drawBirthplace === 'function') drawBirthplace();
+    if (typeof setupBirthplaceYear === 'function') setupBirthplaceYear();
+  });
+</script>
+</body>
+</html>
