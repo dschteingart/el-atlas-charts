@@ -497,18 +497,13 @@ function setupLigasCSV() {
 //  Init + PNG
 //==================================================================
 function setupLigasSlider() {
-  const fromEl = document.getElementById('lg-slider-from'), toEl = document.getElementById('lg-slider-to');
-  const dispEl = document.getElementById('lg-range-display'), trackEl = document.getElementById('lg-range-track-active');
-  if (!fromEl || !toEl || !dispEl) return;
-  const MINW = 8;
-  function disp() {
-    const [a, b] = state[7].period; dispEl.textContent = `${a}–${b}`;
-    if (trackEl) { const mn = +fromEl.min, mx = +fromEl.max, sp = mx - mn; if (sp > 0) { trackEl.style.left = ((a - mn) / sp * 100) + '%'; trackEl.style.right = ((mx - b) / sp * 100) + '%'; } }
-  }
-  function sync() { fromEl.value = state[7].period[0]; toEl.value = state[7].period[1]; }
-  fromEl.addEventListener('input', () => { let f = +fromEl.value, b = state[7].period[1]; if (f > b - MINW) f = b - MINW; state[7].period = [f, b]; sync(); disp(); drawLigas(); });
-  toEl.addEventListener('input', () => { let a = state[7].period[0], b = +toEl.value; if (b < a + MINW) b = a + MINW; state[7].period = [a, b]; sync(); disp(); drawLigas(); });
-  sync(); disp();
+  // Slider de rango que salta de Mundial en Mundial (sin años intermedios).
+  setupWcRangeSlider({
+    fromId: 'lg-slider-from', toId: 'lg-slider-to', dispId: 'lg-range-display', trackId: 'lg-range-track-active',
+    years: lg_years,
+    get: () => state[7].period, set: (p) => { state[7].period = p; },
+    onChange: () => drawLigas()
+  });
 }
 
 function initLigas() {

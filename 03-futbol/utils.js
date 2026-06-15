@@ -49,6 +49,30 @@ function isMobileViewport() {
   return window.matchMedia('(max-width: 768px)').matches;
 }
 
+// Slider de rango que SOLO permite años de Mundial (los thumbs "saltan" de
+// Mundial en Mundial; no caen en años intermedios como 1931 o 2015). Opera
+// internamente sobre índices del array `years` y mapea a años reales.
+//   o = { fromId, toId, dispId, trackId?, years, get(), set([y0,y1]), onChange() }
+// get() devuelve [y0,y1] (años); set recibe [y0,y1] (años).
+function setupWcRangeSlider(o) {
+  const fromEl = document.getElementById(o.fromId), toEl = document.getElementById(o.toId);
+  if (!fromEl || !toEl) return;
+  const dispEl = o.dispId ? document.getElementById(o.dispId) : null;
+  const trackEl = o.trackId ? document.getElementById(o.trackId) : null;
+  const ys = o.years, N = ys.length;
+  [fromEl, toEl].forEach(el => { el.min = 0; el.max = N - 1; el.step = 1; });
+  const idxOf = (yr) => { let bi = 0, bd = Infinity; for (let i = 0; i < N; i++) { const d = Math.abs(ys[i] - yr); if (d < bd) { bd = d; bi = i; } } return bi; };
+  function curIdx() { const p = o.get(); return [idxOf(p[0]), idxOf(p[1])]; }
+  function paint() {
+    const [a, b] = o.get(); if (dispEl) dispEl.textContent = `${a}–${b}`;
+    if (trackEl) { const sp = N - 1; if (sp > 0) { const [ia, ib] = curIdx(); trackEl.style.left = (ia / sp * 100) + '%'; trackEl.style.right = ((sp - ib) / sp * 100) + '%'; } }
+  }
+  function syncInputs() { const [ia, ib] = curIdx(); fromEl.value = ia; toEl.value = ib; }
+  fromEl.addEventListener('input', () => { let fi = +fromEl.value; const [, bi] = curIdx(); if (fi > bi) fi = bi; o.set([ys[fi], ys[bi]]); syncInputs(); paint(); if (o.onChange) o.onChange(); });
+  toEl.addEventListener('input', () => { let ti = +toEl.value; const [ai] = curIdx(); if (ti < ai) ti = ai; o.set([ys[ai], ys[ti]]); syncInputs(); paint(); if (o.onChange) o.onChange(); });
+  syncInputs(); paint();
+}
+
 // =============================================================
 // PNG_FORMATS — viewBoxes y canvas sizes por formato del editor
 // =============================================================

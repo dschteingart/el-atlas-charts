@@ -28,10 +28,27 @@
   .lg-seg + .lg-seg { border-left: 1px solid var(--rule); }
   .lg-seg.lg-seg-on { background: var(--accent); color: #fff; }
 
-  /* Selector de año */
-  .bp-year-wrap { display: inline-flex; align-items: center; gap: 8px; }
-  .bp-select { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 8px; padding: 6px 30px 6px 11px; cursor: pointer; outline: none; -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23999' stroke-width='1.6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
-  .bp-select:focus { border-color: var(--accent); }
+  /* Slider de rango (2 thumbs, salta de Mundial en Mundial) */
+  .s-range-block { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 260px; }
+  .s-range-slider { position: relative; flex: 1; height: 20px; min-width: 180px; }
+  .s-range-track { position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: var(--grid); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+  .s-range-track-active { position: absolute; top: 50%; height: 4px; background: var(--accent); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+  .s-range-slider input[type="range"] { position: absolute; top: 0; left: 0; width: 100%; height: 20px; margin: 0; -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; outline: none; }
+  .s-range-slider input[type="range"]::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .s-range-slider input[type="range"]::-moz-range-thumb { pointer-events: auto; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .s-range-slider input[type="range"]::-moz-range-track { background: transparent; border: none; }
+  .s-range-display { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--ink); min-width: 96px; font-variant-numeric: tabular-nums; text-align: right; }
+
+  /* Controles solo-mapa: toggle calor + reset zoom */
+  .bp-map-controls { display: inline-flex; align-items: center; gap: 8px; }
+  .lg-toggle { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 13px; border: 1px solid var(--rule); border-radius: 15px; background: var(--bg); color: var(--ink-soft); cursor: pointer; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease; }
+  .lg-toggle::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: #CF7B4E; opacity: 0.35; }
+  .lg-toggle:hover { border-color: var(--accent); }
+  .lg-toggle.lg-toggle-on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .lg-toggle.lg-toggle-on::before { opacity: 1; background: #fff; }
+  .bp-btn { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink-soft); cursor: pointer; white-space: nowrap; }
+  .bp-btn:hover { border-color: var(--accent); color: var(--ink); }
+  @media (max-width: 768px) { .s-range-block .m-ctrl-label { display: none; } .s-range-display { font-size: 13px; font-family: var(--sans); font-weight: 600; min-width: 70px; } }
 
   #chart8 { width: 100%; height: auto; display: block; background: var(--bg); }
 
@@ -70,9 +87,19 @@
         <button type="button" class="lg-seg lg-seg-on" id="bp-tab-map" aria-pressed="true" data-i18n="c8-tab-map">Mapa</button>
         <button type="button" class="lg-seg" id="bp-tab-bars" aria-pressed="false" data-i18n="c8-tab-bars">Ranking</button>
       </div>
-      <div class="bp-year-wrap">
-        <span class="m-ctrl-label" data-i18n="c8-year-label">Mundial</span>
-        <select id="bp-year" class="bp-select" aria-label="Mundial"></select>
+      <div class="s-range-block">
+        <span class="m-ctrl-label" data-i18n="c8-slider-label">Mundiales</span>
+        <div class="s-range-slider" id="bp-range-slider">
+          <div class="s-range-track"></div>
+          <div class="s-range-track-active" id="bp-range-track-active"></div>
+          <input type="range" id="bp-slider-from" min="0" max="22" value="0" step="1" aria-label="Desde">
+          <input type="range" id="bp-slider-to"   min="0" max="22" value="22" step="1" aria-label="Hasta">
+        </div>
+        <span class="s-range-display" id="bp-range-display">1930–2026</span>
+      </div>
+      <div id="bp-map-controls" class="bp-map-controls">
+        <button type="button" class="lg-toggle" id="bp-heat-toggle" aria-pressed="false" data-i18n="c8-heat-toggle">Mapa de calor</button>
+        <button type="button" class="bp-btn" id="bp-reset-zoom" data-i18n="c8-reset-zoom">Restablecer zoom</button>
       </div>
     </div>
 
@@ -104,18 +131,18 @@
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
 
-<script src="../lib/regions.js?v=8"></script>
-<script src="../lib/i18n.js?v=8"></script>
-<script src="./regions-fifa.js?v=8"></script>
-<script src="./i18n-issue.js?v=8"></script>
-<script src="./utils.js?v=8"></script>
-<script src="./country-names.js?v=8"></script>
-<script src="./data-birthplace.js?v=8"></script>
-<script src="./data-country-geo.js?v=8"></script>
-<script src="./editor.js?v=8"></script>
-<script src="./birthplace.js?v=8"></script>
-<script src="./png-export.js?v=8"></script>
-<script src="./svg-export.js?v=8"></script>
+<script src="../lib/regions.js?v=9"></script>
+<script src="../lib/i18n.js?v=9"></script>
+<script src="./regions-fifa.js?v=9"></script>
+<script src="./i18n-issue.js?v=9"></script>
+<script src="./utils.js?v=9"></script>
+<script src="./country-names.js?v=9"></script>
+<script src="./data-birthplace.js?v=9"></script>
+<script src="./data-country-geo.js?v=9"></script>
+<script src="./editor.js?v=9"></script>
+<script src="./birthplace.js?v=9"></script>
+<script src="./png-export.js?v=9"></script>
+<script src="./svg-export.js?v=9"></script>
 <script>
   state[8] = { view: 'map', year: 'all' };
   applyI18n();

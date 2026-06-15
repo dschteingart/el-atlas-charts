@@ -417,18 +417,13 @@ function setupNatividadCSV() {
 //==================================================================
 // Slider de período (dos thumbs). Min 1930, max 2026 (rango de Mundiales).
 function setupNatividadSlider() {
-  const fromEl = document.getElementById('nv-slider-from'), toEl = document.getElementById('nv-slider-to');
-  const dispEl = document.getElementById('nv-range-display'), trackEl = document.getElementById('nv-range-track-active');
-  if (!fromEl || !toEl || !dispEl) return;
-  const MINW = 8;
-  function disp() {
-    const [a, b] = state[6].period; dispEl.textContent = `${a}–${b}`;
-    if (trackEl) { const mn = +fromEl.min, mx = +fromEl.max, sp = mx - mn; if (sp > 0) { trackEl.style.left = ((a - mn) / sp * 100) + '%'; trackEl.style.right = ((mx - b) / sp * 100) + '%'; } }
-  }
-  function sync() { fromEl.value = state[6].period[0]; toEl.value = state[6].period[1]; }
-  fromEl.addEventListener('input', () => { let f = +fromEl.value, b = state[6].period[1]; if (f > b - MINW) f = b - MINW; state[6].period = [f, b]; sync(); disp(); drawNatividad(); });
-  toEl.addEventListener('input', () => { let a = state[6].period[0], b = +toEl.value; if (b < a + MINW) b = a + MINW; state[6].period = [a, b]; sync(); disp(); drawNatividad(); });
-  sync(); disp();
+  // Slider de rango que salta de Mundial en Mundial (sin años intermedios).
+  setupWcRangeSlider({
+    fromId: 'nv-slider-from', toId: 'nv-slider-to', dispId: 'nv-range-display', trackId: 'nv-range-track-active',
+    years: nv_years,
+    get: () => state[6].period, set: (p) => { state[6].period = p; },
+    onChange: () => drawNatividad()
+  });
 }
 
 function initNatividad() {
