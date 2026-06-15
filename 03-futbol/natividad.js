@@ -49,14 +49,19 @@ const nv_el = (t) => document.createElementNS(NV_NS, t);
 //==================================================================
 //  Data
 //==================================================================
-let nv_years = null, nv_avg = null, nv_byIso = null;
+let nv_years = null, nv_avg = null, nv_byIso = null, nv_teams = null;
+// Interim: GBR agrupa por error a Inglaterra/Escocia/Gales/Irlanda del Norte
+// (4 selecciones distintas del Mundial) en un solo "Gran Bretaña" → lo
+// excluimos del buscador hasta separar las home nations en el build.
+const NV_EXCLUDE = new Set(['GBR']);
 function nv_initData() {
   if (nv_avg) return;
-  if (typeof NATIVIDAD === 'undefined') { console.error('[natividad] NATIVIDAD no cargado'); nv_avg = []; nv_byIso = {}; nv_years = []; return; }
+  if (typeof NATIVIDAD === 'undefined') { console.error('[natividad] NATIVIDAD no cargado'); nv_avg = []; nv_byIso = {}; nv_years = []; nv_teams = []; return; }
   nv_years = NATIVIDAD.years.slice();
   nv_avg = NATIVIDAD.avg.slice();               // [[year, pctIn]]
+  nv_teams = NATIVIDAD.teams.filter(t => !NV_EXCLUDE.has(t.iso3));
   nv_byIso = {};
-  NATIVIDAD.teams.forEach(t => nv_byIso[t.iso3] = t);
+  nv_teams.forEach(t => nv_byIso[t.iso3] = t);
 }
 const NV_YEAR_MIN = 1930, NV_YEAR_MAX = 2026;
 
@@ -125,6 +130,10 @@ function drawNatividad() {
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
 
   const bigFmt = newsletter || square || mobilePng || mobile;
+  // Hover según CAPACIDAD del dispositivo (HAS_HOVER), no según el ancho del
+  // viewport: un desktop con ventana angosta cae en "mobile" pero igual tiene
+  // mouse → debe tener tooltip. Solo se omite en los formatos de export.
+  const isPngFormat = newsletter || square || mobilePng;
   const SIZES = bigFmt ? { tick: 22, axisTitle: 26, label: 26 } : { tick: 11, axisTitle: 11.5, label: 11.5 };
   const lineW = bigFmt ? 3.4 : 2, haloW = lineW + (bigFmt ? 5 : 3), labelHalo = bigFmt ? 6 : 3;
   const dotR = bigFmt ? 4.5 : 2.6;
@@ -145,8 +154,9 @@ function drawNatividad() {
   NV_MARGIN.right = Math.min(maxRight, Math.max(NV_MARGIN.right, neededRight));
   PLOT_W = NV_W - NV_MARGIN.left - NV_MARGIN.right;
 
-  // escalas: X = año (lineal), Y = % (0-100)
-  const y0 = NV_YEAR_MIN, y1 = NV_YEAR_MAX;
+  // escalas: X = año (lineal, según el slider de período), Y = % (0-100)
+  const period = (state[6] && state[6].period) || [NV_YEAR_MIN, NV_YEAR_MAX];
+  const y0 = period[0], y1 = period[1];
   const xS = (yr) => NV_MARGIN.left + ((yr - y0) / (y1 - y0)) * PLOT_W;
   const yS = (v) => NV_MARGIN.top + PLOT_H - (v / 100) * PLOT_H;
 
@@ -206,7 +216,7 @@ function drawNatividad() {
       if (opts.iso) c.setAttribute('data-nv', opts.iso); dotsG.appendChild(c);
     });
     // hit-area + hover (solo selecciones, desktop)
-    if (opts.iso && !bigFmt && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+    if (opts.iso && !isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
       const hit = nv_el('path'); hit.setAttribute('d', d); hit.setAttribute('fill', 'none');
       hit.setAttribute('stroke', 'transparent'); hit.setAttribute('stroke-width', Math.max(lineW + 8, 9));
       hit.style.cursor = 'pointer';
@@ -220,17 +230,24 @@ function drawNatividad() {
     if (last) endLabels.push({ iso: opts.iso, color, text: opts.label, x: xS(last[0]), idealY: yS(last[1]), ref: opts.ref });
   }
 
-  // --- promedio del Mundial ---
-  const avgOut = nv_avg.map(p => [p[0], +(100 - p[1]).toFixed(1)]);
+  // --- promedio del Mundial / selecciones (filtrado al período del slider) ---
+  const inP = (pts) => pts.filter(p => p[0] >= y0 && p[0] <= y1 && p[1] != null);
+  const avgIn = inP(nv_avg);
+  const avgOut = avgIn.map(p => [p[0], +(100 - p[1]).toFixed(1)]);
+  const hoverSeries = [];
   if (!hasSel) {
-    drawSeries(nv_avg, NV_COL_IN, { markers: true, label: tt('c6-label-in', 'Nacidos en el país') });
+    drawSeries(avgIn, NV_COL_IN, { markers: true, label: tt('c6-label-in', 'Nacidos en el país') });
     drawSeries(avgOut, NV_COL_OUT, { markers: true, label: tt('c6-label-out', 'Nacidos en otro país') });
+    hoverSeries.push({ label: tt('c6-label-in', 'Nacidos en el país'), color: NV_COL_IN, pts: avgIn });
+    hoverSeries.push({ label: tt('c6-label-out', 'Nacidos en otro país'), color: NV_COL_OUT, pts: avgOut });
   } else {
-    // referencia: promedio nacidos en el país (gris, sin marcadores)
-    drawSeries(nv_avg, NV_COL_REF, { ref: true, dash: true, label: tt('c6-label-avg', 'Promedio Mundial') });
+    drawSeries(avgIn, NV_COL_REF, { ref: true, dash: true, label: tt('c6-label-avg', 'Promedio mundial') });
+    hoverSeries.push({ label: tt('c6-label-avg', 'Promedio mundial'), color: NV_COL_REF, pts: avgIn });
     selected.forEach(iso => {
       const tm = nv_byIso[iso];
-      drawSeries(tm.pts.map(p => [p[0], p[1]]), nv_getColor(iso), { markers: true, iso, label: nv_displayName(iso, tm.name) });
+      const pts = inP(tm.pts.map(p => [p[0], p[1]]));
+      drawSeries(pts, nv_getColor(iso), { markers: true, iso, label: nv_displayName(iso, tm.name) });
+      hoverSeries.push({ label: nv_displayName(iso, tm.name), color: nv_getColor(iso), pts });
     });
   }
 
@@ -258,7 +275,48 @@ function drawNatividad() {
     txt.textContent = l.text; endG.appendChild(txt);
   });
 
+  // Hover: vline + markers + tooltip (snap al Mundial más cercano). Solo desktop.
+  if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER) && hoverSeries.length)
+    nv_setupHover(svg, { y0, y1, xS, yS, series: hoverSeries });
+
   nv_applyHeadings(hasSel, aeCfg);
+}
+
+function nv_setupHover(svg, ctx) {
+  const { y0, y1, xS, yS, series } = ctx;
+  const tooltip = document.getElementById('tooltip6');
+  const wcYears = nv_years.filter(y => y >= y0 && y <= y1);
+  const plotBottom = NV_MARGIN.top + (NV_H - NV_MARGIN.top - NV_MARGIN.bottom);
+  const hoverG = nv_el('g'); hoverG.setAttribute('display', 'none'); svg.appendChild(hoverG);
+  const vline = nv_el('line'); vline.setAttribute('stroke', '#9a9488'); vline.setAttribute('stroke-width', 1);
+  vline.setAttribute('stroke-dasharray', '3 3'); vline.setAttribute('y1', NV_MARGIN.top); vline.setAttribute('y2', plotBottom);
+  hoverG.appendChild(vline);
+  const cap = nv_el('rect'); cap.setAttribute('x', NV_MARGIN.left); cap.setAttribute('y', NV_MARGIN.top);
+  cap.setAttribute('width', NV_W - NV_MARGIN.left - NV_MARGIN.right); cap.setAttribute('height', NV_H - NV_MARGIN.top - NV_MARGIN.bottom);
+  cap.setAttribute('fill', 'transparent'); svg.insertBefore(cap, svg.firstChild);
+  function nearest(px) { let best = wcYears[0], bd = Infinity; wcYears.forEach(y => { const d = Math.abs(xS(y) - px); if (d < bd) { bd = d; best = y; } }); return best; }
+  function update(year) {
+    if (year == null) { hoverG.setAttribute('display', 'none'); if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; } return; }
+    hoverG.setAttribute('display', ''); while (hoverG.children.length > 1) hoverG.removeChild(hoverG.lastChild);
+    const xAt = xS(year); vline.setAttribute('x1', xAt); vline.setAttribute('x2', xAt);
+    const rows = [];
+    series.forEach(s => { const p = s.pts.find(q => q[0] === year); if (!p || p[1] == null) return;
+      const c = nv_el('circle'); c.setAttribute('cx', xAt); c.setAttribute('cy', yS(p[1])); c.setAttribute('r', 4);
+      c.setAttribute('fill', s.color); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', 1.5); hoverG.appendChild(c);
+      rows.push({ label: s.label, color: s.color, v: p[1] }); });
+    if (tooltip && rows.length) { rows.sort((a, b) => b.v - a.v);
+      let html = `<div style="font-weight:600;margin-bottom:4px;">${year}</div>`;
+      rows.forEach(r => { html += `<div style="display:flex;align-items:center;gap:6px;line-height:1.5;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${r.color};"></span><span style="flex:1;">${r.label}</span><strong style="font-variant-numeric:tabular-nums;">${r.v}%</strong></div>`; });
+      tooltip.innerHTML = html; tooltip.style.display = 'block'; tooltip.style.opacity = '1';
+    }
+  }
+  svg.addEventListener('mousemove', (ev) => {
+    const rc = svg.getBoundingClientRect(); const sc = rc.width / NV_W; const lx = (ev.clientX - rc.left) / sc;
+    if (lx < NV_MARGIN.left || lx > NV_W - NV_MARGIN.right) { update(null); return; }
+    update(nearest(lx));
+    if (tooltip) { tooltip.style.left = (ev.clientX - rc.left + 14) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; }
+  });
+  svg.addEventListener('mouseleave', () => update(null));
 }
 
 // Énfasis al hover sobre una línea (atenúa el resto).
@@ -302,7 +360,7 @@ function setupNatividadSearch() {
   const input = document.getElementById('nv-search'), results = document.getElementById('nv-search-results');
   if (!input || !results) return;
   let matches = [], active = -1;
-  const all = () => NATIVIDAD.teams.map(t => ({ iso3: t.iso3, name: nv_displayName(t.iso3, t.name) })).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  const all = () => nv_teams.map(t => ({ iso3: t.iso3, name: nv_displayName(t.iso3, t.name) })).sort((a, b) => a.name.localeCompare(b.name, 'es'));
   function get(q) { if (!q) return []; const qn = nv_norm(q); return all().filter(c => nv_norm(c.name).includes(qn)).slice(0, 8); }
   function render(a) {
     if (!matches.length) { results.innerHTML = ''; results.classList.remove('open'); return; }
@@ -342,11 +400,29 @@ function setupNatividadCSV() {
 //==================================================================
 //  Init + PNG
 //==================================================================
+// Slider de período (dos thumbs). Min 1930, max 2026 (rango de Mundiales).
+function setupNatividadSlider() {
+  const fromEl = document.getElementById('nv-slider-from'), toEl = document.getElementById('nv-slider-to');
+  const dispEl = document.getElementById('nv-range-display'), trackEl = document.getElementById('nv-range-track-active');
+  if (!fromEl || !toEl || !dispEl) return;
+  const MINW = 8;
+  function disp() {
+    const [a, b] = state[6].period; dispEl.textContent = `${a}–${b}`;
+    if (trackEl) { const mn = +fromEl.min, mx = +fromEl.max, sp = mx - mn; if (sp > 0) { trackEl.style.left = ((a - mn) / sp * 100) + '%'; trackEl.style.right = ((mx - b) / sp * 100) + '%'; } }
+  }
+  function sync() { fromEl.value = state[6].period[0]; toEl.value = state[6].period[1]; }
+  fromEl.addEventListener('input', () => { let f = +fromEl.value, b = state[6].period[1]; if (f > b - MINW) f = b - MINW; state[6].period = [f, b]; sync(); disp(); drawNatividad(); });
+  toEl.addEventListener('input', () => { let a = state[6].period[0], b = +toEl.value; if (b < a + MINW) b = a + MINW; state[6].period = [a, b]; sync(); disp(); drawNatividad(); });
+  sync(); disp();
+}
+
 function initNatividad() {
   nv_initData();
   if (!state[6]) state[6] = {};
+  if (!state[6].period) state[6].period = [NV_YEAR_MIN, NV_YEAR_MAX];
   if (!(state[6].selectedCountries instanceof Map)) state[6].selectedCountries = new Map();
   drawNatividad();
+  setupNatividadSlider();
   setupNatividadSearch();
   setupNatividadCSV();
   nv_renderChips();
