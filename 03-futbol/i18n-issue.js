@@ -160,6 +160,17 @@ const ISSUE_I18N = {
     'index-paper-kicker':    'Nota técnica',
     'index-paper-title':     'La excepcionalidad futbolística sudamericana: antigüedad, monopolio del talento y un residuo persistente',
     'index-paper-go':        'Leer la nota →',
+
+    // Chart 6 — Natividad de los mundialistas (anexo: mundiales)
+    'c6-title':              'La selección nacional, cada vez menos nacional',
+    'c6-subtitle':           'Porcentaje de jugadores de cada Mundial nacidos en el país que representan.',
+    'c6-axis-y':             '% de jugadores nacidos en el país',
+    'c6-label-in':           'Nacidos en el país',
+    'c6-label-out':          'Nacidos en otro país',
+    'c6-label-avg':          'Promedio Mundial',
+    'c6-search-placeholder': 'Agregar selección…',
+    'c6-sources':            'Datos: base de mundialistas <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> (1930-2022), Pantheon y Wikidata para el lugar de nacimiento, y FC Maps para 2026. Un jugador cuenta como "nacido en el país" si su lugar de nacimiento coincide con la selección que representa.',
+    'c6-sources-tpl':        'Datos: base jfjelstul/worldcup + Pantheon/Wikidata (lugar de nacimiento) + FC Maps (2026).',
   },
   en: {
     'issue-num':  'N° 3',
@@ -289,6 +300,17 @@ const ISSUE_I18N = {
     'index-paper-kicker':    'Technical note',
     'index-paper-title':     'South American footballing exceptionalism: club age, talent monopoly and a persistent residual',
     'index-paper-go':        'Read the note →',
+
+    // Chart 6 — World Cup players' nativity (annex: World Cups)
+    'c6-title':              'National teams are less and less national',
+    'c6-subtitle':           'Share of each World Cup\'s players born in the country they represent.',
+    'c6-axis-y':             '% of players born in their country',
+    'c6-label-in':           'Born in the country',
+    'c6-label-out':          'Born abroad',
+    'c6-label-avg':          'World Cup average',
+    'c6-search-placeholder': 'Add a team…',
+    'c6-sources':            'Data: <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> database (1930-2022), Pantheon and Wikidata for birthplaces, and FC Maps for 2026. A player counts as "born in the country" if their birthplace matches the team they represent.',
+    'c6-sources-tpl':        'Data: jfjelstul/worldcup + Pantheon/Wikidata (birthplaces) + FC Maps (2026).',
   }
 };
 
