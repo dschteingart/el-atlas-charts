@@ -62,25 +62,31 @@ for r in csv.DictReader(open(SRC/"mundialistas_birthcountry.csv", encoding="utf-
 
 years = sorted({y for (y, c) in agg})
 avg = [[y, round(100*avgagg[(y,0)][0]/avgagg[(y,0)][1], 1)] for y in years if avgagg[(y,0)][1]]
-# 2026 (wc2026: excluye GBR del por-equipo; cuenta en el promedio)
-def truthy(x): return str(x).strip() in ("1","1.0","True","true")
-wc26 = list(csv.DictReader(open(SRC/"wc2026_birthcountry.csv", encoding="utf-8-sig")))
-a26 = [sum(1 for r in wc26 if truthy(r["born_in_country"])), len(wc26)]
+# 2026 desde wc2026_fcmaps (per-jugador; home nations separadas ENG/SCO;
+# nacimiento ya a nivel nación). Códigos ISO3 salvo ALG (->DZA).
+FIX26 = {"ALG": "DZA"}
+fx = lambda c: FIX26.get(c, c)
+fc26 = list(csv.DictReader(open(SRC/"wc2026_fcmaps.csv", encoding="utf-8-sig")))
+a26 = [0, 0]                            # [born, with_country]
+t26 = defaultdict(lambda: [0, 0, 0])    # team -> [born, with_country, total]
+for r in fc26:
+    team = fx(r["country_iso3"]); bi = fx((r["birth_country_iso3"] or "").strip())
+    has = bi != ""
+    born = has and (bi == team)
+    t26[team][2] += 1
+    if has: t26[team][1] += 1; a26[1] += 1
+    if born: t26[team][0] += 1; a26[0] += 1
 if a26[1]: avg.append([2026, round(100*a26[0]/a26[1], 1)]); years.append(2026)
-t26 = defaultdict(lambda: [0,0])
-for r in wc26:
-    if r["team_iso3"] == "GBR": continue
-    t26[r["team_iso3"]][0]+= 1 if truthy(r["born_in_country"]) else 0; t26[r["team_iso3"]][1]+=1
 
 teams = {}
 for (y, c), (born, withc, tot) in agg.items():
     if withc == 0: continue
     teams.setdefault(c, {"iso3": c, "name": NAME_ES.get(c, teams_en.get(c, c)), "en": teams_en.get(c, c), "pts": []})
     teams[c]["pts"].append([y, round(100*born/withc, 1), tot])
-for iso, (b, n) in t26.items():
-    if n == 0: continue
+for iso, (b, withc, tot) in t26.items():
+    if withc == 0: continue
     teams.setdefault(iso, {"iso3": iso, "name": NAME_ES.get(iso, iso), "en": iso, "pts": []})
-    teams[iso]["pts"].append([2026, round(100*b/n, 1), n])
+    teams[iso]["pts"].append([2026, round(100*b/withc, 1), tot])
 out_teams = [teams[c] for c in sorted(teams)]
 for t in out_teams: t["pts"].sort()
 years = sorted(set(years))
