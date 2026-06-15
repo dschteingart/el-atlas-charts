@@ -179,10 +179,13 @@ const ISSUE_I18N = {
 
     // Chart 7 — Ligas de destino de los mundialistas (anexo: mundiales)
     'c7-title':              'Dónde juegan su fútbol de clubes los mundialistas',
-    'c7-subtitle':           'Porcentaje de jugadores de cada Mundial según el país donde está radicado su club. Las cinco grandes ligas europeas vienen seleccionadas por defecto.',
+    'c7-subtitle':           'Porcentaje de jugadores de cada Mundial según el país donde está radicado su club.',
     'c7-axis-y':             '% de mundialistas (según país del club)',
     'c7-label-europa':       'En Europa (total)',
     'c7-europa-toggle':      'En Europa (total)',
+    'c7-mode-line':          'Líneas',
+    'c7-mode-stack':         'Área apilada',
+    'c7-label-otros':        'Otras ligas',
     'c7-slider-period-label':'Mundiales',
     'c7-search-placeholder': 'Agregar país de liga…',
     'c7-sources':            'Datos: base de mundialistas <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> (1930-2022) + Wikidata/Transfermarkt para los clubes, y FC Maps para 2026. El club se asigna al país donde está radicado; los clubes del Reino Unido (mayormente la Premier League inglesa) se agrupan como Reino Unido. El salto 2022→2026 incluye la ampliación del Mundial a 48 selecciones.',
@@ -335,10 +338,13 @@ const ISSUE_I18N = {
 
     // Chart 7 — Where World Cup players play their club football (annex: World Cups)
     'c7-title':              'Where the World Cup players play their club football',
-    'c7-subtitle':           'Share of each World Cup\'s players by the country where their club is based. Europe\'s five big leagues are selected by default.',
+    'c7-subtitle':           'Share of each World Cup\'s players by the country where their club is based.',
     'c7-axis-y':             '% of World Cup players (by club country)',
     'c7-label-europa':       'In Europe (total)',
     'c7-europa-toggle':      'In Europe (total)',
+    'c7-mode-line':          'Lines',
+    'c7-mode-stack':         'Stacked area',
+    'c7-label-otros':        'Other leagues',
     'c7-slider-period-label':'World Cups',
     'c7-search-placeholder': 'Add a league country…',
     'c7-sources':            'Data: <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> squads (1930-2022) + Wikidata/Transfermarkt for clubs, and FC Maps for 2026. A club is assigned to the country where it is based; UK clubs (mostly the English Premier League) are grouped as the United Kingdom. The 2022→2026 jump also reflects the World Cup\'s expansion to 48 teams.',

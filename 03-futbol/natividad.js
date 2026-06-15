@@ -34,10 +34,10 @@ const NV_MARGIN_DESKTOP = { top: 30, right: 150, bottom: 52, left: 64 };
 const NV_MARGIN_MOBILE  = { top: 64, right: 168, bottom: 150, left: 96 };
 function nv_getMargins(format) {
   switch (format) {
-    case 'public':     return { top: 40, right: 168, bottom: 92,  left: 72 };
-    case 'newsletter': return { top: 44, right: 184, bottom: 96,  left: 88 };
-    case 'square':     return { top: 44, right: 184, bottom: 74,  left: 88 };
-    case 'mobile':     return { top: 64, right: 176, bottom: 150, left: 100 };
+    case 'public':     return { top: 40, right: 168, bottom: 92,  left: 78 };
+    case 'newsletter': return { top: 44, right: 184, bottom: 96,  left: 112 };
+    case 'square':     return { top: 44, right: 184, bottom: 74,  left: 112 };
+    case 'mobile':     return { top: 64, right: 176, bottom: 150, left: 116 };
     default:           return { ...NV_MARGIN_DESKTOP };
   }
 }
@@ -96,16 +96,25 @@ function nv_toggle(iso3) {
   nv_renderChips(); drawNatividad();
 }
 
-// Ticks del eje X: primer y último Mundial + redondos intermedios (igual regla
-// que el chart 5).
-function nv_xTicks(y0, y1) {
-  const span = y1 - y0;
-  let step = span <= 18 ? 5 : span <= 55 ? 10 : 20;
-  const minGap = step * 0.4, ticks = [y0];
-  for (let y = Math.ceil(y0 / step) * step; y < y1; y += step)
-    if (y - y0 >= minGap && y1 - y >= minGap) ticks.push(y);
-  ticks.push(y1);
-  return ticks;
+// Ticks del eje X: SOLO años de Mundial (así coinciden con los datos y no caen
+// en años sin Mundial, p. ej. los 40s). Se muestran todos los que entren sin
+// encimarse: en desktop entran prácticamente todos (~cada 4 años); en formatos
+// grandes / mobile se ralean por separación mínima en píxeles.
+function nv_xTicks(y0, y1, plotW, minGapPx) {
+  const ys = (nv_years || []).filter(y => y >= y0 && y <= y1);
+  if (!ys.length) return [];
+  const xOf = (y) => ((y - y0) / (y1 - y0)) * plotW;
+  const out = [ys[0]]; let lastX = xOf(ys[0]);
+  for (let i = 1; i < ys.length - 1; i++) {
+    const x = xOf(ys[i]);
+    if (x - lastX >= minGapPx) { out.push(ys[i]); lastX = x; }
+  }
+  const last = ys[ys.length - 1];
+  if (out[out.length - 1] !== last) {
+    if (out.length > 1 && xOf(last) - lastX < minGapPx) out.pop();
+    out.push(last);
+  }
+  return out;
 }
 
 //==================================================================
@@ -151,7 +160,8 @@ function drawNatividad() {
   let maxLabelW = 0;
   const endNames = hasSel ? selected.map(iso => nv_displayName(iso, nv_byIso[iso].name))
                           : [tt('c6-label-in', 'Nacidos en el país'), tt('c6-label-out', 'Nacidos en otro país')];
-  endNames.forEach(nm => { const w = nv_measureText(nm, SIZES.label, bigFmt ? 700 : 600); if (w > maxLabelW) maxLabelW = w; });
+  // En PNG (sin tooltip) las etiquetas llevan el % del último año → reservar ancho.
+  endNames.forEach(nm => { const w = nv_measureText(nm + (isPngFormat ? '  100%' : ''), SIZES.label, bigFmt ? 700 : 600); if (w > maxLabelW) maxLabelW = w; });
   const neededRight = labelOffset + maxLabelW + (bigFmt ? 16 : 8);
   const maxRight = Math.round(NV_W * 0.42);
   NV_MARGIN.right = Math.min(maxRight, Math.max(NV_MARGIN.right, neededRight));
@@ -163,8 +173,8 @@ function drawNatividad() {
   const xS = (yr) => NV_MARGIN.left + ((yr - y0) / (y1 - y0)) * PLOT_W;
   const yS = (v) => NV_MARGIN.top + PLOT_H - (v / 100) * PLOT_H;
 
-  // grid + eje X
-  nv_xTicks(y0, y1).forEach(yr => {
+  // grid + eje X (solo años de Mundial)
+  nv_xTicks(y0, y1, PLOT_W, bigFmt ? 92 : 30).forEach(yr => {
     const x = xS(yr);
     const gl = nv_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x);
     gl.setAttribute('y1', NV_MARGIN.top); gl.setAttribute('y2', NV_MARGIN.top + PLOT_H);
@@ -184,7 +194,7 @@ function drawNatividad() {
   });
   // título eje Y
   const yT = nv_el('text'); yT.setAttribute('class', 's-axis-title'); yT.setAttribute('text-anchor', 'middle');
-  yT.setAttribute('transform', `translate(${NV_MARGIN.left - (mobile || mobilePng ? 60 : bigFmt ? 52 : 44)}, ${NV_MARGIN.top + PLOT_H / 2}) rotate(-90)`);
+  yT.setAttribute('transform', `translate(${NV_MARGIN.left - (mobile || mobilePng ? 84 : bigFmt ? 78 : 44)}, ${NV_MARGIN.top + PLOT_H / 2}) rotate(-90)`);
   yT.style.fontSize = SIZES.axisTitle + 'px'; yT.textContent = tt('c6-axis-y', '% de jugadores nacidos en el país'); svg.appendChild(yT);
 
   // builder: pts = [[year, pct], ...]
@@ -230,7 +240,7 @@ function drawNatividad() {
     }
     // etiqueta de fin
     const last = pts.filter(p => p[1] != null).slice(-1)[0];
-    if (last) endLabels.push({ iso: opts.iso, color, text: opts.label, x: xS(last[0]), idealY: yS(last[1]), ref: opts.ref });
+    if (last) endLabels.push({ iso: opts.iso, color, text: opts.label, x: xS(last[0]), idealY: yS(last[1]), ref: opts.ref, valLast: last[1] });
   }
 
   // --- promedio del Mundial / selecciones (filtrado al período del slider) ---
@@ -275,7 +285,9 @@ function drawNatividad() {
     txt.style.fontSize = (l.ref ? SIZES.label * 0.85 : SIZES.label) + 'px'; txt.style.fontFamily = 'var(--sans)';
     txt.setAttribute('paint-order', 'stroke'); txt.setAttribute('stroke', '#FAF8F3'); txt.setAttribute('stroke-width', labelHalo); txt.setAttribute('stroke-linejoin', 'round');
     if (l.iso) txt.setAttribute('data-nv', l.iso);
-    txt.textContent = l.text; endG.appendChild(txt);
+    // En PNG la etiqueta incluye el % del último año (no hay tooltip).
+    const valTxt = (isPngFormat && l.valLast != null && !l.ref) ? '  ' + Math.round(l.valLast) + '%' : '';
+    txt.textContent = l.text + valTxt; endG.appendChild(txt);
   });
 
   // Hover: vline + markers + tooltip (snap al Mundial más cercano). Solo desktop.

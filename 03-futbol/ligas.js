@@ -27,6 +27,8 @@ const LG_PALETTE_EXT = [
 function lg_colorForSlot(slot) { return LG_PALETTE_EXT[slot % LG_PALETTE_EXT.length]; }
 
 const LG_COL_EUR = '#6E6A62';      // agregado "en Europa (total)" — gris cálido
+const LG_COL_OTH = '#CFC9BC';      // banda "otras ligas / resto" en modo apilado
+const LG_COL_OTH_TXT = '#8A8170';  // etiqueta de esa banda (más oscura, legible)
 const LG_BIG5 = ['GBR', 'ESP', 'ITA', 'DEU', 'FRA'];
 const LG_EUR = '_EUR';             // iso sentinela para la serie agregada
 
@@ -36,10 +38,10 @@ const LG_MARGIN_DESKTOP = { top: 30, right: 150, bottom: 52, left: 64 };
 const LG_MARGIN_MOBILE  = { top: 64, right: 168, bottom: 150, left: 96 };
 function lg_getMargins(format) {
   switch (format) {
-    case 'public':     return { top: 40, right: 168, bottom: 92,  left: 72 };
-    case 'newsletter': return { top: 44, right: 184, bottom: 96,  left: 88 };
-    case 'square':     return { top: 44, right: 184, bottom: 74,  left: 88 };
-    case 'mobile':     return { top: 64, right: 176, bottom: 150, left: 100 };
+    case 'public':     return { top: 40, right: 168, bottom: 92,  left: 78 };
+    case 'newsletter': return { top: 44, right: 184, bottom: 96,  left: 112 };
+    case 'square':     return { top: 44, right: 184, bottom: 74,  left: 112 };
+    case 'mobile':     return { top: 64, right: 176, bottom: 150, left: 116 };
     default:           return { ...LG_MARGIN_DESKTOP };
   }
 }
@@ -96,15 +98,24 @@ function lg_toggle(iso3) {
   lg_renderChips(); drawLigas();
 }
 
-// Ticks del eje X: primer y último Mundial + redondos intermedios.
-function lg_xTicks(y0, y1) {
-  const span = y1 - y0;
-  let step = span <= 18 ? 5 : span <= 55 ? 10 : 20;
-  const minGap = step * 0.4, ticks = [y0];
-  for (let y = Math.ceil(y0 / step) * step; y < y1; y += step)
-    if (y - y0 >= minGap && y1 - y >= minGap) ticks.push(y);
-  ticks.push(y1);
-  return ticks;
+// Ticks del eje X: SOLO años de Mundial (coinciden con los datos; no caen en
+// años sin Mundial como los 40s). Se densifican hasta donde entren sin
+// encimarse: desktop ~cada 4 años; formatos grandes / mobile se ralean.
+function lg_xTicks(y0, y1, plotW, minGapPx) {
+  const ys = (lg_years || []).filter(y => y >= y0 && y <= y1);
+  if (!ys.length) return [];
+  const xOf = (y) => ((y - y0) / (y1 - y0)) * plotW;
+  const out = [ys[0]]; let lastX = xOf(ys[0]);
+  for (let i = 1; i < ys.length - 1; i++) {
+    const x = xOf(ys[i]);
+    if (x - lastX >= minGapPx) { out.push(ys[i]); lastX = x; }
+  }
+  const last = ys[ys.length - 1];
+  if (out[out.length - 1] !== last) {
+    if (out.length > 1 && xOf(last) - lastX < minGapPx) out.pop();
+    out.push(last);
+  }
+  return out;
 }
 // Escala Y "linda" según el máximo visible (las ligas rondan 0-20%).
 function lg_niceScale(maxVal) {
@@ -148,7 +159,8 @@ function drawLigas() {
 
   const sel = lg_selMap();
   const selected = Array.from(sel.keys()).filter(iso => lg_byIso[iso]);
-  const showEur = !!(state[7] && state[7].showEuropa);
+  const stackMode = !!(state[7] && state[7].mode === 'stack');
+  const showEur = !stackMode && !!(state[7] && state[7].showEuropa);
   const tt = (k, fb) => ((typeof t === 'function' ? t(k) : '') || fb);
 
   // período (slider)
@@ -156,18 +168,27 @@ function drawLigas() {
   const y0 = period[0], y1 = period[1];
   const inP = (pts) => pts.filter(p => p[0] >= y0 && p[0] <= y1 && p[1] != null);
 
-  // --- máximo visible -> escala Y autoajustada -------------------------------
-  let maxVal = 0;
-  selected.forEach(iso => inP(lg_byIso[iso].pts).forEach(p => { if (p[1] > maxVal) maxVal = p[1]; }));
-  if (showEur) inP(lg_europa).forEach(p => { if (p[1] > maxVal) maxVal = p[1]; });
-  const yScale = lg_niceScale(Math.max(maxVal, 1));
+  // --- escala Y --------------------------------------------------------------
+  // Modo apilado: parte-sobre-el-todo (0-100%). Modo líneas: autoajustada (las
+  // ligas individuales rondan 0-20%, un 0-100 fijo las aplastaría).
+  let yScale;
+  if (stackMode) {
+    yScale = { max: 100, ticks: [0, 20, 40, 60, 80, 100] };
+  } else {
+    let maxVal = 0;
+    selected.forEach(iso => inP(lg_byIso[iso].pts).forEach(p => { if (p[1] > maxVal) maxVal = p[1]; }));
+    if (showEur) inP(lg_europa).forEach(p => { if (p[1] > maxVal) maxVal = p[1]; });
+    yScale = lg_niceScale(Math.max(maxVal, 1));
+  }
 
-  // margen derecho dinámico para las etiquetas de fin de línea
+  // margen derecho dinámico para las etiquetas de fin de línea/banda
   const labelOffset = bigFmt ? 12 : 6;
   let maxLabelW = 0;
   const endNames = selected.map(iso => lg_displayName(iso, lg_byIso[iso].name));
-  if (showEur) endNames.push(lg_displayName(LG_EUR));
-  endNames.forEach(nm => { const w = lg_measureText(nm, SIZES.label, bigFmt ? 700 : 600); if (w > maxLabelW) maxLabelW = w; });
+  if (stackMode) endNames.push(tt('c7-label-otros', 'Otras ligas'));
+  else if (showEur) endNames.push(lg_displayName(LG_EUR));
+  const endSuffix = isPngFormat ? '  100%' : '';   // en PNG las etiquetas llevan %
+  endNames.forEach(nm => { const w = lg_measureText(nm + endSuffix, SIZES.label, bigFmt ? 700 : 600); if (w > maxLabelW) maxLabelW = w; });
   const neededRight = labelOffset + maxLabelW + (bigFmt ? 16 : 8);
   const maxRight = Math.round(LG_W * 0.42);
   LG_MARGIN.right = Math.min(maxRight, Math.max(LG_MARGIN.right, neededRight));
@@ -177,8 +198,8 @@ function drawLigas() {
   const xS = (yr) => LG_MARGIN.left + ((yr - y0) / (y1 - y0)) * PLOT_W;
   const yS = (v) => LG_MARGIN.top + PLOT_H - (v / yScale.max) * PLOT_H;
 
-  // grid + eje X
-  lg_xTicks(y0, y1).forEach(yr => {
+  // grid + eje X (solo años de Mundial)
+  lg_xTicks(y0, y1, PLOT_W, bigFmt ? 92 : 30).forEach(yr => {
     const x = xS(yr);
     const gl = lg_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x);
     gl.setAttribute('y1', LG_MARGIN.top); gl.setAttribute('y2', LG_MARGIN.top + PLOT_H);
@@ -198,7 +219,7 @@ function drawLigas() {
   });
   // título eje Y
   const yT = lg_el('text'); yT.setAttribute('class', 's-axis-title'); yT.setAttribute('text-anchor', 'middle');
-  yT.setAttribute('transform', `translate(${LG_MARGIN.left - (mobile || mobilePng ? 60 : bigFmt ? 52 : 44)}, ${LG_MARGIN.top + PLOT_H / 2}) rotate(-90)`);
+  yT.setAttribute('transform', `translate(${LG_MARGIN.left - (mobile || mobilePng ? 84 : bigFmt ? 78 : 44)}, ${LG_MARGIN.top + PLOT_H / 2}) rotate(-90)`);
   yT.style.fontSize = SIZES.axisTitle + 'px'; yT.textContent = tt('c7-axis-y', '% de mundialistas (según país del club)'); svg.appendChild(yT);
 
   // builder
@@ -241,22 +262,57 @@ function drawLigas() {
       hitG.appendChild(hit);
     }
     const last = pts.filter(p => p[1] != null).slice(-1)[0];
-    if (last) endLabels.push({ iso: opts.iso, color, text: opts.label, x: xS(last[0]), idealY: yS(last[1]), ref: opts.ref });
+    if (last) endLabels.push({ iso: opts.iso, color, text: opts.label, x: xS(last[0]), idealY: yS(last[1]), ref: opts.ref, valLast: last[1] });
   }
 
   const hoverSeries = [];
-  // ligas seleccionadas
-  selected.forEach(iso => {
-    const tm = lg_byIso[iso];
-    const pts = inP(tm.pts.map(p => [p[0], p[1]]));
-    drawSeries(pts, lg_getColor(iso), { markers: true, iso, label: lg_displayName(iso, tm.name) });
-    hoverSeries.push({ label: lg_displayName(iso, tm.name), color: lg_getColor(iso), pts });
-  });
-  // agregado Europa (toggle)
-  if (showEur) {
-    const ep = inP(lg_europa);
-    drawSeries(ep, LG_COL_EUR, { markers: true, ref: true, iso: LG_EUR, label: lg_displayName(LG_EUR) });
-    hoverSeries.push({ label: lg_displayName(LG_EUR), color: LG_COL_EUR, pts: ep });
+  if (stackMode) {
+    // --- modo ÁREA APILADA: ligas seleccionadas (abajo) + "otras ligas" arriba
+    //     hasta 100% (parte-sobre-el-todo). -------------------------------------
+    const yrs = lg_years.filter(y => y >= y0 && y <= y1);
+    const valOf = (iso, yr) => { const p = lg_byIso[iso].pts.find(q => q[0] === yr); return p ? p[1] : 0; };
+    const bands = selected.map(iso => ({ iso, color: lg_getColor(iso), name: lg_displayName(iso, lg_byIso[iso].name), get: (yr) => valOf(iso, yr) }));
+    bands.push({ iso: '_OTH', color: LG_COL_OTH, name: tt('c7-label-otros', 'Otras ligas'),
+      get: (yr) => { let s = 0; selected.forEach(iso => s += valOf(iso, yr)); return Math.max(0, +(100 - s).toFixed(1)); } });
+    const areasG = lg_el('g'); svg.insertBefore(areasG, halosG);   // áreas sobre la grilla
+    const lower = yrs.map(() => 0);
+    bands.forEach(b => {
+      const upper = yrs.map((yr, i) => lower[i] + b.get(yr));
+      let d = 'M' + yrs.map((yr, i) => xS(yr).toFixed(1) + ',' + yS(upper[i]).toFixed(1)).join(' L');
+      for (let i = yrs.length - 1; i >= 0; i--) d += ' L' + xS(yrs[i]).toFixed(1) + ',' + yS(lower[i]).toFixed(1);
+      d += ' Z';
+      const area = lg_el('path'); area.setAttribute('d', d); area.setAttribute('fill', b.color);
+      area.setAttribute('fill-opacity', b.iso === '_OTH' ? 0.5 : 0.9);
+      area.setAttribute('stroke', '#FAF8F3'); area.setAttribute('stroke-width', bigFmt ? 1.6 : 1); area.setAttribute('stroke-linejoin', 'round');
+      if (b.iso !== '_OTH') {
+        area.setAttribute('data-lg', b.iso); area.classList.add('lg-colored'); area.setAttribute('data-base-w', bigFmt ? 1.6 : 1);
+        if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+          area.style.cursor = 'pointer';
+          area.addEventListener('mouseenter', () => lg_emph(b.iso));
+          area.addEventListener('mouseleave', () => lg_emph(null));
+          area.addEventListener('click', (ev) => { ev.stopPropagation(); lg_toggle(b.iso); });
+        }
+      }
+      areasG.appendChild(area);
+      const li = yrs.length - 1, mid = (upper[li] + lower[li]) / 2;
+      endLabels.push({ iso: b.iso === '_OTH' ? null : b.iso, color: b.iso === '_OTH' ? LG_COL_OTH_TXT : b.color, text: b.name, x: xS(yrs[li]), idealY: yS(mid), valLast: b.get(yrs[li]) });
+      // hover: punto en el tope acumulado, muestra el share propio
+      hoverSeries.push({ label: b.name, color: b.iso === '_OTH' ? LG_COL_OTH_TXT : b.color, pts: yrs.map((yr, i) => [yr, upper[i], b.get(yr)]) });
+      yrs.forEach((yr, i) => { lower[i] = upper[i]; });
+    });
+  } else {
+    // --- modo LÍNEAS -----------------------------------------------------------
+    selected.forEach(iso => {
+      const tm = lg_byIso[iso];
+      const pts = inP(tm.pts.map(p => [p[0], p[1]]));
+      drawSeries(pts, lg_getColor(iso), { markers: true, iso, label: lg_displayName(iso, tm.name) });
+      hoverSeries.push({ label: lg_displayName(iso, tm.name), color: lg_getColor(iso), pts });
+    });
+    if (showEur) {
+      const ep = inP(lg_europa);
+      drawSeries(ep, LG_COL_EUR, { markers: true, ref: true, iso: LG_EUR, label: lg_displayName(LG_EUR) });
+      hoverSeries.push({ label: lg_displayName(LG_EUR), color: LG_COL_EUR, pts: ep });
+    }
   }
 
   // etiquetas de fin (anti-colisión vertical)
@@ -280,7 +336,9 @@ function drawLigas() {
     txt.style.fontSize = (l.ref ? SIZES.label * 0.9 : SIZES.label) + 'px'; txt.style.fontFamily = 'var(--sans)';
     txt.setAttribute('paint-order', 'stroke'); txt.setAttribute('stroke', '#FAF8F3'); txt.setAttribute('stroke-width', labelHalo); txt.setAttribute('stroke-linejoin', 'round');
     if (l.iso) txt.setAttribute('data-lg', l.iso);
-    txt.textContent = l.text; endG.appendChild(txt);
+    // En PNG la etiqueta incluye el % del último año (no hay tooltip).
+    const valTxt = (isPngFormat && l.valLast != null && !l.ref) ? '  ' + Math.round(l.valLast) + '%' : '';
+    txt.textContent = l.text + valTxt; endG.appendChild(txt);
   });
 
   // Hover (solo dispositivos con mouse; nunca en export PNG)
@@ -311,7 +369,8 @@ function lg_setupHover(svg, ctx) {
     series.forEach(s => { const p = s.pts.find(q => q[0] === year); if (!p || p[1] == null) return;
       const c = lg_el('circle'); c.setAttribute('cx', xAt); c.setAttribute('cy', yS(p[1])); c.setAttribute('r', 4);
       c.setAttribute('fill', s.color); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', 1.5); hoverG.appendChild(c);
-      rows.push({ label: s.label, color: s.color, v: p[1] }); });
+      // p[2] = valor a mostrar (share propio en modo apilado); por defecto p[1].
+      rows.push({ label: s.label, color: s.color, v: (p[2] != null ? p[2] : p[1]) }); });
     if (tooltip && rows.length) { rows.sort((a, b) => b.v - a.v);
       let html = `<div style="font-weight:600;margin-bottom:4px;">${year}</div>`;
       rows.forEach(r => { html += `<div style="display:flex;align-items:center;gap:6px;line-height:1.5;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${r.color};"></span><span style="flex:1;">${r.label}</span><strong style="font-variant-numeric:tabular-nums;">${r.v}%</strong></div>`; });
@@ -392,8 +451,27 @@ function setupLigasEuropaToggle() {
     const on = !!state[7].showEuropa;
     btn.classList.toggle('lg-toggle-on', on);
     btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    // El agregado "en Europa" no aplica en modo apilado → ocultar el toggle ahí.
+    btn.style.display = (state[7].mode === 'stack') ? 'none' : '';
   }
   btn.addEventListener('click', () => { state[7].showEuropa = !state[7].showEuropa; sync(); drawLigas(); });
+  sync();
+}
+// Toggle líneas ↔ área apilada.
+function setupLigasModeToggle() {
+  const lineBtn = document.getElementById('lg-mode-line'), stackBtn = document.getElementById('lg-mode-stack');
+  if (!lineBtn || !stackBtn) return;
+  const eurBtn = document.getElementById('lg-europa-toggle');
+  function sync() {
+    const stack = state[7].mode === 'stack';
+    lineBtn.classList.toggle('lg-seg-on', !stack);
+    stackBtn.classList.toggle('lg-seg-on', stack);
+    lineBtn.setAttribute('aria-pressed', !stack ? 'true' : 'false');
+    stackBtn.setAttribute('aria-pressed', stack ? 'true' : 'false');
+    if (eurBtn) eurBtn.style.display = stack ? 'none' : '';
+  }
+  lineBtn.addEventListener('click', () => { if (state[7].mode !== 'line') { state[7].mode = 'line'; sync(); drawLigas(); } });
+  stackBtn.addEventListener('click', () => { if (state[7].mode !== 'stack') { state[7].mode = 'stack'; sync(); drawLigas(); } });
   sync();
 }
 
@@ -438,6 +516,7 @@ function initLigas() {
   if (!state[7]) state[7] = {};
   if (!state[7].period) state[7].period = [LG_YEAR_MIN, LG_YEAR_MAX];
   if (state[7].showEuropa == null) state[7].showEuropa = false;
+  if (!state[7].mode) state[7].mode = 'line';
   if (!(state[7].selectedCountries instanceof Map)) {
     const init = state[7].selectedCountries;
     state[7].selectedCountries = new Map(init || []);
@@ -446,6 +525,7 @@ function initLigas() {
   drawLigas();
   setupLigasSlider();
   setupLigasSearch();
+  setupLigasModeToggle();
   setupLigasEuropaToggle();
   setupLigasCSV();
   lg_renderChips();
