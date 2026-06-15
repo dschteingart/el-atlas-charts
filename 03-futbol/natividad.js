@@ -50,10 +50,9 @@ const nv_el = (t) => document.createElementNS(NV_NS, t);
 //  Data
 //==================================================================
 let nv_years = null, nv_avg = null, nv_byIso = null, nv_teams = null;
-// Interim: GBR agrupa por error a Inglaterra/Escocia/Gales/Irlanda del Norte
-// (4 selecciones distintas del Mundial) en un solo "Gran Bretaña" → lo
-// excluimos del buscador hasta separar las home nations en el build.
-const NV_EXCLUDE = new Set(['GBR']);
+// Las home nations (ENG/SCO/WAL/NIR) ya vienen separadas del dato (build v3),
+// así que no se excluye nada. (GBR ya no existe como equipo.)
+const NV_EXCLUDE = new Set();
 function nv_initData() {
   if (nv_avg) return;
   if (typeof NATIVIDAD === 'undefined') { console.error('[natividad] NATIVIDAD no cargado'); nv_avg = []; nv_byIso = {}; nv_years = []; nv_teams = []; return; }
@@ -73,6 +72,10 @@ function nv_displayName(iso3, fallback) {
   if (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[iso3]) {
     return COUNTRY_NAMES[iso3][lang] || COUNTRY_NAMES[iso3].en || fallback || iso3;
   }
+  // Códigos que COUNTRY_NAMES no cubre (home nations ENG/SCO/WAL/NIR, estados
+  // disueltos YUG/SUN/CSK/SCG/DDR): el dato trae name (es) + en (inglés).
+  const tm = (typeof nv_byIso !== 'undefined' && nv_byIso) ? nv_byIso[iso3] : null;
+  if (tm) return (lang === 'en' && tm.en) ? tm.en : (tm.name || fallback || iso3);
   return fallback || iso3;
 }
 function nv_isMobile() { return (typeof isMobileViewport === 'function') ? isMobileViewport() : false; }
