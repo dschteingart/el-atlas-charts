@@ -134,20 +134,20 @@
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
 
-<script src="../lib/regions.js?v=11"></script>
-<script src="../lib/i18n.js?v=11"></script>
-<script src="./regions-fifa.js?v=11"></script>
-<script src="./i18n-issue.js?v=11"></script>
-<script src="./utils.js?v=11"></script>
-<script src="./country-names.js?v=11"></script>
-<script src="./data-birthplace.js?v=11"></script>
-<script src="./data-country-geo.js?v=11"></script>
-<script src="./editor.js?v=11"></script>
-<script src="./birthplace.js?v=11"></script>
-<script src="./png-export.js?v=11"></script>
-<script src="./svg-export.js?v=11"></script>
+<script src="../lib/regions.js?v=13"></script>
+<script src="../lib/i18n.js?v=13"></script>
+<script src="./regions-fifa.js?v=13"></script>
+<script src="./i18n-issue.js?v=13"></script>
+<script src="./utils.js?v=13"></script>
+<script src="./country-names.js?v=13"></script>
+<script src="./data-birthplace.js?v=13"></script>
+<script src="./data-country-geo-lite.js?v=13"></script>
+<script src="./editor.js?v=13"></script>
+<script src="./birthplace.js?v=13"></script>
+<script src="./png-export.js?v=13"></script>
+<script src="./svg-export.js?v=13"></script>
 <script>
-  state[8] = { view: 'map', year: 'all' };
+  state[8] = { view: 'map', period: [1930, 2026], heat: false };
   applyI18n();
   initBirthplace();
   setupLangToggle(() => {

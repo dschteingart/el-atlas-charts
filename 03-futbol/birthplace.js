@@ -80,8 +80,11 @@ function bp_period() { return (state[8] && state[8].period) || [BIRTH.years[0], 
 function bp_isHeat() { return !!(state[8] && state[8].heat); }
 function bp_loadGeo() {
   if (bp_geo) return;
-  if (typeof GEO_COUNTRIES === 'undefined') { console.error('[birthplace] GEO_COUNTRIES no cargado'); return; }
-  bp_geo = GEO_COUNTRIES;
+  // backdrop liviano (simplificado) para que el mapa renderice rápido; fallback
+  // al geo completo si no estuviera.
+  if (typeof GEO_COUNTRIES_LITE !== 'undefined') { bp_geo = GEO_COUNTRIES_LITE; return; }
+  if (typeof GEO_COUNTRIES !== 'undefined') { bp_geo = GEO_COUNTRIES; return; }
+  console.error('[birthplace] geometría no cargada');
 }
 function bp_idxOf(year) { const ys = BIRTH.years; let bi = 0, bd = Infinity; for (let i = 0; i < ys.length; i++) { const d = Math.abs(ys[i] - year); if (d < bd) { bd = d; bi = i; } } return bi; }
 
@@ -103,6 +106,34 @@ function bp_points(period) {
   counts.forEach((n, ci) => { pts.push({ ci, c: BIRTH.cities[ci], n }); });
   pts.sort((x, y) => x.n - y.n);
   return pts;
+}
+
+// Hexbin propio (sin depender del CDN d3-hexbin). Bina puntos en una grilla
+// hexagonal de radio r; cada bin trae .x/.y (centro) y los puntos que cayeron.
+function bp_makeHexbin(r) {
+  const thirdPi = Math.PI / 3, dx = r * 2 * Math.sin(thirdPi), dy = r * 1.5;
+  function bin(points, xacc, yacc) {
+    const byId = new Map(), bins = [];
+    for (let i = 0; i < points.length; i++) {
+      const pt = points[i]; let px = xacc(pt) / dx, py = yacc(pt) / dy;
+      if (!isFinite(px) || !isFinite(py)) continue;
+      let pj = Math.round(py); px -= (pj & 1) ? 0.5 : 0; let pi = Math.round(px);
+      const py1 = py - pj;
+      if (Math.abs(py1) * 3 > 1) {
+        const px1 = px - pi, pi2 = pi + (px < pi ? -1 : 1) / 2, pj2 = pj + (py < pj ? -1 : 1), px2 = px - pi2, py2 = py - pj2;
+        if (px1 * px1 + py1 * py1 > px2 * px2 + py2 * py2) { pi = pi2 + ((pj & 1) ? 1 : -1) / 2; pj = pj2; }
+      }
+      const id = pi + ',' + pj; let b = byId.get(id);
+      if (!b) { b = []; b.x = (pi + ((pj & 1) ? 0.5 : 0)) * dx; b.y = pj * dy; byId.set(id, b); bins.push(b); }
+      b.push(pt);
+    }
+    return bins;
+  }
+  bin.hexagon = function () {
+    const pts = []; for (let i = 0; i < 6; i++) { const a = thirdPi * i; pts.push((Math.sin(a) * r).toFixed(2) + ',' + (-Math.cos(a) * r).toFixed(2)); }
+    return 'M' + pts.join('L') + 'Z';
+  };
+  return bin;
 }
 
 //==================================================================
@@ -186,21 +217,29 @@ function bp_renderData(transform) {
   if (!bp_gData || !bp_vpts) return;
   bp_gData.selectAll('*').remove();
   const t = transform || d3.zoomIdentity, k = t.k, pad = 40;
-  const maxDots = bp_isPng ? bp_vpts.length : Math.min(bp_vpts.length, Math.round(BP_BASE_DOTS * k));
-  const vis = [];
-  for (let i = 0; i < maxDots; i++) {
-    const p = bp_vpts[i], sx = t.applyX(p.x), sy = t.applyY(p.y);
-    if (sx < -pad || sx > bp_PW + pad || sy < -pad || sy > bp_PH + pad) continue;
-    vis.push({ d: p, sx, sy });
-  }
+  const inView = (sx, sy) => sx >= -pad && sx <= bp_PW + pad && sy >= -pad && sy <= bp_PH + pad;
+
   if (bp_isHeat()) {
-    const dens = d3.contourDensity().x(o => o.sx).y(o => o.sy).weight(o => o.d.n)
-      .size([bp_PW, bp_PH]).bandwidth(bp_bigFmt ? 26 : 18).thresholds(18)(vis);
-    const maxV = d3.max(dens, o => o.value) || 1;
-    const color = d3.scaleSequential(d3.interpolateRgbBasis(BP_HEAT_RAMP)).domain([0, maxV]);
-    bp_gData.append('g').attr('class', 'bp-heat').selectAll('path').data(dens).join('path')
-      .attr('d', d3.geoPath()).attr('fill', o => color(o.value)).attr('fill-opacity', 0.78).attr('stroke', 'none');
+    // HEXBIN: bina TODOS los puntos visibles en hexágonos → grilla fina y nítida
+    // (sin "manchón" del KDE), y se re-grilla con el zoom (más detalle al acercar).
+    // El binning es O(n): barato aun con miles de puntos.
+    const vis = [];
+    for (let i = 0; i < bp_vpts.length; i++) { const p = bp_vpts[i], sx = t.applyX(p.x), sy = t.applyY(p.y); if (inView(sx, sy)) vis.push({ x: sx, y: sy, n: p.n }); }
+    const R = bp_bigFmt ? 15 : 10;
+    const hb = bp_makeHexbin(R);
+    const bins = hb(vis, o => o.x, o => o.y);
+    for (let i = 0; i < bins.length; i++) { let v = 0; for (let j = 0; j < bins[i].length; j++) v += bins[i][j].n; bins[i]._v = v; }
+    const maxV = d3.max(bins, b => b._v) || 1;
+    // escala de color sqrt: los clusters chicos no desaparecen al lado de Europa
+    const color = d3.scaleSequentialSqrt(d3.interpolateRgbBasis(BP_HEAT_RAMP)).domain([0, maxV]);
+    const hex = hb.hexagon();
+    bp_gData.append('g').attr('class', 'bp-heat').selectAll('path').data(bins).join('path')
+      .attr('transform', b => `translate(${b.x.toFixed(1)},${b.y.toFixed(1)})`)
+      .attr('d', hex).attr('fill', b => color(b._v)).attr('stroke', 'none');
   } else {
+    const maxDots = bp_isPng ? bp_vpts.length : Math.min(bp_vpts.length, Math.round(BP_BASE_DOTS * k));
+    const vis = [];
+    for (let i = 0; i < maxDots; i++) { const p = bp_vpts[i], sx = t.applyX(p.x), sy = t.applyY(p.y); if (inView(sx, sy)) vis.push({ d: p, sx, sy }); }
     const draw = vis.slice().reverse();   // dibujar las grandes al final (arriba)
     const gDots = bp_gData.append('g').attr('class', 'bp-dots');
     gDots.selectAll('circle').data(draw).join('circle')
