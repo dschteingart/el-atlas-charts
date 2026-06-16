@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — De dónde salen los mundialistas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<link rel="stylesheet" href="./editor.css">
+<style>
+  .wrap-wide { max-width: 1100px; padding: 6px 20px 10px; }
+  .wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
+  .wrap-wide .chart-block { margin: 4px 0 2px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+  .wrap-wide .chart-subtitle { margin: 0 0 4px; font-size: 13.5px; line-height: 1.35; }
+  .chart-svg-wrap { margin-top: 2px; }
+  .footer { margin-top: 6px; }
+  .footer p { margin: 2px 0; }
+
+  .m-controls { display: flex; align-items: center; gap: 14px; margin: 6px 0 6px; flex-wrap: wrap; }
+  .m-ctrl-label { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+
+  /* Pestañas Mapa / Ranking (segmentado) */
+  .lg-mode { display: inline-flex; border: 1px solid var(--rule); border-radius: 15px; overflow: hidden; }
+  .lg-seg { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 14px; background: var(--bg); color: var(--ink-soft); border: none; cursor: pointer; white-space: nowrap; transition: background 0.12s ease, color 0.12s ease; }
+  .lg-seg + .lg-seg { border-left: 1px solid var(--rule); }
+  .lg-seg.lg-seg-on { background: var(--accent); color: #fff; }
+
+  /* Slider de rango (2 thumbs, salta de Mundial en Mundial) */
+  .s-range-block { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 260px; }
+  .s-range-slider { position: relative; flex: 1; height: 20px; min-width: 180px; }
+  .s-range-track { position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: var(--grid); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+  .s-range-track-active { position: absolute; top: 50%; height: 4px; background: var(--accent); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+  .s-range-slider input[type="range"] { position: absolute; top: 0; left: 0; width: 100%; height: 20px; margin: 0; -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; outline: none; }
+  .s-range-slider input[type="range"]::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .s-range-slider input[type="range"]::-moz-range-thumb { pointer-events: auto; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .s-range-slider input[type="range"]::-moz-range-track { background: transparent; border: none; }
+  .s-range-display { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--ink); min-width: 96px; font-variant-numeric: tabular-nums; text-align: right; }
+
+  /* Controles solo-mapa: toggle calor + reset zoom */
+  .bp-map-controls { display: inline-flex; align-items: center; gap: 8px; }
+  .lg-toggle { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 13px; border: 1px solid var(--rule); border-radius: 15px; background: var(--bg); color: var(--ink-soft); cursor: pointer; display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease; }
+  .lg-toggle::before { content: ''; width: 10px; height: 10px; border-radius: 50%; background: #CF7B4E; opacity: 0.35; }
+  .lg-toggle:hover { border-color: var(--accent); }
+  .lg-toggle.lg-toggle-on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .lg-toggle.lg-toggle-on::before { opacity: 1; background: #fff; }
+  .bp-btn { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink-soft); cursor: pointer; white-space: nowrap; }
+  .bp-btn:hover { border-color: var(--accent); color: var(--ink); }
+  @media (max-width: 768px) { .s-range-block .m-ctrl-label { display: none; } .s-range-display { font-size: 13px; font-family: var(--sans); font-weight: 600; min-width: 70px; } }
+
+  #chart8 { width: 100%; height: auto; display: block; background: var(--bg); }
+  /* En desktop, que el gráfico nunca exceda el alto de pantalla (evita scroll en
+     el ranking). El SVG se reescala con preserveAspectRatio dentro del tope. */
+  @media (min-width: 769px) { #chart8 { max-height: calc(100vh - 230px); } }
+
+  .m-mobile-collapse { display: none; }
+  .m-mobile-collapse > summary { font-family: var(--sans); font-size: 11px; color: var(--accent); cursor: pointer; padding: 6px 0; list-style: none; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
+  .m-mobile-collapse > summary::before { content: '+ '; }
+  .m-mobile-collapse[open] > summary::before { content: '− '; }
+  .m-mobile-collapse > p { margin: 4px 0 8px; font-family: var(--sans); font-size: 11px; color: var(--ink-soft); line-height: 1.45; }
+  @media (max-width: 768px) {
+    .m-mobile-collapse { display: block; } .m-desktop-only { display: none; }
+    .wrap-wide .chart-title { font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 4px; }
+    .wrap-wide .chart-subtitle { font-size: 12px; color: var(--ink-muted); line-height: 1.4; margin: 0 0 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 3</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="8" data-editor-id="birthplace">
+    <h2 class="chart-title" data-i18n="c8-title">De dónde salen los mundialistas</h2>
+    <p class="chart-subtitle" data-i18n="c8-subtitle">Ciudad de nacimiento de los jugadores de cada Mundial.</p>
+
+    <div class="m-controls">
+      <div class="lg-mode" role="group" aria-label="Vista">
+        <button type="button" class="lg-seg lg-seg-on" id="bp-tab-map" aria-pressed="true" data-i18n="c8-tab-map">Mapa</button>
+        <button type="button" class="lg-seg" id="bp-tab-bars" aria-pressed="false" data-i18n="c8-tab-bars">Ranking</button>
+      </div>
+      <div class="s-range-block">
+        <span class="m-ctrl-label" data-i18n="c8-slider-label">Mundiales</span>
+        <div class="s-range-slider" id="bp-range-slider">
+          <div class="s-range-track"></div>
+          <div class="s-range-track-active" id="bp-range-track-active"></div>
+          <input type="range" id="bp-slider-from" min="0" max="22" value="0" step="1" aria-label="Desde">
+          <input type="range" id="bp-slider-to"   min="0" max="22" value="22" step="1" aria-label="Hasta">
+        </div>
+        <span class="s-range-display" id="bp-range-display">1930–2026</span>
+      </div>
+      <div id="bp-map-controls" class="bp-map-controls">
+        <button type="button" class="lg-toggle" id="bp-heat-toggle" aria-pressed="false" data-i18n="c8-heat-toggle">Mapa de calor</button>
+        <button type="button" class="bp-btn" id="bp-reset-zoom" data-i18n="c8-reset-zoom">Restablecer zoom</button>
+      </div>
+    </div>
+
+    <div class="chart-svg-wrap">
+      <svg id="chart8" viewBox="0 0 1100 600" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip8"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" data-chart="8-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="8" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources m-desktop-only" data-i18n="c8-sources">
+        Datos: base de mundialistas <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> (1930-2022) + FC Maps para 2026; lugar de nacimiento (ciudad y coordenadas) de Wikidata y Pantheon. "Todos los Mundiales" cuenta jugadores únicos; al elegir un Mundial se cuentan los jugadores de ese plantel.
+      </p>
+      <details class="m-mobile-collapse">
+        <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+        <p data-i18n="c8-sources">Datos: jfjelstul/worldcup + FC Maps (2026); lugar de nacimiento de Wikidata/Pantheon.</p>
+      </details>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
+
+<script src="../lib/regions.js?v=20"></script>
+<script src="../lib/i18n.js?v=20"></script>
+<script src="./regions-fifa.js?v=20"></script>
+<script src="./i18n-issue.js?v=20"></script>
+<script src="./utils.js?v=20"></script>
+<script src="./country-names.js?v=20"></script>
+<script src="./data-birthplace.js?v=20"></script>
+<script src="./data-country-geo-lite.js?v=20"></script>
+<script src="./editor.js?v=20"></script>
+<script src="./birthplace.js?v=20"></script>
+<script src="./png-export.js?v=20"></script>
+<script src="./svg-export.js?v=20"></script>
+<script>
+  state[8] = { view: 'map', period: [1930, 2026], heat: false, heatStyle: 'hexsmall' };
+  applyI18n();
+  initBirthplace();
+  setupLangToggle(() => {
+    if (typeof drawBirthplace === 'function') drawBirthplace();
+    if (typeof setupBirthplaceYear === 'function') setupBirthplaceYear();
+  });
+</script>
+</body>
+</html>

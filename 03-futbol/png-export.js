@@ -819,6 +819,20 @@
       y += legendH;
     }
 
+    // En formato del editor, si el SVG no llenó todo el alto disponible (típico
+    // en mapas apaisados), el bloque fuente/firma queda equidistante entre el
+    // borde inferior del gráfico y el del PNG (centrado en el espacio sobrante),
+    // en vez de pegado al gráfico con un hueco muerto abajo.
+    if (format && PNG_FORMATS[format] && sourceText) {
+      const gap = (showLegend ? gapAfterLegend : gapAfterSvg);
+      // El bloque se dibuja centrado en sourcesCenterY = footerTop + sourceH/2.
+      // Para que quede equidistante, ese centro debe caer en el punto medio real
+      // entre el borde inferior del gráfico (y) y el del PNG (H) → footerTop =
+      // (y + H)/2 - sourceH/2. (Sin restar padBottom: eso lo sesgaba hacia arriba.)
+      const centeredTop = y + (H - y - sourceH) / 2;
+      y = Math.max(y, centeredTop - gap);
+    }
+
     if (sourceText) {
       y += (showLegend ? gapAfterLegend : gapAfterSvg);
       ctx.fillStyle = PALETTE.inkSoft;
