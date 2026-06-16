@@ -36,6 +36,15 @@ const BP_CITY_ES = {
 };
 
 let bp_geo = null, bp_projection = null, bp_path = null, bp_zoom = null, bp_zoomT = null;
+let bp_dotsSel = null, bp_baseStroke = 0.8, bp_rafPending = false;
+
+// Redibujo coalescido por frame: el slider dispara muchos 'input' por segundo;
+// sin esto, cada uno reconstruye el mapa entero (lento al arrastrar).
+function bp_scheduleDraw() {
+  if (bp_rafPending) return;
+  bp_rafPending = true;
+  requestAnimationFrame(() => { bp_rafPending = false; drawBirthplace(); });
+}
 
 function bp_dims(fmt, mobile, view) {
   if (fmt && typeof PNG_FORMATS !== 'undefined' && PNG_FORMATS[fmt]) {
@@ -43,7 +52,7 @@ function bp_dims(fmt, mobile, view) {
     return { W: f.vbW, H: view === 'bars' ? Math.max(f.vbH, 760) : f.vbH };
   }
   if (mobile) return { W: 1100, H: view === 'bars' ? 1180 : 720 };
-  return { W: 1100, H: view === 'bars' ? 600 : 600 };
+  return { W: 1100, H: view === 'bars' ? 500 : 600 };
 }
 
 const BP_NS = 'http://www.w3.org/2000/svg';
@@ -133,58 +142,62 @@ function bp_drawMapView(svg, W, H, opt) {
   bp_path = d3.geoPath(bp_projection);
 
   const root = svg.append('g').attr('transform', `translate(${M},${M})`);
-  // clip para que el zoom no derrame fuera del viewBox
   svg.append('defs').append('clipPath').attr('id', 'bp-clip').append('rect')
     .attr('x', -M).attr('y', -M).attr('width', W).attr('height', H);
   root.attr('clip-path', 'url(#bp-clip)');
   const gZoom = root.append('g');   // capa zoomable (base + datos)
 
-  // backdrop países
+  // backdrop países (stroke que NO se engrosa al hacer zoom)
   gZoom.append('g').attr('class', 'bp-land').selectAll('path').data(bp_geo.features).join('path')
-    .attr('d', bp_path).attr('fill', BP_LAND).attr('stroke', BP_LAND_STROKE).attr('stroke-width', 0.5);
+    .attr('d', bp_path).attr('fill', BP_LAND).attr('stroke', BP_LAND_STROKE)
+    .attr('stroke-width', 0.5).attr('vector-effect', 'non-scaling-stroke');
 
+  // proyectar CADA ciudad una sola vez (antes se proyectaba 2x por punto → lento)
   const pts = bp_points(period);
-  const maxN = d3.max(pts, d => d.n) || 1;
+  for (let i = 0; i < pts.length; i++) { const p = bp_projection([pts[i].c.lon, pts[i].c.lat]); pts[i].x = p ? p[0] : null; pts[i].y = p ? p[1] : null; }
+  const vpts = pts.filter(p => p.x != null);
+  const maxN = d3.max(vpts, d => d.n) || 1;
+  bp_dotsSel = null;
 
   if (heat) {
-    // mapa de calor: densidad ponderada por nº de jugadores
-    const xy = d => { const p = bp_projection([d.c.lon, d.c.lat]); return p || [-9999, -9999]; };
-    const dens = d3.contourDensity().x(d => xy(d)[0]).y(d => xy(d)[1])
-      .weight(d => d.n).size([PW, PH]).bandwidth(bigFmt ? 26 : 18).thresholds(18)(pts);
+    const dens = d3.contourDensity().x(d => d.x).y(d => d.y)
+      .weight(d => d.n).size([PW, PH]).bandwidth(bigFmt ? 26 : 18).thresholds(18)(vpts);
     const maxV = d3.max(dens, d => d.value) || 1;
     const color = d3.scaleSequential(d3.interpolateRgbBasis(BP_HEAT_RAMP)).domain([0, maxV]);
     gZoom.append('g').attr('class', 'bp-heat').selectAll('path').data(dens).join('path')
-      .attr('d', d3.geoPath()).attr('fill', d => color(d.value)).attr('fill-opacity', 0.78)
-      .attr('stroke', 'none');
+      .attr('d', d3.geoPath()).attr('fill', d => color(d.value)).attr('fill-opacity', 0.78).attr('stroke', 'none');
   } else {
-    // burbujas: borde definido + relleno translúcido → las solapadas se ven
     const maxR = bigFmt ? 32 : 19;
     const rScale = d3.scaleSqrt().domain([0, maxN]).range([0, maxR]);
-    gZoom.append('g').attr('class', 'bp-dots').selectAll('circle').data(pts).join('circle')
-      .attr('cx', d => { const p = bp_projection([d.c.lon, d.c.lat]); return p ? p[0] : -9999; })
-      .attr('cy', d => { const p = bp_projection([d.c.lon, d.c.lat]); return p ? p[1] : -9999; })
-      .attr('r', d => rScale(d.n))
+    bp_baseStroke = bigFmt ? 1.1 : 0.8;
+    const gDots = gZoom.append('g').attr('class', 'bp-dots');
+    bp_dotsSel = gDots.selectAll('circle').data(vpts).join('circle')
+      .attr('cx', d => d.x).attr('cy', d => d.y).attr('r', d => { d._r = rScale(d.n); return d._r; })
       .attr('fill', BP_ACCENT).attr('fill-opacity', 0.4)
-      .attr('stroke', BP_ACCENT_DARK).attr('stroke-width', bigFmt ? 1.1 : 0.8).attr('stroke-opacity', 0.85)
-      .each(function (d) {
-        if (isPngFormat || (typeof HAS_HOVER !== 'undefined' && !HAS_HOVER)) return;
-        const sel = d3.select(this);
-        sel.style('cursor', 'pointer');
-        sel.on('mouseenter', function () { d3.select(this).attr('fill-opacity', 0.85).raise(); bp_tip(d); })
-          .on('mousemove', () => bp_tipMove())
-          .on('mouseleave', function () { d3.select(this).attr('fill-opacity', 0.4); bp_tipHide(); });
-      });
+      .attr('stroke', BP_ACCENT_DARK).attr('stroke-width', bp_baseStroke).attr('stroke-opacity', 0.85);
+    // hover por DELEGACIÓN: un solo listener en el grupo (antes 3×4052 listeners)
+    if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+      gDots.style('cursor', 'pointer')
+        .on('mouseover', (ev) => { if (ev.target.tagName !== 'circle') return; const c = d3.select(ev.target); c.attr('fill-opacity', 0.85).raise(); bp_tip(c.datum()); })
+        .on('mousemove', () => bp_tipMove())
+        .on('mouseout', (ev) => { if (ev.target.tagName !== 'circle') return; d3.select(ev.target).attr('fill-opacity', 0.4); bp_tipHide(); });
+    }
     bp_sizeLegend(root, rScale, maxN, PW, PH, bigFmt);
   }
 
   bp_scopeNote(root, period, PW, bigFmt);
 
-  // zoom (solo en pantalla, no en PNG)
+  // zoom (no en PNG). Al acercar, el radio de las burbujas se contra-escala
+  // (1/k) para que no se vuelvan ilegibles; las posiciones se separan igual.
   if (!isPngFormat) {
     bp_zoom = d3.zoom().scaleExtent([1, 8]).translateExtent([[0, 0], [PW, PH]])
-      .on('zoom', (ev) => { gZoom.attr('transform', ev.transform); bp_zoomT = ev.transform; });
+      .on('zoom', (ev) => {
+        gZoom.attr('transform', ev.transform); bp_zoomT = ev.transform;
+        const k = ev.transform.k;
+        if (bp_dotsSel) bp_dotsSel.attr('r', d => d._r / k).attr('stroke-width', bp_baseStroke / k);
+      });
     svg.call(bp_zoom);
-    if (bp_zoomT) { svg.call(bp_zoom.transform, bp_zoomT); }  // re-aplicar zoom previo tras redraw
+    if (bp_zoomT) svg.call(bp_zoom.transform, bp_zoomT);  // re-aplicar zoom previo tras redraw
   }
 }
 
@@ -316,7 +329,7 @@ function setupBirthplaceSlider() {
     fromId: 'bp-slider-from', toId: 'bp-slider-to', dispId: 'bp-range-display', trackId: 'bp-range-track-active',
     years: BIRTH.years,
     get: () => bp_period(), set: (p) => { state[8].period = p; },
-    onChange: () => drawBirthplace()
+    onChange: () => bp_scheduleDraw()
   });
 }
 function setupBirthplaceHeatToggle() {
