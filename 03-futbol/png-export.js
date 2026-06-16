@@ -819,6 +819,16 @@
       y += legendH;
     }
 
+    // En formato del editor, si el SVG no llenó todo el alto disponible (típico
+    // en mapas apaisados), el bloque fuente/firma queda equidistante entre el
+    // borde inferior del gráfico y el del PNG (centrado en el espacio sobrante),
+    // en vez de pegado al gráfico con un hueco muerto abajo.
+    if (format && PNG_FORMATS[format] && sourceText) {
+      const gap = (showLegend ? gapAfterLegend : gapAfterSvg);
+      const centeredTop = y + ((H - padBottom) - y - sourceH) / 2;
+      y = Math.max(y, centeredTop - gap);
+    }
+
     if (sourceText) {
       y += (showLegend ? gapAfterLegend : gapAfterSvg);
       ctx.fillStyle = PALETTE.inkSoft;
