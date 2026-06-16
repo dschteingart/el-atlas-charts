@@ -15,8 +15,9 @@
 //==================================================================
 const BP_ACCENT = '#BE5D32';
 const BP_ACCENT_DARK = '#8F3F22';   // borde de las burbujas (para distinguir solapadas)
-const BP_LAND = '#ECE7DD';
-const BP_LAND_STROKE = '#FFFFFF';
+const BP_LAND = '#F1ECE3';          // continentes (cálido claro)
+const BP_LAND_STROKE = '#FFFFFF';   // divisiones de países
+const BP_OCEAN = '#DED7C9';         // mar — más oscuro que la tierra → se distinguen los continentes
 const BP_TOPN = 15;
 const BP_BASE_DOTS = 1200;          // ciudades visibles a zoom 1 (más al acercar)
 const BP_HEAT_RAMP = ['#F6E7DC', '#E7AE89', '#CF7B4E', '#BE5D32', '#7A2E16'];
@@ -188,7 +189,8 @@ function bp_drawMapView(svg, W, H, opt) {
       .append('feGaussianBlur').attr('stdDeviation', bigFmt ? 6 : 4);
   }
   const root = svg.append('g').attr('transform', `translate(${M},${M})`).attr('clip-path', 'url(#bp-clip)');
-  if (glow) root.append('rect').attr('x', -M).attr('y', -M).attr('width', W).attr('height', H).attr('fill', '#1b2027');
+  // fondo: mar (claro-cálido) o, en iluminación, oscuro. Da contraste tierra/mar.
+  root.append('rect').attr('x', -M).attr('y', -M).attr('width', W).attr('height', H).attr('fill', glow ? '#1b2027' : BP_OCEAN);
   const gZoom = root.append('g');   // SOLO el mapa base se transforma con el zoom
 
   gZoom.append('g').attr('class', 'bp-land').selectAll('path').data(bp_geo.features).join('path')
@@ -206,12 +208,13 @@ function bp_drawMapView(svg, W, H, opt) {
 
   // Capa de datos (puntos/calor) en coords de PANTALLA.
   bp_gData = root.append('g');
-  bp_lastRenderT = bp_zoomT || d3.zoomIdentity;
-  if (bp_zoomT) gZoom.attr('transform', bp_zoomT);
-  bp_renderData(bp_lastRenderT);
+  // En PNG se exporta el mundo entero (ignora el zoom de pantalla).
+  const t0 = isPngFormat ? d3.zoomIdentity : (bp_zoomT || d3.zoomIdentity);
+  bp_lastRenderT = t0;
+  if (!isPngFormat && bp_zoomT) gZoom.attr('transform', bp_zoomT);
+  bp_renderData(t0);
 
   if (!bp_isHeat()) bp_sizeLegend(root, bp_rScale, bp_maxN, PW, PH, bigFmt);
-  bp_scopeNote(root, period, PW, bigFmt, glow);
 
   // PERFORMANCE: durante el gesto solo se mueven el mapa y la capa de datos con
   // un transform (barato, GPU); el recálculo pesado (cull/LOD/calor) ocurre al
@@ -330,6 +333,19 @@ function bp_scopeLabel(period) {
   if (a === ymin && b === ymax) return bp_t('c8-scope-all', 'Todos los Mundiales (1930-2026)');
   return bp_t('c8-scope-range', 'Mundiales') + ' ' + a + '–' + b;
 }
+// Subtítulo dinámico: incorpora el período (y cambia entre mapa y ranking).
+function bp_subtitle() {
+  const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
+  const [a, b] = bp_period(), one = (a === b), bars = (bp_view() === 'bars');
+  if (lang === 'en') {
+    if (bars) return `The ${BP_TOPN} cities that produced the most World Cup players (${one ? a : a + '–' + b}).`;
+    return one ? `Birth city of the players of the ${a} World Cup.`
+               : `Birth city of the players of the World Cups from ${a} to ${b}.`;
+  }
+  if (bars) return `Las ${BP_TOPN} ciudades que más mundialistas aportaron (${one ? 'Mundial de ' + a : 'Mundiales de ' + a + ' a ' + b}).`;
+  return one ? `Ciudad de nacimiento de los jugadores del Mundial de ${a}.`
+             : `Ciudad de nacimiento de los jugadores de los Mundiales de ${a} a ${b}.`;
+}
 
 //------------------------------------------------------------------
 //  Vista RANKING (barras)
@@ -349,9 +365,7 @@ function bp_drawBars(svg, W, H, opt) {
   const y = d3.scaleBand().domain(rows.map((_, i) => i)).range([0, PH]).padding(0.26);
   const bh = y.bandwidth();
 
-  svg.append('text').attr('x', W - M.right).attr('y', bigFmt ? 30 : 14).attr('text-anchor', 'end')
-    .style('font-family', 'var(--serif)').style('font-size', (bigFmt ? 26 : 14) + 'px').style('font-weight', 700)
-    .attr('fill', 'var(--ink-soft)').text(bp_scopeLabel(period));
+  // (sin nota de alcance en el chart: el período va en el subtítulo)
 
   rows.forEach((d, i) => {
     const yy = y(i);
@@ -400,7 +414,7 @@ function bp_applyHeadings() {
   const titleEl = block.querySelector('.chart-title');
   if (titleEl && !(tx.title || '').trim()) titleEl.textContent = bp_t('c8-title', 'De dónde salen los mundialistas');
   const subEl = block.querySelector('.chart-subtitle');
-  if (subEl && !(tx.subtitle || '').trim()) subEl.textContent = bp_t('c8-subtitle', 'Ciudad de nacimiento de los jugadores de cada Mundial.');
+  if (subEl && !(tx.subtitle || '').trim()) subEl.textContent = bp_subtitle();
 }
 
 //==================================================================
@@ -477,8 +491,20 @@ function initBirthplace() {
   if (!state[8].view) state[8].view = 'map';
   if (!state[8].period) state[8].period = [BIRTH.years[0], BIRTH.years[BIRTH.years.length - 1]];
   if (state[8].heat == null) state[8].heat = false;
-  if (!state[8].heatStyle) state[8].heatStyle = 'hexbig';
+  if (!state[8].heatStyle) state[8].heatStyle = 'hexsmall';
   bp_loadGeo();
+  // Registrar hooks de PNG temprano (antes de los setup*, que dependen de los
+  // datos): si algo falla luego, el export sigue configurado.
+  window.__atlasSupportsFormats = true;
+  window.__atlasRedraw = drawBirthplace;
+  window.__atlasDefaultPngFormat = 'worldmap';   // apaisado, como el mapa del chart 3
+  window.onBeforePngExportGetSourceText = function (chartId) { return String(chartId) === '8' ? ((typeof t === 'function' ? t('c8-sources-tpl') : '') || null) : null; };
+  window.onBeforePngExportGetSubtitle = function (chartId) { return String(chartId) === '8' ? bp_subtitle() : null; };
+  window.onBeforePngExport = function (svgClone, chartId) {
+    if (String(chartId) !== '8') return;
+    const clipped = svgClone.querySelector('[clip-path]'); if (clipped) clipped.removeAttribute('clip-path');
+    svgClone.setAttribute('overflow', 'visible');
+  };
   drawBirthplace();
   setupBirthplaceTabs();
   setupBirthplaceSlider();
@@ -489,11 +515,4 @@ function initBirthplace() {
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initBirthplace._wired) { initBirthplace._wired = true; window.addEventListener('atlas-editor-change', () => drawBirthplace()); }
   document.getElementById('chart8')?.addEventListener('mousemove', (e) => { bp_tipMove._e = e; });
-
-  window.__atlasSupportsFormats = true;
-  window.__atlasRedraw = drawBirthplace;
-  window.onBeforePngExportGetSourceText = function (chartId) {
-    if (String(chartId) !== '8') return null;
-    return (typeof t === 'function' ? t('c8-sources-tpl') : '') || null;
-  };
 }
