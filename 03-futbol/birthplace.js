@@ -56,7 +56,10 @@ function bp_scheduleDraw() {
 function bp_dims(fmt, mobile, view) {
   if (fmt && typeof PNG_FORMATS !== 'undefined' && PNG_FORMATS[fmt]) {
     const f = PNG_FORMATS[fmt];
-    return { W: f.vbW, H: view === 'bars' ? Math.max(f.vbH, 760) : f.vbH };
+    // Ranking en worldmap (apaisado): viewBox más ancho para que LLENE el ancho
+    // del canvas (si fuera alto, queda encajonado con huecos a los costados).
+    if (view === 'bars') return { W: f.vbW, H: fmt === 'worldmap' ? 650 : Math.max(f.vbH, 760) };
+    return { W: f.vbW, H: f.vbH };
   }
   if (mobile) return { W: 1100, H: view === 'bars' ? 1180 : 720 };
   return { W: 1100, H: view === 'bars' ? 500 : 600 };
@@ -151,10 +154,13 @@ function drawBirthplace() {
   bp_loadGeo();
 
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
-  const newsletter = editorFormat === 'newsletter', square = editorFormat === 'square', mobilePng = editorFormat === 'mobile';
+  const newsletter = editorFormat === 'newsletter', square = editorFormat === 'square', mobilePng = editorFormat === 'mobile', worldmap = editorFormat === 'worldmap';
   const mobile = !editorFormat && bp_isMobile();
+  // worldmap NO entra en bigFmt: así el MAPA conserva los tamaños aprobados
+  // (hexágonos R5, burbujas). Sí entra en isPngFormat (export estático: sin
+  // hover/zoom, mundo entero). El RANKING usa tamaños grandes vía isPngFormat.
   const bigFmt = newsletter || square || mobilePng || mobile;
-  const isPngFormat = newsletter || square || mobilePng;
+  const isPngFormat = newsletter || square || mobilePng || worldmap;
   const view = bp_view();
   const { W, H } = bp_dims(editorFormat, mobile, view);
   const node = svg.node();
@@ -361,7 +367,9 @@ function bp_subtitle() {
 //  Vista RANKING (barras)
 //------------------------------------------------------------------
 function bp_drawBars(svg, W, H, opt) {
-  const { bigFmt } = opt;
+  // En PNG (incl. worldmap) el ranking usa tamaños grandes aunque worldmap no
+  // sea bigFmt para el mapa.
+  const bigFmt = opt.bigFmt || opt.isPngFormat;
   const period = bp_period();
   const rows = bp_points(period).slice().sort((a, b) => b.n - a.n).slice(0, BP_TOPN);
 
