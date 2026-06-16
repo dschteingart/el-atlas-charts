@@ -18,6 +18,7 @@ const BP_ACCENT_DARK = '#8F3F22';   // borde de las burbujas (para distinguir so
 const BP_LAND = '#ECE7DD';
 const BP_LAND_STROKE = '#FFFFFF';
 const BP_TOPN = 15;
+const BP_BASE_DOTS = 1200;          // ciudades visibles a zoom 1 (más al acercar)
 const BP_HEAT_RAMP = ['#F6E7DC', '#E7AE89', '#CF7B4E', '#BE5D32', '#7A2E16'];
 
 // Nombres de ciudad en español (la fuente los trae en inglés). Para EN se usa
@@ -36,7 +37,10 @@ const BP_CITY_ES = {
 };
 
 let bp_geo = null, bp_projection = null, bp_path = null, bp_zoom = null, bp_zoomT = null;
-let bp_dotsSel = null, bp_baseStroke = 0.8, bp_rafPending = false;
+let bp_baseStroke = 0.8, bp_rafPending = false;
+let bp_vpts = null, bp_gData = null, bp_rScale = null, bp_maxN = 1;
+let bp_PW = 0, bp_PH = 0, bp_bigFmt = false, bp_isPng = false;
+let bp_renderRaf = false, bp_lastT = null;
 
 // Redibujo coalescido por frame: el slider dispara muchos 'input' por segundo;
 // sin esto, cada uno reconstruye el mapa entero (lento al arrastrar).
@@ -136,7 +140,6 @@ function bp_drawMapView(svg, W, H, opt) {
   const M = 8;
   const PW = W - 2 * M, PH = H - 2 * M;
   const period = bp_period();
-  const heat = bp_isHeat();
 
   bp_projection = d3.geoRobinson().fitSize([PW, PH], bp_geo);
   bp_path = d3.geoPath(bp_projection);
@@ -145,60 +148,76 @@ function bp_drawMapView(svg, W, H, opt) {
   svg.append('defs').append('clipPath').attr('id', 'bp-clip').append('rect')
     .attr('x', -M).attr('y', -M).attr('width', W).attr('height', H);
   root.attr('clip-path', 'url(#bp-clip)');
-  const gZoom = root.append('g');   // capa zoomable (base + datos)
+  const gZoom = root.append('g');   // SOLO el mapa base se transforma con el zoom
 
-  // backdrop países (stroke que NO se engrosa al hacer zoom)
   gZoom.append('g').attr('class', 'bp-land').selectAll('path').data(bp_geo.features).join('path')
     .attr('d', bp_path).attr('fill', BP_LAND).attr('stroke', BP_LAND_STROKE)
     .attr('stroke-width', 0.5).attr('vector-effect', 'non-scaling-stroke');
 
-  // proyectar CADA ciudad una sola vez (antes se proyectaba 2x por punto → lento)
+  // proyectar cada ciudad una sola vez; ordenar por nº de jugadores (desc)
   const pts = bp_points(period);
   for (let i = 0; i < pts.length; i++) { const p = bp_projection([pts[i].c.lon, pts[i].c.lat]); pts[i].x = p ? p[0] : null; pts[i].y = p ? p[1] : null; }
-  const vpts = pts.filter(p => p.x != null);
-  const maxN = d3.max(vpts, d => d.n) || 1;
-  bp_dotsSel = null;
+  bp_vpts = pts.filter(p => p.x != null).sort((a, b) => b.n - a.n);
+  bp_maxN = bp_vpts.length ? bp_vpts[0].n : 1;
+  bp_rScale = d3.scaleSqrt().domain([0, bp_maxN]).range([0, bigFmt ? 32 : 19]);
+  bp_baseStroke = bigFmt ? 1.1 : 0.8;
+  bp_PW = PW; bp_PH = PH; bp_bigFmt = bigFmt; bp_isPng = isPngFormat;
 
-  if (heat) {
-    const dens = d3.contourDensity().x(d => d.x).y(d => d.y)
-      .weight(d => d.n).size([PW, PH]).bandwidth(bigFmt ? 26 : 18).thresholds(18)(vpts);
-    const maxV = d3.max(dens, d => d.value) || 1;
-    const color = d3.scaleSequential(d3.interpolateRgbBasis(BP_HEAT_RAMP)).domain([0, maxV]);
-    gZoom.append('g').attr('class', 'bp-heat').selectAll('path').data(dens).join('path')
-      .attr('d', d3.geoPath()).attr('fill', d => color(d.value)).attr('fill-opacity', 0.78).attr('stroke', 'none');
-  } else {
-    const maxR = bigFmt ? 32 : 19;
-    const rScale = d3.scaleSqrt().domain([0, maxN]).range([0, maxR]);
-    bp_baseStroke = bigFmt ? 1.1 : 0.8;
-    const gDots = gZoom.append('g').attr('class', 'bp-dots');
-    bp_dotsSel = gDots.selectAll('circle').data(vpts).join('circle')
-      .attr('cx', d => d.x).attr('cy', d => d.y).attr('r', d => { d._r = rScale(d.n); return d._r; })
-      .attr('fill', BP_ACCENT).attr('fill-opacity', 0.4)
-      .attr('stroke', BP_ACCENT_DARK).attr('stroke-width', bp_baseStroke).attr('stroke-opacity', 0.85);
-    // hover por DELEGACIÓN: un solo listener en el grupo (antes 3×4052 listeners)
-    if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
-      gDots.style('cursor', 'pointer')
-        .on('mouseover', (ev) => { if (ev.target.tagName !== 'circle') return; const c = d3.select(ev.target); c.attr('fill-opacity', 0.85).raise(); bp_tip(c.datum()); })
-        .on('mousemove', () => bp_tipMove())
-        .on('mouseout', (ev) => { if (ev.target.tagName !== 'circle') return; d3.select(ev.target).attr('fill-opacity', 0.4); bp_tipHide(); });
-    }
-    bp_sizeLegend(root, rScale, maxN, PW, PH, bigFmt);
-  }
+  // Capa de datos (puntos/calor) en coords de PANTALLA: se recalcula con el zoom
+  // → el calor "cambia según el zoom" y se cullean los puntos fuera de vista.
+  bp_gData = root.append('g');
+  bp_renderData(bp_zoomT || d3.zoomIdentity);
 
+  if (!bp_isHeat()) bp_sizeLegend(root, bp_rScale, bp_maxN, PW, PH, bigFmt);
   bp_scopeNote(root, period, PW, bigFmt);
 
-  // zoom (no en PNG). Al acercar, el radio de las burbujas se contra-escala
-  // (1/k) para que no se vuelvan ilegibles; las posiciones se separan igual.
   if (!isPngFormat) {
     bp_zoom = d3.zoom().scaleExtent([1, 8]).translateExtent([[0, 0], [PW, PH]])
-      .on('zoom', (ev) => {
-        gZoom.attr('transform', ev.transform); bp_zoomT = ev.transform;
-        const k = ev.transform.k;
-        if (bp_dotsSel) bp_dotsSel.attr('r', d => d._r / k).attr('stroke-width', bp_baseStroke / k);
-      });
+      .on('zoom', (ev) => { gZoom.attr('transform', ev.transform); bp_zoomT = ev.transform; bp_scheduleRenderData(ev.transform); });
     svg.call(bp_zoom);
     if (bp_zoomT) svg.call(bp_zoom.transform, bp_zoomT);  // re-aplicar zoom previo tras redraw
   }
+}
+
+// Recalcula la capa de datos para el zoom/posición actuales. LOD: más ciudades
+// al acercar; cull de las que caen fuera del viewport (clave para la fluidez).
+// En calor, recomputa la densidad para la vista actual (cambia con el zoom).
+function bp_renderData(transform) {
+  if (!bp_gData || !bp_vpts) return;
+  bp_gData.selectAll('*').remove();
+  const t = transform || d3.zoomIdentity, k = t.k, pad = 40;
+  const maxDots = bp_isPng ? bp_vpts.length : Math.min(bp_vpts.length, Math.round(BP_BASE_DOTS * k));
+  const vis = [];
+  for (let i = 0; i < maxDots; i++) {
+    const p = bp_vpts[i], sx = t.applyX(p.x), sy = t.applyY(p.y);
+    if (sx < -pad || sx > bp_PW + pad || sy < -pad || sy > bp_PH + pad) continue;
+    vis.push({ d: p, sx, sy });
+  }
+  if (bp_isHeat()) {
+    const dens = d3.contourDensity().x(o => o.sx).y(o => o.sy).weight(o => o.d.n)
+      .size([bp_PW, bp_PH]).bandwidth(bp_bigFmt ? 26 : 18).thresholds(18)(vis);
+    const maxV = d3.max(dens, o => o.value) || 1;
+    const color = d3.scaleSequential(d3.interpolateRgbBasis(BP_HEAT_RAMP)).domain([0, maxV]);
+    bp_gData.append('g').attr('class', 'bp-heat').selectAll('path').data(dens).join('path')
+      .attr('d', d3.geoPath()).attr('fill', o => color(o.value)).attr('fill-opacity', 0.78).attr('stroke', 'none');
+  } else {
+    const draw = vis.slice().reverse();   // dibujar las grandes al final (arriba)
+    const gDots = bp_gData.append('g').attr('class', 'bp-dots');
+    gDots.selectAll('circle').data(draw).join('circle')
+      .attr('cx', o => o.sx).attr('cy', o => o.sy).attr('r', o => bp_rScale(o.d.n))
+      .attr('fill', BP_ACCENT).attr('fill-opacity', 0.4)
+      .attr('stroke', BP_ACCENT_DARK).attr('stroke-width', bp_baseStroke).attr('stroke-opacity', 0.85);
+    if (!bp_isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+      gDots.style('cursor', 'pointer')
+        .on('mouseover', (ev) => { if (ev.target.tagName !== 'circle') return; const c = d3.select(ev.target); c.attr('fill-opacity', 0.85).raise(); bp_tip(c.datum().d); })
+        .on('mousemove', () => bp_tipMove())
+        .on('mouseout', (ev) => { if (ev.target.tagName !== 'circle') return; d3.select(ev.target).attr('fill-opacity', 0.4); bp_tipHide(); });
+    }
+  }
+}
+function bp_scheduleRenderData(t) {
+  bp_lastT = t; if (bp_renderRaf) return; bp_renderRaf = true;
+  requestAnimationFrame(() => { bp_renderRaf = false; bp_renderData(bp_lastT); });
 }
 
 function bp_sizeLegend(g, rScale, maxN, PW, PH, bigFmt) {
