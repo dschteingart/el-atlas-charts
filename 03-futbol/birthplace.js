@@ -259,7 +259,7 @@ function bp_renderData(transform) {
       // HEXBIN (grande o fino): grilla nítida, color por densidad (escala sqrt
       // para que los clusters chicos no desaparezcan al lado de Europa).
       const vis = [];
-      for (let i = 0; i < bp_vpts.length; i++) { const p = bp_vpts[i], sx = t.applyX(p.x), sy = t.applyY(p.y); if (inView(sx, sy)) vis.push({ x: sx, y: sy, n: p.n }); }
+      for (let i = 0; i < bp_vpts.length; i++) { const p = bp_vpts[i], sx = t.applyX(p.x), sy = t.applyY(p.y); if (inView(sx, sy)) vis.push({ x: sx, y: sy, n: p.n, c: p.c }); }
       const R = (style === 'hexsmall') ? (bp_bigFmt ? 8 : 5) : (bp_bigFmt ? 15 : 10);
       const hb = bp_makeHexbin(R);
       const bins = hb(vis, o => o.x, o => o.y);
@@ -267,9 +267,17 @@ function bp_renderData(transform) {
       const maxV = d3.max(bins, b => b._v) || 1;
       const color = d3.scaleSequentialSqrt(d3.interpolateRgbBasis(BP_HEAT_RAMP)).domain([0, maxV]);
       const hex = hb.hexagon();
-      bp_gData.append('g').attr('class', 'bp-heat').selectAll('path').data(bins).join('path')
+      const gHex = bp_gData.append('g').attr('class', 'bp-heat');
+      gHex.selectAll('path').data(bins).join('path')
         .attr('transform', b => `translate(${b.x.toFixed(1)},${b.y.toFixed(1)})`)
         .attr('d', hex).attr('fill', b => color(b._v)).attr('stroke', 'none');
+      // hover por delegación: total de jugadores + ciudad con más del hexágono
+      if (!bp_isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+        gHex.style('cursor', 'pointer')
+          .on('mouseover', (ev) => { if (ev.target.tagName !== 'path') return; d3.select(ev.target).attr('stroke', '#FAF8F3').attr('stroke-width', bp_bigFmt ? 1.4 : 0.9).raise(); bp_hexTip(d3.select(ev.target).datum()); })
+          .on('mousemove', () => bp_tipMove())
+          .on('mouseout', (ev) => { if (ev.target.tagName !== 'path') return; d3.select(ev.target).attr('stroke', 'none'); bp_tipHide(); });
+      }
     }
   } else {
     const maxDots = bp_isPng ? bp_vpts.length : Math.min(bp_vpts.length, Math.round(BP_BASE_DOTS * k));
@@ -333,18 +341,20 @@ function bp_scopeLabel(period) {
   if (a === ymin && b === ymax) return bp_t('c8-scope-all', 'Todos los Mundiales (1930-2026)');
   return bp_t('c8-scope-range', 'Mundiales') + ' ' + a + '–' + b;
 }
-// Subtítulo dinámico: incorpora el período (y cambia entre mapa y ranking).
+// Subtítulo dinámico: incorpora el período, y cambia según vista (mapa/ranking)
+// y modo (burbujas = "Ciudad" vs calor = "Zona", porque agrupa en hexágonos).
 function bp_subtitle() {
   const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
   const [a, b] = bp_period(), one = (a === b), bars = (bp_view() === 'bars');
+  const heat = !bars && bp_isHeat();
+  const period_es = one ? `del Mundial de ${a}` : `de los Mundiales de ${a} a ${b}`;
+  const period_en = one ? `the ${a} World Cup` : `the World Cups from ${a} to ${b}`;
   if (lang === 'en') {
     if (bars) return `The ${BP_TOPN} cities that produced the most World Cup players (${one ? a : a + '–' + b}).`;
-    return one ? `Birth city of the players of the ${a} World Cup.`
-               : `Birth city of the players of the World Cups from ${a} to ${b}.`;
+    return `${heat ? 'Birth area' : 'Birth city'} of the players of ${period_en}.`;
   }
   if (bars) return `Las ${BP_TOPN} ciudades que más mundialistas aportaron (${one ? 'Mundial de ' + a : 'Mundiales de ' + a + ' a ' + b}).`;
-  return one ? `Ciudad de nacimiento de los jugadores del Mundial de ${a}.`
-             : `Ciudad de nacimiento de los jugadores de los Mundiales de ${a} a ${b}.`;
+  return `${heat ? 'Zona' : 'Ciudad'} de nacimiento de los jugadores ${period_es}.`;
 }
 
 //------------------------------------------------------------------
@@ -393,6 +403,24 @@ function bp_tip(d) {
   else scope = bp_t('c8-tip-range', 'en los Mundiales') + ' ' + period[0] + '–' + period[1];
   tt.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">${bp_cityName(d.c.c)}, ${bp_countryName(d.c.iso)}</div>`
     + `<div style="display:flex;align-items:center;gap:6px;"><strong style="font-variant-numeric:tabular-nums;">${d.n}</strong> <span>${noun} ${scope}</span></div>`;
+  tt.style.display = 'block'; tt.style.opacity = '1';
+}
+// Tooltip de un hexágono: total de jugadores de la zona + ciudad con más.
+function bp_hexTip(bin) {
+  const tt = document.getElementById('tooltip8'); if (!tt || !bin || !bin.length) return;
+  let total = 0, top = bin[0];
+  for (let i = 0; i < bin.length; i++) { total += bin[i].n; if (bin[i].n > top.n) top = bin[i]; }
+  const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
+  const cityNm = bp_cityName(top.c.c), ctry = bp_countryName(top.c.iso);
+  if (lang === 'en') {
+    tt.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">${total} ${total === 1 ? 'player' : 'players'} born in this area</div>`
+      + `<div>Top city: ${cityNm}, ${ctry} <strong style="font-variant-numeric:tabular-nums;">(${top.n})</strong></div>`;
+  } else {
+    const noun = total === 1 ? bp_t('c8-noun-1', 'jugador') : bp_t('c8-noun-n', 'jugadores');
+    const born = total === 1 ? 'nacido' : 'nacidos';
+    tt.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">${total} ${noun} ${born} en esta zona</div>`
+      + `<div>Ciudad con más: ${cityNm}, ${ctry} <strong style="font-variant-numeric:tabular-nums;">(${top.n})</strong></div>`;
+  }
   tt.style.display = 'block'; tt.style.opacity = '1';
 }
 function bp_tipMove() {
