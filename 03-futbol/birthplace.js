@@ -41,6 +41,8 @@ let bp_baseStroke = 0.8, bp_rafPending = false;
 let bp_vpts = null, bp_gData = null, bp_rScale = null, bp_maxN = 1;
 let bp_PW = 0, bp_PH = 0, bp_bigFmt = false, bp_isPng = false;
 let bp_renderRaf = false, bp_lastT = null;
+let bp_recomputeTimer = null, bp_lastRenderT = null;
+const BP_GLOW_MAX = 2500;           // puntos máx. en el estilo "iluminación"
 
 // Redibujo coalescido por frame: el slider dispara muchos 'input' por segundo;
 // sin esto, cada uno reconstruye el mapa entero (lento al arrastrar).
@@ -78,6 +80,8 @@ function bp_cityName(c) {
 function bp_view() { return (state[8] && state[8].view) || 'map'; }
 function bp_period() { return (state[8] && state[8].period) || [BIRTH.years[0], BIRTH.years[BIRTH.years.length - 1]]; }
 function bp_isHeat() { return !!(state[8] && state[8].heat); }
+function bp_heatStyle() { return (state[8] && state[8].heatStyle) || 'hexbig'; }
+function bp_isGlow() { return bp_isHeat() && bp_heatStyle() === 'glow'; }
 function bp_loadGeo() {
   if (bp_geo) return;
   // backdrop liviano (simplificado) para que el mapa renderice rápido; fallback
@@ -175,14 +179,20 @@ function bp_drawMapView(svg, W, H, opt) {
   bp_projection = d3.geoRobinson().fitSize([PW, PH], bp_geo);
   bp_path = d3.geoPath(bp_projection);
 
-  const root = svg.append('g').attr('transform', `translate(${M},${M})`);
-  svg.append('defs').append('clipPath').attr('id', 'bp-clip').append('rect')
+  const glow = bp_isGlow();
+  const defs = svg.append('defs');
+  defs.append('clipPath').attr('id', 'bp-clip').append('rect')
     .attr('x', -M).attr('y', -M).attr('width', W).attr('height', H);
-  root.attr('clip-path', 'url(#bp-clip)');
+  if (glow) {  // blur para el estilo "iluminación"
+    defs.append('filter').attr('id', 'bp-glow').attr('x', '-40%').attr('y', '-40%').attr('width', '180%').attr('height', '180%')
+      .append('feGaussianBlur').attr('stdDeviation', bigFmt ? 6 : 4);
+  }
+  const root = svg.append('g').attr('transform', `translate(${M},${M})`).attr('clip-path', 'url(#bp-clip)');
+  if (glow) root.append('rect').attr('x', -M).attr('y', -M).attr('width', W).attr('height', H).attr('fill', '#1b2027');
   const gZoom = root.append('g');   // SOLO el mapa base se transforma con el zoom
 
   gZoom.append('g').attr('class', 'bp-land').selectAll('path').data(bp_geo.features).join('path')
-    .attr('d', bp_path).attr('fill', BP_LAND).attr('stroke', BP_LAND_STROKE)
+    .attr('d', bp_path).attr('fill', glow ? '#2b313b' : BP_LAND).attr('stroke', glow ? '#3a414d' : BP_LAND_STROKE)
     .attr('stroke-width', 0.5).attr('vector-effect', 'non-scaling-stroke');
 
   // proyectar cada ciudad una sola vez; ordenar por nº de jugadores (desc)
@@ -194,19 +204,29 @@ function bp_drawMapView(svg, W, H, opt) {
   bp_baseStroke = bigFmt ? 1.1 : 0.8;
   bp_PW = PW; bp_PH = PH; bp_bigFmt = bigFmt; bp_isPng = isPngFormat;
 
-  // Capa de datos (puntos/calor) en coords de PANTALLA: se recalcula con el zoom
-  // → el calor "cambia según el zoom" y se cullean los puntos fuera de vista.
+  // Capa de datos (puntos/calor) en coords de PANTALLA.
   bp_gData = root.append('g');
-  bp_renderData(bp_zoomT || d3.zoomIdentity);
+  bp_lastRenderT = bp_zoomT || d3.zoomIdentity;
+  if (bp_zoomT) gZoom.attr('transform', bp_zoomT);
+  bp_renderData(bp_lastRenderT);
 
   if (!bp_isHeat()) bp_sizeLegend(root, bp_rScale, bp_maxN, PW, PH, bigFmt);
-  bp_scopeNote(root, period, PW, bigFmt);
+  bp_scopeNote(root, period, PW, bigFmt, glow);
 
+  // PERFORMANCE: durante el gesto solo se mueven el mapa y la capa de datos con
+  // un transform (barato, GPU); el recálculo pesado (cull/LOD/calor) ocurre al
+  // SOLTAR (debounce). Antes se reconstruía la capa SVG en cada frame → lento.
   if (!isPngFormat) {
     bp_zoom = d3.zoom().scaleExtent([1, 8]).translateExtent([[0, 0], [PW, PH]])
-      .on('zoom', (ev) => { gZoom.attr('transform', ev.transform); bp_zoomT = ev.transform; bp_scheduleRenderData(ev.transform); });
+      .on('zoom', (ev) => {
+        const T = ev.transform; bp_zoomT = T;
+        gZoom.attr('transform', T);
+        const T0 = bp_lastRenderT, m = T.k / T0.k;
+        bp_gData.attr('transform', `translate(${(T.x - m * T0.x).toFixed(2)},${(T.y - m * T0.y).toFixed(2)}) scale(${m.toFixed(4)})`);
+        bp_scheduleRecompute(T);
+      });
     svg.call(bp_zoom);
-    if (bp_zoomT) svg.call(bp_zoom.transform, bp_zoomT);  // re-aplicar zoom previo tras redraw
+    if (bp_zoomT) svg.property('__zoom', bp_zoomT);  // sincronizar sin re-disparar el evento
   }
 }
 
@@ -220,22 +240,34 @@ function bp_renderData(transform) {
   const inView = (sx, sy) => sx >= -pad && sx <= bp_PW + pad && sy >= -pad && sy <= bp_PH + pad;
 
   if (bp_isHeat()) {
-    // HEXBIN: bina TODOS los puntos visibles en hexágonos → grilla fina y nítida
-    // (sin "manchón" del KDE), y se re-grilla con el zoom (más detalle al acercar).
-    // El binning es O(n): barato aun con miles de puntos.
-    const vis = [];
-    for (let i = 0; i < bp_vpts.length; i++) { const p = bp_vpts[i], sx = t.applyX(p.x), sy = t.applyY(p.y); if (inView(sx, sy)) vis.push({ x: sx, y: sy, n: p.n }); }
-    const R = bp_bigFmt ? 15 : 10;
-    const hb = bp_makeHexbin(R);
-    const bins = hb(vis, o => o.x, o => o.y);
-    for (let i = 0; i < bins.length; i++) { let v = 0; for (let j = 0; j < bins[i].length; j++) v += bins[i][j].n; bins[i]._v = v; }
-    const maxV = d3.max(bins, b => b._v) || 1;
-    // escala de color sqrt: los clusters chicos no desaparecen al lado de Europa
-    const color = d3.scaleSequentialSqrt(d3.interpolateRgbBasis(BP_HEAT_RAMP)).domain([0, maxV]);
-    const hex = hb.hexagon();
-    bp_gData.append('g').attr('class', 'bp-heat').selectAll('path').data(bins).join('path')
-      .attr('transform', b => `translate(${b.x.toFixed(1)},${b.y.toFixed(1)})`)
-      .attr('d', hex).attr('fill', b => color(b._v)).attr('stroke', 'none');
+    const style = bp_heatStyle();
+    if (style === 'glow') {
+      // ILUMINACIÓN: puntos difusos (blur) sobre fondo oscuro que acumulan luz
+      // (mix-blend screen) → glow estilo mapa de fotos geolocalizadas.
+      const cap = Math.min(bp_vpts.length, BP_GLOW_MAX);
+      const vis = [];
+      for (let i = 0; i < cap; i++) { const p = bp_vpts[i], sx = t.applyX(p.x), sy = t.applyY(p.y); if (inView(sx, sy)) vis.push({ sx, sy, n: p.n }); }
+      const rOf = d3.scaleSqrt().domain([0, bp_maxN]).range([bp_bigFmt ? 3 : 2, bp_bigFmt ? 12 : 8]);
+      const g = bp_gData.append('g').attr('class', 'bp-heat').attr('filter', 'url(#bp-glow)').style('mix-blend-mode', 'screen');
+      g.selectAll('circle').data(vis).join('circle')
+        .attr('cx', o => o.sx.toFixed(1)).attr('cy', o => o.sy.toFixed(1)).attr('r', o => rOf(o.n))
+        .attr('fill', '#FFC23B').attr('fill-opacity', 0.5);
+    } else {
+      // HEXBIN (grande o fino): grilla nítida, color por densidad (escala sqrt
+      // para que los clusters chicos no desaparezcan al lado de Europa).
+      const vis = [];
+      for (let i = 0; i < bp_vpts.length; i++) { const p = bp_vpts[i], sx = t.applyX(p.x), sy = t.applyY(p.y); if (inView(sx, sy)) vis.push({ x: sx, y: sy, n: p.n }); }
+      const R = (style === 'hexsmall') ? (bp_bigFmt ? 8 : 5) : (bp_bigFmt ? 15 : 10);
+      const hb = bp_makeHexbin(R);
+      const bins = hb(vis, o => o.x, o => o.y);
+      for (let i = 0; i < bins.length; i++) { let v = 0; for (let j = 0; j < bins[i].length; j++) v += bins[i][j].n; bins[i]._v = v; }
+      const maxV = d3.max(bins, b => b._v) || 1;
+      const color = d3.scaleSequentialSqrt(d3.interpolateRgbBasis(BP_HEAT_RAMP)).domain([0, maxV]);
+      const hex = hb.hexagon();
+      bp_gData.append('g').attr('class', 'bp-heat').selectAll('path').data(bins).join('path')
+        .attr('transform', b => `translate(${b.x.toFixed(1)},${b.y.toFixed(1)})`)
+        .attr('d', hex).attr('fill', b => color(b._v)).attr('stroke', 'none');
+    }
   } else {
     const maxDots = bp_isPng ? bp_vpts.length : Math.min(bp_vpts.length, Math.round(BP_BASE_DOTS * k));
     const vis = [];
@@ -254,9 +286,15 @@ function bp_renderData(transform) {
     }
   }
 }
-function bp_scheduleRenderData(t) {
-  bp_lastT = t; if (bp_renderRaf) return; bp_renderRaf = true;
-  requestAnimationFrame(() => { bp_renderRaf = false; bp_renderData(bp_lastT); });
+// Recompute "al soltar": tras ~110 ms sin eventos de zoom, redibuja la capa de
+// datos para la transform final y resetea el transform-delta del gesto.
+function bp_scheduleRecompute(T) {
+  bp_lastT = T;
+  if (bp_recomputeTimer) clearTimeout(bp_recomputeTimer);
+  bp_recomputeTimer = setTimeout(() => {
+    bp_renderData(bp_lastT); bp_lastRenderT = bp_lastT;
+    if (bp_gData) bp_gData.attr('transform', null);
+  }, 110);
 }
 
 function bp_sizeLegend(g, rScale, maxN, PW, PH, bigFmt) {
@@ -280,11 +318,11 @@ function bp_sizeLegend(g, rScale, maxN, PW, PH, bigFmt) {
   });
 }
 
-function bp_scopeNote(g, period, PW, bigFmt) {
+function bp_scopeNote(g, period, PW, bigFmt, glow) {
   g.append('text').attr('x', PW - (bigFmt ? 10 : 6)).attr('y', bigFmt ? 30 : 18)
     .attr('text-anchor', 'end').style('font-family', 'var(--serif)')
     .style('font-size', (bigFmt ? 28 : 15) + 'px').style('font-weight', 700)
-    .attr('fill', 'var(--ink)').text(bp_scopeLabel(period));
+    .attr('fill', glow ? '#EDE8DF' : 'var(--ink)').text(bp_scopeLabel(period));
 }
 function bp_scopeLabel(period) {
   const [a, b] = period, ymin = BIRTH.years[0], ymax = BIRTH.years[BIRTH.years.length - 1];
@@ -392,8 +430,21 @@ function setupBirthplaceSlider() {
 }
 function setupBirthplaceHeatToggle() {
   const btn = document.getElementById('bp-heat-toggle'); if (!btn) return;
-  function sync() { const on = bp_isHeat(); btn.classList.toggle('lg-toggle-on', on); btn.setAttribute('aria-pressed', on); }
+  const styleWrap = document.getElementById('bp-heatstyle');
+  function sync() {
+    const on = bp_isHeat();
+    btn.classList.toggle('lg-toggle-on', on); btn.setAttribute('aria-pressed', on);
+    if (styleWrap) styleWrap.style.display = on ? '' : 'none';
+  }
   btn.addEventListener('click', () => { state[8].heat = !state[8].heat; sync(); drawBirthplace(); });
+  sync();
+}
+// Selector de estilo de calor: hexágonos / finos / iluminación.
+function setupBirthplaceHeatStyle() {
+  const btns = Array.from(document.querySelectorAll('#bp-heatstyle [data-style]'));
+  if (!btns.length) return;
+  function sync() { btns.forEach(b => { const on = b.dataset.style === bp_heatStyle(); b.classList.toggle('lg-seg-on', on); b.setAttribute('aria-pressed', on); }); }
+  btns.forEach(b => b.addEventListener('click', () => { if (bp_heatStyle() !== b.dataset.style) { state[8].heatStyle = b.dataset.style; sync(); drawBirthplace(); } }));
   sync();
 }
 function setupBirthplaceZoomReset() {
@@ -426,11 +477,13 @@ function initBirthplace() {
   if (!state[8].view) state[8].view = 'map';
   if (!state[8].period) state[8].period = [BIRTH.years[0], BIRTH.years[BIRTH.years.length - 1]];
   if (state[8].heat == null) state[8].heat = false;
+  if (!state[8].heatStyle) state[8].heatStyle = 'hexbig';
   bp_loadGeo();
   drawBirthplace();
   setupBirthplaceTabs();
   setupBirthplaceSlider();
   setupBirthplaceHeatToggle();
+  setupBirthplaceHeatStyle();
   setupBirthplaceZoomReset();
   setupBirthplaceCSV();
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();

@@ -102,6 +102,11 @@
       </div>
       <div id="bp-map-controls" class="bp-map-controls">
         <button type="button" class="lg-toggle" id="bp-heat-toggle" aria-pressed="false" data-i18n="c8-heat-toggle">Mapa de calor</button>
+        <div id="bp-heatstyle" class="lg-mode" role="group" aria-label="Estilo de calor" style="display:none;">
+          <button type="button" class="lg-seg lg-seg-on" data-style="hexbig" data-i18n="c8-style-hex">Hexágonos</button>
+          <button type="button" class="lg-seg" data-style="hexsmall" data-i18n="c8-style-fine">Finos</button>
+          <button type="button" class="lg-seg" data-style="glow" data-i18n="c8-style-glow">Iluminación</button>
+        </div>
         <button type="button" class="bp-btn" id="bp-reset-zoom" data-i18n="c8-reset-zoom">Restablecer zoom</button>
       </div>
     </div>
@@ -134,20 +139,20 @@
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
 
-<script src="../lib/regions.js?v=13"></script>
-<script src="../lib/i18n.js?v=13"></script>
-<script src="./regions-fifa.js?v=13"></script>
-<script src="./i18n-issue.js?v=13"></script>
-<script src="./utils.js?v=13"></script>
-<script src="./country-names.js?v=13"></script>
-<script src="./data-birthplace.js?v=13"></script>
-<script src="./data-country-geo-lite.js?v=13"></script>
-<script src="./editor.js?v=13"></script>
-<script src="./birthplace.js?v=13"></script>
-<script src="./png-export.js?v=13"></script>
-<script src="./svg-export.js?v=13"></script>
+<script src="../lib/regions.js?v=14"></script>
+<script src="../lib/i18n.js?v=14"></script>
+<script src="./regions-fifa.js?v=14"></script>
+<script src="./i18n-issue.js?v=14"></script>
+<script src="./utils.js?v=14"></script>
+<script src="./country-names.js?v=14"></script>
+<script src="./data-birthplace.js?v=14"></script>
+<script src="./data-country-geo-lite.js?v=14"></script>
+<script src="./editor.js?v=14"></script>
+<script src="./birthplace.js?v=14"></script>
+<script src="./png-export.js?v=14"></script>
+<script src="./svg-export.js?v=14"></script>
 <script>
-  state[8] = { view: 'map', period: [1930, 2026], heat: false };
+  state[8] = { view: 'map', period: [1930, 2026], heat: false, heatStyle: 'hexbig' };
   applyI18n();
   initBirthplace();
   setupLangToggle(() => {
