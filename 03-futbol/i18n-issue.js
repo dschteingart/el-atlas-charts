@@ -431,10 +431,20 @@ function applyI18n() {
   });
 }
 
-// Resolver idioma desde URL (?lang=en o ?lang=es)
+// Resolver idioma: ?lang=en|es en la URL tiene prioridad; si no, lo último
+// elegido (localStorage). Esto hace que el idioma sobreviva a la navegación
+// entre gráficos — los links son ./chart-X.html pelados, sin ?lang, así que
+// sin esto cada página nueva volvía a ES por default.
 (function initLang() {
+  let stored = null;
+  try { stored = localStorage.getItem('atlas-lang'); } catch (_) {}
   const urlLang = new URLSearchParams(location.search).get('lang');
-  if (urlLang === 'en' || urlLang === 'es') LANG = urlLang;
+  if (urlLang === 'en' || urlLang === 'es') {
+    LANG = urlLang;
+    try { localStorage.setItem('atlas-lang', LANG); } catch (_) {}
+  } else if (stored === 'en' || stored === 'es') {
+    LANG = stored;
+  }
   document.documentElement.lang = LANG;
 })();
 
@@ -442,6 +452,7 @@ function setupLangToggle(onLangChange) {
   document.querySelectorAll('.lang-toggle button').forEach(btn => {
     btn.addEventListener('click', () => {
       LANG = btn.dataset.lang;
+      try { localStorage.setItem('atlas-lang', LANG); } catch (_) {}
       document.documentElement.lang = LANG;
       document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('active', b.dataset.lang === LANG));
       applyI18n();

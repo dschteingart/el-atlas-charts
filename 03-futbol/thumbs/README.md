@@ -18,5 +18,12 @@ Dejá acá los PNG con **estos nombres exactos** (el formato cuadrado del botón
 | 7 — Ligas de destino                     | `chart-ligas.png` |
 | 8 — De dónde salen los mundialistas (mapa) | `chart-birthplace.png` |
 
+## Versión en inglés
+
+El index muestra la miniatura en el idioma activo. Para cada gráfico hay un
+par: `chart-<página>.png` (ES, default) y `chart-<página>.en.png` (EN). Si
+falta la `.en.png`, esa tarjeta simplemente queda sin imagen en inglés (no se
+rompe). Mismos 8 nombres, con sufijo `.en` antes del `.png`.
+
 Tip: no hace falta que sean chicos; el CSS los encuadra. Pero si querés que el
 repo no pese, redimensionalos a ~600 px de ancho.
