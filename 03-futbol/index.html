@@ -52,6 +52,14 @@
     color: var(--accent); margin-top: auto;
   }
 
+  /* Miniatura del gráfico (preview). Si falta el PNG, onerror la quita y la
+     tarjeta queda como sin imagen. Sangría negativa para que sangre al borde. */
+  .idx-thumb {
+    display: block; width: calc(100% + 40px); height: 150px; object-fit: cover;
+    margin: -18px -20px 8px; border-radius: 10px 10px 0 0;
+    border-bottom: 1px solid var(--rule); background: var(--bg-soft);
+  }
+
   /* Tarjeta de la nota técnica: ancha, borde punteado para diferenciarla. */
   .idx-paper {
     border-style: dashed;
@@ -91,30 +99,35 @@
   <div class="idx-grid">
 
     <a class="idx-card" href="./chart-elo-pib.html">
+      <img class="idx-thumb" src="./thumbs/chart-elo-pib.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 1</span>
       <h2 data-i18n="c1-title">Sudamérica juega en otra liga</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
     <a class="idx-card" href="./chart-talento.html">
+      <img class="idx-thumb" src="./thumbs/chart-talento.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 2</span>
       <h2 data-i18n="c2-title">Talento futbolístico ajustado por población</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
     <a class="idx-card" href="./chart-clubage-map.html">
+      <img class="idx-thumb" src="./thumbs/chart-clubage-map.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 3</span>
       <h2 data-i18n="c3-title">Dónde nació el fútbol moderno</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
     <a class="idx-card" href="./chart-talento-clubes.html">
+      <img class="idx-thumb" src="./thumbs/chart-talento-clubes.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 4</span>
       <h2 data-i18n="c4-title">Sudamérica: clubes muy antiguos y talento monopolizado por el fútbol</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
     <a class="idx-card" href="./chart-elo-trayectoria.html">
+      <img class="idx-thumb" src="./thumbs/chart-elo-trayectoria.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 5</span>
       <h2 data-i18n="c5-title">Trayectorias de las selecciones</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
@@ -122,18 +135,21 @@
 
 
     <a class="idx-card" href="./chart-natividad.html">
+      <img class="idx-thumb" src="./thumbs/chart-natividad.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 6</span>
       <h2 data-i18n="c6-title">Cada vez más mundialistas nacieron fuera del país que representan</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
     <a class="idx-card" href="./chart-ligas.html">
+      <img class="idx-thumb" src="./thumbs/chart-ligas.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 7</span>
       <h2 data-i18n="c7-title">Dónde juegan su fútbol de clubes los mundialistas</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
     <a class="idx-card" href="./chart-birthplace.html">
+      <img class="idx-thumb" src="./thumbs/chart-birthplace.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 8</span>
       <h2 data-i18n="c8-title">De dónde salen los mundialistas</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
@@ -168,6 +184,6 @@
   if (typeof setupLangToggle === 'function') setupLangToggle(function () { applyI18n(); });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=3"></script>
+<script src="./nav.js?v=4"></script>
 </body>
 </html>
