@@ -21,8 +21,8 @@
   ];
   const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
   const T = {
-    es: { label: 'Gráfico', sub: 'Suscribite a El Atlas', prev: 'Gráfico anterior', next: 'Gráfico siguiente', all: 'Ver todos los gráficos' },
-    en: { label: 'Chart', sub: 'Subscribe to The Atlas', prev: 'Previous chart', next: 'Next chart', all: 'See all charts' }
+    es: { label: 'Gráfico', sub: 'Suscribite gratis', eyebrow: 'El Atlas · Newsletter', pitch: 'Datos y mapas sobre el desarrollo de América Latina y el mundo, directo a tu correo.', prev: 'Gráfico anterior', next: 'Gráfico siguiente', all: 'Ver todos los gráficos' },
+    en: { label: 'Chart', sub: 'Subscribe for free', eyebrow: 'The Atlas · Newsletter', pitch: 'Data and maps on development across Latin America and the world, straight to your inbox.', prev: 'Previous chart', next: 'Next chart', all: 'See all charts' }
   };
   function lang() {
     if (typeof LANG !== 'undefined' && LANG) return LANG;
@@ -31,7 +31,10 @@
   function render(force) {
     const host = document.getElementById('chart-nav'); if (!host) return;
     const L = ((force || lang()) === 'en') ? 'en' : 'es', t = T[L];
-    const cta = `<a class="atlas-cta" href="${SUBS[L]}" target="_blank" rel="noopener">${t.sub} →</a>`;
+    const cta = `<a class="atlas-cta" href="${SUBS[L]}" target="_blank" rel="noopener">`
+      + `<span class="atlas-cta-eyebrow">${t.eyebrow}</span>`
+      + `<span class="atlas-cta-pitch">${t.pitch}</span>`
+      + `<span class="atlas-cta-go">${t.sub} →</span></a>`;
     const file = (location.pathname.split('/').pop() || '').toLowerCase();
     const idx = CHARTS.indexOf(file);
     if (idx < 0) { host.innerHTML = cta; return; }   // index / otra página → solo CTA
@@ -58,8 +61,11 @@
       .atlas-nav-arrow.is-off { opacity: .28; pointer-events: none; }
       .atlas-nav-count { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--ink-muted); text-decoration: none; letter-spacing: .07em; text-transform: uppercase; min-width: 92px; text-align: center; }
       .atlas-nav-count:hover { color: var(--accent); }
-      .atlas-cta { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 14px; font-weight: 600; color: #fff; background: var(--accent); padding: 10px 22px; border-radius: 24px; text-decoration: none; box-shadow: 0 2px 8px rgba(190,93,50,.25); transition: transform .12s ease, box-shadow .12s ease; }
-      .atlas-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(190,93,50,.35); }`;
+      .atlas-cta { display: flex; flex-direction: column; align-items: center; gap: 9px; max-width: 460px; text-align: center; text-decoration: none; background: var(--bg); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 24px 16px; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+      .atlas-cta:hover { border-color: var(--accent); box-shadow: 0 6px 20px rgba(190,93,50,.13); transform: translateY(-1px); }
+      .atlas-cta-eyebrow { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+      .atlas-cta-pitch { font-family: var(--serif); font-size: 15px; line-height: 1.4; color: var(--ink); max-width: 380px; }
+      .atlas-cta-go { display: inline-flex; align-items: center; font-family: var(--sans); font-size: 14px; font-weight: 600; color: #fff; background: var(--accent); padding: 9px 20px; border-radius: 22px; margin-top: 2px; }`;
     const st = document.createElement('style'); st.id = 'atlas-nav-css'; st.textContent = css;
     document.head.appendChild(st);
   }
