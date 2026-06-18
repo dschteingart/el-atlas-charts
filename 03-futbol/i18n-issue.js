@@ -8,8 +8,8 @@
 const ISSUE_I18N = {
   es: {
     'issue-num':  'N° 3',
-    'page-title': 'El fútbol no respeta al PIB',
-    'page-lede':  'La excepcionalidad sudamericana en el fútbol — selecciones competitivas con economías relativamente chicas — sigue siendo una rareza estadística.',
+    'page-title': 'La geografía del talento futbolístico',
+    'page-lede':  'Dónde nacen los jugadores, dónde juegan y por qué algunos países rinden muy por encima del tamaño de su economía.',
 
     // Chart 1 — Scatter ELO vs PIB total
     'c1-title':            'Sudamérica juega en otra liga',
@@ -217,8 +217,8 @@ const ISSUE_I18N = {
   },
   en: {
     'issue-num':  'N° 3',
-    'page-title': 'Football doesn\'t bow to GDP',
-    'page-lede':  'South America\'s footballing exceptionalism — strong national teams from relatively small economies — remains a statistical oddity.',
+    'page-title': 'The geography of football talent',
+    'page-lede':  'Where players are born, where they play, and why some countries punch far above the size of their economy.',
 
     // Chart 1 — Scatter ELO vs total GDP
     'c1-title':            'South America plays in a different league',
