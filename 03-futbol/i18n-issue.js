@@ -189,8 +189,8 @@ const ISSUE_I18N = {
     'c7-label-otros':        'Otras ligas',
     'c7-slider-period-label':'Mundiales',
     'c7-search-placeholder': 'Agregar país de liga…',
-    'c7-sources':            'Datos: base de mundialistas <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> (1930-2022) + Wikidata/Transfermarkt para los clubes, y FC Maps para 2026. El club se asigna al país donde está radicado; los clubes del Reino Unido (mayormente la Premier League inglesa) se agrupan como Reino Unido. El salto 2022→2026 incluye la ampliación del Mundial a 48 selecciones.',
-    'c7-sources-tpl':        'Datos: jfjelstul/worldcup + Wikidata/Transfermarkt (clubes) + FC Maps (2026). Clubes del Reino Unido agrupados.',
+    'c7-sources':            'Datos: base de mundialistas <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> (1930-2022) + Wikidata/Transfermarkt para los clubes, y FC Maps para 2026. El club se asigna al país donde está radicado; el Reino Unido va separado por nación futbolística (la Premier League cuenta como Inglaterra, distinta de la liga escocesa). El salto 2022→2026 incluye la ampliación del Mundial a 48 selecciones.',
+    'c7-sources-tpl':        'Datos: jfjelstul/worldcup + Wikidata/Transfermarkt (clubes) + FC Maps (2026). Reino Unido separado por nación (Inglaterra/Escocia).',
 
     // Chart 8 — Lugares de nacimiento de los mundialistas (anexo: mundiales)
     'c8-title':              'De dónde salen los mundialistas',
@@ -372,8 +372,8 @@ const ISSUE_I18N = {
     'c7-label-otros':        'Other leagues',
     'c7-slider-period-label':'World Cups',
     'c7-search-placeholder': 'Add a league country…',
-    'c7-sources':            'Data: <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> squads (1930-2022) + Wikidata/Transfermarkt for clubs, and FC Maps for 2026. A club is assigned to the country where it is based; UK clubs (mostly the English Premier League) are grouped as the United Kingdom. The 2022→2026 jump also reflects the World Cup\'s expansion to 48 teams.',
-    'c7-sources-tpl':        'Data: jfjelstul/worldcup + Wikidata/Transfermarkt (clubs) + FC Maps (2026). UK clubs grouped.',
+    'c7-sources':            'Data: <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> squads (1930-2022) + Wikidata/Transfermarkt for clubs, and FC Maps for 2026. A club is assigned to the country where it is based; the UK is split by football nation (the Premier League counts as England, separate from the Scottish league). The 2022→2026 jump also reflects the World Cup\'s expansion to 48 teams.',
+    'c7-sources-tpl':        'Data: jfjelstul/worldcup + Wikidata/Transfermarkt (clubs) + FC Maps (2026). UK split by nation (England/Scotland).',
 
     // Chart 8 — Where World Cup players are born (annex: World Cups)
     'c8-title':              'Where World Cup players come from',

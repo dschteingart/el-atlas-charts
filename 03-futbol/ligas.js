@@ -3,10 +3,12 @@
 // =============================================================
 // ¿Dónde juegan su fútbol de clubes los mundialistas? % de jugadores de cada
 // Mundial según el país donde está radicado su club (1930-2026).
-//   - Default: las 5 grandes ligas europeas (Reino Unido, España, Italia,
+//   - Default: las 5 grandes ligas europeas (Inglaterra, España, Italia,
 //     Alemania, Francia) preseleccionadas. Cada una es UNA línea estilo OWID
 //     (línea uniendo sus Mundiales + marcador en cada uno).
-//   - Buscador: agrega/saca cualquier país-de-club (93 en total).
+//   - El Reino Unido va separado por nación (Inglaterra / Escocia / Irlanda
+//     del Norte): la Premier League es inglesa, no se mezcla con la escocesa.
+//   - Buscador: agrega/saca cualquier país-de-club.
 //   - Toggle "En Europa (total)": superpone el agregado de europeización
 //     (~28% en 1930 → ~69% en 2026). Al activarse, el eje Y se reescala.
 //   - El eje Y se autoajusta a los datos visibles (las ligas individuales
@@ -29,7 +31,7 @@ function lg_colorForSlot(slot) { return LG_PALETTE_EXT[slot % LG_PALETTE_EXT.len
 const LG_COL_EUR = '#6E6A62';      // agregado "en Europa (total)" — gris cálido
 const LG_COL_OTH = '#CFC9BC';      // banda "otras ligas / resto" en modo apilado
 const LG_COL_OTH_TXT = '#8A8170';  // etiqueta de esa banda (más oscura, legible)
-const LG_BIG5 = ['GBR', 'ESP', 'ITA', 'DEU', 'FRA'];
+const LG_BIG5 = ['ENG', 'ESP', 'ITA', 'DEU', 'FRA'];
 const LG_EUR = '_EUR';             // iso sentinela para la serie agregada
 
 const LG_W_DESKTOP = 1100, LG_H_DESKTOP = 520;
