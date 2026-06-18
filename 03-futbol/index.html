@@ -3,7 +3,25 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Atlas — N° 3 · Fútbol</title>
+<title>El Atlas N°3 — La geografía del talento futbolístico</title>
+<meta name="description" content="Dónde nacen los jugadores, dónde juegan y por qué algunos países rinden muy por encima del tamaño de su economía. 8 gráficos interactivos de El Atlas.">
+
+<!-- Open Graph / Twitter: preview del link al compartir (X, WhatsApp, etc.).
+     Las URLs deben ser ABSOLUTAS. Idioma del preview = español (las meta tags
+     son estáticas; el crawler no ejecuta JS ni lee ?lang). -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/">
+<meta property="og:title" content="La geografía del talento futbolístico — El Atlas N°3">
+<meta property="og:description" content="Dónde nacen los jugadores, dónde juegan y por qué algunos países rinden muy por encima del tamaño de su economía.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/og-n3.png">
+<meta property="og:image:alt" content="Mapas y gráficos de El Atlas N°3 sobre el talento futbolístico mundial">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="La geografía del talento futbolístico — El Atlas N°3">
+<meta name="twitter:description" content="Dónde nacen los jugadores, dónde juegan y por qué algunos países rinden muy por encima del tamaño de su economía.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/og-n3.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -52,6 +70,14 @@
     color: var(--accent); margin-top: auto;
   }
 
+  /* Miniatura del gráfico (preview). Si falta el PNG, onerror la quita y la
+     tarjeta queda como sin imagen. Sangría negativa para que sangre al borde. */
+  .idx-thumb {
+    display: block; width: calc(100% + 40px); height: 150px; object-fit: cover;
+    margin: -18px -20px 8px; border-radius: 10px 10px 0 0;
+    border-bottom: 1px solid var(--rule); background: var(--bg-soft);
+  }
+
   /* Tarjeta de la nota técnica: ancha, borde punteado para diferenciarla. */
   .idx-paper {
     border-style: dashed;
@@ -82,8 +108,8 @@
         <button data-lang="en">EN</button>
       </div>
     </div>
-    <h1 data-i18n="page-title">El fútbol no le rinde pleitesía al PIB</h1>
-    <p class="lede" data-i18n="page-lede">La excepcionalidad futbolística sudamericana — selecciones fuertes desde economías relativamente chicas — es una rareza estadística.</p>
+    <h1 data-i18n="page-title">La geografía del talento futbolístico</h1>
+    <p class="lede" data-i18n="page-lede">Dónde nacen los jugadores, dónde juegan y por qué algunos países rinden muy por encima del tamaño de su economía.</p>
     <div class="accent-rule"></div>
   </header>
 
@@ -91,55 +117,58 @@
   <div class="idx-grid">
 
     <a class="idx-card" href="./chart-elo-pib.html">
+      <img class="idx-thumb" src="./thumbs/chart-elo-pib.png" data-thumb-es="./thumbs/chart-elo-pib.png" data-thumb-en="./thumbs/chart-elo-pib.en.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 1</span>
       <h2 data-i18n="c1-title">Sudamérica juega en otra liga</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
     <a class="idx-card" href="./chart-talento.html">
+      <img class="idx-thumb" src="./thumbs/chart-talento.png" data-thumb-es="./thumbs/chart-talento.png" data-thumb-en="./thumbs/chart-talento.en.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 2</span>
       <h2 data-i18n="c2-title">Talento futbolístico ajustado por población</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
     <a class="idx-card" href="./chart-clubage-map.html">
+      <img class="idx-thumb" src="./thumbs/chart-clubage-map.png" data-thumb-es="./thumbs/chart-clubage-map.png" data-thumb-en="./thumbs/chart-clubage-map.en.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 3</span>
       <h2 data-i18n="c3-title">Dónde nació el fútbol moderno</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
     <a class="idx-card" href="./chart-talento-clubes.html">
+      <img class="idx-thumb" src="./thumbs/chart-talento-clubes.png" data-thumb-es="./thumbs/chart-talento-clubes.png" data-thumb-en="./thumbs/chart-talento-clubes.en.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 4</span>
       <h2 data-i18n="c4-title">Sudamérica: clubes muy antiguos y talento monopolizado por el fútbol</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
     <a class="idx-card" href="./chart-elo-trayectoria.html">
+      <img class="idx-thumb" src="./thumbs/chart-elo-trayectoria.png" data-thumb-es="./thumbs/chart-elo-trayectoria.png" data-thumb-en="./thumbs/chart-elo-trayectoria.en.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 5</span>
       <h2 data-i18n="c5-title">Trayectorias de las selecciones</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
-  </div>
-
-  <div class="idx-section-label" data-i18n="index-mundiales-label">Mundial 2026 · anexo</div>
-  <p class="lede" data-i18n="index-mundiales-sub" style="margin:-4px 0 14px; font-size:14px; color:var(--ink-muted);">Gráficos exploratorios sobre cómo cambiaron los mundialistas entre 1930 y 2026.</p>
-  <div class="idx-grid">
 
     <a class="idx-card" href="./chart-natividad.html">
-      <span class="idx-card-num" data-i18n="index-c6-kicker">Nacimiento</span>
+      <img class="idx-thumb" src="./thumbs/chart-natividad.png" data-thumb-es="./thumbs/chart-natividad.png" data-thumb-en="./thumbs/chart-natividad.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <span class="idx-card-num">Gráfico 6</span>
       <h2 data-i18n="c6-title">Cada vez más mundialistas nacieron fuera del país que representan</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
     <a class="idx-card" href="./chart-ligas.html">
-      <span class="idx-card-num" data-i18n="index-c7-kicker">Clubes</span>
+      <img class="idx-thumb" src="./thumbs/chart-ligas.png" data-thumb-es="./thumbs/chart-ligas.png" data-thumb-en="./thumbs/chart-ligas.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <span class="idx-card-num">Gráfico 7</span>
       <h2 data-i18n="c7-title">Dónde juegan su fútbol de clubes los mundialistas</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
     <a class="idx-card" href="./chart-birthplace.html">
-      <span class="idx-card-num" data-i18n="index-c8-kicker">Cunas</span>
+      <img class="idx-thumb" src="./thumbs/chart-birthplace.png" data-thumb-es="./thumbs/chart-birthplace.png" data-thumb-en="./thumbs/chart-birthplace.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <span class="idx-card-num">Gráfico 8</span>
       <h2 data-i18n="c8-title">De dónde salen los mundialistas</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
@@ -166,11 +195,26 @@
 <script src="../lib/regions.js?v=idx3"></script>
 <script src="../lib/i18n.js?v=idx3"></script>
 <script src="./regions-fifa.js?v=idx3"></script>
-<script src="./i18n-issue.js?v=idx3"></script>
+<script src="./i18n-issue.js?v=lang2"></script>
 <script src="./utils.js?v=idx3"></script>
 <script>
+  // Miniaturas por idioma: cada tarjeta trae data-thumb-es / data-thumb-en.
+  // Arranca en ES (el src del HTML) y se cambia al PNG en inglés si LANG==='en'.
+  function applyThumbLang() {
+    var en = (typeof LANG !== 'undefined' && LANG === 'en');
+    document.querySelectorAll('.idx-thumb').forEach(function (img) {
+      var want = img.getAttribute(en ? 'data-thumb-en' : 'data-thumb-es');
+      if (want && img.getAttribute('src') !== want) img.src = want;
+    });
+  }
   applyI18n();
-  if (typeof setupLangToggle === 'function') setupLangToggle(function () { applyI18n(); });
+  applyThumbLang();
+  if (typeof setupLangToggle === 'function') setupLangToggle(function () {
+    applyI18n();
+    applyThumbLang();
+  });
 </script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=5"></script>
 </body>
 </html>

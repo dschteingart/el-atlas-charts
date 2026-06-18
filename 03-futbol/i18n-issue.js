@@ -8,8 +8,8 @@
 const ISSUE_I18N = {
   es: {
     'issue-num':  'N° 3',
-    'page-title': 'El fútbol no respeta al PIB',
-    'page-lede':  'La excepcionalidad sudamericana en el fútbol — selecciones competitivas con economías relativamente chicas — sigue siendo una rareza estadística.',
+    'page-title': 'La geografía del talento futbolístico',
+    'page-lede':  'Dónde nacen los jugadores, dónde juegan y por qué algunos países rinden muy por encima del tamaño de su economía.',
 
     // Chart 1 — Scatter ELO vs PIB total
     'c1-title':            'Sudamérica juega en otra liga',
@@ -217,8 +217,8 @@ const ISSUE_I18N = {
   },
   en: {
     'issue-num':  'N° 3',
-    'page-title': 'Football doesn\'t bow to GDP',
-    'page-lede':  'South America\'s footballing exceptionalism — strong national teams from relatively small economies — remains a statistical oddity.',
+    'page-title': 'The geography of football talent',
+    'page-lede':  'Where players are born, where they play, and why some countries punch far above the size of their economy.',
 
     // Chart 1 — Scatter ELO vs total GDP
     'c1-title':            'South America plays in a different league',
@@ -431,10 +431,20 @@ function applyI18n() {
   });
 }
 
-// Resolver idioma desde URL (?lang=en o ?lang=es)
+// Resolver idioma: ?lang=en|es en la URL tiene prioridad; si no, lo último
+// elegido (localStorage). Esto hace que el idioma sobreviva a la navegación
+// entre gráficos — los links son ./chart-X.html pelados, sin ?lang, así que
+// sin esto cada página nueva volvía a ES por default.
 (function initLang() {
+  let stored = null;
+  try { stored = localStorage.getItem('atlas-lang'); } catch (_) {}
   const urlLang = new URLSearchParams(location.search).get('lang');
-  if (urlLang === 'en' || urlLang === 'es') LANG = urlLang;
+  if (urlLang === 'en' || urlLang === 'es') {
+    LANG = urlLang;
+    try { localStorage.setItem('atlas-lang', LANG); } catch (_) {}
+  } else if (stored === 'en' || stored === 'es') {
+    LANG = stored;
+  }
   document.documentElement.lang = LANG;
 })();
 
@@ -442,6 +452,7 @@ function setupLangToggle(onLangChange) {
   document.querySelectorAll('.lang-toggle button').forEach(btn => {
     btn.addEventListener('click', () => {
       LANG = btn.dataset.lang;
+      try { localStorage.setItem('atlas-lang', LANG); } catch (_) {}
       document.documentElement.lang = LANG;
       document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('active', b.dataset.lang === LANG));
       applyI18n();
