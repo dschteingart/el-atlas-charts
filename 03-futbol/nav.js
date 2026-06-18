@@ -2,8 +2,9 @@
 //  El Atlas N°3 — navegación entre gráficos (estilo OWID) + CTA Substack
 // =============================================================
 // Se autoinyecta en <div id="chart-nav"></div>: flechas ← →, contador
-// "Gráfico N / 8" (linkea al index) y un botón de suscripción que cambia de
+// "Gráfico N / 8" (linkea al index) y una card de suscripción que cambia de
 // publicación según el idioma activo (ES → El Atlas, EN → The Atlas).
+// Además agrega un link sutil de suscripción en la .top-bar (arriba).
 //
 // Autocontenido: lee el idioma del global LANG (fallback a <html lang>), y se
 // re-renderiza al togglear idioma. No depende de i18n-issue.js.
@@ -21,8 +22,8 @@
   ];
   const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
   const T = {
-    es: { label: 'Gráfico', sub: 'Suscribite gratis', eyebrow: 'El Atlas · Newsletter', pitch: 'Excepcionalidades del desarrollo de América Latina y el mundo, con datos y gráficos interactivos.', prev: 'Gráfico anterior', next: 'Gráfico siguiente', all: 'Ver todos los gráficos' },
-    en: { label: 'Chart', sub: 'Subscribe for free', eyebrow: 'The Atlas · Newsletter', pitch: 'Exceptions in the development of Latin America and the world, with data and interactive charts.', prev: 'Previous chart', next: 'Next chart', all: 'See all charts' }
+    es: { label: 'Gráfico', sub: 'Suscribite gratis', eyebrow: 'El Atlas · Newsletter', pitch: 'Cartografías del desarrollo de América Latina y el mundo, con datos y gráficos interactivos.', prev: 'Gráfico anterior', next: 'Gráfico siguiente', all: 'Ver todos los gráficos' },
+    en: { label: 'Chart', sub: 'Subscribe for free', eyebrow: 'The Atlas · Newsletter', pitch: 'Mapping development in Latin America and the world, with data and interactive charts.', prev: 'Previous chart', next: 'Next chart', all: 'See all charts' }
   };
   function lang() {
     if (typeof LANG !== 'undefined' && LANG) return LANG;
@@ -65,17 +66,53 @@
       .atlas-cta:hover { border-color: var(--accent); box-shadow: 0 6px 20px rgba(190,93,50,.13); transform: translateY(-1px); }
       .atlas-cta-eyebrow { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
       .atlas-cta-pitch { font-family: var(--serif); font-size: 15px; line-height: 1.4; color: var(--ink); max-width: 380px; }
-      .atlas-cta-go { display: inline-flex; align-items: center; font-family: var(--sans); font-size: 14px; font-weight: 600; color: #fff; background: var(--accent); padding: 9px 20px; border-radius: 22px; margin-top: 2px; }`;
+      .atlas-cta-go { display: inline-flex; align-items: center; font-family: var(--sans); font-size: 14px; font-weight: 600; color: #fff; background: var(--accent); padding: 9px 20px; border-radius: 22px; margin-top: 2px; }
+      .atlas-top-right { display: inline-flex; align-items: center; gap: 16px; }
+      .atlas-top-sub { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: .04em; color: var(--accent); text-decoration: none; white-space: nowrap; opacity: .9; transition: opacity .15s ease; }
+      .atlas-top-sub:hover { opacity: 1; text-decoration: underline; text-underline-offset: 3px; }`;
     const st = document.createElement('style'); st.id = 'atlas-nav-css'; st.textContent = css;
     document.head.appendChild(st);
+  }
+  // Link sutil de suscripción en la barra superior (presencia "al principio"
+  // sin empujar el gráfico ni meter otra card). Agrupa el link con el
+  // lang-toggle a la derecha de la top-bar. Idempotente.
+  function mountTopCta() {
+    const bar = document.querySelector('.top-bar');
+    if (!bar || bar.querySelector('.atlas-top-sub')) return;
+    const a = document.createElement('a');
+    a.className = 'atlas-top-sub';
+    a.target = '_blank'; a.rel = 'noopener';
+    const toggle = bar.querySelector('.lang-toggle');
+    if (toggle) {
+      // Agrupar [link][ES/EN] a la derecha: el toggle queda en su esquina.
+      const right = document.createElement('div');
+      right.className = 'atlas-top-right';
+      bar.insertBefore(right, toggle);
+      right.appendChild(a);
+      right.appendChild(toggle);
+    } else {
+      bar.appendChild(a);
+    }
+    updateTopCta();
+  }
+  function updateTopCta(force) {
+    const a = document.querySelector('.atlas-top-sub'); if (!a) return;
+    const L = ((force || lang()) === 'en') ? 'en' : 'es';
+    a.textContent = T[L].sub + ' →';
+    a.setAttribute('href', SUBS[L]);
   }
   function init() {
     injectCss();
     render();
+    mountTopCta();
     // Re-render sincrónico al cambiar idioma, usando el data-lang del botón
     // clickeado (sin depender de rAF ni del orden con setupLangToggle).
     document.querySelectorAll('.lang-toggle [data-lang]').forEach(b =>
-      b.addEventListener('click', () => render(b.getAttribute('data-lang'))));
+      b.addEventListener('click', () => {
+        const L = b.getAttribute('data-lang');
+        render(L);
+        updateTopCta(L);
+      }));
   }
   if (document.readyState !== 'loading') init();
   else document.addEventListener('DOMContentLoaded', init);
