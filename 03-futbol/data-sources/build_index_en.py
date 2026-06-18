@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Genera 03-futbol/index.en.html a partir de index.html.
+Genera 03-futbol/index-en.html a partir de index.html.
 
 Por qué existe: el robot que arma el preview al compartir (X, WhatsApp,
 Substack) NO ejecuta JS ni lee ?lang=en, así que el index normal previsualiza
-siempre en español. index.en.html es una página COMPLETA en inglés (no una
+siempre en español. index-en.html es una página COMPLETA en inglés (no una
 redirección — los crawlers no arman card con páginas-redirección flacas) con
 sus meta Open Graph/Twitter en inglés.
 
-No edites index.en.html a mano: corré este script cada vez que cambie index.html
+No edites index-en.html a mano: corré este script cada vez que cambie index.html
     python build_index_en.py
 """
 import pathlib, re, sys
@@ -56,7 +56,7 @@ EN_HEAD = '''<title>The Atlas N°3 — The geography of football talent</title>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="The Atlas · Mapping development">
 <meta property="og:locale" content="en_US">
-<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/index.en.html">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/index-en.html">
 <meta property="og:title" content="The geography of football talent — The Atlas N°3">
 <meta property="og:description" content="Where players are born, where they play, and why some countries punch far above the size of their economy.">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-birthplace.en.png">
@@ -83,12 +83,12 @@ src = replace_once(src,
 # 5) forzar inglés en el arranque (sin depender de ?lang ni de localStorage)
 src = replace_once(src,
     '  applyI18n();\n  applyThumbLang();',
-    "  // index.en.html: forzar inglés por defecto (no depende de ?lang).\n"
+    "  // index-en.html: forzar inglés por defecto (no depende de ?lang).\n"
     "  try { LANG = 'en'; } catch (e) {}\n"
     "  try { localStorage.setItem('atlas-lang', 'en'); } catch (e) {}\n"
     "  document.documentElement.lang = 'en';\n"
     "  applyI18n();\n  applyThumbLang();",
     "inline force-EN")
 
-(ROOT / "index.en.html").write_text(src, encoding="utf-8")
-print("OK: index.en.html regenerado (página completa en inglés).")
+(ROOT / "index-en.html").write_text(src, encoding="utf-8")
+print("OK: index-en.html regenerado (página completa en inglés).")
