@@ -208,6 +208,10 @@ function drawOrigenes() {
   const y0 = period[0], y1 = period[1];
   const inP = (pts) => pts.filter(p => p[0] >= y0 && p[0] <= y1 && p[1] != null);
 
+  // Modo BARRAS: ranking de UN Mundial (el extremo derecho del slider). Sale
+  // por acá; no usa la maquinaria de líneas/área.
+  if (state[9].mode === 'bar') { og_drawBars(svg, { bigFmt, isPngFormat, wc: y1 }); og_applyHeadings(aeCfg); return; }
+
   // escala Y (depende de la métrica: % o cantidad)
   const abs = og_isAbs();
   let yScale;
@@ -373,6 +377,61 @@ function drawOrigenes() {
   og_applyHeadings(aeCfg);
 }
 
+// Default de barras (modo país): los que MÁS y MENOS producen en total
+// (todos los Mundiales), para mostrar el rango — Francia vs Curaçao.
+const OG_DEFUNCT = ['CSK', 'YUG', 'SUN', 'DDR', 'SCG'];   // estados desaparecidos
+function og_barDefault() {
+  og_initData();
+  const tots = og_rawTeams.map(t => ({ iso: t.iso3, tot: t.all.reduce((s, p) => s + p[1], 0) }))
+    .filter(x => x.tot > 0 && OG_DEFUNCT.indexOf(x.iso) < 0).sort((a, b) => b.tot - a.tot || a.iso.localeCompare(b.iso));
+  const top = tots.slice(0, 8).map(x => x.iso);
+  const bottom = tots.slice(-7).map(x => x.iso);
+  return top.concat(bottom);
+}
+
+// Ranking horizontal de UN Mundial. Aplica universo (todos/exportados) y
+// métrica (% de ese Mundial / cantidad). Click en la barra la saca.
+function og_drawBars(svg, opt) {
+  const bigFmt = opt.bigFmt, isPngFormat = opt.isPngFormat, wc = opt.wc;
+  const abs = og_isAbs(), U = og_universe(), den = og_totals[U][wc] || 0;
+  const rows = Array.from(og_selMap().keys()).filter(iso => og_byIso[iso]).map(iso => {
+    const p = og_byIso[iso].pts.find(q => q[0] === wc);
+    const n = p ? p[2] : 0;
+    return { iso, name: og_displayName(iso, og_byIso[iso].name), color: og_getColor(iso) || '#BE5D32',
+      n, v: abs ? n : (den ? +(100 * n / den).toFixed(1) : 0) };
+  }).sort((a, b) => b.v - a.v || b.n - a.n);
+
+  const fs = bigFmt ? 23 : 12.5;
+  const top = OG_MARGIN.top + (bigFmt ? 26 : 16), bottom = bigFmt ? 24 : 12;
+  let nameW = 0; rows.forEach(r => { const w = og_measureText(r.name, fs, 600); if (w > nameW) nameW = w; });
+  const valW = og_measureText(abs ? '1888' : '100%', fs, 700);
+  const left = (bigFmt ? 18 : 12) + nameW + (bigFmt ? 16 : 10);
+  const right = valW + (bigFmt ? 22 : 14);
+  const plotW = Math.max(40, OG_W - left - right);
+  const availH = OG_H - top - bottom;
+  const rowH = Math.min(bigFmt ? 42 : 24, rows.length ? availH / rows.length : 24);
+  const barH = rowH * 0.6, maxV = Math.max(1, ...rows.map(r => r.v));
+  const xW = (v) => Math.max(0, (v / maxV) * plotW);
+  const baseline = (y) => y + fs * 0.34;
+
+  // indicador del Mundial mostrado
+  const wcLbl = og_el('text'); wcLbl.setAttribute('x', OG_W - right); wcLbl.setAttribute('y', OG_MARGIN.top + (bigFmt ? 8 : 4));
+  wcLbl.setAttribute('text-anchor', 'end'); wcLbl.style.fontSize = (bigFmt ? 26 : 13) + 'px'; wcLbl.style.fontFamily = 'var(--sans)';
+  wcLbl.style.fontWeight = '700'; wcLbl.setAttribute('fill', 'var(--accent)'); wcLbl.textContent = og_tt('c9-bar-wc', 'Mundial') + ' ' + wc; svg.appendChild(wcLbl);
+
+  rows.forEach((r, i) => {
+    const cy = top + i * rowH, midY = cy + rowH / 2, bw = xW(r.v);
+    const nm = og_el('text'); nm.setAttribute('x', left - (bigFmt ? 12 : 8)); nm.setAttribute('y', baseline(midY)); nm.setAttribute('text-anchor', 'end');
+    nm.style.fontSize = fs + 'px'; nm.style.fontFamily = 'var(--sans)'; nm.style.fontWeight = '600'; nm.setAttribute('fill', 'var(--ink)'); nm.textContent = r.name; svg.appendChild(nm);
+    const bar = og_el('rect'); bar.setAttribute('x', left); bar.setAttribute('y', midY - barH / 2); bar.setAttribute('width', bw); bar.setAttribute('height', barH); bar.setAttribute('rx', bigFmt ? 3 : 2); bar.setAttribute('fill', r.color); svg.appendChild(bar);
+    const vt = og_el('text'); vt.setAttribute('x', left + bw + (bigFmt ? 10 : 6)); vt.setAttribute('y', baseline(midY));
+    vt.style.fontSize = fs + 'px'; vt.style.fontFamily = 'var(--sans)'; vt.style.fontWeight = '700'; vt.setAttribute('fill', 'var(--ink)'); vt.textContent = abs ? r.n : (r.v + '%'); svg.appendChild(vt);
+    if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) { bar.style.cursor = 'pointer'; bar.addEventListener('click', () => og_toggle(r.iso)); }
+  });
+  // en barras el slider representa UN Mundial → mostrar solo ese año
+  const disp = document.getElementById('og-range-display'); if (disp) disp.textContent = wc;
+}
+
 function og_setupHover(svg, ctx) {
   const { y0, y1, xS, yS, series } = ctx;
   const unit = ctx.abs ? '' : '%';
@@ -471,17 +530,28 @@ function setupOrigenesSearch() {
   });
   document.addEventListener('click', (ev) => { if (!input.contains(ev.target) && !results.contains(ev.target)) results.classList.remove('open'); });
 }
-// Toggle líneas ↔ área apilada.
+// Toggle de forma: Líneas / Área apilada / Barras.
 function setupOrigenesModeToggle() {
-  const lineBtn = document.getElementById('og-mode-line'), stackBtn = document.getElementById('og-mode-stack');
-  if (!lineBtn || !stackBtn) return;
+  const B = { line: document.getElementById('og-mode-line'), stack: document.getElementById('og-mode-stack'), bar: document.getElementById('og-mode-bar') };
+  if (!B.line || !B.stack || !B.bar) return;
   function sync() {
-    const stack = state[9].mode === 'stack';
-    lineBtn.classList.toggle('lg-seg-on', !stack); stackBtn.classList.toggle('lg-seg-on', stack);
-    lineBtn.setAttribute('aria-pressed', !stack ? 'true' : 'false'); stackBtn.setAttribute('aria-pressed', stack ? 'true' : 'false');
+    ['line', 'stack', 'bar'].forEach(k => { B[k].classList.toggle('lg-seg-on', state[9].mode === k); B[k].setAttribute('aria-pressed', state[9].mode === k ? 'true' : 'false'); });
   }
-  lineBtn.addEventListener('click', () => { if (state[9].mode !== 'line') { state[9].mode = 'line'; sync(); drawOrigenes(); } });
-  stackBtn.addEventListener('click', () => { if (state[9].mode !== 'stack') { state[9].mode = 'stack'; sync(); drawOrigenes(); } });
+  function switchTo(m) {
+    if (state[9].mode === m) return;
+    const wasBar = state[9].mode === 'bar';
+    state[9].mode = m;
+    // En país, barras trae su propio default (más/menos productores en total);
+    // al volver a líneas/área se restauran las grandes canteras.
+    if (og_group() === 'pais') {
+      if (m === 'bar') state[9].selectedCountries = new Map(og_barDefault().map((iso, i) => [iso, i]));
+      else if (wasBar) state[9].selectedCountries = new Map(OG_BIG.map((iso, i) => [iso, i]));
+    }
+    sync(); og_renderChips(); drawOrigenes();
+  }
+  B.line.addEventListener('click', () => switchTo('line'));
+  B.stack.addEventListener('click', () => switchTo('stack'));
+  B.bar.addEventListener('click', () => switchTo('bar'));
   sync();
 }
 // Toggle universo Todos ↔ Exportados.
