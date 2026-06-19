@@ -328,14 +328,24 @@ function drawOrigenes() {
     });
   }
 
-  // etiquetas de fin (anti-colisión)
+  // etiquetas de fin: anti-colisión BIDIRECCIONAL. Un solo pase hacia abajo
+  // apila todo en el borde cuando varias series quedan pegadas (p.ej. regiones
+  // que casi no exportan, todas cerca de 0). Pase 1 hacia abajo; si el último
+  // se desborda, pase 2 reacomodando hacia arriba; las desplazadas llevan guía.
   const GAP = bigFmt ? SIZES.label + 6 : 13;
+  const og_topB = OG_MARGIN.top + (bigFmt ? 6 : 2), og_botB = OG_MARGIN.top + PLOT_H;
   endLabels.sort((a, b) => a.idealY - b.idealY);
   endLabels.forEach((l, i) => {
-    l.y = i === 0 ? l.idealY : Math.max(l.idealY, endLabels[i - 1].y + GAP);
-    l.y = Math.min(l.y, OG_MARGIN.top + PLOT_H); l.y = Math.max(l.y, OG_MARGIN.top + (bigFmt ? 6 : 2));
-    l.shifted = Math.abs(l.y - l.idealY) > 1.5;
+    l.y = (i === 0) ? Math.max(l.idealY, og_topB) : Math.max(l.idealY, endLabels[i - 1].y + GAP);
   });
+  if (endLabels.length) {
+    const lastL = endLabels[endLabels.length - 1];
+    if (lastL.y > og_botB) {
+      lastL.y = og_botB;
+      for (let i = endLabels.length - 2; i >= 0; i--) endLabels[i].y = Math.min(endLabels[i].y, endLabels[i + 1].y - GAP);
+    }
+  }
+  endLabels.forEach(l => { l.y = Math.max(l.y, og_topB); l.shifted = Math.abs(l.y - l.idealY) > 1.5; });
   const endG = og_el('g'); svg.appendChild(endG);
   endLabels.forEach(l => {
     if (l.shifted) {
