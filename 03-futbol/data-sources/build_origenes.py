@@ -103,8 +103,13 @@ total_exp = defaultdict(int)
 team_all = defaultdict(lambda: defaultdict(int))   # iso_nac -> {year: n}
 team_exp = defaultdict(lambda: defaultdict(int))
 flows = defaultdict(lambda: defaultdict(int))      # year -> {(birth_iso, repr_iso): n}
+teams_wc = defaultdict(set)                         # year -> {selecciones que jugaron}
 
 for r in rows:
+    y0 = int(r["year"])
+    ri0 = repr_iso(r.get("team_code"))             # selección que juega ese Mundial
+    if ri0:
+        teams_wc[y0].add(ri0)
     bi = (r.get("iso_nacimiento") or "").strip()
     if not bi:
         continue
@@ -158,6 +163,7 @@ data = {
     "confed": confed,
     "teams": teams,
     "flows": flows_out,
+    "teams_wc": {str(y): sorted(teams_wc[y]) for y in years},   # selecciones por Mundial
 }
 js = "// Generado por data-sources/build_origenes.py — NO editar a mano.\n"
 js += "// País de nacimiento de los mundialistas por Mundial + flujos de migración.\n"

@@ -141,6 +141,8 @@ function og_nextFreeSlot() { const u = new Set(Array.from(og_selMap().values()).
 function og_toggle(iso3) {
   const sel = og_selMap();
   if (sel.has(iso3)) sel.delete(iso3); else sel.set(iso3, og_nextFreeSlot());
+  // En barras, editar a mano fija la selección (deja de auto-ajustarse al año).
+  if (state[9].mode === 'bar') state[9].barCustom = true;
   og_renderChips(); drawOrigenes();
 }
 function og_xTicks(y0, y1, plotW, minGapPx) {
@@ -383,15 +385,27 @@ function drawOrigenes() {
 // Default de barras (modo país): los que MÁS y MENOS producen en total
 // (todos los Mundiales), para mostrar el rango — Francia vs Curaçao.
 const OG_DEFUNCT = ['CSK', 'YUG', 'SUN', 'DDR', 'SCG'];   // estados desaparecidos
-const OG_BAR_COL = '#2B5C8A';                            // barras: un solo color (azul)
-// Default de barras: los 15 países con MÁS jugadores en ESE Mundial (solo los
-// que están presentes; el resto se agrega con el buscador). Excluye defuntos.
+const OG_BAR_COL = '#5E7E96';                            // azul coherente con el chart 2
+// Potencias futbolísticas para el default de barras (las "selecciones
+// importantes" que se muestran aunque no estén en el top/bottom).
+const OG_IMPORTANT = ['BRA', 'ARG', 'DEU', 'FRA', 'ENG', 'ITA', 'ESP', 'NLD', 'URY', 'PRT', 'BEL', 'MEX'];
+// Default de barras (entre los presentes en ESE Mundial): top 5 + bottom 5 +
+// 5 potencias importantes que hayan quedado afuera. Excluye estados defuntos.
 function og_barDefault(wc) {
   og_initData();
-  return og_rawTeams.map(t => { const p = t.all.find(q => q[0] === wc); return { iso: t.iso3, n: p ? p[1] : 0 }; })
-    .filter(x => x.n > 0 && OG_DEFUNCT.indexOf(x.iso) < 0)
-    .sort((a, b) => b.n - a.n || a.iso.localeCompare(b.iso))
-    .slice(0, 15).map(x => x.iso);
+  // candidatos = selecciones que JUEGAN ese Mundial (no cualquier país de
+  // nacimiento), con al menos un jugador nacido en ellas.
+  const teamSet = new Set((typeof ORIGENES !== 'undefined' && ORIGENES.teams_wc && ORIGENES.teams_wc[String(wc)]) || []);
+  const present = og_rawTeams.map(t => { const p = t.all.find(q => q[0] === wc); return { iso: t.iso3, n: p ? p[1] : 0 }; })
+    .filter(x => x.n > 0 && teamSet.has(x.iso) && OG_DEFUNCT.indexOf(x.iso) < 0)
+    .sort((a, b) => b.n - a.n || a.iso.localeCompare(b.iso));
+  const order = present.map(x => x.iso);
+  if (order.length <= 15) return order;
+  const top = order.slice(0, 5), bottom = order.slice(-5);
+  const chosen = new Set(top.concat(bottom)), important = [];
+  for (const iso of OG_IMPORTANT) { if (!chosen.has(iso) && order.indexOf(iso) >= 0) { important.push(iso); chosen.add(iso); if (important.length >= 5) break; } }
+  for (let i = 5; i < order.length - 5 && important.length < 5; i++) { if (!chosen.has(order[i])) { important.push(order[i]); chosen.add(order[i]); } }
+  return top.concat(important, bottom);
 }
 
 // Ranking horizontal de UN Mundial. Aplica universo (todos/exportados) y
@@ -551,6 +565,7 @@ function setupOrigenesModeToggle() {
     state[9].mode = m;
     // En país, barras trae su propio default (más/menos productores en total);
     // al volver a líneas/área se restauran las grandes canteras.
+    if (m === 'bar') state[9].barCustom = false;          // default fresco: auto-ajusta al año
     if (og_group() === 'pais') {
       if (m === 'bar') state[9].selectedCountries = new Map(og_barDefault(state[9].period[1]).map((iso, i) => [iso, i]));
       else if (wasBar) state[9].selectedCountries = new Map(OG_BIG.map((iso, i) => [iso, i]));
@@ -584,6 +599,7 @@ function setupOrigenesGroupToggle() {
     if (og_group() === 'region') isos = OG_REGION_ORDER;
     else if (state[9].mode === 'bar') isos = og_barDefault(state[9].period[1]);  // país + barras
     else isos = OG_BIG;
+    if (state[9].mode === 'bar') state[9].barCustom = false;   // volver al default reactiva el auto-ajuste
     state[9].selectedCountries = new Map(isos.map((iso, i) => [iso, i]));
   }
   function sync() {
@@ -631,7 +647,16 @@ function setupOrigenesCSV() {
 function setupOrigenesSlider() {
   setupWcRangeSlider({
     fromId: 'og-slider-from', toId: 'og-slider-to', dispId: 'og-range-display', trackId: 'og-range-track-active',
-    years: og_years, get: () => state[9].period, set: (p) => { state[9].period = p; }, onChange: () => drawOrigenes()
+    years: og_years, get: () => state[9].period, set: (p) => { state[9].period = p; },
+    onChange: () => {
+      // En barras (sin edición manual) la selección por defecto se reajusta al
+      // Mundial elegido. Si el usuario ya la editó (barCustom), queda fija.
+      if (state[9].mode === 'bar' && !state[9].barCustom && og_group() === 'pais') {
+        state[9].selectedCountries = new Map(og_barDefault(state[9].period[1]).map((iso, i) => [iso, i]));
+        og_renderChips();
+      }
+      drawOrigenes();
+    }
   });
 }
 function initOrigenes() {
