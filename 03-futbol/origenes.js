@@ -435,11 +435,7 @@ function og_drawBars(svg, opt) {
   const barH = rowH * 0.6, maxV = Math.max(1, ...rows.map(r => r.v));
   const xW = (v) => Math.max(0, (v / maxV) * plotW);
   const baseline = (y) => y + fs * 0.34;
-
-  // indicador del Mundial mostrado
-  const wcLbl = og_el('text'); wcLbl.setAttribute('x', OG_W - right); wcLbl.setAttribute('y', OG_MARGIN.top + (bigFmt ? 8 : 4));
-  wcLbl.setAttribute('text-anchor', 'end'); wcLbl.style.fontSize = (bigFmt ? 26 : 13) + 'px'; wcLbl.style.fontFamily = 'var(--sans)';
-  wcLbl.style.fontWeight = '700'; wcLbl.setAttribute('fill', 'var(--accent)'); wcLbl.textContent = og_tt('c9-bar-wc', 'Mundial') + ' ' + wc; svg.appendChild(wcLbl);
+  // El Mundial mostrado va en el subtítulo (og_subtitle), no dentro del gráfico.
 
   rows.forEach((r, i) => {
     const cy = top + i * rowH, midY = cy + rowH / 2, bw = xW(r.v);
@@ -497,6 +493,27 @@ function og_emph(iso) {
   });
 }
 
+// Fragmento de período: en barras un solo Mundial; en líneas/área el rango.
+function og_periodPhrase(en) {
+  if (state[9].mode === 'bar') return en ? `in the ${state[9].period[1]} World Cup` : `del Mundial ${state[9].period[1]}`;
+  const y0 = state[9].period[0], y1 = state[9].period[1];
+  if (y0 <= OG_YEAR_MIN && y1 >= OG_YEAR_MAX) return en ? 'in each World Cup' : 'de cada Mundial';
+  return en ? `in the World Cups between ${y0} and ${y1}` : `de los Mundiales entre ${y0} y ${y1}`;
+}
+// Subtítulo dinámico: refleja universo (todos/exportados), métrica (%/cantidad)
+// y el período/Mundial elegido. El PNG lo toma del DOM, así que respeta todo.
+function og_subtitle() {
+  const en = (typeof LANG !== 'undefined' && LANG === 'en'), abs = og_isAbs(), exp = og_universe() === 'exp';
+  const per = og_periodPhrase(en);
+  if (en) {
+    if (exp) return abs ? `Number of players ${per} representing a different country, by where they were born.`
+                        : `Players ${per} representing a different country, as a share of the "exported", by where they were born.`;
+    return abs ? `Number of players ${per}, by country of birth.` : `Share of players ${per}, by country of birth.`;
+  }
+  if (exp) return abs ? `Cantidad de jugadores ${per} que representan a otra selección, según dónde nacieron.`
+                      : `Jugadores ${per} que representan a otra selección, como % de los «exportados», según dónde nacieron.`;
+  return abs ? `Cantidad de jugadores ${per} según su país de nacimiento.` : `Porcentaje de los jugadores ${per} según su país de nacimiento.`;
+}
 function og_applyHeadings(aeCfg) {
   const block = document.querySelector('.chart-block[data-chart="9"]') || document;
   const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
@@ -504,11 +521,7 @@ function og_applyHeadings(aeCfg) {
   const titleEl = block.querySelector('.chart-title');
   if (titleEl && !(tx.title || '').trim()) titleEl.textContent = og_tt('c9-title', 'De qué país nacen los mundialistas');
   const subEl = block.querySelector('.chart-subtitle');
-  if (subEl && !(tx.subtitle || '').trim()) {
-    subEl.textContent = og_universe() === 'exp'
-      ? og_tt('c9-subtitle-exp', 'Mundialistas nacidos en cada país pero que representan a otra selección, como % de los "exportados" de ese Mundial.')
-      : og_tt('c9-subtitle-all', 'Porcentaje de los jugadores de cada Mundial según su país de nacimiento.');
-  }
+  if (subEl && !(tx.subtitle || '').trim()) subEl.textContent = og_subtitle();
 }
 
 //==================================================================
@@ -689,5 +702,9 @@ function initOrigenes() {
   window.onBeforePngExportGetSourceText = function (chartId) {
     if (String(chartId) !== '9') return null;
     return (typeof t === 'function' ? t('c9-sources-tpl') : '') || null;
+  };
+  // El subtítulo del PNG refleja universo + métrica + período/Mundial.
+  window.onBeforePngExportGetSubtitle = function (chartId) {
+    return (String(chartId) === '9') ? og_subtitle() : null;
   };
 }
