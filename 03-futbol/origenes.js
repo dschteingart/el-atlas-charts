@@ -287,7 +287,9 @@ function drawOrigenes() {
       hit.addEventListener('click', (ev) => { ev.stopPropagation(); og_toggle(opts.iso); }); hitG.appendChild(hit);
     }
     const last = pts.filter(p => p[1] != null).slice(-1)[0];
-    if (last) endLabels.push({ iso: opts.iso, color, text: opts.label, x: xS(last[0]), idealY: yS(og_mv(last)), valLast: og_mv(last) });
+    // Etiqueta siempre al borde derecho (no flotando en el fin de líneas que
+    // terminan antes, p.ej. Oceanía que casi no exporta y corta en 2006).
+    if (last) endLabels.push({ iso: opts.iso, color, text: opts.label, x: xS(y1), idealY: yS(og_mv(last)), valLast: og_mv(last) });
   }
 
   const hoverSeries = [];
@@ -295,7 +297,12 @@ function drawOrigenes() {
     const yrs = og_years.filter(y => y >= y0 && y <= y1);
     const valOf = (iso, yr) => { const p = og_byIso[iso].pts.find(q => q[0] === yr); return p ? og_mv(p) : 0; };
     const bands = selected.map(iso => ({ iso, color: og_getColor(iso), name: og_displayName(iso, og_byIso[iso].name), get: (yr) => valOf(iso, yr) }));
-    bands.push({ iso: '_OTH', color: OG_COL_OTH, name: tt('c9-label-otros', 'Otros'), get: (yr) => { let s = 0; selected.forEach(iso => s += valOf(iso, yr)); const tot = abs ? (og_totals[og_universe()][yr] || 0) : 100; return Math.max(0, +(tot - s).toFixed(1)); } });
+    // Banda "Otros" = lo no seleccionado. En modo región las 6 confederaciones
+    // cubren el total, así que da 0 → no se dibuja (no existe un continente
+    // "Otros"). Solo se agrega si aporta algo en algún año visible.
+    const othGet = (yr) => { let s = 0; selected.forEach(iso => s += valOf(iso, yr)); const tot = abs ? (og_totals[og_universe()][yr] || 0) : 100; return Math.max(0, +(tot - s).toFixed(1)); };
+    if (Math.max(0, ...yrs.map(othGet)) > (abs ? 0.5 : 0.3))
+      bands.push({ iso: '_OTH', color: OG_COL_OTH, name: tt('c9-label-otros', 'Otros'), get: othGet });
     const areasG = og_el('g'); svg.insertBefore(areasG, halosG);
     const lower = yrs.map(() => 0);
     bands.forEach(b => {
