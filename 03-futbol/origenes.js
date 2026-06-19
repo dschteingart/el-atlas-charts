@@ -455,11 +455,6 @@ function og_drawBars(svg, opt) {
   const disp = document.getElementById('og-range-display'); if (disp) disp.textContent = wc;
 }
 
-// Color de los flujos del Sankey según la confederación de ORIGEN (dónde
-// nació): así se ve, p.ej., el chorro de nacidos en Europa hacia equipos CAF.
-const OG_CONF_COL = { CONMEBOL: '#BE5D32', UEFA: '#2B5C8A', CAF: '#5BA152', AFC: '#9A4FA8', CONCACAF: '#C9A227', OFC: '#2BA0A8', OTRO: '#8A8170' };
-function og_sankeyColor(iso) { return OG_CONF_COL[(og_confed && og_confed[iso]) || 'OTRO'] || OG_CONF_COL.OTRO; }
-
 // SANKEY: flujos nacimiento -> selección de los jugadores "exportados" de UN
 // Mundial. Izquierda = país de nacimiento, derecha = selección que representan.
 // Se quedan los top-N orígenes y destinos; el resto se agrupa en "Otros".
@@ -481,6 +476,8 @@ function og_drawSankey(svg, opt) {
   const srcVal = {}, tgtVal = {};
   Object.keys(agg).forEach(k => { const p = k.split('|'); srcVal[p[0]] = (srcVal[p[0]] || 0) + agg[k]; tgtVal[p[1]] = (tgtVal[p[1]] || 0) + agg[k]; });
   const srcNodes = Object.keys(srcVal).filter(x => x !== OS).sort((a, b) => srcVal[b] - srcVal[a]); if (srcVal[OS]) srcNodes.push(OS);
+  // Un color por país de ORIGEN (paleta multicolor); "Otros" en gris.
+  const srcColor = {}; let _ci = 0; srcNodes.forEach(iso => srcColor[iso] = (iso === OS) ? '#9C928A' : og_colorForSlot(_ci++));
   const tgtNodes = Object.keys(tgtVal).filter(x => x !== OT).sort((a, b) => tgtVal[b] - tgtVal[a]); if (tgtVal[OT]) tgtNodes.push(OT);
   const sIdx = {}, tIdx = {}; srcNodes.forEach((k, i) => sIdx[k] = i); tgtNodes.forEach((k, i) => tIdx[k] = i);
 
@@ -508,7 +505,7 @@ function og_drawSankey(svg, opt) {
     const h = L.n * scale, y0 = sOff[L.s], y1 = tOff[L.t]; sOff[L.s] += h; tOff[L.t] += h;
     const x0 = leftX + nodeW, x1 = rightX, xm = (x0 + x1) / 2;
     const d = `M${x0},${y0} C${xm},${y0} ${xm},${y1} ${x1},${y1} L${x1},${y1 + h} C${xm},${y1 + h} ${xm},${y0 + h} ${x0},${y0 + h} Z`;
-    const path = og_el('path'); path.setAttribute('d', d); path.setAttribute('fill', og_sankeyColor(L.s)); path.setAttribute('fill-opacity', 0.42); path.setAttribute('stroke', 'none');
+    const path = og_el('path'); path.setAttribute('d', d); path.setAttribute('fill', srcColor[L.s]); path.setAttribute('fill-opacity', 0.42); path.setAttribute('stroke', 'none');
     if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
       path.style.cursor = 'default';
       path.addEventListener('mouseenter', () => { path.setAttribute('fill-opacity', 0.72); if (tooltip) { tooltip.innerHTML = `<strong>${nmOf(L.s)} → ${nmOf(L.t)}</strong><br>${L.n} ${L.n === 1 ? og_tt('c9-sankey-jug1', 'jugador') : og_tt('c9-sankey-jugN', 'jugadores')}`; tooltip.style.display = 'block'; tooltip.style.opacity = '1'; } });
@@ -521,7 +518,7 @@ function og_drawSankey(svg, opt) {
   const drawCol = (nodes, pos, x, side) => nodes.forEach(k => {
     const p = pos[k];
     const rect = og_el('rect'); rect.setAttribute('x', x); rect.setAttribute('y', p.y0); rect.setAttribute('width', nodeW); rect.setAttribute('height', Math.max(1.5, p.h));
-    rect.setAttribute('fill', side === 'src' ? og_sankeyColor(k) : '#9C928A'); rect.setAttribute('rx', 1.5); nodesG.appendChild(rect);
+    rect.setAttribute('fill', side === 'src' ? srcColor[k] : '#9C928A'); rect.setAttribute('rx', 1.5); nodesG.appendChild(rect);
     const txt = og_el('text'); txt.setAttribute('x', side === 'src' ? x - padLbl : x + nodeW + padLbl); txt.setAttribute('y', (p.y0 + p.y1) / 2 + fs * 0.34);
     txt.setAttribute('text-anchor', side === 'src' ? 'end' : 'start'); txt.style.fontSize = fs + 'px'; txt.style.fontFamily = 'var(--sans)'; txt.style.fontWeight = '600'; txt.setAttribute('fill', 'var(--ink)');
     txt.textContent = nmOf(k); nodesG.appendChild(txt);
