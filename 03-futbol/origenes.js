@@ -177,6 +177,9 @@ function drawOrigenes() {
   if (!svg) return;
   svg.innerHTML = '';
   og_project();
+  // En barras el slider representa UN Mundial → modo single-thumb (un solo año).
+  const sliderEl = document.getElementById('og-range-slider');
+  if (sliderEl) sliderEl.classList.toggle('s-range-single', state[9].mode === 'bar');
 
   const aeCfg = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
@@ -380,13 +383,15 @@ function drawOrigenes() {
 // Default de barras (modo país): los que MÁS y MENOS producen en total
 // (todos los Mundiales), para mostrar el rango — Francia vs Curaçao.
 const OG_DEFUNCT = ['CSK', 'YUG', 'SUN', 'DDR', 'SCG'];   // estados desaparecidos
-function og_barDefault() {
+const OG_BAR_COL = '#2B5C8A';                            // barras: un solo color (azul)
+// Default de barras: los 15 países con MÁS jugadores en ESE Mundial (solo los
+// que están presentes; el resto se agrega con el buscador). Excluye defuntos.
+function og_barDefault(wc) {
   og_initData();
-  const tots = og_rawTeams.map(t => ({ iso: t.iso3, tot: t.all.reduce((s, p) => s + p[1], 0) }))
-    .filter(x => x.tot > 0 && OG_DEFUNCT.indexOf(x.iso) < 0).sort((a, b) => b.tot - a.tot || a.iso.localeCompare(b.iso));
-  const top = tots.slice(0, 8).map(x => x.iso);
-  const bottom = tots.slice(-7).map(x => x.iso);
-  return top.concat(bottom);
+  return og_rawTeams.map(t => { const p = t.all.find(q => q[0] === wc); return { iso: t.iso3, n: p ? p[1] : 0 }; })
+    .filter(x => x.n > 0 && OG_DEFUNCT.indexOf(x.iso) < 0)
+    .sort((a, b) => b.n - a.n || a.iso.localeCompare(b.iso))
+    .slice(0, 15).map(x => x.iso);
 }
 
 // Ranking horizontal de UN Mundial. Aplica universo (todos/exportados) y
@@ -397,9 +402,10 @@ function og_drawBars(svg, opt) {
   const rows = Array.from(og_selMap().keys()).filter(iso => og_byIso[iso]).map(iso => {
     const p = og_byIso[iso].pts.find(q => q[0] === wc);
     const n = p ? p[2] : 0;
-    return { iso, name: og_displayName(iso, og_byIso[iso].name), color: og_getColor(iso) || '#BE5D32',
+    return { iso, name: og_displayName(iso, og_byIso[iso].name),
       n, v: abs ? n : (den ? +(100 * n / den).toFixed(1) : 0) };
-  }).sort((a, b) => b.v - a.v || b.n - a.n);
+  }).filter(r => r.n > 0)                                 // solo países presentes en ese Mundial
+    .sort((a, b) => b.v - a.v || b.n - a.n);
 
   const fs = bigFmt ? 23 : 12.5;
   const top = OG_MARGIN.top + (bigFmt ? 26 : 16), bottom = bigFmt ? 24 : 12;
@@ -409,7 +415,9 @@ function og_drawBars(svg, opt) {
   const right = valW + (bigFmt ? 22 : 14);
   const plotW = Math.max(40, OG_W - left - right);
   const availH = OG_H - top - bottom;
-  const rowH = Math.min(bigFmt ? 42 : 24, rows.length ? availH / rows.length : 24);
+  // las barras llenan el alto disponible (con pocas, p.ej. 6 regiones, se
+  // ensanchan para ocupar más pantalla).
+  const rowH = rows.length ? Math.min(availH / rows.length, bigFmt ? 150 : 96) : 24;
   const barH = rowH * 0.6, maxV = Math.max(1, ...rows.map(r => r.v));
   const xW = (v) => Math.max(0, (v / maxV) * plotW);
   const baseline = (y) => y + fs * 0.34;
@@ -423,7 +431,7 @@ function og_drawBars(svg, opt) {
     const cy = top + i * rowH, midY = cy + rowH / 2, bw = xW(r.v);
     const nm = og_el('text'); nm.setAttribute('x', left - (bigFmt ? 12 : 8)); nm.setAttribute('y', baseline(midY)); nm.setAttribute('text-anchor', 'end');
     nm.style.fontSize = fs + 'px'; nm.style.fontFamily = 'var(--sans)'; nm.style.fontWeight = '600'; nm.setAttribute('fill', 'var(--ink)'); nm.textContent = r.name; svg.appendChild(nm);
-    const bar = og_el('rect'); bar.setAttribute('x', left); bar.setAttribute('y', midY - barH / 2); bar.setAttribute('width', bw); bar.setAttribute('height', barH); bar.setAttribute('rx', bigFmt ? 3 : 2); bar.setAttribute('fill', r.color); svg.appendChild(bar);
+    const bar = og_el('rect'); bar.setAttribute('x', left); bar.setAttribute('y', midY - barH / 2); bar.setAttribute('width', bw); bar.setAttribute('height', barH); bar.setAttribute('rx', bigFmt ? 3 : 2); bar.setAttribute('fill', OG_BAR_COL); svg.appendChild(bar);
     const vt = og_el('text'); vt.setAttribute('x', left + bw + (bigFmt ? 10 : 6)); vt.setAttribute('y', baseline(midY));
     vt.style.fontSize = fs + 'px'; vt.style.fontFamily = 'var(--sans)'; vt.style.fontWeight = '700'; vt.setAttribute('fill', 'var(--ink)'); vt.textContent = abs ? r.n : (r.v + '%'); svg.appendChild(vt);
     if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) { bar.style.cursor = 'pointer'; bar.addEventListener('click', () => og_toggle(r.iso)); }
@@ -544,7 +552,7 @@ function setupOrigenesModeToggle() {
     // En país, barras trae su propio default (más/menos productores en total);
     // al volver a líneas/área se restauran las grandes canteras.
     if (og_group() === 'pais') {
-      if (m === 'bar') state[9].selectedCountries = new Map(og_barDefault().map((iso, i) => [iso, i]));
+      if (m === 'bar') state[9].selectedCountries = new Map(og_barDefault(state[9].period[1]).map((iso, i) => [iso, i]));
       else if (wasBar) state[9].selectedCountries = new Map(OG_BIG.map((iso, i) => [iso, i]));
     }
     sync(); og_renderChips(); drawOrigenes();
@@ -572,10 +580,11 @@ function setupOrigenesGroupToggle() {
   const paisBtn = document.getElementById('og-group-pais'), regBtn = document.getElementById('og-group-region');
   if (!paisBtn || !regBtn) return;
   function applyDefaultSelection() {
-    const m = new Map();
-    if (og_group() === 'region') OG_REGION_ORDER.forEach((r, i) => m.set(r, i));
-    else OG_BIG.forEach((iso, i) => m.set(iso, i));
-    state[9].selectedCountries = m;
+    let isos;
+    if (og_group() === 'region') isos = OG_REGION_ORDER;
+    else if (state[9].mode === 'bar') isos = og_barDefault(state[9].period[1]);  // país + barras
+    else isos = OG_BIG;
+    state[9].selectedCountries = new Map(isos.map((iso, i) => [iso, i]));
   }
   function sync() {
     const reg = state[9].group === 'region';

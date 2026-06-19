@@ -51,6 +51,9 @@
   .s-range-slider input[type="range"]::-moz-range-track { background: transparent; border: none; }
   .s-range-display { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--ink); min-width: 110px; font-variant-numeric: tabular-nums; text-align: right; }
   @media (max-width: 768px) { .s-range-block .m-ctrl-label { display: none; } .s-range-display { font-size: 13px; font-family: var(--sans); font-weight: 600; min-width: 76px; } }
+  /* Modo barras: slider de UN solo año (se oculta el thumb "desde" y el tramo activo) */
+  .s-range-slider.s-range-single #og-slider-from { display: none; }
+  .s-range-slider.s-range-single #og-range-track-active { display: none; }
 
   /* Toggles segmentados */
   .lg-mode { display: inline-flex; border: 1px solid var(--rule); border-radius: 15px; overflow: hidden; }
@@ -172,9 +175,9 @@
 <script src="./i18n-issue.js?v=lang6"></script>
 <script src="./utils.js?v=7"></script>
 <script src="./country-names.js?v=7"></script>
-<script src="./data-origenes.js?v=7"></script>
+<script src="./data-origenes.js?v=9"></script>
 <script src="./editor.js?v=7"></script>
-<script src="./origenes.js?v=7"></script>
+<script src="./origenes.js?v=9"></script>
 <script src="./png-export.js?v=7"></script>
 <script src="./svg-export.js?v=7"></script>
 <script>
