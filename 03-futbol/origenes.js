@@ -26,7 +26,7 @@ function og_colorForSlot(slot) { return OG_PALETTE_EXT[slot % OG_PALETTE_EXT.len
 const OG_COL_OTH = '#CFC9BC', OG_COL_OTH_TXT = '#8A8170';
 
 // Default país: grandes canteras. Default región: las 6 confederaciones.
-const OG_BIG = ['GBR', 'BRA', 'FRA', 'DEU', 'ARG'];
+const OG_BIG = ['ENG', 'BRA', 'FRA', 'DEU', 'ARG'];
 const OG_REGION_ORDER = ['CONMEBOL', 'UEFA', 'CONCACAF', 'CAF', 'AFC', 'OFC'];
 const OG_REGION_NAME = {
   CONMEBOL: ['Sudamérica', 'South America'], UEFA: ['Europa', 'Europe'],
@@ -77,6 +77,9 @@ function og_initData() {
 }
 function og_universe() { return (state[9] && state[9].universe === 'exp') ? 'exp' : 'all'; }
 function og_group() { return (state[9] && state[9].group === 'region') ? 'region' : 'pais'; }
+function og_isAbs() { return !!(state[9] && state[9].metric === 'abs'); }
+// Valor a graficar de un punto [year, pct, n]: cantidad o porcentaje.
+function og_mv(p) { return og_isAbs() ? p[2] : p[1]; }
 
 // Construye la vista (byIso + lista) para los toggles actuales: pts=[[year,pct,n]]
 let og_byIso = null, og_teams = null;
@@ -155,6 +158,15 @@ function og_niceScale(maxVal) {
   for (const [m, s] of cands) if (maxVal <= m + 0.001) { const ticks = []; for (let v = 0; v <= m; v += s) ticks.push(v); return { max: m, ticks }; }
   return { max: 100, ticks: [0, 20, 40, 60, 80, 100] };
 }
+// Escala "linda" para cantidades absolutas (~5 ticks redondos).
+function og_niceCount(maxVal) {
+  const m = Math.max(maxVal, 1);
+  const pow = Math.pow(10, Math.floor(Math.log10(m)));
+  const top = ([1, 1.5, 2, 3, 5, 10].map(x => x * pow).find(c => c >= m - 0.001)) || 10 * pow;
+  const step = top / 5, ticks = [];
+  for (let v = 0; v <= top + 1e-6; v += step) ticks.push(Math.round(v));
+  return { max: top, ticks };
+}
 const og_tt = (k, fb) => ((typeof t === 'function' ? t(k) : '') || fb);
 
 //==================================================================
@@ -196,13 +208,18 @@ function drawOrigenes() {
   const y0 = period[0], y1 = period[1];
   const inP = (pts) => pts.filter(p => p[0] >= y0 && p[0] <= y1 && p[1] != null);
 
-  // escala Y
+  // escala Y (depende de la métrica: % o cantidad)
+  const abs = og_isAbs();
   let yScale;
-  if (stackMode) { yScale = { max: 100, ticks: [0, 20, 40, 60, 80, 100] }; }
-  else {
+  if (stackMode) {
+    if (abs) {
+      let mx = 0; og_years.filter(y => y >= y0 && y <= y1).forEach(y => { const T = og_totals[og_universe()][y] || 0; if (T > mx) mx = T; });
+      yScale = og_niceCount(mx);
+    } else yScale = { max: 100, ticks: [0, 20, 40, 60, 80, 100] };
+  } else {
     let maxVal = 0;
-    selected.forEach(iso => inP(og_byIso[iso].pts).forEach(p => { if (p[1] > maxVal) maxVal = p[1]; }));
-    yScale = og_niceScale(Math.max(maxVal, 1));
+    selected.forEach(iso => inP(og_byIso[iso].pts).forEach(p => { const v = og_mv(p); if (v > maxVal) maxVal = v; }));
+    yScale = abs ? og_niceCount(maxVal) : og_niceScale(Math.max(maxVal, 1));
   }
 
   // margen derecho dinámico
@@ -233,18 +250,18 @@ function drawOrigenes() {
     const gl = og_el('line'); gl.setAttribute('x1', OG_MARGIN.left); gl.setAttribute('x2', OG_MARGIN.left + PLOT_W);
     gl.setAttribute('y1', y); gl.setAttribute('y2', y); gl.setAttribute('class', 's-grid-line'); svg.appendChild(gl);
     const lbl = og_el('text'); lbl.setAttribute('x', OG_MARGIN.left - (bigFmt ? 12 : 8)); lbl.setAttribute('y', y + (bigFmt ? 8 : 4));
-    lbl.setAttribute('text-anchor', 'end'); lbl.setAttribute('class', 's-tick'); lbl.style.fontSize = SIZES.tick + 'px'; lbl.textContent = v + '%'; svg.appendChild(lbl);
+    lbl.setAttribute('text-anchor', 'end'); lbl.setAttribute('class', 's-tick'); lbl.style.fontSize = SIZES.tick + 'px'; lbl.textContent = abs ? v : v + '%'; svg.appendChild(lbl);
   });
-  // título eje Y (depende del universo)
+  // título eje Y (depende de métrica + universo)
   const yT = og_el('text'); yT.setAttribute('class', 's-axis-title'); yT.setAttribute('text-anchor', 'middle');
   yT.setAttribute('transform', `translate(${OG_MARGIN.left - (mobile || mobilePng ? 84 : bigFmt ? 78 : 44)}, ${OG_MARGIN.top + PLOT_H / 2}) rotate(-90)`);
   yT.style.fontSize = SIZES.axisTitle + 'px';
-  yT.textContent = og_universe() === 'exp'
-    ? tt('c9-axis-y-exp', '% de los mundialistas "exportados"')
-    : tt('c9-axis-y-all', '% de mundialistas (según país de nacimiento)');
+  yT.textContent = abs
+    ? (og_universe() === 'exp' ? tt('c9-axis-n-exp', 'Mundialistas "exportados" (cantidad)') : tt('c9-axis-n-all', 'Mundialistas (cantidad)'))
+    : (og_universe() === 'exp' ? tt('c9-axis-y-exp', '% de los mundialistas "exportados"') : tt('c9-axis-y-all', '% de mundialistas (según país de nacimiento)'));
   svg.appendChild(yT);
 
-  function build(pts) { const v = pts.filter(p => p[1] != null); if (!v.length) return ''; return v.map((p, i) => (i === 0 ? 'M' : 'L') + xS(p[0]).toFixed(1) + ',' + yS(p[1]).toFixed(1)).join(' '); }
+  function build(pts) { const v = pts.filter(p => p[1] != null); if (!v.length) return ''; return v.map((p, i) => (i === 0 ? 'M' : 'L') + xS(p[0]).toFixed(1) + ',' + yS(og_mv(p)).toFixed(1)).join(' '); }
   const endLabels = [];
   const halosG = og_el('g'); svg.appendChild(halosG);
   const linesG = og_el('g'); svg.appendChild(linesG);
@@ -261,7 +278,7 @@ function drawOrigenes() {
     if (opts.iso) { path.setAttribute('data-og', opts.iso); path.setAttribute('data-base-w', lineW); path.classList.add('og-colored'); }
     linesG.appendChild(path);
     if (opts.markers) pts.filter(p => p[1] != null).forEach(p => {
-      const c = og_el('circle'); c.setAttribute('cx', xS(p[0])); c.setAttribute('cy', yS(p[1])); c.setAttribute('r', dotR);
+      const c = og_el('circle'); c.setAttribute('cx', xS(p[0])); c.setAttribute('cy', yS(og_mv(p))); c.setAttribute('r', dotR);
       c.setAttribute('fill', color); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', bigFmt ? 2 : 1.2); if (opts.iso) c.setAttribute('data-og', opts.iso); dotsG.appendChild(c);
     });
     if (opts.iso && !isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
@@ -270,15 +287,15 @@ function drawOrigenes() {
       hit.addEventListener('click', (ev) => { ev.stopPropagation(); og_toggle(opts.iso); }); hitG.appendChild(hit);
     }
     const last = pts.filter(p => p[1] != null).slice(-1)[0];
-    if (last) endLabels.push({ iso: opts.iso, color, text: opts.label, x: xS(last[0]), idealY: yS(last[1]), valLast: last[1] });
+    if (last) endLabels.push({ iso: opts.iso, color, text: opts.label, x: xS(last[0]), idealY: yS(og_mv(last)), valLast: og_mv(last) });
   }
 
   const hoverSeries = [];
   if (stackMode) {
     const yrs = og_years.filter(y => y >= y0 && y <= y1);
-    const valOf = (iso, yr) => { const p = og_byIso[iso].pts.find(q => q[0] === yr); return p ? p[1] : 0; };
+    const valOf = (iso, yr) => { const p = og_byIso[iso].pts.find(q => q[0] === yr); return p ? og_mv(p) : 0; };
     const bands = selected.map(iso => ({ iso, color: og_getColor(iso), name: og_displayName(iso, og_byIso[iso].name), get: (yr) => valOf(iso, yr) }));
-    bands.push({ iso: '_OTH', color: OG_COL_OTH, name: tt('c9-label-otros', 'Otros'), get: (yr) => { let s = 0; selected.forEach(iso => s += valOf(iso, yr)); return Math.max(0, +(100 - s).toFixed(1)); } });
+    bands.push({ iso: '_OTH', color: OG_COL_OTH, name: tt('c9-label-otros', 'Otros'), get: (yr) => { let s = 0; selected.forEach(iso => s += valOf(iso, yr)); const tot = abs ? (og_totals[og_universe()][yr] || 0) : 100; return Math.max(0, +(tot - s).toFixed(1)); } });
     const areasG = og_el('g'); svg.insertBefore(areasG, halosG);
     const lower = yrs.map(() => 0);
     bands.forEach(b => {
@@ -304,9 +321,10 @@ function drawOrigenes() {
   } else {
     selected.forEach(iso => {
       const tm = og_byIso[iso];
-      const pts = inP(tm.pts.map(p => [p[0], p[1]]));
+      const pts = inP(tm.pts);                          // [year, pct, n]
       drawSeries(pts, og_getColor(iso), { markers: true, iso, label: og_displayName(iso, tm.name) });
-      hoverSeries.push({ label: og_displayName(iso, tm.name), color: og_getColor(iso), pts });
+      // hover: [year, valor-graficado, valor-a-mostrar] (ambos = métrica activa)
+      hoverSeries.push({ label: og_displayName(iso, tm.name), color: og_getColor(iso), pts: pts.map(p => [p[0], og_mv(p), og_mv(p)]) });
     });
   }
 
@@ -328,18 +346,19 @@ function drawOrigenes() {
     txt.style.fontSize = SIZES.label + 'px'; txt.style.fontFamily = 'var(--sans)';
     txt.setAttribute('paint-order', 'stroke'); txt.setAttribute('stroke', '#FAF8F3'); txt.setAttribute('stroke-width', labelHalo); txt.setAttribute('stroke-linejoin', 'round');
     if (l.iso) txt.setAttribute('data-og', l.iso);
-    const valTxt = (isPngFormat && l.valLast != null) ? '  ' + Math.round(l.valLast) + '%' : '';
+    const valTxt = (isPngFormat && l.valLast != null) ? '  ' + Math.round(l.valLast) + (abs ? '' : '%') : '';
     txt.textContent = l.text + valTxt; endG.appendChild(txt);
   });
 
   if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER) && hoverSeries.length)
-    og_setupHover(svg, { y0, y1, xS, yS, series: hoverSeries });
+    og_setupHover(svg, { y0, y1, xS, yS, series: hoverSeries, abs });
 
   og_applyHeadings(aeCfg);
 }
 
 function og_setupHover(svg, ctx) {
   const { y0, y1, xS, yS, series } = ctx;
+  const unit = ctx.abs ? '' : '%';
   const tooltip = document.getElementById('tooltip9');
   const wcYears = og_years.filter(y => y >= y0 && y <= y1);
   const plotBottom = OG_MARGIN.top + (OG_H - OG_MARGIN.top - OG_MARGIN.bottom);
@@ -357,7 +376,7 @@ function og_setupHover(svg, ctx) {
       rows.push({ label: s.label, color: s.color, v: (p[2] != null ? p[2] : p[1]) }); });
     if (tooltip && rows.length) { rows.sort((a, b) => b.v - a.v);
       let html = `<div style="font-weight:600;margin-bottom:4px;">${year}</div>`;
-      rows.forEach(r => { html += `<div style="display:flex;align-items:center;gap:6px;line-height:1.5;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${r.color};"></span><span style="flex:1;">${r.label}</span><strong style="font-variant-numeric:tabular-nums;">${r.v}%</strong></div>`; });
+      rows.forEach(r => { html += `<div style="display:flex;align-items:center;gap:6px;line-height:1.5;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${r.color};"></span><span style="flex:1;">${r.label}</span><strong style="font-variant-numeric:tabular-nums;">${r.v}${unit}</strong></div>`; });
       tooltip.innerHTML = html; tooltip.style.display = 'block'; tooltip.style.opacity = '1';
     }
   }
@@ -481,6 +500,19 @@ function setupOrigenesGroupToggle() {
   regBtn.addEventListener('click', () => switchTo('region'));
   sync();
 }
+// Toggle métrica % ↔ cantidad absoluta.
+function setupOrigenesMetricToggle() {
+  const pctBtn = document.getElementById('og-metric-pct'), absBtn = document.getElementById('og-metric-abs');
+  if (!pctBtn || !absBtn) return;
+  function sync() {
+    const abs = state[9].metric === 'abs';
+    pctBtn.classList.toggle('lg-seg-on', !abs); absBtn.classList.toggle('lg-seg-on', abs);
+    pctBtn.setAttribute('aria-pressed', !abs ? 'true' : 'false'); absBtn.setAttribute('aria-pressed', abs ? 'true' : 'false');
+  }
+  pctBtn.addEventListener('click', () => { if (state[9].metric !== 'pct') { state[9].metric = 'pct'; sync(); drawOrigenes(); } });
+  absBtn.addEventListener('click', () => { if (state[9].metric !== 'abs') { state[9].metric = 'abs'; sync(); drawOrigenes(); } });
+  sync();
+}
 
 //==================================================================
 //  CSV + Init + PNG
@@ -513,6 +545,7 @@ function initOrigenes() {
   if (!state[9].mode) state[9].mode = 'line';
   if (!state[9].universe) state[9].universe = 'all';
   if (!state[9].group) state[9].group = 'pais';
+  if (!state[9].metric) state[9].metric = 'pct';
   if (!(state[9].selectedCountries instanceof Map)) {
     const init = state[9].selectedCountries;
     state[9].selectedCountries = new Map(init || []);
@@ -524,6 +557,7 @@ function initOrigenes() {
   setupOrigenesModeToggle();
   setupOrigenesUnivToggle();
   setupOrigenesGroupToggle();
+  setupOrigenesMetricToggle();
   setupOrigenesCSV();
   og_renderChips();
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();

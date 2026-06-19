@@ -36,7 +36,39 @@ def load_country_names():
 CN = load_country_names()
 HIST = {"CSK": ("Checoslovaquia", "Czechoslovakia"), "YUG": ("Yugoslavia", "Yugoslavia"),
         "SUN": ("Unión Soviética", "Soviet Union"), "DDR": ("Alemania Oriental", "East Germany"),
-        "SCG": ("Serbia y Montenegro", "Serbia and Montenegro"), "GBR": ("Reino Unido", "United Kingdom")}
+        "SCG": ("Serbia y Montenegro", "Serbia and Montenegro"), "GBR": ("Reino Unido", "United Kingdom"),
+        # Naciones del Reino Unido (no están en country-names.js, que es ISO-3166).
+        "ENG": ("Inglaterra", "England"), "SCO": ("Escocia", "Scotland"),
+        "WAL": ("Gales", "Wales"), "NIR": ("Irlanda del Norte", "Northern Ireland")}
+
+# --- split del Reino Unido por nación de NACIMIENTO (mismo criterio que el
+#     chart 7, adaptado: acá la nación sale de la CIUDAD de nacimiento). El dato
+#     ya trae nacio_en_pais tratando bien a las naciones UK; clasificamos la
+#     ciudad para captar también los casos cruzados (nacido en una nación UK que
+#     representa a otra selección). Default Inglaterra + red de seguridad geo.
+GBR_SCO = {"Glasgow", "Edinburgh", "Aberdeen", "Dundee", "Irvine", "Paisley", "Hamilton",
+  "Clydebank", "Falkirk", "Dunfermline", "Johnstone", "Kirkintilloch", "Uddingston",
+  "Kilwinning", "Greenock", "Fife", "Cumnock", "Alloa", "Perth", "Dumfries", "Ayr",
+  "Galashiels", "Stevenston", "Kilmarnock", "Lochgelly", "Carnoustie", "Cowdenbeath",
+  "Glencraig", "Douglas Water", "Dennistoun", "Kennoway", "Carron", "Barrhead", "Selkirk",
+  "Bishopbriggs", "Buckie", "Blantyre", "Leith", "Montrose", "Airdrie", "Arbroath",
+  "Alexandria", "Denny", "Busby", "Lossiemouth", "Stonehaven", "Stirling", "Lesmahagow",
+  "Linlithgow", "Cardenden", "Scottish Borders", "Banchory", "Maryhill", "Grangemouth",
+  "Largs", "Douglas", "Gourock", "Bellshill", "Bonnybridge", "Motherwell", "Thurso",
+  "Govan", "Stranraer", "Keith", "Dalry", "Leuchars", "Balfron", "Rutherglen", "Inverness",
+  "Kirriemuir"}
+GBR_WAL = {"Cardiff", "Swansea", "Wrexham", "Neath", "Newport", "Llansamlet", "Ystrad",
+  "Flint", "Cwmbwrla", "Rhondda", "Abercynon", "Ynysybwl", "Nant-y-derry", "Maerdy",
+  "Builth Wells", "Bangor", "Carmarthen", "Caerphilly", "Denbighshire"}
+GBR_NIR = {"Belfast", "Newry", "Derry", "Ballymoney", "Ballymena", "Magherafelt", "Coleraine",
+  "Lurgan", "Comber", "Castledawson", "Dundonald", "Kilrea", "Enniskillen", "Eglinton"}
+def gbr_birth_nation(city, lat, lon):
+    if city in GBR_NIR: return "NIR"
+    if city in GBR_SCO: return "SCO"
+    if city in GBR_WAL: return "WAL"
+    if lon <= -5.7 and 54 <= lat <= 55.6: return "NIR"   # isla de Irlanda
+    if lat >= 55.85: return "SCO"                          # al norte de Berwick
+    return "ENG"
 def nm(iso):
     if iso in HIST: return list(HIST[iso])
     c = CN.get(iso, {})
@@ -48,17 +80,18 @@ def load_confed():
     m = re.search(r"const\s+DATA_CLUBAGE\s*=\s*(\{.*?\});", txt, re.S)
     d = json.loads(m.group(1)) if m else {}
     out = {iso: v.get("confed") for iso, v in d.items() if v.get("confed")}
-    out.update({"GBR": "UEFA", "CSK": "UEFA", "YUG": "UEFA", "SUN": "UEFA",
-                "DDR": "UEFA", "SCG": "UEFA", "XKX": "UEFA", "IMN": "UEFA",
-                "PSE": "AFC", "CUW": "CONCACAF"})
+    out.update({"GBR": "UEFA", "ENG": "UEFA", "SCO": "UEFA", "WAL": "UEFA", "NIR": "UEFA",
+                "CSK": "UEFA", "YUG": "UEFA", "SUN": "UEFA", "DDR": "UEFA", "SCG": "UEFA",
+                "XKX": "UEFA", "IMN": "UEFA", "PSE": "AFC", "CUW": "CONCACAF"})
     return out
 CONFED = load_confed()
 
 # team_code (FIFA) -> iso3 cuando difieren (para la selección representada)
+# ENG/SCO/WAL/NIR son selecciones FIFA distintas → se mantienen separadas.
 TEAMCODE_FIX = {"ALG": "DZA", "GER": "DEU", "NED": "NLD", "SUI": "CHE", "POR": "PRT",
                 "CRO": "HRV", "URU": "URY", "PAR": "PRY", "RSA": "ZAF", "ZAI": "COD",
                 "TCH": "CSK", "FRG": "DEU", "GDR": "DDR", "YUG": "YUG", "SCG": "SCG",
-                "URS": "SUN", "ENG": "GBR", "SCO": "GBR", "WAL": "GBR", "NIR": "GBR"}
+                "URS": "SUN"}
 def repr_iso(team_code):
     tc = (team_code or "").strip()
     return TEAMCODE_FIX.get(tc, tc)
@@ -75,6 +108,10 @@ for r in rows:
     bi = (r.get("iso_nacimiento") or "").strip()
     if not bi:
         continue
+    if bi == "GBR":                                    # separar por nación de nacimiento
+        try: lat = float(r.get("lat_nac") or 0); lon = float(r.get("lon_nac") or 0)
+        except (TypeError, ValueError): lat = lon = 0.0
+        bi = gbr_birth_nation((r.get("ciudad_nac") or "").strip(), lat, lon)
     y = int(r["year"])
     total_all[y] += 1
     team_all[bi][y] += 1
