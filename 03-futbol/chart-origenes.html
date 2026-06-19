@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cada vez más mundialistas nacieron fuera del país que representan — El Atlas N°3</title>
+<title>De qué país nacen los mundialistas — El Atlas N°3</title>
 <!-- Open Graph / Twitter: preview al compartir este gráfico. URLs absolutas; preview en español. -->
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
-<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/chart-natividad.html">
-<meta property="og:title" content="Cada vez más mundialistas nacieron fuera del país que representan — El Atlas N°3">
-<meta property="og:description" content="Porcentaje de jugadores de cada Mundial nacidos en el país que representan.">
-<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-natividad.png">
-<meta property="og:image:alt" content="Cada vez más mundialistas nacieron fuera del país que representan">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/chart-origenes.html">
+<meta property="og:title" content="De qué país nacen los mundialistas — El Atlas N°3">
+<meta property="og:description" content="País de nacimiento de los jugadores de cada Mundial, y cuántos representan a otra selección (migración).">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-origenes.png">
+<meta property="og:image:alt" content="País de nacimiento de los mundialistas por Mundial">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Cada vez más mundialistas nacieron fuera del país que representan — El Atlas N°3">
-<meta name="twitter:description" content="Porcentaje de jugadores de cada Mundial nacidos en el país que representan.">
-<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-natividad.png">
+<meta name="twitter:title" content="De qué país nacen los mundialistas — El Atlas N°3">
+<meta name="twitter:description" content="País de nacimiento de los jugadores de cada Mundial, y cuántos representan a otra selección (migración).">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-origenes.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,7 +38,7 @@
   .s-tick { font-family: var(--sans); font-size: 11px; fill: var(--ink-soft); font-variant-numeric: tabular-nums; }
   .s-axis-title { font-family: var(--sans); font-size: 11.5px; fill: var(--ink-soft); font-weight: 500; }
 
-  /* Slider de rango (2 thumbs) */
+  /* Controles */
   .m-controls { display: flex; align-items: center; gap: 14px; margin: 4px 0 6px; flex-wrap: wrap; }
   .m-ctrl-label { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
   .s-range-block { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 280px; }
@@ -51,6 +51,12 @@
   .s-range-slider input[type="range"]::-moz-range-track { background: transparent; border: none; }
   .s-range-display { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--ink); min-width: 110px; font-variant-numeric: tabular-nums; text-align: right; }
   @media (max-width: 768px) { .s-range-block .m-ctrl-label { display: none; } .s-range-display { font-size: 13px; font-family: var(--sans); font-weight: 600; min-width: 76px; } }
+
+  /* Toggles segmentados */
+  .lg-mode { display: inline-flex; border: 1px solid var(--rule); border-radius: 15px; overflow: hidden; }
+  .lg-seg { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 13px; background: var(--bg); color: var(--ink-soft); border: none; cursor: pointer; white-space: nowrap; transition: background 0.12s ease, color 0.12s ease; }
+  .lg-seg + .lg-seg { border-left: 1px solid var(--rule); }
+  .lg-seg.lg-seg-on { background: var(--accent); color: #fff; }
 
   /* Buscador + chips */
   .m-search-wrap { position: relative; margin: 6px 0 4px; max-width: 360px; }
@@ -95,47 +101,59 @@
     </div>
   </header>
 
-  <section class="chart-block" data-chart="6" data-editor-id="natividad">
-    <h2 class="chart-title" data-i18n="c6-title">La selección nacional, cada vez menos nacional</h2>
-    <p class="chart-subtitle" data-i18n="c6-subtitle">Porcentaje de jugadores de cada Mundial nacidos en el país que representan.</p>
+  <section class="chart-block" data-chart="9" data-editor-id="origenes">
+    <h2 class="chart-title" data-i18n="c9-title">De qué país nacen los mundialistas</h2>
+    <p class="chart-subtitle" data-i18n="c9-subtitle-all">Porcentaje de los jugadores de cada Mundial según su país de nacimiento.</p>
 
     <div class="m-controls">
+      <div class="lg-mode" role="group" aria-label="Universo">
+        <button type="button" class="lg-seg lg-seg-on" id="og-univ-all" aria-pressed="true" data-i18n="c9-univ-all">Todos</button>
+        <button type="button" class="lg-seg" id="og-univ-exp" aria-pressed="false" data-i18n="c9-univ-exp">Exportados</button>
+      </div>
+      <div class="lg-mode" role="group" aria-label="Agrupación">
+        <button type="button" class="lg-seg lg-seg-on" id="og-group-pais" aria-pressed="true" data-i18n="c9-group-pais">País</button>
+        <button type="button" class="lg-seg" id="og-group-region" aria-pressed="false" data-i18n="c9-group-region">Región</button>
+      </div>
+      <div class="lg-mode" role="group" aria-label="Tipo de gráfico">
+        <button type="button" class="lg-seg lg-seg-on" id="og-mode-line" aria-pressed="true" data-i18n="c9-mode-line">Líneas</button>
+        <button type="button" class="lg-seg" id="og-mode-stack" aria-pressed="false" data-i18n="c9-mode-stack">Área apilada</button>
+      </div>
       <div class="s-range-block">
-        <span class="m-ctrl-label" data-i18n="c6-slider-period-label">Mundiales</span>
-        <div class="s-range-slider" id="nv-range-slider">
+        <span class="m-ctrl-label" data-i18n="c9-slider-period-label">Mundiales</span>
+        <div class="s-range-slider" id="og-range-slider">
           <div class="s-range-track"></div>
-          <div class="s-range-track-active" id="nv-range-track-active"></div>
-          <input type="range" id="nv-slider-from" min="1930" max="2026" value="1930" step="1" aria-label="Desde">
-          <input type="range" id="nv-slider-to"   min="1930" max="2026" value="2026" step="1" aria-label="Hasta">
+          <div class="s-range-track-active" id="og-range-track-active"></div>
+          <input type="range" id="og-slider-from" min="1930" max="2026" value="1930" step="1" aria-label="Desde">
+          <input type="range" id="og-slider-to"   min="1930" max="2026" value="2026" step="1" aria-label="Hasta">
         </div>
-        <span class="s-range-display" id="nv-range-display">1930–2026</span>
+        <span class="s-range-display" id="og-range-display">1930–2026</span>
       </div>
     </div>
 
-    <div class="m-search-wrap">
-      <input type="text" id="nv-search" class="m-search-input" data-i18n-placeholder="c6-search-placeholder" placeholder="Agregar selección…" autocomplete="off">
-      <div id="nv-search-results" class="m-search-results"></div>
+    <div class="m-search-wrap" id="og-search-wrap">
+      <input type="text" id="og-search" class="m-search-input" data-i18n-placeholder="c9-search-placeholder" placeholder="Agregar país de nacimiento…" autocomplete="off">
+      <div id="og-search-results" class="m-search-results"></div>
     </div>
-    <div class="m-selected-chips" id="nv-selected-chips"></div>
+    <div class="m-selected-chips" id="og-selected-chips"></div>
 
     <div class="chart-svg-wrap">
-      <svg id="chart6" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="tooltip" id="tooltip6"></div>
+      <svg id="chart9" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip9"></div>
     </div>
   </section>
 
   <div class="footer">
     <p>
-      <button class="download" data-chart="6-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
-      <button class="download" data-png="6" data-i18n="footer-download-png">Descargar PNG</button>
+      <button class="download" data-chart="9-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="9" data-i18n="footer-download-png">Descargar PNG</button>
     </p>
     <div class="footer-row">
-      <p class="sources m-desktop-only" data-i18n="c6-sources">
-        Datos: base de mundialistas jfjelstul/worldcup (1930-2022), Pantheon y Wikidata para lugar de nacimiento, y FC Maps para 2026. Un jugador cuenta como "nacido en el país" si su lugar de nacimiento coincide con la selección que representa.
+      <p class="sources m-desktop-only" data-i18n="c9-sources">
+        Datos: base de mundialistas jfjelstul/worldcup (1930-2022) + Pantheon/Wikidata para el lugar de nacimiento, y FC Maps para 2026. Un jugador cuenta como "exportado" si nació en un país distinto al que representa. El salto 2022→2026 incluye la ampliación del Mundial a 48 selecciones.
       </p>
       <details class="m-mobile-collapse">
         <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
-        <p data-i18n="c6-sources">Datos: jfjelstul/worldcup + Pantheon/Wikidata (lugar de nacimiento) + FC Maps (2026).</p>
+        <p data-i18n="c9-sources">Datos: jfjelstul/worldcup + Pantheon/Wikidata (nacimiento) + FC Maps (2026). "Exportado" = nació en otro país del que representa.</p>
       </details>
       <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
     </div>
@@ -146,21 +164,21 @@
 <script src="../lib/regions.js?v=7"></script>
 <script src="../lib/i18n.js?v=7"></script>
 <script src="./regions-fifa.js?v=7"></script>
-<script src="./i18n-issue.js?v=lang2"></script>
+<script src="./i18n-issue.js?v=lang4"></script>
 <script src="./utils.js?v=7"></script>
 <script src="./country-names.js?v=7"></script>
-<script src="./data-natividad.js?v=7"></script>
+<script src="./data-origenes.js?v=1"></script>
 <script src="./editor.js?v=7"></script>
-<script src="./natividad.js?v=7"></script>
+<script src="./origenes.js?v=1"></script>
 <script src="./png-export.js?v=7"></script>
 <script src="./svg-export.js?v=7"></script>
 <script>
-  state[6] = { selectedCountries: null, period: [1930, 2026] };
-  initNatividad();
+  state[9] = { selectedCountries: null, period: [1930, 2026], mode: 'line', universe: 'all', group: 'pais' };
+  initOrigenes();
   applyI18n();
   setupLangToggle(() => {
-    if (typeof nv_renderChips === 'function') nv_renderChips();
-    if (typeof drawNatividad === 'function') drawNatividad();
+    if (typeof og_renderChips === 'function') og_renderChips();
+    if (typeof drawOrigenes === 'function') drawOrigenes();
   });
 </script>
 <div id="chart-nav"></div>
