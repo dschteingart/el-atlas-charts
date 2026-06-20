@@ -266,7 +266,16 @@ function bp_renderData(transform) {
       // para que los clusters chicos no desaparezcan al lado de Europa).
       const vis = [];
       for (let i = 0; i < bp_vpts.length; i++) { const p = bp_vpts[i], sx = t.applyX(p.x), sy = t.applyY(p.y); if (inView(sx, sy)) vis.push({ x: sx, y: sy, n: p.n, c: p.c }); }
-      const R = (style === 'hexsmall') ? (bp_bigFmt ? 8 : 5) : (bp_bigFmt ? 15 : 10);
+      // Radio FIJO (NO escala con bigFmt). El mapa se proyecta a la MISMA escala
+      // en pantalla y en todos los formatos PNG (PW≈1084 siempre), así que el
+      // hexbin tiene que usar el mismo radio en todos lados. Cuando variaba
+      // (10 en desktop, 15 en mobile/PNG) re-discretizaba el MISMO mapa con otra
+      // grilla y otro offset de centrado: ciudades vecinas como Buenos Aires y
+      // Montevideo (a ~1px entre sí) caían en hexágonos distintos → el PNG no
+      // coincidía con el HTML ("uno al norte del otro"). Con radio fijo, todos
+      // los renders son idénticos. (Para agrandar los hexágonos, subir estos
+      // números: afecta a todos los formatos por igual y se mantiene la coherencia.)
+      const R = (style === 'hexsmall') ? 5 : 10;
       const hb = bp_makeHexbin(R);
       const bins = hb(vis, o => o.x, o => o.y);
       for (let i = 0; i < bins.length; i++) { let v = 0; for (let j = 0; j < bins[i].length; j++) v += bins[i][j].n; bins[i]._v = v; }

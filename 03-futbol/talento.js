@@ -215,6 +215,19 @@ function drawTalento() {
   }
   svg.setAttribute('viewBox', `0 0 ${TA_W} ${totalH}`);
 
+  // Margen izquierdo DINÁMICO: los nombres de país van a la izquierda (anchor
+  // end) en x = left-8, así que un nombre más ancho que el margen se sale por
+  // el borde del viewBox y el PNG lo recorta (p.ej. "Bosnia y Herzegovina" en
+  // cuadrado, donde SIZES.name=28). Expandimos el margen para que entre el
+  // nombre más largo de los que se muestran, con tope (no más del 42% del ancho).
+  let ta_maxNameW = 0;
+  data.forEach(d => { const w = ta_measureText(ta_displayName(d.iso), SIZES.name, 600); if (w > ta_maxNameW) ta_maxNameW = w; });
+  if (ta_maxNameW > 0) {
+    const neededLeft = Math.ceil(ta_maxNameW) + 8 + (bigFmt ? 10 : 6);
+    const maxLeft = Math.round(TA_W * 0.42);
+    TA_MARGIN.left = Math.min(maxLeft, Math.max(TA_MARGIN.left, neededLeft));
+  }
+
   const plotW = TA_W - TA_MARGIN.left - TA_MARGIN.right;
   const maxRate = data.length > 0 ? Math.max(...data.map(d => d.rate), 0.01) : 1;
 
