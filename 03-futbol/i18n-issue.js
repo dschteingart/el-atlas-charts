@@ -192,7 +192,7 @@ const ISSUE_I18N = {
     'c7-sources':            'Datos: base de mundialistas <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> (1930-2022) + Wikidata/Transfermarkt para los clubes, y FC Maps para 2026. El club se asigna al país donde está radicado; el Reino Unido va separado por nación futbolística (la Premier League cuenta como Inglaterra, distinta de la liga escocesa). El salto 2022→2026 incluye la ampliación del Mundial a 48 selecciones.',
     'c7-sources-tpl':        'Datos: jfjelstul/worldcup + Wikidata/Transfermarkt (clubes) + FC Maps (2026). Reino Unido separado por nación (Inglaterra/Escocia).',
 
-    'c9-title':              'De qué país nacen los mundialistas',
+    'c9-title':              'La migración en el fútbol mundial',
     'c9-subtitle-all':       'Porcentaje de los jugadores de cada Mundial según su país de nacimiento.',
     'c9-subtitle-exp':       'Mundialistas nacidos en cada país pero que representan a otra selección, como % de los "exportados" de ese Mundial.',
     'c9-axis-y-all':         '% de mundialistas (según país de nacimiento)',
@@ -403,7 +403,7 @@ const ISSUE_I18N = {
     'c7-sources':            'Data: <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> squads (1930-2022) + Wikidata/Transfermarkt for clubs, and FC Maps for 2026. A club is assigned to the country where it is based; the UK is split by football nation (the Premier League counts as England, separate from the Scottish league). The 2022→2026 jump also reflects the World Cup\'s expansion to 48 teams.',
     'c7-sources-tpl':        'Data: jfjelstul/worldcup + Wikidata/Transfermarkt (clubs) + FC Maps (2026). UK split by nation (England/Scotland).',
 
-    'c9-title':              'Where World Cup players are born',
+    'c9-title':              'Migration in world football',
     'c9-subtitle-all':       'Share of each World Cup\'s players by country of birth.',
     'c9-subtitle-exp':       'Players born in each country but representing a different national team, as a share of that World Cup\'s "exported" players.',
     'c9-axis-y-all':         '% of World Cup players (by country of birth)',

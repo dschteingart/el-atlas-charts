@@ -616,7 +616,7 @@ function og_applyHeadings(aeCfg) {
   const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
   const tx = (aeCfg && aeCfg.texts && aeCfg.texts[lang]) || {};
   const titleEl = block.querySelector('.chart-title');
-  if (titleEl && !(tx.title || '').trim()) titleEl.textContent = og_tt('c9-title', 'De qué país nacen los mundialistas');
+  if (titleEl && !(tx.title || '').trim()) titleEl.textContent = og_tt('c9-title', 'La migración en el fútbol mundial');
   const subEl = block.querySelector('.chart-subtitle');
   if (subEl && !(tx.subtitle || '').trim()) subEl.textContent = og_subtitle();
 }
@@ -771,7 +771,7 @@ function initOrigenes() {
   og_initData();
   if (!state[9]) state[9] = {};
   if (!state[9].period) state[9].period = [OG_YEAR_MIN, OG_YEAR_MAX];
-  if (!state[9].mode) state[9].mode = 'line';
+  if (!state[9].mode) state[9].mode = 'sankey';   // por default mostramos los flujos (lo que distingue a este gráfico del 8)
   if (!state[9].universe) state[9].universe = 'all';
   if (!state[9].group) state[9].group = 'pais';
   if (!state[9].metric) state[9].metric = 'pct';
