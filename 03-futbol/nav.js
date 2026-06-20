@@ -51,7 +51,8 @@
          ${arrow(prev, '←', t.prev)}
          <a class="atlas-nav-count" href="./index.html" title="${t.all}">${t.label} ${num} / ${n}</a>
          ${arrow(next, '→', t.next)}
-       </div>` + cta;
+       </div>
+       <a class="atlas-nav-all" href="./index.html">${t.all} →</a>` + cta;
   }
   function injectCss() {
     if (document.getElementById('atlas-nav-css')) return;
@@ -63,6 +64,10 @@
       .atlas-nav-arrow.is-off { opacity: .28; pointer-events: none; }
       .atlas-nav-count { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--ink-muted); text-decoration: none; letter-spacing: .07em; text-transform: uppercase; min-width: 92px; text-align: center; }
       .atlas-nav-count:hover { color: var(--accent); }
+      .atlas-nav-all { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; }
+      .atlas-nav-all:hover { text-decoration: underline; text-underline-offset: 3px; }
+      .brand a.atlas-home { color: inherit; text-decoration: none; }
+      .brand a.atlas-home:hover { color: var(--accent); }
       .atlas-cta { display: flex; flex-direction: column; align-items: center; gap: 9px; max-width: 460px; text-align: center; text-decoration: none; background: var(--bg); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 24px 16px; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
       .atlas-cta:hover { border-color: var(--accent); box-shadow: 0 6px 20px rgba(190,93,50,.13); transform: translateY(-1px); }
       .atlas-cta-eyebrow { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
@@ -102,9 +107,25 @@
     a.textContent = T[L].sub + ' →';
     a.setAttribute('href', SUBS[L]);
   }
+  // En páginas de gráfico, hacer del "El Atlas · N° 3" de la top-bar un link al
+  // índice (patrón logo→home), para volver claro al listado general cuando se
+  // entra directo a un gráfico desde un link compartido. Idempotente.
+  function mountBrandLink() {
+    const file = (location.pathname.split('/').pop() || '').toLowerCase();
+    if (CHARTS.indexOf(file) < 0) return;   // solo en páginas de gráfico
+    const brand = document.querySelector('.top-bar .brand');
+    if (!brand || brand.querySelector('a.atlas-home')) return;
+    const a = document.createElement('a');
+    a.className = 'atlas-home';
+    a.href = './index.html';
+    a.title = T[lang()].all;
+    while (brand.firstChild) a.appendChild(brand.firstChild);
+    brand.appendChild(a);
+  }
   function init() {
     injectCss();
     render();
+    mountBrandLink();
     mountTopCta();
     // Re-render sincrónico al cambiar idioma, usando el data-lang del botón
     // clickeado (sin depender de rAF ni del orden con setupLangToggle).
