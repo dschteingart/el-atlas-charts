@@ -52,14 +52,15 @@ const AL_YEAR_MIN = 1930, AL_YEAR_MAX = 2026;
 //==================================================================
 //  Data
 //==================================================================
-let al_years = null, al_overall = null, al_teams = null, al_positions = null, al_teamNames = null, al_proxies = null;
+let al_years = null, al_overall = null, al_teams = null, al_positions = null, al_teamPos = null, al_teamNames = null, al_proxies = null;
 function al_initData() {
   if (al_overall) return;
-  if (typeof ALTURA === 'undefined') { console.error('[altura] ALTURA no cargado'); al_years = []; al_overall = {}; al_teams = {}; al_positions = {}; al_teamNames = {}; al_proxies = {}; return; }
+  if (typeof ALTURA === 'undefined') { console.error('[altura] ALTURA no cargado'); al_years = []; al_overall = {}; al_teams = {}; al_positions = {}; al_teamPos = {}; al_teamNames = {}; al_proxies = {}; return; }
   al_years = ALTURA.years.slice();
-  al_overall = ALTURA.overall; al_teams = ALTURA.teams; al_positions = ALTURA.positions;
+  al_overall = ALTURA.overall; al_teams = ALTURA.teams; al_positions = ALTURA.positions; al_teamPos = ALTURA.teamPos || {};
   al_teamNames = ALTURA.teamNames; al_proxies = ALTURA.proxies || {};
 }
+function al_teamPosSeries(country, p) { const o = al_teamPos[country] && al_teamPos[country][p]; if (!o) return []; const r = []; (al_years || []).forEach(y => { const v = o[String(y)]; if (v != null) r.push([y, v]); }); return r; }
 function al_mode() { return (state[10] && state[10].mode) || 'line'; }
 function al_byPos() { return !!(state[10] && state[10].byPos); }
 function al_vsCountry() { return !!(state[10] && state[10].vsCountry); }
@@ -84,7 +85,7 @@ function al_selTeams() { return Array.from(al_selMap().keys()).filter(c => c ===
 function al_nextFreeSlot() { const u = new Set(Array.from(al_selMap().values()).filter(v => v >= 0)); let i = 0; while (u.has(i)) i++; return i; }
 function al_toggleTeam(code) {
   const sel = al_selMap();
-  if (al_mode() === 'box') {            // en distribución, una sola selección a la vez
+  if (al_mode() === 'box' || al_byPos()) {   // distribución y "por puesto": una sola selección a la vez
     if (sel.has(code)) sel.clear(); else { sel.clear(); sel.set(code, 0); }
   } else {
     if (sel.has(code)) sel.delete(code); else sel.set(code, al_nextFreeSlot());
@@ -117,16 +118,22 @@ function al_yScale(min, max) {
 function al_lineSeries() {
   al_initData(); const out = [];
   if (al_byPos()) {
-    AL_POS_ORDER.forEach(p => { const o = al_positions[p]; if (o) out.push({ label: al_posName(p), color: AL_POS_COL[p], pts: al_seriesByYear(o, 'act') }); });
+    const country = al_selTeams().find(c => c !== AL_WORLD);   // primer país elegido; si no hay, Mundial (overall)
+    AL_POS_ORDER.forEach(p => {
+      const pts = country ? al_teamPosSeries(country, p) : (al_positions[p] ? al_seriesByYear(al_positions[p], 'act') : []);
+      if (pts.length) out.push({ label: al_posName(p), color: AL_POS_COL[p], pts });
+    });
     return out;
   }
   let sel = al_selTeams(); if (!sel.length) sel = [AL_WORLD];
   sel.forEach(code => {
-    const isW = code === AL_WORLD, o = isW ? al_overall : al_teams[code], col = isW ? AL_REAL : al_getColor(code);
-    out.push({ label: al_teamName(code), color: col, pts: al_seriesByYear(o, 'act') });
-    // la "esperada" del país: línea gris para el Mundial; compañera fina por país.
-    if (al_vsCountry()) out.push({ label: isW ? al_tt('c10-exp', 'Varón promedio del país') : '', color: isW ? AL_EXP : col, pts: al_seriesByYear(o, 'exp'), dashed: true, faint: !isW });
+    const isW = code === AL_WORLD, o = isW ? al_overall : al_teams[code];
+    out.push({ label: al_teamName(code), color: isW ? AL_REAL : al_getColor(code), pts: al_seriesByYear(o, 'act') });
   });
+  // "vs. varón promedio": UNA sola línea gris (la del Mundial = promedio de los
+  // varones de los países de todos los mundialistas). Solo si el Mundial está
+  // seleccionado — comparar la real de un país contra ESTA referencia.
+  if (al_vsCountry() && sel.indexOf(AL_WORLD) >= 0) out.push({ label: al_tt('c10-exp', 'Varón promedio de sus países'), color: AL_EXP, pts: al_seriesByYear(al_overall, 'exp'), dashed: true });
   return out;
 }
 // Distribución: UNA sola caja por año. Devuelve { label, color, boxes:[[year,mn,q1,md,q3,mx]] }
@@ -146,9 +153,12 @@ function drawAltura() {
 
   // visibilidad de controles
   const box = al_mode() === 'box';
-  const wrap = document.getElementById('al-search-wrap'); if (wrap) wrap.style.display = al_byPos() ? 'none' : '';     // buscador solo si NO es "por puesto"
+  const wrap = document.getElementById('al-search-wrap'); if (wrap) wrap.style.display = '';     // buscador siempre (en "por puesto" filtra el país)
   const vsBtn = document.getElementById('al-vscountry'); if (vsBtn) { const g = vsBtn.closest('.lg-mode'); if (g) g.style.display = (box || al_byPos()) ? 'none' : ''; }
   const posSel = document.getElementById('al-boxpos'); if (posSel) posSel.style.display = (box && al_byPos()) ? '' : 'none';   // selector de puesto único, solo en box+puesto
+  // hint del Mundial: visible cuando es la única selección (guía la primera comparación)
+  const hint = document.getElementById('al-hint');
+  if (hint) { const onlyWorld = !al_byPos() && al_selTeams().filter(c => c !== AL_WORLD).length === 0; hint.style.display = onlyWorld ? '' : 'none'; }
 
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const newsletter = editorFormat === 'newsletter', square = editorFormat === 'square', mobilePng = editorFormat === 'mobile';
@@ -331,7 +341,11 @@ function al_subtitle() {
   const en = (typeof LANG !== 'undefined' && LANG === 'en'), box = al_mode() === 'box', per = al_periodPhrase(en);
   const someTeams = !al_byPos() && Array.from(al_selMap().keys()).filter(c => al_teams && al_teams[c]).length > 0;
   if (box) return en ? `Distribution of player height ${per}.` : `Distribución de la altura de los jugadores ${per}.`;
-  if (al_byPos()) return en ? `Average player height by position ${per}.` : `Altura promedio de los jugadores por puesto ${per}.`;
+  if (al_byPos()) {
+    const country = al_selTeams().find(c => c !== AL_WORLD);
+    if (country) return en ? `Average height by position — ${al_teamName(country)} ${per}.` : `Altura promedio por puesto — ${al_teamName(country)} ${per}.`;
+    return en ? `Average player height by position ${per}.` : `Altura promedio de los jugadores por puesto ${per}.`;
+  }
   if (someTeams) return en ? `Average height of the selected teams' players ${per}.` : `Altura promedio de los jugadores de las selecciones elegidas ${per}.`;
   if (al_vsCountry()) return en ? `Average height of World Cup players vs. the average man of their birth country and cohort, ${per}.` : `Altura promedio de los mundialistas vs. el varón promedio de su país de nacimiento y generación, ${per}.`;
   return en ? `Average height of World Cup players ${per}.` : `Altura promedio de los mundialistas ${per}.`;
@@ -348,7 +362,6 @@ function al_applyHeadings() {
 function al_renderChips() {
   const c = document.getElementById('al-selected-chips'); if (!c) return;
   c.innerHTML = '';
-  if (al_byPos()) return;
   Array.from(al_selMap().keys()).forEach(code => {
     if (code !== AL_WORLD && !al_teams[code]) return;
     const chip = document.createElement('span'); chip.className = 'm-selected-chip'; chip.style.background = al_getColor(code); chip.style.color = '#fff'; chip.textContent = al_teamName(code);
@@ -392,8 +405,11 @@ function setupAlturaToggles() {
     state[10].mode = v;
     if (v === 'box') { const sel = al_selMap(); if (sel.size > 1) { const first = sel.keys().next().value; sel.clear(); sel.set(first, 0); } }
   });
-  // Desglose: selección (buscador) / por puesto
-  al_seg(['view-sel', 'view-pos'], () => (al_byPos() ? 'pos' : 'sel'), v => { state[10].byPos = (v === 'pos'); });
+  // Desglose: selección (buscador) / por puesto. Al pasar a "por puesto", una sola selección.
+  al_seg(['view-sel', 'view-pos'], () => (al_byPos() ? 'pos' : 'sel'), v => {
+    state[10].byPos = (v === 'pos');
+    if (v === 'pos') { const sel = al_selMap(); if (sel.size > 1) { const first = sel.keys().next().value; sel.clear(); sel.set(first, 0); } }
+  });
   // Selector de puesto único (solo en box+puesto)
   al_seg(['boxpos-GK', 'boxpos-DEF', 'boxpos-MID', 'boxpos-FWD'], () => al_boxPos(), v => { state[10].boxPos = v; });
   // vs país

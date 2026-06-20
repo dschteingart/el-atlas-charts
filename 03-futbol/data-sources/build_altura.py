@@ -114,6 +114,7 @@ def _mk(): return {"act": [], "exp": []}
 overall = defaultdict(_mk)                                  # year -> {act:[],exp:[]}
 teams = defaultdict(lambda: defaultdict(_mk))              # code -> year -> {...}
 positions = defaultdict(lambda: defaultdict(lambda: {"act": []}))  # pos -> year -> {act:[]}
+team_pos = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))  # code -> pos -> year -> [alturas]
 team_name = {}                                             # code -> nombre legible (último)
 team_proxy = defaultdict(set)                              # code -> {iso proxyados} (para caveat)
 
@@ -147,7 +148,9 @@ for r in rows:
         overall[y]["act"].append(height)
         if tc: teams[tc][y]["act"].append(height)
         p = POS_MAP.get((r.get("posicion") or "").strip())
-        if p: positions[p][y]["act"].append(height)
+        if p:
+            positions[p][y]["act"].append(height)
+            if tc: team_pos[tc][p][y].append(height)
     if exp is not None:
         overall[y]["exp"].append(exp)
         if tc: teams[tc][y]["exp"].append(exp)
@@ -189,11 +192,22 @@ def team_label(tc):
 team_names_out = {tc: team_label(tc) for tc in teams_out}
 proxies_out = {tc: sorted(v) for tc, v in team_proxy.items() if v}
 
+# altura promedio por selección × puesto × año (para "Por puesto" filtrado por país).
+# Solo el promedio (no boxplot: por puesto y selección hay pocos jugadores).
+teampos_out = {}
+for tc, byp in team_pos.items():
+    d = {}
+    for p, byy in byp.items():
+        ser = {str(y): round(sum(vs) / len(vs), 1) for y, vs in byy.items() if vs}
+        if ser: d[p] = ser
+    if d: teampos_out[tc] = d
+
 data = {
     "years": years,
     "overall": overall_out,
     "teams": teams_out,
     "positions": positions_out,
+    "teamPos": teampos_out,          # code -> pos -> {year: altura promedio}
     "teamNames": team_names_out,
     "proxies": proxies_out,          # selección -> isos cuya altura esperada usa proxy (caveat)
     "proxyMap": PROXY_NOTE,
