@@ -248,41 +248,49 @@
     }
   }
 
+  // wrapText / countWrapLines respetan saltos de línea explícitos (\n) como
+  // cortes DUROS y, dentro de cada segmento, hacen wrap greedy por ancho. Sirve
+  // para forzar dónde corta un texto sin depender del ancho — ej. el caption de
+  // fuentes pone la definición de "Exportado"/"Exported" en su propio renglón.
   function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-    const words = text.split(/\s+/);
-    let line = '';
     let lines = 0;
-    for (let i = 0; i < words.length; i++) {
-      const testLine = line ? line + ' ' + words[i] : words[i];
-      if (ctx.measureText(testLine).width > maxWidth && line) {
-        ctx.fillText(line, x, y + lines * lineHeight);
-        line = words[i];
-        lines++;
-      } else {
-        line = testLine;
+    String(text).split('\n').forEach(para => {
+      const words = para.split(/\s+/).filter(Boolean);
+      let line = '';
+      for (let i = 0; i < words.length; i++) {
+        const testLine = line ? line + ' ' + words[i] : words[i];
+        if (ctx.measureText(testLine).width > maxWidth && line) {
+          ctx.fillText(line, x, y + lines * lineHeight);
+          line = words[i];
+          lines++;
+        } else {
+          line = testLine;
+        }
       }
-    }
-    if (line) {
-      ctx.fillText(line, x, y + lines * lineHeight);
-      lines++;
-    }
+      if (line) {
+        ctx.fillText(line, x, y + lines * lineHeight);
+        lines++;
+      }
+    });
     return lines;
   }
 
   function countWrapLines(ctx, text, maxWidth) {
-    const words = text.split(/\s+/);
-    let line = '';
     let lines = 0;
-    for (let i = 0; i < words.length; i++) {
-      const testLine = line ? line + ' ' + words[i] : words[i];
-      if (ctx.measureText(testLine).width > maxWidth && line) {
-        line = words[i];
-        lines++;
-      } else {
-        line = testLine;
+    String(text).split('\n').forEach(para => {
+      const words = para.split(/\s+/).filter(Boolean);
+      let line = '';
+      for (let i = 0; i < words.length; i++) {
+        const testLine = line ? line + ' ' + words[i] : words[i];
+        if (ctx.measureText(testLine).width > maxWidth && line) {
+          line = words[i];
+          lines++;
+        } else {
+          line = testLine;
+        }
       }
-    }
-    if (line) lines++;
+      if (line) lines++;
+    });
     return lines;
   }
 

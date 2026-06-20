@@ -218,7 +218,7 @@ const ISSUE_I18N = {
     'c9-search-placeholder': 'Agregar país de nacimiento…',
     'c9-label-otros':        'Otros',
     'c9-sources':            'Datos: base de mundialistas <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> (1930-2022) + Pantheon/Wikidata para el lugar de nacimiento, y FC Maps para 2026. Un jugador cuenta como "exportado" si nació en un país distinto al que representa. El salto 2022→2026 incluye la ampliación del Mundial a 48 selecciones.',
-    'c9-sources-tpl':        'Datos: jfjelstul/worldcup + Pantheon/Wikidata (nacimiento) + FC Maps (2026). "Exportado" = nació en otro país del que representa.',
+    'c9-sources-tpl':        'Datos: jfjelstul/worldcup + Pantheon/Wikidata (nacimiento) + FC Maps (2026).\n"Exportado" = nació en otro país del que representa.',
 
     // Chart 8 — Lugares de nacimiento de los mundialistas (anexo: mundiales)
     'c8-title':              'De dónde salen los mundialistas',
@@ -429,7 +429,7 @@ const ISSUE_I18N = {
     'c9-search-placeholder': 'Add a country of birth…',
     'c9-label-otros':        'Others',
     'c9-sources':            'Data: <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> squads (1930-2022) + Pantheon/Wikidata for birthplace, and FC Maps for 2026. A player counts as "exported" if born in a country other than the one they represent. The 2022→2026 jump also reflects the World Cup\'s expansion to 48 teams.',
-    'c9-sources-tpl':        'Data: jfjelstul/worldcup + Pantheon/Wikidata (birthplace) + FC Maps (2026). "Exported" = born in a country other than the one represented.',
+    'c9-sources-tpl':        'Data: jfjelstul/worldcup + Pantheon/Wikidata (birthplace) + FC Maps (2026).\n"Exported" = born in a country other than the one represented.',
 
     // Chart 8 — Where World Cup players are born (annex: World Cups)
     'c8-title':              'Where World Cup players come from',
