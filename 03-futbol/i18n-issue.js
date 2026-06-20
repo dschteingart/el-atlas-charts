@@ -220,6 +220,23 @@ const ISSUE_I18N = {
     'c9-sources':            'Datos: base de mundialistas <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> (1930-2022) + Pantheon/Wikidata para el lugar de nacimiento, y FC Maps para 2026. Un jugador cuenta como "exportado" si nació en un país distinto al que representa. El salto 2022→2026 incluye la ampliación del Mundial a 48 selecciones.',
     'c9-sources-tpl':        'Datos: jfjelstul/worldcup + Pantheon/Wikidata (nacimiento) + FC Maps (2026).\n"Exportado" = nació en otro país del que representa.',
 
+    // Chart 10 — Evolución de la altura de los mundialistas
+    'c10-title':              'Los mundialistas son cada vez más altos',
+    'c10-subtitle':           'Altura promedio de los mundialistas vs. el varón promedio de su país de nacimiento y generación, en cada Mundial.',
+    'c10-axis-y':             'Altura (cm)',
+    'c10-real':               'Mundialistas',
+    'c10-exp':                'Varón promedio del país',
+    'c10-mode-line':          'Líneas',
+    'c10-mode-box':           'Distribución',
+    'c10-group-total':        'Total',
+    'c10-group-pos':          'Por puesto',
+    'c10-group-team':         'Por selección',
+    'c10-vscountry':          'vs. país',
+    'c10-slider-period-label':'Mundiales',
+    'c10-search-placeholder': 'Agregar selección…',
+    'c10-sources':            'Datos: altura y plantel de la base de mundialistas <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> (1930-2022) + FC Maps (2026). Altura esperada = altura media de varones del país de nacimiento de cada jugador en su año de nacimiento (NCD-RisC vía Our World in Data, 1896-1996; los nacidos después se extrapolan). Curazao usa Países Bajos como proxy.',
+    'c10-sources-tpl':        'Datos: jfjelstul/worldcup + FC Maps (2026). Altura esperada = altura media de varones del país y año de nacimiento (NCD-RisC vía OWID).\nCurazao usa Países Bajos como proxy.',
+
     // Chart 8 — Lugares de nacimiento de los mundialistas (anexo: mundiales)
     'c8-title':              'De dónde salen los mundialistas',
     'c8-subtitle':           'Ciudad de nacimiento de los jugadores de cada Mundial.',
@@ -430,6 +447,23 @@ const ISSUE_I18N = {
     'c9-label-otros':        'Others',
     'c9-sources':            'Data: <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> squads (1930-2022) + Pantheon/Wikidata for birthplace, and FC Maps for 2026. A player counts as "exported" if born in a country other than the one they represent. The 2022→2026 jump also reflects the World Cup\'s expansion to 48 teams.',
     'c9-sources-tpl':        'Data: jfjelstul/worldcup + Pantheon/Wikidata (birthplace) + FC Maps (2026).\n"Exported" = born in a country other than the one represented.',
+
+    // Chart 10 — Evolution of World Cup players' height
+    'c10-title':              'World Cup players keep getting taller',
+    'c10-subtitle':           'Average height of World Cup players vs. the average man of their birth country and cohort, World Cup by World Cup.',
+    'c10-axis-y':             'Height (cm)',
+    'c10-real':               'World Cup players',
+    'c10-exp':                'Average man of the country',
+    'c10-mode-line':          'Lines',
+    'c10-mode-box':           'Distribution',
+    'c10-group-total':        'Total',
+    'c10-group-pos':          'By position',
+    'c10-group-team':         'By team',
+    'c10-vscountry':          'vs. country',
+    'c10-slider-period-label':'World Cups',
+    'c10-search-placeholder': 'Add a team…',
+    'c10-sources':            'Data: height and squads from the <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> database (1930-2022) + FC Maps (2026). Expected height = mean height of men from each player\'s birth country in their birth year (NCD-RisC via Our World in Data, 1896-1996; later cohorts extrapolated). Curaçao uses the Netherlands as a proxy.',
+    'c10-sources-tpl':        'Data: jfjelstul/worldcup + FC Maps (2026). Expected height = mean height of men by birth country and year (NCD-RisC via OWID).\nCuraçao uses the Netherlands as a proxy.',
 
     // Chart 8 — Where World Cup players are born (annex: World Cups)
     'c8-title':              'Where World Cup players come from',
