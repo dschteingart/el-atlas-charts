@@ -53,6 +53,13 @@ OWID_FALLBACK = {
 }
 PROXY_NOTE = {"CUW": "NLD", "XKX": "SRB", "IMN": "GBR"}   # los que el renderer marca como proxy
 
+# Correcciones de altura a errores conocidos de la fuente fcmaps (2026): Wikidata
+# da un valor muy distinto y sin esto distorsionan el mín/máx del boxplot.
+# Clave = wd_id (Wikidata).
+HEIGHT_FIX = {
+    "Q501274": 190,   # Ramy Rabia (Egipto, central): fcmaps lo lista en 156 cm; mide ~190.
+}
+
 # --- nombres de país (es/en) para el selector de selecciones --------------------
 def load_country_names():
     txt = (ROOT / "country-names.js").read_text(encoding="utf-8")
@@ -120,6 +127,8 @@ for r in rows:
     if h:
         try: height = float(h)
         except ValueError: height = None
+    wd = (r.get("wd_id") or "").strip()
+    if wd in HEIGHT_FIX: height = float(HEIGHT_FIX[wd])   # corrección de error conocido
 
     # altura esperada del país de nacimiento en el año de nacimiento
     iso = (r.get("iso_nacimiento") or "").strip()

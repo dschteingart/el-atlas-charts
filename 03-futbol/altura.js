@@ -28,7 +28,8 @@ const AL_PALETTE = [
   '#1B3956', '#772C24', '#386433', '#7D6418', '#5F3168', '#1B6368'
 ];
 function al_colorForSlot(s) { return AL_PALETTE[s % AL_PALETTE.length]; }
-const AL_BIG = ['ARG', 'BRA', 'DEU', 'NLD', 'ESP'];   // selección default si entrás "por selección" (team_code = ISO3)
+const AL_BIG = ['ARG', 'BRA', 'DEU', 'NLD', 'ESP'];   // (team_code = ISO3)
+const AL_WORLD = '_WORLD';   // "selección" especial = promedio de TODOS los mundialistas (seleccionable como un país más)
 
 const AL_W_DESKTOP = 1100, AL_H_DESKTOP = 520;
 const AL_W_MOBILE = 1100, AL_H_MOBILE = 1000;
@@ -74,11 +75,12 @@ function al_measureText(text, size, weight) {
   return al_measureText._c.measureText(text).width;
 }
 const al_tt = (k, fb) => ((typeof t === 'function' ? t(k) : '') || fb);
-function al_teamName(code) { const lang = (typeof LANG !== 'undefined') ? LANG : 'es'; const nm = al_teamNames && al_teamNames[code]; return nm ? (lang === 'en' ? nm[1] : nm[0]) : code; }
+function al_teamName(code) { if (code === AL_WORLD) return al_totalName(); const lang = (typeof LANG !== 'undefined') ? LANG : 'es'; const nm = al_teamNames && al_teamNames[code]; return nm ? (lang === 'en' ? nm[1] : nm[0]) : code; }
 function al_posName(p) { const lang = (typeof LANG !== 'undefined') ? LANG : 'es'; const nm = AL_POS_NAME[p]; return nm ? (lang === 'en' ? nm[1] : nm[0]) : p; }
 function al_totalName() { return al_tt('c10-real', 'Mundialistas'); }
 function al_selMap() { if (!(state[10].selectedTeams instanceof Map)) state[10].selectedTeams = new Map(state[10].selectedTeams || []); return state[10].selectedTeams; }
-function al_getColor(code) { const s = al_selMap().get(code); return s == null ? null : al_colorForSlot(s); }
+function al_getColor(code) { if (code === AL_WORLD) return AL_REAL; const s = al_selMap().get(code); return s == null ? null : al_colorForSlot(s); }
+function al_selTeams() { return Array.from(al_selMap().keys()).filter(c => c === AL_WORLD || (al_teams && al_teams[c])); }
 function al_nextFreeSlot() { const u = new Set(Array.from(al_selMap().values()).filter(v => v >= 0)); let i = 0; while (u.has(i)) i++; return i; }
 function al_toggleTeam(code) {
   const sel = al_selMap();
@@ -118,27 +120,21 @@ function al_lineSeries() {
     AL_POS_ORDER.forEach(p => { const o = al_positions[p]; if (o) out.push({ label: al_posName(p), color: AL_POS_COL[p], pts: al_seriesByYear(o, 'act') }); });
     return out;
   }
-  const sel = Array.from(al_selMap().keys()).filter(c => al_teams[c]);
-  if (!sel.length) {   // Total
-    out.push({ label: al_totalName(), color: AL_REAL, pts: al_seriesByYear(al_overall, 'act') });
-    if (al_vsCountry()) out.push({ label: al_tt('c10-exp', 'Varón promedio del país'), color: AL_EXP, pts: al_seriesByYear(al_overall, 'exp'), dashed: true });
-  } else {
-    sel.forEach(code => {
-      const o = al_teams[code], col = al_getColor(code);
-      out.push({ label: al_teamName(code), color: col, pts: al_seriesByYear(o, 'act') });
-      if (al_vsCountry()) out.push({ label: '', color: col, pts: al_seriesByYear(o, 'exp'), dashed: true, faint: true });
-    });
-  }
+  let sel = al_selTeams(); if (!sel.length) sel = [AL_WORLD];
+  sel.forEach(code => {
+    const isW = code === AL_WORLD, o = isW ? al_overall : al_teams[code], col = isW ? AL_REAL : al_getColor(code);
+    out.push({ label: al_teamName(code), color: col, pts: al_seriesByYear(o, 'act') });
+    // la "esperada" del país: línea gris para el Mundial; compañera fina por país.
+    if (al_vsCountry()) out.push({ label: isW ? al_tt('c10-exp', 'Varón promedio del país') : '', color: isW ? AL_EXP : col, pts: al_seriesByYear(o, 'exp'), dashed: true, faint: !isW });
+  });
   return out;
 }
 // Distribución: UNA sola caja por año. Devuelve { label, color, boxes:[[year,mn,q1,md,q3,mx]] }
 function al_boxOne() {
   al_initData();
   if (al_byPos()) { const p = al_boxPos(), o = al_positions[p]; return { label: al_posName(p), color: AL_POS_COL[p], boxes: o ? al_boxesByYear(o) : [] }; }
-  const sel = Array.from(al_selMap().keys()).filter(c => al_teams[c]);
-  if (!sel.length) return { label: al_totalName(), color: AL_REAL, boxes: al_boxesByYear(al_overall) };
-  const code = sel[0];   // en box, una sola
-  return { label: al_teamName(code), color: al_getColor(code), boxes: al_boxesByYear(al_teams[code]) };
+  const sel = al_selTeams(); const code = sel[0] || AL_WORLD, isW = code === AL_WORLD;
+  return { label: al_teamName(code), color: isW ? AL_REAL : al_getColor(code), boxes: al_boxesByYear(isW ? al_overall : al_teams[code]) };
 }
 
 //==================================================================
@@ -189,7 +185,10 @@ function drawAltura() {
     AL_MARGIN.right = Math.min(Math.round(AL_W * 0.42), Math.max(AL_MARGIN.right, labelOffset + maxLabelW + (bigFmt ? 16 : 8)));
     PLOT_W = AL_W - AL_MARGIN.left - AL_MARGIN.right;
   }
-  const xS = (yr) => AL_MARGIN.left + ((yr - y0) / (y1 - y0 || 1)) * PLOT_W;
+  // En distribución, inset horizontal para que la primera/última caja no se
+  // pisen con el eje Y ni el borde derecho (las líneas sí pueden tocar el borde).
+  const xInset = box ? (bigFmt ? 30 : 18) : 0;
+  const xS = (yr) => AL_MARGIN.left + xInset + ((yr - y0) / (y1 - y0 || 1)) * (PLOT_W - 2 * xInset);
   const yS = (v) => AL_MARGIN.top + PLOT_H - ((v - yScale.min) / (yScale.max - yScale.min)) * PLOT_H;
 
   // grid + eje X
@@ -351,7 +350,7 @@ function al_renderChips() {
   c.innerHTML = '';
   if (al_byPos()) return;
   Array.from(al_selMap().keys()).forEach(code => {
-    if (!al_teams[code]) return;
+    if (code !== AL_WORLD && !al_teams[code]) return;
     const chip = document.createElement('span'); chip.className = 'm-selected-chip'; chip.style.background = al_getColor(code); chip.style.color = '#fff'; chip.textContent = al_teamName(code);
     const x = document.createElement('button'); x.className = 'm-chip-x'; x.innerHTML = '×'; x.addEventListener('click', () => al_toggleTeam(code)); chip.appendChild(x); c.appendChild(chip);
   });
@@ -361,7 +360,8 @@ function setupAlturaSearch() {
   const input = document.getElementById('al-search'), results = document.getElementById('al-search-results');
   if (!input || !results) return;
   let matches = [], active = -1;
-  const all = () => Object.keys(al_teams || {}).map(code => ({ code, name: al_teamName(code) })).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  // "Mundial" (todos) siempre primero, para poder compararlo contra un país.
+  const all = () => [{ code: AL_WORLD, name: al_teamName(AL_WORLD) }].concat(Object.keys(al_teams || {}).map(code => ({ code, name: al_teamName(code) })).sort((a, b) => a.name.localeCompare(b.name, 'es')));
   function get(q) { if (!q) return []; const qn = al_norm(q); return all().filter(c => al_norm(c.name).includes(qn)).slice(0, 8); }
   function render(a) {
     if (!matches.length) { results.innerHTML = ''; results.classList.remove('open'); return; }
@@ -425,6 +425,7 @@ function initAltura() {
   if (state[10].vsCountry == null) state[10].vsCountry = true;
   if (!state[10].boxPos) state[10].boxPos = 'DEF';
   if (!(state[10].selectedTeams instanceof Map)) state[10].selectedTeams = new Map(state[10].selectedTeams || []);
+  if (state[10].selectedTeams.size === 0) state[10].selectedTeams.set(AL_WORLD, 0);   // default: Mundial (todos)
 
   drawAltura();
   setupAlturaSlider();
