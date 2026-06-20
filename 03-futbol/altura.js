@@ -3,32 +3,32 @@
 // =============================================================
 // ¿Cuánto más altos son los futbolistas que el varón promedio de su país y su
 // generación? Línea de altura REAL vs ESPERADA (la del país de nacimiento en el
-// año de nacimiento de cada jugador). Toggles:
-//   - Forma: Líneas (promedio) ↔ Boxplot (distribución por Mundial).
-//   - Desglose: Total ↔ Por puesto ↔ Por selección.
+// año de nacimiento de cada jugador). Controles:
+//   - Forma: Líneas (promedio) ↔ Distribución (boxplot por Mundial).
+//   - Buscador de selecciones (siempre): vacío = Total (todas); o agregás una/varias.
+//   - Por puesto: arquero / defensor / medio / delantero.
 //   - vs país: mostrar la altura esperada (la brecha) — solo en líneas.
-// Datos: ALTURA (data-altura.js). Motor/escala compartido con los otros charts.
-//
-// Mobile-first PNG (cuadrado por default) — ver skill graficos-atlas.
+// En Distribución se muestra UNA sola caja por Mundial (Total, o una selección,
+// o un puesto): comparar muchas cajas a la vez no se lee.
+// Datos: ALTURA (data-altura.js). Mobile-first PNG (cuadrado) — ver skill graficos-atlas.
 
 //==================================================================
 //  Constantes
 //==================================================================
 const AL_REAL = '#BE5D32';            // altura real (terracota Atlas)
 const AL_EXP = '#9A8F82';             // altura esperada del país (gris cálido)
+const AL_POS_ORDER = ['GK', 'DEF', 'MID', 'FWD'];
 const AL_POS_COL = { GK: '#C9A227', DEF: '#2B5C8A', MID: '#5BA152', FWD: '#9A4FA8' };
+const AL_POS_NAME = {
+  GK: ['Arqueros', 'Goalkeepers'], DEF: ['Defensores', 'Defenders'],
+  MID: ['Mediocampistas', 'Midfielders'], FWD: ['Delanteros', 'Forwards']
+};
 const AL_PALETTE = [
   '#2B5C8A', '#C0473A', '#5BA152', '#C9A227', '#9A4FA8', '#2BA0A8',
   '#1B3956', '#772C24', '#386433', '#7D6418', '#5F3168', '#1B6368'
 ];
 function al_colorForSlot(s) { return AL_PALETTE[s % AL_PALETTE.length]; }
-
-const AL_POS_ORDER = ['GK', 'DEF', 'MID', 'FWD'];
-const AL_POS_NAME = {
-  GK: ['Arqueros', 'Goalkeepers'], DEF: ['Defensores', 'Defenders'],
-  MID: ['Mediocampistas', 'Midfielders'], FWD: ['Delanteros', 'Forwards']
-};
-const AL_BIG = ['ARG', 'BRA', 'DEU', 'NLD', 'ESP'];   // selección default (team_code = ISO3)
+const AL_BIG = ['ARG', 'BRA', 'DEU', 'NLD', 'ESP'];   // selección default si entrás "por selección" (team_code = ISO3)
 
 const AL_W_DESKTOP = 1100, AL_H_DESKTOP = 520;
 const AL_W_MOBILE = 1100, AL_H_MOBILE = 1000;
@@ -51,21 +51,18 @@ const AL_YEAR_MIN = 1930, AL_YEAR_MAX = 2026;
 //==================================================================
 //  Data
 //==================================================================
-let al_years = null, al_overall = null, al_teams = null, al_positions = null, al_teamNames = null, al_proxies = null, al_proxyMap = null;
+let al_years = null, al_overall = null, al_teams = null, al_positions = null, al_teamNames = null, al_proxies = null;
 function al_initData() {
   if (al_overall) return;
   if (typeof ALTURA === 'undefined') { console.error('[altura] ALTURA no cargado'); al_years = []; al_overall = {}; al_teams = {}; al_positions = {}; al_teamNames = {}; al_proxies = {}; return; }
   al_years = ALTURA.years.slice();
-  al_overall = ALTURA.overall;
-  al_teams = ALTURA.teams;
-  al_positions = ALTURA.positions;
-  al_teamNames = ALTURA.teamNames;
-  al_proxies = ALTURA.proxies || {};
-  al_proxyMap = ALTURA.proxyMap || {};
+  al_overall = ALTURA.overall; al_teams = ALTURA.teams; al_positions = ALTURA.positions;
+  al_teamNames = ALTURA.teamNames; al_proxies = ALTURA.proxies || {};
 }
 function al_mode() { return (state[10] && state[10].mode) || 'line'; }
-function al_group() { return (state[10] && state[10].group) || 'total'; }
+function al_byPos() { return !!(state[10] && state[10].byPos); }
 function al_vsCountry() { return !!(state[10] && state[10].vsCountry); }
+function al_boxPos() { return (state[10] && state[10].boxPos) || 'DEF'; }
 
 //==================================================================
 //  Helpers
@@ -77,24 +74,23 @@ function al_measureText(text, size, weight) {
   return al_measureText._c.measureText(text).width;
 }
 const al_tt = (k, fb) => ((typeof t === 'function' ? t(k) : '') || fb);
-function al_teamName(code) {
-  const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
-  const nm = al_teamNames && al_teamNames[code];
-  if (nm) return lang === 'en' ? nm[1] : nm[0];
-  return code;
-}
+function al_teamName(code) { const lang = (typeof LANG !== 'undefined') ? LANG : 'es'; const nm = al_teamNames && al_teamNames[code]; return nm ? (lang === 'en' ? nm[1] : nm[0]) : code; }
 function al_posName(p) { const lang = (typeof LANG !== 'undefined') ? LANG : 'es'; const nm = AL_POS_NAME[p]; return nm ? (lang === 'en' ? nm[1] : nm[0]) : p; }
-function al_selMap() {
-  if (!(state[10].selectedTeams instanceof Map)) state[10].selectedTeams = new Map(state[10].selectedTeams || []);
-  return state[10].selectedTeams;
-}
+function al_totalName() { return al_tt('c10-real', 'Mundialistas'); }
+function al_selMap() { if (!(state[10].selectedTeams instanceof Map)) state[10].selectedTeams = new Map(state[10].selectedTeams || []); return state[10].selectedTeams; }
 function al_getColor(code) { const s = al_selMap().get(code); return s == null ? null : al_colorForSlot(s); }
 function al_nextFreeSlot() { const u = new Set(Array.from(al_selMap().values()).filter(v => v >= 0)); let i = 0; while (u.has(i)) i++; return i; }
 function al_toggleTeam(code) {
   const sel = al_selMap();
-  if (sel.has(code)) sel.delete(code); else sel.set(code, al_nextFreeSlot());
+  if (al_mode() === 'box') {            // en distribución, una sola selección a la vez
+    if (sel.has(code)) sel.clear(); else { sel.clear(); sel.set(code, 0); }
+  } else {
+    if (sel.has(code)) sel.delete(code); else sel.set(code, al_nextFreeSlot());
+  }
   al_renderChips(); drawAltura();
 }
+function al_seriesByYear(obj, field) { const r = []; (al_years || []).forEach(y => { const d = obj[String(y)]; if (d && d[field] != null) r.push([y, d[field]]); }); return r; }
+function al_boxesByYear(obj) { const r = []; (al_years || []).forEach(y => { const d = obj[String(y)]; if (d && d.box) r.push([y].concat(d.box)); }); return r; }
 function al_xTicks(y0, y1, plotW, minGapPx) {
   const ys = (al_years || []).filter(y => y >= y0 && y <= y1);
   if (!ys.length) return [];
@@ -105,7 +101,6 @@ function al_xTicks(y0, y1, plotW, minGapPx) {
   if (out[out.length - 1] !== last) { if (out.length > 1 && xOf(last) - lastX < minGapPx) out.pop(); out.push(last); }
   return out;
 }
-// Escala Y "linda" para cm: redondea a múltiplos de 5, ticks cada 5.
 function al_yScale(min, max) {
   let lo = Math.floor((min - 1) / 5) * 5, hi = Math.ceil((max + 1) / 5) * 5;
   if (hi - lo < 10) hi = lo + 10;
@@ -114,64 +109,56 @@ function al_yScale(min, max) {
 }
 
 //==================================================================
-//  Construcción de series según los toggles
+//  Construcción de series según los controles
 //==================================================================
-// Línea: lista de { key, label, color, pts:[[year,val]], dashed }
+// Líneas: lista de { label, color, pts:[[year,val]], dashed, faint }
 function al_lineSeries() {
-  al_initData();
-  const G = al_group(), out = [];
-  const get = (obj, field) => { const r = []; (al_years || []).forEach(y => { const d = obj[String(y)]; if (d && d[field] != null) r.push([y, d[field]]); }); return r; };
-  if (G === 'total') {
-    out.push({ key: 'real', label: al_tt('c10-real', 'Mundialistas'), color: AL_REAL, pts: get(al_overall, 'act') });
-    if (al_vsCountry()) out.push({ key: 'exp', label: al_tt('c10-exp', 'Varón promedio del país'), color: AL_EXP, pts: get(al_overall, 'exp'), dashed: true });
-  } else if (G === 'pos') {
-    AL_POS_ORDER.forEach(p => { const o = al_positions[p]; if (o) out.push({ key: 'pos:' + p, label: al_posName(p), color: AL_POS_COL[p], pts: get(o, 'act') }); });
-  } else { // team
-    Array.from(al_selMap().keys()).forEach(code => {
-      const o = al_teams[code]; if (!o) return; const col = al_getColor(code);
-      out.push({ key: 'team:' + code, label: al_teamName(code), color: col, pts: get(o, 'act') });
-      if (al_vsCountry()) out.push({ key: 'teamexp:' + code, label: '', color: col, pts: get(o, 'exp'), dashed: true, faint: true });
+  al_initData(); const out = [];
+  if (al_byPos()) {
+    AL_POS_ORDER.forEach(p => { const o = al_positions[p]; if (o) out.push({ label: al_posName(p), color: AL_POS_COL[p], pts: al_seriesByYear(o, 'act') }); });
+    return out;
+  }
+  const sel = Array.from(al_selMap().keys()).filter(c => al_teams[c]);
+  if (!sel.length) {   // Total
+    out.push({ label: al_totalName(), color: AL_REAL, pts: al_seriesByYear(al_overall, 'act') });
+    if (al_vsCountry()) out.push({ label: al_tt('c10-exp', 'Varón promedio del país'), color: AL_EXP, pts: al_seriesByYear(al_overall, 'exp'), dashed: true });
+  } else {
+    sel.forEach(code => {
+      const o = al_teams[code], col = al_getColor(code);
+      out.push({ label: al_teamName(code), color: col, pts: al_seriesByYear(o, 'act') });
+      if (al_vsCountry()) out.push({ label: '', color: col, pts: al_seriesByYear(o, 'exp'), dashed: true, faint: true });
     });
   }
   return out;
 }
-// Boxplot: lista de { key, label, color, boxes:[[year,mn,q1,md,q3,mx]] }
-function al_boxGroups() {
+// Distribución: UNA sola caja por año. Devuelve { label, color, boxes:[[year,mn,q1,md,q3,mx]] }
+function al_boxOne() {
   al_initData();
-  const G = al_group(), out = [];
-  const boxes = (obj) => { const r = []; (al_years || []).forEach(y => { const d = obj[String(y)]; if (d && d.box) r.push([y].concat(d.box)); }); return r; };
-  if (G === 'pos') AL_POS_ORDER.forEach(p => { const o = al_positions[p]; if (o) out.push({ key: p, label: al_posName(p), color: AL_POS_COL[p], boxes: boxes(o) }); });
-  else if (G === 'team') Array.from(al_selMap().keys()).forEach(code => { const o = al_teams[code]; if (o) out.push({ key: code, label: al_teamName(code), color: al_getColor(code), boxes: boxes(o) }); });
-  else out.push({ key: 'all', label: al_tt('c10-real', 'Mundialistas'), color: AL_REAL, boxes: boxes(al_overall) });
-  return out;
+  if (al_byPos()) { const p = al_boxPos(), o = al_positions[p]; return { label: al_posName(p), color: AL_POS_COL[p], boxes: o ? al_boxesByYear(o) : [] }; }
+  const sel = Array.from(al_selMap().keys()).filter(c => al_teams[c]);
+  if (!sel.length) return { label: al_totalName(), color: AL_REAL, boxes: al_boxesByYear(al_overall) };
+  const code = sel[0];   // en box, una sola
+  return { label: al_teamName(code), color: al_getColor(code), boxes: al_boxesByYear(al_teams[code]) };
 }
 
 //==================================================================
 //  DRAW
 //==================================================================
 function drawAltura() {
-  const svg = document.getElementById('chart10');
-  if (!svg) return;
-  svg.innerHTML = '';
-  al_clearHover(svg);
-  al_initData();
+  const svg = document.getElementById('chart10'); if (!svg) return;
+  svg.innerHTML = ''; al_clearHover(svg); al_initData();
 
-  // Toggle de selección/buscador: solo visible en desglose "por selección".
-  const showSearch = al_group() === 'team';
-  const wrap = document.getElementById('al-search-wrap');
-  if (wrap) wrap.style.display = showSearch ? '' : 'none';
-  // "vs país" no aplica en boxplot ni por puesto.
-  const vsBtn = document.getElementById('al-vscountry');
-  if (vsBtn) { const g = vsBtn.closest('.lg-mode'); if (g) g.style.display = (al_mode() === 'box' || al_group() === 'pos') ? 'none' : ''; }
+  // visibilidad de controles
+  const box = al_mode() === 'box';
+  const wrap = document.getElementById('al-search-wrap'); if (wrap) wrap.style.display = al_byPos() ? 'none' : '';     // buscador solo si NO es "por puesto"
+  const vsBtn = document.getElementById('al-vscountry'); if (vsBtn) { const g = vsBtn.closest('.lg-mode'); if (g) g.style.display = (box || al_byPos()) ? 'none' : ''; }
+  const posSel = document.getElementById('al-boxpos'); if (posSel) posSel.style.display = (box && al_byPos()) ? '' : 'none';   // selector de puesto único, solo en box+puesto
 
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const newsletter = editorFormat === 'newsletter', square = editorFormat === 'square', mobilePng = editorFormat === 'mobile';
   const mobile = !editorFormat && al_isMobile();
-  if (editorFormat) {
-    const f = PNG_FORMATS[editorFormat]; AL_W = f.vbW;
-    AL_H = square ? 910 : newsletter ? 860 : f.vbH;
-    AL_MARGIN = al_getMargins(editorFormat);
-  } else if (mobile) { AL_W = AL_W_MOBILE; AL_H = AL_H_MOBILE; AL_MARGIN = { ...AL_MARGIN_MOBILE }; }
+  if (editorFormat) { const f = PNG_FORMATS[editorFormat]; AL_W = f.vbW; AL_H = square ? 910 : newsletter ? 860 : f.vbH; AL_MARGIN = al_getMargins(editorFormat); }
+  else if (mobile) { AL_W = AL_W_MOBILE; AL_H = AL_H_MOBILE; AL_MARGIN = { ...AL_MARGIN_MOBILE }; }
   else { AL_W = AL_W_DESKTOP; AL_H = AL_H_DESKTOP; AL_MARGIN = { ...AL_MARGIN_DESKTOP }; }
   let PLOT_W = AL_W - AL_MARGIN.left - AL_MARGIN.right;
   const PLOT_H = AL_H - AL_MARGIN.top - AL_MARGIN.bottom;
@@ -188,26 +175,20 @@ function drawAltura() {
   const y0 = period[0], y1 = period[1];
   const inP = (pts) => pts.filter(p => p[0] >= y0 && p[0] <= y1);
 
-  // ── reunir valores visibles para la escala Y ──
-  const isBox = al_mode() === 'box';
-  const lineSeries = isBox ? [] : al_lineSeries();
-  const boxGroups = isBox ? al_boxGroups() : [];
+  const lineSeries = box ? [] : al_lineSeries();
+  const boxOne = box ? al_boxOne() : null;
   let vmin = Infinity, vmax = -Infinity;
-  if (isBox) boxGroups.forEach(g => inP(g.boxes).forEach(b => { if (b[1] < vmin) vmin = b[1]; if (b[5] > vmax) vmax = b[5]; }));
+  if (box) inP(boxOne.boxes).forEach(b => { if (b[1] < vmin) vmin = b[1]; if (b[5] > vmax) vmax = b[5]; });
   else lineSeries.forEach(s => inP(s.pts).forEach(p => { if (p[1] < vmin) vmin = p[1]; if (p[1] > vmax) vmax = p[1]; }));
   if (!isFinite(vmin)) { vmin = 165; vmax = 185; }
   const yScale = al_yScale(vmin, vmax);
 
-  // margen derecho dinámico (para los end-labels de líneas)
-  if (!isBox) {
-    const labelOffset = bigFmt ? 12 : 6;
-    let maxLabelW = 0;
+  if (!box) {
+    const labelOffset = bigFmt ? 12 : 6; let maxLabelW = 0;
     lineSeries.filter(s => s.label).forEach(s => { const w = al_measureText(s.label, SIZES.label, bigFmt ? 700 : 600); if (w > maxLabelW) maxLabelW = w; });
-    const neededRight = labelOffset + maxLabelW + (bigFmt ? 16 : 8);
-    AL_MARGIN.right = Math.min(Math.round(AL_W * 0.42), Math.max(AL_MARGIN.right, neededRight));
+    AL_MARGIN.right = Math.min(Math.round(AL_W * 0.42), Math.max(AL_MARGIN.right, labelOffset + maxLabelW + (bigFmt ? 16 : 8)));
     PLOT_W = AL_W - AL_MARGIN.left - AL_MARGIN.right;
   }
-
   const xS = (yr) => AL_MARGIN.left + ((yr - y0) / (y1 - y0 || 1)) * PLOT_W;
   const yS = (v) => AL_MARGIN.top + PLOT_H - ((v - yScale.min) / (yScale.max - yScale.min)) * PLOT_H;
 
@@ -223,19 +204,18 @@ function drawAltura() {
     const gl = al_el('line'); gl.setAttribute('x1', AL_MARGIN.left); gl.setAttribute('x2', AL_MARGIN.left + PLOT_W); gl.setAttribute('y1', y); gl.setAttribute('y2', y); gl.setAttribute('class', 's-grid-line'); svg.appendChild(gl);
     const lbl = al_el('text'); lbl.setAttribute('x', AL_MARGIN.left - (bigFmt ? 12 : 8)); lbl.setAttribute('y', y + (bigFmt ? 8 : 4)); lbl.setAttribute('text-anchor', 'end'); lbl.setAttribute('class', 's-tick'); lbl.style.fontSize = SIZES.tick + 'px'; lbl.textContent = v; svg.appendChild(lbl);
   });
-  // título eje Y
   const yT = al_el('text'); yT.setAttribute('class', 's-axis-title'); yT.setAttribute('text-anchor', 'middle');
   yT.setAttribute('transform', `translate(${AL_MARGIN.left - (mobile || mobilePng ? 80 : bigFmt ? 74 : 42)}, ${AL_MARGIN.top + PLOT_H / 2}) rotate(-90)`);
   yT.style.fontSize = SIZES.axisTitle + 'px'; yT.textContent = al_tt('c10-axis-y', 'Altura (cm)'); svg.appendChild(yT);
 
-  if (isBox) al_drawBoxes(svg, boxGroups, { xS, yS, y0, y1, bigFmt, isPngFormat, SIZES, lineW });
+  if (box) al_drawBox(svg, boxOne, { xS, yS, y0, y1, bigFmt, isPngFormat, SIZES });
   else al_drawLines(svg, lineSeries, { xS, yS, y0, y1, bigFmt, isPngFormat, SIZES, lineW, haloW, labelHalo, dotR, inP });
 
   al_applyHeadings();
 }
 
 //------------------------------------------------------------------
-//  Modo LÍNEAS (multi-serie + end-labels anti-colisión)
+//  Modo LÍNEAS
 //------------------------------------------------------------------
 function al_drawLines(svg, series, ctx) {
   const { xS, yS, y0, y1, bigFmt, isPngFormat, SIZES, lineW, haloW, labelHalo, dotR, inP } = ctx;
@@ -243,7 +223,6 @@ function al_drawLines(svg, series, ctx) {
   const linesG = al_el('g'); svg.appendChild(linesG);
   const dotsG = al_el('g'); svg.appendChild(dotsG);
   const endLabels = [], hoverSeries = [];
-
   series.forEach(s => {
     const pts = inP(s.pts); if (!pts.length) return;
     const d = pts.map((p, i) => (i ? 'L' : 'M') + xS(p[0]).toFixed(1) + ',' + yS(p[1]).toFixed(1)).join(' ');
@@ -255,10 +234,8 @@ function al_drawLines(svg, series, ctx) {
     if (!s.faint) pts.forEach(p => { const c = al_el('circle'); c.setAttribute('cx', xS(p[0])); c.setAttribute('cy', yS(p[1])); c.setAttribute('r', dotR); c.setAttribute('fill', s.color); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', bigFmt ? 2 : 1.2); dotsG.appendChild(c); });
     const last = pts[pts.length - 1];
     if (s.label) endLabels.push({ label: s.label, color: s.color, idealY: yS(last[1]), x: xS(y1), valLast: last[1] });
-    hoverSeries.push({ label: s.label || (al_tt('c10-exp', 'esperada')), color: s.color, faint: s.faint, pts });
+    hoverSeries.push({ label: s.label || al_tt('c10-exp', 'esperada'), color: s.color, pts });
   });
-
-  // end-labels: anti-colisión hacia abajo + corrección si se desborda
   const GAP = bigFmt ? SIZES.label + 6 : 13;
   const topB = AL_MARGIN.top + (bigFmt ? 6 : 2), botB = AL_MARGIN.top + (AL_H - AL_MARGIN.top - AL_MARGIN.bottom);
   endLabels.sort((a, b) => a.idealY - b.idealY);
@@ -271,54 +248,40 @@ function al_drawLines(svg, series, ctx) {
     const txt = al_el('text'); txt.setAttribute('x', l.x + (bigFmt ? 12 : 6)); txt.setAttribute('y', l.y + (bigFmt ? 8 : 4)); txt.setAttribute('fill', l.color); txt.setAttribute('font-weight', bigFmt ? 700 : 600);
     txt.style.fontSize = SIZES.label + 'px'; txt.style.fontFamily = 'var(--sans)';
     txt.setAttribute('paint-order', 'stroke'); txt.setAttribute('stroke', '#FAF8F3'); txt.setAttribute('stroke-width', labelHalo); txt.setAttribute('stroke-linejoin', 'round');
-    const valTxt = isPngFormat ? '  ' + Math.round(l.valLast) : '';
-    txt.textContent = l.label + valTxt; endG.appendChild(txt);
+    txt.textContent = l.label + (isPngFormat ? '  ' + Math.round(l.valLast) : ''); endG.appendChild(txt);
   });
-
   if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER) && hoverSeries.length) al_setupHover(svg, { y0, y1, xS, yS, series: hoverSeries });
 }
 
 //------------------------------------------------------------------
-//  Modo BOXPLOT (una caja por Mundial; varias por año si hay grupos)
+//  Modo DISTRIBUCIÓN — UNA caja por Mundial
 //------------------------------------------------------------------
-function al_drawBoxes(svg, groups, ctx) {
-  const { xS, yS, y0, y1, bigFmt, isPngFormat, lineW, SIZES } = ctx;
+function al_drawBox(svg, grp, ctx) {
+  const { xS, yS, y0, y1, bigFmt, isPngFormat, SIZES } = ctx;
   const yrs = (al_years || []).filter(y => y >= y0 && y <= y1);
-  const nG = Math.max(1, groups.length);
-  // ancho de slot por año; dividir entre grupos
   const slot = yrs.length > 1 ? (xS(yrs[1]) - xS(yrs[0])) : (AL_W - AL_MARGIN.left - AL_MARGIN.right);
-  const bw = Math.max(3, Math.min(bigFmt ? 26 : 14, (slot * 0.62) / nG));
+  const bw = Math.max(4, Math.min(bigFmt ? 40 : 22, slot * 0.66));
   const g = al_el('g'); svg.appendChild(g);
   const tooltip = document.getElementById('tooltip10');
-  groups.forEach((grp, gi) => {
-    const off = (gi - (nG - 1) / 2) * (bw + (bigFmt ? 3 : 2));
-    grp.boxes.filter(b => b[0] >= y0 && b[0] <= y1).forEach(b => {
-      const [yr, mn, q1, md, q3, mx] = b; const cx = xS(yr) + off;
-      const yb1 = yS(q1), yb3 = yS(q3), ymd = yS(md), ymn = yS(mn), ymx = yS(mx);
-      // whisker
-      const wk = al_el('line'); wk.setAttribute('x1', cx); wk.setAttribute('x2', cx); wk.setAttribute('y1', ymx); wk.setAttribute('y2', ymn); wk.setAttribute('stroke', grp.color); wk.setAttribute('stroke-width', bigFmt ? 1.6 : 1); wk.setAttribute('stroke-opacity', 0.7); g.appendChild(wk);
-      // caja q1-q3
-      const box = al_el('rect'); box.setAttribute('x', cx - bw / 2); box.setAttribute('y', yb3); box.setAttribute('width', bw); box.setAttribute('height', Math.max(1, yb1 - yb3)); box.setAttribute('fill', grp.color); box.setAttribute('fill-opacity', 0.32); box.setAttribute('stroke', grp.color); box.setAttribute('stroke-width', bigFmt ? 1.6 : 1); g.appendChild(box);
-      // mediana
-      const me = al_el('line'); me.setAttribute('x1', cx - bw / 2); me.setAttribute('x2', cx + bw / 2); me.setAttribute('y1', ymd); me.setAttribute('y2', ymd); me.setAttribute('stroke', grp.color); me.setAttribute('stroke-width', bigFmt ? 2.6 : 1.8); g.appendChild(me);
-      if (!isPngFormat && tooltip && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
-        const hit = al_el('rect'); hit.setAttribute('x', cx - bw / 2 - 2); hit.setAttribute('y', ymx); hit.setAttribute('width', bw + 4); hit.setAttribute('height', Math.max(2, ymn - ymx)); hit.setAttribute('fill', 'transparent'); hit.style.cursor = 'pointer';
-        hit.addEventListener('mouseenter', () => { tooltip.innerHTML = `<div style="font-weight:600;margin-bottom:3px;">${grp.label} · ${yr}</div>mediana <strong>${md} cm</strong><br><span style="color:var(--ink-muted);">${mn}–${mx} cm (mín–máx)</span>`; tooltip.style.display = 'block'; tooltip.style.opacity = '1'; });
-        hit.addEventListener('mousemove', (ev) => { const rc = svg.getBoundingClientRect(); tooltip.style.left = (ev.clientX - rc.left + 14) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; });
-        hit.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; });
-        g.appendChild(hit);
-      }
-    });
+  const tMed = al_tt('c10-box-median', 'mediana'), tRange = al_tt('c10-box-range', 'mín–máx');
+  grp.boxes.filter(b => b[0] >= y0 && b[0] <= y1).forEach(b => {
+    const [yr, mn, q1, md, q3, mx] = b; const cx = xS(yr);
+    const yb1 = yS(q1), yb3 = yS(q3), ymd = yS(md), ymn = yS(mn), ymx = yS(mx);
+    const wk = al_el('line'); wk.setAttribute('x1', cx); wk.setAttribute('x2', cx); wk.setAttribute('y1', ymx); wk.setAttribute('y2', ymn); wk.setAttribute('stroke', grp.color); wk.setAttribute('stroke-width', bigFmt ? 1.8 : 1.1); wk.setAttribute('stroke-opacity', 0.7); g.appendChild(wk);
+    // bigotes con tope horizontal
+    [ymn, ymx].forEach(yy => { const cap = al_el('line'); cap.setAttribute('x1', cx - bw * 0.22); cap.setAttribute('x2', cx + bw * 0.22); cap.setAttribute('y1', yy); cap.setAttribute('y2', yy); cap.setAttribute('stroke', grp.color); cap.setAttribute('stroke-width', bigFmt ? 1.6 : 1); cap.setAttribute('stroke-opacity', 0.7); g.appendChild(cap); });
+    const rect = al_el('rect'); rect.setAttribute('x', cx - bw / 2); rect.setAttribute('y', yb3); rect.setAttribute('width', bw); rect.setAttribute('height', Math.max(1, yb1 - yb3)); rect.setAttribute('fill', grp.color); rect.setAttribute('fill-opacity', 0.32); rect.setAttribute('stroke', grp.color); rect.setAttribute('stroke-width', bigFmt ? 1.8 : 1.1); rect.setAttribute('rx', 2); g.appendChild(rect);
+    const me = al_el('line'); me.setAttribute('x1', cx - bw / 2); me.setAttribute('x2', cx + bw / 2); me.setAttribute('y1', ymd); me.setAttribute('y2', ymd); me.setAttribute('stroke', grp.color); me.setAttribute('stroke-width', bigFmt ? 3 : 2); g.appendChild(me);
+    if (!isPngFormat && tooltip && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+      const hit = al_el('rect'); hit.setAttribute('x', cx - bw / 2 - 2); hit.setAttribute('y', ymx); hit.setAttribute('width', bw + 4); hit.setAttribute('height', Math.max(2, ymn - ymx)); hit.setAttribute('fill', 'transparent'); hit.style.cursor = 'pointer';
+      hit.addEventListener('mouseenter', () => { tooltip.innerHTML = `<div style="font-weight:600;margin-bottom:3px;">${grp.label} · ${yr}</div>${tMed} <strong>${md} cm</strong><br><span style="color:var(--ink-muted);">${mn}–${mx} cm (${tRange})</span>`; tooltip.style.display = 'block'; tooltip.style.opacity = '1'; });
+      hit.addEventListener('mousemove', (ev) => { const rc = svg.getBoundingClientRect(); tooltip.style.left = (ev.clientX - rc.left + 14) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; });
+      hit.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; });
+      g.appendChild(hit);
+    }
   });
-  // leyenda de grupos (chips de color) cuando hay más de uno
-  if (groups.length > 1) {
-    const lg = al_el('g'); svg.appendChild(lg); let lx = AL_MARGIN.left + 4; const ly = AL_MARGIN.top + (bigFmt ? 4 : 2); const fs = SIZES.label * 0.86;
-    groups.forEach(grp => {
-      const sw = al_el('rect'); sw.setAttribute('x', lx); sw.setAttribute('y', ly); sw.setAttribute('width', fs * 0.8); sw.setAttribute('height', fs * 0.8); sw.setAttribute('fill', grp.color); sw.setAttribute('rx', 2); lg.appendChild(sw);
-      const tx = al_el('text'); tx.setAttribute('x', lx + fs); tx.setAttribute('y', ly + fs * 0.8); tx.style.fontSize = fs + 'px'; tx.style.fontFamily = 'var(--sans)'; tx.setAttribute('font-weight', 600); tx.setAttribute('fill', grp.color); tx.textContent = grp.label; lg.appendChild(tx);
-      lx += fs + al_measureText(grp.label, fs, 600) + fs * 1.1;
-    });
-  }
+  // etiqueta del grupo (qué se está mostrando), arriba a la izquierda
+  const lbl = al_el('text'); lbl.setAttribute('x', AL_MARGIN.left + 4); lbl.setAttribute('y', AL_MARGIN.top + (bigFmt ? 22 : 13)); lbl.style.fontSize = SIZES.label + 'px'; lbl.style.fontFamily = 'var(--sans)'; lbl.setAttribute('font-weight', bigFmt ? 700 : 600); lbl.setAttribute('fill', grp.color); lbl.textContent = grp.label; svg.appendChild(lbl);
 }
 
 //------------------------------------------------------------------
@@ -366,10 +329,11 @@ function al_periodPhrase(en) {
   return en ? `in the World Cups between ${p[0]} and ${p[1]}` : `en los Mundiales entre ${p[0]} y ${p[1]}`;
 }
 function al_subtitle() {
-  const en = (typeof LANG !== 'undefined' && LANG === 'en'), G = al_group(), box = al_mode() === 'box', per = al_periodPhrase(en);
+  const en = (typeof LANG !== 'undefined' && LANG === 'en'), box = al_mode() === 'box', per = al_periodPhrase(en);
+  const someTeams = !al_byPos() && Array.from(al_selMap().keys()).filter(c => al_teams && al_teams[c]).length > 0;
   if (box) return en ? `Distribution of player height ${per}.` : `Distribución de la altura de los jugadores ${per}.`;
-  if (G === 'pos') return en ? `Average player height by position ${per}.` : `Altura promedio de los jugadores por puesto ${per}.`;
-  if (G === 'team') return en ? `Average height of the selected teams' players ${per}.` : `Altura promedio de los jugadores de las selecciones elegidas ${per}.`;
+  if (al_byPos()) return en ? `Average player height by position ${per}.` : `Altura promedio de los jugadores por puesto ${per}.`;
+  if (someTeams) return en ? `Average height of the selected teams' players ${per}.` : `Altura promedio de los jugadores de las selecciones elegidas ${per}.`;
   if (al_vsCountry()) return en ? `Average height of World Cup players vs. the average man of their birth country and cohort, ${per}.` : `Altura promedio de los mundialistas vs. el varón promedio de su país de nacimiento y generación, ${per}.`;
   return en ? `Average height of World Cup players ${per}.` : `Altura promedio de los mundialistas ${per}.`;
 }
@@ -385,8 +349,9 @@ function al_applyHeadings() {
 function al_renderChips() {
   const c = document.getElementById('al-selected-chips'); if (!c) return;
   c.innerHTML = '';
-  if (al_group() !== 'team') return;
+  if (al_byPos()) return;
   Array.from(al_selMap().keys()).forEach(code => {
+    if (!al_teams[code]) return;
     const chip = document.createElement('span'); chip.className = 'm-selected-chip'; chip.style.background = al_getColor(code); chip.style.color = '#fff'; chip.textContent = al_teamName(code);
     const x = document.createElement('button'); x.className = 'm-chip-x'; x.innerHTML = '×'; x.addEventListener('click', () => al_toggleTeam(code)); chip.appendChild(x); c.appendChild(chip);
   });
@@ -414,28 +379,28 @@ function setupAlturaSearch() {
   });
   document.addEventListener('click', (ev) => { if (!input.contains(ev.target) && !results.contains(ev.target)) results.classList.remove('open'); });
 }
-function setupAlturaSegToggle(ids, getCur, setCur) {
-  const B = {}; ids.forEach(id => B[id] = document.getElementById('al-' + id));
-  if (Object.values(B).some(x => !x)) return;
+// Toggle segmentado genérico (clase lg-seg-on)
+function al_seg(ids, getCur, setCur, after) {
+  const B = {}; ids.forEach(id => B[id] = document.getElementById('al-' + id)); if (Object.values(B).some(x => !x)) return null;
   function sync() { ids.forEach(id => { const on = getCur() === id.split('-').pop(); B[id].classList.toggle('lg-seg-on', on); B[id].setAttribute('aria-pressed', on ? 'true' : 'false'); }); }
-  ids.forEach(id => B[id].addEventListener('click', () => { const v = id.split('-').pop(); if (getCur() === v) return; setCur(v); sync(); al_renderChips(); drawAltura(); }));
-  sync();
+  ids.forEach(id => B[id].addEventListener('click', () => { const v = id.split('-').pop(); if (getCur() === v) return; setCur(v); sync(); if (after) after(); al_renderChips(); drawAltura(); }));
+  sync(); return sync;
 }
 function setupAlturaToggles() {
-  // Forma: línea / box
-  setupAlturaSegToggle(['mode-line', 'mode-box'], () => state[10].mode, v => state[10].mode = v);
-  // Desglose: total / pos / team
-  setupAlturaSegToggle(['group-total', 'group-pos', 'group-team'], () => state[10].group, v => {
-    state[10].group = v;
-    if (v === 'team' && al_selMap().size === 0) AL_BIG.forEach((c, i) => { if (al_teams[c]) al_selMap().set(c, i); });
+  // Forma: línea / box. Al pasar a box, dejar una sola selección.
+  al_seg(['mode-line', 'mode-box'], () => state[10].mode, v => {
+    state[10].mode = v;
+    if (v === 'box') { const sel = al_selMap(); if (sel.size > 1) { const first = sel.keys().next().value; sel.clear(); sel.set(first, 0); } }
   });
-  // vs país (toggle simple)
+  // Desglose: selección (buscador) / por puesto
+  al_seg(['view-sel', 'view-pos'], () => (al_byPos() ? 'pos' : 'sel'), v => { state[10].byPos = (v === 'pos'); });
+  // Selector de puesto único (solo en box+puesto)
+  al_seg(['boxpos-GK', 'boxpos-DEF', 'boxpos-MID', 'boxpos-FWD'], () => al_boxPos(), v => { state[10].boxPos = v; });
+  // vs país
   const vs = document.getElementById('al-vscountry');
   if (vs) { const sync = () => { vs.classList.toggle('lg-seg-on', al_vsCountry()); vs.setAttribute('aria-pressed', al_vsCountry() ? 'true' : 'false'); }; vs.addEventListener('click', () => { state[10].vsCountry = !al_vsCountry(); sync(); drawAltura(); }); sync(); }
 }
-function setupAlturaSlider() {
-  setupWcRangeSlider({ fromId: 'al-slider-from', toId: 'al-slider-to', dispId: 'al-range-display', trackId: 'al-range-track-active', years: al_years, get: () => state[10].period, set: (p) => { state[10].period = p; }, onChange: () => drawAltura() });
-}
+function setupAlturaSlider() { setupWcRangeSlider({ fromId: 'al-slider-from', toId: 'al-slider-to', dispId: 'al-range-display', trackId: 'al-range-track-active', years: al_years, get: () => state[10].period, set: (p) => { state[10].period = p; }, onChange: () => drawAltura() }); }
 function setupAlturaCSV() {
   document.querySelectorAll('button.download[data-chart="10-csv"]').forEach(btn => btn.addEventListener('click', () => {
     al_initData();
@@ -456,8 +421,9 @@ function initAltura() {
   if (!state[10]) state[10] = {};
   if (!state[10].period) state[10].period = [AL_YEAR_MIN, AL_YEAR_MAX];
   if (!state[10].mode) state[10].mode = 'line';
-  if (!state[10].group) state[10].group = 'total';
+  if (state[10].byPos == null) state[10].byPos = false;
   if (state[10].vsCountry == null) state[10].vsCountry = true;
+  if (!state[10].boxPos) state[10].boxPos = 'DEF';
   if (!(state[10].selectedTeams instanceof Map)) state[10].selectedTeams = new Map(state[10].selectedTeams || []);
 
   drawAltura();
