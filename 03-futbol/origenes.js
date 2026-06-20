@@ -178,6 +178,7 @@ function drawOrigenes() {
   const svg = document.getElementById('chart9');
   if (!svg) return;
   svg.innerHTML = '';
+  og_clearHover(svg);   // matar el hover del render anterior (si no, en barras/flujos sale un tooltip fantasma del modo líneas)
   og_project();
   // En barras y flujos el slider representa UN Mundial → single-thumb.
   const sliderEl = document.getElementById('og-range-slider');
@@ -551,13 +552,28 @@ function og_setupHover(svg, ctx) {
       tooltip.innerHTML = html; tooltip.style.display = 'block'; tooltip.style.opacity = '1';
     }
   }
-  svg.addEventListener('mousemove', (ev) => {
+  // Handlers a nivel <svg> (innerHTML='' borra hijos, no listeners del svg).
+  // Se guardan en el nodo para que og_clearHover pueda quitarlos en el próximo
+  // render — sin esto, al cambiar de modo queda vivo el hover del modo anterior.
+  const moveH = (ev) => {
     const rc = svg.getBoundingClientRect(); const sc = rc.width / OG_W; const lx = (ev.clientX - rc.left) / sc;
     if (lx < OG_MARGIN.left || lx > OG_W - OG_MARGIN.right) { update(null); return; }
     update(nearest(lx));
     if (tooltip) { tooltip.style.left = (ev.clientX - rc.left + 14) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; }
-  });
-  svg.addEventListener('mouseleave', () => update(null));
+  };
+  const leaveH = () => update(null);
+  svg.addEventListener('mousemove', moveH);
+  svg.addEventListener('mouseleave', leaveH);
+  svg.__ogHoverMove = moveH; svg.__ogHoverLeave = leaveH;
+}
+// Quita los listeners de hover (líneas/área) que viven en el propio <svg> y
+// oculta el tooltip. Se llama al inicio de cada drawOrigenes para que barras y
+// flujos —que no instalan hover— no arrastren el tooltip fantasma del modo previo.
+function og_clearHover(svg) {
+  if (svg.__ogHoverMove) { svg.removeEventListener('mousemove', svg.__ogHoverMove); svg.__ogHoverMove = null; }
+  if (svg.__ogHoverLeave) { svg.removeEventListener('mouseleave', svg.__ogHoverLeave); svg.__ogHoverLeave = null; }
+  const tt = document.getElementById('tooltip9');
+  if (tt) { tt.style.opacity = '0'; tt.style.display = 'none'; }
 }
 
 function og_emph(iso) {
