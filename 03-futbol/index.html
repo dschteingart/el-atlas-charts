@@ -207,11 +207,18 @@
 <script>
   // Miniaturas por idioma: cada tarjeta trae data-thumb-es / data-thumb-en.
   // Arranca en ES (el src del HTML) y se cambia al PNG en inglés si LANG==='en'.
+  // THUMB_V: cache-busting. Cuando se re-exporta un thumbnail se sobrescribe el
+  // MISMO archivo, así que el navegador/CDN sirve la versión vieja cacheada
+  // (los nombres nuevos sí cargan frescos). Bumpear este número fuerza recargar
+  // todos los thumbnails.
+  var THUMB_V = '2';
   function applyThumbLang() {
     var en = (typeof LANG !== 'undefined' && LANG === 'en');
     document.querySelectorAll('.idx-thumb').forEach(function (img) {
       var want = img.getAttribute(en ? 'data-thumb-en' : 'data-thumb-es');
-      if (want && img.getAttribute('src') !== want) img.src = want;
+      if (!want) return;
+      want += '?v=' + THUMB_V;
+      if (img.getAttribute('src') !== want) img.src = want;
     });
   }
   // Número de tarjeta por idioma ("Gráfico N" / "Chart N"). Está hardcodeado sin
