@@ -144,6 +144,17 @@ function bp_makeHexbin(r) {
   return bin;
 }
 
+// Frame de referencia para anclar la grilla del hexbin: la proyección del
+// DESKTOP (1100×600). Sirve para que la hexagonación sea idéntica en todos los
+// formatos (ver nota en bp_renderData). Se calcula una vez — la geo no cambia.
+let bp_hexRef = null;
+function bp_hexRefFrame() {
+  if (bp_hexRef || !bp_geo) return bp_hexRef;
+  const M = 8, p = d3.geoRobinson().fitSize([1100 - 2 * M, 600 - 2 * M], bp_geo);
+  bp_hexRef = { scale: p.scale(), tr: p.translate() };
+  return bp_hexRef;
+}
+
 //==================================================================
 //  DRAW
 //==================================================================
@@ -264,17 +275,26 @@ function bp_renderData(transform) {
     } else {
       // HEXBIN (grande o fino): grilla nítida, color por densidad (escala sqrt
       // para que los clusters chicos no desaparezcan al lado de Europa).
+      // Grilla del hexbin ANCLADA A UN FRAME DE REFERENCIA FIJO (proyección del
+      // desktop), NO al canvas. Binar en píxeles absolutos hexagonaba el MISMO
+      // mapa distinto entre formatos: el mapa se centra en cajas de distinto alto
+      // (HTML 600 vs PNG cuadrado 760), su translate vertical cambia ~80px, y con
+      // la grilla anclada en (0,0) las mismas ciudades caían en celdas distintas
+      // entre HTML y PNG (Buenos Aires/Montevideo "uno al norte del otro").
+      // Normalizamos cada punto al frame de referencia —restar el translate del
+      // formato, reescalar por la escala, sumar el translate de referencia— y así
+      // TODOS los formatos reproducen exactamente la grilla del desktop. El radio
+      // fijo (abajo) es condición necesaria: si variara, las celdas no coincidirían.
+      const _ref = bp_hexRefFrame();
+      const _sc = bp_projection.scale(), _tr = bp_projection.translate();
+      const _f = _ref ? _ref.scale / _sc : 1;                  // normaliza la escala (difiere <1% entre formatos)
+      const _ax = t.applyX(_tr[0]), _ay = t.applyY(_tr[1]);     // ancla del formato actual, en px (con zoom)
+      const _rx = _ref ? _ref.tr[0] : 0, _ry = _ref ? _ref.tr[1] : 0;   // fase de la grilla de referencia
       const vis = [];
-      for (let i = 0; i < bp_vpts.length; i++) { const p = bp_vpts[i], sx = t.applyX(p.x), sy = t.applyY(p.y); if (inView(sx, sy)) vis.push({ x: sx, y: sy, n: p.n, c: p.c }); }
-      // Radio FIJO (NO escala con bigFmt). El mapa se proyecta a la MISMA escala
-      // en pantalla y en todos los formatos PNG (PW≈1084 siempre), así que el
-      // hexbin tiene que usar el mismo radio en todos lados. Cuando variaba
-      // (10 en desktop, 15 en mobile/PNG) re-discretizaba el MISMO mapa con otra
-      // grilla y otro offset de centrado: ciudades vecinas como Buenos Aires y
-      // Montevideo (a ~1px entre sí) caían en hexágonos distintos → el PNG no
-      // coincidía con el HTML ("uno al norte del otro"). Con radio fijo, todos
-      // los renders son idénticos. (Para agrandar los hexágonos, subir estos
-      // números: afecta a todos los formatos por igual y se mantiene la coherencia.)
+      for (let i = 0; i < bp_vpts.length; i++) {
+        const p = bp_vpts[i], sx = t.applyX(p.x), sy = t.applyY(p.y);
+        if (inView(sx, sy)) vis.push({ x: (sx - _ax) * _f + _rx, y: (sy - _ay) * _f + _ry, n: p.n, c: p.c });
+      }
       const R = (style === 'hexsmall') ? 5 : 10;
       const hb = bp_makeHexbin(R);
       const bins = hb(vis, o => o.x, o => o.y);
@@ -282,9 +302,11 @@ function bp_renderData(transform) {
       const maxV = d3.max(bins, b => b._v) || 1;
       const color = d3.scaleSequentialSqrt(d3.interpolateRgbBasis(BP_HEAT_RAMP)).domain([0, maxV]);
       const hex = hb.hexagon();
-      const gHex = bp_gData.append('g').attr('class', 'bp-heat');
+      // Volver de coords-referencia a píxeles del formato: pixel = (b - ref)/f + ancla.
+      const gHex = bp_gData.append('g').attr('class', 'bp-heat')
+        .attr('transform', `translate(${_ax.toFixed(2)},${_ay.toFixed(2)}) scale(${(1 / _f).toFixed(5)})`);
       gHex.selectAll('path').data(bins).join('path')
-        .attr('transform', b => `translate(${b.x.toFixed(1)},${b.y.toFixed(1)})`)
+        .attr('transform', b => `translate(${(b.x - _rx).toFixed(2)},${(b.y - _ry).toFixed(2)})`)
         .attr('d', hex).attr('fill', b => color(b._v)).attr('stroke', 'none');
       // hover por delegación: total de jugadores + ciudad con más del hexágono
       if (!bp_isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
