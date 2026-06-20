@@ -105,7 +105,7 @@
   </header>
 
   <section class="chart-block" data-chart="9" data-editor-id="origenes">
-    <h2 class="chart-title" data-i18n="c9-title">De qué país nacen los mundialistas</h2>
+    <h2 class="chart-title" data-i18n="c9-title">La migración en el fútbol mundial</h2>
     <p class="chart-subtitle" data-i18n="c9-subtitle-all">Porcentaje de los jugadores de cada Mundial según su país de nacimiento.</p>
 
     <div class="m-controls">
@@ -178,13 +178,16 @@
 <script src="./country-names.js?v=7"></script>
 <script src="./data-origenes.js?v=14"></script>
 <script src="./editor.js?v=7"></script>
-<script src="./origenes.js?v=15"></script>
+<script src="./origenes.js?v=16"></script>
 <script src="./png-export.js?v=8"></script>
 <script src="./svg-export.js?v=7"></script>
 <script>
-  state[9] = { selectedCountries: null, period: [1930, 2026], mode: 'line', universe: 'all', group: 'pais', metric: 'pct' };
-  initOrigenes();
+  state[9] = { selectedCountries: null, period: [1930, 2026], mode: 'sankey', universe: 'all', group: 'pais', metric: 'pct' };
+  // applyI18n() PRIMERO (setea los textos estáticos data-i18n), después
+  // initOrigenes() dibuja y pisa el subtítulo con el dinámico (si no, applyI18n
+  // clobbearía el subtítulo del Sankey con el de líneas en la carga inicial).
   applyI18n();
+  initOrigenes();
   setupLangToggle(() => {
     if (typeof og_renderChips === 'function') og_renderChips();
     if (typeof drawOrigenes === 'function') drawOrigenes();

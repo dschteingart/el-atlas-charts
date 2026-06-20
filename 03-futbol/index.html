@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>El Atlas N°3 — La geografía del talento futbolístico</title>
-<meta name="description" content="Dónde nacen los jugadores, dónde juegan y por qué algunos países rinden muy por encima del tamaño de su economía. 8 gráficos interactivos de El Atlas.">
+<meta name="description" content="Dónde nacen los jugadores, dónde juegan y por qué algunos países rinden muy por encima del tamaño de su economía. 9 gráficos interactivos de El Atlas.">
 
 <!-- Open Graph / Twitter: preview del link al compartir (X, WhatsApp, etc.).
      Las URLs deben ser ABSOLUTAS. Idioma del preview = español (las meta tags
@@ -176,7 +176,7 @@
     <a class="idx-card" href="./chart-origenes.html">
       <img class="idx-thumb" src="./thumbs/chart-origenes.png" data-thumb-es="./thumbs/chart-origenes.png" data-thumb-en="./thumbs/chart-origenes.en.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 9</span>
-      <h2 data-i18n="c9-title">De qué país nacen los mundialistas</h2>
+      <h2 data-i18n="c9-title">La migración en el fútbol mundial</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
@@ -202,7 +202,7 @@
 <script src="../lib/regions.js?v=idx3"></script>
 <script src="../lib/i18n.js?v=idx3"></script>
 <script src="./regions-fifa.js?v=idx3"></script>
-<script src="./i18n-issue.js?v=lang2"></script>
+<script src="./i18n-issue.js?v=lang8"></script>
 <script src="./utils.js?v=idx3"></script>
 <script>
   // Miniaturas por idioma: cada tarjeta trae data-thumb-es / data-thumb-en.
@@ -214,11 +214,23 @@
       if (want && img.getAttribute('src') !== want) img.src = want;
     });
   }
+  // Número de tarjeta por idioma ("Gráfico N" / "Chart N"). Está hardcodeado sin
+  // data-i18n, así que lo seteamos por JS según LANG, numerando por orden y
+  // salteando la tarjeta de la nota técnica (que sí lleva data-i18n).
+  function applyCardNums() {
+    var en = (typeof LANG !== 'undefined' && LANG === 'en');
+    var word = en ? 'Chart ' : 'Gráfico ';
+    document.querySelectorAll('.idx-card-num:not([data-i18n])').forEach(function (el, i) {
+      el.textContent = word + (i + 1);
+    });
+  }
   applyI18n();
   applyThumbLang();
+  applyCardNums();
   if (typeof setupLangToggle === 'function') setupLangToggle(function () {
     applyI18n();
     applyThumbLang();
+    applyCardNums();
   });
 </script>
 <div id="chart-nav"></div>
