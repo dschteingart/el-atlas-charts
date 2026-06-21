@@ -135,22 +135,21 @@ function al_lineSeries() {
     const country = al_selTeams().find(c => c !== AL_WORLD);   // primer país elegido; si no hay, Mundial (overall)
     AL_POS_ORDER.forEach(p => {
       const pts = country ? al_teamPosSeries(country, p) : (al_positions[p] ? al_seriesByYear(al_positions[p], 'act') : []);
-      if (pts.length) out.push({ label: al_posName(p), color: AL_POS_COL[p], pts });
+      if (pts.length) out.push({ label: al_posName(p), color: AL_POS_COL[p], pts, key: 'P_' + p });
     });
     return out;
   }
   let sel = al_selTeams(); if (!sel.length) sel = [AL_WORLD];
-  const single = sel.length === 1;
   sel.forEach(code => {
     const isW = code === AL_WORLD, o = isW ? al_overall : al_teams[code], col = isW ? AL_REAL : al_getColor(code);
-    out.push({ label: al_teamName(code), color: col, pts: al_seriesByYear(o, 'act') });
-    // "varón promedio": la referencia esperada de ESA selección (gris). Se etiqueta
-    // solo cuando es el Mundial o cuando hay una sola selección; con varios países
-    // las compañeras van finas y sin etiqueta para no amontonar/confundir.
+    out.push({ label: al_teamName(code), color: col, pts: al_seriesByYear(o, 'act'), key: code });
+    // "varón promedio": la referencia esperada de ESA selección. SIEMPRE etiquetada,
+    // si no, al exportar el PNG quedan líneas punteadas sin explicación. El Mundial usa
+    // el gris de referencia; cada país usa su color (pareja sólida/punteada, mismo color)
+    // y un sufijo "· varón prom." para que se lea cuál es cuál.
     if (al_vsCountry()) {
-      const labeled = isW || single;
-      const lab = !labeled ? '' : (isW ? al_tt('c10-exp', 'Varón promedio de sus países') : al_tt('c10-exp-one', 'Varón promedio del país'));
-      out.push({ label: lab, color: labeled ? AL_EXP : col, pts: al_seriesByYear(o, 'exp'), dashed: true, faint: !labeled });
+      const lab = isW ? al_tt('c10-exp', 'Varón promedio de sus países') : (al_teamName(code) + al_tt('c10-exp-sfx', ' · varón prom.'));
+      out.push({ label: lab, color: isW ? AL_EXP : col, pts: al_seriesByYear(o, 'exp'), dashed: true, key: code });
     }
   });
   return out;
@@ -282,21 +281,30 @@ function drawAltura() {
 //------------------------------------------------------------------
 function al_drawLines(svg, series, ctx) {
   const { xS, yS, y0, y1, bigFmt, isPngFormat, SIZES, lineW, haloW, labelHalo, dotR, inP } = ctx;
+  const interactive = !isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
   const halosG = al_el('g'); svg.appendChild(halosG);
   const linesG = al_el('g'); svg.appendChild(linesG);
   const dotsG = al_el('g'); svg.appendChild(dotsG);
+  const hitG = al_el('g'); svg.appendChild(hitG);   // áreas invisibles para resaltar al pasar el mouse
   const endLabels = [], hoverSeries = [];
   series.forEach(s => {
     const pts = inP(s.pts); if (!pts.length) return;
     const d = pts.map((p, i) => (i ? 'L' : 'M') + xS(p[0]).toFixed(1) + ',' + yS(p[1]).toFixed(1)).join(' ');
-    const halo = al_el('path'); halo.setAttribute('d', d); halo.setAttribute('fill', 'none'); halo.setAttribute('stroke', '#FAF8F3'); halo.setAttribute('stroke-width', haloW); halo.setAttribute('stroke-linejoin', 'round'); halo.setAttribute('stroke-linecap', 'round'); halosG.appendChild(halo);
-    const path = al_el('path'); path.setAttribute('d', d); path.setAttribute('fill', 'none'); path.setAttribute('stroke', s.color); path.setAttribute('stroke-width', s.faint ? lineW * 0.7 : lineW); path.setAttribute('stroke-linejoin', 'round'); path.setAttribute('stroke-linecap', 'round');
+    const halo = al_el('path'); halo.setAttribute('d', d); halo.setAttribute('fill', 'none'); halo.setAttribute('stroke', '#FAF8F3'); halo.setAttribute('stroke-width', haloW); halo.setAttribute('stroke-linejoin', 'round'); halo.setAttribute('stroke-linecap', 'round'); if (s.key) halo.setAttribute('data-al', s.key); halosG.appendChild(halo);
+    const path = al_el('path'); path.setAttribute('d', d); path.setAttribute('fill', 'none'); path.setAttribute('stroke', s.color); path.setAttribute('stroke-width', s.dashed ? lineW * 0.85 : lineW); path.setAttribute('stroke-linejoin', 'round'); path.setAttribute('stroke-linecap', 'round');
     if (s.dashed) path.setAttribute('stroke-dasharray', bigFmt ? '2 7' : '1 4');
-    if (s.faint) path.setAttribute('stroke-opacity', 0.55);
+    if (s.key) path.setAttribute('data-al', s.key);
     linesG.appendChild(path);
-    if (!s.faint) pts.forEach(p => { const c = al_el('circle'); c.setAttribute('cx', xS(p[0])); c.setAttribute('cy', yS(p[1])); c.setAttribute('r', dotR); c.setAttribute('fill', s.color); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', bigFmt ? 2 : 1.2); dotsG.appendChild(c); });
+    if (!s.dashed) pts.forEach(p => { const c = al_el('circle'); c.setAttribute('cx', xS(p[0])); c.setAttribute('cy', yS(p[1])); c.setAttribute('r', dotR); c.setAttribute('fill', s.color); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', bigFmt ? 2 : 1.2); if (s.key) c.setAttribute('data-al', s.key); dotsG.appendChild(c); });
+    // área de hover ancha e invisible: al entrar, el resto de las líneas se atenúa
+    if (interactive && s.key) {
+      const hit = al_el('path'); hit.setAttribute('d', d); hit.setAttribute('fill', 'none'); hit.setAttribute('stroke', 'transparent'); hit.setAttribute('stroke-width', Math.max(lineW + 10, 12)); hit.setAttribute('stroke-linejoin', 'round'); hit.setAttribute('stroke-linecap', 'round'); hit.style.pointerEvents = 'stroke'; hit.style.cursor = 'pointer';
+      hit.addEventListener('mouseenter', () => al_emph(svg, s.key));
+      hit.addEventListener('mouseleave', () => al_emph(svg, null));
+      hitG.appendChild(hit);
+    }
     const last = pts[pts.length - 1];
-    if (s.label) endLabels.push({ label: s.label, color: s.color, idealY: yS(last[1]), x: xS(y1), valLast: last[1] });
+    if (s.label) endLabels.push({ label: s.label, color: s.color, idealY: yS(last[1]), x: xS(y1), valLast: last[1], key: s.key });
     hoverSeries.push({ label: s.label || al_tt('c10-exp', 'esperada'), color: s.color, pts });
   });
   const GAP = bigFmt ? SIZES.label + 6 : 13;
@@ -307,13 +315,23 @@ function al_drawLines(svg, series, ctx) {
   const endG = al_el('g'); svg.appendChild(endG);
   endLabels.forEach(l => {
     l.y = Math.max(l.y, topB);
-    if (Math.abs(l.y - l.idealY) > 1.5) { const g = al_el('line'); g.setAttribute('x1', l.x); g.setAttribute('y1', l.idealY); g.setAttribute('x2', l.x + (bigFmt ? 8 : 4)); g.setAttribute('y2', l.y); g.setAttribute('stroke', l.color); g.setAttribute('stroke-width', bigFmt ? 1.4 : 0.8); g.setAttribute('stroke-opacity', 0.5); endG.appendChild(g); }
+    if (Math.abs(l.y - l.idealY) > 1.5) { const g = al_el('line'); g.setAttribute('x1', l.x); g.setAttribute('y1', l.idealY); g.setAttribute('x2', l.x + (bigFmt ? 8 : 4)); g.setAttribute('y2', l.y); g.setAttribute('stroke', l.color); g.setAttribute('stroke-width', bigFmt ? 1.4 : 0.8); g.setAttribute('stroke-opacity', 0.5); if (l.key) g.setAttribute('data-al', l.key); endG.appendChild(g); }
     const txt = al_el('text'); txt.setAttribute('x', l.x + (bigFmt ? 12 : 6)); txt.setAttribute('y', l.y + (bigFmt ? 8 : 4)); txt.setAttribute('fill', l.color); txt.setAttribute('font-weight', bigFmt ? 700 : 600);
     txt.style.fontSize = SIZES.label + 'px'; txt.style.fontFamily = 'var(--sans)';
     txt.setAttribute('paint-order', 'stroke'); txt.setAttribute('stroke', '#FAF8F3'); txt.setAttribute('stroke-width', labelHalo); txt.setAttribute('stroke-linejoin', 'round');
+    if (l.key) txt.setAttribute('data-al', l.key);
     txt.textContent = l.label + (isPngFormat ? '  ' + Math.round(l.valLast) : ''); endG.appendChild(txt);
   });
   if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER) && hoverSeries.length) al_setupHover(svg, { y0, y1, xS, yS, series: hoverSeries });
+}
+// Resalte: al pasar el mouse por una línea, las demás se atenúan. Las parejas
+// real/esperada comparten data-al (= código de selección), así se resaltan juntas.
+// Norma general de los gráficos del Atlas salvo pedido en contra.
+function al_emph(svg, key) {
+  if (!svg) return;
+  svg.querySelectorAll('[data-al]').forEach(el => {
+    el.style.opacity = (key == null || el.getAttribute('data-al') === key) ? '' : '0.14';
+  });
 }
 
 //------------------------------------------------------------------
@@ -471,8 +489,16 @@ function setupAlturaSearch() {
   const input = document.getElementById('al-search'), results = document.getElementById('al-search-results');
   if (!input || !results) return;
   let matches = [], active = -1;
-  // "Mundial" (todos) primero para comparar contra un país — salvo en barras (ahí no es una barra).
-  const all = () => { const base = Object.keys(al_teams || {}).map(code => ({ code, name: al_teamName(code) })).sort((a, b) => a.name.localeCompare(b.name, 'es')); return al_mode() === 'bar' ? base : [{ code: AL_WORLD, name: al_teamName(AL_WORLD) }].concat(base); };
+  // En barras solo se ofrecen las selecciones que JUEGAN el Mundial elegido (las
+  // que tienen plantel ese año). En líneas/distribución, todas + el "Mundial".
+  const all = () => {
+    if (al_mode() === 'bar') {
+      const wc = String(((state[10] && state[10].period) || [])[1]);
+      return Object.keys(al_teams || {}).filter(c => al_teams[c][wc]).map(code => ({ code, name: al_teamName(code) })).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+    }
+    const base = Object.keys(al_teams || {}).map(code => ({ code, name: al_teamName(code) })).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+    return [{ code: AL_WORLD, name: al_teamName(AL_WORLD) }].concat(base);
+  };
   function get(q) { if (!q) return []; const qn = al_norm(q); return all().filter(c => al_norm(c.name).includes(qn)).slice(0, 8); }
   function render(a) {
     if (!matches.length) { results.innerHTML = ''; results.classList.remove('open'); return; }
