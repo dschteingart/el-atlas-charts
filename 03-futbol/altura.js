@@ -99,7 +99,7 @@ function al_selTeams() { return Array.from(al_selMap().keys()).filter(c => c ===
 function al_nextFreeSlot() { const u = new Set(Array.from(al_selMap().values()).filter(v => v >= 0)); let i = 0; while (u.has(i)) i++; return i; }
 function al_toggleTeam(code) {
   const sel = al_selMap();
-  if (al_mode() === 'box' || (al_byPos() && al_mode() !== 'bar')) {   // distribución y "por puesto": una sola; barras y líneas: varias
+  if (al_mode() === 'box' || (al_byPos() && al_mode() === 'line')) {   // distribución y "por puesto" (líneas): una sola; barras/dispersión/líneas: varias
     if (sel.has(code)) sel.clear(); else { sel.clear(); sel.set(code, 0); }
   } else {
     if (sel.has(code)) sel.delete(code); else sel.set(code, al_nextFreeSlot());
@@ -199,8 +199,8 @@ function drawAltura() {
   // visibilidad de controles
   const box = al_mode() === 'box', bar = al_mode() === 'bar', scatter = al_mode() === 'scatter';
   const viewBtn = document.getElementById('al-view-sel'); if (viewBtn) { const g = viewBtn.closest('.lg-mode'); if (g) g.style.display = (bar || scatter) ? 'none' : ''; }   // desglose: oculto en barras y dispersión
-  const wrap = document.getElementById('al-search-wrap'); if (wrap) wrap.style.display = scatter ? 'none' : '';     // dispersión muestra TODAS las selecciones del Mundial; sin buscador
-  const chipsEl = document.getElementById('al-selected-chips'); if (chipsEl) chipsEl.style.display = scatter ? 'none' : '';
+  const wrap = document.getElementById('al-search-wrap'); if (wrap) wrap.style.display = '';     // buscador siempre (en barras/dispersión agrega/marca selecciones)
+  const chipsEl = document.getElementById('al-selected-chips'); if (chipsEl) chipsEl.style.display = '';
   const vsBtn = document.getElementById('al-vscountry'); if (vsBtn) { const g = vsBtn.closest('.lg-mode'); if (g) g.style.display = (bar || box || scatter || al_byPos()) ? 'none' : ''; }
   const posSel = document.getElementById('al-boxpos'); if (posSel) posSel.style.display = (box && al_byPos()) ? '' : 'none';   // selector de puesto único, solo en box+puesto
   const barSel = document.getElementById('al-barpos'); if (barSel) barSel.style.display = bar ? '' : 'none';                  // selector de puesto del ranking, solo en barras
@@ -413,16 +413,6 @@ function al_scatterPoints(wc) {
   });
   return out;
 }
-// Regresión lineal OLS y = a + b·x (mismo solver que scatter.js, sobre alturas).
-function al_ols(pts) {
-  const n = pts.length; if (n < 2) return null;
-  let sx = 0, sy = 0; pts.forEach(p => { sx += p.x; sy += p.y; }); const mx = sx / n, my = sy / n;
-  let num = 0, den = 0, sst = 0; pts.forEach(p => { const dx = p.x - mx, dy = p.y - my; num += dx * dy; den += dx * dx; sst += dy * dy; });
-  const b = den ? num / den : 0, a = my - b * mx;
-  let ssr = 0; pts.forEach(p => { const yp = a + b * p.x; ssr += (p.y - yp) ** 2; });
-  const r2 = sst ? 1 - ssr / sst : 0;
-  return { a, b, r2, n };
-}
 // Ticks "lindos" en cm para un dominio chico (rangos de ~15 cm): paso 5/2/1.
 function al_scTicks(lo, hi) {
   const span = hi - lo; const step = span > 24 ? 5 : span > 10 ? 2 : 1;
@@ -433,94 +423,108 @@ function al_scTicks(lo, hi) {
 function al_drawScatter(svg, opt) {
   const { wc, bigFmt, isPngFormat, SIZES } = opt;
   const interactive = !isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
-  const M = { top: bigFmt ? 40 : 28, right: bigFmt ? 54 : 40, bottom: bigFmt ? 108 : 72, left: bigFmt ? 112 : 66 };
-  const PW = AL_W - M.left - M.right, PH = AL_H - M.top - M.bottom;
+  const en = (typeof LANG !== 'undefined' && LANG === 'en');
+  const M = { top: bigFmt ? 40 : 28, right: bigFmt ? 44 : 36, bottom: bigFmt ? 100 : 66, left: bigFmt ? 100 : 60 };
+  const availW = AL_W - M.left - M.right, availH = AL_H - M.top - M.bottom;
+  // Plot CUADRADO: misma escala en ambos ejes ⇒ la diagonal es de 45° reales y
+  // significa "plantel = país". Se centra en el ancho disponible.
+  const side = Math.max(40, Math.min(availW, availH));
+  const ox = M.left + (availW - side) / 2, oy = M.top + (availH - side) / 2;
   const pts = al_scatterPoints(wc);
   const disp = document.getElementById('al-range-display'); if (disp) disp.textContent = wc;
   al_renderConfLegend(pts);
   if (pts.length < 2) {
     const m = al_el('text'); m.setAttribute('x', AL_W / 2); m.setAttribute('y', AL_H / 2); m.setAttribute('text-anchor', 'middle'); m.style.fontFamily = 'var(--sans)'; m.style.fontSize = (bigFmt ? 24 : 14) + 'px'; m.setAttribute('fill', 'var(--ink-muted)'); m.textContent = al_tt('c10-sc-empty', 'Sin datos suficientes para este Mundial.'); svg.appendChild(m); return;
   }
-  let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
-  pts.forEach(p => { if (p.x < xmin) xmin = p.x; if (p.x > xmax) xmax = p.x; if (p.y < ymin) ymin = p.y; if (p.y > ymax) ymax = p.y; });
-  const xpad = Math.max(0.8, (xmax - xmin) * 0.10), ypad = Math.max(0.8, (ymax - ymin) * 0.10);
-  const xd = [xmin - xpad, xmax + xpad], yd = [ymin - ypad, ymax + ypad];
-  const xS = v => M.left + ((v - xd[0]) / (xd[1] - xd[0])) * PW;
-  const yS = v => M.top + PH - ((v - yd[0]) / (yd[1] - yd[0])) * PH;
+  // dominio COMPARTIDO entre ambos ejes (lo exige la diagonal de 45°)
+  let lo = Infinity, hi = -Infinity;
+  pts.forEach(p => { lo = Math.min(lo, p.x, p.y); hi = Math.max(hi, p.x, p.y); });
+  const pad = Math.max(1, (hi - lo) * 0.08), d0 = lo - pad, d1 = hi + pad;
+  const xS = v => ox + ((v - d0) / (d1 - d0)) * side;
+  const yS = v => oy + side - ((v - d0) / (d1 - d0)) * side;
 
-  const bg = al_el('rect'); bg.setAttribute('x', M.left); bg.setAttribute('y', M.top); bg.setAttribute('width', PW); bg.setAttribute('height', PH); bg.setAttribute('fill', 'var(--bg)'); svg.appendChild(bg);
-  // grid + ticks X
-  al_scTicks(xd[0], xd[1]).forEach(v => {
-    const x = xS(v); if (x < M.left - 0.5 || x > M.left + PW + 0.5) return;
-    const gl = al_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x); gl.setAttribute('y1', M.top); gl.setAttribute('y2', M.top + PH); gl.setAttribute('class', 's-grid-line'); svg.appendChild(gl);
-    const lb = al_el('text'); lb.setAttribute('x', x); lb.setAttribute('y', M.top + PH + (bigFmt ? 34 : 18)); lb.setAttribute('text-anchor', 'middle'); lb.setAttribute('class', 's-tick'); lb.style.fontSize = SIZES.tick + 'px'; lb.textContent = v; svg.appendChild(lb);
-  });
-  // grid + ticks Y
-  al_scTicks(yd[0], yd[1]).forEach(v => {
-    const y = yS(v); if (y < M.top - 0.5 || y > M.top + PH + 0.5) return;
-    const gl = al_el('line'); gl.setAttribute('x1', M.left); gl.setAttribute('x2', M.left + PW); gl.setAttribute('y1', y); gl.setAttribute('y2', y); gl.setAttribute('class', 's-grid-line'); svg.appendChild(gl);
-    const lb = al_el('text'); lb.setAttribute('x', M.left - (bigFmt ? 12 : 8)); lb.setAttribute('y', y + (bigFmt ? 8 : 4)); lb.setAttribute('text-anchor', 'end'); lb.setAttribute('class', 's-tick'); lb.style.fontSize = SIZES.tick + 'px'; lb.textContent = v; svg.appendChild(lb);
+  const bg = al_el('rect'); bg.setAttribute('x', ox); bg.setAttribute('y', oy); bg.setAttribute('width', side); bg.setAttribute('height', side); bg.setAttribute('fill', 'var(--bg)'); svg.appendChild(bg);
+  // grid + ticks (mismos valores en X e Y)
+  const ticks = al_scTicks(d0, d1);
+  ticks.forEach(v => {
+    const x = xS(v); if (x >= ox - 0.5 && x <= ox + side + 0.5) {
+      const gl = al_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x); gl.setAttribute('y1', oy); gl.setAttribute('y2', oy + side); gl.setAttribute('class', 's-grid-line'); svg.appendChild(gl);
+      const lb = al_el('text'); lb.setAttribute('x', x); lb.setAttribute('y', oy + side + (bigFmt ? 32 : 17)); lb.setAttribute('text-anchor', 'middle'); lb.setAttribute('class', 's-tick'); lb.style.fontSize = SIZES.tick + 'px'; lb.textContent = v; svg.appendChild(lb);
+    }
+    const y = yS(v); if (y >= oy - 0.5 && y <= oy + side + 0.5) {
+      const gl = al_el('line'); gl.setAttribute('x1', ox); gl.setAttribute('x2', ox + side); gl.setAttribute('y1', y); gl.setAttribute('y2', y); gl.setAttribute('class', 's-grid-line'); svg.appendChild(gl);
+      const lb = al_el('text'); lb.setAttribute('x', ox - (bigFmt ? 10 : 7)); lb.setAttribute('y', y + (bigFmt ? 8 : 4)); lb.setAttribute('text-anchor', 'end'); lb.setAttribute('class', 's-tick'); lb.style.fontSize = SIZES.tick + 'px'; lb.textContent = v; svg.appendChild(lb);
+    }
   });
   // títulos de eje
-  const xT = al_el('text'); xT.setAttribute('class', 's-axis-title'); xT.setAttribute('x', M.left + PW / 2); xT.setAttribute('y', M.top + PH + (bigFmt ? 34 : 18) + (bigFmt ? 42 : 26)); xT.setAttribute('text-anchor', 'middle'); xT.style.fontSize = SIZES.axisTitle + 'px'; xT.textContent = al_tt('c10-sc-axis-x', 'Altura del país (varón promedio, cm)'); svg.appendChild(xT);
-  const yT = al_el('text'); yT.setAttribute('class', 's-axis-title'); yT.setAttribute('text-anchor', 'middle'); yT.setAttribute('transform', `translate(${M.left - (bigFmt ? 82 : 48)}, ${M.top + PH / 2}) rotate(-90)`); yT.style.fontSize = SIZES.axisTitle + 'px'; yT.textContent = al_tt('c10-sc-axis-y', 'Altura del plantel (cm)'); svg.appendChild(yT);
+  const xT = al_el('text'); xT.setAttribute('class', 's-axis-title'); xT.setAttribute('x', ox + side / 2); xT.setAttribute('y', oy + side + (bigFmt ? 32 : 17) + (bigFmt ? 40 : 26)); xT.setAttribute('text-anchor', 'middle'); xT.style.fontSize = SIZES.axisTitle + 'px'; xT.textContent = al_tt('c10-sc-axis-x', 'Altura del país (varón promedio, cm)'); svg.appendChild(xT);
+  const yT = al_el('text'); yT.setAttribute('class', 's-axis-title'); yT.setAttribute('text-anchor', 'middle'); yT.setAttribute('transform', `translate(${ox - (bigFmt ? 70 : 44)}, ${oy + side / 2}) rotate(-90)`); yT.style.fontSize = SIZES.axisTitle + 'px'; yT.textContent = al_tt('c10-sc-axis-y', 'Altura del plantel (cm)'); svg.appendChild(yT);
 
-  // recta de regresión + nota de stats
-  const reg = al_ols(pts);
-  if (reg) {
-    const rl = al_el('line'); rl.setAttribute('x1', xS(xd[0])); rl.setAttribute('y1', yS(reg.a + reg.b * xd[0])); rl.setAttribute('x2', xS(xd[1])); rl.setAttribute('y2', yS(reg.a + reg.b * xd[1]));
-    rl.setAttribute('stroke', 'var(--ink)'); rl.setAttribute('stroke-width', bigFmt ? 2 : 1.4); rl.setAttribute('stroke-opacity', 0.55); rl.setAttribute('stroke-dasharray', bigFmt ? '7 5' : '5 3'); svg.appendChild(rl);
-    const en = (typeof LANG !== 'undefined' && LANG === 'en');
-    const st = al_el('text'); st.setAttribute('x', M.left + (bigFmt ? 12 : 8)); st.setAttribute('y', M.top + (bigFmt ? 24 : 14)); st.style.fontFamily = 'var(--sans)'; st.style.fontSize = (bigFmt ? 20 : 11) + 'px'; st.setAttribute('fill', 'var(--ink-muted)'); st.textContent = (en ? `${reg.n} teams · R² ${reg.r2.toFixed(2)}` : `${reg.n} selecciones · R² ${reg.r2.toFixed(2)}`); svg.appendChild(st);
-  }
+  // diagonal 45° = "plantel = país". Los puntos casi siempre quedan ARRIBA
+  // (jugadores más altos que el varón promedio de su país).
+  const diag = al_el('line'); diag.setAttribute('x1', xS(d0)); diag.setAttribute('y1', yS(d0)); diag.setAttribute('x2', xS(d1)); diag.setAttribute('y2', yS(d1));
+  diag.setAttribute('stroke', 'var(--ink)'); diag.setAttribute('stroke-width', bigFmt ? 1.8 : 1.2); diag.setAttribute('stroke-opacity', 0.5); diag.setAttribute('stroke-dasharray', bigFmt ? '7 5' : '5 3'); svg.appendChild(diag);
+  const dl = al_el('text'); const dmx = (xS(d0) + xS(d1)) / 2, dmy = (yS(d0) + yS(d1)) / 2;
+  dl.setAttribute('transform', `translate(${dmx}, ${dmy}) rotate(-45)`); dl.setAttribute('text-anchor', 'middle'); dl.setAttribute('y', bigFmt ? -12 : -7);
+  dl.style.fontFamily = 'var(--sans)'; dl.style.fontSize = (bigFmt ? 18 : 10.5) + 'px'; dl.setAttribute('fill', 'var(--ink-muted)');
+  dl.setAttribute('paint-order', 'stroke'); dl.setAttribute('stroke', '#FAF8F3'); dl.setAttribute('stroke-width', bigFmt ? 5 : 2.5); dl.setAttribute('stroke-linejoin', 'round');
+  dl.textContent = al_tt('c10-sc-diag', 'plantel = país'); svg.appendChild(dl);
+
+  // selección manual (buscador/click): se etiquetan y agrandan
+  const selSet = new Set(Array.from(al_selMap().keys()).filter(c => c !== AL_WORLD && al_teams[c]));
 
   // puntos
   const tooltip = document.getElementById('tooltip10');
   const r = bigFmt ? 7 : 4.2;
   const ptsG = al_el('g'); svg.appendChild(ptsG);
-  const en = (typeof LANG !== 'undefined' && LANG === 'en');
   pts.forEach(p => {
-    const cx = xS(p.x), cy = yS(p.y);
+    const cx = xS(p.x), cy = yS(p.y), sel = selSet.has(p.code);
     const col = (typeof CONF_FIFA_COLORS !== 'undefined' && CONF_FIFA_COLORS[p.confed]) || '#888';
-    const c = al_el('circle'); c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', r); c.setAttribute('fill', col); c.setAttribute('fill-opacity', 0.85); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', bigFmt ? 1.6 : 1);
-    if (interactive && tooltip) {
+    const c = al_el('circle'); c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', sel ? r * 1.45 : r); c.setAttribute('fill', col); c.setAttribute('fill-opacity', sel ? 0.95 : 0.82); c.setAttribute('stroke', sel ? '#1A1A1A' : '#FAF8F3'); c.setAttribute('stroke-width', sel ? (bigFmt ? 2 : 1.2) : (bigFmt ? 1.6 : 1));
+    if (p.confed) c.setAttribute('data-confed', p.confed);
+    if (interactive) {
       c.style.cursor = 'pointer';
       const gap = +(p.y - p.x).toFixed(1);
-      c.addEventListener('mouseenter', (ev) => {
-        tooltip.innerHTML = `<div style="font-weight:600;margin-bottom:3px;">${p.name}</div><div style="display:flex;gap:8px;"><span style="flex:1;">${en ? 'Squad' : 'Plantel'}</span><strong style="font-variant-numeric:tabular-nums;">${p.y} cm</strong></div><div style="display:flex;gap:8px;"><span style="flex:1;">${en ? 'Country' : 'País'}</span><strong style="font-variant-numeric:tabular-nums;">${p.x} cm</strong></div><div style="color:var(--ink-muted);margin-top:2px;">${en ? 'Gap' : 'Brecha'} ${gap >= 0 ? '+' : ''}${gap} cm</div>`;
-        tooltip.style.display = 'block'; tooltip.style.opacity = '1'; al_placeTip(tooltip, ev, svg); c.setAttribute('r', r * 1.35);
-      });
-      c.addEventListener('mousemove', (ev) => al_placeTip(tooltip, ev, svg));
-      c.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; c.setAttribute('r', r); });
+      if (tooltip) {
+        c.addEventListener('mouseenter', (ev) => {
+          tooltip.innerHTML = `<div style="font-weight:600;margin-bottom:3px;">${p.name}</div><div style="display:flex;gap:8px;"><span style="flex:1;">${en ? 'Squad' : 'Plantel'}</span><strong style="font-variant-numeric:tabular-nums;">${p.y} cm</strong></div><div style="display:flex;gap:8px;"><span style="flex:1;">${en ? 'Country' : 'País'}</span><strong style="font-variant-numeric:tabular-nums;">${p.x} cm</strong></div><div style="color:var(--ink-muted);margin-top:2px;">${en ? 'Gap' : 'Brecha'} ${gap >= 0 ? '+' : ''}${gap} cm</div>`;
+          tooltip.style.display = 'block'; tooltip.style.opacity = '1'; al_placeTip(tooltip, ev, svg); c.setAttribute('r', (sel ? r * 1.45 : r) * 1.3);
+        });
+        c.addEventListener('mousemove', (ev) => al_placeTip(tooltip, ev, svg));
+        c.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; c.setAttribute('r', sel ? r * 1.45 : r); });
+      }
+      c.addEventListener('click', (ev) => { ev.stopPropagation(); al_toggleTeam(p.code); });   // clic = marcar/desmarcar
     }
     ptsG.appendChild(c);
   });
 
-  // etiquetas curadas: potencias presentes + el plantel más alto y el más bajo
-  const want = new Set(AL_IMPORTANT);
+  // etiquetas: seleccionadas (siempre) + curadas (potencias presentes + extremos)
+  const want = new Set(selSet); AL_IMPORTANT.forEach(c => want.add(c));
   let tallest = pts[0], shortest = pts[0];
   pts.forEach(p => { if (p.y > tallest.y) tallest = p; if (p.y < shortest.y) shortest = p; });
   want.add(tallest.code); want.add(shortest.code);
-  al_placeScatterLabels(svg, pts.filter(p => want.has(p.code)), xS, yS, { M, PW, PH, bigFmt, SIZES, r });
+  al_placeScatterLabels(svg, pts.filter(p => want.has(p.code)), xS, yS, { ox, oy, side, bigFmt, SIZES, r, selSet });
 }
 // Colocación greedy de etiquetas del scatter: 4 posiciones candidatas
 // (arriba/derecha/abajo/izquierda); si todas chocan o salen del plot, se omite.
+// Las seleccionadas van en negrita. data-confed permite atenuarlas al hacer
+// hover sobre una confederación.
 function al_placeScatterLabels(svg, items, xS, yS, ctx) {
-  const { M, PW, PH, bigFmt, SIZES, r } = ctx;
-  const fs = SIZES.label, fw = bigFmt ? 700 : 600, halo = bigFmt ? 6 : 3;
-  const box = { x1: M.left + 1, y1: M.top + 1, x2: M.left + PW - 1, y2: M.top + PH - 1 };
+  const { ox, oy, side, bigFmt, SIZES, r, selSet } = ctx;
+  const box = { x1: ox + 1, y1: oy + 1, x2: ox + side - 1, y2: oy + side - 1 };
   const placed = [];
   const over = (a, b) => !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
   const inBox = (q) => q.x1 >= box.x1 && q.x2 <= box.x2 && q.y1 >= box.y1 && q.y2 <= box.y2;
   const g = al_el('g'); svg.appendChild(g);
-  // ordenar por Y para una colocación estable
   items.slice().sort((a, b) => yS(a.y) - yS(b.y)).forEach(p => {
-    const cx = xS(p.x), cy = yS(p.y), w = al_measureText(p.name, fs, fw) + 2;
+    const cx = xS(p.x), cy = yS(p.y), sel = selSet && selSet.has(p.code);
+    const fs = SIZES.label, fw = sel ? (bigFmt ? 800 : 700) : (bigFmt ? 700 : 600), halo = bigFmt ? 6 : 3, rr = sel ? r * 1.45 : r;
+    const w = al_measureText(p.name, fs, fw) + 2;
     const cands = [
-      { lx: cx, ly: cy - (r + 5), anchor: 'middle' },
-      { lx: cx + r + 6, ly: cy + fs * 0.34, anchor: 'start' },
-      { lx: cx, ly: cy + r + fs, anchor: 'middle' },
-      { lx: cx - r - 6, ly: cy + fs * 0.34, anchor: 'end' },
+      { lx: cx, ly: cy - (rr + 5), anchor: 'middle' },
+      { lx: cx + rr + 6, ly: cy + fs * 0.34, anchor: 'start' },
+      { lx: cx, ly: cy + rr + fs, anchor: 'middle' },
+      { lx: cx - rr - 6, ly: cy + fs * 0.34, anchor: 'end' },
     ];
     let chosen = null;
     for (const cd of cands) {
@@ -534,9 +538,18 @@ function al_placeScatterLabels(svg, items, xS, yS, ctx) {
     placed.push(chosen.rect);
     const col = (typeof CONF_FIFA_LABEL_COLORS !== 'undefined' && CONF_FIFA_LABEL_COLORS[p.confed]) || '#444';
     const t = al_el('text'); t.setAttribute('x', chosen.lx); t.setAttribute('y', chosen.ly); t.setAttribute('text-anchor', chosen.anchor); t.setAttribute('fill', col);
+    if (p.confed) t.setAttribute('data-confed', p.confed);
     t.style.fontSize = fs + 'px'; t.style.fontFamily = 'var(--sans)'; t.style.fontWeight = fw;
     t.setAttribute('paint-order', 'stroke'); t.setAttribute('stroke', '#FAF8F3'); t.setAttribute('stroke-width', halo); t.setAttribute('stroke-linejoin', 'round');
     t.textContent = p.name; g.appendChild(t);
+  });
+}
+// Atenúa los puntos/etiquetas que no son de la confederación apuntada (hover en
+// la leyenda). Sin redibujar — evita el loop de re-disparo de mouseenter.
+function al_emphConf(conf) {
+  const svg = document.getElementById('chart10'); if (!svg) return;
+  svg.querySelectorAll('[data-confed]').forEach(el => {
+    el.style.opacity = (conf == null || el.getAttribute('data-confed') === conf) ? '' : '0.12';
   });
 }
 function al_renderConfLegend(pts) {
@@ -548,6 +561,8 @@ function al_renderConfLegend(pts) {
     const col = (typeof CONF_FIFA_COLORS !== 'undefined' && CONF_FIFA_COLORS[c]) || '#888';
     const chip = document.createElement('span'); chip.className = 'al-conf-chip';
     chip.innerHTML = `<span class="al-conf-dot" style="background:${col};"></span>${c}`;
+    chip.addEventListener('mouseenter', () => al_emphConf(c));    // hover confederación → resalta sus países
+    chip.addEventListener('mouseleave', () => al_emphConf(null));
     el.appendChild(chip);
   });
 }
@@ -637,10 +652,13 @@ function al_applyHeadings() {
 function al_renderChips() {
   const c = document.getElementById('al-selected-chips'); if (!c) return;
   c.innerHTML = '';
+  const scatter = al_mode() === 'scatter';
   Array.from(al_selMap().keys()).forEach(code => {
     if (code !== AL_WORLD && !al_teams[code]) return;
-    if (code === AL_WORLD && al_mode() === 'bar') return;   // en barras el "Mundial" no es una barra
-    const chip = document.createElement('span'); chip.className = 'm-selected-chip'; chip.style.background = code === AL_WORLD ? AL_REAL : al_getColor(code); chip.style.color = '#fff'; chip.textContent = al_teamName(code);
+    if (code === AL_WORLD && (al_mode() === 'bar' || scatter)) return;   // en barras/dispersión el "Mundial" no es un punto
+    // en dispersión el color del chip es el de la confederación (igual que el punto)
+    const bg = code === AL_WORLD ? AL_REAL : (scatter ? ((typeof CONF_FIFA_COLORS !== 'undefined' && CONF_FIFA_COLORS[al_teamConfed && al_teamConfed[code]]) || '#888') : al_getColor(code));
+    const chip = document.createElement('span'); chip.className = 'm-selected-chip'; chip.style.background = bg; chip.style.color = '#fff'; chip.textContent = al_teamName(code);
     const x = document.createElement('button'); x.className = 'm-chip-x'; x.innerHTML = '×'; x.addEventListener('click', () => al_toggleTeam(code)); chip.appendChild(x); c.appendChild(chip);
   });
 }
@@ -652,7 +670,7 @@ function setupAlturaSearch() {
   // En barras solo se ofrecen las selecciones que JUEGAN el Mundial elegido (las
   // que tienen plantel ese año). En líneas/distribución, todas + el "Mundial".
   const all = () => {
-    if (al_mode() === 'bar') {
+    if (al_mode() === 'bar' || al_mode() === 'scatter') {   // solo selecciones que juegan el Mundial elegido
       const wc = String(((state[10] && state[10].period) || [])[1]);
       return Object.keys(al_teams || {}).filter(c => al_teams[c][wc]).map(code => ({ code, name: al_teamName(code) })).sort((a, b) => a.name.localeCompare(b.name, 'es'));
     }
