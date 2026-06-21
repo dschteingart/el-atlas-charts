@@ -109,6 +109,13 @@ function rk_fmt(v, unit) {
   s = s.replace(/\B(?=(\d{3})+(?!\d))/g, en ? ',' : '.');
   return '$' + s;
 }
+// Formato para ticks del eje Y: sin decimales si es entero ($10, no $10.0);
+// con decimal solo para valores < 1 ($0.1, $0.5).
+function rk_fmtTick(v) {
+  const en = (typeof LANG !== 'undefined' && LANG === 'en');
+  if (Math.abs(v - Math.round(v)) < 1e-9) return '$' + Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, en ? ',' : '.');
+  return '$' + (v < 1 ? String(v) : v.toFixed(1));
+}
 function rk_unitSuffix() {
   const u = state[4].unit, en = (typeof LANG !== 'undefined' && LANG === 'en');
   if (u === 'day') return en ? '/day' : '/día';
@@ -298,7 +305,7 @@ function rk_drawLines(svg, ctx) {
   yTicks.forEach(v => {
     const y = yS(v); if (y < M.top - 1 || y > M.top + PH + 1) return;
     const gl = rk_el('line'); gl.setAttribute('x1', M.left); gl.setAttribute('x2', M.left + PW); gl.setAttribute('y1', y); gl.setAttribute('y2', y); gl.setAttribute('class', 's-grid-line'); svg.appendChild(gl);
-    const lb = rk_el('text'); lb.setAttribute('x', M.left - (bigFmt ? 12 : 8)); lb.setAttribute('y', y + (bigFmt ? 7 : 4)); lb.setAttribute('text-anchor', 'end'); lb.setAttribute('class', 's-tick'); lb.style.fontSize = fs + 'px'; lb.textContent = rk_fmt(v, unit); svg.appendChild(lb);
+    const lb = rk_el('text'); lb.setAttribute('x', M.left - (bigFmt ? 12 : 8)); lb.setAttribute('y', y + (bigFmt ? 7 : 4)); lb.setAttribute('text-anchor', 'end'); lb.setAttribute('class', 's-tick'); lb.style.fontSize = fs + 'px'; lb.textContent = rk_fmtTick(v); svg.appendChild(lb);
   });
   // grid + ticks X (años)
   const xticks = []; const ys = rk_years().filter(y => y >= p0 && y <= p1); let lastX = -1e9; const minGap = bigFmt ? 90 : 48;
