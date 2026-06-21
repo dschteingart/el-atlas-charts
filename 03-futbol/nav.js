@@ -9,7 +9,7 @@
 // Autocontenido: lee el idioma del global LANG (fallback a <html lang>), y se
 // re-renderiza al togglear idioma. No depende de i18n-issue.js.
 (function () {
-  // Orden de los 9 gráficos del número (= orden del index).
+  // Orden de los 10 gráficos del número (= orden del index).
   const CHARTS = [
     'chart-elo-pib.html',
     'chart-talento.html',
@@ -19,7 +19,8 @@
     'chart-natividad.html',
     'chart-ligas.html',
     'chart-birthplace.html',
-    'chart-origenes.html'
+    'chart-origenes.html',
+    'chart-altura.html'
   ];
   const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
   const T = {
