@@ -650,7 +650,8 @@ function tl_setupHover(svg, ctx) {
     update(yr);
     if (tooltip) {
       const rect = svg.getBoundingClientRect();
-      tooltip.style.left = (ev.clientX - rect.left + 14) + 'px';
+      const _x = ev.clientX - rect.left, _w = tooltip.offsetWidth || 170;   // si no entra a la derecha, a la izquierda del cursor
+      tooltip.style.left = ((_x + 14 + _w > rect.width) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px';
       tooltip.style.top = (ev.clientY - rect.top + 14) + 'px';
     }
   });
