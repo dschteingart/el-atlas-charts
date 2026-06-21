@@ -175,7 +175,7 @@ function drawRanking() {
   const ctx = { bigFmt, isPngFormat, mobile };
   if (view === 'bars') rk_drawBars(svg, ctx);
   else if (view === 'lines') rk_drawLines(svg, ctx);
-  else if (view === 'map') rk_drawComing(svg, ctx, 'Mapa');
+  else if (view === 'map') rk_drawMap(svg, ctx);
 
   rk_applyHeadings();
   rk_renderDecileButtons();
@@ -376,6 +376,106 @@ function rk_linesHover(svg, c) {
   svg.addEventListener('mousemove', moveH); svg.addEventListener('mouseleave', () => update(null));
 }
 
+// =================== Vista MAPA ===================
+// Coroplético D3 (Robinson). Modo clásico (rampa terracota por cuantiles) o
+// benchmark (diverging: por encima del país de referencia en terracota, por
+// debajo en azul). Zoom por continente vía fitExtent a un bbox. Año + deciles.
+const RK_MAP_NODATA = '#E2DDD0';
+const RK_MAP_CLASSIC = ['#F2D9C9', '#E2A782', '#CF7E54', '#BE5D32', '#8E3F20', '#5A2818'];   // terracota claro→oscuro
+const RK_MAP_DIVERGE = ['#2D4256', '#5E7E96', '#A5BFD0', '#E2A782', '#9B3D24', '#5A2818'];   // azul (debajo) → terracota (encima)
+const RK_CONT_BBOX = {
+  all: [[-168, -56], [190, 80]], america: [[-168, -56], [-32, 73]], europe: [[-26, 34], [46, 71]],
+  africa: [[-20, -36], [52, 38]], asia: [[26, -11], [150, 78]], oceania: [[110, -50], [184, 8]]
+};
+let rk_map_proj = null, rk_map_path = null;
+function rk_mapValues(year, dec, unit) {
+  const vals = {};
+  rk_allIsos(year).forEach(iso => { const v = rk_value(iso, year, dec, unit); if (v != null) vals[iso] = v; });
+  return vals;
+}
+function rk_drawMap(svg, ctx) {
+  const { bigFmt } = ctx;
+  if (typeof d3 === 'undefined' || typeof GEO_COUNTRIES === 'undefined') {
+    const m = rk_el('text'); m.setAttribute('x', RK_W / 2); m.setAttribute('y', RK_H / 2); m.setAttribute('text-anchor', 'middle'); m.style.fontFamily = 'var(--sans)'; m.setAttribute('fill', 'var(--ink-muted)'); m.textContent = 'Cargando mapa…'; svg.appendChild(m); return;
+  }
+  const year = state[4].year, dec = rk_deciles(), unit = rk_unit();
+  const vals = rk_mapValues(year, dec, unit);
+  const benchOn = state[4].mapMode === 'bench';
+  const benchV = benchOn ? vals[state[4].benchmark] : null;
+  const pad = bigFmt ? 14 : 8;
+  const PW = RK_W - pad * 2, PH = RK_H - pad * 2;
+
+  // proyección fit al continente elegido
+  const box = RK_CONT_BBOX[state[4].continent] || RK_CONT_BBOX.all;
+  const bboxPoly = { type: 'Polygon', coordinates: [[[box[0][0], box[0][1]], [box[1][0], box[0][1]], [box[1][0], box[1][1]], [box[0][0], box[1][1]], [box[0][0], box[0][1]]]] };
+  rk_map_proj = d3.geoRobinson().fitExtent([[pad, pad], [pad + PW, pad + PH]], state[4].continent === 'all' ? GEO_COUNTRIES : bboxPoly);
+  rk_map_path = d3.geoPath(rk_map_proj);
+  const svgSel = d3.select(svg); svgSel.selectAll('*').remove();
+
+  // color
+  const arr = Object.values(vals);
+  let colorOf;
+  if (benchOn && benchV) {
+    const sc = d3.scaleThreshold().domain([0.5, 0.8, 1, 1.25, 2]).range(RK_MAP_DIVERGE);
+    colorOf = (v) => (v == null) ? RK_MAP_NODATA : sc(v / benchV);
+  } else {
+    const sc = d3.scaleQuantile().domain(arr).range(RK_MAP_CLASSIC);
+    colorOf = (v) => (v == null) ? RK_MAP_NODATA : sc(v);
+  }
+
+  // clip al área de plot (para continentes recortados)
+  const defs = svgSel.append('defs'); defs.append('clipPath').attr('id', 'rk-map-clip').append('rect').attr('x', pad).attr('y', pad).attr('width', PW).attr('height', PH);
+  const g = svgSel.append('g').attr('clip-path', 'url(#rk-map-clip)');
+  if (GEO_COUNTRIES.landmask) g.append('path').attr('d', rk_map_path(GEO_COUNTRIES.landmask)).attr('fill', RK_MAP_NODATA).attr('stroke', 'none');
+  const feats = GEO_COUNTRIES.features.slice().sort((a, b) => d3.geoArea(b) - d3.geoArea(a));
+  const tooltip = document.getElementById('tooltip4');
+  const en = (typeof LANG !== 'undefined' && LANG === 'en');
+  const interactive = !ctx.isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  g.append('g').selectAll('path.rk-country').data(feats).join('path')
+    .attr('class', 'rk-country').attr('d', rk_map_path)
+    .attr('fill', d => { const iso = d.id || (d.properties && d.properties.iso); return colorOf(vals[iso]); })
+    .attr('stroke', d => { const iso = d.id || (d.properties && d.properties.iso); return (benchOn && iso === state[4].benchmark) ? '#1A1A1A' : 'rgba(255,255,255,0.55)'; })
+    .attr('stroke-width', d => { const iso = d.id || (d.properties && d.properties.iso); return (benchOn && iso === state[4].benchmark) ? (bigFmt ? 2.2 : 1.6) : 0.5; })
+    .attr('vector-effect', 'non-scaling-stroke')
+    .style('cursor', interactive ? 'pointer' : 'default')
+    .on('mouseenter', interactive ? function (ev, d) {
+      const iso = d.id || (d.properties && d.properties.iso), v = vals[iso]; if (v == null) { if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; } return; }
+      d3.select(this).attr('stroke', '#1A1A1A').attr('stroke-width', bigFmt ? 2 : 1.4).raise();
+      let html = `<div style="font-weight:600;margin-bottom:3px;">${rk_name(iso)}</div><strong style="font-variant-numeric:tabular-nums;">${rk_fmt(v, unit)}</strong> ${rk_unitSuffix()}`;
+      if (benchOn && benchV) { const r = v / benchV; const pct = Math.round((r - 1) * 100); html += `<div style="color:var(--ink-muted);margin-top:2px;">${pct >= 0 ? '+' : ''}${pct}% ${en ? 'vs' : 'vs'} ${rk_name(state[4].benchmark)}</div>`; }
+      if (tooltip) { tooltip.innerHTML = html; tooltip.style.display = 'block'; tooltip.style.opacity = '1'; rk_placeTip(tooltip, ev, svg); }
+    } : null)
+    .on('mousemove', interactive ? (ev) => { if (tooltip) rk_placeTip(tooltip, ev, svg); } : null)
+    .on('mouseleave', interactive ? function (ev, d) {
+      const iso = d.id || (d.properties && d.properties.iso);
+      d3.select(this).attr('stroke', (benchOn && iso === state[4].benchmark) ? '#1A1A1A' : 'rgba(255,255,255,0.55)').attr('stroke-width', (benchOn && iso === state[4].benchmark) ? (bigFmt ? 2.2 : 1.6) : 0.5);
+      if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }
+    } : null)
+    .on('click', interactive ? function (ev, d) { if (!benchOn) return; const iso = d.id || (d.properties && d.properties.iso); if (vals[iso] != null) { state[4].benchmark = iso; rk_updateBenchName(); drawRanking(); } } : null);
+
+  rk_drawMapLegend(svg, { bigFmt, benchOn, benchV, classicArr: arr, unit });
+  rk_updateBenchName();
+  const disp = document.getElementById('rk-year-display'); if (disp) disp.textContent = year;
+}
+function rk_drawMapLegend(svg, o) {
+  const x0 = (o.bigFmt ? 18 : 12), y0 = RK_H - (o.bigFmt ? 30 : 22), sw = o.bigFmt ? 26 : 18, sh = o.bigFmt ? 12 : 9, fs = o.bigFmt ? 16 : 10;
+  const g = rk_el('g'); svg.appendChild(g);
+  const en = (typeof LANG !== 'undefined' && LANG === 'en');
+  let labels, colors;
+  if (o.benchOn && o.benchV) {
+    colors = RK_MAP_DIVERGE; labels = en ? ['≤½', '', 'below', 'above', '', '≥2×'] : ['≤½', '', 'debajo', 'encima', '', '≥2×'];
+  } else {
+    colors = RK_MAP_CLASSIC; labels = en ? ['low', '', '', '', '', 'high'] : ['bajo', '', '', '', '', 'alto'];
+  }
+  colors.forEach((c, i) => {
+    const r = rk_el('rect'); r.setAttribute('x', x0 + i * sw); r.setAttribute('y', y0); r.setAttribute('width', sw); r.setAttribute('height', sh); r.setAttribute('fill', c); g.appendChild(r);
+    if (labels[i]) { const t = rk_el('text'); t.setAttribute('x', x0 + i * sw + (i === colors.length - 1 ? sw : 0)); t.setAttribute('y', y0 - 4); t.setAttribute('text-anchor', i === colors.length - 1 ? 'end' : 'start'); t.style.fontFamily = 'var(--sans)'; t.style.fontSize = fs + 'px'; t.setAttribute('fill', 'var(--ink-soft)'); t.textContent = labels[i]; g.appendChild(t); }
+  });
+}
+function rk_updateBenchName() {
+  const el = document.getElementById('rk-bench-name'); if (el) el.textContent = rk_name(state[4].benchmark);
+}
+
 // =================== Títulos dinámicos ===================
 function rk_title() {
   return rk_tt('c4-title', 'El ingreso por decil, país por país');
@@ -511,6 +611,18 @@ function rk_setupToggles() {
     document.querySelectorAll('[data-rk-scale]').forEach(x => x.classList.toggle('active', x === b));
     drawRanking();
   }));
+  // Mapa: modo clásico / benchmark
+  document.querySelectorAll('[data-rk-mapmode]').forEach(b => b.addEventListener('click', () => {
+    state[4].mapMode = b.dataset.rkMapmode;
+    document.querySelectorAll('[data-rk-mapmode]').forEach(x => x.classList.toggle('active', x === b));
+    drawRanking();
+  }));
+  // Mapa: zoom por continente
+  document.querySelectorAll('[data-rk-cont]').forEach(b => b.addEventListener('click', () => {
+    state[4].continent = b.dataset.rkCont;
+    document.querySelectorAll('[data-rk-cont]').forEach(x => x.classList.toggle('active', x === b));
+    drawRanking();
+  }));
   // Deciles
   const decHost = document.getElementById('rk-decile-btns');
   if (decHost) decHost.querySelectorAll('button[data-decile]').forEach(b => b.addEventListener('click', () => rk_toggleDecile(+b.dataset.decile)));
@@ -552,6 +664,7 @@ function initRanking() {
   if (!s.period) s.period = [rk_yearMin(), rk_yearMax()];
   if (!s.benchmark) s.benchmark = 'USA';
   if (!s.continent) s.continent = 'all';
+  if (!s.mapMode) s.mapMode = 'classic';
   if (!(s.excluded instanceof Set)) s.excluded = new Set(s.excluded || []);   // países que el user sacó (no reaparecen como máx/mín)
 
   rk_setupToggles();

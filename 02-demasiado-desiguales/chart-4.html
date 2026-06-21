@@ -124,15 +124,25 @@
           <button class="active" data-rk-scale="log" data-i18n="c4-scale-log">Log</button>
         </div>
       </div>
-      <!-- Benchmark (solo Mapa) -->
+      <!-- Modo del mapa: clásico / benchmark (solo Mapa) -->
       <div class="m-ctrl-group" id="rk-bench-group" style="display:none;">
-        <span class="m-ctrl-label" data-i18n="c4-bench-label">Comparar vs</span>
+        <div class="m-mode-toggle" role="group" aria-label="Modo mapa">
+          <button class="active" data-rk-mapmode="classic" data-i18n="c4-map-classic">Clásico</button>
+          <button data-rk-mapmode="bench" data-i18n="c4-map-bench">Comparar vs</button>
+        </div>
         <span id="rk-bench-name" style="font-family:var(--sans);font-size:12px;font-weight:600;color:var(--ink);">Estados Unidos</span>
       </div>
-      <!-- Continente (solo Mapa) -->
+      <!-- Zoom por continente (solo Mapa) -->
       <div class="m-ctrl-group" id="rk-continent-group" style="display:none;">
         <span class="m-ctrl-label" data-i18n="c4-continent-label">Zoom</span>
-        <span style="font-family:var(--sans);font-size:12px;color:var(--ink-muted);">—</span>
+        <div class="m-mode-toggle" id="rk-continents" role="group" aria-label="Continente">
+          <button class="active" data-rk-cont="all" data-i18n="c4-cont-all">Mundo</button>
+          <button data-rk-cont="america" data-i18n="c4-cont-america">América</button>
+          <button data-rk-cont="europe" data-i18n="c4-cont-europe">Europa</button>
+          <button data-rk-cont="africa" data-i18n="c4-cont-africa">África</button>
+          <button data-rk-cont="asia" data-i18n="c4-cont-asia">Asia</button>
+          <button data-rk-cont="oceania" data-i18n="c4-cont-oceania">Oceanía</button>
+        </div>
       </div>
       <!-- Año (Barras/Mapa) -->
       <div class="m-slider-block" id="rk-year-block">
@@ -187,12 +197,15 @@
 <script src="../lib/regions.js"></script>
 <script src="../lib/i18n.js"></script>
 <script src="./regions-wb.js"></script>
-<script src="./i18n-issue.js?v=rk7"></script>
+<script src="./i18n-issue.js?v=rk11"></script>
 <script src="./utils.js"></script>
 <script src="./country-names.js"></script>
 <script src="./data-deciles.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
+<script src="./data-country-geo.js?v=rk1"></script>
 <script src="./editor.js"></script>
-<script src="./ranking.js?v=rk9"></script>
+<script src="./ranking.js?v=rk10"></script>
 <script src="./png-export.js"></script>
 <script>
   state[4] = {
