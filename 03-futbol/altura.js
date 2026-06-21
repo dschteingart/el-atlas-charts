@@ -126,14 +126,19 @@ function al_lineSeries() {
     return out;
   }
   let sel = al_selTeams(); if (!sel.length) sel = [AL_WORLD];
+  const single = sel.length === 1;
   sel.forEach(code => {
-    const isW = code === AL_WORLD, o = isW ? al_overall : al_teams[code];
-    out.push({ label: al_teamName(code), color: isW ? AL_REAL : al_getColor(code), pts: al_seriesByYear(o, 'act') });
+    const isW = code === AL_WORLD, o = isW ? al_overall : al_teams[code], col = isW ? AL_REAL : al_getColor(code);
+    out.push({ label: al_teamName(code), color: col, pts: al_seriesByYear(o, 'act') });
+    // "varón promedio": la referencia esperada de ESA selección (gris). Se etiqueta
+    // solo cuando es el Mundial o cuando hay una sola selección; con varios países
+    // las compañeras van finas y sin etiqueta para no amontonar/confundir.
+    if (al_vsCountry()) {
+      const labeled = isW || single;
+      const lab = !labeled ? '' : (isW ? al_tt('c10-exp', 'Varón promedio de sus países') : al_tt('c10-exp-one', 'Varón promedio del país'));
+      out.push({ label: lab, color: labeled ? AL_EXP : col, pts: al_seriesByYear(o, 'exp'), dashed: true, faint: !labeled });
+    }
   });
-  // "vs. varón promedio": UNA sola línea gris (la del Mundial = promedio de los
-  // varones de los países de todos los mundialistas). Solo si el Mundial está
-  // seleccionado — comparar la real de un país contra ESTA referencia.
-  if (al_vsCountry() && sel.indexOf(AL_WORLD) >= 0) out.push({ label: al_tt('c10-exp', 'Varón promedio de sus países'), color: AL_EXP, pts: al_seriesByYear(al_overall, 'exp'), dashed: true });
   return out;
 }
 // Distribución: UNA sola caja por año. Devuelve { label, color, boxes:[[year,mn,q1,md,q3,mx]] }
