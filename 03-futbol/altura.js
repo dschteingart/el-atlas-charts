@@ -59,6 +59,7 @@ const AL_YEAR_MIN = 1930, AL_YEAR_MAX = 2026;
 //  Data
 //==================================================================
 let al_years = null, al_overall = null, al_teams = null, al_positions = null, al_teamPos = null, al_teamNames = null, al_proxies = null, al_teamConfed = null;
+let al_scHoverConf = null;   // confederación apuntada en la leyenda del scatter (transitorio)
 function al_initData() {
   if (al_overall) return;
   if (typeof ALTURA === 'undefined') { console.error('[altura] ALTURA no cargado'); al_years = []; al_overall = {}; al_teams = {}; al_positions = {}; al_teamPos = {}; al_teamNames = {}; al_proxies = {}; al_teamConfed = {}; return; }
@@ -245,10 +246,20 @@ function drawAltura() {
   const yScale = al_yScale(vmin, vmax);
 
   if (!box) {
-    const labelOffset = bigFmt ? 12 : 6; let maxLabelW = 0;
-    const sfx = isPngFormat ? '  188' : '';   // en PNG el end-label lleva el valor (p.ej. "  183"); reservar su ancho
-    lineSeries.filter(s => s.label).forEach(s => { const w = al_measureText(s.label + sfx, SIZES.label, bigFmt ? 700 : 600); if (w > maxLabelW) maxLabelW = w; });
-    AL_MARGIN.right = Math.min(Math.round(AL_W * 0.46), Math.max(AL_MARGIN.right, labelOffset + maxLabelW + (bigFmt ? 16 : 8)));
+    // Las etiquetas de fin de línea se parten en 2 renglones si son largas, para
+    // que el margen derecho no se coma el gráfico (presupuesto ~28% del ancho).
+    // Cada serie guarda sus renglones en s._wrap; el margen sale del renglón más
+    // ancho. El valor (PNG) va pegado al final del texto.
+    const labelOffset = bigFmt ? 12 : 6, fw = bigFmt ? 700 : 600;
+    const budget = AL_W * (bigFmt ? 0.27 : 0.31);   // ancho máximo por renglón
+    let maxLineW = 0;
+    lineSeries.filter(s => s.label).forEach(s => {
+      const lv = (s.pts.filter(p => p[0] >= y0 && p[0] <= y1).slice(-1)[0] || [])[1];
+      const disp = s.label + (isPngFormat && lv != null ? '  ' + Math.round(lv) : '');
+      s._wrap = al_wrapLabel(disp, budget, SIZES.label, fw);
+      s._wrap.forEach(ln => { const w = al_measureText(ln, SIZES.label, fw); if (w > maxLineW) maxLineW = w; });
+    });
+    AL_MARGIN.right = Math.min(Math.round(AL_W * 0.34), Math.max(AL_MARGIN.right, labelOffset + maxLineW + (bigFmt ? 16 : 8)));
     PLOT_W = AL_W - AL_MARGIN.left - AL_MARGIN.right;
   }
   // En distribución, inset horizontal para que la primera/última caja no se
@@ -279,6 +290,22 @@ function drawAltura() {
   al_applyHeadings();
 }
 
+// Parte una etiqueta larga en hasta 2 renglones que entren en maxW (greedy por
+// palabras). Si entra en uno, devuelve un solo renglón. El valor (PNG) viaja
+// pegado al final del texto, así cae naturalmente en el 2º renglón.
+function al_wrapLabel(text, maxW, fs, fw) {
+  if (al_measureText(text, fs, fw) <= maxW) return [text];
+  const words = String(text).split(' ');
+  if (words.length < 2) return [text];
+  let l1 = '', i = 0;
+  for (; i < words.length; i++) {
+    const test = l1 ? l1 + ' ' + words[i] : words[i];
+    if (!l1 || al_measureText(test, fs, fw) <= maxW) l1 = test; else break;
+  }
+  const l2 = words.slice(i).join(' ');
+  return l2 ? [l1, l2] : [l1];
+}
+
 //------------------------------------------------------------------
 //  Modo LÍNEAS
 //------------------------------------------------------------------
@@ -307,23 +334,36 @@ function al_drawLines(svg, series, ctx) {
       hitG.appendChild(hit);
     }
     const last = pts[pts.length - 1];
-    if (s.label) endLabels.push({ label: s.label, color: s.color, idealY: yS(last[1]), x: xS(y1), valLast: last[1], key: s.key });
+    if (s.label) endLabels.push({ label: s.label, lines: s._wrap, color: s.color, idealY: yS(last[1]), x: xS(y1), valLast: last[1], key: s.key });
     hoverSeries.push({ label: s.label || al_tt('c10-exp', 'esperada'), color: s.color, pts });
   });
-  const GAP = bigFmt ? SIZES.label + 6 : 13;
+  // anti-colisión de las etiquetas de fin de línea contemplando su ALTO (1 o 2
+  // renglones): el gap entre dos vecinas es la semisuma de sus altos + un padding.
+  const lineH = SIZES.label * (bigFmt ? 1.16 : 1.22), padY = bigFmt ? 6 : 4;
+  endLabels.forEach(l => { l.n = (l.lines && l.lines.length) || 1; l.h = l.n * lineH; });
   const topB = AL_MARGIN.top + (bigFmt ? 6 : 2), botB = AL_MARGIN.top + (AL_H - AL_MARGIN.top - AL_MARGIN.bottom);
   endLabels.sort((a, b) => a.idealY - b.idealY);
-  endLabels.forEach((l, i) => { l.y = (i === 0) ? Math.max(l.idealY, topB) : Math.max(l.idealY, endLabels[i - 1].y + GAP); });
-  if (endLabels.length) { const last = endLabels[endLabels.length - 1]; if (last.y > botB) { last.y = botB; for (let i = endLabels.length - 2; i >= 0; i--) endLabels[i].y = Math.min(endLabels[i].y, endLabels[i + 1].y - GAP); } }
+  endLabels.forEach((l, i) => {
+    const minY = topB + l.h / 2;
+    l.y = (i === 0) ? Math.max(l.idealY, minY) : Math.max(l.idealY, endLabels[i - 1].y + (endLabels[i - 1].h + l.h) / 2 + padY);
+  });
+  if (endLabels.length) {
+    const last = endLabels[endLabels.length - 1], maxY = botB - last.h / 2;
+    if (last.y > maxY) { last.y = maxY; for (let i = endLabels.length - 2; i >= 0; i--) endLabels[i].y = Math.min(endLabels[i].y, endLabels[i + 1].y - (endLabels[i].h + endLabels[i + 1].h) / 2 - padY); }
+  }
   const endG = al_el('g'); svg.appendChild(endG);
   endLabels.forEach(l => {
-    l.y = Math.max(l.y, topB);
+    l.y = Math.max(l.y, topB + l.h / 2);
+    const lines = (l.lines && l.lines.length) ? l.lines : [l.label + (isPngFormat ? '  ' + Math.round(l.valLast) : '')];
     if (Math.abs(l.y - l.idealY) > 1.5) { const g = al_el('line'); g.setAttribute('x1', l.x); g.setAttribute('y1', l.idealY); g.setAttribute('x2', l.x + (bigFmt ? 8 : 4)); g.setAttribute('y2', l.y); g.setAttribute('stroke', l.color); g.setAttribute('stroke-width', bigFmt ? 1.4 : 0.8); g.setAttribute('stroke-opacity', 0.5); if (l.key) g.setAttribute('data-al', l.key); endG.appendChild(g); }
-    const txt = al_el('text'); txt.setAttribute('x', l.x + (bigFmt ? 12 : 6)); txt.setAttribute('y', l.y + (bigFmt ? 8 : 4)); txt.setAttribute('fill', l.color); txt.setAttribute('font-weight', bigFmt ? 700 : 600);
-    txt.style.fontSize = SIZES.label + 'px'; txt.style.fontFamily = 'var(--sans)';
-    txt.setAttribute('paint-order', 'stroke'); txt.setAttribute('stroke', '#FAF8F3'); txt.setAttribute('stroke-width', labelHalo); txt.setAttribute('stroke-linejoin', 'round');
-    if (l.key) txt.setAttribute('data-al', l.key);
-    txt.textContent = l.label + (isPngFormat ? '  ' + Math.round(l.valLast) : ''); endG.appendChild(txt);
+    const x = l.x + (bigFmt ? 12 : 6), baseAdj = bigFmt ? 8 : 4;
+    lines.forEach((ln, k) => {
+      const txt = al_el('text'); txt.setAttribute('x', x); txt.setAttribute('y', l.y + (k - (lines.length - 1) / 2) * lineH + baseAdj); txt.setAttribute('fill', l.color); txt.setAttribute('font-weight', bigFmt ? 700 : 600);
+      txt.style.fontSize = SIZES.label + 'px'; txt.style.fontFamily = 'var(--sans)';
+      txt.setAttribute('paint-order', 'stroke'); txt.setAttribute('stroke', '#FAF8F3'); txt.setAttribute('stroke-width', labelHalo); txt.setAttribute('stroke-linejoin', 'round');
+      if (l.key) txt.setAttribute('data-al', l.key);
+      txt.textContent = ln; endG.appendChild(txt);
+    });
   });
   if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER) && hoverSeries.length) al_setupHover(svg, { y0, y1, xS, yS, series: hoverSeries });
 }
@@ -473,14 +513,16 @@ function al_drawScatter(svg, opt) {
   // selección manual (buscador/click): se etiquetan y agrandan
   const selSet = new Set(Array.from(al_selMap().keys()).filter(c => c !== AL_WORLD && al_teams[c]));
 
-  // puntos
+  // puntos (si hay una confederación apuntada en la leyenda, el resto se atenúa)
   const tooltip = document.getElementById('tooltip10');
+  const hoverConf = al_scHoverConf;
   const r = bigFmt ? 7 : 4.2;
   const ptsG = al_el('g'); svg.appendChild(ptsG);
   pts.forEach(p => {
     const cx = xS(p.x), cy = yS(p.y), sel = selSet.has(p.code);
+    const dim = hoverConf && p.confed !== hoverConf && !sel;
     const col = (typeof CONF_FIFA_COLORS !== 'undefined' && CONF_FIFA_COLORS[p.confed]) || '#888';
-    const c = al_el('circle'); c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', sel ? r * 1.45 : r); c.setAttribute('fill', col); c.setAttribute('fill-opacity', sel ? 0.95 : 0.82); c.setAttribute('stroke', sel ? '#1A1A1A' : '#FAF8F3'); c.setAttribute('stroke-width', sel ? (bigFmt ? 2 : 1.2) : (bigFmt ? 1.6 : 1));
+    const c = al_el('circle'); c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', sel ? r * 1.45 : r); c.setAttribute('fill', col); c.setAttribute('fill-opacity', dim ? 0.1 : (sel ? 0.95 : 0.82)); c.setAttribute('stroke', sel ? '#1A1A1A' : '#FAF8F3'); c.setAttribute('stroke-width', sel ? (bigFmt ? 2 : 1.2) : (bigFmt ? 1.6 : 1));
     if (p.confed) c.setAttribute('data-confed', p.confed);
     if (interactive) {
       c.style.cursor = 'pointer';
@@ -498,11 +540,18 @@ function al_drawScatter(svg, opt) {
     ptsG.appendChild(c);
   });
 
-  // etiquetas: seleccionadas (siempre) + curadas (potencias presentes + extremos)
-  const want = new Set(selSet); AL_IMPORTANT.forEach(c => want.add(c));
-  let tallest = pts[0], shortest = pts[0];
-  pts.forEach(p => { if (p.y > tallest.y) tallest = p; if (p.y < shortest.y) shortest = p; });
-  want.add(tallest.code); want.add(shortest.code);
+  // etiquetas: si hay confederación apuntada → TODOS sus países (como Elo-PIB);
+  // si no → seleccionadas + curadas (potencias presentes + plantel más alto/bajo).
+  let want;
+  if (hoverConf) {
+    want = new Set(pts.filter(p => p.confed === hoverConf).map(p => p.code));
+    selSet.forEach(c => want.add(c));
+  } else {
+    want = new Set(selSet); AL_IMPORTANT.forEach(c => want.add(c));
+    let tallest = pts[0], shortest = pts[0];
+    pts.forEach(p => { if (p.y > tallest.y) tallest = p; if (p.y < shortest.y) shortest = p; });
+    want.add(tallest.code); want.add(shortest.code);
+  }
   al_placeScatterLabels(svg, pts.filter(p => want.has(p.code)), xS, yS, { ox, oy, side, bigFmt, SIZES, r, selSet });
 }
 // Colocación greedy de etiquetas del scatter: 4 posiciones candidatas
@@ -544,25 +593,23 @@ function al_placeScatterLabels(svg, items, xS, yS, ctx) {
     t.textContent = p.name; g.appendChild(t);
   });
 }
-// Atenúa los puntos/etiquetas que no son de la confederación apuntada (hover en
-// la leyenda). Sin redibujar — evita el loop de re-disparo de mouseenter.
-function al_emphConf(conf) {
-  const svg = document.getElementById('chart10'); if (!svg) return;
-  svg.querySelectorAll('[data-confed]').forEach(el => {
-    el.style.opacity = (conf == null || el.getAttribute('data-confed') === conf) ? '' : '0.12';
-  });
-}
+// Leyenda de confederaciones. Hover sobre una → redibuja el scatter resaltando
+// sus países (con etiquetas, como el scatter Elo-PIB). Es IDEMPOTENTE: si el set
+// de confederaciones no cambió, no recrea el DOM — así los handlers sobreviven al
+// redibujo del hover y no se dispara un loop de mouseenter.
 function al_renderConfLegend(pts) {
   const el = document.getElementById('al-conf-legend'); if (!el) return;
   const present = new Set((pts || []).map(p => p.confed).filter(Boolean));
-  const order = (typeof CONF_FIFA_ORDER !== 'undefined') ? CONF_FIFA_ORDER : Array.from(present);
-  el.innerHTML = '';
-  order.filter(c => present.has(c)).forEach(c => {
+  const order = ((typeof CONF_FIFA_ORDER !== 'undefined') ? CONF_FIFA_ORDER : Array.from(present)).filter(c => present.has(c));
+  const key = order.join(',');
+  if (el.dataset.key === key) return;   // mismo set → no recrear (evita loop en hover)
+  el.dataset.key = key; el.innerHTML = ''; al_scHoverConf = null;   // cambió el Mundial → limpiar hover colgado
+  order.forEach(c => {
     const col = (typeof CONF_FIFA_COLORS !== 'undefined' && CONF_FIFA_COLORS[c]) || '#888';
     const chip = document.createElement('span'); chip.className = 'al-conf-chip';
     chip.innerHTML = `<span class="al-conf-dot" style="background:${col};"></span>${c}`;
-    chip.addEventListener('mouseenter', () => al_emphConf(c));    // hover confederación → resalta sus países
-    chip.addEventListener('mouseleave', () => al_emphConf(null));
+    chip.addEventListener('mouseenter', () => { al_scHoverConf = c; drawAltura(); });    // hover → resalta+etiqueta sus países
+    chip.addEventListener('mouseleave', () => { al_scHoverConf = null; drawAltura(); });
     el.appendChild(chip);
   });
 }
@@ -704,7 +751,7 @@ function al_seg(ids, getCur, setCur, after) {
 function setupAlturaToggles() {
   // Forma: líneas / distribución / barras / dispersión. Al pasar a distribución, una sola selección.
   al_seg(['mode-line', 'mode-box', 'mode-bar', 'mode-scatter'], () => state[10].mode, v => {
-    state[10].mode = v;
+    state[10].mode = v; al_scHoverConf = null;
     if (v === 'box') { const sel = al_selMap(); if (sel.size > 1) { const first = sel.keys().next().value; sel.clear(); sel.set(first, 0); } }
   });
   // Puesto del ranking de barras: todos / cada puesto.
