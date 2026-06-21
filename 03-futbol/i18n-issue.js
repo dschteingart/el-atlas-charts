@@ -222,6 +222,7 @@ const ISSUE_I18N = {
 
     // Chart 10 — Evolución de la altura de los mundialistas
     'c10-title':              'Los mundialistas son cada vez más altos',
+    'c10-title-neutral':      'La altura de los mundialistas',
     'c10-subtitle':           'Altura promedio de los mundialistas vs. el varón promedio de su país de nacimiento y generación, en cada Mundial.',
     'c10-axis-y':             'Altura (cm)',
     'c10-real':               'Mundialistas',
@@ -463,6 +464,7 @@ const ISSUE_I18N = {
 
     // Chart 10 — Evolution of World Cup players' height
     'c10-title':              'World Cup players keep getting taller',
+    'c10-title-neutral':      'The height of World Cup players',
     'c10-subtitle':           'Average height of World Cup players vs. the average man of their birth country and cohort, World Cup by World Cup.',
     'c10-axis-y':             'Height (cm)',
     'c10-real':               'World Cup players',
