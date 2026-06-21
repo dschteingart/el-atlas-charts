@@ -87,7 +87,7 @@ const al_tt = (k, fb) => ((typeof t === 'function' ? t(k) : '') || fb);
 function al_placeTip(tt, ev, svg) {
   const rc = svg.getBoundingClientRect();
   const x = ev.clientX - rc.left, y = ev.clientY - rc.top, tw = tt.offsetWidth || 170;
-  const left = (x + 16 + tw > rc.width) ? Math.max(2, x - tw - 16) : (x + 14);
+  const left = (x + 16 + tw > rc.width || x > rc.width * 0.72) ? Math.max(2, x - tw - 16) : (x + 14);
   tt.style.left = left + 'px'; tt.style.top = (y + 14) + 'px';
 }
 function al_teamName(code) { if (code === AL_WORLD) return al_totalName(); const lang = (typeof LANG !== 'undefined') ? LANG : 'es'; const nm = al_teamNames && al_teamNames[code]; return nm ? (lang === 'en' ? nm[1] : nm[0]) : code; }

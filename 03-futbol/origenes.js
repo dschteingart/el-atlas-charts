@@ -510,7 +510,7 @@ function og_drawSankey(svg, opt) {
     if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
       path.style.cursor = 'default';
       path.addEventListener('mouseenter', () => { path.setAttribute('fill-opacity', 0.72); if (tooltip) { tooltip.innerHTML = `<strong>${nmOf(L.s)} → ${nmOf(L.t)}</strong><br>${L.n} ${L.n === 1 ? og_tt('c9-sankey-jug1', 'jugador') : og_tt('c9-sankey-jugN', 'jugadores')}`; tooltip.style.display = 'block'; tooltip.style.opacity = '1'; } });
-      path.addEventListener('mousemove', (ev) => { if (!tooltip) return; const rc = svg.getBoundingClientRect(); const _x = ev.clientX - rc.left, _w = tooltip.offsetWidth || 170; tooltip.style.left = ((_x + 14 + _w > rc.width) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; });   // si no entra a la derecha, a la izquierda del cursor
+      path.addEventListener('mousemove', (ev) => { if (!tooltip) return; const rc = svg.getBoundingClientRect(); const _x = ev.clientX - rc.left, _w = tooltip.offsetWidth || 170; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; });   // si no entra a la derecha, a la izquierda del cursor
       path.addEventListener('mouseleave', () => { path.setAttribute('fill-opacity', 0.42); if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; } });
     }
     linksG.appendChild(path);
@@ -559,7 +559,7 @@ function og_setupHover(svg, ctx) {
     const rc = svg.getBoundingClientRect(); const sc = rc.width / OG_W; const lx = (ev.clientX - rc.left) / sc;
     if (lx < OG_MARGIN.left || lx > OG_W - OG_MARGIN.right) { update(null); return; }
     update(nearest(lx));
-    if (tooltip) { const _x = ev.clientX - rc.left, _w = tooltip.offsetWidth || 170; tooltip.style.left = ((_x + 14 + _w > rc.width) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; }   // si no entra a la derecha, a la izquierda del cursor
+    if (tooltip) { const _x = ev.clientX - rc.left, _w = tooltip.offsetWidth || 170; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; }   // si no entra a la derecha, a la izquierda del cursor
   };
   const leaveH = () => update(null);
   svg.addEventListener('mousemove', moveH);
