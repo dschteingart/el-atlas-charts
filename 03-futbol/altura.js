@@ -60,6 +60,7 @@ const AL_YEAR_MIN = 1930, AL_YEAR_MAX = 2026;
 //==================================================================
 let al_years = null, al_overall = null, al_teams = null, al_positions = null, al_teamPos = null, al_teamNames = null, al_proxies = null, al_teamConfed = null;
 let al_scHoverConf = null;   // confederación apuntada en la leyenda del scatter (transitorio)
+let al_scHidden = new Set();  // confederaciones ocultadas con click en la leyenda (toggle)
 function al_initData() {
   if (al_overall) return;
   if (typeof ALTURA === 'undefined') { console.error('[altura] ALTURA no cargado'); al_years = []; al_overall = {}; al_teams = {}; al_positions = {}; al_teamPos = {}; al_teamNames = {}; al_proxies = {}; al_teamConfed = {}; return; }
@@ -471,6 +472,7 @@ function al_drawScatter(svg, opt) {
   const side = Math.max(40, Math.min(availW, availH));
   const ox = M.left + (availW - side) / 2, oy = M.top + (availH - side) / 2;
   const pts = al_scatterPoints(wc);
+  const visible = pts.filter(p => !al_scHidden.has(p.confed));   // confederaciones destildadas en la leyenda se ocultan
   const disp = document.getElementById('al-range-display'); if (disp) disp.textContent = wc;
   al_renderConfLegend(pts);
   if (pts.length < 2) {
@@ -518,7 +520,7 @@ function al_drawScatter(svg, opt) {
   const hoverConf = al_scHoverConf;
   const r = bigFmt ? 7 : 4.2;
   const ptsG = al_el('g'); svg.appendChild(ptsG);
-  pts.forEach(p => {
+  visible.forEach(p => {
     const cx = xS(p.x), cy = yS(p.y), sel = selSet.has(p.code);
     const dim = hoverConf && p.confed !== hoverConf && !sel;
     const col = (typeof CONF_FIFA_COLORS !== 'undefined' && CONF_FIFA_COLORS[p.confed]) || '#888';
@@ -544,15 +546,17 @@ function al_drawScatter(svg, opt) {
   // si no → seleccionadas + curadas (potencias presentes + plantel más alto/bajo).
   let want;
   if (hoverConf) {
-    want = new Set(pts.filter(p => p.confed === hoverConf).map(p => p.code));
+    want = new Set(visible.filter(p => p.confed === hoverConf).map(p => p.code));
     selSet.forEach(c => want.add(c));
   } else {
     want = new Set(selSet); AL_IMPORTANT.forEach(c => want.add(c));
-    let tallest = pts[0], shortest = pts[0];
-    pts.forEach(p => { if (p.y > tallest.y) tallest = p; if (p.y < shortest.y) shortest = p; });
-    want.add(tallest.code); want.add(shortest.code);
+    if (visible.length) {
+      let tallest = visible[0], shortest = visible[0];
+      visible.forEach(p => { if (p.y > tallest.y) tallest = p; if (p.y < shortest.y) shortest = p; });
+      want.add(tallest.code); want.add(shortest.code);
+    }
   }
-  al_placeScatterLabels(svg, pts.filter(p => want.has(p.code)), xS, yS, { ox, oy, side, bigFmt, SIZES, r, selSet });
+  al_placeScatterLabels(svg, visible.filter(p => want.has(p.code)), xS, yS, { ox, oy, side, bigFmt, SIZES, r, selSet });
 }
 // Colocación greedy de etiquetas del scatter: 4 posiciones candidatas
 // (arriba/derecha/abajo/izquierda); si todas chocan o salen del plot, se omite.
@@ -601,15 +605,21 @@ function al_renderConfLegend(pts) {
   const el = document.getElementById('al-conf-legend'); if (!el) return;
   const present = new Set((pts || []).map(p => p.confed).filter(Boolean));
   const order = ((typeof CONF_FIFA_ORDER !== 'undefined') ? CONF_FIFA_ORDER : Array.from(present)).filter(c => present.has(c));
-  const key = order.join(',');
-  if (el.dataset.key === key) return;   // mismo set → no recrear (evita loop en hover)
-  el.dataset.key = key; el.innerHTML = ''; al_scHoverConf = null;   // cambió el Mundial → limpiar hover colgado
+  // La key incluye el set de confederaciones Y cuáles están ocultas: así un CLICK
+  // (que cambia lo oculto) recrea los chips con el estilo nuevo, pero un HOVER (que
+  // no cambia ni el set ni lo oculto) salta el rebuild y no dispara loop de mouseenter.
+  const key = order.join(',') + '|' + order.filter(c => al_scHidden.has(c)).join(',');
+  if (el.dataset.key === key) return;
+  if (el.dataset.confset !== order.join(',')) { al_scHoverConf = null; }   // cambió el Mundial → limpiar hover colgado
+  el.dataset.key = key; el.dataset.confset = order.join(','); el.innerHTML = '';
   order.forEach(c => {
     const col = (typeof CONF_FIFA_COLORS !== 'undefined' && CONF_FIFA_COLORS[c]) || '#888';
-    const chip = document.createElement('span'); chip.className = 'al-conf-chip';
+    const hidden = al_scHidden.has(c);
+    const chip = document.createElement('span'); chip.className = 'al-conf-chip' + (hidden ? ' al-conf-off' : '');
     chip.innerHTML = `<span class="al-conf-dot" style="background:${col};"></span>${c}`;
-    chip.addEventListener('mouseenter', () => { al_scHoverConf = c; drawAltura(); });    // hover → resalta+etiqueta sus países
+    chip.addEventListener('mouseenter', () => { if (al_scHidden.has(c)) return; al_scHoverConf = c; drawAltura(); });   // hover → resalta+etiqueta sus países
     chip.addEventListener('mouseleave', () => { al_scHoverConf = null; drawAltura(); });
+    chip.addEventListener('click', () => { if (al_scHidden.has(c)) al_scHidden.delete(c); else al_scHidden.add(c); al_scHoverConf = null; drawAltura(); });   // click → oculta/muestra
     el.appendChild(chip);
   });
 }
@@ -751,7 +761,7 @@ function al_seg(ids, getCur, setCur, after) {
 function setupAlturaToggles() {
   // Forma: líneas / distribución / barras / dispersión. Al pasar a distribución, una sola selección.
   al_seg(['mode-line', 'mode-box', 'mode-bar', 'mode-scatter'], () => state[10].mode, v => {
-    state[10].mode = v; al_scHoverConf = null;
+    state[10].mode = v; al_scHoverConf = null; al_scHidden.clear();
     if (v === 'box') { const sel = al_selMap(); if (sel.size > 1) { const first = sel.keys().next().value; sel.clear(); sel.set(first, 0); } }
   });
   // Puesto del ranking de barras: todos / cada puesto.

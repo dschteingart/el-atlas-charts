@@ -198,9 +198,12 @@ for tc, byy in teams.items():
 positions_out = {p: {str(y): stat(positions[p][y]["act"], None, with_exp=False) for y in sorted(positions[p])}
                  for p in positions}
 
-# nombres de selección (es/en): preferimos COUNTRY_NAMES por iso; fallback al label del torneo
+# nombres de selección (es/en): preferimos COUNTRY_NAMES por iso; fallback al label del torneo.
+# Algunos team_code vienen con código FIFA (no ISO3) y sin esto caen al nombre crudo del
+# master (p.ej. ALG -> "Algerije"). Se alias-an al ISO3 correcto.
+NAME_ALIAS = {"ALG": "DZA"}
 def team_label(tc):
-    c = CN.get(tc) or {}
+    c = CN.get(tc) or CN.get(NAME_ALIAS.get(tc, "")) or {}
     es = c.get("es") or team_name.get(tc, tc)
     en = c.get("en") or team_name.get(tc, tc)
     return [es, en]
