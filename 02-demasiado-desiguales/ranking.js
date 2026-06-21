@@ -44,7 +44,12 @@ const RK_BAR_COL = '#BE5D32';     // terracota Atlas — todas las barras igual
 // Selección manual por default de Barras/Líneas: LatAm clave + grandes potencias.
 // En Barras se le suman el país máx y mín dinámicos del año/deciles elegidos.
 const RK_DEFAULT_COUNTRIES = ['ARG', 'BRA', 'MEX', 'CHL', 'USA', 'DEU', 'CHN', 'JPN'];
-const RK_PALETTE = ['#2B5C8A', '#5BA152', '#9A4FA8', '#2BA0A8', '#C9A227', '#1B3956', '#386433', '#5F3168', '#1B6368', '#7D6418', '#C0473A', '#772C24'];
+// Líneas arrancan con pocas (la vista temporal se satura con muchas): 4 países
+// con buen contraste de la historia (dos LatAm + EE.UU. + Noruega como techo).
+const RK_LINES_DEFAULT = ['ARG', 'BRA', 'USA', 'NOR'];
+// Misma paleta que el chart 3 (deciles): 12 hues distintos, la primera repetición
+// recién con 13+ países.
+const RK_PALETTE = ['#234B85', '#2D6A3D', '#C9A227', '#6B3D8B', '#2C8484', '#7A2A3F', '#1F8AC0', '#6CB04D', '#E07A23', '#B5639E', '#8A5A35', '#5A7A4F'];
 
 // =================== Helpers de datos ===================
 let rk_years_cache = null;
@@ -113,6 +118,10 @@ function rk_unitSuffix() {
 
 // =================== Estado de accesores ===================
 function rk_view() { return (state[4] && state[4].view) || 'bars'; }
+// Barras/Mapa comparten la selección (selectedCountries); Líneas tiene la suya
+// (linesCountries), que arranca con pocas. El buscador/chips operan sobre la activa.
+function rk_listKey() { return rk_view() === 'lines' ? 'linesCountries' : 'selectedCountries'; }
+function rk_sel() { return state[4][rk_listKey()] || []; }
 function rk_deciles() { const d = state[4] && state[4].deciles; return (d && d.length) ? d.slice().sort((a, b) => a - b) : [1]; }
 function rk_unit() { return (state[4] && state[4].unit) || 'day'; }
 
@@ -237,16 +246,18 @@ function rk_period() {
 function rk_lineSeries() {
   const dec = rk_deciles(), unit = rk_unit(), [p0, p1] = rk_period();
   const out = [];
-  (state[4].selectedCountries || []).filter(iso => !rk_excluded(iso)).forEach(iso => {
+  (state[4].linesCountries || []).forEach(iso => {
     const pts = [];
     rk_years().forEach(y => { if (y < p0 || y > p1) return; const v = rk_value(iso, y, dec, unit); if (v != null) pts.push([y, v]); });
     if (pts.length) out.push({ iso, name: rk_name(iso), color: rk_lineColor(iso), pts });
   });
   return out;
 }
-function rk_niceLog(lo, hi) {   // décadas 1,10,100... que caen en [lo,hi]
-  const ticks = []; let e = Math.floor(Math.log10(lo));
-  for (; Math.pow(10, e) <= hi * 1.0001; e++) { const v = Math.pow(10, e); if (v >= lo * 0.999) ticks.push(v); }
+function rk_niceLog(lo, hi) {   // ticks 1,2,5 por década (1,2,5,10,20,50,100…)
+  const ticks = [];
+  for (let e = Math.floor(Math.log10(lo)); Math.pow(10, e) <= hi * 1.0001; e++) {
+    [1, 2, 5].forEach(m => { const v = m * Math.pow(10, e); if (v >= lo * 0.999 && v <= hi * 1.0001) ticks.push(v); });
+  }
   return ticks.length ? ticks : [lo, hi];
 }
 function rk_niceLin(lo, hi, n) {
@@ -404,14 +415,16 @@ function rk_renderChips() {
   const c = document.getElementById('rk-selected-chips'); if (!c) return;
   c.innerHTML = '';
   const view = rk_view(); if (view === 'map') return;
-  const manual = (state[4].selectedCountries || []).filter(iso => !rk_excluded(iso));
-  let items = manual.map(iso => ({ iso, auto: false }));
-  if (view === 'bars') {
+  let items;
+  if (view === 'lines') {
+    items = (state[4].linesCountries || []).map(iso => ({ iso }));   // sin máx/mín ni excluidos
+  } else {
+    const manual = (state[4].selectedCountries || []).filter(iso => !rk_excluded(iso));
+    items = manual.map(iso => ({ iso, auto: false }));
     const ext = rk_extremes(state[4].year, rk_deciles(), rk_unit());
     if (ext) {
       if (!rk_excluded(ext.max) && manual.indexOf(ext.max) < 0) items.push({ iso: ext.max, auto: true });
       if (!rk_excluded(ext.min) && manual.indexOf(ext.min) < 0) items.push({ iso: ext.min, auto: true });
-      // etiqueta máx/mín a quien sea el extremo (de la selección o automático)
       items.forEach(it => {
         if (ext.max === it.iso) it.tag = rk_tt('c4-tag-max', 'máx');
         else if (ext.min === it.iso) it.tag = rk_tt('c4-tag-min', 'mín');
@@ -424,8 +437,6 @@ function rk_renderChips() {
     chip.style.background = (view === 'lines') ? rk_lineColor(it.iso) : (it.auto ? '#A8A192' : '#6F6A5E');
     chip.style.color = '#fff';
     chip.textContent = rk_name(it.iso) + (it.tag ? ' · ' + it.tag : '');
-    // todos los chips se pueden sacar; al sacar uno queda excluido (no reaparece
-    // como máx/mín hasta volver a buscarlo).
     const x = document.createElement('button'); x.className = 'm-chip-x'; x.innerHTML = '×';
     x.addEventListener('click', () => rk_removeCountry(it.iso));
     chip.appendChild(x);
@@ -433,21 +444,22 @@ function rk_renderChips() {
   });
 }
 function rk_removeCountry(iso) {
-  if (state[4].excluded) state[4].excluded.add(iso);
-  state[4].selectedCountries = (state[4].selectedCountries || []).filter(c2 => c2 !== iso);
+  const key = rk_listKey();
+  if (key === 'selectedCountries' && state[4].excluded) state[4].excluded.add(iso);   // excluido solo aplica a barras/mapa
+  state[4][key] = (state[4][key] || []).filter(c2 => c2 !== iso);
   drawRanking();
 }
 // Color estable por país en Líneas: índice alfabético dentro de la selección.
 function rk_lineColor(iso) {
-  const ordered = (state[4].selectedCountries || []).slice().sort((a, b) => rk_name(a).localeCompare(rk_name(b), 'es'));
+  const ordered = (state[4].linesCountries || []).slice().sort((a, b) => rk_name(a).localeCompare(rk_name(b), 'es'));
   const i = ordered.indexOf(iso);
   return RK_PALETTE[(i < 0 ? 0 : i) % RK_PALETTE.length];
 }
 function rk_toggleCountry(iso) {
-  const arr = state[4].selectedCountries || [];
+  const key = rk_listKey(), arr = state[4][key] || [];
   if (arr.indexOf(iso) >= 0) { rk_removeCountry(iso); return; }
-  if (state[4].excluded) state[4].excluded.delete(iso);   // volver a buscarlo lo reincorpora
-  state[4].selectedCountries = arr.concat([iso]);
+  if (key === 'selectedCountries' && state[4].excluded) state[4].excluded.delete(iso);   // volver a buscarlo lo reincorpora
+  state[4][key] = arr.concat([iso]);
   drawRanking();
 }
 function rk_setupSearch() {
@@ -459,7 +471,7 @@ function rk_setupSearch() {
   const get = (q) => { if (!q) return []; const qn = rk_norm(q); return all().filter(c => rk_norm(c.name).includes(qn)).slice(0, 8); };
   const render = (a) => {
     if (!matches.length) { results.innerHTML = ''; results.classList.remove('open'); return; }
-    results.innerHTML = matches.map((c, i) => `<div class="m-search-result${i === a ? ' m-active' : ''}${(state[4].selectedCountries || []).indexOf(c.iso) >= 0 ? ' m-already' : ''}" data-iso="${c.iso}"><span>${c.name}</span></div>`).join('');
+    results.innerHTML = matches.map((c, i) => `<div class="m-search-result${i === a ? ' m-active' : ''}${rk_sel().indexOf(c.iso) >= 0 ? ' m-already' : ''}" data-iso="${c.iso}"><span>${c.name}</span></div>`).join('');
     results.classList.add('open');
     results.querySelectorAll('.m-search-result[data-iso]').forEach(el => el.addEventListener('click', () => { rk_toggleCountry(el.dataset.iso); input.value = ''; results.classList.remove('open'); input.focus(); }));
   };
@@ -529,6 +541,7 @@ function initRanking() {
   if (!s.yScale) s.yScale = 'log';
   if (s.year == null) s.year = rk_yearMax();
   if (!s.selectedCountries) s.selectedCountries = RK_DEFAULT_COUNTRIES.slice();
+  if (!s.linesCountries) s.linesCountries = RK_LINES_DEFAULT.slice();   // líneas: pocas por default (≤4)
   if (!s.period) s.period = [rk_yearMin(), rk_yearMax()];
   if (!s.benchmark) s.benchmark = 'USA';
   if (!s.continent) s.continent = 'all';
