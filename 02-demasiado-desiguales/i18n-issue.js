@@ -79,6 +79,8 @@ const ISSUE_I18N = {
     'c4-continent-label':        'Zoom',
     'c4-period-label':           'Período',
     'c4-search-placeholder':     'Agregar país…',
+    'c4-tag-max':                'máx',
+    'c4-tag-min':                'mín',
     'c4-empty':                  'Sin datos para este año.',
     'c4-sources':                'Datos: Banco Mundial — Poverty and Inequality Platform (PIP). Ingreso por decil en US$ PPA por persona; media nacional interpolada por año.',
 
@@ -223,6 +225,8 @@ const ISSUE_I18N = {
     'c4-continent-label':        'Zoom',
     'c4-period-label':           'Period',
     'c4-search-placeholder':     'Add a country…',
+    'c4-tag-max':                'max',
+    'c4-tag-min':                'min',
     'c4-empty':                  'No data for this year.',
     'c4-sources':                'Data: World Bank — Poverty and Inequality Platform (PIP). Income by decile in PPP US$ per person; national mean interpolated by year.',
 
