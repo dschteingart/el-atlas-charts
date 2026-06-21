@@ -173,17 +173,21 @@ function rk_drawComing(svg, ctx, label) {
 }
 
 // =================== Vista BARRAS ===================
-// Países mostrados = máx + mín dinámicos (del año/deciles) + selección manual.
-function rk_barRows() {
-  const year = state[4].year, dec = rk_deciles(), unit = rk_unit();
+// Las barras muestran EXACTAMENTE la selección (chips), así barras y selector
+// quedan espejados. El máx y el mín se siembran como selección al inicio
+// (ver initRanking) — quedan como chips removibles, no como barras fantasma.
+function rk_extremes(year, dec, unit) {
   const vals = {};
   rk_allIsos(year).forEach(iso => { const v = rk_value(iso, year, dec, unit); if (v != null) vals[iso] = v; });
-  const isos = Object.keys(vals);
-  if (!isos.length) return [];
-  let maxIso = isos[0], minIso = isos[0];
-  isos.forEach(iso => { if (vals[iso] > vals[maxIso]) maxIso = iso; if (vals[iso] < vals[minIso]) minIso = iso; });
-  const set = new Set([maxIso, minIso].concat(state[4].selectedCountries || []));
-  const rows = Array.from(set).filter(iso => vals[iso] != null).map(iso => ({ iso, v: vals[iso] }));
+  const isos = Object.keys(vals); if (!isos.length) return null;
+  let mx = isos[0], mn = isos[0];
+  isos.forEach(iso => { if (vals[iso] > vals[mx]) mx = iso; if (vals[iso] < vals[mn]) mn = iso; });
+  return { max: mx, min: mn };
+}
+function rk_barRows() {
+  const year = state[4].year, dec = rk_deciles(), unit = rk_unit();
+  const rows = [];
+  (state[4].selectedCountries || []).forEach(iso => { const v = rk_value(iso, year, dec, unit); if (v != null) rows.push({ iso, v }); });
   rows.sort((a, b) => b.v - a.v);
   return rows;
 }
@@ -260,7 +264,10 @@ function rk_renderChips() {
   c.innerHTML = '';
   (state[4].selectedCountries || []).forEach((iso, i) => {
     const chip = document.createElement('span'); chip.className = 'm-selected-chip';
-    chip.style.background = (rk_view() === 'lines') ? RK_PALETTE[i % RK_PALETTE.length] : RK_BAR_COL;
+    // En líneas cada país tiene su color (= su línea). En barras/mapa los chips
+    // son gris neutro: el terracota queda reservado para los datos (las barras),
+    // no se duplica en la lista de selección.
+    chip.style.background = (rk_view() === 'lines') ? RK_PALETTE[i % RK_PALETTE.length] : '#6F6A5E';
     chip.style.color = '#fff'; chip.textContent = rk_name(iso);
     const x = document.createElement('button'); x.className = 'm-chip-x'; x.innerHTML = '×';
     x.addEventListener('click', () => { state[4].selectedCountries = state[4].selectedCountries.filter(c2 => c2 !== iso); rk_renderChips(); drawRanking(); });
@@ -336,6 +343,13 @@ function initRanking() {
   if (!s.period) s.period = [rk_yearMin(), rk_yearMax()];
   if (!s.benchmark) s.benchmark = 'USA';
   if (!s.continent) s.continent = 'all';
+  // Sembrar el máx y el mín del año/deciles inicial como selección, para que las
+  // barras y el selector (chips) queden espejados desde el arranque.
+  if (!s._seeded) {
+    s._seeded = true;
+    const ext = rk_extremes(s.year, (s.deciles && s.deciles.length ? s.deciles : [1]), s.unit);
+    if (ext) [ext.min, ext.max].forEach(iso => { if (s.selectedCountries.indexOf(iso) < 0) s.selectedCountries.unshift(iso); });
+  }
 
   rk_setupToggles();
   rk_setupSearch();
