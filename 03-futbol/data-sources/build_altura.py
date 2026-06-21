@@ -67,6 +67,21 @@ def load_country_names():
     return json.loads(m.group(1)) if m else {}
 CN = load_country_names()
 
+# --- confederación FIFA por team_code (para el scatter altura población vs plantel) -
+# Misma fuente y overrides que build_origenes.py: DATA_CLUBAGE trae confed por iso3;
+# los códigos futbolísticos e históricos (ENG/SCO/CSK/YUG/SUN…) se completan a mano.
+def load_confed():
+    txt = (ROOT / "data-clubage.js").read_text(encoding="utf-8")
+    m = re.search(r"const\s+DATA_CLUBAGE\s*=\s*(\{.*?\});", txt, re.S)
+    d = json.loads(m.group(1)) if m else {}
+    out = {iso: v.get("confed") for iso, v in d.items() if v.get("confed")}
+    out.update({"GBR": "UEFA", "ENG": "UEFA", "SCO": "UEFA", "WAL": "UEFA", "NIR": "UEFA",
+                "CSK": "UEFA", "YUG": "UEFA", "SUN": "UEFA", "DDR": "UEFA", "SCG": "UEFA",
+                "XKX": "UEFA", "IMN": "UEFA", "PSE": "AFC", "CUW": "CONCACAF",
+                "ALG": "CAF"})   # Argelia aparece con código FIFA (no ISO3 DZA) en el master
+    return out
+CONFED = load_confed()
+
 # --- OWID: altura media de varones por país (ISO3) y año de nacimiento ----------
 owid = defaultdict(dict)            # code -> {year: cm}
 for r in csv.DictReader(open(OWID, encoding="utf-8")):
@@ -192,6 +207,11 @@ def team_label(tc):
 team_names_out = {tc: team_label(tc) for tc in teams_out}
 proxies_out = {tc: sorted(v) for tc, v in team_proxy.items() if v}
 
+# confederación FIFA por selección (para colorear el scatter). Las que no
+# resuelven quedan fuera y el renderer las pinta en gris neutro.
+team_confed_out = {tc: CONFED[tc] for tc in teams_out if CONFED.get(tc)}
+_no_confed = [tc for tc in teams_out if not CONFED.get(tc)]
+
 # altura promedio por selección × puesto × año (para "Por puesto" filtrado por país).
 # Solo el promedio (no boxplot: por puesto y selección hay pocos jugadores).
 teampos_out = {}
@@ -209,6 +229,7 @@ data = {
     "positions": positions_out,
     "teamPos": teampos_out,          # code -> pos -> {year: altura promedio}
     "teamNames": team_names_out,
+    "teamConfed": team_confed_out,   # selección -> confederación FIFA (color del scatter)
     "proxies": proxies_out,          # selección -> isos cuya altura esperada usa proxy (caveat)
     "proxyMap": PROXY_NOTE,
     "owidLast": OWID_LAST,
@@ -220,6 +241,7 @@ OUT.write_text(js, encoding="utf-8")
 
 # --- log ------------------------------------------------------------------------
 print(f"OK: {OUT.stat().st_size//1024} KB | selecciones: {len(teams_out)} | Mundiales: {len(years)}")
+print(f"   confed: {len(team_confed_out)}/{len(teams_out)} mapeadas" + (f" | SIN confed: {_no_confed}" if _no_confed else ""))
 def gap(yr):
     o = overall_out.get(str(yr), {})
     if "act" in o and "exp" in o:

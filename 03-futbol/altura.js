@@ -58,13 +58,13 @@ const AL_YEAR_MIN = 1930, AL_YEAR_MAX = 2026;
 //==================================================================
 //  Data
 //==================================================================
-let al_years = null, al_overall = null, al_teams = null, al_positions = null, al_teamPos = null, al_teamNames = null, al_proxies = null;
+let al_years = null, al_overall = null, al_teams = null, al_positions = null, al_teamPos = null, al_teamNames = null, al_proxies = null, al_teamConfed = null;
 function al_initData() {
   if (al_overall) return;
-  if (typeof ALTURA === 'undefined') { console.error('[altura] ALTURA no cargado'); al_years = []; al_overall = {}; al_teams = {}; al_positions = {}; al_teamPos = {}; al_teamNames = {}; al_proxies = {}; return; }
+  if (typeof ALTURA === 'undefined') { console.error('[altura] ALTURA no cargado'); al_years = []; al_overall = {}; al_teams = {}; al_positions = {}; al_teamPos = {}; al_teamNames = {}; al_proxies = {}; al_teamConfed = {}; return; }
   al_years = ALTURA.years.slice();
   al_overall = ALTURA.overall; al_teams = ALTURA.teams; al_positions = ALTURA.positions; al_teamPos = ALTURA.teamPos || {};
-  al_teamNames = ALTURA.teamNames; al_proxies = ALTURA.proxies || {};
+  al_teamNames = ALTURA.teamNames; al_proxies = ALTURA.proxies || {}; al_teamConfed = ALTURA.teamConfed || {};
 }
 function al_teamPosSeries(country, p) { const o = al_teamPos[country] && al_teamPos[country][p]; if (!o) return []; const r = []; (al_years || []).forEach(y => { const v = o[String(y)]; if (v != null) r.push([y, v]); }); return r; }
 function al_mode() { return (state[10] && state[10].mode) || 'line'; }
@@ -197,17 +197,18 @@ function drawAltura() {
   svg.innerHTML = ''; al_clearHover(svg); al_initData();
 
   // visibilidad de controles
-  const box = al_mode() === 'box', bar = al_mode() === 'bar';
-  const viewBtn = document.getElementById('al-view-sel'); if (viewBtn) { const g = viewBtn.closest('.lg-mode'); if (g) g.style.display = bar ? 'none' : ''; }   // desglose: oculto en barras
-  const wrap = document.getElementById('al-search-wrap'); if (wrap) wrap.style.display = '';     // buscador siempre (en barras agrega selecciones al ranking)
-  const chipsEl = document.getElementById('al-selected-chips'); if (chipsEl) chipsEl.style.display = '';
-  const vsBtn = document.getElementById('al-vscountry'); if (vsBtn) { const g = vsBtn.closest('.lg-mode'); if (g) g.style.display = (bar || box || al_byPos()) ? 'none' : ''; }
+  const box = al_mode() === 'box', bar = al_mode() === 'bar', scatter = al_mode() === 'scatter';
+  const viewBtn = document.getElementById('al-view-sel'); if (viewBtn) { const g = viewBtn.closest('.lg-mode'); if (g) g.style.display = (bar || scatter) ? 'none' : ''; }   // desglose: oculto en barras y dispersión
+  const wrap = document.getElementById('al-search-wrap'); if (wrap) wrap.style.display = scatter ? 'none' : '';     // dispersión muestra TODAS las selecciones del Mundial; sin buscador
+  const chipsEl = document.getElementById('al-selected-chips'); if (chipsEl) chipsEl.style.display = scatter ? 'none' : '';
+  const vsBtn = document.getElementById('al-vscountry'); if (vsBtn) { const g = vsBtn.closest('.lg-mode'); if (g) g.style.display = (bar || box || scatter || al_byPos()) ? 'none' : ''; }
   const posSel = document.getElementById('al-boxpos'); if (posSel) posSel.style.display = (box && al_byPos()) ? '' : 'none';   // selector de puesto único, solo en box+puesto
   const barSel = document.getElementById('al-barpos'); if (barSel) barSel.style.display = bar ? '' : 'none';                  // selector de puesto del ranking, solo en barras
-  const hint = document.getElementById('al-hint');   // solo en Líneas (en distribución/barras no se compara contra el Mundial)
+  const confLeg = document.getElementById('al-conf-legend'); if (confLeg) confLeg.style.display = scatter ? '' : 'none';      // leyenda de confederaciones, solo en dispersión
+  const hint = document.getElementById('al-hint');   // solo en Líneas (en distribución/barras/dispersión no se compara contra el Mundial)
   if (hint) { const onlyWorld = al_mode() === 'line' && !al_byPos() && al_selTeams().filter(c => c !== AL_WORLD).length === 0; hint.style.display = onlyWorld ? '' : 'none'; }
-  // En barras el slider elige UN Mundial → un solo thumb.
-  const sliderEl = document.getElementById('al-range-slider'); if (sliderEl) sliderEl.classList.toggle('s-range-single', bar);
+  // En barras y dispersión el slider elige UN Mundial → un solo thumb.
+  const sliderEl = document.getElementById('al-range-slider'); if (sliderEl) sliderEl.classList.toggle('s-range-single', bar || scatter);
 
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const newsletter = editorFormat === 'newsletter', square = editorFormat === 'square', mobilePng = editorFormat === 'mobile';
@@ -232,6 +233,8 @@ function drawAltura() {
 
   // Barras: ranking de selecciones de UN Mundial (el extremo derecho del slider).
   if (bar) { al_drawBars(svg, { wc: y1, pos: al_barPos(), bigFmt, isPngFormat }); al_applyHeadings(); return; }
+  // Dispersión: altura del país (x) vs altura del plantel (y), un punto por selección.
+  if (scatter) { al_drawScatter(svg, { wc: y1, bigFmt, isPngFormat, SIZES }); al_applyHeadings(); return; }
 
   const lineSeries = box ? [] : al_lineSeries();
   const boxOne = box ? al_boxOne() : null;
@@ -397,6 +400,159 @@ function al_drawBars(svg, opt) {
 }
 
 //------------------------------------------------------------------
+//  Modo DISPERSIÓN — altura del país (x) vs altura del plantel (y),
+//  un punto por selección de UN Mundial. Color por confederación FIFA
+//  (misma paleta que el scatter Elo-PIB del N°3) + recta de regresión.
+//------------------------------------------------------------------
+function al_scatterPoints(wc) {
+  al_initData(); const w = String(wc); const out = [];
+  Object.keys(al_teams || {}).forEach(code => {
+    const d = al_teams[code] && al_teams[code][w];
+    if (!d || d.act == null || d.exp == null) return;     // necesita altura real Y esperada
+    out.push({ code, name: al_teamName(code), x: d.exp, y: d.act, confed: (al_teamConfed && al_teamConfed[code]) || null, n: d.n || 0 });
+  });
+  return out;
+}
+// Regresión lineal OLS y = a + b·x (mismo solver que scatter.js, sobre alturas).
+function al_ols(pts) {
+  const n = pts.length; if (n < 2) return null;
+  let sx = 0, sy = 0; pts.forEach(p => { sx += p.x; sy += p.y; }); const mx = sx / n, my = sy / n;
+  let num = 0, den = 0, sst = 0; pts.forEach(p => { const dx = p.x - mx, dy = p.y - my; num += dx * dy; den += dx * dx; sst += dy * dy; });
+  const b = den ? num / den : 0, a = my - b * mx;
+  let ssr = 0; pts.forEach(p => { const yp = a + b * p.x; ssr += (p.y - yp) ** 2; });
+  const r2 = sst ? 1 - ssr / sst : 0;
+  return { a, b, r2, n };
+}
+// Ticks "lindos" en cm para un dominio chico (rangos de ~15 cm): paso 5/2/1.
+function al_scTicks(lo, hi) {
+  const span = hi - lo; const step = span > 24 ? 5 : span > 10 ? 2 : 1;
+  const out = []; let v = Math.ceil(lo / step) * step;
+  for (; v <= hi + 1e-6; v += step) out.push(v);
+  return out;
+}
+function al_drawScatter(svg, opt) {
+  const { wc, bigFmt, isPngFormat, SIZES } = opt;
+  const interactive = !isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  const M = { top: bigFmt ? 40 : 28, right: bigFmt ? 54 : 40, bottom: bigFmt ? 108 : 72, left: bigFmt ? 112 : 66 };
+  const PW = AL_W - M.left - M.right, PH = AL_H - M.top - M.bottom;
+  const pts = al_scatterPoints(wc);
+  const disp = document.getElementById('al-range-display'); if (disp) disp.textContent = wc;
+  al_renderConfLegend(pts);
+  if (pts.length < 2) {
+    const m = al_el('text'); m.setAttribute('x', AL_W / 2); m.setAttribute('y', AL_H / 2); m.setAttribute('text-anchor', 'middle'); m.style.fontFamily = 'var(--sans)'; m.style.fontSize = (bigFmt ? 24 : 14) + 'px'; m.setAttribute('fill', 'var(--ink-muted)'); m.textContent = al_tt('c10-sc-empty', 'Sin datos suficientes para este Mundial.'); svg.appendChild(m); return;
+  }
+  let xmin = Infinity, xmax = -Infinity, ymin = Infinity, ymax = -Infinity;
+  pts.forEach(p => { if (p.x < xmin) xmin = p.x; if (p.x > xmax) xmax = p.x; if (p.y < ymin) ymin = p.y; if (p.y > ymax) ymax = p.y; });
+  const xpad = Math.max(0.8, (xmax - xmin) * 0.10), ypad = Math.max(0.8, (ymax - ymin) * 0.10);
+  const xd = [xmin - xpad, xmax + xpad], yd = [ymin - ypad, ymax + ypad];
+  const xS = v => M.left + ((v - xd[0]) / (xd[1] - xd[0])) * PW;
+  const yS = v => M.top + PH - ((v - yd[0]) / (yd[1] - yd[0])) * PH;
+
+  const bg = al_el('rect'); bg.setAttribute('x', M.left); bg.setAttribute('y', M.top); bg.setAttribute('width', PW); bg.setAttribute('height', PH); bg.setAttribute('fill', 'var(--bg)'); svg.appendChild(bg);
+  // grid + ticks X
+  al_scTicks(xd[0], xd[1]).forEach(v => {
+    const x = xS(v); if (x < M.left - 0.5 || x > M.left + PW + 0.5) return;
+    const gl = al_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x); gl.setAttribute('y1', M.top); gl.setAttribute('y2', M.top + PH); gl.setAttribute('class', 's-grid-line'); svg.appendChild(gl);
+    const lb = al_el('text'); lb.setAttribute('x', x); lb.setAttribute('y', M.top + PH + (bigFmt ? 34 : 18)); lb.setAttribute('text-anchor', 'middle'); lb.setAttribute('class', 's-tick'); lb.style.fontSize = SIZES.tick + 'px'; lb.textContent = v; svg.appendChild(lb);
+  });
+  // grid + ticks Y
+  al_scTicks(yd[0], yd[1]).forEach(v => {
+    const y = yS(v); if (y < M.top - 0.5 || y > M.top + PH + 0.5) return;
+    const gl = al_el('line'); gl.setAttribute('x1', M.left); gl.setAttribute('x2', M.left + PW); gl.setAttribute('y1', y); gl.setAttribute('y2', y); gl.setAttribute('class', 's-grid-line'); svg.appendChild(gl);
+    const lb = al_el('text'); lb.setAttribute('x', M.left - (bigFmt ? 12 : 8)); lb.setAttribute('y', y + (bigFmt ? 8 : 4)); lb.setAttribute('text-anchor', 'end'); lb.setAttribute('class', 's-tick'); lb.style.fontSize = SIZES.tick + 'px'; lb.textContent = v; svg.appendChild(lb);
+  });
+  // títulos de eje
+  const xT = al_el('text'); xT.setAttribute('class', 's-axis-title'); xT.setAttribute('x', M.left + PW / 2); xT.setAttribute('y', M.top + PH + (bigFmt ? 34 : 18) + (bigFmt ? 42 : 26)); xT.setAttribute('text-anchor', 'middle'); xT.style.fontSize = SIZES.axisTitle + 'px'; xT.textContent = al_tt('c10-sc-axis-x', 'Altura del país (varón promedio, cm)'); svg.appendChild(xT);
+  const yT = al_el('text'); yT.setAttribute('class', 's-axis-title'); yT.setAttribute('text-anchor', 'middle'); yT.setAttribute('transform', `translate(${M.left - (bigFmt ? 82 : 48)}, ${M.top + PH / 2}) rotate(-90)`); yT.style.fontSize = SIZES.axisTitle + 'px'; yT.textContent = al_tt('c10-sc-axis-y', 'Altura del plantel (cm)'); svg.appendChild(yT);
+
+  // recta de regresión + nota de stats
+  const reg = al_ols(pts);
+  if (reg) {
+    const rl = al_el('line'); rl.setAttribute('x1', xS(xd[0])); rl.setAttribute('y1', yS(reg.a + reg.b * xd[0])); rl.setAttribute('x2', xS(xd[1])); rl.setAttribute('y2', yS(reg.a + reg.b * xd[1]));
+    rl.setAttribute('stroke', 'var(--ink)'); rl.setAttribute('stroke-width', bigFmt ? 2 : 1.4); rl.setAttribute('stroke-opacity', 0.55); rl.setAttribute('stroke-dasharray', bigFmt ? '7 5' : '5 3'); svg.appendChild(rl);
+    const en = (typeof LANG !== 'undefined' && LANG === 'en');
+    const st = al_el('text'); st.setAttribute('x', M.left + (bigFmt ? 12 : 8)); st.setAttribute('y', M.top + (bigFmt ? 24 : 14)); st.style.fontFamily = 'var(--sans)'; st.style.fontSize = (bigFmt ? 20 : 11) + 'px'; st.setAttribute('fill', 'var(--ink-muted)'); st.textContent = (en ? `${reg.n} teams · R² ${reg.r2.toFixed(2)}` : `${reg.n} selecciones · R² ${reg.r2.toFixed(2)}`); svg.appendChild(st);
+  }
+
+  // puntos
+  const tooltip = document.getElementById('tooltip10');
+  const r = bigFmt ? 7 : 4.2;
+  const ptsG = al_el('g'); svg.appendChild(ptsG);
+  const en = (typeof LANG !== 'undefined' && LANG === 'en');
+  pts.forEach(p => {
+    const cx = xS(p.x), cy = yS(p.y);
+    const col = (typeof CONF_FIFA_COLORS !== 'undefined' && CONF_FIFA_COLORS[p.confed]) || '#888';
+    const c = al_el('circle'); c.setAttribute('cx', cx); c.setAttribute('cy', cy); c.setAttribute('r', r); c.setAttribute('fill', col); c.setAttribute('fill-opacity', 0.85); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', bigFmt ? 1.6 : 1);
+    if (interactive && tooltip) {
+      c.style.cursor = 'pointer';
+      const gap = +(p.y - p.x).toFixed(1);
+      c.addEventListener('mouseenter', (ev) => {
+        tooltip.innerHTML = `<div style="font-weight:600;margin-bottom:3px;">${p.name}</div><div style="display:flex;gap:8px;"><span style="flex:1;">${en ? 'Squad' : 'Plantel'}</span><strong style="font-variant-numeric:tabular-nums;">${p.y} cm</strong></div><div style="display:flex;gap:8px;"><span style="flex:1;">${en ? 'Country' : 'País'}</span><strong style="font-variant-numeric:tabular-nums;">${p.x} cm</strong></div><div style="color:var(--ink-muted);margin-top:2px;">${en ? 'Gap' : 'Brecha'} ${gap >= 0 ? '+' : ''}${gap} cm</div>`;
+        tooltip.style.display = 'block'; tooltip.style.opacity = '1'; al_placeTip(tooltip, ev, svg); c.setAttribute('r', r * 1.35);
+      });
+      c.addEventListener('mousemove', (ev) => al_placeTip(tooltip, ev, svg));
+      c.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; c.setAttribute('r', r); });
+    }
+    ptsG.appendChild(c);
+  });
+
+  // etiquetas curadas: potencias presentes + el plantel más alto y el más bajo
+  const want = new Set(AL_IMPORTANT);
+  let tallest = pts[0], shortest = pts[0];
+  pts.forEach(p => { if (p.y > tallest.y) tallest = p; if (p.y < shortest.y) shortest = p; });
+  want.add(tallest.code); want.add(shortest.code);
+  al_placeScatterLabels(svg, pts.filter(p => want.has(p.code)), xS, yS, { M, PW, PH, bigFmt, SIZES, r });
+}
+// Colocación greedy de etiquetas del scatter: 4 posiciones candidatas
+// (arriba/derecha/abajo/izquierda); si todas chocan o salen del plot, se omite.
+function al_placeScatterLabels(svg, items, xS, yS, ctx) {
+  const { M, PW, PH, bigFmt, SIZES, r } = ctx;
+  const fs = SIZES.label, fw = bigFmt ? 700 : 600, halo = bigFmt ? 6 : 3;
+  const box = { x1: M.left + 1, y1: M.top + 1, x2: M.left + PW - 1, y2: M.top + PH - 1 };
+  const placed = [];
+  const over = (a, b) => !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
+  const inBox = (q) => q.x1 >= box.x1 && q.x2 <= box.x2 && q.y1 >= box.y1 && q.y2 <= box.y2;
+  const g = al_el('g'); svg.appendChild(g);
+  // ordenar por Y para una colocación estable
+  items.slice().sort((a, b) => yS(a.y) - yS(b.y)).forEach(p => {
+    const cx = xS(p.x), cy = yS(p.y), w = al_measureText(p.name, fs, fw) + 2;
+    const cands = [
+      { lx: cx, ly: cy - (r + 5), anchor: 'middle' },
+      { lx: cx + r + 6, ly: cy + fs * 0.34, anchor: 'start' },
+      { lx: cx, ly: cy + r + fs, anchor: 'middle' },
+      { lx: cx - r - 6, ly: cy + fs * 0.34, anchor: 'end' },
+    ];
+    let chosen = null;
+    for (const cd of cands) {
+      let x1; if (cd.anchor === 'start') x1 = cd.lx; else if (cd.anchor === 'end') x1 = cd.lx - w; else x1 = cd.lx - w / 2;
+      const q = { x1, x2: x1 + w, y1: cd.ly - fs * 0.8, y2: cd.ly + fs * 0.2 };
+      if (!inBox(q)) continue;
+      if (placed.some(pp => over(pp, q))) continue;
+      chosen = { ...cd, rect: q }; break;
+    }
+    if (!chosen) return;
+    placed.push(chosen.rect);
+    const col = (typeof CONF_FIFA_LABEL_COLORS !== 'undefined' && CONF_FIFA_LABEL_COLORS[p.confed]) || '#444';
+    const t = al_el('text'); t.setAttribute('x', chosen.lx); t.setAttribute('y', chosen.ly); t.setAttribute('text-anchor', chosen.anchor); t.setAttribute('fill', col);
+    t.style.fontSize = fs + 'px'; t.style.fontFamily = 'var(--sans)'; t.style.fontWeight = fw;
+    t.setAttribute('paint-order', 'stroke'); t.setAttribute('stroke', '#FAF8F3'); t.setAttribute('stroke-width', halo); t.setAttribute('stroke-linejoin', 'round');
+    t.textContent = p.name; g.appendChild(t);
+  });
+}
+function al_renderConfLegend(pts) {
+  const el = document.getElementById('al-conf-legend'); if (!el) return;
+  const present = new Set((pts || []).map(p => p.confed).filter(Boolean));
+  const order = (typeof CONF_FIFA_ORDER !== 'undefined') ? CONF_FIFA_ORDER : Array.from(present);
+  el.innerHTML = '';
+  order.filter(c => present.has(c)).forEach(c => {
+    const col = (typeof CONF_FIFA_COLORS !== 'undefined' && CONF_FIFA_COLORS[c]) || '#888';
+    const chip = document.createElement('span'); chip.className = 'al-conf-chip';
+    chip.innerHTML = `<span class="al-conf-dot" style="background:${col};"></span>${c}`;
+    el.appendChild(chip);
+  });
+}
+
+//------------------------------------------------------------------
 //  Hover (líneas)
 //------------------------------------------------------------------
 function al_setupHover(svg, ctx) {
@@ -441,8 +597,12 @@ function al_periodPhrase(en) {
   return en ? `in the World Cups between ${p[0]} and ${p[1]}` : `en los Mundiales entre ${p[0]} y ${p[1]}`;
 }
 function al_subtitle() {
-  const en = (typeof LANG !== 'undefined' && LANG === 'en'), box = al_mode() === 'box', bar = al_mode() === 'bar', per = al_periodPhrase(en);
+  const en = (typeof LANG !== 'undefined' && LANG === 'en'), box = al_mode() === 'box', bar = al_mode() === 'bar', scatter = al_mode() === 'scatter', per = al_periodPhrase(en);
   const someTeams = !al_byPos() && Array.from(al_selMap().keys()).filter(c => al_teams && al_teams[c]).length > 0;
+  if (scatter) {
+    const wc = ((state[10] && state[10].period) || [AL_YEAR_MIN, AL_YEAR_MAX])[1];
+    return en ? `Squad height vs. the average man of the players' birth countries, by team in the ${wc} World Cup.` : `Altura del plantel vs. el varón promedio de los países de nacimiento de sus jugadores, por selección en el Mundial ${wc}.`;
+  }
   if (bar) {
     const wc = ((state[10] && state[10].period) || [AL_YEAR_MIN, AL_YEAR_MAX])[1], pos = al_barPos();
     if (pos !== 'all') return en ? `Average height of each team's ${al_posName(pos).toLowerCase()} in the ${wc} World Cup.` : `Altura promedio de los ${al_posName(pos).toLowerCase()} de cada selección en el Mundial ${wc}.`;
@@ -524,8 +684,8 @@ function al_seg(ids, getCur, setCur, after) {
   sync(); return sync;
 }
 function setupAlturaToggles() {
-  // Forma: líneas / distribución / barras. Al pasar a distribución, una sola selección.
-  al_seg(['mode-line', 'mode-box', 'mode-bar'], () => state[10].mode, v => {
+  // Forma: líneas / distribución / barras / dispersión. Al pasar a distribución, una sola selección.
+  al_seg(['mode-line', 'mode-box', 'mode-bar', 'mode-scatter'], () => state[10].mode, v => {
     state[10].mode = v;
     if (v === 'box') { const sel = al_selMap(); if (sel.size > 1) { const first = sel.keys().next().value; sel.clear(); sel.set(first, 0); } }
   });
