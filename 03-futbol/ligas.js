@@ -383,7 +383,7 @@ function lg_setupHover(svg, ctx) {
     const rc = svg.getBoundingClientRect(); const sc = rc.width / LG_W; const lx = (ev.clientX - rc.left) / sc;
     if (lx < LG_MARGIN.left || lx > LG_W - LG_MARGIN.right) { update(null); return; }
     update(nearest(lx));
-    if (tooltip) { tooltip.style.left = (ev.clientX - rc.left + 14) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; }
+    if (tooltip) { const _x = ev.clientX - rc.left, _w = tooltip.offsetWidth || 170; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; }   // si no entra a la derecha, a la izquierda del cursor
   });
   svg.addEventListener('mouseleave', () => update(null));
 }

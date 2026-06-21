@@ -466,7 +466,7 @@ function bp_tipMove() {
   const tt = document.getElementById('tooltip8'); if (!tt) return;
   const svg = document.getElementById('chart8'); const rc = svg.getBoundingClientRect();
   const ev = bp_tipMove._e;
-  if (ev) { tt.style.left = (ev.clientX - rc.left + 14) + 'px'; tt.style.top = (ev.clientY - rc.top + 14) + 'px'; }
+  if (ev) { const _x = ev.clientX - rc.left, _w = tt.offsetWidth || 170; tt.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tt.style.top = (ev.clientY - rc.top + 14) + 'px'; }   // si no entra a la derecha, a la izquierda del cursor
 }
 function bp_tipHide() { const tt = document.getElementById('tooltip8'); if (tt) { tt.style.opacity = '0'; tt.style.display = 'none'; } }
 

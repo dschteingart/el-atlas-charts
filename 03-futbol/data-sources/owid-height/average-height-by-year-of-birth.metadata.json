@@ -1,0 +1,43 @@
+{
+  "chart": {
+    "title": "Average adult height by year of birth",
+    "subtitle": "Average height of men and women at age 18, by year of birth.",
+    "citation": "NCD Risk Factor Collaboration (2016)",
+    "originalChartUrl": "https://ourworldindata.org/grapher/average-height-by-year-of-birth?v=1&csvType=full&useColumnShortNames=false",
+    "selection": [
+      "World"
+    ]
+  },
+  "columns": {
+    "Mean male height (cm)": {
+      "titleShort": "Men",
+      "titleLong": "Men",
+      "shortUnit": "cm",
+      "unit": "centimeters",
+      "timespan": "1896-1996",
+      "type": "Numeric",
+      "owidVariableId": 1206196,
+      "shortName": "mean_male_height__cm",
+      "lastUpdated": "2019-05-14",
+      "citationShort": "NCD Risk Factor Collaboration (2016) – processed by Our World in Data",
+      "citationLong": "NCD Risk Factor Collaboration (2016) – processed by Our World in Data. “Men” [dataset]. NCD Risk Factor Collaboration, “Human height” [original data].",
+      "fullMetadata": "https://api.ourworldindata.org/v1/indicators/1206196.metadata.json"
+    },
+    "Mean female height (cm)": {
+      "titleShort": "Women",
+      "titleLong": "Women",
+      "shortUnit": "cm",
+      "unit": "centimeters",
+      "timespan": "1896-1996",
+      "type": "Numeric",
+      "owidVariableId": 1206195,
+      "shortName": "mean_female_height__cm",
+      "lastUpdated": "2019-05-14",
+      "citationShort": "NCD Risk Factor Collaboration (2016) – processed by Our World in Data",
+      "citationLong": "NCD Risk Factor Collaboration (2016) – processed by Our World in Data. “Women” [dataset]. NCD Risk Factor Collaboration, “Human height” [original data].",
+      "fullMetadata": "https://api.ourworldindata.org/v1/indicators/1206195.metadata.json"
+    }
+  },
+  "dateDownloaded": "2026-06-20",
+  "activeFilters": {}
+}

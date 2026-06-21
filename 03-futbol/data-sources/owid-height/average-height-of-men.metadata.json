@@ -1,0 +1,34 @@
+{
+  "chart": {
+    "title": "Average height of men by year of birth",
+    "subtitle": "Mean height of adult men by year of birth. Data for the latest cohort (the year 1996) is therefore the mean height of men aged 18 in 2014.",
+    "citation": "NCD Risk Factor Collaboration (2016)",
+    "originalChartUrl": "https://ourworldindata.org/grapher/average-height-of-men?v=1&csvType=full&useColumnShortNames=false",
+    "selection": [
+      "Sub-Saharan Africa",
+      "Middle East and North Africa",
+      "North America",
+      "Latin America and Caribbean",
+      "Europe and Central Asia",
+      "World"
+    ]
+  },
+  "columns": {
+    "Mean male height (cm)": {
+      "titleShort": "Mean male height (cm)",
+      "titleLong": "Mean male height (cm)",
+      "shortUnit": "cm",
+      "unit": "centimeters",
+      "timespan": "1896-1996",
+      "type": "Numeric",
+      "owidVariableId": 1206196,
+      "shortName": "mean_male_height__cm",
+      "lastUpdated": "2019-05-14",
+      "citationShort": "NCD Risk Factor Collaboration (2016) – processed by Our World in Data",
+      "citationLong": "NCD Risk Factor Collaboration (2016) – processed by Our World in Data. “Mean male height (cm)” [dataset]. NCD Risk Factor Collaboration, “Human height” [original data].",
+      "fullMetadata": "https://api.ourworldindata.org/v1/indicators/1206196.metadata.json"
+    }
+  },
+  "dateDownloaded": "2026-06-20",
+  "activeFilters": {}
+}
