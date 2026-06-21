@@ -158,7 +158,7 @@ function drawRanking() {
 
   const ctx = { bigFmt, isPngFormat, mobile };
   if (view === 'bars') rk_drawBars(svg, ctx);
-  else if (view === 'lines') rk_drawComing(svg, ctx, 'Líneas');
+  else if (view === 'lines') rk_drawLines(svg, ctx);
   else if (view === 'map') rk_drawComing(svg, ctx, 'Mapa');
 
   rk_applyHeadings();
@@ -224,6 +224,138 @@ function rk_drawBars(svg, ctx) {
     const vt = rk_el('text'); vt.setAttribute('x', left + bw + (bigFmt ? 9 : 6)); vt.setAttribute('y', yBase(midY)); vt.style.fontSize = fs + 'px'; vt.style.fontFamily = 'var(--sans)'; vt.style.fontWeight = '700'; vt.setAttribute('fill', 'var(--ink)'); vt.style.fontVariantNumeric = 'tabular-nums'; vt.textContent = rk_fmt(r.v, unit); svg.appendChild(vt);
   });
   const disp = document.getElementById('rk-year-display'); if (disp) disp.textContent = state[4].year;
+}
+
+// =================== Vista LÍNEAS ===================
+// Una línea por país de la selección manual (sin máx/mín automáticos). X = año,
+// Y = ingreso del decil elegido en la unidad elegida; toggle lin/log. Slider de
+// período inicio–fin. Hover-resalte (atenúa el resto) + tooltip reubicable.
+function rk_period() {
+  const p = (state[4].period && state[4].period.length === 2) ? state[4].period : [rk_yearMin(), rk_yearMax()];
+  return [Math.max(rk_yearMin(), Math.min(p[0], p[1])), Math.min(rk_yearMax(), Math.max(p[0], p[1]))];
+}
+function rk_lineSeries() {
+  const dec = rk_deciles(), unit = rk_unit(), [p0, p1] = rk_period();
+  const out = [];
+  (state[4].selectedCountries || []).filter(iso => !rk_excluded(iso)).forEach(iso => {
+    const pts = [];
+    rk_years().forEach(y => { if (y < p0 || y > p1) return; const v = rk_value(iso, y, dec, unit); if (v != null) pts.push([y, v]); });
+    if (pts.length) out.push({ iso, name: rk_name(iso), color: rk_lineColor(iso), pts });
+  });
+  return out;
+}
+function rk_niceLog(lo, hi) {   // décadas 1,10,100... que caen en [lo,hi]
+  const ticks = []; let e = Math.floor(Math.log10(lo));
+  for (; Math.pow(10, e) <= hi * 1.0001; e++) { const v = Math.pow(10, e); if (v >= lo * 0.999) ticks.push(v); }
+  return ticks.length ? ticks : [lo, hi];
+}
+function rk_niceLin(lo, hi, n) {
+  const span = hi - lo || 1; const raw = span / n;
+  const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = (raw / mag >= 5 ? 5 : raw / mag >= 2 ? 2 : 1) * mag;
+  const ticks = []; for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-6; v += step) ticks.push(v);
+  return ticks;
+}
+function rk_drawLines(svg, ctx) {
+  const { bigFmt, isPngFormat } = ctx;
+  const interactive = !isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  const unit = rk_unit(), logScale = (state[4].yScale === 'log');
+  const series = rk_lineSeries();
+  const [p0, p1] = rk_period();
+  const dispR = document.getElementById('rk-range-display'); if (dispR) dispR.textContent = p0 + '–' + p1;
+  if (!series.length) {
+    const m = rk_el('text'); m.setAttribute('x', RK_W / 2); m.setAttribute('y', RK_H / 2); m.setAttribute('text-anchor', 'middle'); m.style.fontFamily = 'var(--sans)'; m.style.fontSize = (bigFmt ? 22 : 14) + 'px'; m.setAttribute('fill', 'var(--ink-muted)'); m.textContent = rk_tt('c4-empty-lines', 'Elegí al menos un país.'); svg.appendChild(m); return;
+  }
+  // escala Y
+  let vmin = Infinity, vmax = -Infinity;
+  series.forEach(s => s.pts.forEach(p => { if (p[1] < vmin) vmin = p[1]; if (p[1] > vmax) vmax = p[1]; }));
+  if (!isFinite(vmin)) { vmin = 1; vmax = 10; }
+  const fs = bigFmt ? 22 : 11.5, labelFs = bigFmt ? 22 : 12;
+  // margen derecho dinámico para los end-labels (nombre + valor en PNG)
+  let nameW = 0; series.forEach(s => { const w = rk_measure(s.name + (isPngFormat ? '  ' + rk_fmt(s.pts[s.pts.length - 1][1], unit) : ''), labelFs, 600); if (w > nameW) nameW = w; });
+  const M = { top: RK_MARGIN.top, bottom: bigFmt ? 56 : 40, left: bigFmt ? 96 : 64, right: Math.min(Math.round(RK_W * 0.34), (bigFmt ? 22 : 12) + nameW + (bigFmt ? 16 : 10)) };
+  const PW = RK_W - M.left - M.right, PH = RK_H - M.top - M.bottom;
+  let yLo, yHi, yTicks;
+  if (logScale) { yLo = Math.max(0.1, Math.pow(10, Math.floor(Math.log10(vmin)))); yHi = Math.pow(10, Math.ceil(Math.log10(vmax))); yTicks = rk_niceLog(yLo, yHi); }
+  else { const t = rk_niceLin(Math.min(0, vmin), vmax, 6); yLo = 0; yHi = t[t.length - 1]; yTicks = t; }
+  const xS = (yr) => M.left + ((yr - p0) / (p1 - p0 || 1)) * PW;
+  const yS = (v) => {
+    if (logScale) { const a = Math.log10(yLo), b = Math.log10(yHi); return M.top + PH - ((Math.log10(Math.max(v, yLo)) - a) / (b - a)) * PH; }
+    return M.top + PH - ((v - yLo) / (yHi - yLo || 1)) * PH;
+  };
+  // grid + ticks Y
+  yTicks.forEach(v => {
+    const y = yS(v); if (y < M.top - 1 || y > M.top + PH + 1) return;
+    const gl = rk_el('line'); gl.setAttribute('x1', M.left); gl.setAttribute('x2', M.left + PW); gl.setAttribute('y1', y); gl.setAttribute('y2', y); gl.setAttribute('class', 's-grid-line'); svg.appendChild(gl);
+    const lb = rk_el('text'); lb.setAttribute('x', M.left - (bigFmt ? 12 : 8)); lb.setAttribute('y', y + (bigFmt ? 7 : 4)); lb.setAttribute('text-anchor', 'end'); lb.setAttribute('class', 's-tick'); lb.style.fontSize = fs + 'px'; lb.textContent = rk_fmt(v, unit); svg.appendChild(lb);
+  });
+  // grid + ticks X (años)
+  const xticks = []; const ys = rk_years().filter(y => y >= p0 && y <= p1); let lastX = -1e9; const minGap = bigFmt ? 90 : 48;
+  ys.forEach((y, i) => { const x = xS(y); if (i === 0 || i === ys.length - 1 || x - lastX >= minGap) { if (i === ys.length - 1 && xticks.length && (x - xS(xticks[xticks.length - 1])) < minGap) xticks.pop(); xticks.push(y); lastX = x; } });
+  xticks.forEach(y => {
+    const x = xS(y);
+    const lb = rk_el('text'); lb.setAttribute('x', x); lb.setAttribute('y', M.top + PH + (bigFmt ? 34 : 18)); lb.setAttribute('text-anchor', 'middle'); lb.setAttribute('class', 's-tick'); lb.style.fontSize = fs + 'px'; lb.textContent = y; svg.appendChild(lb);
+  });
+  // título eje Y
+  const en = (typeof LANG !== 'undefined' && LANG === 'en');
+  const yT = rk_el('text'); yT.setAttribute('class', 's-axis-title'); yT.setAttribute('text-anchor', 'middle'); yT.setAttribute('transform', `translate(${M.left - (bigFmt ? 74 : 46)}, ${M.top + PH / 2}) rotate(-90)`); yT.style.fontSize = (bigFmt ? 22 : 11.5) + 'px'; yT.textContent = (en ? 'US$ PPP' : 'US$ PPA') + ' ' + rk_unitSuffix(); svg.appendChild(yT);
+
+  // líneas + halos + dots + áreas de hover (resalte)
+  const lineW = bigFmt ? 3.2 : 2, haloW = lineW + (bigFmt ? 5 : 3), dotR = bigFmt ? 4 : 2.4;
+  const halosG = rk_el('g'), linesG = rk_el('g'), dotsG = rk_el('g'), hitG = rk_el('g');
+  [halosG, linesG, dotsG, hitG].forEach(g => svg.appendChild(g));
+  const endLabels = [];
+  series.forEach(s => {
+    const d = s.pts.map((p, i) => (i ? 'L' : 'M') + xS(p[0]).toFixed(1) + ',' + yS(p[1]).toFixed(1)).join(' ');
+    const halo = rk_el('path'); halo.setAttribute('d', d); halo.setAttribute('fill', 'none'); halo.setAttribute('stroke', '#FAF8F3'); halo.setAttribute('stroke-width', haloW); halo.setAttribute('stroke-linejoin', 'round'); halo.setAttribute('stroke-linecap', 'round'); halo.setAttribute('data-rk', s.iso); halosG.appendChild(halo);
+    const path = rk_el('path'); path.setAttribute('d', d); path.setAttribute('fill', 'none'); path.setAttribute('stroke', s.color); path.setAttribute('stroke-width', lineW); path.setAttribute('stroke-linejoin', 'round'); path.setAttribute('stroke-linecap', 'round'); path.setAttribute('data-rk', s.iso); linesG.appendChild(path);
+    s.pts.forEach(p => { const c = rk_el('circle'); c.setAttribute('cx', xS(p[0])); c.setAttribute('cy', yS(p[1])); c.setAttribute('r', dotR); c.setAttribute('fill', s.color); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', bigFmt ? 1.6 : 1); c.setAttribute('data-rk', s.iso); dotsG.appendChild(c); });
+    if (interactive) {
+      const hit = rk_el('path'); hit.setAttribute('d', d); hit.setAttribute('fill', 'none'); hit.setAttribute('stroke', 'transparent'); hit.setAttribute('stroke-width', Math.max(lineW + 10, 12)); hit.style.pointerEvents = 'stroke'; hit.style.cursor = 'pointer';
+      hit.addEventListener('mouseenter', () => rk_emph(svg, s.iso)); hit.addEventListener('mouseleave', () => rk_emph(svg, null));
+      hitG.appendChild(hit);
+    }
+    const last = s.pts[s.pts.length - 1];
+    endLabels.push({ name: s.name, color: s.color, idealY: yS(last[1]), x: xS(last[0]), valLast: last[1], iso: s.iso });
+  });
+  // end-labels con anti-pisado vertical
+  const gap = bigFmt ? labelFs + 6 : 14, topB = M.top + (bigFmt ? 6 : 2), botB = M.top + PH;
+  endLabels.sort((a, b) => a.idealY - b.idealY);
+  endLabels.forEach((l, i) => { l.y = (i === 0) ? Math.max(l.idealY, topB) : Math.max(l.idealY, endLabels[i - 1].y + gap); });
+  if (endLabels.length) { const last = endLabels[endLabels.length - 1]; if (last.y > botB) { last.y = botB; for (let i = endLabels.length - 2; i >= 0; i--) endLabels[i].y = Math.min(endLabels[i].y, endLabels[i + 1].y - gap); } }
+  const endG = rk_el('g'); svg.appendChild(endG);
+  endLabels.forEach(l => {
+    l.y = Math.max(l.y, topB);
+    if (Math.abs(l.y - l.idealY) > 1.5) { const g = rk_el('line'); g.setAttribute('x1', l.x); g.setAttribute('y1', l.idealY); g.setAttribute('x2', l.x + (bigFmt ? 8 : 4)); g.setAttribute('y2', l.y); g.setAttribute('stroke', l.color); g.setAttribute('stroke-width', bigFmt ? 1.4 : 0.8); g.setAttribute('stroke-opacity', 0.5); g.setAttribute('data-rk', l.iso); endG.appendChild(g); }
+    const txt = rk_el('text'); txt.setAttribute('x', l.x + (bigFmt ? 12 : 6)); txt.setAttribute('y', l.y + (bigFmt ? 7 : 4)); txt.setAttribute('fill', l.color); txt.setAttribute('font-weight', bigFmt ? 700 : 600); txt.style.fontSize = labelFs + 'px'; txt.style.fontFamily = 'var(--sans)'; txt.setAttribute('paint-order', 'stroke'); txt.setAttribute('stroke', '#FAF8F3'); txt.setAttribute('stroke-width', bigFmt ? 5 : 2.5); txt.setAttribute('stroke-linejoin', 'round'); txt.setAttribute('data-rk', l.iso);
+    txt.textContent = l.name + (isPngFormat ? '  ' + rk_fmt(l.valLast, unit) : ''); endG.appendChild(txt);
+  });
+  if (interactive) rk_linesHover(svg, { p0, p1, xS, yS, series, unit, M, PW, PH });
+}
+function rk_emph(svg, iso) {
+  if (!svg) return;
+  svg.querySelectorAll('[data-rk]').forEach(el => { el.style.opacity = (iso == null || el.getAttribute('data-rk') === iso) ? '' : '0.14'; });
+}
+function rk_linesHover(svg, c) {
+  const tooltip = document.getElementById('tooltip4'); if (!tooltip) return;
+  const years = rk_years().filter(y => y >= c.p0 && y <= c.p1);
+  const hoverG = rk_el('g'); hoverG.setAttribute('display', 'none'); svg.appendChild(hoverG);
+  const vline = rk_el('line'); vline.setAttribute('stroke', '#9a9488'); vline.setAttribute('stroke-width', 1); vline.setAttribute('stroke-dasharray', '3 3'); vline.setAttribute('y1', c.M.top); vline.setAttribute('y2', c.M.top + c.PH); hoverG.appendChild(vline);
+  const cap = rk_el('rect'); cap.setAttribute('x', c.M.left); cap.setAttribute('y', c.M.top); cap.setAttribute('width', c.PW); cap.setAttribute('height', c.PH); cap.setAttribute('fill', 'transparent'); svg.insertBefore(cap, svg.firstChild);
+  const nearest = (px) => { let best = years[0], bd = Infinity; years.forEach(y => { const d = Math.abs(c.xS(y) - px); if (d < bd) { bd = d; best = y; } }); return best; };
+  const update = (yr) => {
+    if (yr == null) { hoverG.setAttribute('display', 'none'); tooltip.style.opacity = '0'; tooltip.style.display = 'none'; return; }
+    hoverG.setAttribute('display', ''); while (hoverG.children.length > 1) hoverG.removeChild(hoverG.lastChild);
+    const xAt = c.xS(yr); vline.setAttribute('x1', xAt); vline.setAttribute('x2', xAt);
+    const rows = [];
+    c.series.forEach(s => { const p = s.pts.find(q => q[0] === yr); if (!p) return; const dot = rk_el('circle'); dot.setAttribute('cx', xAt); dot.setAttribute('cy', c.yS(p[1])); dot.setAttribute('r', 4); dot.setAttribute('fill', s.color); dot.setAttribute('stroke', '#FAF8F3'); dot.setAttribute('stroke-width', 1.5); hoverG.appendChild(dot); rows.push({ name: s.name, color: s.color, v: p[1] }); });
+    rows.sort((a, b) => b.v - a.v);
+    let html = `<div style="font-weight:600;margin-bottom:4px;">${yr}</div>`;
+    rows.forEach(r => { html += `<div style="display:flex;align-items:center;gap:6px;line-height:1.5;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${r.color};"></span><span style="flex:1;">${r.name}</span><strong style="font-variant-numeric:tabular-nums;">${rk_fmt(r.v, c.unit)}</strong></div>`; });
+    tooltip.innerHTML = html; tooltip.style.display = 'block'; tooltip.style.opacity = '1';
+  };
+  const moveH = (ev) => { const rc = svg.getBoundingClientRect(); const sc = rc.width / RK_W; const lx = (ev.clientX - rc.left) / sc; if (lx < c.M.left || lx > c.M.left + c.PW) { update(null); return; } update(nearest(lx)); rk_placeTip(tooltip, ev, svg); };
+  svg.addEventListener('mousemove', moveH); svg.addEventListener('mouseleave', () => update(null));
 }
 
 // =================== Títulos dinámicos ===================
@@ -366,6 +498,25 @@ function rk_setupToggles() {
   // Año (slider simple)
   const yr = document.getElementById('rk-year'); const disp = document.getElementById('rk-year-display');
   if (yr) { yr.min = rk_yearMin(); yr.max = rk_yearMax(); yr.value = state[4].year; yr.addEventListener('input', () => { state[4].year = +yr.value; if (disp) disp.textContent = yr.value; drawRanking(); }); }
+  // Slider de período (2 thumbs) — Líneas
+  rk_setupRange();
+}
+function rk_setupRange() {
+  const from = document.getElementById('rk-range-from'), to = document.getElementById('rk-range-to'), fill = document.getElementById('rk-range-fill');
+  if (!from || !to) return;
+  const lo = rk_yearMin(), hi = rk_yearMax();
+  [from, to].forEach(el => { el.min = lo; el.max = hi; });
+  const p = rk_period(); from.value = p[0]; to.value = p[1];
+  const paint = () => {
+    let a = +from.value, b = +to.value; if (a > b) { const t = a; a = b; b = t; }
+    if (fill) { fill.style.left = ((a - lo) / (hi - lo) * 100) + '%'; fill.style.width = ((b - a) / (hi - lo) * 100) + '%'; }
+  };
+  const onInput = () => {
+    let a = +from.value, b = +to.value; if (a > b) { const t = a; a = b; b = t; }
+    state[4].period = [a, b]; paint(); drawRanking();
+  };
+  from.addEventListener('input', onInput); to.addEventListener('input', onInput);
+  paint();
 }
 
 // =================== Init + PNG ===================
