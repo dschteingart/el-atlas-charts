@@ -162,6 +162,7 @@ function drawRanking() {
   sng('rk-range-block', view === 'lines');                 // slider temporal: solo líneas
   sng('rk-bench-group', view === 'map');                   // modo clásico/benchmark: solo mapa
   sng('rk-continent-group', view === 'map');               // zoom continente: solo mapa
+  sng('rk-labels-group', view === 'map');                  // toggle de etiquetas de valor: solo mapa
   const sInput = document.getElementById('rk-search');     // placeholder según contexto
   if (sInput) sInput.placeholder = mapBench ? rk_tt('c4-bench-placeholder', 'Comparar contra…') : rk_tt('c4-search-placeholder', 'Agregar país…');
 
@@ -480,9 +481,38 @@ function rk_drawMap(svg, ctx) {
     } : null)
     .on('click', interactive ? function (ev, d) { if (!benchOn) return; const iso = rk_isoOf(d); if (vals[iso] != null) { state[4].benchmark = iso; rk_updateBenchName(); drawRanking(); } } : null);
 
-  rk_drawMapLegend(svg, { bigFmt, benchOn, benchV, classicBreaks, unit, interactive });
+  if (state[4].mapLabels) rk_drawMapLabels(svg, { feats, vals, box: { x1: pad, y1: pad, x2: pad + PW, y2: pad + PH }, bigFmt, unit });
+  rk_drawMapLegend(svg, { bigFmt, benchOn, benchV, classicBreaks, unit, interactive, pngExport: ctx.isPngFormat });
   rk_updateBenchName();
   const disp = document.getElementById('rk-year-display'); if (disp) disp.textContent = year;
+}
+// Etiquetas de valor en el centro de cada país (toggle "Valores", estilo OWID).
+// Greedy por área desc: prueba el centroide y algunos offsets verticales; si choca
+// con otra etiqueta o se sale del encuadre, NO la muestra. Cuando va corrida del
+// centroide, dibuja una línea guía.
+function rk_drawMapLabels(svg, o) {
+  const { feats, vals, box, bigFmt, unit } = o;
+  const fs = bigFmt ? 17 : 10.5, halo = bigFmt ? 5 : 2.5, fw = bigFmt ? 700 : 600;
+  const placed = [], g = rk_el('g'); svg.appendChild(g);
+  const over = (a, b) => !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
+  const items = feats.filter(f => vals[rk_isoOf(f)] != null).map(f => ({ f, iso: rk_isoOf(f), area: d3.geoArea(f) })).sort((a, b) => b.area - a.area);
+  const offs = [0, -(fs + 3), fs + 3, -(2 * fs + 5), 2 * fs + 5];
+  items.forEach(it => {
+    let c; try { c = rk_map_path.centroid(it.f); } catch (e) { return; }
+    if (!c || isNaN(c[0]) || c[0] < box.x1 || c[0] > box.x2 || c[1] < box.y1 || c[1] > box.y2) return;
+    const txt = rk_fmt(vals[it.iso], unit), w = rk_measure(txt, fs, fw) + 2, h = fs;
+    let chosen = null;
+    for (const dy of offs) {
+      const cx = c[0], cy = c[1] + dy, rect = { x1: cx - w / 2, x2: cx + w / 2, y1: cy - h * 0.7, y2: cy + h * 0.3 };
+      if (rect.x1 < box.x1 || rect.x2 > box.x2 || rect.y1 < box.y1 || rect.y2 > box.y2) continue;
+      if (placed.some(p => over(p, rect))) continue;
+      chosen = { cx, cy, dy, rect }; break;
+    }
+    if (!chosen) return;   // imposible ubicarla → no se muestra (como OWID)
+    placed.push(chosen.rect);
+    if (Math.abs(chosen.dy) > 1) { const ln = rk_el('line'); ln.setAttribute('x1', c[0]); ln.setAttribute('y1', c[1]); ln.setAttribute('x2', chosen.cx); ln.setAttribute('y2', chosen.cy - (chosen.dy > 0 ? h * 0.5 : -h * 0.1)); ln.setAttribute('stroke', '#1A1A1A'); ln.setAttribute('stroke-width', bigFmt ? 1 : 0.6); ln.setAttribute('stroke-opacity', 0.5); g.appendChild(ln); }
+    const t = rk_el('text'); t.setAttribute('x', chosen.cx); t.setAttribute('y', chosen.cy); t.setAttribute('text-anchor', 'middle'); t.style.fontSize = fs + 'px'; t.style.fontFamily = 'var(--sans)'; t.style.fontWeight = fw; t.setAttribute('fill', '#1A1A1A'); t.setAttribute('paint-order', 'stroke'); t.setAttribute('stroke', '#FAF8F3'); t.setAttribute('stroke-width', halo); t.setAttribute('stroke-linejoin', 'round'); t.textContent = txt; g.appendChild(t);
+  });
 }
 // Leyenda estilo OWID: barra escalonada centrada abajo + swatch "Sin dato" (y el
 // dorado de referencia en modo benchmark). Hover sobre cada tramo → atenúa el resto.
@@ -494,9 +524,12 @@ function rk_drawMapLegend(svg, o) {
   let edge;
   if (o.benchOn && o.benchV) edge = ['', '0.5×', '0.8×', '=', '1.25×', '2×'];
   else edge = ['$0'].concat(o.classicBreaks.map(b => rk_fmtTick(b)));
+  // En el PNG no se muestra el swatch del país de referencia (el subtítulo ya dice
+  // contra quién se compara); en pantalla sí, como clave de lectura.
+  const showBench = o.benchOn && o.benchV && !o.pngExport;
   const barW = colors.length * bw;
   const ndW = bw * 0.9;
-  const totalW = ndW + gap + barW + (o.benchOn && o.benchV ? gap + bw * 1.1 : 0);
+  const totalW = ndW + gap + barW + (showBench ? gap + bw * 1.1 : 0);
   const x0 = (RK_W - totalW) / 2, yb = RK_H - (o.bigFmt ? 46 : 38);
   const g = rk_el('g'); svg.appendChild(g);
   const mk = (tag) => rk_el(tag);
@@ -682,6 +715,9 @@ function rk_setupToggles() {
     document.querySelectorAll('[data-rk-cont]').forEach(x => x.classList.toggle('active', x === b));
     drawRanking();
   }));
+  // Mapa: toggle de etiquetas de valor sobre los países
+  const lblBtn = document.getElementById('rk-maplabels-btn');
+  if (lblBtn) lblBtn.addEventListener('click', () => { state[4].mapLabels = !state[4].mapLabels; lblBtn.classList.toggle('active', !!state[4].mapLabels); lblBtn.setAttribute('aria-pressed', state[4].mapLabels ? 'true' : 'false'); drawRanking(); });
   // Deciles
   const decHost = document.getElementById('rk-decile-btns');
   if (decHost) decHost.querySelectorAll('button[data-decile]').forEach(b => b.addEventListener('click', () => rk_toggleDecile(+b.dataset.decile)));
@@ -724,6 +760,7 @@ function initRanking() {
   if (!s.benchmark) s.benchmark = 'USA';
   if (!s.continent) s.continent = 'all';
   if (!s.mapMode) s.mapMode = 'classic';
+  if (s.mapLabels == null) s.mapLabels = false;
   if (!(s.excluded instanceof Set)) s.excluded = new Set(s.excluded || []);   // países que el user sacó (no reaparecen como máx/mín)
 
   rk_setupToggles();
