@@ -481,37 +481,64 @@ function rk_drawMap(svg, ctx) {
     } : null)
     .on('click', interactive ? function (ev, d) { if (!benchOn) return; const iso = rk_isoOf(d); if (vals[iso] != null) { state[4].benchmark = iso; rk_updateBenchName(); drawRanking(); } } : null);
 
-  if (state[4].mapLabels) rk_drawMapLabels(svg, { feats, vals, box: { x1: pad, y1: pad, x2: pad + PW, y2: pad + PH }, bigFmt, unit });
+  if (state[4].mapLabels) {
+    const fillByIso = {}; feats.forEach(f => { fillByIso[rk_isoOf(f)] = paint(rk_isoOf(f)).fill; });
+    rk_drawMapLabels(svg, { feats, vals, fillByIso, benchV, box: { x1: pad, y1: pad, x2: pad + PW, y2: pad + PH }, bigFmt, unit });
+  }
   rk_drawMapLegend(svg, { bigFmt, benchOn, benchV, classicBreaks, unit, interactive, pngExport: ctx.isPngFormat });
   rk_updateBenchName();
   const disp = document.getElementById('rk-year-display'); if (disp) disp.textContent = year;
 }
-// Etiquetas de valor en el centro de cada país (toggle "Valores", estilo OWID).
-// Greedy por área desc: prueba el centroide y algunos offsets verticales; si choca
-// con otra etiqueta o se sale del encuadre, NO la muestra. Cuando va corrida del
-// centroide, dibuja una línea guía.
+// ¿El color de fondo es oscuro? (para decidir texto blanco o negro encima).
+function rk_isDark(hex) {
+  if (!hex || hex[0] !== '#' || hex.length < 7) return false;
+  const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.58;
+}
+// Parte CONTINENTAL de un país (polígono proyectado más grande): evita que el
+// centroide de un multipolígono (Francia + ultramar, EE.UU. + Alaska/Hawái) caiga
+// en el mar o lejos del territorio principal.
+function rk_mainland(f) {
+  const geom = f.geometry; if (!geom) return f;
+  if (geom.type !== 'MultiPolygon') return f;
+  let best = f, bestA = -1;
+  geom.coordinates.forEach(poly => { const tmp = { type: 'Feature', geometry: { type: 'Polygon', coordinates: poly } }; let a = 0; try { a = Math.abs(rk_map_path.area(tmp)); } catch (e) { } if (a > bestA) { bestA = a; best = tmp; } });
+  return best;
+}
+// Etiquetas de valor sobre los países (toggle "Valores", criterio OWID):
+//   - Clásico: el valor; comparador: la brecha vs el país de referencia (+20%, -4%).
+//   - Centradas en la parte continental; solo si la etiqueta ENTRA en el país
+//     (si es muy chico, no se muestra). Si chocaría con otra, se omite — nunca se
+//     mete en otro país, así que no hace falta línea guía.
+//   - Texto blanco sobre fondo oscuro, negro sobre claro (sin halo).
 function rk_drawMapLabels(svg, o) {
-  const { feats, vals, box, bigFmt, unit } = o;
-  const fs = bigFmt ? 17 : 10.5, halo = bigFmt ? 5 : 2.5, fw = bigFmt ? 700 : 600;
+  const { feats, vals, fillByIso, benchV, box, bigFmt } = o;
+  const unit = o.unit, benchOn = state[4].mapMode === 'bench';
+  const fs = bigFmt ? 16 : 10, fw = bigFmt ? 700 : 600;
   const placed = [], g = rk_el('g'); svg.appendChild(g);
   const over = (a, b) => !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
-  const items = feats.filter(f => vals[rk_isoOf(f)] != null).map(f => ({ f, iso: rk_isoOf(f), area: d3.geoArea(f) })).sort((a, b) => b.area - a.area);
-  const offs = [0, -(fs + 3), fs + 3, -(2 * fs + 5), 2 * fs + 5];
+  const items = feats.filter(f => vals[rk_isoOf(f)] != null).map(f => {
+    const ml = rk_mainland(f); let b = null; try { b = rk_map_path.bounds(ml); } catch (e) { }
+    return { iso: rk_isoOf(f), b, area: b ? (b[1][0] - b[0][0]) * (b[1][1] - b[0][1]) : 0 };
+  }).sort((a, b) => b.area - a.area);
   items.forEach(it => {
-    let c; try { c = rk_map_path.centroid(it.f); } catch (e) { return; }
-    if (!c || isNaN(c[0]) || c[0] < box.x1 || c[0] > box.x2 || c[1] < box.y1 || c[1] > box.y2) return;
-    const txt = rk_fmt(vals[it.iso], unit), w = rk_measure(txt, fs, fw) + 2, h = fs;
-    let chosen = null;
-    for (const dy of offs) {
-      const cx = c[0], cy = c[1] + dy, rect = { x1: cx - w / 2, x2: cx + w / 2, y1: cy - h * 0.7, y2: cy + h * 0.3 };
-      if (rect.x1 < box.x1 || rect.x2 > box.x2 || rect.y1 < box.y1 || rect.y2 > box.y2) continue;
-      if (placed.some(p => over(p, rect))) continue;
-      chosen = { cx, cy, dy, rect }; break;
-    }
-    if (!chosen) return;   // imposible ubicarla → no se muestra (como OWID)
-    placed.push(chosen.rect);
-    if (Math.abs(chosen.dy) > 1) { const ln = rk_el('line'); ln.setAttribute('x1', c[0]); ln.setAttribute('y1', c[1]); ln.setAttribute('x2', chosen.cx); ln.setAttribute('y2', chosen.cy - (chosen.dy > 0 ? h * 0.5 : -h * 0.1)); ln.setAttribute('stroke', '#1A1A1A'); ln.setAttribute('stroke-width', bigFmt ? 1 : 0.6); ln.setAttribute('stroke-opacity', 0.5); g.appendChild(ln); }
-    const t = rk_el('text'); t.setAttribute('x', chosen.cx); t.setAttribute('y', chosen.cy); t.setAttribute('text-anchor', 'middle'); t.style.fontSize = fs + 'px'; t.style.fontFamily = 'var(--sans)'; t.style.fontWeight = fw; t.setAttribute('fill', '#1A1A1A'); t.setAttribute('paint-order', 'stroke'); t.setAttribute('stroke', '#FAF8F3'); t.setAttribute('stroke-width', halo); t.setAttribute('stroke-linejoin', 'round'); t.textContent = txt; g.appendChild(t);
+    if (!it.b) return;
+    if (benchOn && it.iso === state[4].benchmark) return;   // el país de referencia no se etiqueta
+    const bw = it.b[1][0] - it.b[0][0], bh = it.b[1][1] - it.b[0][1];
+    const cx = (it.b[0][0] + it.b[1][0]) / 2, cy = (it.b[0][1] + it.b[1][1]) / 2;
+    if (cx < box.x1 || cx > box.x2 || cy < box.y1 || cy > box.y2) return;
+    const v = vals[it.iso];
+    let txt;
+    if (benchOn && benchV) { const pct = Math.round((v / benchV - 1) * 100); txt = (pct >= 0 ? '+' : '') + pct + '%'; }
+    else txt = rk_fmt(v, unit);
+    const w = rk_measure(txt, fs, fw), h = fs;
+    if (bw < w * 1.05 || bh < h * 1.15) return;   // el país es muy chico para contener la etiqueta → no se muestra
+    const rect = { x1: cx - w / 2, x2: cx + w / 2, y1: cy - h * 0.55, y2: cy + h * 0.45 };
+    if (placed.some(p => over(p, rect))) return;   // chocaría con otra → se omite (no se mete en otro país)
+    placed.push(rect);
+    const t = rk_el('text'); t.setAttribute('x', cx); t.setAttribute('y', cy + h * 0.34); t.setAttribute('text-anchor', 'middle'); t.style.fontSize = fs + 'px'; t.style.fontFamily = 'var(--sans)'; t.style.fontWeight = fw;
+    t.setAttribute('fill', rk_isDark(fillByIso[it.iso]) ? '#FFFFFF' : '#1A1A1A');
+    t.textContent = txt; g.appendChild(t);
   });
 }
 // Leyenda estilo OWID: barra escalonada centrada abajo + swatch "Sin dato" (y el
