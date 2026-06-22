@@ -397,6 +397,10 @@ const RK_MAP_DIVERGE = ['#2D4256', '#5E7E96', '#A5BFD0', '#E2A782', '#9B3D24', '
 const RK_MAP_BENCH = '#595550';   // país de referencia: gris cálido oscuro, neutro y fuera de la escala azul/terracota
 const RK_MAP_BREAKS = [1, 2, 5, 10, 20];      // US$ PPA/día (escalados por unidad) — bins fijos OWID
 const RK_BENCH_BREAKS = [0.5, 0.8, 1, 1.25, 2];
+// Las líneas guía (etiqueta externa al mar) son EXCEPCIONALES: solo para esta lista
+// de países importantes que suelen ser demasiado chicos para etiquetar adentro. El
+// resto, si la etiqueta no entra dentro del país, no se muestra (sin línea guía).
+const RK_LEADER_ALLOW = new Set(['NLD', 'BEL', 'CHE', 'AUT', 'DNK', 'ISR', 'KOR', 'SGP', 'TWN', 'HKG', 'ARE', 'QAT', 'URY', 'CRI', 'PAN', 'LBN']);
 const RK_CONT_BBOX = {
   all: [[-168, -56], [178, 80]], america: [[-168, -56], [-32, 73]], europe: [[-26, 34], [46, 71]],
   africa: [[-20, -36], [52, 38]], asia: [[26, -11], [150, 78]], oceania: [[110, -50], [179, 10]]
@@ -557,6 +561,7 @@ function rk_drawMapLabels(svg, o) {
     return { iso, el: svg.querySelector('path.rk-country[data-iso="' + iso + '"]'), c, b, area: b ? (b[1][0] - b[0][0]) * (b[1][1] - b[0][1]) : 0 };
   }).sort((a, b) => b.area - a.area);
 
+  let leaders = 0; const maxLeaders = bigFmt ? 10 : 8;
   items.forEach(it => {
     if (!it.el || !it.c || isNaN(it.c[0])) return;
     if (benchOn && it.iso === state[4].benchmark) return;   // el país de referencia no se etiqueta
@@ -582,13 +587,15 @@ function rk_drawMapLabels(svg, o) {
       }
     }
 
-    // 3) etiqueta externa sobre el mar, con línea guía (países chicos con costa).
-    // El candidato arranca FUERA del bbox del país (para caer en el mar) y crece;
-    // la línea guía nace en el borde del país y no debe cruzar otra etiqueta.
-    if (!anchor && it.b) {
+    // 3) etiqueta externa al mar con línea guía — EXCEPCIONAL: solo para países
+    // importantes (RK_LEADER_ALLOW) que no entran adentro, con su centroide en el
+    // encuadre, línea corta y con un tope total. Así son pocas y no ensucian. El
+    // resto de los países chicos simplemente no se etiquetan.
+    if (!anchor && it.b && RK_LEADER_ALLOW.has(it.iso) && leaders < maxLeaders
+      && cx0 >= box.x1 && cx0 <= box.x2 && cy0 >= box.y1 && cy0 <= box.y2) {
       const hW = (it.b[1][0] - it.b[0][0]) / 2, hH = (it.b[1][1] - it.b[0][1]) / 2;
       const dirs = [[1, 0], [0.7, -0.7], [0, -1], [-0.7, -0.7], [-1, 0], [-0.7, 0.7], [0, 1], [0.7, 0.7]];
-      const step = bigFmt ? 12 : 8, maxR = bigFmt ? 150 : 95;
+      const step = bigFmt ? 10 : 7, maxR = bigFmt ? 64 : 42;
       outer: for (let r = step; r <= maxR; r += step) {
         for (const d of dirs) {
           const cx = cx0 + d[0] * (hW + AX(w) + r), cy = cy0 + d[1] * (hH + AY(h) + r);
@@ -605,6 +612,7 @@ function rk_drawMapLabels(svg, o) {
     placed.push(rectOf(anchor[0], anchor[1], w, h));
 
     if (external) {   // línea guía desde el borde del país hasta la etiqueta en el mar
+      leaders++;
       const ls = leaderStart || [cx0, cy0];
       const ln = rk_el('line'); ln.setAttribute('x1', ls[0]); ln.setAttribute('y1', ls[1]); ln.setAttribute('x2', anchor[0]); ln.setAttribute('y2', anchor[1]); ln.setAttribute('stroke', '#1A1A1A'); ln.setAttribute('stroke-width', bigFmt ? 1 : 0.7); ln.setAttribute('stroke-opacity', 0.45); g.appendChild(ln);
     }
