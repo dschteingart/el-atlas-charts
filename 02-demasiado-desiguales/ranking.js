@@ -452,7 +452,7 @@ function rk_drawMap(svg, ctx) {
   // clip al área de plot
   svgSel.append('defs').append('clipPath').attr('id', 'rk-map-clip').append('rect').attr('x', 0).attr('y', 0).attr('width', RK_W).attr('height', pad + PH);
   const g = svgSel.append('g').attr('clip-path', 'url(#rk-map-clip)');
-  if (GEO_COUNTRIES.landmask) g.append('path').attr('d', rk_map_path(GEO_COUNTRIES.landmask)).attr('fill', RK_MAP_NODATA).attr('stroke', 'none');
+  if (GEO_COUNTRIES.landmask) g.append('path').attr('class', 'rk-landmask').attr('d', rk_map_path(GEO_COUNTRIES.landmask)).attr('fill', RK_MAP_NODATA).attr('stroke', 'none');
   const feats = GEO_COUNTRIES.features.filter(d => rk_isoOf(d) !== 'ATA').sort((a, b) => d3.geoArea(b) - d3.geoArea(a));   // sin Antártida
   const tooltip = document.getElementById('tooltip4');
   const en = (typeof LANG !== 'undefined' && LANG === 'en');
@@ -496,54 +496,121 @@ function rk_isDark(hex) {
   const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.58;
 }
-// Etiquetas de valor sobre los países (toggle "Valores", criterio OWID):
-//   - Clásico: el valor; comparador: la brecha vs el país de referencia (+20%, -4%).
-//   - La etiqueta se coloca SOLO donde sus 4 esquinas caen DENTRO del propio país
-//     (hit-test real con isPointInFill) y dentro del encuadre visible. Así nunca
-//     cae en otro país ni en el mar, y los países cóncavos/curvos (Noruega,
-//     Croacia) o recortados por el zoom (Rusia en Europa) se ubican en su
-//     territorio visible. Si no hay lugar (país muy chico/fino) → no se muestra.
-//   - Texto blanco sobre fondo oscuro, negro sobre claro (sin halo).
+// Parte CONTINENTAL de un país (polígono proyectado más grande): da el centroide
+// sobre el territorio principal y no en el mar (Francia + Guayana, EE.UU. +
+// Alaska/Hawái, etc.).
+function rk_mainland(f) {
+  const geom = f && f.geometry; if (!geom) return f;
+  if (geom.type !== 'MultiPolygon') return f;
+  let best = f, bestA = -1;
+  geom.coordinates.forEach(poly => { const tmp = { type: 'Feature', geometry: { type: 'Polygon', coordinates: poly } }; let a = 0; try { a = Math.abs(rk_map_path.area(tmp)); } catch (e) { } if (a > bestA) { bestA = a; best = tmp; } });
+  return best;
+}
+// Punto donde el segmento p0(adentro)→p1(afuera) cruza el borde del bbox bb.
+// Sirve para que la línea guía de una etiqueta externa nazca en el borde del país
+// (≈ la costa) y no en el centroide.
+function rk_segBoxExit(p0, p1, bb) {
+  const x0 = p0[0], y0 = p0[1], dx = p1[0] - x0, dy = p1[1] - y0; let t = 1;
+  if (dx > 0) t = Math.min(t, (bb[1][0] - x0) / dx);
+  if (dx < 0) t = Math.min(t, (bb[0][0] - x0) / dx);
+  if (dy > 0) t = Math.min(t, (bb[1][1] - y0) / dy);
+  if (dy < 0) t = Math.min(t, (bb[0][1] - y0) / dy);
+  t = Math.max(0, Math.min(1, t));
+  return [x0 + dx * t, y0 + dy * t];
+}
+// Etiquetas de valor sobre los países (toggle "Valores", criterio OWID). Tres
+// niveles, en orden:
+//   1. Centroide de la parte CONTINENTAL: si la etiqueta entra ahí (4 esquinas
+//      dentro del país) y no choca → se coloca centrada. Cubre la mayoría de los
+//      países grandes/medianos bien centrados (Brasil, EE.UU., Francia, Suecia…).
+//   2. Si no entra en el centroide (país cóncavo/curvo): se busca en una grilla el
+//      punto interior que entre más cercano al centroide.
+//   3. Si no entra DENTRO (país chico con costa): etiqueta EXTERNA en el mar, con
+//      línea guía. El punto externo debe estar sobre océano (no sobre el landmask,
+//      o sea ningún país) y dentro del encuadre. Cubre Portugal, Países Bajos,
+//      Bélgica, etc.
+// Si nada de eso entra (país chico sin costa cercana libre) → no se muestra.
+// Texto: dentro → blanco sobre fondo oscuro / negro sobre claro; externo (sobre el
+// mar crema) → tinta oscura con halo crema.
 function rk_drawMapLabels(svg, o) {
   const { feats, vals, fillByIso, benchV, box, bigFmt } = o;
   const unit = o.unit, benchOn = state[4].mapMode === 'bench';
   const fs = bigFmt ? 16 : 10, fw = bigFmt ? 700 : 600;
   const placed = [], g = rk_el('g'); svg.appendChild(g);
-  const over = (a, b) => !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
+  const land = svg.querySelector('path.rk-landmask');
   const sp = svg.createSVGPoint();
-  const inFill = (el, x, y) => { sp.x = x; sp.y = y; try { return el.isPointInFill(sp); } catch (e) { return false; } };
+  const over = (a, b) => !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
+  const inFill = (el, x, y) => { if (!el) return false; sp.x = x; sp.y = y; try { return el.isPointInFill(sp); } catch (e) { return false; } };
+  // Caja ÚNICA de la etiqueta — la misma para validar interior, colisión, viewport y
+  // mar. Alineada con el glifo real: el texto se dibuja con baseline en cy + h*0.34 y
+  // text-anchor middle, por lo que queda centrado visualmente en ~cy; medio-alto 0.55h.
+  const AX = (w) => w / 2 + 1, AY = (h) => h * 0.55;
+  const rectOf = (cx, cy, w, h) => ({ x1: cx - AX(w), x2: cx + AX(w), y1: cy - AY(h), y2: cy + AY(h) });
+  const inView = (cx, cy, w, h) => (cx - AX(w) >= box.x1 && cx + AX(w) <= box.x2 && cy - AY(h) >= box.y1 && cy + AY(h) <= box.y2);
+  const cornersIn = (el, cx, cy, w, h) => { const a = AX(w), b = AY(h); return inFill(el, cx - a, cy - b) && inFill(el, cx + a, cy - b) && inFill(el, cx - a, cy + b) && inFill(el, cx + a, cy + b); };
+  const overSea = (cx, cy, w, h) => { if (!land) return false; const a = AX(w), b = AY(h); return !inFill(land, cx - a, cy - b) && !inFill(land, cx + a, cy - b) && !inFill(land, cx - a, cy + b) && !inFill(land, cx + a, cy + b) && !inFill(land, cx, cy); };
+  const free = (cx, cy, w, h) => !placed.some(p => over(p, rectOf(cx, cy, w, h)));
+
   const items = feats.filter(f => vals[rk_isoOf(f)] != null).map(f => {
-    const iso = rk_isoOf(f); let b = null; try { b = rk_map_path.bounds(f); } catch (e) { }
-    return { iso, el: svg.querySelector('path.rk-country[data-iso="' + iso + '"]'), b, area: b ? (b[1][0] - b[0][0]) * (b[1][1] - b[0][1]) : 0 };
+    const iso = rk_isoOf(f), ml = rk_mainland(f); let c = null, b = null;
+    try { c = rk_map_path.centroid(ml); b = rk_map_path.bounds(ml); } catch (e) { }
+    return { iso, el: svg.querySelector('path.rk-country[data-iso="' + iso + '"]'), c, b, area: b ? (b[1][0] - b[0][0]) * (b[1][1] - b[0][1]) : 0 };
   }).sort((a, b) => b.area - a.area);
+
   items.forEach(it => {
-    if (!it.b || !it.el) return;
+    if (!it.el || !it.c || isNaN(it.c[0])) return;
     if (benchOn && it.iso === state[4].benchmark) return;   // el país de referencia no se etiqueta
     const v = vals[it.iso];
-    let txt;
-    if (benchOn && benchV) { const pct = Math.round((v / benchV - 1) * 100); txt = (pct >= 0 ? '+' : '') + pct + '%'; }
-    else txt = rk_fmt(v, unit);
-    const w = rk_measure(txt, fs, fw), h = fs, hw = w / 2 + 1;
-    // búsqueda dentro de (bbox del país ∩ encuadre visible)
-    const sx0 = Math.max(it.b[0][0], box.x1) + hw, sx1 = Math.min(it.b[1][0], box.x2) - hw;
-    const sy0 = Math.max(it.b[0][1], box.y1) + h * 0.6, sy1 = Math.min(it.b[1][1], box.y2) - h * 0.5;
-    if (sx0 > sx1 || sy0 > sy1) return;
-    const cxc = (sx0 + sx1) / 2, cyc = (sy0 + sy1) / 2, cands = [[cxc, cyc]];
-    const N = 6; for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++) cands.push([sx0 + (sx1 - sx0) * i / N, sy0 + (sy1 - sy0) * j / N]);
-    cands.sort((a, b) => ((a[0] - cxc) ** 2 + (a[1] - cyc) ** 2) - ((b[0] - cxc) ** 2 + (b[1] - cyc) ** 2));
-    let chosen = null;
-    for (const c of cands) {
-      const cx = c[0], cy = c[1];
-      // las 4 esquinas del rect de la etiqueta deben caer dentro del país
-      if (!inFill(it.el, cx - w / 2, cy - h * 0.5) || !inFill(it.el, cx + w / 2, cy - h * 0.5) || !inFill(it.el, cx - w / 2, cy + h * 0.4) || !inFill(it.el, cx + w / 2, cy + h * 0.4)) continue;
-      const rect = { x1: cx - w / 2, x2: cx + w / 2, y1: cy - h * 0.55, y2: cy + h * 0.45 };
-      if (placed.some(p => over(p, rect))) continue;
-      chosen = { cx, cy, rect }; break;
+    const txt = (benchOn && benchV) ? (() => { const p = Math.round((v / benchV - 1) * 100); return (p >= 0 ? '+' : '') + p + '%'; })() : rk_fmt(v, unit);
+    const w = rk_measure(txt, fs, fw), h = fs, cx0 = it.c[0], cy0 = it.c[1];
+    let anchor = null, external = false, leaderStart = null;
+
+    // 1) centroide del continente
+    if (inView(cx0, cy0, w, h) && cornersIn(it.el, cx0, cy0, w, h) && free(cx0, cy0, w, h)) anchor = [cx0, cy0];
+
+    // 2) grilla interior: punto que entre, más cercano al centroide
+    if (!anchor && it.b) {
+      const sx0 = Math.max(it.b[0][0], box.x1), sx1 = Math.min(it.b[1][0], box.x2), sy0 = Math.max(it.b[0][1], box.y1), sy1 = Math.min(it.b[1][1], box.y2);
+      if (sx1 > sx0 && sy1 > sy0) {
+        const N = 10; let best = null, bestD = Infinity;
+        for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++) {
+          const cx = sx0 + (sx1 - sx0) * i / N, cy = sy0 + (sy1 - sy0) * j / N;
+          if (!inView(cx, cy, w, h) || !cornersIn(it.el, cx, cy, w, h) || !free(cx, cy, w, h)) continue;
+          const d = (cx - cx0) ** 2 + (cy - cy0) ** 2; if (d < bestD) { bestD = d; best = [cx, cy]; }
+        }
+        if (best) anchor = best;
+      }
     }
-    if (!chosen) return;
-    placed.push(chosen.rect);
-    const t = rk_el('text'); t.setAttribute('x', chosen.cx); t.setAttribute('y', chosen.cy + h * 0.34); t.setAttribute('text-anchor', 'middle'); t.style.fontSize = fs + 'px'; t.style.fontFamily = 'var(--sans)'; t.style.fontWeight = fw;
-    t.setAttribute('fill', rk_isDark(fillByIso[it.iso]) ? '#FFFFFF' : '#1A1A1A');
+
+    // 3) etiqueta externa sobre el mar, con línea guía (países chicos con costa).
+    // El candidato arranca FUERA del bbox del país (para caer en el mar) y crece;
+    // la línea guía nace en el borde del país y no debe cruzar otra etiqueta.
+    if (!anchor && it.b) {
+      const hW = (it.b[1][0] - it.b[0][0]) / 2, hH = (it.b[1][1] - it.b[0][1]) / 2;
+      const dirs = [[1, 0], [0.7, -0.7], [0, -1], [-0.7, -0.7], [-1, 0], [-0.7, 0.7], [0, 1], [0.7, 0.7]];
+      const step = bigFmt ? 12 : 8, maxR = bigFmt ? 150 : 95;
+      outer: for (let r = step; r <= maxR; r += step) {
+        for (const d of dirs) {
+          const cx = cx0 + d[0] * (hW + AX(w) + r), cy = cy0 + d[1] * (hH + AY(h) + r);
+          if (!inView(cx, cy, w, h) || !overSea(cx, cy, w, h) || !free(cx, cy, w, h)) continue;
+          const st = rk_segBoxExit([cx0, cy0], [cx, cy], it.b);   // borde del país (≈ costa)
+          let crosses = false;
+          for (let t = 0.2; t <= 1.001; t += 0.2) { const px = st[0] + (cx - st[0]) * t, py = st[1] + (cy - st[1]) * t; if (placed.some(p => px >= p.x1 && px <= p.x2 && py >= p.y1 && py <= p.y2)) { crosses = true; break; } }
+          if (crosses) continue;
+          anchor = [cx, cy]; external = true; leaderStart = st; break outer;
+        }
+      }
+    }
+    if (!anchor) return;
+    placed.push(rectOf(anchor[0], anchor[1], w, h));
+
+    if (external) {   // línea guía desde el borde del país hasta la etiqueta en el mar
+      const ls = leaderStart || [cx0, cy0];
+      const ln = rk_el('line'); ln.setAttribute('x1', ls[0]); ln.setAttribute('y1', ls[1]); ln.setAttribute('x2', anchor[0]); ln.setAttribute('y2', anchor[1]); ln.setAttribute('stroke', '#1A1A1A'); ln.setAttribute('stroke-width', bigFmt ? 1 : 0.7); ln.setAttribute('stroke-opacity', 0.45); g.appendChild(ln);
+    }
+    const t = rk_el('text'); t.setAttribute('x', anchor[0]); t.setAttribute('y', anchor[1] + h * 0.34); t.setAttribute('text-anchor', 'middle'); t.style.fontSize = fs + 'px'; t.style.fontFamily = 'var(--sans)'; t.style.fontWeight = fw;
+    if (external) { t.setAttribute('fill', '#1A1A1A'); t.setAttribute('paint-order', 'stroke'); t.setAttribute('stroke', '#FAF8F3'); t.setAttribute('stroke-width', bigFmt ? 3 : 2); t.setAttribute('stroke-linejoin', 'round'); }
+    else t.setAttribute('fill', rk_isDark(fillByIso[it.iso]) ? '#FFFFFF' : '#1A1A1A');
     t.textContent = txt; g.appendChild(t);
   });
 }
