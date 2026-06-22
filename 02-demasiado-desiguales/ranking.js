@@ -519,18 +519,6 @@ function rk_mainland(f) {
   geom.coordinates.forEach(poly => { const tmp = { type: 'Feature', geometry: { type: 'Polygon', coordinates: poly } }; let a = 0; try { a = Math.abs(rk_map_path.area(tmp)); } catch (e) { } if (a > bestA) { bestA = a; best = tmp; } });
   return best;
 }
-// Punto donde el segmento p0(adentro)→p1(afuera) cruza el borde del bbox bb.
-// Sirve para que la línea guía de una etiqueta externa nazca en el borde del país
-// (≈ la costa) y no en el centroide.
-function rk_segBoxExit(p0, p1, bb) {
-  const x0 = p0[0], y0 = p0[1], dx = p1[0] - x0, dy = p1[1] - y0; let t = 1;
-  if (dx > 0) t = Math.min(t, (bb[1][0] - x0) / dx);
-  if (dx < 0) t = Math.min(t, (bb[0][0] - x0) / dx);
-  if (dy > 0) t = Math.min(t, (bb[1][1] - y0) / dy);
-  if (dy < 0) t = Math.min(t, (bb[0][1] - y0) / dy);
-  t = Math.max(0, Math.min(1, t));
-  return [x0 + dx * t, y0 + dy * t];
-}
 // Etiquetas de valor sobre los países (toggle "Valores", criterio OWID). Tres
 // niveles, en orden:
 //   1. Centroide de la parte CONTINENTAL: si la etiqueta entra ahí (4 esquinas
@@ -554,15 +542,24 @@ function rk_drawMapLabels(svg, o) {
   const sp = svg.createSVGPoint();
   const over = (a, b) => !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
   const inFill = (el, x, y) => { if (!el) return false; sp.x = x; sp.y = y; try { return el.isPointInFill(sp); } catch (e) { return false; } };
-  // Caja ÚNICA de la etiqueta — la misma para validar interior, colisión, viewport y
-  // mar. Alineada con el glifo real: el texto se dibuja con baseline en cy + h*0.34 y
-  // text-anchor middle, por lo que queda centrado visualmente en ~cy; medio-alto 0.55h.
-  const AX = (w) => w / 2 + 1, AY = (h) => h * 0.55;
+  // Caja de la etiqueta, alineada con el glifo real (baseline en cy+0.34h, text-anchor
+  // middle → el dígito/'%' queda centrado ópticamente en ~cy). Media-altura 0.45h: lo
+  // que valida ≈ lo que se dibuja (antes 0.55h rechazaba ubicaciones válidas).
+  const AX = (w) => w / 2 + 1, AY = (h) => h * 0.45;
   const rectOf = (cx, cy, w, h) => ({ x1: cx - AX(w), x2: cx + AX(w), y1: cy - AY(h), y2: cy + AY(h) });
   const inView = (cx, cy, w, h) => (cx - AX(w) >= box.x1 && cx + AX(w) <= box.x2 && cy - AY(h) >= box.y1 && cy + AY(h) <= box.y2);
-  const cornersIn = (el, cx, cy, w, h) => { const a = AX(w), b = AY(h); return inFill(el, cx - a, cy - b) && inFill(el, cx + a, cy - b) && inFill(el, cx - a, cy + b) && inFill(el, cx + a, cy + b); };
   const overSea = (cx, cy, w, h) => { if (!land) return false; const a = AX(w), b = AY(h); return !inFill(land, cx - a, cy - b) && !inFill(land, cx + a, cy - b) && !inFill(land, cx - a, cy + b) && !inFill(land, cx + a, cy + b) && !inFill(land, cx, cy); };
   const free = (cx, cy, w, h) => !placed.some(p => over(p, rectOf(cx, cy, w, h)));
+  // Hit-test contra el CUERPO PRINCIPAL (mainland), no contra el país con islas: una
+  // <path> oculta a la que le seteamos el path del mainland por país. Así la etiqueta y
+  // el origen de la línea guía nunca caen en una isla (Lofoten, archipiélago ártico,
+  // islas australes de Chile) en vez del continente.
+  const probe = rk_el('path'); probe.setAttribute('fill', '#000'); probe.style.opacity = '0'; probe.style.pointerEvents = 'none'; svg.appendChild(probe);
+  let mlEl = null;   // = probe (mainland) por país; it.el de fallback si no hay path
+  const cornersIn = (cx, cy, w, h) => { const a = AX(w), b = AY(h); return inFill(mlEl, cx - a, cy - b) && inFill(mlEl, cx + a, cy - b) && inFill(mlEl, cx - a, cy + b) && inFill(mlEl, cx + a, cy + b); };
+  // Fit laxo para países angostos (Italia, Chile, Vietnam, Portugal): centro + medios
+  // verticales adentro; se tolera que el texto desborde un poco a los lados (OWID igual).
+  const looseIn = (cx, cy, w, h) => { const b = AY(h); return inFill(mlEl, cx, cy) && inFill(mlEl, cx, cy - b) && inFill(mlEl, cx, cy + b); };
 
   // Filtro por continente: con zoom a un continente, etiquetar SOLO países de ese
   // continente (según el centroide geográfico dentro de su bbox), para no mostrar
@@ -577,10 +574,11 @@ function rk_drawMapLabels(svg, o) {
     return gc[0] >= contBB[0][0] && gc[0] <= contBB[1][0] && gc[1] >= contBB[0][1] && gc[1] <= contBB[1][1];
   };
   const items = feats.filter(f => vals[rk_isoOf(f)] != null).map(f => {
-    const iso = rk_isoOf(f), ml = rk_mainland(f); let c = null, b = null, gc = null;
+    const iso = rk_isoOf(f), ml = rk_mainland(f); let c = null, b = null, gc = null, dpath = null;
     try { c = rk_map_path.centroid(ml); b = rk_map_path.bounds(ml); } catch (e) { }
     try { gc = d3.geoCentroid(f); } catch (e) { }
-    return { iso, el: svg.querySelector('path.rk-country[data-iso="' + iso + '"]'), c, b, gc, area: b ? (b[1][0] - b[0][0]) * (b[1][1] - b[0][1]) : 0 };
+    try { dpath = rk_map_path(ml); } catch (e) { }   // path del mainland (para la probe)
+    return { iso, el: svg.querySelector('path.rk-country[data-iso="' + iso + '"]'), c, b, gc, dpath, area: b ? (b[1][0] - b[0][0]) * (b[1][1] - b[0][1]) : 0 };
   }).filter(it => inContinent(it.iso, it.gc))
     // Prioridad: países relevantes primero (procesados antes → ganan colisiones y son
     // los únicos elegibles para línea guía), y dentro de cada grupo por superficie
@@ -599,35 +597,44 @@ function rk_drawMapLabels(svg, o) {
   let leaders = 0; const maxLeaders = (cont === 'all') ? 0 : (bigFmt ? 12 : 9);
   items.forEach(it => {
     if (!it.el || !it.c || isNaN(it.c[0])) return;
-    if (benchOn && it.iso === state[4].benchmark) return;   // el país de referencia no se etiqueta
+    if (benchOn && benchV && it.iso === state[4].benchmark) return;   // el país de referencia no se etiqueta (solo si hay benchV)
     const v = vals[it.iso];
     const txt = (benchOn && benchV) ? (() => { const p = Math.round((v / benchV - 1) * 100); return (p >= 0 ? '+' : '') + p + '%'; })() : rk_fmt(v, unit);
     const w = rk_measure(txt, fs, fw), h = fs, cx0 = it.c[0], cy0 = it.c[1];
-    let anchor = null, external = false, leaderStart = null;
+    mlEl = it.dpath ? (probe.setAttribute('d', it.dpath), probe) : it.el;   // probe = mainland de este país
+    let anchor = null, external = false, leaderStart = null, interiorPt = null;
 
-    // 1) centroide del continente
-    if (inView(cx0, cy0, w, h) && cornersIn(it.el, cx0, cy0, w, h) && free(cx0, cy0, w, h)) anchor = [cx0, cy0];
+    // 1) centroide del mainland, si la etiqueta entra (caso ideal: países convexos →
+    //    queda exactamente en el centro: México, Brasil, China, India…).
+    if (inView(cx0, cy0, w, h) && cornersIn(cx0, cy0, w, h) && free(cx0, cy0, w, h)) anchor = [cx0, cy0];
 
-    // 2) pole of inaccessibility: el punto interior más "adentro" del país (máxima
-    //    distancia al borde). Para países cóncavos o con penínsulas (México, Francia,
-    //    Croacia) el centroide cae afuera o muy descentrado; el pole queda en el centro
-    //    de la masa principal. Grilla de inside/outside + clearance (distancia en celdas
-    //    a la celda exterior más cercana); se prueban los candidatos de mayor clearance
-    //    primero y se toma el primero donde la etiqueta entra.
-    if (!anchor && it.b) {
+    // 2) grilla interior con score = clearance − λ·dist(centroide): el punto queda
+    //    CENTRAL pero bien adentro. Esto corrige el sesgo del pole puro hacia el lóbulo
+    //    más ancho (que mandaba Canadá/Noruega al sur, México al norte). clearance vía
+    //    distance-transform de Chebyshev (2 pasadas, O(N²)). Se prueba primero fit
+    //    estricto (4 esquinas) y luego laxo (centro + medios verticales) para angostos.
+    //    Poda: si el bbox del mainland no llega a contener la etiqueta, ni se intenta.
+    if (!anchor && it.b && it.area >= w * h * 0.7) {
       const sx0 = Math.max(it.b[0][0], box.x1), sx1 = Math.min(it.b[1][0], box.x2), sy0 = Math.max(it.b[0][1], box.y1), sy1 = Math.min(it.b[1][1], box.y2);
       if (sx1 > sx0 && sy1 > sy0) {
-        const N = 12, gx = i => sx0 + (sx1 - sx0) * i / N, gy = j => sy0 + (sy1 - sy0) * j / N;
-        const ins = []; for (let i = 0; i <= N; i++) { ins[i] = []; for (let j = 0; j <= N; j++) ins[i][j] = inFill(it.el, gx(i), gy(j)); }
-        const cand = [];
+        const N = 14, gx = i => sx0 + (sx1 - sx0) * i / N, gy = j => sy0 + (sy1 - sy0) * j / N;
+        const ins = [], cl = [];
+        for (let i = 0; i <= N; i++) { ins[i] = []; cl[i] = []; for (let j = 0; j <= N; j++) { ins[i][j] = inFill(mlEl, gx(i), gy(j)); cl[i][j] = 0; } }
+        // distance-transform Chebyshev al "afuera" (incl. el borde de la grilla = mar/clip)
+        const C = (i, j) => (i < 0 || j < 0 || i > N || j > N) ? 0 : cl[i][j];
+        for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++) cl[i][j] = ins[i][j] ? Math.min(C(i - 1, j), C(i, j - 1), C(i - 1, j - 1), C(i - 1, j + 1)) + 1 : 0;
+        for (let i = N; i >= 0; i--) for (let j = N; j >= 0; j--) if (ins[i][j]) cl[i][j] = Math.min(cl[i][j], Math.min(C(i + 1, j), C(i, j + 1), C(i + 1, j + 1), C(i + 1, j - 1)) + 1);
+        const cell = ((sx1 - sx0) + (sy1 - sy0)) / (2 * N), LAM = 0.8;
+        const cand = []; let bestCl = -1;
         for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++) {
           if (!ins[i][j]) continue;
-          let cl = Math.min(i, j, N - i, N - j);   // distancia al borde de la grilla
-          for (let a = 0; a <= N && cl > 0; a++) for (let b2 = 0; b2 <= N; b2++) { if (ins[a][b2]) continue; const d = Math.max(Math.abs(a - i), Math.abs(b2 - j)); if (d < cl) cl = d; }
-          cand.push({ x: gx(i), y: gy(j), cl });
+          const x = gx(i), y = gy(j), dc = Math.sqrt((x - cx0) ** 2 + (y - cy0) ** 2);
+          cand.push({ x, y, score: cl[i][j] * cell - LAM * dc });
+          if (cl[i][j] > bestCl) { bestCl = cl[i][j]; interiorPt = [x, y]; }   // punto más adentro → destino del rayo
         }
-        cand.sort((p, q) => q.cl - p.cl || ((p.x - cx0) ** 2 + (p.y - cy0) ** 2) - ((q.x - cx0) ** 2 + (q.y - cy0) ** 2));
-        for (const p of cand) { if (p.cl <= 0) break; if (inView(p.x, p.y, w, h) && cornersIn(it.el, p.x, p.y, w, h) && free(p.x, p.y, w, h)) { anchor = [p.x, p.y]; break; } }
+        cand.sort((p, q) => q.score - p.score);   // más central-y-adentro primero
+        for (const p of cand) { if (inView(p.x, p.y, w, h) && cornersIn(p.x, p.y, w, h) && free(p.x, p.y, w, h)) { anchor = [p.x, p.y]; break; } }
+        if (!anchor) for (const p of cand) { if (inView(p.x, p.y, w, h) && looseIn(p.x, p.y, w, h) && free(p.x, p.y, w, h)) { anchor = [p.x, p.y]; break; } }
       }
     }
 
@@ -637,6 +644,7 @@ function rk_drawMapLabels(svg, o) {
     // Así son pocas y no ensucian. El resto de los países chicos no se etiquetan.
     if (!anchor && it.b && RK_RELEVANT.has(it.iso) && leaders < maxLeaders
       && cx0 >= box.x1 && cx0 <= box.x2 && cy0 >= box.y1 && cy0 <= box.y2) {
+      const tgt = interiorPt || [cx0, cy0];   // destino del rayo: punto GARANTIZADO en tierra
       const hW = (it.b[1][0] - it.b[0][0]) / 2, hH = (it.b[1][1] - it.b[0][1]) / 2;
       const dirs = [[1, 0], [0.7, -0.7], [0, -1], [-0.7, -0.7], [-1, 0], [-0.7, 0.7], [0, 1], [0.7, 0.7]];
       const step = bigFmt ? 10 : 7, maxR = bigFmt ? 64 : 42;
@@ -644,9 +652,14 @@ function rk_drawMapLabels(svg, o) {
         for (const d of dirs) {
           const cx = cx0 + d[0] * (hW + AX(w) + r), cy = cy0 + d[1] * (hH + AY(h) + r);
           if (!inView(cx, cy, w, h) || !overSea(cx, cy, w, h) || !free(cx, cy, w, h)) continue;
-          const st = rk_segBoxExit([cx0, cy0], [cx, cy], it.b);   // borde del país (≈ costa)
-          let crosses = false;
-          for (let t = 0.2; t <= 1.001; t += 0.2) { const px = st[0] + (cx - st[0]) * t, py = st[1] + (cy - st[1]) * t; if (placed.some(p => px >= p.x1 && px <= p.x2 && py >= p.y1 && py <= p.y2)) { crosses = true; break; } }
+          // Origen = COSTA REAL: de la etiqueta (mar) hacia un punto interior GARANTIZADO
+          // (tgt), el primer punto que cae dentro del mainland. La línea toca siempre el
+          // país (no queda flotando — bug Portugal) y no arranca de la esquina del bbox.
+          let st = null;
+          for (let t = 0; t <= 1.001; t += 0.03) { const px = cx + (tgt[0] - cx) * t, py = cy + (tgt[1] - cy) * t; if (inFill(mlEl, px, py)) { st = [px, py]; break; } }
+          if (!st) continue;
+          let crosses = false;   // la línea no debe cruzar otra etiqueta ya colocada
+          for (let t = 0; t <= 1.001; t += 0.12) { const px = st[0] + (cx - st[0]) * t, py = st[1] + (cy - st[1]) * t; if (placed.some(p => px >= p.x1 && px <= p.x2 && py >= p.y1 && py <= p.y2)) { crosses = true; break; } }
           if (crosses) continue;
           anchor = [cx, cy]; external = true; leaderStart = st; break outer;
         }
@@ -665,6 +678,7 @@ function rk_drawMapLabels(svg, o) {
     else t.setAttribute('fill', rk_isDark(fillByIso[it.iso]) ? '#FFFFFF' : '#1A1A1A');
     t.textContent = txt; g.appendChild(t);
   });
+  if (probe.parentNode) probe.parentNode.removeChild(probe);   // sacar la probe oculta del mainland
 }
 // Leyenda estilo OWID: barra escalonada centrada abajo + swatch "Sin dato" (y el
 // dorado de referencia en modo benchmark). Hover sobre cada tramo → atenúa el resto.
