@@ -542,10 +542,9 @@ function rk_drawMapLabels(svg, o) {
   const sp = svg.createSVGPoint();
   const over = (a, b) => !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
   const inFill = (el, x, y) => { if (!el) return false; sp.x = x; sp.y = y; try { return el.isPointInFill(sp); } catch (e) { return false; } };
-  // Caja de la etiqueta, alineada con el glifo real (baseline en cy+0.34h, text-anchor
-  // middle → el dígito/'%' queda centrado ópticamente en ~cy). Media-altura 0.45h: lo
-  // que valida ≈ lo que se dibuja (antes 0.55h rechazaba ubicaciones válidas).
-  const AX = (w) => w / 2 + 1, AY = (h) => h * 0.45;
+  // Caja de la etiqueta (validación interior, colisión, viewport y mar). Media-altura
+  // 0.55h: deja aire para que la anti-colisión separe bien y las cifras no se amontonen.
+  const AX = (w) => w / 2 + 1, AY = (h) => h * 0.55;
   const rectOf = (cx, cy, w, h) => ({ x1: cx - AX(w), x2: cx + AX(w), y1: cy - AY(h), y2: cy + AY(h) });
   const inView = (cx, cy, w, h) => (cx - AX(w) >= box.x1 && cx + AX(w) <= box.x2 && cy - AY(h) >= box.y1 && cy + AY(h) <= box.y2);
   const overSea = (cx, cy, w, h) => { if (!land) return false; const a = AX(w), b = AY(h); return !inFill(land, cx - a, cy - b) && !inFill(land, cx + a, cy - b) && !inFill(land, cx - a, cy + b) && !inFill(land, cx + a, cy + b) && !inFill(land, cx, cy); };
@@ -557,9 +556,6 @@ function rk_drawMapLabels(svg, o) {
   const probe = rk_el('path'); probe.setAttribute('fill', '#000'); probe.style.opacity = '0'; probe.style.pointerEvents = 'none'; svg.appendChild(probe);
   let mlEl = null;   // = probe (mainland) por país; it.el de fallback si no hay path
   const cornersIn = (cx, cy, w, h) => { const a = AX(w), b = AY(h); return inFill(mlEl, cx - a, cy - b) && inFill(mlEl, cx + a, cy - b) && inFill(mlEl, cx - a, cy + b) && inFill(mlEl, cx + a, cy + b); };
-  // Fit laxo para países angostos (Italia, Chile, Vietnam, Portugal): centro + medios
-  // verticales adentro; se tolera que el texto desborde un poco a los lados (OWID igual).
-  const looseIn = (cx, cy, w, h) => { const b = AY(h); return inFill(mlEl, cx, cy) && inFill(mlEl, cx, cy - b) && inFill(mlEl, cx, cy + b); };
 
   // Filtro por continente: con zoom a un continente, etiquetar SOLO países de ese
   // continente (según el centroide geográfico dentro de su bbox), para no mostrar
@@ -624,17 +620,22 @@ function rk_drawMapLabels(svg, o) {
         const C = (i, j) => (i < 0 || j < 0 || i > N || j > N) ? 0 : cl[i][j];
         for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++) cl[i][j] = ins[i][j] ? Math.min(C(i - 1, j), C(i, j - 1), C(i - 1, j - 1), C(i - 1, j + 1)) + 1 : 0;
         for (let i = N; i >= 0; i--) for (let j = N; j >= 0; j--) if (ins[i][j]) cl[i][j] = Math.min(cl[i][j], Math.min(C(i + 1, j), C(i, j + 1), C(i + 1, j + 1), C(i + 1, j - 1)) + 1);
-        const cell = ((sx1 - sx0) + (sy1 - sy0)) / (2 * N), LAM = 0.8;
-        const cand = []; let bestCl = -1;
+        const diag = Math.sqrt((sx1 - sx0) ** 2 + (sy1 - sy0) ** 2) || 1, LAM = 1.3;
+        const raw = []; let bestCl = -1;
         for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++) {
           if (!ins[i][j]) continue;
-          const x = gx(i), y = gy(j), dc = Math.sqrt((x - cx0) ** 2 + (y - cy0) ** 2);
-          cand.push({ x, y, score: cl[i][j] * cell - LAM * dc });
-          if (cl[i][j] > bestCl) { bestCl = cl[i][j]; interiorPt = [x, y]; }   // punto más adentro → destino del rayo
+          const x = gx(i), y = gy(j);
+          raw.push({ x, y, cl: cl[i][j], dc: Math.sqrt((x - cx0) ** 2 + (y - cy0) ** 2) });
+          if (cl[i][j] > bestCl) { bestCl = cl[i][j]; interiorPt = [x, y]; }   // punto más adentro → destino del rayo (nivel 3)
         }
-        cand.sort((p, q) => q.score - p.score);   // más central-y-adentro primero
+        // Score ADIMENSIONAL (estable entre niveles de zoom): clearance normalizada por su
+        // máximo − λ·distancia normalizada por la diagonal del bbox. Queda central pero
+        // bien adentro, sin que el zoom cambie el balance.
+        const cand = raw.map(p => ({ x: p.x, y: p.y, score: (bestCl > 0 ? p.cl / bestCl : 0) - LAM * (p.dc / diag) }));
+        cand.sort((p, q) => q.score - p.score);
+        // Fit ESTRICTO únicamente: la cifra debe entrar ENTERA adentro (4 esquinas). Si no
+        // entra, no se etiqueta — no se tolera desborde al mar ni sobre el país vecino.
         for (const p of cand) { if (inView(p.x, p.y, w, h) && cornersIn(p.x, p.y, w, h) && free(p.x, p.y, w, h)) { anchor = [p.x, p.y]; break; } }
-        if (!anchor) for (const p of cand) { if (inView(p.x, p.y, w, h) && looseIn(p.x, p.y, w, h) && free(p.x, p.y, w, h)) { anchor = [p.x, p.y]; break; } }
       }
     }
 
@@ -644,7 +645,10 @@ function rk_drawMapLabels(svg, o) {
     // Así son pocas y no ensucian. El resto de los países chicos no se etiquetan.
     if (!anchor && it.b && RK_RELEVANT.has(it.iso) && leaders < maxLeaders
       && cx0 >= box.x1 && cx0 <= box.x2 && cy0 >= box.y1 && cy0 <= box.y2) {
-      const tgt = interiorPt || [cx0, cy0];   // destino del rayo: punto GARANTIZADO en tierra
+      // destino del rayo: el punto interior del nivel 2 si existe; si no, el centroide
+      // (en un cóncavo podría caer en agua → el rayo no entra y el país no lleva etiqueta
+      // externa, lo cual es aceptable: preferimos no mostrarla a mostrarla flotando).
+      const tgt = interiorPt || [cx0, cy0];
       const hW = (it.b[1][0] - it.b[0][0]) / 2, hH = (it.b[1][1] - it.b[0][1]) / 2;
       const dirs = [[1, 0], [0.7, -0.7], [0, -1], [-0.7, -0.7], [-1, 0], [-0.7, 0.7], [0, 1], [0.7, 0.7]];
       const step = bigFmt ? 10 : 7, maxR = bigFmt ? 64 : 42;
