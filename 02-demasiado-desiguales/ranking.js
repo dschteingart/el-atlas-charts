@@ -152,14 +152,18 @@ function drawRanking() {
 
   // visibilidad de controles por vista
   const view = rk_view();
+  const mapBench = (view === 'map' && state[4].mapMode === 'bench');
   const sng = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
-  sng('rk-year-block', view !== 'lines');          // año: barras y mapa
-  sng('rk-search-wrap', view !== 'map');           // buscador de países: barras y líneas
-  sng('rk-selected-chips', view !== 'map');
-  sng('rk-scale-group', view === 'lines');         // escala lin/log: solo líneas
-  sng('rk-range-block', view === 'lines');         // slider temporal: solo líneas
-  sng('rk-bench-group', view === 'map');           // benchmark: solo mapa
-  sng('rk-continent-group', view === 'map');       // zoom continente: solo mapa
+  sng('rk-year-block', view !== 'lines');                  // año: barras y mapa
+  sng('rk-search-wrap', view !== 'map' || mapBench);       // buscador: barras, líneas y mapa+benchmark (elige el país de referencia)
+  sng('rk-selected-chips', view !== 'map');                // chips: barras y líneas
+  sng('rk-map-hint', mapBench);                            // hint de "clic/buscá para comparar"
+  sng('rk-scale-group', view === 'lines');                 // escala lin/log: solo líneas
+  sng('rk-range-block', view === 'lines');                 // slider temporal: solo líneas
+  sng('rk-bench-group', view === 'map');                   // modo clásico/benchmark: solo mapa
+  sng('rk-continent-group', view === 'map');               // zoom continente: solo mapa
+  const sInput = document.getElementById('rk-search');     // placeholder según contexto
+  if (sInput) sInput.placeholder = mapBench ? rk_tt('c4-bench-placeholder', 'Comparar contra…') : rk_tt('c4-search-placeholder', 'Agregar país…');
 
   // dimensiones según formato del editor / viewport
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
@@ -377,21 +381,33 @@ function rk_linesHover(svg, c) {
 }
 
 // =================== Vista MAPA ===================
-// Coroplético D3 (Robinson). Modo clásico (rampa terracota por cuantiles) o
-// benchmark (diverging: por encima del país de referencia en terracota, por
-// debajo en azul). Zoom por continente vía fitExtent a un bbox. Año + deciles.
+// Coroplético D3 (Robinson). Modo clásico (rampa terracota, bins fijos estilo
+// OWID) o benchmark (diverging vs un país: encima en terracota, debajo en azul;
+// el país de referencia va en un color aparte). Zoom por continente (fitExtent a
+// un MultiPoint del bbox — un Polygon lo interpreta como la esfera complementaria
+// y no zoomea). Sin Antártida (norma de mapas). Hover en la leyenda → atenúa los
+// países fuera de ese tramo (mismo criterio que el mapa de clubes del N°3).
 const RK_MAP_NODATA = '#E2DDD0';
 const RK_MAP_CLASSIC = ['#F2D9C9', '#E2A782', '#CF7E54', '#BE5D32', '#8E3F20', '#5A2818'];   // terracota claro→oscuro
 const RK_MAP_DIVERGE = ['#2D4256', '#5E7E96', '#A5BFD0', '#E2A782', '#9B3D24', '#5A2818'];   // azul (debajo) → terracota (encima)
+const RK_MAP_BENCH = '#E8B23A';   // país de referencia: dorado, fuera de la escala
+const RK_MAP_BREAKS = [1, 2, 5, 10, 20];      // US$ PPA/día (escalados por unidad) — bins fijos OWID
+const RK_BENCH_BREAKS = [0.5, 0.8, 1, 1.25, 2];
 const RK_CONT_BBOX = {
-  all: [[-168, -56], [190, 80]], america: [[-168, -56], [-32, 73]], europe: [[-26, 34], [46, 71]],
-  africa: [[-20, -36], [52, 38]], asia: [[26, -11], [150, 78]], oceania: [[110, -50], [184, 8]]
+  all: [[-168, -56], [178, 80]], america: [[-168, -56], [-32, 73]], europe: [[-26, 34], [46, 71]],
+  africa: [[-20, -36], [52, 38]], asia: [[26, -11], [150, 78]], oceania: [[110, -50], [179, 10]]
 };
 let rk_map_proj = null, rk_map_path = null;
 function rk_mapValues(year, dec, unit) {
   const vals = {};
   rk_allIsos(year).forEach(iso => { const v = rk_value(iso, year, dec, unit); if (v != null) vals[iso] = v; });
   return vals;
+}
+function rk_isoOf(d) { return d.id || (d.properties && d.properties.iso) || null; }
+// Atenúa los países que no están en el tramo (bin) apuntado en la leyenda.
+function rk_mapDim(binId) {
+  const svg = document.getElementById('chart4'); if (!svg) return;
+  svg.querySelectorAll('path.rk-country').forEach(p => { p.style.opacity = (binId == null || p.getAttribute('data-bin') === String(binId)) ? '' : '0.16'; });
 }
 function rk_drawMap(svg, ctx) {
   const { bigFmt } = ctx;
@@ -403,74 +419,103 @@ function rk_drawMap(svg, ctx) {
   const benchOn = state[4].mapMode === 'bench';
   const benchV = benchOn ? vals[state[4].benchmark] : null;
   const pad = bigFmt ? 14 : 8;
-  const PW = RK_W - pad * 2, PH = RK_H - pad * 2;
+  const legendH = bigFmt ? 64 : 44;   // espacio reservado abajo para la leyenda
+  const PW = RK_W - pad * 2, PH = RK_H - pad - legendH;
 
-  // proyección fit al continente elegido
+  // proyección: fit a un MultiPoint del bbox del continente (sin Antártida)
   const box = RK_CONT_BBOX[state[4].continent] || RK_CONT_BBOX.all;
-  const bboxPoly = { type: 'Polygon', coordinates: [[[box[0][0], box[0][1]], [box[1][0], box[0][1]], [box[1][0], box[1][1]], [box[0][0], box[1][1]], [box[0][0], box[0][1]]]] };
-  rk_map_proj = d3.geoRobinson().fitExtent([[pad, pad], [pad + PW, pad + PH]], state[4].continent === 'all' ? GEO_COUNTRIES : bboxPoly);
+  const fitObj = { type: 'MultiPoint', coordinates: [box[0], [box[1][0], box[0][1]], box[1], [box[0][0], box[1][1]]] };
+  rk_map_proj = d3.geoRobinson().fitExtent([[pad, pad], [pad + PW, pad + PH]], fitObj);
   rk_map_path = d3.geoPath(rk_map_proj);
   const svgSel = d3.select(svg); svgSel.selectAll('*').remove();
 
-  // color
-  const arr = Object.values(vals);
-  let colorOf;
-  if (benchOn && benchV) {
-    const sc = d3.scaleThreshold().domain([0.5, 0.8, 1, 1.25, 2]).range(RK_MAP_DIVERGE);
-    colorOf = (v) => (v == null) ? RK_MAP_NODATA : sc(v / benchV);
-  } else {
-    const sc = d3.scaleQuantile().domain(arr).range(RK_MAP_CLASSIC);
-    colorOf = (v) => (v == null) ? RK_MAP_NODATA : sc(v);
+  // bins + color
+  const mult = rk_unitMult(unit);
+  const classicBreaks = RK_MAP_BREAKS.map(b => b * mult);
+  const classicSc = d3.scaleThreshold().domain(classicBreaks).range(RK_MAP_CLASSIC);
+  const benchSc = d3.scaleThreshold().domain(RK_BENCH_BREAKS).range(RK_MAP_DIVERGE);
+  // bin + fill por país. Devuelve {fill, bin} ('nd' sin dato, 'bench' país ref.)
+  function paint(iso) {
+    const v = vals[iso];
+    if (v == null) return { fill: RK_MAP_NODATA, bin: 'nd' };
+    if (benchOn && benchV) {
+      if (iso === state[4].benchmark) return { fill: RK_MAP_BENCH, bin: 'bench' };
+      const r = v / benchV; return { fill: benchSc(r), bin: d3.bisect(RK_BENCH_BREAKS, r) };
+    }
+    return { fill: classicSc(v), bin: d3.bisect(classicBreaks, v) };
   }
 
-  // clip al área de plot (para continentes recortados)
-  const defs = svgSel.append('defs'); defs.append('clipPath').attr('id', 'rk-map-clip').append('rect').attr('x', pad).attr('y', pad).attr('width', PW).attr('height', PH);
+  // clip al área de plot
+  svgSel.append('defs').append('clipPath').attr('id', 'rk-map-clip').append('rect').attr('x', 0).attr('y', 0).attr('width', RK_W).attr('height', pad + PH);
   const g = svgSel.append('g').attr('clip-path', 'url(#rk-map-clip)');
   if (GEO_COUNTRIES.landmask) g.append('path').attr('d', rk_map_path(GEO_COUNTRIES.landmask)).attr('fill', RK_MAP_NODATA).attr('stroke', 'none');
-  const feats = GEO_COUNTRIES.features.slice().sort((a, b) => d3.geoArea(b) - d3.geoArea(a));
+  const feats = GEO_COUNTRIES.features.filter(d => rk_isoOf(d) !== 'ATA').sort((a, b) => d3.geoArea(b) - d3.geoArea(a));   // sin Antártida
   const tooltip = document.getElementById('tooltip4');
   const en = (typeof LANG !== 'undefined' && LANG === 'en');
   const interactive = !ctx.isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
   g.append('g').selectAll('path.rk-country').data(feats).join('path')
     .attr('class', 'rk-country').attr('d', rk_map_path)
-    .attr('fill', d => { const iso = d.id || (d.properties && d.properties.iso); return colorOf(vals[iso]); })
-    .attr('stroke', d => { const iso = d.id || (d.properties && d.properties.iso); return (benchOn && iso === state[4].benchmark) ? '#1A1A1A' : 'rgba(255,255,255,0.55)'; })
-    .attr('stroke-width', d => { const iso = d.id || (d.properties && d.properties.iso); return (benchOn && iso === state[4].benchmark) ? (bigFmt ? 2.2 : 1.6) : 0.5; })
+    .attr('fill', d => paint(rk_isoOf(d)).fill)
+    .attr('data-bin', d => paint(rk_isoOf(d)).bin)
+    .attr('stroke', d => (benchOn && rk_isoOf(d) === state[4].benchmark) ? '#1A1A1A' : 'rgba(255,255,255,0.55)')
+    .attr('stroke-width', d => (benchOn && rk_isoOf(d) === state[4].benchmark) ? (bigFmt ? 2.2 : 1.6) : 0.5)
     .attr('vector-effect', 'non-scaling-stroke')
     .style('cursor', interactive ? 'pointer' : 'default')
     .on('mouseenter', interactive ? function (ev, d) {
-      const iso = d.id || (d.properties && d.properties.iso), v = vals[iso]; if (v == null) { if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; } return; }
+      const iso = rk_isoOf(d), v = vals[iso]; if (v == null) { if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; } return; }
       d3.select(this).attr('stroke', '#1A1A1A').attr('stroke-width', bigFmt ? 2 : 1.4).raise();
       let html = `<div style="font-weight:600;margin-bottom:3px;">${rk_name(iso)}</div><strong style="font-variant-numeric:tabular-nums;">${rk_fmt(v, unit)}</strong> ${rk_unitSuffix()}`;
-      if (benchOn && benchV) { const r = v / benchV; const pct = Math.round((r - 1) * 100); html += `<div style="color:var(--ink-muted);margin-top:2px;">${pct >= 0 ? '+' : ''}${pct}% ${en ? 'vs' : 'vs'} ${rk_name(state[4].benchmark)}</div>`; }
+      if (benchOn && benchV && iso !== state[4].benchmark) { const pct = Math.round((v / benchV - 1) * 100); html += `<div style="color:var(--ink-muted);margin-top:2px;">${pct >= 0 ? '+' : ''}${pct}% vs ${rk_name(state[4].benchmark)}</div>`; }
+      else if (benchOn && iso === state[4].benchmark) { html += `<div style="color:var(--ink-muted);margin-top:2px;">${en ? 'reference' : 'referencia'}</div>`; }
       if (tooltip) { tooltip.innerHTML = html; tooltip.style.display = 'block'; tooltip.style.opacity = '1'; rk_placeTip(tooltip, ev, svg); }
     } : null)
     .on('mousemove', interactive ? (ev) => { if (tooltip) rk_placeTip(tooltip, ev, svg); } : null)
     .on('mouseleave', interactive ? function (ev, d) {
-      const iso = d.id || (d.properties && d.properties.iso);
+      const iso = rk_isoOf(d);
       d3.select(this).attr('stroke', (benchOn && iso === state[4].benchmark) ? '#1A1A1A' : 'rgba(255,255,255,0.55)').attr('stroke-width', (benchOn && iso === state[4].benchmark) ? (bigFmt ? 2.2 : 1.6) : 0.5);
       if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }
     } : null)
-    .on('click', interactive ? function (ev, d) { if (!benchOn) return; const iso = d.id || (d.properties && d.properties.iso); if (vals[iso] != null) { state[4].benchmark = iso; rk_updateBenchName(); drawRanking(); } } : null);
+    .on('click', interactive ? function (ev, d) { if (!benchOn) return; const iso = rk_isoOf(d); if (vals[iso] != null) { state[4].benchmark = iso; rk_updateBenchName(); drawRanking(); } } : null);
 
-  rk_drawMapLegend(svg, { bigFmt, benchOn, benchV, classicArr: arr, unit });
+  rk_drawMapLegend(svg, { bigFmt, benchOn, benchV, classicBreaks, unit, interactive });
   rk_updateBenchName();
   const disp = document.getElementById('rk-year-display'); if (disp) disp.textContent = year;
 }
+// Leyenda estilo OWID: barra escalonada centrada abajo + swatch "Sin dato" (y el
+// dorado de referencia en modo benchmark). Hover sobre cada tramo → atenúa el resto.
 function rk_drawMapLegend(svg, o) {
-  const x0 = (o.bigFmt ? 18 : 12), y0 = RK_H - (o.bigFmt ? 30 : 22), sw = o.bigFmt ? 26 : 18, sh = o.bigFmt ? 12 : 9, fs = o.bigFmt ? 16 : 10;
-  const g = rk_el('g'); svg.appendChild(g);
   const en = (typeof LANG !== 'undefined' && LANG === 'en');
-  let labels, colors;
-  if (o.benchOn && o.benchV) {
-    colors = RK_MAP_DIVERGE; labels = en ? ['≤½', '', 'below', 'above', '', '≥2×'] : ['≤½', '', 'debajo', 'encima', '', '≥2×'];
-  } else {
-    colors = RK_MAP_CLASSIC; labels = en ? ['low', '', '', '', '', 'high'] : ['bajo', '', '', '', '', 'alto'];
-  }
+  const bw = o.bigFmt ? 40 : 26, bh = o.bigFmt ? 14 : 10, fs = o.bigFmt ? 15 : 10, gap = o.bigFmt ? 14 : 9;
+  const colors = (o.benchOn && o.benchV) ? RK_MAP_DIVERGE : RK_MAP_CLASSIC;
+  // etiquetas en el borde IZQUIERDO de cada bloque
+  let edge;
+  if (o.benchOn && o.benchV) edge = ['', '½×', '0.8×', '=', '1.25×', '2×'];
+  else edge = ['$0'].concat(o.classicBreaks.map(b => rk_fmtTick(b)));
+  const barW = colors.length * bw;
+  const ndW = bw * 0.9;
+  const totalW = ndW + gap + barW + (o.benchOn && o.benchV ? gap + bw * 1.1 : 0);
+  const x0 = (RK_W - totalW) / 2, yb = RK_H - (o.bigFmt ? 30 : 20);
+  const g = rk_el('g'); svg.appendChild(g);
+  const mk = (tag) => rk_el(tag);
+  const addText = (x, y, txt, anchor) => { const t = mk('text'); t.setAttribute('x', x); t.setAttribute('y', y); t.setAttribute('text-anchor', anchor || 'middle'); t.style.fontFamily = 'var(--sans)'; t.style.fontSize = fs + 'px'; t.setAttribute('fill', 'var(--ink-soft)'); t.textContent = txt; g.appendChild(t); };
+  // "Sin dato"
+  const nd = mk('rect'); nd.setAttribute('x', x0); nd.setAttribute('y', yb); nd.setAttribute('width', ndW); nd.setAttribute('height', bh); nd.setAttribute('fill', RK_MAP_NODATA); nd.style.cursor = 'default'; g.appendChild(nd);
+  addText(x0 + ndW / 2, yb + bh + fs + 1, en ? 'No data' : 'Sin dato');
+  if (o.interactive) { nd.addEventListener('mouseenter', () => rk_mapDim('nd')); nd.addEventListener('mouseleave', () => rk_mapDim(null)); }
+  // barra escalonada
+  const bx = x0 + ndW + gap;
   colors.forEach((c, i) => {
-    const r = rk_el('rect'); r.setAttribute('x', x0 + i * sw); r.setAttribute('y', y0); r.setAttribute('width', sw); r.setAttribute('height', sh); r.setAttribute('fill', c); g.appendChild(r);
-    if (labels[i]) { const t = rk_el('text'); t.setAttribute('x', x0 + i * sw + (i === colors.length - 1 ? sw : 0)); t.setAttribute('y', y0 - 4); t.setAttribute('text-anchor', i === colors.length - 1 ? 'end' : 'start'); t.style.fontFamily = 'var(--sans)'; t.style.fontSize = fs + 'px'; t.setAttribute('fill', 'var(--ink-soft)'); t.textContent = labels[i]; g.appendChild(t); }
+    const r = mk('rect'); r.setAttribute('x', bx + i * bw); r.setAttribute('y', yb); r.setAttribute('width', bw); r.setAttribute('height', bh); r.setAttribute('fill', c); r.style.cursor = o.interactive ? 'pointer' : 'default'; g.appendChild(r);
+    if (edge[i]) addText(bx + i * bw, yb + bh + fs + 1, edge[i]);
+    if (o.interactive) { r.addEventListener('mouseenter', () => rk_mapDim(i)); r.addEventListener('mouseleave', () => rk_mapDim(null)); }
   });
+  // dorado de referencia (benchmark)
+  if (o.benchOn && o.benchV) {
+    const gx = bx + barW + gap;
+    const r = mk('rect'); r.setAttribute('x', gx); r.setAttribute('y', yb); r.setAttribute('width', bw * 1.1); r.setAttribute('height', bh); r.setAttribute('fill', RK_MAP_BENCH); r.setAttribute('stroke', '#1A1A1A'); r.setAttribute('stroke-width', 1); r.style.cursor = o.interactive ? 'pointer' : 'default'; g.appendChild(r);
+    addText(gx + bw * 0.55, yb + bh + fs + 1, rk_name(state[4].benchmark));
+    if (o.interactive) { r.addEventListener('mouseenter', () => rk_mapDim('bench')); r.addEventListener('mouseleave', () => rk_mapDim(null)); }
+  }
 }
 function rk_updateBenchName() {
   const el = document.getElementById('rk-bench-name'); if (el) el.textContent = rk_name(state[4].benchmark);
@@ -569,6 +614,11 @@ function rk_toggleCountry(iso) {
   state[4][key] = arr.concat([iso]);
   drawRanking();
 }
+// El buscador: en mapa+benchmark elige el país de referencia; en el resto, toggle.
+function rk_searchPick(iso) {
+  if (rk_view() === 'map' && state[4].mapMode === 'bench') { state[4].benchmark = iso; rk_updateBenchName(); drawRanking(); }
+  else rk_toggleCountry(iso);
+}
 function rk_setupSearch() {
   const input = document.getElementById('rk-search'), results = document.getElementById('rk-search-results');
   if (!input || !results) return;
@@ -580,14 +630,14 @@ function rk_setupSearch() {
     if (!matches.length) { results.innerHTML = ''; results.classList.remove('open'); return; }
     results.innerHTML = matches.map((c, i) => `<div class="m-search-result${i === a ? ' m-active' : ''}${rk_sel().indexOf(c.iso) >= 0 ? ' m-already' : ''}" data-iso="${c.iso}"><span>${c.name}</span></div>`).join('');
     results.classList.add('open');
-    results.querySelectorAll('.m-search-result[data-iso]').forEach(el => el.addEventListener('click', () => { rk_toggleCountry(el.dataset.iso); input.value = ''; results.classList.remove('open'); input.focus(); }));
+    results.querySelectorAll('.m-search-result[data-iso]').forEach(el => el.addEventListener('click', () => { rk_searchPick(el.dataset.iso); input.value = ''; results.classList.remove('open'); input.focus(); }));
   };
   input.addEventListener('input', () => { matches = get(input.value); active = matches.length ? 0 : -1; render(active); });
   input.addEventListener('keydown', (ev) => {
     if (!results.classList.contains('open')) return;
     if (ev.key === 'ArrowDown') { ev.preventDefault(); active = (active + 1) % matches.length; render(active); }
     else if (ev.key === 'ArrowUp') { ev.preventDefault(); active = (active - 1 + matches.length) % matches.length; render(active); }
-    else if (ev.key === 'Enter' && active >= 0) { ev.preventDefault(); rk_toggleCountry(matches[active].iso); input.value = ''; results.classList.remove('open'); }
+    else if (ev.key === 'Enter' && active >= 0) { ev.preventDefault(); rk_searchPick(matches[active].iso); input.value = ''; results.classList.remove('open'); }
     else if (ev.key === 'Escape') { results.classList.remove('open'); input.blur(); }
   });
   document.addEventListener('click', (ev) => { if (!input.contains(ev.target) && !results.contains(ev.target)) results.classList.remove('open'); });
