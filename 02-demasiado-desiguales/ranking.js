@@ -171,6 +171,9 @@ function drawRanking() {
   if (editorFormat) { const f = PNG_FORMATS[editorFormat]; RK_W = f.vbW; RK_H = f.vbH; RK_MARGIN = rk_getMargins(editorFormat); }
   else if (mobile) { RK_W = RK_W_MOBILE; RK_H = RK_H_MOBILE; RK_MARGIN = { ...RK_MARGIN_MOBILE }; }
   else { RK_W = RK_W_DESKTOP; RK_H = RK_H_DESKTOP; RK_MARGIN = { ...RK_MARGIN_DESKTOP }; }
+  // El mapa en desktop interactivo es más bajo para entrar sin scrollear (junto con
+  // todos los controles). En PNG/mobile usa la altura del formato.
+  if (view === 'map' && !editorFormat && !mobile) RK_H = 480;
   svg.setAttribute('viewBox', `0 0 ${RK_W} ${RK_H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
   const bigFmt = !!editorFormat || mobile;
@@ -390,7 +393,7 @@ function rk_linesHover(svg, c) {
 const RK_MAP_NODATA = '#E2DDD0';
 const RK_MAP_CLASSIC = ['#F2D9C9', '#E2A782', '#CF7E54', '#BE5D32', '#8E3F20', '#5A2818'];   // terracota claro→oscuro
 const RK_MAP_DIVERGE = ['#2D4256', '#5E7E96', '#A5BFD0', '#E2A782', '#9B3D24', '#5A2818'];   // azul (debajo) → terracota (encima)
-const RK_MAP_BENCH = '#E8B23A';   // país de referencia: dorado, fuera de la escala
+const RK_MAP_BENCH = '#595550';   // país de referencia: gris cálido oscuro, neutro y fuera de la escala azul/terracota
 const RK_MAP_BREAKS = [1, 2, 5, 10, 20];      // US$ PPA/día (escalados por unidad) — bins fijos OWID
 const RK_BENCH_BREAKS = [0.5, 0.8, 1, 1.25, 2];
 const RK_CONT_BBOX = {
@@ -419,7 +422,7 @@ function rk_drawMap(svg, ctx) {
   const benchOn = state[4].mapMode === 'bench';
   const benchV = benchOn ? vals[state[4].benchmark] : null;
   const pad = bigFmt ? 14 : 8;
-  const legendH = bigFmt ? 64 : 44;   // espacio reservado abajo para la leyenda
+  const legendH = bigFmt ? 74 : 56;   // espacio reservado abajo para la leyenda (más grande)
   const PW = RK_W - pad * 2, PH = RK_H - pad - legendH;
 
   // proyección: fit a un MultiPoint del bbox del continente (sin Antártida)
@@ -485,16 +488,16 @@ function rk_drawMap(svg, ctx) {
 // dorado de referencia en modo benchmark). Hover sobre cada tramo → atenúa el resto.
 function rk_drawMapLegend(svg, o) {
   const en = (typeof LANG !== 'undefined' && LANG === 'en');
-  const bw = o.bigFmt ? 40 : 26, bh = o.bigFmt ? 14 : 10, fs = o.bigFmt ? 15 : 10, gap = o.bigFmt ? 14 : 9;
+  const bw = o.bigFmt ? 52 : 38, bh = o.bigFmt ? 18 : 14, fs = o.bigFmt ? 18 : 13, gap = o.bigFmt ? 16 : 11;
   const colors = (o.benchOn && o.benchV) ? RK_MAP_DIVERGE : RK_MAP_CLASSIC;
   // etiquetas en el borde IZQUIERDO de cada bloque
   let edge;
-  if (o.benchOn && o.benchV) edge = ['', '½×', '0.8×', '=', '1.25×', '2×'];
+  if (o.benchOn && o.benchV) edge = ['', '0.5×', '0.8×', '=', '1.25×', '2×'];
   else edge = ['$0'].concat(o.classicBreaks.map(b => rk_fmtTick(b)));
   const barW = colors.length * bw;
   const ndW = bw * 0.9;
   const totalW = ndW + gap + barW + (o.benchOn && o.benchV ? gap + bw * 1.1 : 0);
-  const x0 = (RK_W - totalW) / 2, yb = RK_H - (o.bigFmt ? 30 : 20);
+  const x0 = (RK_W - totalW) / 2, yb = RK_H - (o.bigFmt ? 46 : 38);
   const g = rk_el('g'); svg.appendChild(g);
   const mk = (tag) => rk_el(tag);
   const addText = (x, y, txt, anchor) => { const t = mk('text'); t.setAttribute('x', x); t.setAttribute('y', y); t.setAttribute('text-anchor', anchor || 'middle'); t.style.fontFamily = 'var(--sans)'; t.style.fontSize = fs + 'px'; t.setAttribute('fill', 'var(--ink-soft)'); t.textContent = txt; g.appendChild(t); };
@@ -531,6 +534,12 @@ function rk_subtitle() {
   if (rk_view() === 'lines') {
     const p = (state[4].period) || [rk_yearMin(), rk_yearMax()];
     return en ? `Average income ${dec}, PPP US$${sfx}, ${p[0]}–${p[1]}.` : `Ingreso promedio ${dec}, US$ PPA${sfx}, ${p[0]}–${p[1]}.`;
+  }
+  // Mapa comparando contra un país: el subtítulo lo dice (así el PNG se entiende
+  // aunque el país de referencia no quede visible en el encuadre).
+  if (rk_view() === 'map' && state[4].mapMode === 'bench') {
+    const b = rk_name(state[4].benchmark);
+    return en ? `Average income ${dec} relative to ${b}, by country in ${state[4].year}.` : `Ingreso promedio ${dec} en relación con ${b}, por país en ${state[4].year}.`;
   }
   return en ? `Average income ${dec}, PPP US$${sfx}, by country in ${state[4].year}.` : `Ingreso promedio ${dec}, US$ PPA${sfx}, por país en ${state[4].year}.`;
 }
