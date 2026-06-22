@@ -397,10 +397,19 @@ const RK_MAP_DIVERGE = ['#2D4256', '#5E7E96', '#A5BFD0', '#E2A782', '#9B3D24', '
 const RK_MAP_BENCH = '#595550';   // país de referencia: gris cálido oscuro, neutro y fuera de la escala azul/terracota
 const RK_MAP_BREAKS = [1, 2, 5, 10, 20];      // US$ PPA/día (escalados por unidad) — bins fijos OWID
 const RK_BENCH_BREAKS = [0.5, 0.8, 1, 1.25, 2];
-// Las líneas guía (etiqueta externa al mar) son EXCEPCIONALES: solo para esta lista
-// de países importantes que suelen ser demasiado chicos para etiquetar adentro. El
-// resto, si la etiqueta no entra dentro del país, no se muestra (sin línea guía).
-const RK_LEADER_ALLOW = new Set(['NLD', 'BEL', 'CHE', 'AUT', 'DNK', 'ISR', 'KOR', 'SGP', 'TWN', 'HKG', 'ARE', 'QAT', 'URY', 'CRI', 'PAN', 'LBN']);
+// Países "relevantes" (economías/poblaciones grandes + notables). Se usan para dos
+// cosas en el etiquetado del mapa: (a) prioridad de colocación (se procesan primero,
+// ganan colisiones), y (b) elegibilidad de línea guía: solo un país relevante que no
+// entre adentro puede llevar etiqueta externa al mar. El resto, si no entra adentro,
+// no se muestra.
+const RK_RELEVANT = new Set([
+  'USA', 'CHN', 'JPN', 'DEU', 'IND', 'GBR', 'FRA', 'ITA', 'BRA', 'CAN', 'RUS', 'KOR', 'AUS', 'ESP', 'MEX',
+  'IDN', 'NLD', 'SAU', 'TUR', 'CHE', 'POL', 'SWE', 'BEL', 'ARG', 'NOR', 'AUT', 'THA', 'ISR', 'ARE', 'DNK',
+  'SGP', 'ZAF', 'COL', 'CHL', 'EGY', 'NGA', 'PHL', 'VNM', 'MYS', 'PER', 'PRT', 'IRL', 'FIN', 'GRC', 'NZL'
+]);
+// Transcontinentales: se muestran también en el continente que comparten (además del
+// que dicta su centroide geográfico).
+const RK_CONT_EXTRA = { europe: ['RUS', 'TUR', 'KAZ', 'GEO', 'AZE', 'CYP'], asia: ['RUS', 'TUR', 'KAZ', 'EGY', 'GEO', 'AZE'], africa: ['EGY'] };
 const RK_CONT_BBOX = {
   all: [[-168, -56], [178, 80]], america: [[-168, -56], [-32, 73]], europe: [[-26, 34], [46, 71]],
   africa: [[-20, -36], [52, 38]], asia: [[26, -11], [150, 78]], oceania: [[110, -50], [179, 10]]
@@ -555,13 +564,39 @@ function rk_drawMapLabels(svg, o) {
   const overSea = (cx, cy, w, h) => { if (!land) return false; const a = AX(w), b = AY(h); return !inFill(land, cx - a, cy - b) && !inFill(land, cx + a, cy - b) && !inFill(land, cx - a, cy + b) && !inFill(land, cx + a, cy + b) && !inFill(land, cx, cy); };
   const free = (cx, cy, w, h) => !placed.some(p => over(p, rectOf(cx, cy, w, h)));
 
+  // Filtro por continente: con zoom a un continente, etiquetar SOLO países de ese
+  // continente (según el centroide geográfico dentro de su bbox), para no mostrar
+  // etiquetas de África en el zoom a América, etc. Los transcontinentales (Rusia,
+  // Turquía…) se incluyen también en el continente que comparten.
+  const cont = state[4].continent, contBB = (cont !== 'all') ? RK_CONT_BBOX[cont] : null;
+  const contExtra = RK_CONT_EXTRA[cont] || [];
+  const inContinent = (iso, gc) => {
+    if (!contBB) return true;
+    if (contExtra.indexOf(iso) >= 0) return true;
+    if (!gc || isNaN(gc[0])) return false;
+    return gc[0] >= contBB[0][0] && gc[0] <= contBB[1][0] && gc[1] >= contBB[0][1] && gc[1] <= contBB[1][1];
+  };
   const items = feats.filter(f => vals[rk_isoOf(f)] != null).map(f => {
-    const iso = rk_isoOf(f), ml = rk_mainland(f); let c = null, b = null;
+    const iso = rk_isoOf(f), ml = rk_mainland(f); let c = null, b = null, gc = null;
     try { c = rk_map_path.centroid(ml); b = rk_map_path.bounds(ml); } catch (e) { }
-    return { iso, el: svg.querySelector('path.rk-country[data-iso="' + iso + '"]'), c, b, area: b ? (b[1][0] - b[0][0]) * (b[1][1] - b[0][1]) : 0 };
-  }).sort((a, b) => b.area - a.area);
+    try { gc = d3.geoCentroid(f); } catch (e) { }
+    return { iso, el: svg.querySelector('path.rk-country[data-iso="' + iso + '"]'), c, b, gc, area: b ? (b[1][0] - b[0][0]) * (b[1][1] - b[0][1]) : 0 };
+  }).filter(it => inContinent(it.iso, it.gc))
+    // Prioridad: países relevantes primero (procesados antes → ganan colisiones y son
+    // los únicos elegibles para línea guía), y dentro de cada grupo por superficie
+    // visible. Así en el mundo se etiquetan primero los importantes y los chicos
+    // rellenan el espacio que queda.
+    .sort((a, b) => {
+      const ra = RK_RELEVANT.has(a.iso) ? 0 : 1, rb = RK_RELEVANT.has(b.iso) ? 0 : 1;
+      if (ra !== rb) return ra - rb;
+      return b.area - a.area;
+    });
 
-  let leaders = 0; const maxLeaders = bigFmt ? 10 : 8;
+  // Líneas guía: NINGUNA en la vista mundial (los países demasiado chicos para
+  // etiquetar adentro simplemente no se etiquetan — el color del coroplético ya
+  // comunica; quien quiera el valor hace zoom). Con zoom a un continente sí se
+  // permiten, acotadas a países relevantes, porque ahí hay lugar y sentido.
+  let leaders = 0; const maxLeaders = (cont === 'all') ? 0 : (bigFmt ? 12 : 9);
   items.forEach(it => {
     if (!it.el || !it.c || isNaN(it.c[0])) return;
     if (benchOn && it.iso === state[4].benchmark) return;   // el país de referencia no se etiqueta
@@ -573,25 +608,34 @@ function rk_drawMapLabels(svg, o) {
     // 1) centroide del continente
     if (inView(cx0, cy0, w, h) && cornersIn(it.el, cx0, cy0, w, h) && free(cx0, cy0, w, h)) anchor = [cx0, cy0];
 
-    // 2) grilla interior: punto que entre, más cercano al centroide
+    // 2) pole of inaccessibility: el punto interior más "adentro" del país (máxima
+    //    distancia al borde). Para países cóncavos o con penínsulas (México, Francia,
+    //    Croacia) el centroide cae afuera o muy descentrado; el pole queda en el centro
+    //    de la masa principal. Grilla de inside/outside + clearance (distancia en celdas
+    //    a la celda exterior más cercana); se prueban los candidatos de mayor clearance
+    //    primero y se toma el primero donde la etiqueta entra.
     if (!anchor && it.b) {
       const sx0 = Math.max(it.b[0][0], box.x1), sx1 = Math.min(it.b[1][0], box.x2), sy0 = Math.max(it.b[0][1], box.y1), sy1 = Math.min(it.b[1][1], box.y2);
       if (sx1 > sx0 && sy1 > sy0) {
-        const N = 10; let best = null, bestD = Infinity;
+        const N = 12, gx = i => sx0 + (sx1 - sx0) * i / N, gy = j => sy0 + (sy1 - sy0) * j / N;
+        const ins = []; for (let i = 0; i <= N; i++) { ins[i] = []; for (let j = 0; j <= N; j++) ins[i][j] = inFill(it.el, gx(i), gy(j)); }
+        const cand = [];
         for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++) {
-          const cx = sx0 + (sx1 - sx0) * i / N, cy = sy0 + (sy1 - sy0) * j / N;
-          if (!inView(cx, cy, w, h) || !cornersIn(it.el, cx, cy, w, h) || !free(cx, cy, w, h)) continue;
-          const d = (cx - cx0) ** 2 + (cy - cy0) ** 2; if (d < bestD) { bestD = d; best = [cx, cy]; }
+          if (!ins[i][j]) continue;
+          let cl = Math.min(i, j, N - i, N - j);   // distancia al borde de la grilla
+          for (let a = 0; a <= N && cl > 0; a++) for (let b2 = 0; b2 <= N; b2++) { if (ins[a][b2]) continue; const d = Math.max(Math.abs(a - i), Math.abs(b2 - j)); if (d < cl) cl = d; }
+          cand.push({ x: gx(i), y: gy(j), cl });
         }
-        if (best) anchor = best;
+        cand.sort((p, q) => q.cl - p.cl || ((p.x - cx0) ** 2 + (p.y - cy0) ** 2) - ((q.x - cx0) ** 2 + (q.y - cy0) ** 2));
+        for (const p of cand) { if (p.cl <= 0) break; if (inView(p.x, p.y, w, h) && cornersIn(it.el, p.x, p.y, w, h) && free(p.x, p.y, w, h)) { anchor = [p.x, p.y]; break; } }
       }
     }
 
-    // 3) etiqueta externa al mar con línea guía — EXCEPCIONAL: solo para países
-    // importantes (RK_LEADER_ALLOW) que no entran adentro, con su centroide en el
-    // encuadre, línea corta y con un tope total. Así son pocas y no ensucian. El
-    // resto de los países chicos simplemente no se etiquetan.
-    if (!anchor && it.b && RK_LEADER_ALLOW.has(it.iso) && leaders < maxLeaders
+    // 3) etiqueta externa al mar con línea guía — EXCEPCIONAL: solo con zoom a un
+    // continente (maxLeaders=0 en la vista mundial), solo para países RELEVANTES que no
+    // entran adentro, con su centroide en el encuadre, línea corta y con un tope total.
+    // Así son pocas y no ensucian. El resto de los países chicos no se etiquetan.
+    if (!anchor && it.b && RK_RELEVANT.has(it.iso) && leaders < maxLeaders
       && cx0 >= box.x1 && cx0 <= box.x2 && cy0 >= box.y1 && cy0 <= box.y2) {
       const hW = (it.b[1][0] - it.b[0][0]) / 2, hH = (it.b[1][1] - it.b[0][1]) / 2;
       const dirs = [[1, 0], [0.7, -0.7], [0, -1], [-0.7, -0.7], [-1, 0], [-0.7, 0.7], [0, 1], [0.7, 0.7]];
