@@ -459,6 +459,7 @@ function rk_drawMap(svg, ctx) {
   const interactive = !ctx.isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
   g.append('g').selectAll('path.rk-country').data(feats).join('path')
     .attr('class', 'rk-country').attr('d', rk_map_path)
+    .attr('data-iso', d => rk_isoOf(d))
     .attr('fill', d => paint(rk_isoOf(d)).fill)
     .attr('data-bin', d => paint(rk_isoOf(d)).bin)
     .attr('stroke', d => (benchOn && rk_isoOf(d) === state[4].benchmark) ? '#1A1A1A' : 'rgba(255,255,255,0.55)')
@@ -495,21 +496,13 @@ function rk_isDark(hex) {
   const r = parseInt(hex.slice(1, 3), 16), g = parseInt(hex.slice(3, 5), 16), b = parseInt(hex.slice(5, 7), 16);
   return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.58;
 }
-// Parte CONTINENTAL de un país (polígono proyectado más grande): evita que el
-// centroide de un multipolígono (Francia + ultramar, EE.UU. + Alaska/Hawái) caiga
-// en el mar o lejos del territorio principal.
-function rk_mainland(f) {
-  const geom = f.geometry; if (!geom) return f;
-  if (geom.type !== 'MultiPolygon') return f;
-  let best = f, bestA = -1;
-  geom.coordinates.forEach(poly => { const tmp = { type: 'Feature', geometry: { type: 'Polygon', coordinates: poly } }; let a = 0; try { a = Math.abs(rk_map_path.area(tmp)); } catch (e) { } if (a > bestA) { bestA = a; best = tmp; } });
-  return best;
-}
 // Etiquetas de valor sobre los países (toggle "Valores", criterio OWID):
 //   - Clásico: el valor; comparador: la brecha vs el país de referencia (+20%, -4%).
-//   - Centradas en la parte continental; solo si la etiqueta ENTRA en el país
-//     (si es muy chico, no se muestra). Si chocaría con otra, se omite — nunca se
-//     mete en otro país, así que no hace falta línea guía.
+//   - La etiqueta se coloca SOLO donde sus 4 esquinas caen DENTRO del propio país
+//     (hit-test real con isPointInFill) y dentro del encuadre visible. Así nunca
+//     cae en otro país ni en el mar, y los países cóncavos/curvos (Noruega,
+//     Croacia) o recortados por el zoom (Rusia en Europa) se ubican en su
+//     territorio visible. Si no hay lugar (país muy chico/fino) → no se muestra.
 //   - Texto blanco sobre fondo oscuro, negro sobre claro (sin halo).
 function rk_drawMapLabels(svg, o) {
   const { feats, vals, fillByIso, benchV, box, bigFmt } = o;
@@ -517,26 +510,39 @@ function rk_drawMapLabels(svg, o) {
   const fs = bigFmt ? 16 : 10, fw = bigFmt ? 700 : 600;
   const placed = [], g = rk_el('g'); svg.appendChild(g);
   const over = (a, b) => !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
+  const sp = svg.createSVGPoint();
+  const inFill = (el, x, y) => { sp.x = x; sp.y = y; try { return el.isPointInFill(sp); } catch (e) { return false; } };
   const items = feats.filter(f => vals[rk_isoOf(f)] != null).map(f => {
-    const ml = rk_mainland(f); let b = null; try { b = rk_map_path.bounds(ml); } catch (e) { }
-    return { iso: rk_isoOf(f), b, area: b ? (b[1][0] - b[0][0]) * (b[1][1] - b[0][1]) : 0 };
+    const iso = rk_isoOf(f); let b = null; try { b = rk_map_path.bounds(f); } catch (e) { }
+    return { iso, el: svg.querySelector('path.rk-country[data-iso="' + iso + '"]'), b, area: b ? (b[1][0] - b[0][0]) * (b[1][1] - b[0][1]) : 0 };
   }).sort((a, b) => b.area - a.area);
   items.forEach(it => {
-    if (!it.b) return;
+    if (!it.b || !it.el) return;
     if (benchOn && it.iso === state[4].benchmark) return;   // el país de referencia no se etiqueta
-    const bw = it.b[1][0] - it.b[0][0], bh = it.b[1][1] - it.b[0][1];
-    const cx = (it.b[0][0] + it.b[1][0]) / 2, cy = (it.b[0][1] + it.b[1][1]) / 2;
-    if (cx < box.x1 || cx > box.x2 || cy < box.y1 || cy > box.y2) return;
     const v = vals[it.iso];
     let txt;
     if (benchOn && benchV) { const pct = Math.round((v / benchV - 1) * 100); txt = (pct >= 0 ? '+' : '') + pct + '%'; }
     else txt = rk_fmt(v, unit);
-    const w = rk_measure(txt, fs, fw), h = fs;
-    if (bw < w * 1.05 || bh < h * 1.15) return;   // el país es muy chico para contener la etiqueta → no se muestra
-    const rect = { x1: cx - w / 2, x2: cx + w / 2, y1: cy - h * 0.55, y2: cy + h * 0.45 };
-    if (placed.some(p => over(p, rect))) return;   // chocaría con otra → se omite (no se mete en otro país)
-    placed.push(rect);
-    const t = rk_el('text'); t.setAttribute('x', cx); t.setAttribute('y', cy + h * 0.34); t.setAttribute('text-anchor', 'middle'); t.style.fontSize = fs + 'px'; t.style.fontFamily = 'var(--sans)'; t.style.fontWeight = fw;
+    const w = rk_measure(txt, fs, fw), h = fs, hw = w / 2 + 1;
+    // búsqueda dentro de (bbox del país ∩ encuadre visible)
+    const sx0 = Math.max(it.b[0][0], box.x1) + hw, sx1 = Math.min(it.b[1][0], box.x2) - hw;
+    const sy0 = Math.max(it.b[0][1], box.y1) + h * 0.6, sy1 = Math.min(it.b[1][1], box.y2) - h * 0.5;
+    if (sx0 > sx1 || sy0 > sy1) return;
+    const cxc = (sx0 + sx1) / 2, cyc = (sy0 + sy1) / 2, cands = [[cxc, cyc]];
+    const N = 6; for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++) cands.push([sx0 + (sx1 - sx0) * i / N, sy0 + (sy1 - sy0) * j / N]);
+    cands.sort((a, b) => ((a[0] - cxc) ** 2 + (a[1] - cyc) ** 2) - ((b[0] - cxc) ** 2 + (b[1] - cyc) ** 2));
+    let chosen = null;
+    for (const c of cands) {
+      const cx = c[0], cy = c[1];
+      // las 4 esquinas del rect de la etiqueta deben caer dentro del país
+      if (!inFill(it.el, cx - w / 2, cy - h * 0.5) || !inFill(it.el, cx + w / 2, cy - h * 0.5) || !inFill(it.el, cx - w / 2, cy + h * 0.4) || !inFill(it.el, cx + w / 2, cy + h * 0.4)) continue;
+      const rect = { x1: cx - w / 2, x2: cx + w / 2, y1: cy - h * 0.55, y2: cy + h * 0.45 };
+      if (placed.some(p => over(p, rect))) continue;
+      chosen = { cx, cy, rect }; break;
+    }
+    if (!chosen) return;
+    placed.push(chosen.rect);
+    const t = rk_el('text'); t.setAttribute('x', chosen.cx); t.setAttribute('y', chosen.cy + h * 0.34); t.setAttribute('text-anchor', 'middle'); t.style.fontSize = fs + 'px'; t.style.fontFamily = 'var(--sans)'; t.style.fontWeight = fw;
     t.setAttribute('fill', rk_isDark(fillByIso[it.iso]) ? '#FFFFFF' : '#1A1A1A');
     t.textContent = txt; g.appendChild(t);
   });
