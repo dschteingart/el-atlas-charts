@@ -422,6 +422,21 @@ function rk_mapValues(year, dec, unit) {
   return vals;
 }
 function rk_isoOf(d) { return d.id || (d.properties && d.properties.iso) || null; }
+// ¿El país (iso) cae dentro del encuadre del continente activo? Mismo criterio que el
+// filtro de etiquetas: geoCentroid dentro del bbox del continente (+ transcontinentales).
+// Sirve para NO mostrar en la leyenda el swatch del país de comparación cuando el zoom
+// regional lo deja fuera de cuadro (la clave de color no apuntaría a ningún país visible).
+function rk_isoInContinent(iso) {
+  const cont = state[4].continent;
+  if (!cont || cont === 'all') return true;
+  const bb = RK_CONT_BBOX[cont]; if (!bb) return true;
+  if ((RK_CONT_EXTRA[cont] || []).indexOf(iso) >= 0) return true;
+  const feats = (typeof GEO_COUNTRIES !== 'undefined' && GEO_COUNTRIES.features) || [];
+  const f = feats.find(ft => rk_isoOf(ft) === iso); if (!f) return false;
+  let gc = null; try { gc = d3.geoCentroid(f); } catch (e) { }
+  if (!gc || isNaN(gc[0])) return false;
+  return gc[0] >= bb[0][0] && gc[0] <= bb[1][0] && gc[1] >= bb[0][1] && gc[1] <= bb[1][1];
+}
 // Atenúa los países que no están en el tramo (bin) apuntado en la leyenda.
 function rk_mapDim(binId) {
   const svg = document.getElementById('chart4'); if (!svg) return;
@@ -700,9 +715,11 @@ function rk_drawMapLegend(svg, o) {
   let edge;
   if (o.benchOn && o.benchV) edge = ['', '0.5×', '0.8×', '=', '1.25×', '2×'];
   else edge = ['$0'].concat(o.classicBreaks.map(b => rk_fmtTick(b)));
-  // En el PNG no se muestra el swatch del país de referencia (el subtítulo ya dice
-  // contra quién se compara); en pantalla sí, como clave de lectura.
-  const showBench = o.benchOn && o.benchV && !o.pngExport;
+  // El swatch del país de referencia es la clave para ubicar ese color en el mapa: solo
+  // tiene sentido si el país está EN el encuadre. Con zoom a un continente que lo deja
+  // fuera (ej. comparar vs EE.UU. en el zoom a Europa) se omite — el subtítulo ya dice
+  // contra quién se compara, así que no se pierde información.
+  const showBench = o.benchOn && o.benchV && rk_isoInContinent(state[4].benchmark);
   const barW = colors.length * bw;
   const ndW = bw * 0.9;
   const totalW = ndW + gap + barW + (showBench ? gap + bw * 1.1 : 0);
@@ -721,8 +738,8 @@ function rk_drawMapLegend(svg, o) {
     if (edge[i]) addText(bx + i * bw, yb + bh + fs + 1, edge[i]);
     if (o.interactive) { r.addEventListener('mouseenter', () => rk_mapDim(i)); r.addEventListener('mouseleave', () => rk_mapDim(null)); }
   });
-  // dorado de referencia (benchmark)
-  if (o.benchOn && o.benchV) {
+  // swatch del país de referencia (solo si está dentro del encuadre — ver showBench)
+  if (showBench) {
     const gx = bx + barW + gap;
     const r = mk('rect'); r.setAttribute('x', gx); r.setAttribute('y', yb); r.setAttribute('width', bw * 1.1); r.setAttribute('height', bh); r.setAttribute('fill', RK_MAP_BENCH); r.setAttribute('stroke', '#1A1A1A'); r.setAttribute('stroke-width', 1); r.style.cursor = o.interactive ? 'pointer' : 'default'; g.appendChild(r);
     addText(gx + bw * 0.55, yb + bh + fs + 1, rk_name(state[4].benchmark));
