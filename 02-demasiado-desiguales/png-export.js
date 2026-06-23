@@ -370,6 +370,15 @@
     // El mapa del chart 4 es apaisado pero usa la composición "mobile-first" (firma
     // grande en 2 renglones centrada, nota más abajo), igual que el 'worldmap' del N°3.
     const isMapChart   = (chartId === '4' && typeof state !== 'undefined' && state[4] && state[4].view === 'map');
+    // Re-render del mapa al ASPECTO DEL CONTINENTE para el PNG: la versión interactiva es
+    // apaisada (sin scroll), pero el PNG necesita el mapa reencuadrado a la forma del
+    // continente (si no, queda apaisado dentro de un canvas cuadrado/vertical → medio vacío,
+    // y las regiones altas como América muestran el mundo por el letterbox). Esto cambia el
+    // viewBox del SVG en pantalla; se restaura al final (onAfterPngExportRestore).
+    let didPrepareMap = false;
+    if (isMapChart && typeof window.onBeforePngExportPrepare === 'function') {
+      try { didPrepareMap = !!window.onBeforePngExportPrepare(chartId, format); } catch (_) {}
+    }
     const mobileFirst  = isNewsletter || isSquare || isMobilePng || isMapChart;
 
     // Forzar carga de webfonts ANTES de medir/dibujar en canvas. El canvas
@@ -416,7 +425,14 @@
     //   - mobile:     800  (vertical para Stories / WhatsApp).
     // Si no hay formato del editor (uso público sin sidebar), default 1600
     // y el canvas usa el viewBox del SVG visible (que es desktop landscape).
-    const W = format && PNG_FORMATS[format] ? PNG_FORMATS[format].nominalW : 1600;
+    let W = format && PNG_FORMATS[format] ? PNG_FORMATS[format].nominalW : 1600;
+    // El PNG del MAPA toma su aspecto (canvas) del CONTINENTE, no del formato del editor:
+    // Europa cuadrado, Asia/Oceanía/mundo apaisado, África/América vertical.
+    let mapCanvasH = null;
+    if (isMapChart && typeof RK_CONT_VIEW !== 'undefined') {
+      const cv = RK_CONT_VIEW[state[4].continent] || RK_CONT_VIEW.all;
+      W = cv.nW; mapCanvasH = cv.nH;
+    }
     const padX = (isNewsletter || isMobilePng) ? 32 : 42;
     const padTop = 36;
     const padBottom = mobileFirst ? 24 : 36;
@@ -526,8 +542,8 @@
     //   B. SIN formato (público desktop default) → H dinámico (calculado
     //      como suma — comportamiento histórico, sin cambios).
     let svgW, svgH, svgX, H;
-    if (format && PNG_FORMATS[format]) {
-      H = PNG_FORMATS[format].nominalH;
+    if ((format && PNG_FORMATS[format]) || mapCanvasH) {
+      H = mapCanvasH || PNG_FORMATS[format].nominalH;
       const availH = Math.max(50, H - chromeAbove - chromeBelow);
       const availW = innerW;
       // Fit del aspect del viewBox al rectángulo disponible.
@@ -765,6 +781,11 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }, 'image/png');
+    // Restaurar el mapa al interactivo (apaisado) tras rasterizar (el canvas ya quedó
+    // dibujado con el clone del SVG reencuadrado, así que esto no lo afecta).
+    if (didPrepareMap && typeof window.onAfterPngExportRestore === 'function') {
+      try { window.onAfterPngExportRestore(chartId); } catch (_) {}
+    }
   }
 
   document.querySelectorAll('button[data-png]').forEach(btn => {

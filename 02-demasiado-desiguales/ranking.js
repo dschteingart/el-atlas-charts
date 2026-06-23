@@ -36,6 +36,9 @@ function rk_getMargins(format) {
   }
 }
 let RK_W = RK_W_DESKTOP, RK_H = RK_H_DESKTOP, RK_MARGIN = { ...RK_MARGIN_DESKTOP };
+// Flag que prende png-export para re-renderizar el mapa al aspecto del continente al
+// exportar (la versión interactiva queda apaisada sin scroll; el PNG toma el aspecto).
+let rk_pngExporting = false;
 
 const RK_NS = 'http://www.w3.org/2000/svg';
 const rk_el = (t) => document.createElementNS(RK_NS, t);
@@ -199,16 +202,29 @@ function drawRanking() {
   // dimensiones según formato del editor / viewport
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const mobile = !editorFormat && rk_isMobile();
+  // ¿Estamos renderizando para el PNG? = formato del editor activo, O el flag que prende
+  // png-export para re-renderizar el mapa al aspecto del continente al exportar (sin un
+  // formato elegido). Eso permite que el INTERACTIVO quede apaisado (sin scroll) y el PNG
+  // tome igual el aspecto del continente bien encuadrado.
+  const exporting = !!editorFormat || rk_pngExporting;
   if (editorFormat) { const f = PNG_FORMATS[editorFormat]; RK_W = f.vbW; RK_H = f.vbH; RK_MARGIN = rk_getMargins(editorFormat); }
   else if (mobile) { RK_W = RK_W_MOBILE; RK_H = RK_H_MOBILE; RK_MARGIN = { ...RK_MARGIN_MOBILE }; }
   else { RK_W = RK_W_DESKTOP; RK_H = RK_H_DESKTOP; RK_MARGIN = { ...RK_MARGIN_DESKTOP }; }
-  // El mapa en desktop interactivo es más bajo para entrar sin scrollear (junto con
-  // todos los controles). En PNG/mobile usa la altura del formato.
-  if (view === 'map' && !editorFormat && !mobile) RK_H = 480;
+  // El mapa toma su ASPECTO del continente (Europa cuadrado; Asia/Oceanía/mundo apaisado;
+  // África/América vertical) SOLO al exportar. La versión interactiva se queda apaisada y
+  // baja (RK_H=480) para que NO haya scroll en ninguna región.
+  if (view === 'map') {
+    if (exporting) {
+      const cv = RK_CONT_VIEW[state[4].continent] || RK_CONT_VIEW.all;
+      RK_W = cv.vbW; RK_H = cv.vbH;
+    } else if (!mobile) {
+      RK_H = 480;
+    }
+  }
   svg.setAttribute('viewBox', `0 0 ${RK_W} ${RK_H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
-  const bigFmt = !!editorFormat || mobile;
-  const isPngFormat = !!editorFormat;
+  const bigFmt = !!editorFormat || mobile || rk_pngExporting;
+  const isPngFormat = !!editorFormat || rk_pngExporting;
 
   const ctx = { bigFmt, isPngFormat, mobile };
   if (view === 'bars') rk_drawBars(svg, ctx);
@@ -437,12 +453,28 @@ const RK_RELEVANT = new Set([
   'IDN', 'NLD', 'SAU', 'TUR', 'CHE', 'POL', 'SWE', 'BEL', 'ARG', 'NOR', 'AUT', 'THA', 'ISR', 'ARE', 'DNK',
   'SGP', 'ZAF', 'COL', 'CHL', 'EGY', 'NGA', 'PHL', 'VNM', 'MYS', 'PER', 'PRT', 'IRL', 'FIN', 'GRC', 'NZL'
 ]);
+// Rango de relevancia económica (PIB), derivado del ORDEN de RK_RELEVANT (que ya está
+// listado de mayor a menor economía). La vista mundial etiqueta los 15 primeros de este
+// ranking que se puedan ubicar (con etiqueta interior o con línea guía limpia).
+const RK_GDP_RANK = (() => { const m = {}; let i = 0; RK_RELEVANT.forEach(iso => { m[iso] = i++; }); return m; })();
 // Transcontinentales: se muestran también en el continente que comparten (además del
 // que dicta su centroide geográfico).
-const RK_CONT_EXTRA = { europe: ['RUS', 'TUR', 'KAZ', 'GEO', 'AZE', 'CYP'], asia: ['RUS', 'TUR', 'KAZ', 'EGY', 'GEO', 'AZE'], africa: ['EGY'] };
+const RK_CONT_EXTRA = { europe: ['RUS', 'TUR', 'KAZ', 'GEO', 'AZE', 'CYP'], asia: ['RUS', 'TUR', 'KAZ', 'GEO', 'AZE'], africa: ['EGY'] };
 const RK_CONT_BBOX = {
-  all: [[-168, -56], [178, 80]], america: [[-168, -56], [-32, 73]], europe: [[-26, 34], [46, 71]],
+  all: [[-168, -56], [178, 80]], america: [[-168, -56], [-32, 73]], europe: [[-25, 34], [60, 72]],
   africa: [[-20, -36], [52, 38]], asia: [[26, -11], [150, 78]], oceania: [[110, -50], [179, 10]]
+};
+// Aspecto del MAPA por continente: cada uno tiene su forma natural. vbW/vbH = viewBox del
+// SVG (pantalla con formato + PNG); nW/nH = canvas del PNG (define el aspecto final del PNG).
+// Europa cuadrado; Asia/Oceanía/mundo apaisado; África/América vertical. (Números a afinar
+// visualmente — el mapa no se puede previsualizar acá.)
+const RK_CONT_VIEW = {
+  all:     { vbW: 1100, vbH: 480,  nW: 1600, nH: 900 },   // mundo: apaisado (sin scroll en pantalla)
+  asia:    { vbW: 1240, vbH: 720,  nW: 1600, nH: 1060 },  // apaisado
+  oceania: { vbW: 1200, vbH: 740,  nW: 1560, nH: 1060 },  // apaisado
+  europe:  { vbW: 1020, vbH: 800,  nW: 1180, nH: 1180 },  // cuadrado
+  africa:  { vbW: 900,  vbH: 1040, nW: 1120, nH: 1440 },  // vertical
+  america: { vbW: 840,  vbH: 1080, nW: 1080, nH: 1480 }   // vertical
 };
 let rk_map_proj = null, rk_map_path = null;
 function rk_mapValues(year, dec, unit) {
@@ -451,20 +483,35 @@ function rk_mapValues(year, dec, unit) {
   return vals;
 }
 function rk_isoOf(d) { return d.id || (d.properties && d.properties.iso) || null; }
-// ¿El país (iso) cae dentro del encuadre del continente activo? Mismo criterio que el
-// filtro de etiquetas: geoCentroid dentro del bbox del continente (+ transcontinentales).
+// Continente GEOGRÁFICO de un país, para filtrar etiquetas y el swatch de la leyenda con
+// zoom. Se deriva de la región del Banco Mundial (rk_region) + overrides para los casos
+// que la taxonomía WB mezcla: el Norte de África viene junto al Medio Oriente, Asia Central
+// junto a Europa, y Oceanía junto a Asia Oriental. Así, p.ej., Túnez es África (no Europa)
+// aunque su land aparezca como contexto en el zoom a Europa.
+const RK_NORTH_AFRICA = new Set(['DZA', 'EGY', 'LBY', 'MAR', 'TUN', 'ESH']);
+const RK_CENTRAL_ASIA = new Set(['KAZ', 'UZB', 'TKM', 'KGZ', 'TJK']);
+const RK_OCEANIA_ISO = new Set(['AUS', 'NZL', 'PNG', 'FJI', 'SLB', 'VUT', 'WSM', 'TON', 'KIR', 'FSM', 'MHL', 'PLW', 'NRU', 'TUV', 'NCL', 'PYF']);
+function rk_isoContinent(iso) {
+  if (RK_OCEANIA_ISO.has(iso)) return 'oceania';
+  if (RK_NORTH_AFRICA.has(iso)) return 'africa';
+  if (RK_CENTRAL_ASIA.has(iso)) return 'asia';
+  const r = rk_region(iso);
+  if (r === 'North America' || r === 'Latin America & Caribbean') return 'america';
+  if (r === 'Europe & Central Asia') return 'europe';
+  if (r === 'Sub-Saharan Africa') return 'africa';
+  // East Asia & Pacific, South Asia y lo que queda de "Middle East, North Africa,
+  // Afghanistan & Pakistan" (Medio Oriente + Afganistán + Pakistán) → Asia.
+  if (r === 'East Asia & Pacific' || r === 'South Asia' || r === 'Middle East, North Africa, Afghanistan & Pakistan') return 'asia';
+  return '';
+}
+// ¿El país (iso) pertenece al continente activo? (+ transcontinentales de RK_CONT_EXTRA).
 // Sirve para NO mostrar en la leyenda el swatch del país de comparación cuando el zoom
-// regional lo deja fuera de cuadro (la clave de color no apuntaría a ningún país visible).
+// regional lo deja afuera (la clave de color no apuntaría a ningún país del recorte).
 function rk_isoInContinent(iso) {
   const cont = state[4].continent;
   if (!cont || cont === 'all') return true;
-  const bb = RK_CONT_BBOX[cont]; if (!bb) return true;
   if ((RK_CONT_EXTRA[cont] || []).indexOf(iso) >= 0) return true;
-  const feats = (typeof GEO_COUNTRIES !== 'undefined' && GEO_COUNTRIES.features) || [];
-  const f = feats.find(ft => rk_isoOf(ft) === iso); if (!f) return false;
-  let gc = null; try { gc = d3.geoCentroid(f); } catch (e) { }
-  if (!gc || isNaN(gc[0])) return false;
-  return gc[0] >= bb[0][0] && gc[0] <= bb[1][0] && gc[1] >= bb[0][1] && gc[1] <= bb[1][1];
+  return rk_isoContinent(iso) === cont;
 }
 // Atenúa los países que no están en el tramo (bin) apuntado en la leyenda.
 function rk_mapDim(binId) {
@@ -581,11 +628,19 @@ function rk_mainland(f) {
 function rk_drawMapLabels(svg, o) {
   const { feats, vals, fillByIso, benchV, box, bigFmt } = o;
   const unit = o.unit, benchOn = state[4].mapMode === 'bench';
-  const fs = bigFmt ? 16 : 10, fw = bigFmt ? 700 : 600;
-  const placed = [], g = rk_el('g'); svg.appendChild(g);
+  // PNG/export (bigFmt): cifras GRANDES para que se lean tuiteadas. PERO el px FINAL del PNG
+  // = fs · (nW/vbW), y ese factor difiere por continente (el mundo upscalea 1.45×, Europa
+  // 1.16×): con fs fijo en 32 el mundo salía GIGANTE (~46px) y Europa ~37px. Normalizamos al
+  // MISMO px final (~38) en todos los mapas: fs = 38·vbW/nW. (En mobile el SVG no se rasteriza
+  // a un canvas fijo —escala al ancho del teléfono—, así que ahí mantenemos 32.)
+  const cv = RK_CONT_VIEW[state[4].continent] || RK_CONT_VIEW.all;
+  const fs = !bigFmt ? 10 : (rk_pngExporting ? Math.round(38 * cv.vbW / cv.nW) : 32), fw = bigFmt ? 700 : 600;
+  const placed = [], leaderSegs = [], g = rk_el('g'); svg.appendChild(g);
   const land = svg.querySelector('path.rk-landmask');
   const sp = svg.createSVGPoint();
   const over = (a, b) => !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
+  // ¿Se cruzan los segmentos ab y cd? (para que las líneas guía no se crucen entre sí.)
+  const segCross = (a, b, c, d) => { const cw = (p, q, r) => (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]); return ((cw(c, d, a) > 0) !== (cw(c, d, b) > 0)) && ((cw(a, b, c) > 0) !== (cw(a, b, d) > 0)); };
   const inFill = (el, x, y) => { if (!el) return false; sp.x = x; sp.y = y; try { return el.isPointInFill(sp); } catch (e) { return false; } };
   // Caja de la etiqueta (validación interior, colisión, viewport y mar). Media-altura
   // 0.55h: deja aire para que la anti-colisión separe bien y las cifras no se amontonen.
@@ -593,6 +648,21 @@ function rk_drawMapLabels(svg, o) {
   const rectOf = (cx, cy, w, h) => ({ x1: cx - AX(w), x2: cx + AX(w), y1: cy - AY(h), y2: cy + AY(h) });
   const inView = (cx, cy, w, h) => (cx - AX(w) >= box.x1 && cx + AX(w) <= box.x2 && cy - AY(h) >= box.y1 && cy + AY(h) <= box.y2);
   const overSea = (cx, cy, w, h) => { if (!land) return false; const a = AX(w), b = AY(h); return !inFill(land, cx - a, cy - b) && !inFill(land, cx + a, cy - b) && !inFill(land, cx - a, cy + b) && !inFill(land, cx + a, cy + b) && !inFill(land, cx, cy); };
+  // CLEARANCE contra TIERRA AJENA: overSea solo mira 5 puntos (4 esquinas + centro). En un mar
+  // ANGOSTO (Mar de Japón) una costa ajena (Honshu) protruye por el MEDIO de un borde de la caja
+  // sin tocar ninguno, y el halo de 5px besa esa costa → la etiqueta "pisa" al vecino. clearLand
+  // muestrea DENSO el perímetro de la caja EXPANDIDA por el margen 'm' (ancho del halo + 1) y exige
+  // que TODO esté fuera de 'land'. Es LOCAL: donde el mar es genuinamente abierto (Chile, Australia)
+  // no hay tierra dentro de 'm' → pasa igual; solo descarta anclas cuya etiqueta/halo quedan pegados
+  // a una costa ajena (entonces el nivel 3 prueba otra dirección/offset, o el país no se etiqueta).
+  const clearLand = (cx, cy, w, h, m) => {
+    if (!land) return true;
+    const a = AX(w) + m, b = AY(h) + m;
+    const stx = Math.max(4, (2 * a) / 8), sty = Math.max(4, (2 * b) / 8);
+    for (let x = cx - a; x <= cx + a + 0.001; x += stx) if (inFill(land, x, cy - b) || inFill(land, x, cy + b)) return false;
+    for (let y = cy - b; y <= cy + b + 0.001; y += sty) if (inFill(land, cx - a, y) || inFill(land, cx + a, y)) return false;
+    return true;
+  };
   const free = (cx, cy, w, h) => !placed.some(p => over(p, rectOf(cx, cy, w, h)));
   // Hit-test contra el CUERPO PRINCIPAL (mainland), no contra el país con islas: una
   // <path> oculta a la que le seteamos el path del mainland por país. Así la etiqueta y
@@ -607,17 +677,19 @@ function rk_drawMapLabels(svg, o) {
   // arriba/abajo suele caer en otro país). La colisión y el test de mar usan el ancho real.
   const cornersIn = (cx, cy, w, h) => { const a = w * 0.43 + 1, b = AY(h); return inFill(mlEl, cx - a, cy - b) && inFill(mlEl, cx + a, cy - b) && inFill(mlEl, cx - a, cy + b) && inFill(mlEl, cx + a, cy + b); };
 
-  // Filtro por continente: con zoom a un continente, etiquetar SOLO países de ese
-  // continente (según el centroide geográfico dentro de su bbox), para no mostrar
-  // etiquetas de África en el zoom a América, etc. Los transcontinentales (Rusia,
-  // Turquía…) se incluyen también en el continente que comparten.
-  const cont = state[4].continent, contBB = (cont !== 'all') ? RK_CONT_BBOX[cont] : null;
-  const contExtra = RK_CONT_EXTRA[cont] || [];
-  const inContinent = (iso, gc) => {
-    if (!contBB) return true;
-    if (contExtra.indexOf(iso) >= 0) return true;
-    if (!gc || isNaN(gc[0])) return false;
-    return gc[0] >= contBB[0][0] && gc[0] <= contBB[1][0] && gc[1] >= contBB[0][1] && gc[1] <= contBB[1][1];
+  // Filtro por continente: con zoom a un continente, etiquetar SOLO países de ESE
+  // continente (por MEMBRESÍA geográfica — rk_isoContinent —, no por bbox: el land de
+  // África/Medio Oriente puede aparecer como contexto en el zoom a Europa pero NO se
+  // etiqueta). Los transcontinentales (Rusia, Turquía…) se incluyen vía RK_CONT_EXTRA.
+  const cont = state[4].continent;
+  // VISTA MUNDIAL: etiquetamos solo las economías más grandes (RK_RELEVANT, que ya está en
+  // orden de PIB), hasta 15 que se puedan ubicar; las que no entren ni con línea guía limpia
+  // ceden su lugar a la siguiente del ranking. Con zoom a un continente: como antes.
+  const WORLD = (cont === 'all');
+  const inContinent = (iso) => {
+    if (cont === 'all') return true;
+    if ((RK_CONT_EXTRA[cont] || []).indexOf(iso) >= 0) return true;
+    return rk_isoContinent(iso) === cont;
   };
   const items = feats.filter(f => vals[rk_isoOf(f)] != null).map(f => {
     const iso = rk_isoOf(f), ml = rk_mainland(f); let c = null, b = null, gc = null, dpath = null;
@@ -625,23 +697,29 @@ function rk_drawMapLabels(svg, o) {
     try { gc = d3.geoCentroid(f); } catch (e) { }
     try { dpath = rk_map_path(ml); } catch (e) { }   // path del mainland (para la probe)
     return { iso, el: svg.querySelector('path.rk-country[data-iso="' + iso + '"]'), c, b, gc, dpath, area: b ? (b[1][0] - b[0][0]) * (b[1][1] - b[0][1]) : 0 };
-  }).filter(it => inContinent(it.iso, it.gc))
-    // Prioridad: países relevantes primero (procesados antes → ganan colisiones y son
-    // los únicos elegibles para línea guía), y dentro de cada grupo por superficie
-    // visible. Así en el mundo se etiquetan primero los importantes y los chicos
-    // rellenan el espacio que queda.
+  }).filter(it => inContinent(it.iso))
+    // En la vista mundial solo entran las economías relevantes (el resto aporta color en el
+    // coroplético; quien quiera su dato hace zoom a un continente).
+    .filter(it => !WORLD || RK_RELEVANT.has(it.iso))
+    // Orden de procesamiento. MUNDIAL: por relevancia económica (RK_RELEVANT ya está en
+    // orden de PIB) → los primeros 15 que se puedan ubicar son los etiquetados.
+    // CONTINENTE: relevantes primero (ganan colisiones y son los únicos con línea guía),
+    // luego por superficie visible (los chicos rellenan el espacio que queda).
     .sort((a, b) => {
+      if (WORLD) return RK_GDP_RANK[a.iso] - RK_GDP_RANK[b.iso];
       const ra = RK_RELEVANT.has(a.iso) ? 0 : 1, rb = RK_RELEVANT.has(b.iso) ? 0 : 1;
       if (ra !== rb) return ra - rb;
       return b.area - a.area;
     });
 
-  // Líneas guía: NINGUNA en la vista mundial (los países demasiado chicos para
-  // etiquetar adentro simplemente no se etiquetan — el color del coroplético ya
-  // comunica; quien quiera el valor hace zoom). Con zoom a un continente sí se
-  // permiten, acotadas a países relevantes, porque ahí hay lugar y sentido.
-  let leaders = 0; const maxLeaders = (cont === 'all') ? 0 : (bigFmt ? 12 : 9);
+  // Líneas guía: ahora también en la vista mundial (antes: ninguna). Ahí etiquetamos hasta
+  // 15 países —las economías más grandes que entren con etiqueta interior o con línea guía
+  // limpia—; el resto solo aporta color en el coroplético. Con zoom a un continente: sin
+  // tope de etiquetas, tope de líneas guía como antes.
+  let leaders = 0; const maxLeaders = WORLD ? 15 : (bigFmt ? 12 : 9);
+  let labelCount = 0; const maxLabels = WORLD ? 15 : Infinity;
   items.forEach(it => {
+    if (labelCount >= maxLabels) return;     // tope de etiquetas (15 en la vista mundial)
     if (!it.el || !it.c || isNaN(it.c[0])) return;
     if (benchOn && benchV && it.iso === state[4].benchmark) return;   // el país de referencia no se etiqueta (solo si hay benchV)
     const v = vals[it.iso];
@@ -698,29 +776,71 @@ function rk_drawMapLabels(svg, o) {
       // destino del rayo: el punto interior del nivel 2 si existe; si no, el centroide
       // (en un cóncavo podría caer en agua → el rayo no entra y el país no lleva etiqueta
       // externa, lo cual es aceptable: preferimos no mostrarla a mostrarla flotando).
-      const tgt = interiorPt || [cx0, cy0];
-      const hW = (it.b[1][0] - it.b[0][0]) / 2, hH = (it.b[1][1] - it.b[0][1]) / 2;
+      // Punto CENTRAL dentro del país, desde donde "nace" la línea: el centro del bbox si
+      // cae adentro (lo más central — México/Chile salen del centro, no del norte); si no,
+      // el centroide; si no, el punto interior más profundo (cóncavos como Noruega, cuyo
+      // centro de bbox cae en Suecia).
+      const bcx = (it.b[0][0] + it.b[1][0]) / 2, bcy = (it.b[0][1] + it.b[1][1]) / 2;
+      let mo = interiorPt || [cx0, cy0];
+      if (inFill(mlEl, bcx, bcy)) mo = [bcx, bcy];
+      else if (inFill(mlEl, cx0, cy0)) mo = [cx0, cy0];
       const dirs = [[1, 0], [0.7, -0.7], [0, -1], [-0.7, -0.7], [-1, 0], [-0.7, 0.7], [0, 1], [0.7, 0.7]];
-      const step = bigFmt ? 10 : 7, maxR = bigFmt ? 64 : 42;
-      outer: for (let r = step; r <= maxR; r += step) {
-        for (const d of dirs) {
-          const cx = cx0 + d[0] * (hW + AX(w) + r), cy = cy0 + d[1] * (hH + AY(h) + r);
-          if (!inView(cx, cy, w, h) || !overSea(cx, cy, w, h) || !free(cx, cy, w, h)) continue;
-          // Origen = COSTA REAL: de la etiqueta (mar) hacia un punto interior GARANTIZADO
-          // (tgt), el primer punto que cae dentro del mainland. La línea toca siempre el
-          // país (no queda flotando — bug Portugal) y no arranca de la esquina del bbox.
-          let st = null;
-          for (let t = 0; t <= 1.001; t += 0.03) { const px = cx + (tgt[0] - cx) * t, py = cy + (tgt[1] - cy) * t; if (inFill(mlEl, px, py)) { st = [px, py]; break; } }
-          if (!st) continue;
-          let crosses = false;   // la línea no debe cruzar otra etiqueta ya colocada
-          for (let t = 0; t <= 1.001; t += 0.12) { const px = st[0] + (cx - st[0]) * t, py = st[1] + (cy - st[1]) * t; if (placed.some(p => px >= p.x1 && px <= p.x2 && py >= p.y1 && py <= p.y2)) { crosses = true; break; } }
-          if (crosses) continue;
-          anchor = [cx, cy]; external = true; leaderStart = st; break outer;
+      // maxR acotado (antes bigFmt=56): un país que necesita escapar muy lejos para llegar a
+      // mar abierto (Países Bajos, UK en el Mar del Norte cerrado) genera una línea que "sale
+      // tanto" → mejor que NO se etiquete a que estire. Si no alcanza mar abierto cerca, cae.
+      const gap = bigFmt ? 8 : 5, step = bigFmt ? 10 : 7, maxR = 34;
+      // Para cada dirección, la COSTA por donde sale la línea = marchar desde el punto
+      // central hacia afuera hasta salir del país. La etiqueta se ancla JUSTO afuera de esa
+      // costa → línea CORTA (no depende del ancho del bbox: Noruega deja de ser larga) y que
+      // nace del centro. Reglas: la línea va SOLO por mar (no cruza otro país), no cruza otra
+      // etiqueta ni otra línea guía; si no hay salida limpia y corta, el país NO se etiqueta.
+      const edges = dirs.map(d => {
+        let e = null;
+        for (let m = 6; m <= 700; m += 6) { if (!inFill(mlEl, mo[0] + d[0] * m, mo[1] + d[1] * m)) { e = [mo[0] + d[0] * (m - 6), mo[1] + d[1] * (m - 6)]; break; } }
+        return e;
+      });
+      // Selección: entre TODAS las salidas válidas, la de MÁS mar abierto alrededor del
+      // ancla (aire), con pena leve por longitud (a igual aire, la más corta — Chile, que
+      // tiene el Pacífico al lado, queda corto). GATE: el ancla debe estar en mar
+      // GENUINAMENTE abierto (≥6 de 8 puntos de un anillo en mar). Si una dirección da a un
+      // mar cerrado entre islas (Filipinas, Caribe insular, mares de Indonesia) se descarta
+      // → no contamina. Si NINGUNA salida es a mar abierto, el país NO se etiqueta.
+      let best = null, bestKey = Infinity;
+      for (let r = 0; r <= maxR; r += step) {
+        for (let di = 0; di < dirs.length; di++) {
+          const d = dirs[di], edge = edges[di]; if (!edge) continue;
+          const off = AX(w) + gap + r, cx = edge[0] + d[0] * off, cy = edge[1] + d[1] * off;
+          if (!inView(cx, cy, w, h) || !overSea(cx, cy, w, h) || !clearLand(cx, cy, w, h, bigFmt ? 6 : 3) || !free(cx, cy, w, h)) continue;
+          // el trayecto costa→ancla debe ir SOLO por mar (no otro país) y no pisar etiquetas.
+          // El trayecto costa→ancla va SOLO por mar. Marchamos por distancia desde el borde:
+          // se permite estar dentro del propio mainland al arrancar (la línea nace en la
+          // costa), pero EN CUANTO sale al mar no puede volver a tocar tierra —ni de un vecino
+          // ni del propio país (Reino Unido cruzaba Escocia porque se permitía el mainland
+          // propio)— ni pisar otra etiqueta.
+          let bad = false, exited = false;
+          for (let ss = 6; ss <= off; ss += 4) {
+            const px = edge[0] + d[0] * ss, py = edge[1] + d[1] * ss;
+            if (!inFill(mlEl, px, py)) exited = true;
+            if (exited && land && inFill(land, px, py)) { bad = true; break; }
+            if (exited && placed.some(p => px >= p.x1 && px <= p.x2 && py >= p.y1 && py <= p.y2)) { bad = true; break; }
+          }
+          if (bad) continue;
+          if (leaderSegs.some(s => segCross(edge, [cx, cy], s[0], s[1]))) continue;
+          // aire: de 8 puntos en un anillo alrededor del ancla, cuántos caen en mar abierto.
+          const rr = AX(w) + off * 0.4; let sea = 0;
+          for (const e of dirs) if (land && !inFill(land, cx + e[0] * rr, cy + e[1] * rr)) sea++;
+          if (sea < 6) continue;            // GATE: solo mar genuinamente abierto
+          // Con el GATE ya garantizando mar abierto, el objetivo pasa a ser la línea MÁS
+          // CORTA (antes dominaba el aire y la alargaba de más — Noruega). A igual largo,
+          // más aire desempata.
+          const key = off - sea * 0.6;
+          if (key < bestKey) { bestKey = key; best = { cx, cy, st: edge }; }
         }
       }
+      if (best) { anchor = [best.cx, best.cy]; external = true; leaderStart = best.st; leaderSegs.push([best.st, [best.cx, best.cy]]); }
     }
     if (!anchor) return;
-    placed.push(rectOf(anchor[0], anchor[1], w, h));
+    placed.push(rectOf(anchor[0], anchor[1], w, h)); labelCount++;
 
     if (external) {   // línea guía desde el borde del país hasta la etiqueta en el mar
       leaders++;
@@ -728,7 +848,7 @@ function rk_drawMapLabels(svg, o) {
       const ln = rk_el('line'); ln.setAttribute('x1', ls[0]); ln.setAttribute('y1', ls[1]); ln.setAttribute('x2', anchor[0]); ln.setAttribute('y2', anchor[1]); ln.setAttribute('stroke', '#1A1A1A'); ln.setAttribute('stroke-width', bigFmt ? 1 : 0.7); ln.setAttribute('stroke-opacity', 0.45); g.appendChild(ln);
     }
     const t = rk_el('text'); t.setAttribute('x', anchor[0]); t.setAttribute('y', anchor[1] + h * 0.34); t.setAttribute('text-anchor', 'middle'); t.style.fontSize = fs + 'px'; t.style.fontFamily = 'var(--sans)'; t.style.fontWeight = fw;
-    if (external) { t.setAttribute('fill', '#1A1A1A'); t.setAttribute('paint-order', 'stroke'); t.setAttribute('stroke', '#FAF8F3'); t.setAttribute('stroke-width', bigFmt ? 3 : 2); t.setAttribute('stroke-linejoin', 'round'); }
+    if (external) { t.setAttribute('fill', '#1A1A1A'); t.setAttribute('paint-order', 'stroke'); t.setAttribute('stroke', '#FAF8F3'); t.setAttribute('stroke-width', bigFmt ? 5 : 2); t.setAttribute('stroke-linejoin', 'round'); }
     else t.setAttribute('fill', rk_isDark(fillByIso[it.iso]) ? '#FFFFFF' : '#1A1A1A');
     t.textContent = txt; g.appendChild(t);
   });
@@ -1010,4 +1130,13 @@ function initRanking() {
   window.__atlasSupportsFormats = true;
   window.__atlasRedraw = drawRanking;
   window.onBeforePngExportGetSubtitle = function (id) { return (String(id) === '4') ? rk_subtitle() : null; };
+  // png-export llama esto ANTES de leer el SVG: re-renderiza el mapa al aspecto del
+  // continente (bien encuadrado, cifras grandes) para el PNG. Restore vuelve al interactivo.
+  window.onBeforePngExportPrepare = function (id) {
+    if (String(id) === '4' && rk_view() === 'map') { rk_pngExporting = true; drawRanking(); return true; }
+    return false;
+  };
+  window.onAfterPngExportRestore = function () {
+    if (rk_pngExporting) { rk_pngExporting = false; drawRanking(); }
+  };
 }
