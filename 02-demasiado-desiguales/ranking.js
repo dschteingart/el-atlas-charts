@@ -455,7 +455,7 @@ const RK_RELEVANT = new Set([
 ]);
 // Transcontinentales: se muestran también en el continente que comparten (además del
 // que dicta su centroide geográfico).
-const RK_CONT_EXTRA = { europe: ['RUS', 'TUR', 'KAZ', 'GEO', 'AZE', 'CYP'], asia: ['RUS', 'TUR', 'KAZ', 'EGY', 'GEO', 'AZE'], africa: ['EGY'] };
+const RK_CONT_EXTRA = { europe: ['RUS', 'TUR', 'KAZ', 'GEO', 'AZE', 'CYP'], asia: ['RUS', 'TUR', 'KAZ', 'GEO', 'AZE'], africa: ['EGY'] };
 const RK_CONT_BBOX = {
   all: [[-168, -56], [178, 80]], america: [[-168, -56], [-32, 73]], europe: [[-25, 34], [60, 72]],
   africa: [[-20, -36], [52, 38]], asia: [[26, -11], [150, 78]], oceania: [[110, -50], [179, 10]]
@@ -764,9 +764,14 @@ function rk_drawMapLabels(svg, o) {
         for (let m = 6; m <= 700; m += 6) { if (!inFill(mlEl, mo[0] + d[0] * m, mo[1] + d[1] * m)) { e = [mo[0] + d[0] * (m - 6), mo[1] + d[1] * (m - 6)]; break; } }
         return e;
       });
-      let best = null;
-      for (let r = 0; r <= maxR && !best; r += step) {
-        let rBest = null, rBestSea = -1;
+      // Selección: entre TODAS las salidas válidas, la de MÁS mar abierto alrededor del
+      // ancla (aire), con pena leve por longitud (a igual aire, la más corta — Chile, que
+      // tiene el Pacífico al lado, queda corto). GATE: el ancla debe estar en mar
+      // GENUINAMENTE abierto (≥6 de 8 puntos de un anillo en mar). Si una dirección da a un
+      // mar cerrado entre islas (Filipinas, Caribe insular, mares de Indonesia) se descarta
+      // → no contamina. Si NINGUNA salida es a mar abierto, el país NO se etiqueta.
+      let best = null, bestScore = -Infinity;
+      for (let r = 0; r <= maxR; r += step) {
         for (let di = 0; di < dirs.length; di++) {
           const d = dirs[di], edge = edges[di]; if (!edge) continue;
           const off = AX(w) + gap + r, cx = edge[0] + d[0] * off, cy = edge[1] + d[1] * off;
@@ -780,12 +785,13 @@ function rk_drawMapLabels(svg, o) {
           }
           if (bad) continue;
           if (leaderSegs.some(s => segCross(edge, [cx, cy], s[0], s[1]))) continue;
-          // desempate entre direcciones del MISMO radio: la de más mar abierto alrededor.
+          // aire: de 8 puntos en un anillo alrededor del ancla, cuántos caen en mar abierto.
           const rr = AX(w) + off * 0.4; let sea = 0;
           for (const e of dirs) if (land && !inFill(land, cx + e[0] * rr, cy + e[1] * rr)) sea++;
-          if (sea > rBestSea) { rBestSea = sea; rBest = { cx, cy, st: edge }; }
+          if (sea < 6) continue;            // GATE: solo mar genuinamente abierto
+          const score = sea - r * 0.03;     // más aire; a igual aire, más corta
+          if (score > bestScore) { bestScore = score; best = { cx, cy, st: edge }; }
         }
-        if (rBest) best = rBest;   // primer radio con salida válida = la línea más corta
       }
       if (best) { anchor = [best.cx, best.cy]; external = true; leaderStart = best.st; leaderSegs.push([best.st, [best.cx, best.cy]]); }
     }
