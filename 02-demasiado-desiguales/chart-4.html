@@ -31,6 +31,18 @@
   .rk-deciles button { width: 26px; height: 28px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink-soft); font-family: var(--sans); font-size: 12px; font-weight: 600; cursor: pointer; border-radius: 5px; padding: 0; transition: all 0.12s ease; }
   .rk-deciles button:hover { border-color: var(--accent); color: var(--ink); }
   .rk-deciles button.rk-dec-on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .rk-dec-end { font-family: var(--sans); font-size: 10px; color: var(--ink-muted); font-style: italic; white-space: nowrap; }
+
+  /* Dos niveles de controles: fijo (vista+decil+ingreso) y contextual (por vista) */
+  .m-controls-primary { margin-bottom: 6px; }
+  .m-controls-context { margin-bottom: 8px; min-height: 1px; }
+
+  /* "Comparar con" (mapa): un solo control, default Ninguno = mapa absoluto */
+  .rk-compare-host { display: inline-flex; }
+  .rk-compare-pill { display: inline-flex; align-items: center; gap: 4px; font-family: var(--sans); font-size: 12px; font-weight: 600; border-radius: 13px; border: none; cursor: pointer; }
+  .rk-compare-on { background: #595550; color: #fff; padding: 3px 4px 3px 11px; }
+  .rk-compare-none { background: var(--bg-soft); color: var(--ink-soft); padding: 5px 13px; }
+  .rk-compare-none:hover { color: var(--ink); }
 
   /* Slider de año (simple) */
   .m-slider-block { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 240px; }
@@ -92,7 +104,8 @@
     <h2 class="chart-title" data-i18n="c4-title">El ingreso por decil, país por país</h2>
     <p class="chart-subtitle" data-i18n="c4-subtitle">Ingreso promedio del decil elegido, US$ PPA, por país.</p>
 
-    <div class="m-controls">
+    <!-- Nivel fijo: qué dato (vista + decil + ingreso por) -->
+    <div class="m-controls m-controls-primary">
       <!-- Vista -->
       <div class="m-ctrl-group">
         <div class="m-mode-toggle" role="group" aria-label="Vista">
@@ -101,22 +114,28 @@
           <button data-rk-view="lines" data-i18n="c4-view-lines">Líneas</button>
         </div>
       </div>
-      <!-- Deciles (multi-select) -->
+      <!-- Deciles (multi-select) con semántica en las puntas -->
       <div class="m-ctrl-group">
         <span class="m-ctrl-label" data-i18n="c4-deciles-label">Deciles</span>
+        <span class="rk-dec-end" data-i18n="c4-dec-poorest">más pobre</span>
         <div class="rk-deciles" id="rk-decile-btns" role="group" aria-label="Deciles">
           <button data-decile="1">1</button><button data-decile="2">2</button><button data-decile="3">3</button><button data-decile="4">4</button><button data-decile="5">5</button><button data-decile="6">6</button><button data-decile="7">7</button><button data-decile="8">8</button><button data-decile="9">9</button><button data-decile="10">10</button>
         </div>
+        <span class="rk-dec-end" data-i18n="c4-dec-richest">más rico</span>
       </div>
-      <!-- Unidad -->
+      <!-- Ingreso por: día / mes / año -->
       <div class="m-ctrl-group">
-        <span class="m-ctrl-label" data-i18n="c4-unit-label">Unidad</span>
-        <div class="m-mode-toggle" role="group" aria-label="Unidad">
+        <span class="m-ctrl-label" data-i18n="c4-unit-label">Ingreso por</span>
+        <div class="m-mode-toggle" role="group" aria-label="Ingreso por">
           <button class="active" data-rk-unit="day" data-i18n="c4-unit-day">Día</button>
           <button data-rk-unit="month" data-i18n="c4-unit-month">Mes</button>
           <button data-rk-unit="year" data-i18n="c4-unit-year">Año</button>
         </div>
       </div>
+    </div>
+
+    <!-- Nivel contextual: solo los controles de la vista activa -->
+    <div class="m-controls m-controls-context">
       <!-- Escala Y (solo Líneas) -->
       <div class="m-ctrl-group" id="rk-scale-group" style="display:none;">
         <span class="m-ctrl-label" data-i18n="c4-scale-label">Escala</span>
@@ -125,13 +144,10 @@
           <button class="active" data-rk-scale="log" data-i18n="c4-scale-log">Log</button>
         </div>
       </div>
-      <!-- Modo del mapa: clásico / benchmark (solo Mapa) -->
-      <div class="m-ctrl-group" id="rk-bench-group" style="display:none;">
-        <div class="m-mode-toggle" role="group" aria-label="Modo mapa">
-          <button class="active" data-rk-mapmode="classic" data-i18n="c4-map-classic">Clásico</button>
-          <button data-rk-mapmode="bench" data-i18n="c4-map-bench">Comparar vs</button>
-        </div>
-        <span id="rk-bench-name" style="font-family:var(--sans);font-size:12px;font-weight:600;color:var(--ink);">Estados Unidos</span>
+      <!-- Comparar con (solo Mapa): Ninguno = mapa absoluto; un país = comparación -->
+      <div class="m-ctrl-group" id="rk-compare-group" style="display:none;">
+        <span class="m-ctrl-label" data-i18n="c4-compare-label">Comparar con</span>
+        <span class="rk-compare-host" id="rk-compare-chip"></span>
       </div>
       <!-- Zoom por continente (solo Mapa) -->
       <div class="m-ctrl-group" id="rk-continent-group" style="display:none;">
@@ -205,7 +221,7 @@
 <script src="../lib/regions.js"></script>
 <script src="../lib/i18n.js"></script>
 <script src="./regions-wb.js"></script>
-<script src="./i18n-issue.js?v=rk13"></script>
+<script src="./i18n-issue.js?v=rk14"></script>
 <script src="./utils.js"></script>
 <script src="./country-names.js"></script>
 <script src="./data-deciles.js"></script>
@@ -213,7 +229,7 @@
 <script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
 <script src="./data-country-geo.js?v=rk1"></script>
 <script src="./editor.js"></script>
-<script src="./ranking.js?v=rk23"></script>
+<script src="./ranking.js?v=rk24"></script>
 <script src="./png-export.js"></script>
 <script>
   state[4] = {

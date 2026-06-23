@@ -152,19 +152,20 @@ function drawRanking() {
 
   // visibilidad de controles por vista
   const view = rk_view();
-  const mapBench = (view === 'map' && state[4].mapMode === 'bench');
+  const isMap = view === 'map';
   const sng = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
   sng('rk-year-block', view !== 'lines');                  // año: barras y mapa
-  sng('rk-search-wrap', view !== 'map' || mapBench);       // buscador: barras, líneas y mapa+benchmark (elige el país de referencia)
-  sng('rk-selected-chips', view !== 'map');                // chips: barras y líneas
-  sng('rk-map-hint', mapBench);                            // hint de "clic/buscá para comparar"
+  sng('rk-search-wrap', true);                             // buscador: siempre (barras/líneas: agregar países; mapa: elegir país a comparar)
+  sng('rk-selected-chips', !isMap);                        // chips: barras y líneas (en mapa el país comparado va en su propio control)
+  sng('rk-map-hint', isMap);                               // hint del mapa: cómo elegir el país a comparar
   sng('rk-scale-group', view === 'lines');                 // escala lin/log: solo líneas
   sng('rk-range-block', view === 'lines');                 // slider temporal: solo líneas
-  sng('rk-bench-group', view === 'map');                   // modo clásico/benchmark: solo mapa
-  sng('rk-continent-group', view === 'map');               // zoom continente: solo mapa
-  sng('rk-labels-group', view === 'map');                  // toggle de etiquetas de valor: solo mapa
+  sng('rk-compare-group', isMap);                          // "Comparar con": solo mapa
+  sng('rk-continent-group', isMap);                        // zoom continente: solo mapa
+  sng('rk-labels-group', isMap);                           // toggle de etiquetas de valor: solo mapa
+  if (isMap) rk_renderCompare();                           // chip Ninguno / país de comparación
   const sInput = document.getElementById('rk-search');     // placeholder según contexto
-  if (sInput) sInput.placeholder = mapBench ? rk_tt('c4-bench-placeholder', 'Comparar contra…') : rk_tt('c4-search-placeholder', 'Agregar país…');
+  if (sInput) sInput.placeholder = isMap ? rk_tt('c4-compare-placeholder', 'Comparar con un país…') : rk_tt('c4-search-placeholder', 'Agregar país…');
 
   // dimensiones según formato del editor / viewport
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
@@ -493,14 +494,14 @@ function rk_drawMap(svg, ctx) {
       d3.select(this).attr('stroke', (benchOn && iso === state[4].benchmark) ? '#1A1A1A' : 'rgba(255,255,255,0.55)').attr('stroke-width', (benchOn && iso === state[4].benchmark) ? (bigFmt ? 2.2 : 1.6) : 0.5);
       if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }
     } : null)
-    .on('click', interactive ? function (ev, d) { if (!benchOn) return; const iso = rk_isoOf(d); if (vals[iso] != null) { state[4].benchmark = iso; rk_updateBenchName(); drawRanking(); } } : null);
+    .on('click', interactive ? function (ev, d) { const iso = rk_isoOf(d); if (vals[iso] != null) { state[4].benchmark = iso; state[4].mapMode = 'bench'; drawRanking(); } } : null);   // clic en cualquier país → comparar contra él
 
   if (state[4].mapLabels) {
     const fillByIso = {}; feats.forEach(f => { fillByIso[rk_isoOf(f)] = paint(rk_isoOf(f)).fill; });
     rk_drawMapLabels(svg, { feats, vals, fillByIso, benchV, box: { x1: pad, y1: pad, x2: pad + PW, y2: pad + PH }, bigFmt, unit });
   }
   rk_drawMapLegend(svg, { bigFmt, benchOn, benchV, classicBreaks, unit, interactive, pngExport: ctx.isPngFormat });
-  rk_updateBenchName();
+  rk_renderCompare();
   const disp = document.getElementById('rk-year-display'); if (disp) disp.textContent = year;
 }
 // ¿El color de fondo es oscuro? (para decidir texto blanco o negro encima).
@@ -728,8 +729,23 @@ function rk_drawMapLegend(svg, o) {
     if (o.interactive) { r.addEventListener('mouseenter', () => rk_mapDim('bench')); r.addEventListener('mouseleave', () => rk_mapDim(null)); }
   }
 }
-function rk_updateBenchName() {
-  const el = document.getElementById('rk-bench-name'); if (el) el.textContent = rk_name(state[4].benchmark);
+// Control "Comparar con": Ninguno (= mapa absoluto) o el país de referencia con × para
+// volver a absoluto. Reemplaza el toggle Clásico/Comparar: un solo control autoexplicativo.
+function rk_renderCompare() {
+  const host = document.getElementById('rk-compare-chip'); if (!host) return;
+  host.innerHTML = '';
+  if (state[4].mapMode === 'bench') {
+    const pill = document.createElement('span'); pill.className = 'rk-compare-pill rk-compare-on';
+    pill.textContent = rk_name(state[4].benchmark);
+    const x = document.createElement('button'); x.className = 'm-chip-x'; x.innerHTML = '×'; x.setAttribute('aria-label', 'Quitar comparación');
+    x.addEventListener('click', () => { state[4].mapMode = 'classic'; drawRanking(); });
+    pill.appendChild(x); host.appendChild(pill);
+  } else {
+    const b = document.createElement('button'); b.className = 'rk-compare-pill rk-compare-none';
+    b.textContent = rk_tt('c4-compare-none', 'Ninguno');
+    b.addEventListener('click', () => { const s = document.getElementById('rk-search'); if (s) s.focus(); });
+    host.appendChild(b);
+  }
 }
 
 // =================== Títulos dinámicos ===================
@@ -833,7 +849,7 @@ function rk_toggleCountry(iso) {
 }
 // El buscador: en mapa+benchmark elige el país de referencia; en el resto, toggle.
 function rk_searchPick(iso) {
-  if (rk_view() === 'map' && state[4].mapMode === 'bench') { state[4].benchmark = iso; rk_updateBenchName(); drawRanking(); }
+  if (rk_view() === 'map') { state[4].benchmark = iso; state[4].mapMode = 'bench'; drawRanking(); }   // en mapa, el buscador elige el país a comparar
   else rk_toggleCountry(iso);
 }
 function rk_setupSearch() {
@@ -876,12 +892,6 @@ function rk_setupToggles() {
   document.querySelectorAll('[data-rk-scale]').forEach(b => b.addEventListener('click', () => {
     state[4].yScale = b.dataset.rkScale;
     document.querySelectorAll('[data-rk-scale]').forEach(x => x.classList.toggle('active', x === b));
-    drawRanking();
-  }));
-  // Mapa: modo clásico / benchmark
-  document.querySelectorAll('[data-rk-mapmode]').forEach(b => b.addEventListener('click', () => {
-    state[4].mapMode = b.dataset.rkMapmode;
-    document.querySelectorAll('[data-rk-mapmode]').forEach(x => x.classList.toggle('active', x === b));
     drawRanking();
   }));
   // Mapa: zoom por continente
