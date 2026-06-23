@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas N°2 — Ranking de ingreso por decil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<link rel="stylesheet" href="./editor.css">
+<style>
+  .wrap-wide { max-width: 1100px; padding: 10px 20px 16px; }
+  .wrap-wide header { padding-bottom: 8px; margin-bottom: 10px; }
+  .wrap-wide .chart-block { margin: 10px 0 4px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; }
+  .wrap-wide .chart-subtitle { margin: 0 0 8px; font-size: 13.5px; }
+
+  .m-controls { display: flex; align-items: center; gap: 14px; margin-bottom: 8px; flex-wrap: wrap; }
+  .m-ctrl-group { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .m-ctrl-label { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+
+  /* Toggles tipo segmento (vista, unidad, escala) */
+  .m-mode-toggle { display: flex; gap: 4px; padding: 3px; background: var(--bg-soft); border-radius: 7px; }
+  .m-mode-toggle button { background: transparent; border: none; padding: 6px 13px; font-family: var(--sans); font-size: 12px; color: var(--ink-soft); cursor: pointer; border-radius: 5px; transition: all 0.18s ease; font-weight: 500; }
+  .m-mode-toggle button:hover { color: var(--ink); }
+  .m-mode-toggle button.active { background: var(--bg); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+
+  /* Botones de decil (multi-select) */
+  .rk-deciles { display: inline-flex; gap: 3px; }
+  .rk-deciles button { width: 26px; height: 28px; border: 1px solid var(--rule); background: var(--bg); color: var(--ink-soft); font-family: var(--sans); font-size: 12px; font-weight: 600; cursor: pointer; border-radius: 5px; padding: 0; transition: all 0.12s ease; }
+  .rk-deciles button:hover { border-color: var(--accent); color: var(--ink); }
+  .rk-deciles button.rk-dec-on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .rk-dec-end { font-family: var(--sans); font-size: 10px; color: var(--ink-muted); font-style: italic; white-space: nowrap; }
+
+  /* Dos niveles de controles: fijo (vista+decil+ingreso) y contextual (por vista) */
+  .m-controls-primary { margin-bottom: 6px; }
+  .m-controls-context { margin-bottom: 8px; min-height: 1px; }
+
+  /* "Comparar con" (mapa): un solo control, default Ninguno = mapa absoluto */
+  .rk-compare-host { display: inline-flex; }
+  .rk-compare-pill { display: inline-flex; align-items: center; gap: 4px; font-family: var(--sans); font-size: 12px; font-weight: 600; border-radius: 13px; border: none; cursor: pointer; }
+  .rk-compare-on { background: #595550; color: #fff; padding: 3px 4px 3px 11px; }
+  .rk-compare-none { background: var(--bg-soft); color: var(--ink-soft); padding: 5px 13px; }
+  .rk-compare-none:hover { color: var(--ink); }
+
+  /* Slider de año (simple) */
+  .m-slider-block { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 240px; }
+  .m-slider { flex: 1; -webkit-appearance: none; appearance: none; height: 4px; background: var(--grid); border-radius: 2px; outline: none; }
+  .m-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .m-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .m-year-display { font-family: var(--serif); font-size: 17px; font-weight: 700; color: var(--ink); min-width: 46px; font-variant-numeric: tabular-nums; }
+
+  /* Slider de rango (2 thumbs superpuestos) — solo Líneas */
+  .rk-range { position: relative; flex: 1; height: 20px; min-width: 180px; }
+  .rk-range-track { position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: var(--grid); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+  .rk-range-fill { position: absolute; top: 50%; height: 4px; background: var(--accent); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+  .rk-range input[type="range"] { position: absolute; top: 0; left: 0; width: 100%; height: 20px; margin: 0; -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; outline: none; }
+  .rk-range input[type="range"]::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .rk-range input[type="range"]::-moz-range-thumb { pointer-events: auto; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .rk-range input[type="range"]::-moz-range-track { background: transparent; border: none; }
+
+  /* Buscador + chips (reusa .m-*) */
+  .m-search-wrap { position: relative; margin: 8px 0 4px; max-width: 360px; }
+  .m-search-input { width: 100%; padding: 7px 10px; border: 1px solid var(--rule); border-radius: 5px; background: var(--bg); font-family: var(--sans); font-size: 13px; color: var(--ink); outline: none; }
+  .m-search-input:focus { border-color: var(--accent); }
+  .m-search-results { position: absolute; top: calc(100% + 2px); left: 0; right: 0; background: var(--bg); border: 1px solid var(--rule); border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-height: 240px; overflow-y: auto; z-index: 30; display: none; }
+  .m-search-results.open { display: block; }
+  .m-search-result { padding: 7px 10px; font-family: var(--sans); font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--grid); }
+  .m-search-result:last-child { border-bottom: none; }
+  .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
+  .m-search-result.m-already { opacity: 0.5; font-style: italic; }
+  .m-selected-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 6px; min-height: 0; }
+  .m-selected-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 10px; border-radius: 12px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: white; }
+  .m-chip-x { width: 18px; height: 18px; border-radius: 50%; border: none; background: rgba(255,255,255,0.25); color: white; font-size: 13px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .m-chip-x:hover { background: rgba(255,255,255,0.45); }
+
+  .s-grid-line { stroke: var(--grid); stroke-width: 1; opacity: 0.55; }
+  .s-tick { font-family: var(--sans); font-size: 11px; fill: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .s-axis-title { font-family: var(--sans); font-size: 11.5px; fill: var(--ink-soft); font-weight: 500; }
+  .rk-hint { margin: 2px 0 4px; font-family: var(--sans); font-size: 11.5px; color: var(--ink-muted); font-style: italic; }
+
+  @media (max-width: 768px) {
+    .m-search-wrap { max-width: 100%; }
+    .wrap-wide .chart-title { font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 4px; }
+    .wrap-wide .chart-subtitle { font-size: 12px; font-weight: 400; color: var(--ink-muted); line-height: 1.4; margin: 0 0 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 2</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="4" data-editor-id="ranking">
+    <h2 class="chart-title" data-i18n="c4-title">El ingreso por decil, país por país</h2>
+    <p class="chart-subtitle" data-i18n="c4-subtitle">Ingreso promedio del decil elegido, US$ PPA, por país.</p>
+
+    <!-- Nivel fijo: qué dato (vista + decil + ingreso por) -->
+    <div class="m-controls m-controls-primary">
+      <!-- Vista -->
+      <div class="m-ctrl-group">
+        <div class="m-mode-toggle" role="group" aria-label="Vista">
+          <button class="active" data-rk-view="bars" data-i18n="c4-view-bars">Barras</button>
+          <button data-rk-view="map" data-i18n="c4-view-map">Mapa</button>
+          <button data-rk-view="lines" data-i18n="c4-view-lines">Líneas</button>
+        </div>
+      </div>
+      <!-- Deciles (multi-select) con semántica en las puntas -->
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c4-deciles-label">Deciles</span>
+        <span class="rk-dec-end" data-i18n="c4-dec-poorest">más pobre</span>
+        <div class="rk-deciles" id="rk-decile-btns" role="group" aria-label="Deciles">
+          <button data-decile="1">1</button><button data-decile="2">2</button><button data-decile="3">3</button><button data-decile="4">4</button><button data-decile="5">5</button><button data-decile="6">6</button><button data-decile="7">7</button><button data-decile="8">8</button><button data-decile="9">9</button><button data-decile="10">10</button>
+        </div>
+        <span class="rk-dec-end" data-i18n="c4-dec-richest">más rico</span>
+      </div>
+      <!-- Ingreso por: día / mes / año -->
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c4-unit-label">Ingreso por</span>
+        <div class="m-mode-toggle" role="group" aria-label="Ingreso por">
+          <button class="active" data-rk-unit="day" data-i18n="c4-unit-day">Día</button>
+          <button data-rk-unit="month" data-i18n="c4-unit-month">Mes</button>
+          <button data-rk-unit="year" data-i18n="c4-unit-year">Año</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nivel contextual: solo los controles de la vista activa -->
+    <div class="m-controls m-controls-context">
+      <!-- Escala Y (solo Líneas) -->
+      <div class="m-ctrl-group" id="rk-scale-group" style="display:none;">
+        <span class="m-ctrl-label" data-i18n="c4-scale-label">Escala</span>
+        <div class="m-mode-toggle" role="group" aria-label="Escala">
+          <button data-rk-scale="linear" data-i18n="c4-scale-linear">Lineal</button>
+          <button class="active" data-rk-scale="log" data-i18n="c4-scale-log">Log</button>
+        </div>
+      </div>
+      <!-- Comparar con (solo Mapa): Ninguno = mapa absoluto; un país = comparación -->
+      <div class="m-ctrl-group" id="rk-compare-group" style="display:none;">
+        <span class="m-ctrl-label" data-i18n="c4-compare-label">Comparar con</span>
+        <span class="rk-compare-host" id="rk-compare-chip"></span>
+      </div>
+      <!-- Zoom por continente (solo Mapa) -->
+      <div class="m-ctrl-group" id="rk-continent-group" style="display:none;">
+        <span class="m-ctrl-label" data-i18n="c4-continent-label">Zoom</span>
+        <div class="m-mode-toggle" id="rk-continents" role="group" aria-label="Continente">
+          <button class="active" data-rk-cont="all" data-i18n="c4-cont-all">Mundo</button>
+          <button data-rk-cont="america" data-i18n="c4-cont-america">América</button>
+          <button data-rk-cont="europe" data-i18n="c4-cont-europe">Europa</button>
+          <button data-rk-cont="africa" data-i18n="c4-cont-africa">África</button>
+          <button data-rk-cont="asia" data-i18n="c4-cont-asia">Asia</button>
+          <button data-rk-cont="oceania" data-i18n="c4-cont-oceania">Oceanía</button>
+        </div>
+      </div>
+      <!-- Etiquetas de valor sobre los países (solo Mapa) -->
+      <div class="m-ctrl-group" id="rk-labels-group" style="display:none;">
+        <div class="m-mode-toggle" role="group" aria-label="Etiquetas">
+          <button id="rk-maplabels-btn" aria-pressed="false" data-i18n="c4-map-labels">Valores</button>
+        </div>
+      </div>
+      <!-- Año (Barras/Mapa) -->
+      <div class="m-slider-block" id="rk-year-block">
+        <span class="m-ctrl-label" data-i18n="slider-year-label">Año</span>
+        <input type="range" class="m-slider" id="rk-year" min="1990" max="2025" value="2025" step="1">
+        <span class="m-year-display" id="rk-year-display">2025</span>
+      </div>
+      <!-- Slider temporal de rango (solo Líneas): 2 thumbs -->
+      <div class="m-slider-block" id="rk-range-block" style="display:none;">
+        <span class="m-ctrl-label" data-i18n="c4-period-label">Período</span>
+        <div class="rk-range" id="rk-range">
+          <div class="rk-range-track"></div>
+          <div class="rk-range-fill" id="rk-range-fill"></div>
+          <input type="range" id="rk-range-from" min="1990" max="2025" value="1990" step="1" aria-label="Desde">
+          <input type="range" id="rk-range-to" min="1990" max="2025" value="2025" step="1" aria-label="Hasta">
+        </div>
+        <span class="m-year-display" id="rk-range-display" style="min-width:104px;text-align:right;">1990–2025</span>
+      </div>
+    </div>
+
+    <div class="m-search-wrap" id="rk-search-wrap">
+      <input type="text" id="rk-search" class="m-search-input" data-i18n-placeholder="c4-search-placeholder" placeholder="Agregar país…" autocomplete="off">
+      <div id="rk-search-results" class="m-search-results"></div>
+    </div>
+    <div class="m-selected-chips" id="rk-selected-chips"></div>
+    <p class="rk-hint" id="rk-map-hint" data-i18n="c4-map-hint" style="display:none;">Hacé clic en un país del mapa (o buscalo arriba) para elegir el país de comparación.</p>
+
+    <div class="chart-svg-wrap">
+      <svg id="chart4" viewBox="0 0 1100 560" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip4"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" data-chart="4-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="4" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources m-desktop-only" data-i18n="c4-sources">
+        Datos: Banco Mundial — Poverty and Inequality Platform (PIP). Ingreso por decil en US$ PPA por persona; media nacional interpolada por año.
+      </p>
+      <details class="m-mobile-collapse">
+        <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+        <p data-i18n="c4-sources">Datos: Banco Mundial — Poverty and Inequality Platform (PIP).</p>
+      </details>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="../lib/regions.js"></script>
+<script src="../lib/i18n.js"></script>
+<script src="./regions-wb.js"></script>
+<script src="./i18n-issue.js?v=rk15"></script>
+<script src="./utils.js"></script>
+<script src="./country-names.js"></script>
+<script src="./data-deciles.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
+<script src="./data-country-geo.js?v=rk1"></script>
+<script src="./editor.js"></script>
+<script src="./ranking.js?v=rk27"></script>
+<script src="./png-export.js?v=rk2"></script>
+<script>
+  state[4] = {
+    view: 'bars', deciles: [1], unit: 'day', yScale: 'log',
+    year: (typeof DATA_DECILES !== 'undefined' && DATA_DECILES.latest_year) || 2025,
+    selectedCountries: ['ARG', 'BRA', 'MEX', 'CHL', 'USA', 'DEU', 'CHN', 'JPN'],
+    period: [1990, 2025], benchmark: 'USA', continent: 'all'
+  };
+  initRanking();
+  applyI18n();
+  setupLangToggle(() => { rk_renderChips(); drawRanking(); });
+</script>
+</body>
+</html>
