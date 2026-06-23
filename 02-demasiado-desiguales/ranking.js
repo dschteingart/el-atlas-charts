@@ -747,36 +747,40 @@ function rk_drawMapLabels(svg, o) {
       const tgt = interiorPt || [cx0, cy0];
       const hW = (it.b[1][0] - it.b[0][0]) / 2, hH = (it.b[1][1] - it.b[0][1]) / 2;
       const dirs = [[1, 0], [0.7, -0.7], [0, -1], [-0.7, -0.7], [-1, 0], [-0.7, 0.7], [0, 1], [0.7, 0.7]];
-      const step = bigFmt ? 10 : 7, maxR = bigFmt ? 84 : 42;
-      // En vez de tomar la PRIMERA dirección válida, evaluar TODAS y elegir la de más
-      // AIRE: ancla en mar abierto (no entre islas) y lejos de otras etiquetas, sin cruzar
-      // otra línea guía. Así México sale al Pacífico (aire) y no al Caribe (Cuba + cifras),
-      // y Suecia/Noruega no cruzan sus líneas.
-      let best = null, bestScore = -Infinity;
-      for (let r = step; r <= maxR; r += step) {
+      const step = bigFmt ? 10 : 7, maxR = bigFmt ? 52 : 34;
+      // Regla: la línea guía es CORTA y SOLO va por mar. Se recorre el radio de menor a
+      // mayor y nos quedamos con el PRIMER radio que tenga alguna dirección válida (=> la
+      // más corta posible); entre las válidas de ese radio se elige la de más aire. Si
+      // ninguna sirve dentro de maxR, el país NO se etiqueta (mejor sin dato que con una
+      // línea larga o confusa). "Válida" exige, sobre todo, que la línea NO atraviese otro
+      // país (solo mar) — eso descarta los mediterráneos/landlocked y las salidas confusas.
+      let best = null;
+      for (let r = step; r <= maxR && !best; r += step) {
+        let rBest = null, rBestSea = -1;
         for (const d of dirs) {
           const cx = cx0 + d[0] * (hW + AX(w) + r), cy = cy0 + d[1] * (hH + AY(h) + r);
           if (!inView(cx, cy, w, h) || !overSea(cx, cy, w, h) || !free(cx, cy, w, h)) continue;
-          // Origen = COSTA REAL: de la etiqueta (mar) hacia un punto interior GARANTIZADO
-          // (tgt), el primer punto que cae dentro del mainland (la línea toca siempre el país).
+          // Origen = costa real: de la etiqueta (mar) hacia el punto interior, primer inFill.
           let st = null;
           for (let t = 0; t <= 1.001; t += 0.03) { const px = cx + (tgt[0] - cx) * t, py = cy + (tgt[1] - cy) * t; if (inFill(mlEl, px, py)) { st = [px, py]; break; } }
           if (!st) continue;
-          // no cruzar una etiqueta ya colocada…
+          // CLAVE: el trayecto st→ancla debe ir SOLO por mar. Si algún punto cae en tierra
+          // de OTRO país (land pero no el propio mainland), o pisa otra etiqueta → descartar.
           let bad = false;
-          for (let t = 0; t <= 1.001; t += 0.1) { const px = st[0] + (cx - st[0]) * t, py = st[1] + (cy - st[1]) * t; if (placed.some(p => px >= p.x1 && px <= p.x2 && py >= p.y1 && py <= p.y2)) { bad = true; break; } }
+          for (let t = 0.04; t <= 1.001; t += 0.04) {
+            const px = st[0] + (cx - st[0]) * t, py = st[1] + (cy - st[1]) * t;
+            if (land && inFill(land, px, py) && !inFill(mlEl, px, py)) { bad = true; break; }
+            if (placed.some(p => px >= p.x1 && px <= p.x2 && py >= p.y1 && py <= p.y2)) { bad = true; break; }
+          }
           if (bad) continue;
-          // …ni otra línea guía ya dibujada (Suecia/Noruega).
+          // …ni cruzar otra línea guía ya dibujada (Suecia/Noruega).
           if (leaderSegs.some(s => segCross(st, [cx, cy], s[0], s[1]))) continue;
-          // AIRE: de 8 puntos en un anillo alrededor del ancla, cuántos caen en MAR (no
-          // land) → ancla en mar abierto, no entre islas; y qué tan lejos de la etiqueta
-          // más cercana. Más aire + más lejos = mejor (el aire manda).
+          // desempate entre direcciones del MISMO radio: la de más mar abierto alrededor.
           const rr = AX(w) + r * 0.6; let sea = 0;
           for (const e of dirs) if (land && !inFill(land, cx + e[0] * rr, cy + e[1] * rr)) sea++;
-          let near = 1e9; placed.forEach(p => { const mx = (p.x1 + p.x2) / 2, my = (p.y1 + p.y2) / 2; near = Math.min(near, Math.hypot(cx - mx, cy - my)); });
-          const score = sea * 70 + Math.min(near, 160) * 0.45 - r;
-          if (score > bestScore) { bestScore = score; best = { cx, cy, st }; }
+          if (sea > rBestSea) { rBestSea = sea; rBest = { cx, cy, st }; }
         }
+        if (rBest) best = rBest;   // primer radio con salida válida = la línea más corta
       }
       if (best) { anchor = [best.cx, best.cy]; external = true; leaderStart = best.st; leaderSegs.push([best.st, [best.cx, best.cy]]); }
     }
