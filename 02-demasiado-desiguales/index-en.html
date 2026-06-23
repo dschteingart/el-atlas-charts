@@ -1,26 +1,25 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Atlas N°2 — ¿Es América Latina la región más desigual del mundo?</title>
-<meta name="description" content="La excepcionalidad latinoamericana en desigualdad existe, pero no donde solemos creer. 4 gráficos interactivos de El Atlas.">
+<title>The Atlas N°2 — Is Latin America really the world's most unequal region?</title>
+<meta name="description" content="Latin America's inequality exception is real — but not in the way we usually think. 4 interactive charts from The Atlas.">
 
-<!-- Open Graph / Twitter: preview del link al compartir (X, WhatsApp, etc.).
-     URLs ABSOLUTAS. Idioma del preview = español (meta estáticas; el crawler no
-     ejecuta JS ni lee ?lang). -->
+<!-- Open Graph / Twitter (INGLÉS). Página completa (no redirección) para que el robot
+     de X/Substack arme bien el card. Imagen por defecto: el mapa (chart 4). -->
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
-<meta property="og:locale" content="es_AR">
-<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/02-demasiado-desiguales/">
-<meta property="og:title" content="¿Es América Latina la región más desigual del mundo? — El Atlas N°2">
-<meta property="og:description" content="La excepcionalidad latinoamericana en desigualdad existe, pero no donde solemos creer.">
-<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/02-demasiado-desiguales/thumbs/chart-4.png">
-<meta property="og:image:alt" content="Mapa mundial del ingreso por decil, país por país">
+<meta property="og:site_name" content="The Atlas · Mapping development">
+<meta property="og:locale" content="en_US">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/02-demasiado-desiguales/index-en.html">
+<meta property="og:title" content="Is Latin America really the world's most unequal region? — The Atlas N°2">
+<meta property="og:description" content="Latin America's inequality exception is real — but not in the way we usually think.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/02-demasiado-desiguales/thumbs/chart-4.en.png">
+<meta property="og:image:alt" content="World map of income by decile, country by country">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="¿Es América Latina la región más desigual del mundo? — El Atlas N°2">
-<meta name="twitter:description" content="La excepcionalidad latinoamericana en desigualdad existe, pero no donde solemos creer.">
-<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/02-demasiado-desiguales/thumbs/chart-4.png">
+<meta name="twitter:title" content="Is Latin America really the world's most unequal region? — The Atlas N°2">
+<meta name="twitter:description" content="Latin America's inequality exception is real — but not in the way we usually think.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/02-demasiado-desiguales/thumbs/chart-4.en.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -70,8 +69,6 @@
     color: var(--accent); margin-top: auto;
   }
 
-  /* Miniatura del gráfico (preview). Si falta el PNG, onerror la quita y la
-     tarjeta queda como sin imagen. Sangría negativa para que sangre al borde. */
   .idx-thumb {
     display: block; width: calc(100% + 40px); height: 150px; object-fit: cover;
     margin: -18px -20px 8px; border-radius: 10px 10px 0 0;
@@ -95,8 +92,8 @@
     <div class="top-bar">
       <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 2</span></div>
       <div class="lang-toggle">
-        <button data-lang="es" class="active">ES</button>
-        <button data-lang="en">EN</button>
+        <button data-lang="es">ES</button>
+        <button data-lang="en" class="active">EN</button>
       </div>
     </div>
     <h1 data-i18n="page-title">¿Es América Latina realmente la región más desigual del mundo?</h1>
@@ -108,28 +105,28 @@
   <div class="idx-grid">
 
     <a class="idx-card" href="./chart-1.html">
-      <img class="idx-thumb" src="./thumbs/chart-1.png" data-thumb-es="./thumbs/chart-1.png" data-thumb-en="./thumbs/chart-1.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <img class="idx-thumb" src="./thumbs/chart-1.en.png" data-thumb-es="./thumbs/chart-1.png" data-thumb-en="./thumbs/chart-1.en.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 1</span>
       <h2 data-i18n="c1-title">El ranking mundial de la desigualdad</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
     <a class="idx-card" href="./chart-2.html">
-      <img class="idx-thumb" src="./thumbs/chart-2.png" data-thumb-es="./thumbs/chart-2.png" data-thumb-en="./thumbs/chart-2.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <img class="idx-thumb" src="./thumbs/chart-2.en.png" data-thumb-es="./thumbs/chart-2.png" data-thumb-en="./thumbs/chart-2.en.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 2</span>
       <h2 data-i18n="c2-title">América Latina es demasiado desigual para su nivel de desarrollo</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
     <a class="idx-card" href="./chart-3.html">
-      <img class="idx-thumb" src="./thumbs/chart-3.png" data-thumb-es="./thumbs/chart-3.png" data-thumb-en="./thumbs/chart-3.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <img class="idx-thumb" src="./thumbs/chart-3.en.png" data-thumb-es="./thumbs/chart-3.png" data-thumb-en="./thumbs/chart-3.en.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 3</span>
       <h2 data-i18n="c3-title">Las élites cerca, los pobres lejos</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
     </a>
 
     <a class="idx-card" href="./chart-4.html">
-      <img class="idx-thumb" src="./thumbs/chart-4.png" data-thumb-es="./thumbs/chart-4.png" data-thumb-en="./thumbs/chart-4.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <img class="idx-thumb" src="./thumbs/chart-4.en.png" data-thumb-es="./thumbs/chart-4.png" data-thumb-en="./thumbs/chart-4.en.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Gráfico 4</span>
       <h2 data-i18n="c4-title">El ingreso por decil, país por país</h2>
       <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
@@ -149,10 +146,6 @@
 <script src="./i18n-issue.js?v=rk15"></script>
 <script src="./utils.js?v=idx2"></script>
 <script>
-  // Miniaturas por idioma: cada tarjeta trae data-thumb-es / data-thumb-en.
-  // Arranca en ES (el src del HTML) y se cambia al PNG en inglés si LANG==='en'.
-  // THUMB_V: cache-busting. Al re-exportar un thumbnail se sobrescribe el MISMO
-  // archivo; bumpear este número fuerza recargar todos los thumbnails.
   var THUMB_V = '2';
   function applyThumbLang() {
     var en = (typeof LANG !== 'undefined' && LANG === 'en');
@@ -163,7 +156,6 @@
       if (img.getAttribute('src') !== want) img.src = want;
     });
   }
-  // Número de tarjeta por idioma ("Gráfico N" / "Chart N"), seteado por JS.
   function applyCardNums() {
     var en = (typeof LANG !== 'undefined' && LANG === 'en');
     var word = en ? 'Chart ' : 'Gráfico ';
@@ -171,6 +163,9 @@
       el.textContent = word + (i + 1);
     });
   }
+  // index-en.html: forzar inglés por defecto (no depende de ?lang).
+  try { LANG = 'en'; } catch (e) {}
+  document.documentElement.lang = 'en';
   applyI18n();
   applyThumbLang();
   applyCardNums();
