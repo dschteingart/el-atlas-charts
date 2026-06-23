@@ -10,6 +10,8 @@ const ISSUE_I18N = {
     'issue-num':  'N° 2',
     'page-title': '¿Es América Latina realmente la región más desigual del mundo?',
     'page-lede':  'La excepcionalidad latinoamericana en desigualdad existe, pero no donde solemos creer.',
+    'index-charts-label': 'Gráficos interactivos',
+    'index-see':  'Ver gráfico →',
 
     // Chart 1 — Marimekko ranking Gini
     'c1-title':            'El ranking mundial de la desigualdad',
@@ -178,6 +180,8 @@ const ISSUE_I18N = {
     'issue-num':  'No. 2',
     'page-title': "Is Latin America really the world's most unequal region?",
     'page-lede':  "Latin America's inequality exception is real — but not in the way we usually think.",
+    'index-charts-label': 'Interactive charts',
+    'index-see':  'See chart →',
 
     // Chart 1
     'c1-title':            'The world ranking of inequality',
