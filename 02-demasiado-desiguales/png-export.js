@@ -370,6 +370,15 @@
     // El mapa del chart 4 es apaisado pero usa la composición "mobile-first" (firma
     // grande en 2 renglones centrada, nota más abajo), igual que el 'worldmap' del N°3.
     const isMapChart   = (chartId === '4' && typeof state !== 'undefined' && state[4] && state[4].view === 'map');
+    // Re-render del mapa al ASPECTO DEL CONTINENTE para el PNG: la versión interactiva es
+    // apaisada (sin scroll), pero el PNG necesita el mapa reencuadrado a la forma del
+    // continente (si no, queda apaisado dentro de un canvas cuadrado/vertical → medio vacío,
+    // y las regiones altas como América muestran el mundo por el letterbox). Esto cambia el
+    // viewBox del SVG en pantalla; se restaura al final (onAfterPngExportRestore).
+    let didPrepareMap = false;
+    if (isMapChart && typeof window.onBeforePngExportPrepare === 'function') {
+      try { didPrepareMap = !!window.onBeforePngExportPrepare(chartId, format); } catch (_) {}
+    }
     const mobileFirst  = isNewsletter || isSquare || isMobilePng || isMapChart;
 
     // Forzar carga de webfonts ANTES de medir/dibujar en canvas. El canvas
@@ -772,6 +781,11 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }, 'image/png');
+    // Restaurar el mapa al interactivo (apaisado) tras rasterizar (el canvas ya quedó
+    // dibujado con el clone del SVG reencuadrado, así que esto no lo afecta).
+    if (didPrepareMap && typeof window.onAfterPngExportRestore === 'function') {
+      try { window.onAfterPngExportRestore(chartId); } catch (_) {}
+    }
   }
 
   document.querySelectorAll('button[data-png]').forEach(btn => {

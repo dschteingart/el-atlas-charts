@@ -36,6 +36,9 @@ function rk_getMargins(format) {
   }
 }
 let RK_W = RK_W_DESKTOP, RK_H = RK_H_DESKTOP, RK_MARGIN = { ...RK_MARGIN_DESKTOP };
+// Flag que prende png-export para re-renderizar el mapa al aspecto del continente al
+// exportar (la versión interactiva queda apaisada sin scroll; el PNG toma el aspecto).
+let rk_pngExporting = false;
 
 const RK_NS = 'http://www.w3.org/2000/svg';
 const rk_el = (t) => document.createElementNS(RK_NS, t);
@@ -199,14 +202,19 @@ function drawRanking() {
   // dimensiones según formato del editor / viewport
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const mobile = !editorFormat && rk_isMobile();
+  // ¿Estamos renderizando para el PNG? = formato del editor activo, O el flag que prende
+  // png-export para re-renderizar el mapa al aspecto del continente al exportar (sin un
+  // formato elegido). Eso permite que el INTERACTIVO quede apaisado (sin scroll) y el PNG
+  // tome igual el aspecto del continente bien encuadrado.
+  const exporting = !!editorFormat || rk_pngExporting;
   if (editorFormat) { const f = PNG_FORMATS[editorFormat]; RK_W = f.vbW; RK_H = f.vbH; RK_MARGIN = rk_getMargins(editorFormat); }
   else if (mobile) { RK_W = RK_W_MOBILE; RK_H = RK_H_MOBILE; RK_MARGIN = { ...RK_MARGIN_MOBILE }; }
   else { RK_W = RK_W_DESKTOP; RK_H = RK_H_DESKTOP; RK_MARGIN = { ...RK_MARGIN_DESKTOP }; }
   // El mapa toma su ASPECTO del continente (Europa cuadrado; Asia/Oceanía/mundo apaisado;
-  // África/América vertical) SOLO en el PNG/preview (editorFormat). La versión interactiva
-  // se queda apaisada y baja (RK_H=480) para que NO haya scroll en ninguna región.
+  // África/América vertical) SOLO al exportar. La versión interactiva se queda apaisada y
+  // baja (RK_H=480) para que NO haya scroll en ninguna región.
   if (view === 'map') {
-    if (editorFormat) {
+    if (exporting) {
       const cv = RK_CONT_VIEW[state[4].continent] || RK_CONT_VIEW.all;
       RK_W = cv.vbW; RK_H = cv.vbH;
     } else if (!mobile) {
@@ -215,8 +223,8 @@ function drawRanking() {
   }
   svg.setAttribute('viewBox', `0 0 ${RK_W} ${RK_H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
-  const bigFmt = !!editorFormat || mobile;
-  const isPngFormat = !!editorFormat;
+  const bigFmt = !!editorFormat || mobile || rk_pngExporting;
+  const isPngFormat = !!editorFormat || rk_pngExporting;
 
   const ctx = { bigFmt, isPngFormat, mobile };
   if (view === 'bars') rk_drawBars(svg, ctx);
@@ -1046,4 +1054,13 @@ function initRanking() {
   window.__atlasSupportsFormats = true;
   window.__atlasRedraw = drawRanking;
   window.onBeforePngExportGetSubtitle = function (id) { return (String(id) === '4') ? rk_subtitle() : null; };
+  // png-export llama esto ANTES de leer el SVG: re-renderiza el mapa al aspecto del
+  // continente (bien encuadrado, cifras grandes) para el PNG. Restore vuelve al interactivo.
+  window.onBeforePngExportPrepare = function (id) {
+    if (String(id) === '4' && rk_view() === 'map') { rk_pngExporting = true; drawRanking(); return true; }
+    return false;
+  };
+  window.onAfterPngExportRestore = function () {
+    if (rk_pngExporting) { rk_pngExporting = false; drawRanking(); }
+  };
 }
