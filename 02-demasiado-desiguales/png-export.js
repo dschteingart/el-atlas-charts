@@ -419,8 +419,9 @@
     const titleSize = 36, titleLineH = 48;
     const subSize   = 20, subLineH   = 30;
     const sourceSize = 14, sourceLineH = 20;
-    const attribSize = 14;
-    const attribGap = 30;  // gap entre fuente y atribución en la última línea
+    const attribSize = 18;          // firma editorial más grande
+    const attribLineH = 23;         // en 2 renglones (marca + autor)
+    const attribGap = 30;  // gap horizontal entre fuente y firma
     const gapTitleSub  = 6;
     // Mobile PNG (portrait alto 800×1200): gap reducido entre el subtítulo y
     // el SVG para que el plot suba en el canvas. En portrait el chrome
@@ -431,7 +432,7 @@
     // un viewport tan vertical.
     const gapBeforeSvg = isMobilePng ? 12 : 28;
     const gapAfterSvgBase  = 4;   // ajustado: la leyenda casi pegada al chart
-    const gapAfterLegend = 12;
+    const gapAfterLegend = 22;   // un poco más de aire entre la leyenda y la nota
     const innerW = W - 2 * padX;
 
     // Hook opcional para chart-specific extra gap entre SVG y leyenda. Usado
@@ -477,8 +478,10 @@
     // Reservar espacio para la atribución en la última línea de la fuente.
     // Si la atribución no entra en la misma línea que la fuente, va sola en
     // una línea adicional debajo.
+    const attribParts = attribText ? attribText.split(' · ') : [];   // marca / autor → 2 renglones
     mctx.font = `600 ${attribSize}px "Source Sans 3", -apple-system, sans-serif`;
-    const attribW = attribText ? mctx.measureText(attribText).width : 0;
+    const attribW = attribParts.reduce((m, p) => Math.max(m, mctx.measureText(p).width), 0);
+    const attribH = attribParts.length * attribLineH;
     const sourceMaxW = attribText ? Math.max(200, innerW - attribW - attribGap) : innerW;
 
     mctx.font = `400 ${sourceSize}px "Source Sans 3", -apple-system, sans-serif`;
@@ -491,11 +494,12 @@
     const titleH = titleText ? titleLines * titleLineH : 0;
     const subH = subLines * subLineH;
     const sourceH = sourceLines * sourceLineH;
+    const bottomTextH = Math.max(sourceH, attribH);   // la firma (2 renglones) puede ser más alta que la fuente
 
     // Espacio que ocupan los "non-svg" (chrome arriba y abajo del SVG):
     const chromeAbove = padTop + titleH + (subH ? gapTitleSub + subH : 0) + gapBeforeSvg;
     const chromeBelow = (legendH ? gapAfterSvg + legendH : 0)
-                     + (sourceH ? (legendH ? gapAfterLegend : gapAfterSvg) + sourceH : 0)
+                     + (bottomTextH ? (legendH ? gapAfterLegend : gapAfterSvg) + bottomTextH : 0)
                      + padBottom;
 
     // === Altura del canvas ===
@@ -664,25 +668,22 @@
       y += legendH;
     }
 
+    // Banda inferior: fuente a la izquierda, firma editorial a la derecha. El gap se
+    // aplica una sola vez si existe cualquiera de las dos.
+    if (sourceText || attribParts.length) y += (showLegend ? gapAfterLegend : gapAfterSvg);
     if (sourceText) {
-      y += (showLegend ? gapAfterLegend : gapAfterSvg);
       ctx.fillStyle = PALETTE.inkSoft;
       ctx.textBaseline = 'top';
       ctx.font = `400 ${sourceSize}px "Source Sans 3", -apple-system, sans-serif`;
       wrapText(ctx, sourceText, padX, y, sourceMaxW, sourceLineH);
     }
-
-    // Atribución editorial alineada al borde derecho, en la línea más baja
-    // (misma vertical que la última línea de la fuente).
-    if (attribText) {
-      const lastLineY = sourceText
-        ? y + (sourceLines - 1) * sourceLineH
-        : y + (showLegend ? gapAfterLegend : gapAfterSvg);
+    // Firma editorial: más grande, en 2 renglones (marca + autor), alineada a la derecha.
+    if (attribParts.length) {
       ctx.fillStyle = PALETTE.attribution;
       ctx.textAlign = 'right';
       ctx.textBaseline = 'top';
       ctx.font = `600 ${attribSize}px "Source Sans 3", -apple-system, sans-serif`;
-      ctx.fillText(attribText, W - padX, lastLineY);
+      attribParts.forEach((p, i) => ctx.fillText(p, W - padX, y + i * attribLineH));
       ctx.textAlign = 'left';  // restaurar default
     }
 

@@ -713,7 +713,7 @@ function rk_drawMapLegend(svg, o) {
   const colors = (o.benchOn && o.benchV) ? RK_MAP_DIVERGE : RK_MAP_CLASSIC;
   // etiquetas en el borde IZQUIERDO de cada bloque
   let edge;
-  if (o.benchOn && o.benchV) edge = ['', '0.5×', '0.8×', '=', '1.25×', '2×'];
+  if (o.benchOn && o.benchV) edge = ['', '-50%', '-20%', '=', '+25%', '+100%'];   // % vs el país, consistente con las etiquetas de valor
   else edge = ['$0'].concat(o.classicBreaks.map(b => rk_fmtTick(b)));
   // El swatch del país de referencia es la clave para ubicar ese color en el mapa: solo
   // tiene sentido si el país está EN el encuadre. Con zoom a un continente que lo deja
