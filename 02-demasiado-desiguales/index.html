@@ -3,716 +3,97 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Atlas — ¿Es América Latina la región más desigual del mundo?</title>
+<title>El Atlas N°2 — ¿Es América Latina la región más desigual del mundo?</title>
+<meta name="description" content="La excepcionalidad latinoamericana en desigualdad existe, pero no donde solemos creer. 4 gráficos interactivos de El Atlas.">
+
+<!-- Open Graph / Twitter: preview del link al compartir (X, WhatsApp, etc.).
+     URLs ABSOLUTAS. Idioma del preview = español (meta estáticas; el crawler no
+     ejecuta JS ni lee ?lang). -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/02-demasiado-desiguales/">
+<meta property="og:title" content="¿Es América Latina la región más desigual del mundo? — El Atlas N°2">
+<meta property="og:description" content="La excepcionalidad latinoamericana en desigualdad existe, pero no donde solemos creer.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/02-demasiado-desiguales/thumbs/chart-4.png">
+<meta property="og:image:alt" content="Mapa mundial del ingreso por decil, país por país">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="¿Es América Latina la región más desigual del mundo? — El Atlas N°2">
+<meta name="twitter:description" content="La excepcionalidad latinoamericana en desigualdad existe, pero no donde solemos creer.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/02-demasiado-desiguales/thumbs/chart-4.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../lib/style.css">
 <style>
-  /* ============================================================
-     CSS específico del N°2 — merge de chart-1.html, chart-2.html,
-     chart-3.html. Clases:
-       .m-*  → controles compartidos (chart 1, 2, 3) + marimekko
-       .s-*  → propias del scatter (chart 2)
-       .d-*  → propias del deciles (chart 3)
-     Los charts del N°2 usan viewBox 1100px, por eso wrap-wide.
-     ============================================================ */
+  .wrap-idx { max-width: 920px; margin: 0 auto; padding: 18px 20px 40px; }
+  .wrap-idx header { padding-bottom: 8px; margin-bottom: 18px; }
+  .wrap-idx h1 { margin: 0 0 6px; }
+  .wrap-idx .lede { margin: 0 0 4px; }
 
-  /* Wrap más ancho para charts del N°2 */
-  .wrap-wide { max-width: 1100px; }
-  .wrap-wide { padding: 10px 20px 16px; }
-  .wrap-wide header { padding-bottom: 8px; margin-bottom: 10px; }
-  .wrap-wide .chart-block { margin: 10px 0 4px; }
-  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; }
-  .wrap-wide .chart-subtitle { margin: 0 0 8px; font-size: 13.5px; }
-
-  /* En el index "todo-junto" del N°2 los 3 charts quedan apilados.
-     Agregamos aire entre ellos (entre el footer del chart anterior y el
-     título del siguiente) con un margen-top extra y un divisor sutil.
-     Solo aplica a los chart-blocks que vienen DESPUÉS de otro (no al
-     primero), para que el primero siga compacto contra el header. */
-  .wrap-wide .chart-block + .chart-block {
-    margin-top: 56px;
-    padding-top: 32px;
-    border-top: 1px solid var(--rule);
+  .idx-section-label {
+    font-family: var(--sans); font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.09em; color: var(--ink-muted);
+    margin: 26px 0 12px;
   }
 
-  /* === Controles compartidos (chart 1, 2, 3) === */
-  .m-controls {
-    display: flex;
-    align-items: center;
+  .idx-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 14px;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
   }
-  /* Cada label + toggle se mantiene en una unidad inseparable. Sin esto,
-     en mobile el flex-wrap separa el label arriba y los buttons abajo. */
-  .m-ctrl-group {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-  }
-  .m-ctrl-label {
-    font-family: var(--sans);
-    font-size: 11px;
-    color: var(--ink-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 500;
-  }
-  .d-mode-toggle, .m-mode-toggle {
-    display: flex;
-    gap: 4px;
-    padding: 3px;
-    background: var(--bg-soft);
-    border-radius: 7px;
-  }
-  .d-mode-toggle button, .m-mode-toggle button {
-    background: transparent;
-    border: none;
-    padding: 6px 14px;
-    font-family: var(--sans);
-    font-size: 12px;
-    color: var(--ink-soft);
-    cursor: pointer;
-    border-radius: 5px;
-    transition: all 0.18s ease;
-    font-weight: 500;
-  }
-  .d-mode-toggle button:hover, .m-mode-toggle button:hover { color: var(--ink); }
-  .d-mode-toggle button.active, .m-mode-toggle button.active {
-    background: var(--bg);
-    color: var(--ink);
-    font-weight: 600;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-  }
-  .m-slider-block {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex: 1;
-    min-width: 280px;
-  }
-  .m-play-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    border: 1.5px solid var(--accent);
-    background: var(--bg);
-    color: var(--accent);
-    font-size: 13px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s;
-    flex-shrink: 0;
-    padding: 0;
-  }
-  .m-play-btn:hover { background: var(--accent); color: var(--bg); }
-  .m-play-btn::before { content: '▶'; }
-  .m-play-btn.playing::before { content: '⏸'; }
-  .m-slider {
-    flex: 1;
-    -webkit-appearance: none;
-    appearance: none;
-    height: 4px;
-    background: var(--grid);
-    border-radius: 2px;
-    outline: none;
-  }
-  .m-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
-    border: 2px solid var(--bg);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.18);
-  }
-  .m-slider::-moz-range-thumb {
-    width: 16px; height: 16px;
-    border-radius: 50%;
-    background: var(--accent);
-    cursor: pointer;
-    border: 2px solid var(--bg);
-  }
-  .m-year-display {
-    font-family: var(--serif);
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--ink);
-    min-width: 46px;
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* === Marimekko (chart 1) === */
-  .m-grid-line { stroke: var(--grid); stroke-width: 1; opacity: 0.55; }
-  .m-axis-line { stroke: var(--ink-muted); stroke-width: 1; fill: none; }
-  .m-tick {
-    font-family: var(--sans);
-    font-size: 11px;
-    fill: var(--ink-soft);
-    font-variant-numeric: tabular-nums;
-  }
-  .m-axis-label {
-    font-family: var(--sans);
-    font-size: 10.5px;
-    fill: var(--ink-muted);
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-  .m-bar {
-    transition: opacity 0.2s;
-    cursor: pointer;
-  }
-  .m-bar.m-dim { opacity: 0.15; }
-  .m-bar.m-spotlight { /* país seleccionado vía buscador — destacado */ }
-  .m-country-label {
-    font-family: var(--sans);
-    font-size: 9.5px;
-    pointer-events: none;
-    transition: opacity 0.2s;
-  }
-  .m-country-label.m-dim { opacity: 0.2; }
-  .m-country-label.m-spotlight-label {
-    font-weight: 700;
-  }
-  .m-label-tick {
-    stroke-width: 0.6;
-    pointer-events: none;
-    transition: opacity 0.2s;
-  }
-  .m-label-tick.m-dim { opacity: 0.2; }
-
-  /* Tabla de promedios regionales del marimekko */
-  .m-table-title {
-    font-family: var(--sans);
-    font-size: 10px;
-    font-weight: 600;
-    fill: var(--ink-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    pointer-events: none;
-  }
-  .m-table-rule {
-    stroke: var(--rule);
-    stroke-width: 1;
-  }
-  .m-table-swatch {
-    pointer-events: none;
-  }
-  .m-table-label, .m-table-value {
-    font-family: var(--sans);
-    font-size: 11px;
-    font-weight: 500;
-    fill: var(--ink);
-    pointer-events: none;
-  }
-  .m-table-value {
-    font-variant-numeric: tabular-nums;
-  }
-  .m-table-row-active.m-table-label,
-  .m-table-row-active.m-table-value {
-    font-weight: 700;
-  }
-  .m-table-row-dimmed.m-table-label,
-  .m-table-row-dimmed.m-table-value,
-  .m-table-row-dimmed.m-table-swatch {
-    opacity: 0.25;
-  }
-
-  /* === Legend interactivo (chart 1 y chart 2) === */
-  .m-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 4px;
-    padding: 0 4px;
-  }
-  .m-legend-chip {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--sans);
-    font-size: 12px;
-    color: var(--ink-soft);
-    cursor: pointer;
-    user-select: none;
-    transition: opacity 0.15s;
-  }
-  /* En el chart 2 los swatches del legend son círculos; en el chart 1 son
-     cuadrados. Por defecto cuadrado; el JS del scatter le aplica borderRadius
-     inline si hace falta — pero el chart-2.html original lo declaraba así: */
-  .m-legend-chip.inactive {
-    opacity: 0.55;
-    text-decoration: line-through;
-    text-decoration-color: var(--ink-muted);
-    text-decoration-thickness: 1px;
-    color: var(--ink-muted);
-  }
-  .m-legend-chip.inactive .m-legend-swatch {
-    opacity: 0.45;
-  }
-  .m-legend-swatch {
-    width: 12px; height: 12px;
-    border-radius: 2px;
-    display: inline-block;
-  }
-  /* En el chart 2 (scatter) el legend usa swatches redondos. Como no podemos
-     diferenciar por clase del chip (ambos usan .m-legend-swatch), aplicamos
-     border-radius:50% solo cuando el chip está dentro del legend del chart 2. */
-  .m-legend[data-chart="2"] .m-legend-swatch {
-    border-radius: 50%;
-  }
-  .m-legend-label {}
-
-  /* === Buscador + chips de selección (compartido por charts 1, 2, 3) === */
-  .m-search-wrap {
-    position: relative;
-    margin: 8px 0 4px;
-    max-width: 360px;
-  }
-  .m-search-input {
-    width: 100%;
-    padding: 7px 10px;
-    border: 1px solid var(--rule);
-    border-radius: 5px;
-    background: var(--bg);
-    font-family: var(--sans);
-    font-size: 13px;
-    color: var(--ink);
-    outline: none;
-  }
-  .m-search-input:focus { border-color: var(--accent); }
-  .m-search-results {
-    position: absolute;
-    top: calc(100% + 2px);
-    left: 0; right: 0;
+  .idx-card {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 18px 20px;
     background: var(--bg);
     border: 1px solid var(--rule);
-    border-radius: 5px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    max-height: 240px;
-    overflow-y: auto;
-    z-index: 30;
-    display: none;
+    border-radius: 10px;
+    text-decoration: none; color: inherit;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
   }
-  .m-search-results.open { display: block; }
-  .m-search-result {
-    padding: 7px 10px;
-    font-family: var(--sans);
-    font-size: 13px;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    border-bottom: 1px solid var(--grid);
+  .idx-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
   }
-  .m-search-result:last-child { border-bottom: none; }
-  .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
-  .m-search-result.m-already { opacity: 0.5; font-style: italic; }
-  .m-search-region {
-    color: var(--ink-muted);
-    font-size: 11.5px;
-    flex-shrink: 0;
+  .idx-card-num {
+    font-family: var(--sans); font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-muted);
   }
-  .m-selected-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin: 4px 0 6px;
-    min-height: 0;
+  .idx-card h2 {
+    font-family: var(--serif); font-size: 17px; font-weight: 600;
+    line-height: 1.26; margin: 0; color: var(--ink);
   }
-  .m-selected-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 4px 3px 10px;
-    border-radius: 12px;
-    font-family: var(--sans);
-    font-size: 12px;
-    font-weight: 500;
-    color: white;
-  }
-  .m-chip-x {
-    width: 18px; height: 18px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(255,255,255,0.25);
-    color: white;
-    font-size: 13px;
-    line-height: 1;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-  }
-  .m-chip-x:hover { background: rgba(255,255,255,0.45); }
-
-  /* === Scatter (chart 2) === */
-  .s-grid-line { stroke: var(--grid); stroke-width: 1; opacity: 0.55; }
-  .s-axis-line { stroke: var(--ink-muted); stroke-width: 1; fill: none; }
-  .s-tick {
-    font-family: var(--sans);
-    font-size: 11px;
-    fill: var(--ink-soft);
-    font-variant-numeric: tabular-nums;
-  }
-  .s-axis-title {
-    font-family: var(--sans);
-    font-size: 11.5px;
-    fill: var(--ink-soft);
-    font-weight: 500;
-  }
-  .s-point {
-    transition: opacity 0.2s, r 0.15s;
-    cursor: pointer;
-  }
-  .s-point.s-dim {
-    opacity: 0.18;
-  }
-  .s-country-label {
-    font-family: var(--sans);
-    font-size: 10.5px;
-    font-weight: 500;
-    pointer-events: none;
-    paint-order: stroke;
-    stroke: var(--bg);
-    stroke-width: 2.5px;
-    stroke-linejoin: round;
-  }
-  .s-country-label.s-selected-label {
-    font-weight: 600;
-  }
-  .s-regression {
-    pointer-events: none;
+  .idx-card-go {
+    font-family: var(--sans); font-size: 13px; font-weight: 600;
+    color: var(--accent); margin-top: auto;
   }
 
-  /* Banner regional debajo del scatter */
-  .s-banner {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 8px 14px;
-    margin: 8px 0 0;
-    padding: 8px 12px;
-    background: var(--bg-soft);
-    border-radius: 6px;
-    font-family: var(--sans);
-    font-size: 13px;
-    color: var(--ink);
-  }
-  .s-banner-item {
-    display: inline-flex;
-    align-items: baseline;
-    gap: 6px;
-  }
-  .s-banner-key {
-    font-size: 11px;
-    color: var(--ink-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    font-weight: 500;
-  }
-  .s-banner-val {
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-  }
-  .s-banner-region-name {
-    font-weight: 500;
-  }
-  .s-banner-sep {
-    color: var(--ink-muted);
-    opacity: 0.6;
+  /* Miniatura del gráfico (preview). Si falta el PNG, onerror la quita y la
+     tarjeta queda como sin imagen. Sangría negativa para que sangre al borde. */
+  .idx-thumb {
+    display: block; width: calc(100% + 40px); height: 150px; object-fit: cover;
+    margin: -18px -20px 8px; border-radius: 10px 10px 0 0;
+    border-bottom: 1px solid var(--rule); background: var(--bg-soft);
   }
 
-  /* === Deciles (chart 3) === */
-  .d-grid-line { stroke: var(--grid); stroke-width: 1; opacity: 0.55; }
-  .d-axis-line { stroke: var(--ink-muted); stroke-width: 1; fill: none; }
-  .d-vguide {
-    stroke: var(--grid);
-    stroke-width: 1;
-    opacity: 0.35;
-  }
-  .d-tick {
-    font-family: var(--sans);
-    font-size: 11px;
-    fill: var(--ink-soft);
-    font-variant-numeric: tabular-nums;
-  }
-  .d-tick-extra {
-    font-family: var(--sans);
-    font-size: 9.5px;
-    fill: var(--ink-muted);
-    font-style: italic;
-  }
-  .d-axis-title {
-    font-family: var(--sans);
-    font-size: 11.5px;
-    fill: var(--ink-soft);
-    font-weight: 500;
-  }
-  .d-line {
-    fill: none;
-    stroke-width: 2.2;
-    stroke-linejoin: round;
-    stroke-linecap: round;
-  }
-  .d-marker {
-    cursor: pointer;
-    transition: r 0.15s;
-  }
-  .d-marker:hover {
-    r: 5;
-  }
-  .d-end-label {
-    font-family: var(--sans);
-    font-size: 11.5px;
-    font-weight: 600;
-    pointer-events: none;
+  .idx-footer {
+    margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--rule);
+    font-family: var(--sans); font-size: 12px; color: var(--ink-muted);
   }
 
   @media (max-width: 600px) {
-    .m-country-label { font-size: 8px; }
-    .m-region-avg-label { font-size: 10px; }
-    .m-search-wrap { max-width: 100%; }
-    .s-country-label { font-size: 9px; }
-    .s-banner { font-size: 12px; }
-    .d-end-label { font-size: 10px; }
-  }
-
-  /* ============================================================
-     Mobile UX (≤768px): los toggles y el buscador se esconden detrás
-     de botones tuerca + "Seleccionar" estilo OWID. En desktop estos
-     botones no se ven (display:none) y todo sigue inline.
-
-     En el index.html los 3 charts comparten DOM. El JS de
-     setupMobileControlToggles() resuelve esto vía closest('.chart-block')
-     así cada tuerca abre el panel de SU chart.
-     ============================================================ */
-  .m-controls-trigger, .m-search-trigger {
-    background: var(--bg);
-    border: 1px solid var(--rule);
-    border-radius: 5px;
-    padding: 6px 10px;
-    font-family: var(--sans);
-    font-size: 12px;
-    color: var(--ink-soft);
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    gap: 6px;
-    flex-shrink: 0;
-  }
-  .m-controls-trigger { font-size: 16px; padding: 4px 9px; line-height: 1; }
-  .m-controls-trigger:hover, .m-search-trigger:hover {
-    border-color: var(--accent);
-    color: var(--ink);
-  }
-  .m-search-trigger-icon { font-size: 14px; }
-
-  @media (max-width: 768px) {
-    .m-controls-trigger, .m-search-trigger { display: inline-flex; }
-
-    /* Controles en UNA sola fila apretada:
-       [⚙] [👁] [▶] [——slider——] [2024]
-       Mantenemos flex-wrap:wrap para que cuando .m-controls-panel /
-       .m-search-wrap abren (display:block + width:100%) salten a una
-       nueva línea por su order:99/100. Por defecto están display:none
-       y la fila visible es UNA sola. */
-    .m-controls {
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-    .m-controls-trigger, .m-search-trigger {
-      flex-shrink: 0;
-      padding: 4px 8px;
-    }
-    /* En mobile mostramos solo el ícono "👁" del trigger de búsqueda
-       para ahorrar ancho en la fila. La label sigue presente para a11y. */
-    .m-search-trigger-label { display: none; }
-
-    .m-controls-panel {
-      display: none;
-      width: 100%;
-      flex-direction: column;
-      gap: 10px;
-      padding: 12px;
-      margin-top: 8px;
-      background: var(--bg-soft);
-      border-radius: 6px;
-      order: 99;
-    }
-    .m-controls-panel.open { display: flex; }
-
-    .m-search-wrap {
-      display: none;
-      width: 100%;
-      max-width: 100%;
-      margin-top: 8px;
-      order: 100;
-    }
-    .m-search-wrap.open { display: block; }
-
-    .m-selected-chips { width: 100%; order: 101; }
-
-    /* Slider block: ocupa el espacio restante de la fila. min-width:0
-       para que el flex le permita encogerse cuando hay poco ancho. */
-    .m-slider-block {
-      flex: 1 1 auto;
-      min-width: 0;
-      gap: 6px;
-    }
-    /* El "AÑO" label se saca en mobile — es redundante con el year-display
-       que muestra el número grande a la derecha. */
-    .m-slider-block .m-ctrl-label { display: none; }
-    /* Year display: serif 17px a sans 13px (compacto pero legible). */
-    .m-year-display {
-      font-size: 13px;
-      font-family: var(--sans);
-      font-weight: 600;
-      min-width: 32px;
-    }
-
-    /* Chips de selección más compactos */
-    .m-selected-chip {
-      font-size: 11px;
-      padding: 2px 4px 2px 8px;
-    }
-
-    /* Leyenda en 2 columnas (grilla) para que entre en ~2-4 filas, no 3 */
-    .m-legend {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4px 12px;
-      margin-top: 2px;
-    }
-    .m-legend-chip { font-size: 10px; gap: 5px; line-height: 1.2; }
-    .m-legend-swatch { width: 8px; height: 8px; }
-
-    /* Header jerarquía: título dominante 19px bold, subtítulo subordinado.
-       Antes el subtítulo (.chart-subtitle 12.5px) competía visualmente
-       con el título (.chart-title 16px). */
-    .wrap-wide .chart-title {
-      font-size: 19px;
-      font-weight: 700;
-      line-height: 1.2;
-      margin: 0 0 4px;
-    }
-    .wrap-wide .chart-subtitle {
-      font-size: 12px;
-      font-weight: 400;
-      color: var(--ink-muted);
-      line-height: 1.4;
-      margin: 0 0 8px;
-    }
-    .wrap-wide .chart-block { margin: 8px 0 4px; }
-    /* En el index "todo-junto" cada chart en mobile debe sentirse como
-       una "página" propia — sin que el usuario vea dos charts a la vez
-       (que se confundirían). min-height 80vh por chart-block. */
-    .wrap-wide .chart-block {
-      min-height: 80vh;
-    }
-    .wrap-wide .chart-block + .chart-block {
-      margin-top: 48px;
-      padding-top: 28px;
-    }
-
-    /* SVG es el HÉROE del viewport: 65vh garantizado, capeado a 540px
-       para que en tablets verticales no quede absurdamente alto. */
-    .chart-svg-wrap svg {
-      width: 100%;
-      height: min(65vh, 540px);
-      display: block;
-    }
-
-    /* Notas (sources, attribution) y downloads más chicos. */
-    .footer .sources, .footer .attribution { font-size: 10.5px; }
-    .footer .download { font-size: 11px; padding: 6px 10px; }
-  }
-
-  @media (min-width: 769px) {
-    .m-controls-panel {
-      display: inline-flex;
-      align-items: center;
-      gap: 14px;
-      flex-wrap: wrap;
-    }
-  }
-
-  /* ============================================================
-     Colapsables mobile (estilo OWID).
-     - .m-mobile-collapse: <details> que SOLO se ve en mobile.
-     - .m-desktop-only: bloque que SOLO se ve en desktop.
-     Usados para: (a) la nota metodológica larga (c?-sources), (b) la
-     tabla de promedios regionales del marimekko.
-     ============================================================ */
-  .m-mobile-collapse { display: none; }
-  .m-mobile-collapse > summary {
-    font-family: var(--sans);
-    font-size: 11px;
-    color: var(--accent);
-    cursor: pointer;
-    padding: 6px 0;
-    list-style: none;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 600;
-  }
-  .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
-  .m-mobile-collapse > summary::before { content: '+ '; }
-  .m-mobile-collapse[open] > summary::before { content: '− '; }
-  .m-mobile-collapse > p,
-  .m-mobile-collapse > .m-mobile-body {
-    margin: 4px 0 8px;
-    font-family: var(--sans);
-    font-size: 11px;
-    color: var(--ink-soft);
-    line-height: 1.45;
-  }
-
-  /* Tabla regional HTML del marimekko (visible solo en mobile dentro del
-     <details>). El JS la rellena por código (drawRegionalAvgTableHTML). */
-  #m-avg-table-mobile {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin: 6px 0 4px;
-  }
-  .m-mt-row {
-    display: grid;
-    grid-template-columns: 12px 1fr auto;
-    gap: 8px;
-    align-items: center;
-    font-family: var(--sans);
-    font-size: 11.5px;
-    color: var(--ink);
-    padding: 3px 0;
-  }
-  .m-mt-row-active { font-weight: 700; }
-  .m-mt-row-dimmed { opacity: 0.35; }
-  .m-mt-swatch { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
-  .m-mt-value { font-variant-numeric: tabular-nums; }
-
-  @media (max-width: 768px) {
-    .m-mobile-collapse { display: block; }
-    .m-desktop-only { display: none; }
+    .idx-card h2 { font-size: 16px; }
   }
 </style>
 </head>
 <body>
-<div class="wrap wrap-wide">
+<div class="wrap-idx">
 
   <header>
     <div class="top-bar">
-      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="brand-tag">Cartografías del desarrollo</span> · <span data-i18n="issue-num">N° 2</span></div>
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 2</span></div>
       <div class="lang-toggle">
         <button data-lang="es" class="active">ES</button>
         <button data-lang="en">EN</button>
@@ -723,295 +104,83 @@
     <div class="accent-rule"></div>
   </header>
 
-  <!-- ====================== Chart 1: Marimekko ====================== -->
-  <section class="chart-block" data-chart="1">
-    <h2 class="chart-title" data-i18n="c1-title">El ranking mundial de la desigualdad</h2>
-    <p class="chart-subtitle" data-i18n="c1-subtitle-raw">Coeficiente de Gini por país, tal como aparece en las fuentes originales: América Latina por encima de África subsahariana.</p>
+  <div class="idx-section-label" data-i18n="index-charts-label">Gráficos interactivos</div>
+  <div class="idx-grid">
 
-    <div class="m-controls">
-      <!-- Botón tuerca: solo visible en mobile (≤768px). Abre el panel de toggles. -->
-      <button class="m-controls-trigger" aria-label="Opciones" data-i18n-aria="ctrl-options">⚙</button>
+    <a class="idx-card" href="./chart-1.html">
+      <img class="idx-thumb" src="./thumbs/chart-1.png" data-thumb-es="./thumbs/chart-1.png" data-thumb-en="./thumbs/chart-1.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <span class="idx-card-num">Gráfico 1</span>
+      <h2 data-i18n="c1-title">El ranking mundial de la desigualdad</h2>
+      <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
+    </a>
 
-      <!-- Panel con los toggles: inline en desktop, colapsable en mobile -->
-      <div class="m-controls-panel">
-        <div class="m-ctrl-group">
-          <span class="m-ctrl-label" data-i18n="c1-toggle-label">Medición</span>
-          <div class="m-mode-toggle">
-            <button class="active" data-mode="raw" data-i18n="c1-toggle-raw">Gini original</button>
-            <button data-mode="adj" data-i18n="c1-toggle-adj">Gini ajustado</button>
-          </div>
-        </div>
-      </div>
+    <a class="idx-card" href="./chart-2.html">
+      <img class="idx-thumb" src="./thumbs/chart-2.png" data-thumb-es="./thumbs/chart-2.png" data-thumb-en="./thumbs/chart-2.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <span class="idx-card-num">Gráfico 2</span>
+      <h2 data-i18n="c2-title">América Latina es demasiado desigual para su nivel de desarrollo</h2>
+      <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
+    </a>
 
-      <!-- Botón "Seleccionar": solo visible en mobile. Abre el input del buscador. -->
-      <button class="m-search-trigger" aria-label="Seleccionar">
-        <span class="m-search-trigger-icon" aria-hidden="true">👁</span>
-        <span class="m-search-trigger-label" data-i18n="ctrl-select">Seleccionar</span>
-      </button>
+    <a class="idx-card" href="./chart-3.html">
+      <img class="idx-thumb" src="./thumbs/chart-3.png" data-thumb-es="./thumbs/chart-3.png" data-thumb-en="./thumbs/chart-3.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <span class="idx-card-num">Gráfico 3</span>
+      <h2 data-i18n="c3-title">Las élites cerca, los pobres lejos</h2>
+      <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
+    </a>
 
-      <!-- Slider con play: siempre visible -->
-      <div class="m-slider-block">
-        <button class="m-play-btn" id="m-play" aria-label="Reproducir"></button>
-        <span class="m-ctrl-label" data-i18n="slider-year-label">Año</span>
-        <input type="range" class="m-slider" id="m-slider" min="2000" max="2024" value="2024" step="1">
-        <span class="m-year-display" id="m-year-display">2024</span>
-      </div>
-    </div>
+    <a class="idx-card" href="./chart-4.html">
+      <img class="idx-thumb" src="./thumbs/chart-4.png" data-thumb-es="./thumbs/chart-4.png" data-thumb-en="./thumbs/chart-4.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <span class="idx-card-num">Gráfico 4</span>
+      <h2 data-i18n="c4-title">El ingreso por decil, país por país</h2>
+      <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
+    </a>
 
-    <div class="m-legend" data-chart="1"></div>
+  </div>
 
-    <div class="m-search-wrap">
-      <input type="text" id="m-search" class="m-search-input" data-i18n-placeholder="c3-search-placeholder" placeholder="Buscar país…" autocomplete="off">
-      <div id="m-search-results" class="m-search-results"></div>
-    </div>
-    <div class="m-selected-chips" id="m-selected-chips"></div>
-
-    <div class="chart-svg-wrap">
-      <svg id="chart1" viewBox="0 0 1100 470" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="tooltip" id="tooltip1"></div>
-    </div>
-
-    <!-- Mobile-only: tabla de promedios regionales colapsable. En desktop
-         la tabla vive dentro del SVG; acá se muestra como bloque HTML que
-         el JS rellena en cada drawMarimekko(). -->
-    <details class="m-mobile-collapse">
-      <summary data-i18n="c1-show-avg-table">Ver promedios regionales</summary>
-      <div id="m-avg-table-mobile"></div>
-    </details>
-
-    <div class="footer">
-      <p>
-        <button class="download" data-chart="1-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
-        <button class="download" data-png="1" data-i18n="footer-download-png">Descargar PNG</button>
-      </p>
-      <div class="footer-row">
-        <p class="sources m-desktop-only" data-i18n="c1-sources">
-          Datos: Banco Mundial — Poverty and Inequality Platform (PIP).
-        </p>
-        <details class="m-mobile-collapse">
-          <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
-          <p data-i18n="c1-sources">Datos: Banco Mundial — Poverty and Inequality Platform (PIP).</p>
-        </details>
-        <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ====================== Chart 2: Scatter Gini vs PIB ====================== -->
-  <section class="chart-block" data-chart="2">
-    <h2 class="chart-title" data-i18n="c2-title">América Latina es demasiado desigual para su nivel de desarrollo</h2>
-    <!-- Subtítulo dinámico: el JS lo populates al render con el residuo % de Latam. -->
-    <p class="chart-subtitle">América Latina es 14% más desigual de lo esperado para su nivel de desarrollo.</p>
-
-    <div class="m-controls">
-      <!-- Botón tuerca: solo visible en mobile (≤768px). Abre el panel con los 3 toggles. -->
-      <button class="m-controls-trigger" aria-label="Opciones" data-i18n-aria="ctrl-options">⚙</button>
-
-      <!-- Panel con los 3 toggles: inline en desktop, colapsable en mobile -->
-      <div class="m-controls-panel">
-        <div class="m-ctrl-group">
-          <span class="m-ctrl-label" data-i18n="c2-toggle-model-label">Modelo</span>
-          <div class="m-mode-toggle" data-toggle="model">
-            <button class="active" data-model="linear" data-i18n="c2-toggle-linear">Lineal</button>
-            <button data-model="quadratic" data-i18n="c2-toggle-quadratic">Cuadrática</button>
-          </div>
-        </div>
-        <div class="m-ctrl-group">
-          <span class="m-ctrl-label" data-i18n="c2-toggle-gini-label">Gini</span>
-          <div class="m-mode-toggle" data-toggle="gini">
-            <button data-mode="raw" data-i18n="c2-toggle-gini-raw">Original</button>
-            <button class="active" data-mode="adj" data-i18n="c2-toggle-gini-adj">Ajustado</button>
-          </div>
-        </div>
-        <div class="m-ctrl-group">
-          <span class="m-ctrl-label" data-i18n="c2-toggle-scale-label">Escala X</span>
-          <div class="m-mode-toggle" data-toggle="scaleX">
-            <button class="active" data-scale="log" data-i18n="c2-toggle-scale-log">Log</button>
-            <button data-scale="linear" data-i18n="c2-toggle-scale-linear">Lineal</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Botón "Seleccionar": solo visible en mobile. Abre el input del buscador. -->
-      <button class="m-search-trigger" aria-label="Seleccionar">
-        <span class="m-search-trigger-icon" aria-hidden="true">👁</span>
-        <span class="m-search-trigger-label" data-i18n="ctrl-select">Seleccionar</span>
-      </button>
-
-      <!-- Slider con play: siempre visible -->
-      <div class="m-slider-block">
-        <button class="m-play-btn" id="s-play" aria-label="Reproducir"></button>
-        <span class="m-ctrl-label" data-i18n="slider-year-label">Año</span>
-        <input type="range" class="m-slider" id="s-slider" min="2010" max="2025" value="2025" step="1">
-        <span class="m-year-display" id="s-year-display">2025</span>
-      </div>
-    </div>
-
-    <div class="m-legend" data-chart="2"></div>
-
-    <div class="m-search-wrap">
-      <input type="text" id="s-search" class="m-search-input" data-i18n-placeholder="c2-search-placeholder" placeholder="Buscar país…" autocomplete="off">
-      <div id="s-search-results" class="m-search-results"></div>
-    </div>
-    <div class="m-selected-chips" id="s-selected-chips"></div>
-
-    <div class="chart-svg-wrap">
-      <svg id="chart2" viewBox="0 0 1100 540" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="tooltip" id="tooltip2"></div>
-    </div>
-
-    <!-- Banner regional: N, R², Residuo% — populated por JS. -->
-    <div class="s-banner" id="s-banner"></div>
-
-    <div class="footer">
-      <p>
-        <button class="download" data-chart="2-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
-        <button class="download" data-png="2" data-i18n="footer-download-png">Descargar PNG</button>
-      </p>
-      <div class="footer-row">
-        <p class="sources m-desktop-only" data-i18n="c2-sources">
-          Datos: Banco Mundial — Poverty and Inequality Platform (PIP) y World Development Indicators.
-        </p>
-        <details class="m-mobile-collapse">
-          <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
-          <p data-i18n="c2-sources">Datos: Banco Mundial — Poverty and Inequality Platform (PIP) y World Development Indicators.</p>
-        </details>
-        <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- ====================== Chart 3: Deciles ====================== -->
-  <section class="chart-block" data-chart="3">
-    <h2 class="chart-title" data-i18n="c3-title">Las élites cerca, los pobres lejos</h2>
-    <p class="chart-subtitle" data-i18n="c3-subtitle">El ingreso de los hogares ricos de América Latina se acerca al de Europa. El de los hogares pobres, no.</p>
-
-    <div class="m-controls">
-      <!-- Botón tuerca: solo visible en mobile (≤768px). Abre el panel con los 2 toggles. -->
-      <button class="m-controls-trigger" aria-label="Opciones" data-i18n-aria="ctrl-options">⚙</button>
-
-      <!-- Panel con los toggles: inline en desktop, colapsable en mobile -->
-      <div class="m-controls-panel">
-        <div class="m-ctrl-group">
-          <span class="m-ctrl-label" data-i18n="c3-toggle-y-label">Eje Y</span>
-          <div class="d-mode-toggle" data-toggle="yMode">
-            <button class="active" data-ymode="income" data-i18n="c3-toggle-income">Ingreso PPP/día</button>
-            <button data-ymode="percentile" data-i18n="c3-toggle-percentile">Percentil mundial</button>
-          </div>
-        </div>
-        <div class="m-ctrl-group" id="d-scale-group">
-          <span class="m-ctrl-label" data-i18n="c3-toggle-scale-label">Escala</span>
-          <div class="d-mode-toggle" data-toggle="yScale" id="d-scale-block">
-            <button data-yscale="linear" data-i18n="c3-toggle-scale-linear">Lineal</button>
-            <button class="active" data-yscale="log" data-i18n="c3-toggle-scale-log">Log</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Botón "Seleccionar": solo visible en mobile. Abre el input del buscador. -->
-      <button class="m-search-trigger" aria-label="Seleccionar">
-        <span class="m-search-trigger-icon" aria-hidden="true">👁</span>
-        <span class="m-search-trigger-label" data-i18n="ctrl-select">Seleccionar</span>
-      </button>
-
-      <!-- Slider con play: siempre visible -->
-      <div class="m-slider-block">
-        <button class="m-play-btn" id="d-play" aria-label="Reproducir"></button>
-        <span class="m-ctrl-label" data-i18n="slider-year-label">Año</span>
-        <input type="range" class="m-slider" id="d-slider" min="1990" max="2025" value="2025" step="1">
-        <span class="m-year-display" id="d-year-display">2025</span>
-      </div>
-    </div>
-
-    <div class="m-search-wrap">
-      <input type="text" id="d-search" class="m-search-input" data-i18n-placeholder="c3-search-placeholder" placeholder="Buscar país…" autocomplete="off">
-      <div id="d-search-results" class="m-search-results"></div>
-    </div>
-    <div class="m-selected-chips" id="d-selected-chips"></div>
-
-    <div class="chart-svg-wrap">
-      <svg id="chart3" viewBox="0 0 1100 470" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="tooltip" id="tooltip3"></div>
-    </div>
-
-    <div class="footer">
-      <p>
-        <button class="download" data-chart="3-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
-        <button class="download" data-png="3" data-i18n="footer-download-png">Descargar PNG</button>
-      </p>
-      <div class="footer-row">
-        <p class="sources m-desktop-only" data-i18n="c3-sources">
-          Datos: Banco Mundial — Poverty and Inequality Platform (PIP).
-        </p>
-        <details class="m-mobile-collapse">
-          <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
-          <p data-i18n="c3-sources">Datos: Banco Mundial — Poverty and Inequality Platform (PIP).</p>
-        </details>
-        <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
-      </div>
-    </div>
-  </section>
-
-  <div class="footer">
-    <p class="signature" data-i18n="footer-signature">El Atlas · Daniel Schteingart · 2026</p>
+  <div class="idx-footer">
+    <span data-i18n="footer-signature">El Atlas · Daniel Schteingart · 2026</span>
   </div>
 
 </div>
 
-<script src="../lib/regions.js"></script>
-<script src="../lib/i18n.js"></script>
-<script src="./regions-wb.js"></script>
-<script src="./i18n-issue.js"></script>
-<script src="./utils.js"></script>
-<script src="./country-names.js"></script>
-<script src="./data-marimekko.js"></script>
-<script src="./data-scatter.js"></script>
-<script src="./data-deciles.js"></script>
-<script src="./marimekko.js"></script>
-<script src="./scatter.js"></script>
-<script src="./deciles.js"></script>
-<script src="./png-export.js"></script>
+<script src="../lib/regions.js?v=idx2"></script>
+<script src="../lib/i18n.js?v=idx2"></script>
+<script src="./regions-wb.js?v=idx2"></script>
+<script src="./i18n-issue.js?v=rk15"></script>
+<script src="./utils.js?v=idx2"></script>
 <script>
-  // Init combinado: estados de los 3 charts, luego initialize, luego i18n.
-  state[1] = {
-    mode: 'raw',
-    year: 2024,
-    activeRegion: null,
-    playing: false,
-    selectedCountries: []
-  };
-  state[2] = {
-    mode: 'adj',
-    regression: 'linear',
-    scaleX: 'log',
-    year: (typeof DATA_SCATTER !== 'undefined' && DATA_SCATTER.latest_year) || 2025,
-    playing: false,
-    hoverRegion: null,
-    selectedCountries: [],
-    activeRegions: new Set(typeof REGION_WB_ORDER !== 'undefined' ? REGION_WB_ORDER : [])
-  };
-  state[3] = {
-    yMode: 'income',
-    yScale: 'log',
-    year: (typeof DATA_DECILES !== 'undefined' && DATA_DECILES.latest_year) || 2025,
-    playing: false,
-    selectedCountries: ['NOR', 'PRT', 'CHL', 'ARG', 'BRA', 'NER'],
-    spotlightCountry: null
-  };
-  initMarimekko();
-  initScatter();
-  initDeciles();
+  // Miniaturas por idioma: cada tarjeta trae data-thumb-es / data-thumb-en.
+  // Arranca en ES (el src del HTML) y se cambia al PNG en inglés si LANG==='en'.
+  // THUMB_V: cache-busting. Al re-exportar un thumbnail se sobrescribe el MISMO
+  // archivo; bumpear este número fuerza recargar todos los thumbnails.
+  var THUMB_V = '1';
+  function applyThumbLang() {
+    var en = (typeof LANG !== 'undefined' && LANG === 'en');
+    document.querySelectorAll('.idx-thumb').forEach(function (img) {
+      var want = img.getAttribute(en ? 'data-thumb-en' : 'data-thumb-es');
+      if (!want) return;
+      want += '?v=' + THUMB_V;
+      if (img.getAttribute('src') !== want) img.src = want;
+    });
+  }
+  // Número de tarjeta por idioma ("Gráfico N" / "Chart N"), seteado por JS.
+  function applyCardNums() {
+    var en = (typeof LANG !== 'undefined' && LANG === 'en');
+    var word = en ? 'Chart ' : 'Gráfico ';
+    document.querySelectorAll('.idx-card-num:not([data-i18n])').forEach(function (el, i) {
+      el.textContent = word + (i + 1);
+    });
+  }
   applyI18n();
-  setupLangToggle(() => {
-    // Re-render todo en el nuevo idioma
-    renderMarimekkoLegend();
-    drawMarimekko();
-    renderScatterLegend();
-    renderScatterSelectedChips();
-    drawScatter();
-    renderDecilesSelectedChips();
-    drawDeciles();
+  applyThumbLang();
+  applyCardNums();
+  if (typeof setupLangToggle === 'function') setupLangToggle(function () {
+    applyI18n();
+    applyThumbLang();
+    applyCardNums();
   });
 </script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=1"></script>
 </body>
 </html>
