@@ -555,7 +555,12 @@ function rk_drawMapLabels(svg, o) {
   // islas australes de Chile) en vez del continente.
   const probe = rk_el('path'); probe.setAttribute('fill', '#000'); probe.style.opacity = '0'; probe.style.pointerEvents = 'none'; svg.appendChild(probe);
   let mlEl = null;   // = probe (mainland) por país; it.el de fallback si no hay path
-  const cornersIn = (cx, cy, w, h) => { const a = AX(w), b = AY(h); return inFill(mlEl, cx - a, cy - b) && inFill(mlEl, cx + a, cy - b) && inFill(mlEl, cx - a, cy + b) && inFill(mlEl, cx + a, cy + b); };
+  // Fit con tolerancia horizontal (~14%): la cifra se centra igual aunque el texto sea un
+  // poco más ancho ("-75%" vs "$4.3"), para que NO salte de lugar al cambiar de modo
+  // clásico↔comparar (mismo país, ancho de etiqueta distinto). El overflow es chico y solo
+  // lateral → en países anchos cae sobre sí mismos. Vertical estricto (un desborde
+  // arriba/abajo suele caer en otro país). La colisión y el test de mar usan el ancho real.
+  const cornersIn = (cx, cy, w, h) => { const a = w * 0.43 + 1, b = AY(h); return inFill(mlEl, cx - a, cy - b) && inFill(mlEl, cx + a, cy - b) && inFill(mlEl, cx - a, cy + b) && inFill(mlEl, cx + a, cy + b); };
 
   // Filtro por continente: con zoom a un continente, etiquetar SOLO países de ese
   // continente (según el centroide geográfico dentro de su bbox), para no mostrar
