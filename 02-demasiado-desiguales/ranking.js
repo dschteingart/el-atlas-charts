@@ -628,10 +628,13 @@ function rk_mainland(f) {
 function rk_drawMapLabels(svg, o) {
   const { feats, vals, fillByIso, benchV, box, bigFmt } = o;
   const unit = o.unit, benchOn = state[4].mapMode === 'bench';
-  // PNG/export (bigFmt): cifras GRANDES para que se lean tuiteadas (~13-15px en el
-  // timeline de X, que muestra la imagen a ~506px). Con cifras grandes la anti-colisión
-  // (free) muestra menos etiquetas, pero legibles — que es lo que se quiere para redes.
-  const fs = bigFmt ? 32 : 10, fw = bigFmt ? 700 : 600;
+  // PNG/export (bigFmt): cifras GRANDES para que se lean tuiteadas. PERO el px FINAL del PNG
+  // = fs · (nW/vbW), y ese factor difiere por continente (el mundo upscalea 1.45×, Europa
+  // 1.16×): con fs fijo en 32 el mundo salía GIGANTE (~46px) y Europa ~37px. Normalizamos al
+  // MISMO px final (~38) en todos los mapas: fs = 38·vbW/nW. (En mobile el SVG no se rasteriza
+  // a un canvas fijo —escala al ancho del teléfono—, así que ahí mantenemos 32.)
+  const cv = RK_CONT_VIEW[state[4].continent] || RK_CONT_VIEW.all;
+  const fs = !bigFmt ? 10 : (rk_pngExporting ? Math.round(38 * cv.vbW / cv.nW) : 32), fw = bigFmt ? 700 : 600;
   const placed = [], leaderSegs = [], g = rk_el('g'); svg.appendChild(g);
   const land = svg.querySelector('path.rk-landmask');
   const sp = svg.createSVGPoint();
@@ -767,7 +770,10 @@ function rk_drawMapLabels(svg, o) {
       if (inFill(mlEl, bcx, bcy)) mo = [bcx, bcy];
       else if (inFill(mlEl, cx0, cy0)) mo = [cx0, cy0];
       const dirs = [[1, 0], [0.7, -0.7], [0, -1], [-0.7, -0.7], [-1, 0], [-0.7, 0.7], [0, 1], [0.7, 0.7]];
-      const gap = bigFmt ? 8 : 5, step = bigFmt ? 10 : 7, maxR = bigFmt ? 56 : 34;
+      // maxR acotado (antes bigFmt=56): un país que necesita escapar muy lejos para llegar a
+      // mar abierto (Países Bajos, UK en el Mar del Norte cerrado) genera una línea que "sale
+      // tanto" → mejor que NO se etiquete a que estire. Si no alcanza mar abierto cerca, cae.
+      const gap = bigFmt ? 8 : 5, step = bigFmt ? 10 : 7, maxR = 34;
       // Para cada dirección, la COSTA por donde sale la línea = marchar desde el punto
       // central hacia afuera hasta salir del país. La etiqueta se ancla JUSTO afuera de esa
       // costa → línea CORTA (no depende del ancho del bbox: Noruega deja de ser larga) y que
