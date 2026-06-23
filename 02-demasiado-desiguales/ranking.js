@@ -202,9 +202,13 @@ function drawRanking() {
   if (editorFormat) { const f = PNG_FORMATS[editorFormat]; RK_W = f.vbW; RK_H = f.vbH; RK_MARGIN = rk_getMargins(editorFormat); }
   else if (mobile) { RK_W = RK_W_MOBILE; RK_H = RK_H_MOBILE; RK_MARGIN = { ...RK_MARGIN_MOBILE }; }
   else { RK_W = RK_W_DESKTOP; RK_H = RK_H_DESKTOP; RK_MARGIN = { ...RK_MARGIN_DESKTOP }; }
-  // El mapa en desktop interactivo es más bajo para entrar sin scrollear (junto con
-  // todos los controles). En PNG/mobile usa la altura del formato.
-  if (view === 'map' && !editorFormat && !mobile) RK_H = 480;
+  // El mapa toma su ASPECTO del continente (Europa cuadrado; Asia/Oceanía/mundo apaisado;
+  // África/América vertical), tanto en pantalla (desktop) como en el PNG. En mobile
+  // interactivo conserva el portrait del viewport.
+  if (view === 'map' && !(mobile && !editorFormat)) {
+    const cv = RK_CONT_VIEW[state[4].continent] || RK_CONT_VIEW.all;
+    RK_W = cv.vbW; RK_H = cv.vbH;
+  }
   svg.setAttribute('viewBox', `0 0 ${RK_W} ${RK_H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
   const bigFmt = !!editorFormat || mobile;
@@ -441,8 +445,20 @@ const RK_RELEVANT = new Set([
 // que dicta su centroide geográfico).
 const RK_CONT_EXTRA = { europe: ['RUS', 'TUR', 'KAZ', 'GEO', 'AZE', 'CYP'], asia: ['RUS', 'TUR', 'KAZ', 'EGY', 'GEO', 'AZE'], africa: ['EGY'] };
 const RK_CONT_BBOX = {
-  all: [[-168, -56], [178, 80]], america: [[-168, -56], [-32, 73]], europe: [[-26, 34], [46, 71]],
+  all: [[-168, -56], [178, 80]], america: [[-168, -56], [-32, 73]], europe: [[-25, 34], [60, 72]],
   africa: [[-20, -36], [52, 38]], asia: [[26, -11], [150, 78]], oceania: [[110, -50], [179, 10]]
+};
+// Aspecto del MAPA por continente: cada uno tiene su forma natural. vbW/vbH = viewBox del
+// SVG (pantalla con formato + PNG); nW/nH = canvas del PNG (define el aspecto final del PNG).
+// Europa cuadrado; Asia/Oceanía/mundo apaisado; África/América vertical. (Números a afinar
+// visualmente — el mapa no se puede previsualizar acá.)
+const RK_CONT_VIEW = {
+  all:     { vbW: 1100, vbH: 480,  nW: 1600, nH: 900 },   // mundo: apaisado (sin scroll en pantalla)
+  asia:    { vbW: 1240, vbH: 720,  nW: 1600, nH: 1060 },  // apaisado
+  oceania: { vbW: 1200, vbH: 740,  nW: 1560, nH: 1060 },  // apaisado
+  europe:  { vbW: 1020, vbH: 800,  nW: 1180, nH: 1180 },  // cuadrado
+  africa:  { vbW: 900,  vbH: 1040, nW: 1120, nH: 1440 },  // vertical
+  america: { vbW: 840,  vbH: 1080, nW: 1080, nH: 1480 }   // vertical
 };
 let rk_map_proj = null, rk_map_path = null;
 function rk_mapValues(year, dec, unit) {

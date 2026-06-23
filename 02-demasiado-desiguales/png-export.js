@@ -416,7 +416,14 @@
     //   - mobile:     800  (vertical para Stories / WhatsApp).
     // Si no hay formato del editor (uso público sin sidebar), default 1600
     // y el canvas usa el viewBox del SVG visible (que es desktop landscape).
-    const W = format && PNG_FORMATS[format] ? PNG_FORMATS[format].nominalW : 1600;
+    let W = format && PNG_FORMATS[format] ? PNG_FORMATS[format].nominalW : 1600;
+    // El PNG del MAPA toma su aspecto (canvas) del CONTINENTE, no del formato del editor:
+    // Europa cuadrado, Asia/Oceanía/mundo apaisado, África/América vertical.
+    let mapCanvasH = null;
+    if (isMapChart && typeof RK_CONT_VIEW !== 'undefined') {
+      const cv = RK_CONT_VIEW[state[4].continent] || RK_CONT_VIEW.all;
+      W = cv.nW; mapCanvasH = cv.nH;
+    }
     const padX = (isNewsletter || isMobilePng) ? 32 : 42;
     const padTop = 36;
     const padBottom = mobileFirst ? 24 : 36;
@@ -526,8 +533,8 @@
     //   B. SIN formato (público desktop default) → H dinámico (calculado
     //      como suma — comportamiento histórico, sin cambios).
     let svgW, svgH, svgX, H;
-    if (format && PNG_FORMATS[format]) {
-      H = PNG_FORMATS[format].nominalH;
+    if ((format && PNG_FORMATS[format]) || mapCanvasH) {
+      H = mapCanvasH || PNG_FORMATS[format].nominalH;
       const availH = Math.max(50, H - chromeAbove - chromeBelow);
       const availW = innerW;
       // Fit del aspect del viewBox al rectángulo disponible.
