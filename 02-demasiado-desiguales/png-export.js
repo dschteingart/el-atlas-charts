@@ -367,6 +367,10 @@
     const isNewsletter = format === 'newsletter';
     const isSquare     = format === 'square';
     const isMobilePng  = format === 'mobile';
+    // El mapa del chart 4 es apaisado pero usa la composición "mobile-first" (firma
+    // grande en 2 renglones centrada, nota más abajo), igual que el 'worldmap' del N°3.
+    const isMapChart   = (chartId === '4' && typeof state !== 'undefined' && state[4] && state[4].view === 'map');
+    const mobileFirst  = isNewsletter || isSquare || isMobilePng || isMapChart;
 
     // Forzar carga de webfonts ANTES de medir/dibujar en canvas. El canvas
     // tiene un font-cache aparte que no siempre se sincroniza con
@@ -415,13 +419,16 @@
     const W = format && PNG_FORMATS[format] ? PNG_FORMATS[format].nominalW : 1600;
     const padX = (isNewsletter || isMobilePng) ? 32 : 42;
     const padTop = 36;
-    const padBottom = 36;
+    const padBottom = mobileFirst ? 24 : 36;
     const titleSize = 36, titleLineH = 48;
     const subSize   = 20, subLineH   = 30;
-    const sourceSize = 14, sourceLineH = 20;
-    const attribSize = 18;          // firma editorial más grande
-    const attribLineH = 23;         // en 2 renglones (marca + autor)
+    const sourceSize = mobileFirst ? 18 : 14, sourceLineH = mobileFirst ? 24 : 20;
+    // Firma editorial (convención compartida con el N°3): grande y en 2 renglones en los
+    // formatos mobile-first / mapa ("El Atlas" arriba / "Daniel Schteingart" abajo, más chico).
+    const attribSize = mobileFirst ? 34 : 28;
+    const attribLineH = Math.round(attribSize * 1.15);
     const attribGap = 30;  // gap horizontal entre fuente y firma
+    const SOURCE_MAX_RATIO = 0.70;   // caja de la nota más angosta (no compite con la firma)
     const gapTitleSub  = 6;
     // Mobile PNG (portrait alto 800×1200): gap reducido entre el subtítulo y
     // el SVG para que el plot suba en el canvas. En portrait el chrome
@@ -431,8 +438,10 @@
     // (public/newsletter/square) mantienen 28 — el plot ahí no compite con
     // un viewport tan vertical.
     const gapBeforeSvg = isMobilePng ? 12 : 28;
-    const gapAfterSvgBase  = 4;   // ajustado: la leyenda casi pegada al chart
-    const gapAfterLegend = 22;   // un poco más de aire entre la leyenda y la nota
+    // gapAfterSvg subido a 32 en mobile-first/mapa: los ejes/leyenda necesitan respirar
+    // antes del bloque de nota/firma (igual que el N°3). En desktop landscape clásico, 4.
+    const gapAfterSvgBase  = mobileFirst ? 32 : 4;
+    const gapAfterLegend = mobileFirst ? 38 : 12;   // leyenda equidistante entre chart y nota
     const innerW = W - 2 * padX;
 
     // Hook opcional para chart-specific extra gap entre SVG y leyenda. Usado
@@ -475,14 +484,13 @@
     mctx.font = `700 ${titleSize}px "Source Serif 4", Georgia, serif`;
     const titleLines = titleText ? countWrapLines(mctx, titleText, innerW) : 0;
 
-    // Reservar espacio para la atribución en la última línea de la fuente.
-    // Si la atribución no entra en la misma línea que la fuente, va sola en
-    // una línea adicional debajo.
-    const attribParts = attribText ? attribText.split(' · ') : [];   // marca / autor → 2 renglones
+    // Reservar espacio para la firma. Caja de la nota más angosta (ratio + no solaparse
+    // con la firma agrandada). Misma lógica que el N°3.
     mctx.font = `600 ${attribSize}px "Source Sans 3", -apple-system, sans-serif`;
-    const attribW = attribParts.reduce((m, p) => Math.max(m, mctx.measureText(p).width), 0);
-    const attribH = attribParts.length * attribLineH;
-    const sourceMaxW = attribText ? Math.max(200, innerW - attribW - attribGap) : innerW;
+    const attribW = attribText ? mctx.measureText(attribText).width : 0;
+    const sourceMaxW = attribText
+      ? Math.min(innerW * SOURCE_MAX_RATIO, innerW - attribW - attribGap)
+      : innerW * SOURCE_MAX_RATIO;
 
     mctx.font = `400 ${sourceSize}px "Source Sans 3", -apple-system, sans-serif`;
     const sourceLines = sourceText ? countWrapLines(mctx, sourceText, sourceMaxW) : 0;
@@ -493,13 +501,18 @@
 
     const titleH = titleText ? titleLines * titleLineH : 0;
     const subH = subLines * subLineH;
-    const sourceH = sourceLines * sourceLineH;
-    const bottomTextH = Math.max(sourceH, attribH);   // la firma (2 renglones) puede ser más alta que la fuente
+    // La última línea de la nota comparte la vertical con la firma; si la firma es más
+    // alta, esa línea necesita ese espacio para no comerse el padBottom.
+    const lastLineH = Math.max(sourceLineH, attribSize * 1.15);
+    const sourceH = sourceLines > 0 ? (sourceLines - 1) * sourceLineH + lastLineH : 0;
+    const attribOnlyH = attribText ? attribSize * 1.15 : 0;   // firma sola si no hay nota
 
     // Espacio que ocupan los "non-svg" (chrome arriba y abajo del SVG):
     const chromeAbove = padTop + titleH + (subH ? gapTitleSub + subH : 0) + gapBeforeSvg;
     const chromeBelow = (legendH ? gapAfterSvg + legendH : 0)
-                     + (bottomTextH ? (legendH ? gapAfterLegend : gapAfterSvg) + bottomTextH : 0)
+                     + (sourceH
+                          ? (legendH ? gapAfterLegend : gapAfterSvg) + sourceH
+                          : (attribOnlyH ? gapAfterSvg + attribOnlyH : 0))
                      + padBottom;
 
     // === Altura del canvas ===
@@ -668,23 +681,57 @@
       y += legendH;
     }
 
-    // Banda inferior: fuente a la izquierda, firma editorial a la derecha. El gap se
-    // aplica una sola vez si existe cualquiera de las dos.
-    if (sourceText || attribParts.length) y += (showLegend ? gapAfterLegend : gapAfterSvg);
+    // En formato del editor, si el SVG no llenó todo el alto (típico en el mapa
+    // apaisado), el bloque nota/firma queda equidistante entre el borde inferior del
+    // gráfico y el del PNG (centrado en el espacio sobrante), no pegado al gráfico.
+    if (format && PNG_FORMATS[format] && sourceText) {
+      const gap = (showLegend ? gapAfterLegend : gapAfterSvg);
+      const centeredTop = y + (H - y - sourceH) / 2;
+      y = Math.max(y, centeredTop - gap);
+    }
+
     if (sourceText) {
+      y += (showLegend ? gapAfterLegend : gapAfterSvg);
       ctx.fillStyle = PALETTE.inkSoft;
       ctx.textBaseline = 'top';
       ctx.font = `400 ${sourceSize}px "Source Sans 3", -apple-system, sans-serif`;
       wrapText(ctx, sourceText, padX, y, sourceMaxW, sourceLineH);
     }
-    // Firma editorial: más grande, en 2 renglones (marca + autor), alineada a la derecha.
-    if (attribParts.length) {
+
+    // Firma editorial centrada verticalmente con el bloque de nota. En mobile-first/mapa,
+    // en 2 renglones ("El Atlas" arriba grande / "Daniel Schteingart" abajo más chico),
+    // bloque centrado y anclado al borde derecho. (Convención compartida con el N°3.)
+    if (attribText) {
+      const sourcesCenterY = sourceText
+        ? y + sourceH / 2
+        : y + (showLegend ? gapAfterLegend : gapAfterSvg) + attribSize / 2;
       ctx.fillStyle = PALETTE.attribution;
-      ctx.textAlign = 'right';
+      const attribParts = mobileFirst ? attribText.split('·').map(s => s.trim()).filter(Boolean) : [attribText];
+      if (attribParts.length >= 2) {
+        const line1 = attribParts[0];
+        const line2 = attribParts.slice(1).join(' · ');
+        const size1 = attribSize;
+        const size2 = Math.round(attribSize * 0.78);   // autor más chico que la marca
+        ctx.font = `700 ${size1}px "Source Sans 3", -apple-system, sans-serif`;
+        const w1 = ctx.measureText(line1).width;
+        ctx.font = `600 ${size2}px "Source Sans 3", -apple-system, sans-serif`;
+        const w2 = ctx.measureText(line2).width;
+        const blockW = Math.max(w1, w2);
+        const cx = W - padX - blockW / 2;   // centro del bloque, pegado a la derecha
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `700 ${size1}px "Source Sans 3", -apple-system, sans-serif`;
+        ctx.fillText(line1, cx, sourcesCenterY - attribLineH * 0.42);
+        ctx.font = `600 ${size2}px "Source Sans 3", -apple-system, sans-serif`;
+        ctx.fillText(line2, cx, sourcesCenterY + attribLineH * 0.42);
+      } else {
+        ctx.textAlign = 'right';
+        ctx.textBaseline = 'middle';
+        ctx.font = `600 ${attribSize}px "Source Sans 3", -apple-system, sans-serif`;
+        ctx.fillText(attribParts[0], W - padX, sourcesCenterY);
+      }
+      ctx.textAlign = 'left';   // restaurar defaults
       ctx.textBaseline = 'top';
-      ctx.font = `600 ${attribSize}px "Source Sans 3", -apple-system, sans-serif`;
-      attribParts.forEach((p, i) => ctx.fillText(p, W - padX, y + i * attribLineH));
-      ctx.textAlign = 'left';  // restaurar default
     }
 
     URL.revokeObjectURL(svgUrl);
