@@ -63,6 +63,7 @@ const ISSUE_I18N = {
 
     // Chart 4 — Ranking de ingreso por decil
     'c4-title':                  'El ingreso por decil, país por país',
+    'c4-title-lines':            'El ingreso por decil, año a año',
     'c4-subtitle':               'Ingreso promedio del decil elegido, US$ PPA, por país.',
     'c4-view-bars':              'Barras',
     'c4-view-map':               'Mapa',
@@ -226,6 +227,7 @@ const ISSUE_I18N = {
 
     // Chart 4 — Income-by-decile ranking
     'c4-title':                  'Income by decile, country by country',
+    'c4-title-lines':            'Income by decile, year by year',
     'c4-subtitle':               'Average income of the selected decile, PPP US$, by country.',
     'c4-view-bars':              'Bars',
     'c4-view-map':               'Map',

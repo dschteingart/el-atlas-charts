@@ -143,6 +143,35 @@ function rk_decilePhrase() {
   if (en) return 'of ' + body;
   return (d.length === 1 ? 'del ' : 'de los ') + body;
 }
+// Etiqueta del decil para ENCABEZAR el subtítulo (sin artículo previo). Evocativa en los
+// extremos (10% más pobre/rico), por N° en los medios, y "promedio de los deciles X a Y"
+// cuando hay varios. Se capitaliza al usarla.
+function rk_decileLabel() {
+  const en = (typeof LANG !== 'undefined' && LANG === 'en'), d = rk_deciles();
+  if (d.length === 10) return en ? 'the whole population' : 'toda la población';
+  if (d.length === 1) {
+    if (d[0] === 1) return en ? 'the poorest 10%' : 'el 10% más pobre';
+    if (d[0] === 10) return en ? 'the richest 10%' : 'el 10% más rico';
+    return en ? ('decile ' + d[0]) : ('el decil ' + d[0]);
+  }
+  const contiguous = d.every((v, i) => i === 0 || v === d[i - 1] + 1);
+  const list = contiguous ? (en ? (d[0] + '–' + d[d.length - 1]) : (d[0] + ' a ' + d[d.length - 1])) : d.join(', ');
+  return en ? ('average of deciles ' + list) : ('promedio de los deciles ' + list);
+}
+function rk_cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+// Unidad como palabra suelta ("día"/"mes"/"año") para "en US$ PPA por día".
+function rk_unitWord() {
+  const u = state[4].unit, en = (typeof LANG !== 'undefined' && LANG === 'en');
+  if (u === 'month') return en ? 'month' : 'mes';
+  if (u === 'year') return en ? 'year' : 'año';
+  return en ? 'day' : 'día';
+}
+// Nombre del continente activo para el subtítulo (vacío si es Mundo).
+function rk_continentName() {
+  const c = state[4].continent;
+  if (!c || c === 'all') return '';
+  return rk_tt('c4-cont-' + c, '');
+}
 
 // =================== Render principal ===================
 function drawRanking() {
@@ -767,22 +796,27 @@ function rk_renderCompare() {
 
 // =================== Títulos dinámicos ===================
 function rk_title() {
+  // Líneas es temporal → "año a año" (paralelo a "país por país"); barras/mapa comparan países.
+  if (rk_view() === 'lines') return rk_tt('c4-title-lines', 'El ingreso por decil, año a año');
   return rk_tt('c4-title', 'El ingreso por decil, país por país');
 }
+// El subtítulo ENCABEZA con el decil (evocativo) y NO repite "ingreso" ni "por país": eso
+// ya lo dice el título. Suma unidad + tiempo (+ continente en el mapa con zoom). En modo
+// comparación es un % → sin unidad.
 function rk_subtitle() {
   const en = (typeof LANG !== 'undefined' && LANG === 'en');
-  const dec = rk_decilePhrase(), sfx = rk_unitSuffix();
+  const lead = rk_cap(rk_decileLabel()), ccy = en ? 'PPP US$' : 'US$ PPA', uw = rk_unitWord();
   if (rk_view() === 'lines') {
     const p = (state[4].period) || [rk_yearMin(), rk_yearMax()];
-    return en ? `Average income ${dec}, PPP US$${sfx}, ${p[0]}–${p[1]}.` : `Ingreso promedio ${dec}, US$ PPA${sfx}, ${p[0]}–${p[1]}.`;
+    return en ? `${lead}, in ${ccy} per ${uw}. ${p[0]}–${p[1]}.` : `${lead}, en ${ccy} por ${uw}. ${p[0]}–${p[1]}.`;
   }
-  // Mapa comparando contra un país: el subtítulo lo dice (así el PNG se entiende
-  // aunque el país de referencia no quede visible en el encuadre).
+  const cont = (rk_view() === 'map') ? rk_continentName() : '';
+  const when = (cont ? cont + ', ' : '') + state[4].year;   // "Europa, 2025" o "2025"
   if (rk_view() === 'map' && state[4].mapMode === 'bench') {
     const b = rk_name(state[4].benchmark);
-    return en ? `Average income ${dec} relative to ${b}, by country in ${state[4].year}.` : `Ingreso promedio ${dec} en relación con ${b}, por país en ${state[4].year}.`;
+    return en ? `${lead}, relative to ${b}. ${when}.` : `${lead}, en relación con ${b}. ${when}.`;
   }
-  return en ? `Average income ${dec}, PPP US$${sfx}, by country in ${state[4].year}.` : `Ingreso promedio ${dec}, US$ PPA${sfx}, por país en ${state[4].year}.`;
+  return en ? `${lead}, in ${ccy} per ${uw}. ${when}.` : `${lead}, en ${ccy} por ${uw}. ${when}.`;
 }
 function rk_applyHeadings() {
   const block = document.querySelector('.chart-block[data-chart="4"]') || document;
