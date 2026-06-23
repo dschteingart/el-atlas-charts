@@ -744,41 +744,46 @@ function rk_drawMapLabels(svg, o) {
       // destino del rayo: el punto interior del nivel 2 si existe; si no, el centroide
       // (en un cóncavo podría caer en agua → el rayo no entra y el país no lleva etiqueta
       // externa, lo cual es aceptable: preferimos no mostrarla a mostrarla flotando).
-      const tgt = interiorPt || [cx0, cy0];
-      const hW = (it.b[1][0] - it.b[0][0]) / 2, hH = (it.b[1][1] - it.b[0][1]) / 2;
+      // Punto CENTRAL dentro del país, desde donde "nace" la línea: el centro del bbox si
+      // cae adentro (lo más central — México/Chile salen del centro, no del norte); si no,
+      // el centroide; si no, el punto interior más profundo (cóncavos como Noruega, cuyo
+      // centro de bbox cae en Suecia).
+      const bcx = (it.b[0][0] + it.b[1][0]) / 2, bcy = (it.b[0][1] + it.b[1][1]) / 2;
+      let mo = interiorPt || [cx0, cy0];
+      if (inFill(mlEl, bcx, bcy)) mo = [bcx, bcy];
+      else if (inFill(mlEl, cx0, cy0)) mo = [cx0, cy0];
       const dirs = [[1, 0], [0.7, -0.7], [0, -1], [-0.7, -0.7], [-1, 0], [-0.7, 0.7], [0, 1], [0.7, 0.7]];
-      const step = bigFmt ? 10 : 7, maxR = bigFmt ? 52 : 34;
-      // Regla: la línea guía es CORTA y SOLO va por mar. Se recorre el radio de menor a
-      // mayor y nos quedamos con el PRIMER radio que tenga alguna dirección válida (=> la
-      // más corta posible); entre las válidas de ese radio se elige la de más aire. Si
-      // ninguna sirve dentro de maxR, el país NO se etiqueta (mejor sin dato que con una
-      // línea larga o confusa). "Válida" exige, sobre todo, que la línea NO atraviese otro
-      // país (solo mar) — eso descarta los mediterráneos/landlocked y las salidas confusas.
+      const gap = bigFmt ? 8 : 5, step = bigFmt ? 10 : 7, maxR = bigFmt ? 56 : 34;
+      // Para cada dirección, la COSTA por donde sale la línea = marchar desde el punto
+      // central hacia afuera hasta salir del país. La etiqueta se ancla JUSTO afuera de esa
+      // costa → línea CORTA (no depende del ancho del bbox: Noruega deja de ser larga) y que
+      // nace del centro. Reglas: la línea va SOLO por mar (no cruza otro país), no cruza otra
+      // etiqueta ni otra línea guía; si no hay salida limpia y corta, el país NO se etiqueta.
+      const edges = dirs.map(d => {
+        let e = null;
+        for (let m = 6; m <= 700; m += 6) { if (!inFill(mlEl, mo[0] + d[0] * m, mo[1] + d[1] * m)) { e = [mo[0] + d[0] * (m - 6), mo[1] + d[1] * (m - 6)]; break; } }
+        return e;
+      });
       let best = null;
-      for (let r = step; r <= maxR && !best; r += step) {
+      for (let r = 0; r <= maxR && !best; r += step) {
         let rBest = null, rBestSea = -1;
-        for (const d of dirs) {
-          const cx = cx0 + d[0] * (hW + AX(w) + r), cy = cy0 + d[1] * (hH + AY(h) + r);
+        for (let di = 0; di < dirs.length; di++) {
+          const d = dirs[di], edge = edges[di]; if (!edge) continue;
+          const off = AX(w) + gap + r, cx = edge[0] + d[0] * off, cy = edge[1] + d[1] * off;
           if (!inView(cx, cy, w, h) || !overSea(cx, cy, w, h) || !free(cx, cy, w, h)) continue;
-          // Origen = costa real: de la etiqueta (mar) hacia el punto interior, primer inFill.
-          let st = null;
-          for (let t = 0; t <= 1.001; t += 0.03) { const px = cx + (tgt[0] - cx) * t, py = cy + (tgt[1] - cy) * t; if (inFill(mlEl, px, py)) { st = [px, py]; break; } }
-          if (!st) continue;
-          // CLAVE: el trayecto st→ancla debe ir SOLO por mar. Si algún punto cae en tierra
-          // de OTRO país (land pero no el propio mainland), o pisa otra etiqueta → descartar.
+          // el trayecto costa→ancla debe ir SOLO por mar (no otro país) y no pisar etiquetas.
           let bad = false;
-          for (let t = 0.04; t <= 1.001; t += 0.04) {
-            const px = st[0] + (cx - st[0]) * t, py = st[1] + (cy - st[1]) * t;
+          for (let t = 0.06; t <= 1.001; t += 0.06) {
+            const px = edge[0] + (cx - edge[0]) * t, py = edge[1] + (cy - edge[1]) * t;
             if (land && inFill(land, px, py) && !inFill(mlEl, px, py)) { bad = true; break; }
             if (placed.some(p => px >= p.x1 && px <= p.x2 && py >= p.y1 && py <= p.y2)) { bad = true; break; }
           }
           if (bad) continue;
-          // …ni cruzar otra línea guía ya dibujada (Suecia/Noruega).
-          if (leaderSegs.some(s => segCross(st, [cx, cy], s[0], s[1]))) continue;
+          if (leaderSegs.some(s => segCross(edge, [cx, cy], s[0], s[1]))) continue;
           // desempate entre direcciones del MISMO radio: la de más mar abierto alrededor.
-          const rr = AX(w) + r * 0.6; let sea = 0;
+          const rr = AX(w) + off * 0.4; let sea = 0;
           for (const e of dirs) if (land && !inFill(land, cx + e[0] * rr, cy + e[1] * rr)) sea++;
-          if (sea > rBestSea) { rBestSea = sea; rBest = { cx, cy, st }; }
+          if (sea > rBestSea) { rBestSea = sea; rBest = { cx, cy, st: edge }; }
         }
         if (rBest) best = rBest;   // primer radio con salida válida = la línea más corta
       }
