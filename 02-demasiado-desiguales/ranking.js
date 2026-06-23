@@ -628,10 +628,12 @@ function rk_drawMapLabels(svg, o) {
   // timeline de X, que muestra la imagen a ~506px). Con cifras grandes la anti-colisión
   // (free) muestra menos etiquetas, pero legibles — que es lo que se quiere para redes.
   const fs = bigFmt ? 32 : 10, fw = bigFmt ? 700 : 600;
-  const placed = [], g = rk_el('g'); svg.appendChild(g);
+  const placed = [], leaderSegs = [], g = rk_el('g'); svg.appendChild(g);
   const land = svg.querySelector('path.rk-landmask');
   const sp = svg.createSVGPoint();
   const over = (a, b) => !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
+  // ¿Se cruzan los segmentos ab y cd? (para que las líneas guía no se crucen entre sí.)
+  const segCross = (a, b, c, d) => { const cw = (p, q, r) => (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]); return ((cw(c, d, a) > 0) !== (cw(c, d, b) > 0)) && ((cw(a, b, c) > 0) !== (cw(a, b, d) > 0)); };
   const inFill = (el, x, y) => { if (!el) return false; sp.x = x; sp.y = y; try { return el.isPointInFill(sp); } catch (e) { return false; } };
   // Caja de la etiqueta (validación interior, colisión, viewport y mar). Media-altura
   // 0.55h: deja aire para que la anti-colisión separe bien y las cifras no se amontonen.
@@ -745,23 +747,38 @@ function rk_drawMapLabels(svg, o) {
       const tgt = interiorPt || [cx0, cy0];
       const hW = (it.b[1][0] - it.b[0][0]) / 2, hH = (it.b[1][1] - it.b[0][1]) / 2;
       const dirs = [[1, 0], [0.7, -0.7], [0, -1], [-0.7, -0.7], [-1, 0], [-0.7, 0.7], [0, 1], [0.7, 0.7]];
-      const step = bigFmt ? 10 : 7, maxR = bigFmt ? 64 : 42;
-      outer: for (let r = step; r <= maxR; r += step) {
+      const step = bigFmt ? 10 : 7, maxR = bigFmt ? 84 : 42;
+      // En vez de tomar la PRIMERA dirección válida, evaluar TODAS y elegir la de más
+      // AIRE: ancla en mar abierto (no entre islas) y lejos de otras etiquetas, sin cruzar
+      // otra línea guía. Así México sale al Pacífico (aire) y no al Caribe (Cuba + cifras),
+      // y Suecia/Noruega no cruzan sus líneas.
+      let best = null, bestScore = -Infinity;
+      for (let r = step; r <= maxR; r += step) {
         for (const d of dirs) {
           const cx = cx0 + d[0] * (hW + AX(w) + r), cy = cy0 + d[1] * (hH + AY(h) + r);
           if (!inView(cx, cy, w, h) || !overSea(cx, cy, w, h) || !free(cx, cy, w, h)) continue;
           // Origen = COSTA REAL: de la etiqueta (mar) hacia un punto interior GARANTIZADO
-          // (tgt), el primer punto que cae dentro del mainland. La línea toca siempre el
-          // país (no queda flotando — bug Portugal) y no arranca de la esquina del bbox.
+          // (tgt), el primer punto que cae dentro del mainland (la línea toca siempre el país).
           let st = null;
           for (let t = 0; t <= 1.001; t += 0.03) { const px = cx + (tgt[0] - cx) * t, py = cy + (tgt[1] - cy) * t; if (inFill(mlEl, px, py)) { st = [px, py]; break; } }
           if (!st) continue;
-          let crosses = false;   // la línea no debe cruzar otra etiqueta ya colocada
-          for (let t = 0; t <= 1.001; t += 0.12) { const px = st[0] + (cx - st[0]) * t, py = st[1] + (cy - st[1]) * t; if (placed.some(p => px >= p.x1 && px <= p.x2 && py >= p.y1 && py <= p.y2)) { crosses = true; break; } }
-          if (crosses) continue;
-          anchor = [cx, cy]; external = true; leaderStart = st; break outer;
+          // no cruzar una etiqueta ya colocada…
+          let bad = false;
+          for (let t = 0; t <= 1.001; t += 0.1) { const px = st[0] + (cx - st[0]) * t, py = st[1] + (cy - st[1]) * t; if (placed.some(p => px >= p.x1 && px <= p.x2 && py >= p.y1 && py <= p.y2)) { bad = true; break; } }
+          if (bad) continue;
+          // …ni otra línea guía ya dibujada (Suecia/Noruega).
+          if (leaderSegs.some(s => segCross(st, [cx, cy], s[0], s[1]))) continue;
+          // AIRE: de 8 puntos en un anillo alrededor del ancla, cuántos caen en MAR (no
+          // land) → ancla en mar abierto, no entre islas; y qué tan lejos de la etiqueta
+          // más cercana. Más aire + más lejos = mejor (el aire manda).
+          const rr = AX(w) + r * 0.6; let sea = 0;
+          for (const e of dirs) if (land && !inFill(land, cx + e[0] * rr, cy + e[1] * rr)) sea++;
+          let near = 1e9; placed.forEach(p => { const mx = (p.x1 + p.x2) / 2, my = (p.y1 + p.y2) / 2; near = Math.min(near, Math.hypot(cx - mx, cy - my)); });
+          const score = sea * 70 + Math.min(near, 160) * 0.45 - r;
+          if (score > bestScore) { bestScore = score; best = { cx, cy, st }; }
         }
       }
+      if (best) { anchor = [best.cx, best.cy]; external = true; leaderStart = best.st; leaderSegs.push([best.st, [best.cx, best.cy]]); }
     }
     if (!anchor) return;
     placed.push(rectOf(anchor[0], anchor[1], w, h));
