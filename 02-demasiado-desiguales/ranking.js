@@ -203,11 +203,15 @@ function drawRanking() {
   else if (mobile) { RK_W = RK_W_MOBILE; RK_H = RK_H_MOBILE; RK_MARGIN = { ...RK_MARGIN_MOBILE }; }
   else { RK_W = RK_W_DESKTOP; RK_H = RK_H_DESKTOP; RK_MARGIN = { ...RK_MARGIN_DESKTOP }; }
   // El mapa toma su ASPECTO del continente (Europa cuadrado; Asia/Oceanía/mundo apaisado;
-  // África/América vertical), tanto en pantalla (desktop) como en el PNG. En mobile
-  // interactivo conserva el portrait del viewport.
-  if (view === 'map' && !(mobile && !editorFormat)) {
-    const cv = RK_CONT_VIEW[state[4].continent] || RK_CONT_VIEW.all;
-    RK_W = cv.vbW; RK_H = cv.vbH;
+  // África/América vertical) SOLO en el PNG/preview (editorFormat). La versión interactiva
+  // se queda apaisada y baja (RK_H=480) para que NO haya scroll en ninguna región.
+  if (view === 'map') {
+    if (editorFormat) {
+      const cv = RK_CONT_VIEW[state[4].continent] || RK_CONT_VIEW.all;
+      RK_W = cv.vbW; RK_H = cv.vbH;
+    } else if (!mobile) {
+      RK_H = 480;
+    }
   }
   svg.setAttribute('viewBox', `0 0 ${RK_W} ${RK_H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
@@ -467,20 +471,35 @@ function rk_mapValues(year, dec, unit) {
   return vals;
 }
 function rk_isoOf(d) { return d.id || (d.properties && d.properties.iso) || null; }
-// ¿El país (iso) cae dentro del encuadre del continente activo? Mismo criterio que el
-// filtro de etiquetas: geoCentroid dentro del bbox del continente (+ transcontinentales).
+// Continente GEOGRÁFICO de un país, para filtrar etiquetas y el swatch de la leyenda con
+// zoom. Se deriva de la región del Banco Mundial (rk_region) + overrides para los casos
+// que la taxonomía WB mezcla: el Norte de África viene junto al Medio Oriente, Asia Central
+// junto a Europa, y Oceanía junto a Asia Oriental. Así, p.ej., Túnez es África (no Europa)
+// aunque su land aparezca como contexto en el zoom a Europa.
+const RK_NORTH_AFRICA = new Set(['DZA', 'EGY', 'LBY', 'MAR', 'TUN', 'ESH']);
+const RK_CENTRAL_ASIA = new Set(['KAZ', 'UZB', 'TKM', 'KGZ', 'TJK']);
+const RK_OCEANIA_ISO = new Set(['AUS', 'NZL', 'PNG', 'FJI', 'SLB', 'VUT', 'WSM', 'TON', 'KIR', 'FSM', 'MHL', 'PLW', 'NRU', 'TUV', 'NCL', 'PYF']);
+function rk_isoContinent(iso) {
+  if (RK_OCEANIA_ISO.has(iso)) return 'oceania';
+  if (RK_NORTH_AFRICA.has(iso)) return 'africa';
+  if (RK_CENTRAL_ASIA.has(iso)) return 'asia';
+  const r = rk_region(iso);
+  if (r === 'North America' || r === 'Latin America & Caribbean') return 'america';
+  if (r === 'Europe & Central Asia') return 'europe';
+  if (r === 'Sub-Saharan Africa') return 'africa';
+  // East Asia & Pacific, South Asia y lo que queda de "Middle East, North Africa,
+  // Afghanistan & Pakistan" (Medio Oriente + Afganistán + Pakistán) → Asia.
+  if (r === 'East Asia & Pacific' || r === 'South Asia' || r === 'Middle East, North Africa, Afghanistan & Pakistan') return 'asia';
+  return '';
+}
+// ¿El país (iso) pertenece al continente activo? (+ transcontinentales de RK_CONT_EXTRA).
 // Sirve para NO mostrar en la leyenda el swatch del país de comparación cuando el zoom
-// regional lo deja fuera de cuadro (la clave de color no apuntaría a ningún país visible).
+// regional lo deja afuera (la clave de color no apuntaría a ningún país del recorte).
 function rk_isoInContinent(iso) {
   const cont = state[4].continent;
   if (!cont || cont === 'all') return true;
-  const bb = RK_CONT_BBOX[cont]; if (!bb) return true;
   if ((RK_CONT_EXTRA[cont] || []).indexOf(iso) >= 0) return true;
-  const feats = (typeof GEO_COUNTRIES !== 'undefined' && GEO_COUNTRIES.features) || [];
-  const f = feats.find(ft => rk_isoOf(ft) === iso); if (!f) return false;
-  let gc = null; try { gc = d3.geoCentroid(f); } catch (e) { }
-  if (!gc || isNaN(gc[0])) return false;
-  return gc[0] >= bb[0][0] && gc[0] <= bb[1][0] && gc[1] >= bb[0][1] && gc[1] <= bb[1][1];
+  return rk_isoContinent(iso) === cont;
 }
 // Atenúa los países que no están en el tramo (bin) apuntado en la leyenda.
 function rk_mapDim(binId) {
@@ -597,7 +616,10 @@ function rk_mainland(f) {
 function rk_drawMapLabels(svg, o) {
   const { feats, vals, fillByIso, benchV, box, bigFmt } = o;
   const unit = o.unit, benchOn = state[4].mapMode === 'bench';
-  const fs = bigFmt ? 16 : 10, fw = bigFmt ? 700 : 600;
+  // PNG/export (bigFmt): cifras GRANDES para que se lean tuiteadas (~13-15px en el
+  // timeline de X, que muestra la imagen a ~506px). Con cifras grandes la anti-colisión
+  // (free) muestra menos etiquetas, pero legibles — que es lo que se quiere para redes.
+  const fs = bigFmt ? 32 : 10, fw = bigFmt ? 700 : 600;
   const placed = [], g = rk_el('g'); svg.appendChild(g);
   const land = svg.querySelector('path.rk-landmask');
   const sp = svg.createSVGPoint();
@@ -623,17 +645,15 @@ function rk_drawMapLabels(svg, o) {
   // arriba/abajo suele caer en otro país). La colisión y el test de mar usan el ancho real.
   const cornersIn = (cx, cy, w, h) => { const a = w * 0.43 + 1, b = AY(h); return inFill(mlEl, cx - a, cy - b) && inFill(mlEl, cx + a, cy - b) && inFill(mlEl, cx - a, cy + b) && inFill(mlEl, cx + a, cy + b); };
 
-  // Filtro por continente: con zoom a un continente, etiquetar SOLO países de ese
-  // continente (según el centroide geográfico dentro de su bbox), para no mostrar
-  // etiquetas de África en el zoom a América, etc. Los transcontinentales (Rusia,
-  // Turquía…) se incluyen también en el continente que comparten.
-  const cont = state[4].continent, contBB = (cont !== 'all') ? RK_CONT_BBOX[cont] : null;
-  const contExtra = RK_CONT_EXTRA[cont] || [];
-  const inContinent = (iso, gc) => {
-    if (!contBB) return true;
-    if (contExtra.indexOf(iso) >= 0) return true;
-    if (!gc || isNaN(gc[0])) return false;
-    return gc[0] >= contBB[0][0] && gc[0] <= contBB[1][0] && gc[1] >= contBB[0][1] && gc[1] <= contBB[1][1];
+  // Filtro por continente: con zoom a un continente, etiquetar SOLO países de ESE
+  // continente (por MEMBRESÍA geográfica — rk_isoContinent —, no por bbox: el land de
+  // África/Medio Oriente puede aparecer como contexto en el zoom a Europa pero NO se
+  // etiqueta). Los transcontinentales (Rusia, Turquía…) se incluyen vía RK_CONT_EXTRA.
+  const cont = state[4].continent;
+  const inContinent = (iso) => {
+    if (cont === 'all') return true;
+    if ((RK_CONT_EXTRA[cont] || []).indexOf(iso) >= 0) return true;
+    return rk_isoContinent(iso) === cont;
   };
   const items = feats.filter(f => vals[rk_isoOf(f)] != null).map(f => {
     const iso = rk_isoOf(f), ml = rk_mainland(f); let c = null, b = null, gc = null, dpath = null;
@@ -641,7 +661,7 @@ function rk_drawMapLabels(svg, o) {
     try { gc = d3.geoCentroid(f); } catch (e) { }
     try { dpath = rk_map_path(ml); } catch (e) { }   // path del mainland (para la probe)
     return { iso, el: svg.querySelector('path.rk-country[data-iso="' + iso + '"]'), c, b, gc, dpath, area: b ? (b[1][0] - b[0][0]) * (b[1][1] - b[0][1]) : 0 };
-  }).filter(it => inContinent(it.iso, it.gc))
+  }).filter(it => inContinent(it.iso))
     // Prioridad: países relevantes primero (procesados antes → ganan colisiones y son
     // los únicos elegibles para línea guía), y dentro de cada grupo por superficie
     // visible. Así en el mundo se etiquetan primero los importantes y los chicos
@@ -744,7 +764,7 @@ function rk_drawMapLabels(svg, o) {
       const ln = rk_el('line'); ln.setAttribute('x1', ls[0]); ln.setAttribute('y1', ls[1]); ln.setAttribute('x2', anchor[0]); ln.setAttribute('y2', anchor[1]); ln.setAttribute('stroke', '#1A1A1A'); ln.setAttribute('stroke-width', bigFmt ? 1 : 0.7); ln.setAttribute('stroke-opacity', 0.45); g.appendChild(ln);
     }
     const t = rk_el('text'); t.setAttribute('x', anchor[0]); t.setAttribute('y', anchor[1] + h * 0.34); t.setAttribute('text-anchor', 'middle'); t.style.fontSize = fs + 'px'; t.style.fontFamily = 'var(--sans)'; t.style.fontWeight = fw;
-    if (external) { t.setAttribute('fill', '#1A1A1A'); t.setAttribute('paint-order', 'stroke'); t.setAttribute('stroke', '#FAF8F3'); t.setAttribute('stroke-width', bigFmt ? 3 : 2); t.setAttribute('stroke-linejoin', 'round'); }
+    if (external) { t.setAttribute('fill', '#1A1A1A'); t.setAttribute('paint-order', 'stroke'); t.setAttribute('stroke', '#FAF8F3'); t.setAttribute('stroke-width', bigFmt ? 5 : 2); t.setAttribute('stroke-linejoin', 'round'); }
     else t.setAttribute('fill', rk_isDark(fillByIso[it.iso]) ? '#FFFFFF' : '#1A1A1A');
     t.textContent = txt; g.appendChild(t);
   });
