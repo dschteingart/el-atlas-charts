@@ -648,6 +648,21 @@ function rk_drawMapLabels(svg, o) {
   const rectOf = (cx, cy, w, h) => ({ x1: cx - AX(w), x2: cx + AX(w), y1: cy - AY(h), y2: cy + AY(h) });
   const inView = (cx, cy, w, h) => (cx - AX(w) >= box.x1 && cx + AX(w) <= box.x2 && cy - AY(h) >= box.y1 && cy + AY(h) <= box.y2);
   const overSea = (cx, cy, w, h) => { if (!land) return false; const a = AX(w), b = AY(h); return !inFill(land, cx - a, cy - b) && !inFill(land, cx + a, cy - b) && !inFill(land, cx - a, cy + b) && !inFill(land, cx + a, cy + b) && !inFill(land, cx, cy); };
+  // CLEARANCE contra TIERRA AJENA: overSea solo mira 5 puntos (4 esquinas + centro). En un mar
+  // ANGOSTO (Mar de Japón) una costa ajena (Honshu) protruye por el MEDIO de un borde de la caja
+  // sin tocar ninguno, y el halo de 5px besa esa costa → la etiqueta "pisa" al vecino. clearLand
+  // muestrea DENSO el perímetro de la caja EXPANDIDA por el margen 'm' (ancho del halo + 1) y exige
+  // que TODO esté fuera de 'land'. Es LOCAL: donde el mar es genuinamente abierto (Chile, Australia)
+  // no hay tierra dentro de 'm' → pasa igual; solo descarta anclas cuya etiqueta/halo quedan pegados
+  // a una costa ajena (entonces el nivel 3 prueba otra dirección/offset, o el país no se etiqueta).
+  const clearLand = (cx, cy, w, h, m) => {
+    if (!land) return true;
+    const a = AX(w) + m, b = AY(h) + m;
+    const stx = Math.max(4, (2 * a) / 8), sty = Math.max(4, (2 * b) / 8);
+    for (let x = cx - a; x <= cx + a + 0.001; x += stx) if (inFill(land, x, cy - b) || inFill(land, x, cy + b)) return false;
+    for (let y = cy - b; y <= cy + b + 0.001; y += sty) if (inFill(land, cx - a, y) || inFill(land, cx + a, y)) return false;
+    return true;
+  };
   const free = (cx, cy, w, h) => !placed.some(p => over(p, rectOf(cx, cy, w, h)));
   // Hit-test contra el CUERPO PRINCIPAL (mainland), no contra el país con islas: una
   // <path> oculta a la que le seteamos el path del mainland por país. Así la etiqueta y
@@ -795,7 +810,7 @@ function rk_drawMapLabels(svg, o) {
         for (let di = 0; di < dirs.length; di++) {
           const d = dirs[di], edge = edges[di]; if (!edge) continue;
           const off = AX(w) + gap + r, cx = edge[0] + d[0] * off, cy = edge[1] + d[1] * off;
-          if (!inView(cx, cy, w, h) || !overSea(cx, cy, w, h) || !free(cx, cy, w, h)) continue;
+          if (!inView(cx, cy, w, h) || !overSea(cx, cy, w, h) || !clearLand(cx, cy, w, h, bigFmt ? 6 : 3) || !free(cx, cy, w, h)) continue;
           // el trayecto costa→ancla debe ir SOLO por mar (no otro país) y no pisar etiquetas.
           // El trayecto costa→ancla va SOLO por mar. Marchamos por distancia desde el borde:
           // se permite estar dentro del propio mainland al arrancar (la línea nace en la
