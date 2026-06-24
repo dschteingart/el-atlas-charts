@@ -1446,26 +1446,12 @@ window.onBeforePngExport = (svgClone, chartId) => {
   if (chartId !== '2') return;
   const tooltip = document.getElementById('tooltip2');
   if (tooltip) tooltip.style.opacity = '0';
-
-  // Pasamos las etiquetas de país a canvas — el contexto aislado del
-  // <img> SVG rasterizado no resuelve bien las webfonts (Source Sans 3)
-  // y los textos salen con tracking equivocado. Mismo truco que el chart 1.
-  const canvasLabels = [];
-  svgClone.querySelectorAll('text.s-country-label').forEach(el => {
-    canvasLabels.push({
-      x: parseFloat(el.getAttribute('x')),
-      y: parseFloat(el.getAttribute('y')),
-      text: el.textContent,
-      fill: el.getAttribute('fill') || '#444',
-      weight: el.classList.contains('s-selected-label') ? '600' : '500',
-      size: 10.5,
-      halo: '#FAF8F3',   // el bg crema, para que el texto se "destaque" sobre los puntos
-      textAnchor: el.getAttribute('text-anchor') || 'start'
-    });
-    el.style.display = 'none';
-  });
-
-  return { canvasLabels };
+  // NOTA: antes acá repintábamos las etiquetas de país en canvas con tamaño
+  // HARDCODEADO 10.5px (canvasLabels) + display:none al SVG. Eso pisaba el
+  // font-size del SVG → los labels salían diminutos en el cuadrado por más que
+  // subiéramos SIZES.label. Lo sacamos: ahora se rasterizan DESDE el SVG (con
+  // su font-size inline + halo), igual que N°3. La webfont la resuelve la
+  // fuente embebida (buildEmbeddedFontCss), así que el truco del canvas sobra.
 };
 
 // Hook adicional: el sourceText del PNG queda como el del HTML
