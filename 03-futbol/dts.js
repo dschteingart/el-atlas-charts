@@ -718,12 +718,22 @@ function dt_subtitle() {
                       : `DTs ${per} que dirigen a una selección extranjera, como % de los «exportados», según su nacionalidad.`;
   return abs ? `Cantidad de DTs ${per} según su nacionalidad.` : `Porcentaje de los DTs ${per} según su nacionalidad.`;
 }
+// Título dinámico: insight en la vista por default (tendencia), neutral al pasar
+// a otras vistas. Excepción: en Barras sobre TODO el período, el título habla de
+// Argentina (mayor exportadora histórica de técnicos, #1 en todos y exportados).
+function dt_title() {
+  const m = state[11].mode, p = (state[11] && state[11].period) || [DT_YEAR_MIN, DT_YEAR_MAX];
+  const fullRange = p[0] <= DT_YEAR_MIN && p[1] >= DT_YEAR_MAX;
+  if (m === 'trend') return dt_tt('c11-title', 'Cada vez más selecciones tienen un DT extranjero');
+  if (m === 'bar' && fullRange) return dt_tt('c11-title-arg', 'Argentina, la mayor exportadora de técnicos del mundo');
+  return dt_tt('c11-title-neutral', 'La migración de los técnicos');
+}
 function dt_applyHeadings(aeCfg) {
   const block = document.querySelector('.chart-block[data-chart="11"]') || document;
   const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
   const tx = (aeCfg && aeCfg.texts && aeCfg.texts[lang]) || {};
   const titleEl = block.querySelector('.chart-title');
-  if (titleEl && !(tx.title || '').trim()) titleEl.textContent = dt_tt('c11-title', 'La migración de los técnicos');
+  if (titleEl && !(tx.title || '').trim()) titleEl.textContent = dt_title();
   const subEl = block.querySelector('.chart-subtitle');
   if (subEl && !(tx.subtitle || '').trim()) subEl.textContent = dt_subtitle();
 }

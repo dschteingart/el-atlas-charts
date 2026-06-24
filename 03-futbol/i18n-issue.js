@@ -260,6 +260,8 @@ const ISSUE_I18N = {
 
     // Chart 11 — DTs (nacionalidad del entrenador + migración del banquillo)
     'c11-title':              'Cada vez más selecciones tienen un DT extranjero',
+    'c11-title-neutral':      'La migración de los técnicos',
+    'c11-title-arg':          'Argentina, la mayor exportadora de técnicos del mundo',
     'c11-mode-trend':         'Local vs. extranjero',
     'c11-trend-local':        'DT local',
     'c11-trend-foreign':      'DT extranjero',
@@ -544,6 +546,8 @@ const ISSUE_I18N = {
 
     // Chart 11 — Managers (nationality + migration of the bench)
     'c11-title':              'More and more teams have a foreign manager',
+    'c11-title-neutral':      'The migration of managers',
+    'c11-title-arg':          'Argentina exports more managers than any other country',
     'c11-mode-trend':         'Local vs. foreign',
     'c11-trend-local':        'Local coach',
     'c11-trend-foreign':      'Foreign coach',
