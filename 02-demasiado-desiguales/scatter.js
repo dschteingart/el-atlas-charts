@@ -67,7 +67,7 @@ function s_getMargins(format) {
   switch (format) {
     case 'public':     return { top: 40, right: 32, bottom: 100, left: 70 };
     case 'newsletter': return { top: 40, right: 40, bottom: 130, left: 70 };
-    case 'square':     return { top: 40, right: 40, bottom: 130, left: 70 };
+    case 'square':     return { top: 40, right: 44, bottom: 70, left: 92 };
     case 'mobile':     return { top: 60,  right: 36, bottom: 220, left: 110 };
     default:           return { ...S_MARGIN_DESKTOP };
   }
@@ -520,7 +520,7 @@ function drawScatter() {
   const SIZES = newsletter
     ? { tick: 18, axisTitle: 19, label: 17 }
     : square
-    ? { tick: 18, axisTitle: 19, label: 17 }
+    ? { tick: 22, axisTitle: 26, label: 26 }
     : mobilePng
     ? { tick: 28, axisTitle: 30, label: 24 }
     : mobile
@@ -530,6 +530,10 @@ function drawScatter() {
         axisTitle: aeSizes?.axisTitle ?? 11.5,
         label:     aeSizes?.labels    ?? 10.5
       };
+
+    // Mobile-first: agrandar los puntos en los formatos PNG (×1.8 en cuadrado,
+    // ×2 en mobile), igual que N°3 — si no, quedan diminutos al verse a ⅓.
+    const ptScale = (square || newsletter) ? 1.8 : (mobilePng || mobile) ? 2.0 : 1;
 
   const s2 = state[2];
   const year = String(s2.year);
@@ -742,14 +746,14 @@ function drawScatter() {
 
     let r, fillOp, stroke, strokeW;
     if (isSelected) {
-      r = S_POINT_R_SELECTED; fillOp = 1;    stroke = '#1A1A1A'; strokeW = 1.3;
+      r = S_POINT_R_SELECTED * ptScale; fillOp = 1;    stroke = '#1A1A1A'; strokeW = 1.3;
     } else if (isHovered) {
       // Hover sobre chip de región: los puntos de esa región se agrandan.
       r = 6;                  fillOp = 0.95; stroke = '#1A1A1A'; strokeW = 0.9;
     } else if (isLatam) {
-      r = S_POINT_R_LATAM;    fillOp = 0.92; stroke = '#1A1A1A'; strokeW = 0.7;
+      r = S_POINT_R_LATAM * ptScale;    fillOp = 0.92; stroke = '#1A1A1A'; strokeW = 0.7;
     } else {
-      r = S_POINT_R_OTHER;    fillOp = 0.7;  stroke = 'white';   strokeW = 0.5;
+      r = S_POINT_R_OTHER * ptScale;    fillOp = 0.7;  stroke = 'white';   strokeW = 0.5;
     }
 
     const c = s_ns('circle');

@@ -271,11 +271,14 @@
   // Font 15 es el sweet spot: 14 quedaba chico contra el título 36px del PNG;
   // 17 daba "estirado" porque las palabras largas (ej. "Latinoamérica y el
   // Caribe") empujaban los gaps entre items y se veían diluidas.
-  const LEGEND_FONT_SIZE = 15;
-  const LEGEND_LINE_H = 24;
-  const LEGEND_ITEM_GAP = 20;     // separación horizontal entre items
-  const LEGEND_CIRCLE_R = 5;
-  const LEGEND_CIRCLE_TEXT_GAP = 7;
+  // LET (no const): en mobile-first se escalan ~1.9× (ver downloadChartPNG).
+  let LEGEND_FONT_SIZE = 15;
+  let LEGEND_LINE_H = 24;
+  let LEGEND_ITEM_GAP = 20;     // separación horizontal entre items
+  let LEGEND_CIRCLE_R = 5;
+  let LEGEND_CIRCLE_TEXT_GAP = 7;
+  // Valores base para resetear (cada export recalcula desde acá).
+  const LEGEND_BASE = { font: 15, lineH: 24, gap: 20, r: 5, textGap: 7 };
 
   function legendItems() {
     // Para el N°2 usamos las 7 regiones del Banco Mundial (regions-wb.js).
@@ -464,13 +467,29 @@
     const padX = (isNewsletter || isMobilePng) ? 32 : 42;
     const padTop = 36;
     const padBottom = mobileFirst ? 24 : 36;
-    const titleSize = 36, titleLineH = 48;
-    const subSize   = 20, subLineH   = 30;
+    // Mobile-first: el PNG cuadrado se ve a ~⅓ en el celu, así que título y
+    // subtítulo van sobredimensionados (igual que N°3). Apaisado/desktop
+    // mantiene los tamaños históricos.
+    const titleSize = mobileFirst ? 52 : 36, titleLineH = mobileFirst ? 64 : 48;
+    const subSize   = mobileFirst ? 32 : 20, subLineH   = mobileFirst ? 42 : 30;
     const sourceSize = mobileFirst ? 18 : 14, sourceLineH = mobileFirst ? 24 : 20;
     // Firma editorial (convención compartida con el N°3): grande y en 2 renglones en los
     // formatos mobile-first / mapa ("El Atlas" arriba / "Daniel Schteingart" abajo, más chico).
     const attribSize = mobileFirst ? 34 : 28;
     const attribLineH = Math.round(attribSize * 1.15);
+    // Escalar la leyenda canvas para mobile-first (~1.9× sobre la base): a 15px
+    // quedaba en ~5px en el celu, ilegible. Se resetea desde LEGEND_BASE.
+    if (mobileFirst) {
+      LEGEND_FONT_SIZE       = Math.round(LEGEND_BASE.font    * 1.9);
+      LEGEND_LINE_H          = Math.round(LEGEND_BASE.lineH   * 1.9);
+      LEGEND_ITEM_GAP        = Math.round(LEGEND_BASE.gap     * 1.6);
+      LEGEND_CIRCLE_R        = Math.round(LEGEND_BASE.r       * 1.8);
+      LEGEND_CIRCLE_TEXT_GAP = Math.round(LEGEND_BASE.textGap * 1.6);
+    } else {
+      LEGEND_FONT_SIZE = LEGEND_BASE.font; LEGEND_LINE_H = LEGEND_BASE.lineH;
+      LEGEND_ITEM_GAP = LEGEND_BASE.gap;   LEGEND_CIRCLE_R = LEGEND_BASE.r;
+      LEGEND_CIRCLE_TEXT_GAP = LEGEND_BASE.textGap;
+    }
     const attribGap = 30;  // gap horizontal entre fuente y firma
     const SOURCE_MAX_RATIO = 0.70;   // caja de la nota más angosta (no compite con la firma)
     const gapTitleSub  = 6;
