@@ -119,8 +119,8 @@ const S_LATAM_PURE_CODES = new Set([
 //   - Resto: r=3.8px, opacity 0.7, stroke white — contexto.
 //   - Seleccionado: r=7px, opacity 1, stroke dark más grueso.
 const S_POINT_R_LATAM = 5;
-const S_POINT_R_OTHER = 3.8;
-const S_POINT_R_SELECTED = 7;
+const S_POINT_R_OTHER = 3.5;     // igual que N°3 (con ptScale 1.8 → 6.3px)
+const S_POINT_R_SELECTED = 6.5;  // igual que N°3 (con ptScale 1.8 → 11.7px)
 
 const S_SVG_NS = 'http://www.w3.org/2000/svg';
 const s_ns = (tag) => document.createElementNS(S_SVG_NS, tag);
@@ -454,6 +454,74 @@ function s_layoutLabels(items, plotBox) {
   return out;
 }
 
+// Caja real de un label colocado, según su anchor + ancho medido + alto de
+// fuente (labelH). Usado por s_relaxLabels y las líneas guía — necesitan la
+// huella REAL del texto grande, no la del s_buildLabelRect (calibrado para
+// fuente chica). Portado de N°3.
+function s_labelBox(l, labelH) {
+  let x1, x2;
+  if (l.anchor === 'start')      { x1 = l.lx;             x2 = l.lx + l.textW; }
+  else if (l.anchor === 'end')   { x1 = l.lx - l.textW;   x2 = l.lx; }
+  else                           { x1 = l.lx - l.textW/2; x2 = l.lx + l.textW/2; }
+  const y1 = l.ly - labelH * 0.78, y2 = l.ly + labelH * 0.22;
+  return { x1, x2, y1, y2, cx: (x1 + x2) / 2, cy: (y1 + y2) / 2 };
+}
+
+// Relajación anti-colisión 2D + repulsión de puntos (portado de N°3). Tras el
+// placement greedy, en formatos grandes los labels caen apiñados y encima de
+// sus puntos; esto empuja cada par solapado por su eje de menor solape y aleja
+// cada label de los puntos (obstacles).
+function s_relaxLabels(placed, labelH, plotBox, passes, obstacles) {
+  const PAD = 8; const PT_PAD = 4;
+  for (let p = 0; p < passes; p++) {
+    let moved = false;
+    for (let i = 0; i < placed.length; i++) {
+      for (let j = i + 1; j < placed.length; j++) {
+        const a = s_labelBox(placed[i], labelH);
+        const b = s_labelBox(placed[j], labelH);
+        const ox = Math.min(a.x2, b.x2) - Math.max(a.x1, b.x1) + PAD;
+        const oy = Math.min(a.y2, b.y2) - Math.max(a.y1, b.y1) + PAD;
+        if (ox > 0 && oy > 0) {
+          if (oy <= ox) { const push = oy/2;
+            if (a.cy <= b.cy) { placed[i].ly -= push; placed[j].ly += push; }
+            else              { placed[i].ly += push; placed[j].ly -= push; }
+          } else { const push = ox/2;
+            if (a.cx <= b.cx) { placed[i].lx -= push; placed[j].lx += push; }
+            else              { placed[i].lx += push; placed[j].lx -= push; }
+          }
+          moved = true;
+        }
+      }
+    }
+    if (obstacles && obstacles.length) {
+      for (let i = 0; i < placed.length; i++) {
+        const a = s_labelBox(placed[i], labelH);
+        for (let k = 0; k < obstacles.length; k++) {
+          const ob = obstacles[k];
+          const nx = Math.max(a.x1, Math.min(ob.x, a.x2));
+          const ny = Math.max(a.y1, Math.min(ob.y, a.y2));
+          const R = ob.r + PT_PAD;
+          const d = Math.hypot(nx - ob.x, ny - ob.y);
+          if (d < R) { const overlap = R - d;
+            let ux = a.cx - ob.x, uy = a.cy - ob.y;
+            const ul = Math.hypot(ux, uy) || 1; ux /= ul; uy /= ul;
+            placed[i].lx += ux * overlap; placed[i].ly += uy * overlap;
+            moved = true;
+          }
+        }
+      }
+    }
+    if (!moved) break;
+  }
+  const up = labelH * 0.78, dn = labelH * 0.22;
+  placed.forEach(l => {
+    l.ly = Math.max(plotBox.y1 + up, Math.min(plotBox.y2 - dn, l.ly));
+    if (l.anchor === 'start')    l.lx = Math.max(plotBox.x1, Math.min(plotBox.x2 - l.textW, l.lx));
+    else if (l.anchor === 'end') l.lx = Math.max(plotBox.x1 + l.textW, Math.min(plotBox.x2, l.lx));
+    else                         l.lx = Math.max(plotBox.x1 + l.textW/2, Math.min(plotBox.x2 - l.textW/2, l.lx));
+  });
+}
+
 // =================== Render principal ===================
 function drawScatter() {
   const svg = document.getElementById('chart2');
@@ -534,6 +602,9 @@ function drawScatter() {
     // Mobile-first: agrandar los puntos en los formatos PNG (×1.8 en cuadrado,
     // ×2 en mobile), igual que N°3 — si no, quedan diminutos al verse a ⅓.
     const ptScale = (square || newsletter) ? 1.8 : (mobilePng || mobile) ? 2.0 : 1;
+    // Formato grande (PNG mobile-first): gatea relajación de labels + líneas
+    // guía + halo grueso, dejando el render desktop interactivo intacto.
+    const bigFmt = newsletter || square || mobilePng || mobile;
 
   const s2 = state[2];
   const year = String(s2.year);
@@ -596,7 +667,7 @@ function drawScatter() {
     lbl.setAttribute('y', S_MARGIN.top + S_PLOT_H + xTickGap);
     lbl.setAttribute('text-anchor', 'middle');
     lbl.setAttribute('class', 's-tick');
-    lbl.setAttribute('font-size', SIZES.tick);
+    lbl.style.fontSize = SIZES.tick + 'px';  // INLINE (no atributo): la clase .s-tick lo pisaría
     lbl.textContent = fmtTickGDP(v);
     axisG.appendChild(lbl);
   });
@@ -616,7 +687,7 @@ function drawScatter() {
     lbl.setAttribute('y', y + 4);
     lbl.setAttribute('text-anchor', 'end');
     lbl.setAttribute('class', 's-tick');
-    lbl.setAttribute('font-size', SIZES.tick);
+    lbl.style.fontSize = SIZES.tick + 'px';  // INLINE (no atributo): la clase .s-tick lo pisaría
     lbl.textContent = Math.round(v);
     axisG.appendChild(lbl);
   });
@@ -644,7 +715,7 @@ function drawScatter() {
   const xTitleY = mobile ? S_H - 70 : mobilePng ? S_H - 60 : S_H - 14;
   xT.setAttribute('y', xTitleY);
   xT.setAttribute('text-anchor', 'middle');
-  xT.setAttribute('font-size', SIZES.axisTitle);
+  xT.style.fontSize = SIZES.axisTitle + 'px';  // INLINE: la clase .s-axis-title lo pisaría
   // Editor: si hay axisX/Y custom no vacíos, los aplicamos. Si no, default
   // del i18n key (que cambia con el toggle scaleX o mode).
   const customAxisX = (aeCfg?.texts?.[LANG]?.axisX || '').trim();
@@ -662,7 +733,7 @@ function drawScatter() {
   yT.setAttribute('y', (mobile || mobilePng) ? 36 : 16);
   yT.setAttribute('transform', 'rotate(-90)');
   yT.setAttribute('text-anchor', 'middle');
-  yT.setAttribute('font-size', SIZES.axisTitle);
+  yT.style.fontSize = SIZES.axisTitle + 'px';  // INLINE: la clase .s-axis-title lo pisaría
   yT.textContent = customAxisY
     || (mode === 'raw' ? t('c2-axis-y-raw') : t('c2-axis-y-adj'));
   svg.appendChild(yT);
@@ -889,6 +960,45 @@ function drawScatter() {
 
   const placed = s_layoutLabels(labelItems, plotBox);
 
+  // En formatos grandes (PNG mobile-first) los labels caen apiñados y encima
+  // de sus puntos. Relajación 2D + repulsión de puntos (portado de N°3).
+  const ptR = (l) => (l.isSelected ? S_POINT_R_SELECTED : S_POINT_R_LATAM) * ptScale;
+  if (bigFmt) {
+    const obstacles = placed.map(l => ({ x: l.cx, y: l.cy, r: ptR(l) }));
+    s_relaxLabels(placed, SIZES.label, plotBox, 260, obstacles);
+  }
+
+  // Halo grueso + weight: que el texto salte sobre puntos del mismo color.
+  const labelHalo = bigFmt ? 6 : 2.5;
+  const labelWeight = bigFmt ? 700 : null;
+
+  // Líneas guía (estilo OWID): reconectan cada label corrido con su punto. Se
+  // appendean ANTES de los labels para quedar por debajo.
+  if (bigFmt) {
+    const leaderG = s_ns('g'); svg.appendChild(leaderG);
+    placed.forEach(l => {
+      const B = s_labelBox(l, SIZES.label);
+      const Px = l.cx, Py = l.cy, r = ptR(l);
+      const nx = Math.max(B.x1, Math.min(Px, B.x2));
+      const ny = Math.max(B.y1, Math.min(Py, B.y2));
+      const dx = nx - Px, dy = ny - Py;
+      const dist = Math.hypot(dx, dy);
+      if (dist > r + 7) {
+        const ux = dx / dist, uy = dy / dist;
+        const line = s_ns('line');
+        line.setAttribute('x1', Px + ux * r);
+        line.setAttribute('y1', Py + uy * r);
+        line.setAttribute('x2', nx - ux * 2);
+        line.setAttribute('y2', ny - uy * 2);
+        line.setAttribute('stroke', '#9a9488');
+        line.setAttribute('stroke-width', 1.4);
+        line.setAttribute('stroke-opacity', 0.7);
+        line.setAttribute('stroke-linecap', 'round');
+        leaderG.appendChild(line);
+      }
+    });
+  }
+
   const labelsG = s_ns('g'); svg.appendChild(labelsG);
   placed.forEach(l => {
     const txt = s_ns('text');
@@ -897,7 +1007,13 @@ function drawScatter() {
     txt.setAttribute('y', l.ly);
     txt.setAttribute('text-anchor', l.anchor);
     txt.setAttribute('fill', REGION_WB_LABEL_COLORS[l.region] || '#444');
-    txt.setAttribute('font-size', SIZES.label);
+    // INLINE (no atributo): la clase .s-country-label pisaría el font-size.
+    txt.style.fontSize = SIZES.label + 'px';
+    txt.style.stroke = 'var(--bg)';
+    txt.style.strokeWidth = labelHalo + 'px';
+    txt.style.paintOrder = 'stroke';
+    txt.style.strokeLinejoin = 'round';
+    if (labelWeight) txt.style.fontWeight = labelWeight;
     txt.textContent = l.text;
     labelsG.appendChild(txt);
   });

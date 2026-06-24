@@ -224,7 +224,10 @@
         if (val) inline += `${prop}:${val};`;
       });
       const prevStyle = targetNodes[i].getAttribute('style') || '';
-      targetNodes[i].setAttribute('style', inline + prevStyle);
+      // COMPUTED último: el estilo resuelto (rgb) gana al inline original que
+      // todavía tiene var(--bg) — clave para que el halo de los labels (stroke:
+      // var(--bg)) no se evapore al rasterizar el SVG como <img>.
+      targetNodes[i].setAttribute('style', prevStyle + ';' + inline);
     }
   }
 
