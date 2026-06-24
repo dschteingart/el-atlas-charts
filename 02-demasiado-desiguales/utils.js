@@ -49,7 +49,7 @@ function isMobileViewport() {
 const PNG_FORMATS = {
   public:     { vbW: 1100, vbH: 619,  nominalW: 1600, nominalH: 900  },
   newsletter: { vbW: 1100, vbH: 1210, nominalW: 1000, nominalH: 1100 },
-  square:     { vbW: 1100, vbH: 1100, nominalW: 1200, nominalH: 1200 },
+  square:     { vbW: 1100, vbH: 760,  nominalW: 1200, nominalH: 1200 },
   mobile:     { vbW: 1100, vbH: 1650, nominalW: 800,  nominalH: 1200 }
 };
 
