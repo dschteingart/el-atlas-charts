@@ -471,6 +471,9 @@ function og_drawSankey(svg, opt) {
   flows.forEach(([b, r, n]) => { srcTot[b] = (srcTot[b] || 0) + n; tgtTot[r] = (tgtTot[r] || 0) + n; });
   const srcSet = new Set(Object.keys(srcTot).sort((a, b) => srcTot[b] - srcTot[a]).slice(0, TOPN));
   const tgtSet = new Set(Object.keys(tgtTot).sort((a, b) => tgtTot[b] - tgtTot[a]).slice(0, TOPN));
+  // Para el tooltip de "Otros": el desglose de los que quedaron fuera del top-N.
+  const srcOthers = Object.keys(srcTot).filter(b => !srcSet.has(b)).sort((a, b) => srcTot[b] - srcTot[a]).map(b => [b, srcTot[b]]);
+  const tgtOthers = Object.keys(tgtTot).filter(r => !tgtSet.has(r)).sort((a, b) => tgtTot[b] - tgtTot[a]).map(r => [r, tgtTot[r]]);
   const agg = {};
   flows.forEach(([b, r, n]) => { const s = srcSet.has(b) ? b : OS, t = tgtSet.has(r) ? r : OT; agg[s + '|' + t] = (agg[s + '|' + t] || 0) + n; });
   const srcVal = {}, tgtVal = {};
@@ -515,6 +518,21 @@ function og_drawSankey(svg, opt) {
     linksG.appendChild(path);
   });
   const nodesG = og_el('g'); svg.appendChild(nodesG);
+  // Tooltip de nodo: total de jugadores por país (= grosor de la barra). En
+  // "Otros", total + desglose por país de los que quedaron fuera del top-N.
+  const jugN = (n) => n + ' ' + (n === 1 ? og_tt('c9-sankey-jug1', 'jugador') : og_tt('c9-sankey-jugN', 'jugadores'));
+  const moveTip = (ev) => { if (!tooltip) return; const rc = svg.getBoundingClientRect(); const _x = ev.clientX - rc.left, _w = tooltip.offsetWidth || 180; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; };
+  function nodeTipHtml(k, side) {
+    const total = (side === 'src' ? srcVal[k] : tgtVal[k]) || 0;
+    if (k !== OS && k !== OT) return `<strong>${nmOf(k)}</strong><br>${jugN(total)}`;
+    const list = (side === 'src' ? srcOthers : tgtOthers);
+    let html = `<strong>${og_tt('c9-sankey-otros', 'Otros')}</strong> · ${jugN(total)}<div style="margin-top:5px;display:grid;grid-template-columns:auto auto;gap:1px 12px;">`;
+    list.slice(0, 14).forEach(([iso, n]) => { html += `<span>${og_displayName(iso)}</span><strong style="text-align:right;font-variant-numeric:tabular-nums;">${n}</strong>`; });
+    html += '</div>';
+    if (list.length > 14) html += `<div style="margin-top:3px;opacity:.7;">+${list.length - 14} ${og_tt('c9-sankey-more', 'más')}</div>`;
+    return html;
+  }
+  const nodeHover = !isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
   const drawCol = (nodes, pos, x, side) => nodes.forEach(k => {
     const p = pos[k];
     const rect = og_el('rect'); rect.setAttribute('x', x); rect.setAttribute('y', p.y0); rect.setAttribute('width', nodeW); rect.setAttribute('height', Math.max(1.5, p.h));
@@ -522,6 +540,12 @@ function og_drawSankey(svg, opt) {
     const txt = og_el('text'); txt.setAttribute('x', side === 'src' ? x - padLbl : x + nodeW + padLbl); txt.setAttribute('y', (p.y0 + p.y1) / 2 + fs * 0.34);
     txt.setAttribute('text-anchor', side === 'src' ? 'end' : 'start'); txt.style.fontSize = fs + 'px'; txt.style.fontFamily = 'var(--sans)'; txt.style.fontWeight = '600'; txt.setAttribute('fill', 'var(--ink)');
     txt.textContent = nmOf(k); nodesG.appendChild(txt);
+    if (nodeHover) [rect, txt].forEach(el => {
+      el.style.cursor = 'pointer';
+      el.addEventListener('mouseenter', () => { if (tooltip) { tooltip.innerHTML = nodeTipHtml(k, side); tooltip.style.display = 'block'; tooltip.style.opacity = '1'; } });
+      el.addEventListener('mousemove', moveTip);
+      el.addEventListener('mouseleave', () => { if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; } });
+    });
   });
   drawCol(srcNodes, sPos, leftX, 'src'); drawCol(tgtNodes, tPos, rightX, 'tgt');
   const disp = document.getElementById('og-range-display'); if (disp) disp.textContent = wc;

@@ -184,7 +184,7 @@ const dt_tt = (k, fb) => ((typeof t === 'function' ? t(k) : '') || fb);
 //  DRAW
 //==================================================================
 function drawDts() {
-  const svg = document.getElementById('chartDTS');
+  const svg = document.getElementById('chart11');
   if (!svg) return;
   svg.innerHTML = '';
   dt_clearHover(svg);   // matar el hover del render anterior (si no, en barras/flujos sale un tooltip fantasma del modo líneas)
@@ -486,6 +486,9 @@ function dt_drawSankey(svg, opt) {
   flows.forEach(([b, r, n]) => { srcTot[b] = (srcTot[b] || 0) + n; tgtTot[r] = (tgtTot[r] || 0) + n; });
   const srcSet = new Set(Object.keys(srcTot).sort((a, b) => srcTot[b] - srcTot[a]).slice(0, TOPN));
   const tgtSet = new Set(Object.keys(tgtTot).sort((a, b) => tgtTot[b] - tgtTot[a]).slice(0, TOPN));
+  // Para el tooltip de "Otros": el desglose de los que quedaron fuera del top-N.
+  const srcOthers = Object.keys(srcTot).filter(b => !srcSet.has(b)).sort((a, b) => srcTot[b] - srcTot[a]).map(b => [b, srcTot[b]]);
+  const tgtOthers = Object.keys(tgtTot).filter(r => !tgtSet.has(r)).sort((a, b) => tgtTot[b] - tgtTot[a]).map(r => [r, tgtTot[r]]);
   const agg = {};
   flows.forEach(([b, r, n]) => { const s = srcSet.has(b) ? b : OS, t = tgtSet.has(r) ? r : OT; agg[s + '|' + t] = (agg[s + '|' + t] || 0) + n; });
   const srcVal = {}, tgtVal = {};
@@ -514,7 +517,7 @@ function dt_drawSankey(svg, opt) {
   const links = Object.keys(agg).map(k => { const p = k.split('|'); return { s: p[0], t: p[1], n: agg[k] }; })
     .sort((a, b) => (sIdx[a.s] - sIdx[b.s]) || (tIdx[a.t] - tIdx[b.t]));
   const sOff = {}, tOff = {}; srcNodes.forEach(k => sOff[k] = sPos[k].y0); tgtNodes.forEach(k => tOff[k] = tPos[k].y0);
-  const tooltip = document.getElementById('tooltipDTS');
+  const tooltip = document.getElementById('tooltip11');
   const linksG = dt_el('g'); svg.appendChild(linksG);
   links.forEach(L => {
     const h = L.n * scale, y0 = sOff[L.s], y1 = tOff[L.t]; sOff[L.s] += h; tOff[L.t] += h;
@@ -530,6 +533,21 @@ function dt_drawSankey(svg, opt) {
     linksG.appendChild(path);
   });
   const nodesG = dt_el('g'); svg.appendChild(nodesG);
+  // Tooltip de nodo: total de DTs por país (= grosor de la barra). En "Otros",
+  // total + desglose por país de los que quedaron fuera del top-N.
+  const dtN = (n) => n + ' ' + (n === 1 ? dt_tt('c11-sankey-dt1', 'DT') : dt_tt('c11-sankey-dtN', 'DTs'));
+  const moveTip = (ev) => { if (!tooltip) return; const rc = svg.getBoundingClientRect(); const _x = ev.clientX - rc.left, _w = tooltip.offsetWidth || 180; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; };
+  function nodeTipHtml(k, side) {
+    const total = (side === 'src' ? srcVal[k] : tgtVal[k]) || 0;
+    if (k !== OS && k !== OT) return `<strong>${nmOf(k)}</strong><br>${dtN(total)}`;
+    const list = (side === 'src' ? srcOthers : tgtOthers);
+    let html = `<strong>${dt_tt('c11-sankey-otros', 'Otros')}</strong> · ${dtN(total)}<div style="margin-top:5px;display:grid;grid-template-columns:auto auto;gap:1px 12px;">`;
+    list.slice(0, 14).forEach(([iso, n]) => { html += `<span>${dt_displayName(iso)}</span><strong style="text-align:right;font-variant-numeric:tabular-nums;">${n}</strong>`; });
+    html += '</div>';
+    if (list.length > 14) html += `<div style="margin-top:3px;opacity:.7;">+${list.length - 14} ${dt_tt('c11-sankey-more', 'más')}</div>`;
+    return html;
+  }
+  const nodeHover = !isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
   const drawCol = (nodes, pos, x, side) => nodes.forEach(k => {
     const p = pos[k];
     const rect = dt_el('rect'); rect.setAttribute('x', x); rect.setAttribute('y', p.y0); rect.setAttribute('width', nodeW); rect.setAttribute('height', Math.max(1.5, p.h));
@@ -537,6 +555,12 @@ function dt_drawSankey(svg, opt) {
     const txt = dt_el('text'); txt.setAttribute('x', side === 'src' ? x - padLbl : x + nodeW + padLbl); txt.setAttribute('y', (p.y0 + p.y1) / 2 + fs * 0.34);
     txt.setAttribute('text-anchor', side === 'src' ? 'end' : 'start'); txt.style.fontSize = fs + 'px'; txt.style.fontFamily = 'var(--sans)'; txt.style.fontWeight = '600'; txt.setAttribute('fill', 'var(--ink)');
     txt.textContent = nmOf(k); nodesG.appendChild(txt);
+    if (nodeHover) [rect, txt].forEach(el => {
+      el.style.cursor = 'pointer';
+      el.addEventListener('mouseenter', () => { if (tooltip) { tooltip.innerHTML = nodeTipHtml(k, side); tooltip.style.display = 'block'; tooltip.style.opacity = '1'; } });
+      el.addEventListener('mousemove', moveTip);
+      el.addEventListener('mouseleave', () => { if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; } });
+    });
   });
   drawCol(srcNodes, sPos, leftX, 'src'); drawCol(tgtNodes, tPos, rightX, 'tgt');
 }
@@ -610,7 +634,7 @@ function dt_drawTrend(svg, opt) {
 function dt_setupHover(svg, ctx) {
   const { y0, y1, xS, yS, series } = ctx;
   const unit = ctx.abs ? '' : '%';
-  const tooltip = document.getElementById('tooltipDTS');
+  const tooltip = document.getElementById('tooltip11');
   const wcYears = dt_years.filter(y => y >= y0 && y <= y1);
   const plotBottom = DT_MARGIN.top + (DT_H - DT_MARGIN.top - DT_MARGIN.bottom);
   const hoverG = dt_el('g'); hoverG.setAttribute('display', 'none'); svg.appendChild(hoverG);
@@ -651,12 +675,12 @@ function dt_setupHover(svg, ctx) {
 function dt_clearHover(svg) {
   if (svg.__ogHoverMove) { svg.removeEventListener('mousemove', svg.__ogHoverMove); svg.__ogHoverMove = null; }
   if (svg.__ogHoverLeave) { svg.removeEventListener('mouseleave', svg.__ogHoverLeave); svg.__ogHoverLeave = null; }
-  const tt = document.getElementById('tooltipDTS');
+  const tt = document.getElementById('tooltip11');
   if (tt) { tt.style.opacity = '0'; tt.style.display = 'none'; }
 }
 
 function dt_emph(iso) {
-  const svg = document.getElementById('chartDTS'); if (!svg) return;
+  const svg = document.getElementById('chart11'); if (!svg) return;
   svg.querySelectorAll('[data-dt]').forEach(el => {
     const me = el.getAttribute('data-dt');
     if (iso == null) { el.style.opacity = ''; if (el.classList.contains('dt-colored')) el.setAttribute('stroke-width', el.getAttribute('data-base-w')); }
