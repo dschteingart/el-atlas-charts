@@ -189,10 +189,10 @@ function drawDts() {
   svg.innerHTML = '';
   dt_clearHover(svg);   // matar el hover del render anterior (si no, en barras/flujos sale un tooltip fantasma del modo líneas)
   dt_project();
-  // Solo en barras el slider representa UN Mundial → single-thumb. Flujos
-  // (sankey) agrega un RANGO de Mundiales, así que usa el slider doble.
+  // Todos los modos usan el slider de RANGO (doble thumb): líneas/área/tendencia
+  // son series temporales; flujos y barras agregan sobre el rango elegido.
   const sliderEl = document.getElementById('dt-range-slider');
-  if (sliderEl) sliderEl.classList.toggle('s-range-single', state[11].mode === 'bar');
+  if (sliderEl) sliderEl.classList.remove('s-range-single');
   // En flujos (sankey) y en la tendencia (local vs. extranjero) se ocultan los
   // toggles que no aplican (universo, métrica, agrupación); el buscador lo
   // maneja dt_renderChips.
@@ -230,11 +230,11 @@ function drawDts() {
   const inP = (pts) => pts.filter(p => p[0] >= y0 && p[0] <= y1 && p[1] != null);
   // Display del slider: barras = un Mundial; el resto (líneas/área/flujos) = rango.
   const _dispEl = document.getElementById('dt-range-display');
-  if (_dispEl) _dispEl.textContent = (state[11].mode === 'bar') ? y1 : (y0 === y1 ? y0 : (y0 + '–' + y1));
+  if (_dispEl) _dispEl.textContent = (y0 === y1 ? y0 : (y0 + '–' + y1));
 
   // Modo BARRAS: ranking de UN Mundial (el extremo derecho del slider). Sale
   // por acá; no usa la maquinaria de líneas/área.
-  if (state[11].mode === 'bar') { dt_drawBars(svg, { bigFmt, isPngFormat, wc: y1 }); dt_applyHeadings(aeCfg); return; }
+  if (state[11].mode === 'bar') { dt_drawBars(svg, { bigFmt, isPngFormat, y0, y1 }); dt_applyHeadings(aeCfg); return; }
   if (state[11].mode === 'sankey') { dt_drawSankey(svg, { bigFmt, isPngFormat, y0, y1 }); dt_applyHeadings(aeCfg); return; }
   if (state[11].mode === 'trend') { dt_drawTrend(svg, { bigFmt, isPngFormat, y0, y1 }); dt_applyHeadings(aeCfg); return; }
 
@@ -408,13 +408,14 @@ function drawDts() {
 // filtra por las selecciones presentes — un país puede aportar técnicos sin jugar.
 const DT_DEFUNCT = ['CSK', 'YUG', 'SUN', 'DDR', 'SCG'];   // estados desaparecidos
 const DT_BAR_COL = '#5E7E96';                            // azul coherente con el chart 2
-// Default de barras: las nacionalidades que MÁS aportaron DTs a ESE Mundial,
-// hasta 12 (= largo de la paleta, así cada barra tiene su color sin repetir).
-// Excluye estados desaparecidos.
-function dt_barDefault(wc) {
+// Default de barras: las nacionalidades que MÁS aportaron DTs en el RANGO
+// [y0,y1], hasta 12. Excluye estados desaparecidos.
+function dt_barDefault(y0, y1) {
   dt_initData();
-  const present = dt_rawTeams.map(t => { const p = t.all.find(q => q[0] === wc); return { iso: t.iso3, n: p ? p[1] : 0 }; })
-    .filter(x => x.n > 0 && DT_DEFUNCT.indexOf(x.iso) < 0)
+  const present = dt_rawTeams.map(t => {
+    const n = t.all.filter(p => p[0] >= y0 && p[0] <= y1).reduce((s, p) => s + p[1], 0);
+    return { iso: t.iso3, n };
+  }).filter(x => x.n > 0 && DT_DEFUNCT.indexOf(x.iso) < 0)
     .sort((a, b) => b.n - a.n || a.iso.localeCompare(b.iso));
   return present.slice(0, 12).map(x => x.iso);
 }
@@ -422,14 +423,15 @@ function dt_barDefault(wc) {
 // Ranking horizontal de UN Mundial. Aplica universo (todos/exportados) y
 // métrica (% de ese Mundial / cantidad). Click en la barra la saca.
 function dt_drawBars(svg, opt) {
-  const bigFmt = opt.bigFmt, isPngFormat = opt.isPngFormat, wc = opt.wc;
-  const abs = dt_isAbs(), U = dt_universe(), den = dt_totals[U][wc] || 0;
+  const bigFmt = opt.bigFmt, isPngFormat = opt.isPngFormat, y0 = opt.y0, y1 = opt.y1;
+  const abs = dt_isAbs(), U = dt_universe();
+  const yrs = dt_years.filter(y => y >= y0 && y <= y1);
+  const den = yrs.reduce((s, y) => s + (dt_totals[U][y] || 0), 0);   // denominador del rango
   const rows = Array.from(dt_selMap().keys()).filter(iso => dt_byIso[iso]).map(iso => {
-    const p = dt_byIso[iso].pts.find(q => q[0] === wc);
-    const n = p ? p[2] : 0;
+    const n = dt_byIso[iso].pts.filter(p => p[0] >= y0 && p[0] <= y1).reduce((s, p) => s + p[2], 0);
     return { iso, name: dt_displayName(iso, dt_byIso[iso].name),
       n, v: abs ? n : (den ? +(100 * n / den).toFixed(1) : 0) };
-  }).filter(r => r.n > 0)                                 // solo países presentes en ese Mundial
+  }).filter(r => r.n > 0)                                 // solo países con DTs en el rango
     .sort((a, b) => b.v - a.v || b.n - a.n);
 
   const fs = bigFmt ? 23 : 12.5;
@@ -457,8 +459,6 @@ function dt_drawBars(svg, opt) {
     vt.style.fontSize = fs + 'px'; vt.style.fontFamily = 'var(--sans)'; vt.style.fontWeight = '700'; vt.setAttribute('fill', 'var(--ink)'); vt.textContent = abs ? r.n : (r.v + '%'); svg.appendChild(vt);
     if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) { bar.style.cursor = 'pointer'; bar.addEventListener('click', () => dt_toggle(r.iso)); }
   });
-  // en barras el slider representa UN Mundial → mostrar solo ese año
-  const disp = document.getElementById('dt-range-display'); if (disp) disp.textContent = wc;
 }
 
 // SANKEY: flujos nacionalidad -> selección de los DTs "exportados", agregados
@@ -689,9 +689,8 @@ function dt_emph(iso) {
   });
 }
 
-// Fragmento de período: en barras un solo Mundial; en líneas/área el rango.
+// Fragmento de período: un solo Mundial si el rango colapsa, si no el rango.
 function dt_periodPhrase(en) {
-  if (state[11].mode === 'bar') return en ? `in the ${state[11].period[1]} World Cup` : `del Mundial ${state[11].period[1]}`;
   const y0 = state[11].period[0], y1 = state[11].period[1];
   if (y0 === y1) return en ? `in the ${y1} World Cup` : `del Mundial ${y1}`;
   if (y0 <= DT_YEAR_MIN && y1 >= DT_YEAR_MAX) return en ? 'in each World Cup' : 'de cada Mundial';
@@ -743,7 +742,10 @@ function dt_renderChips() {
   Array.from(dt_selMap().keys()).forEach(iso => {
     if (!dt_byIso[iso]) return;
     const chip = document.createElement('span'); chip.className = 'm-selected-chip';
-    chip.style.background = dt_getColor(iso); chip.textContent = dt_displayName(iso, dt_byIso[iso].name);
+    // En barras (todas del mismo color) los chips usan el color de la barra; en
+    // líneas/área cada chip lleva el color de su serie.
+    chip.style.background = (state[11].mode === 'bar') ? DT_BAR_COL : dt_getColor(iso);
+    chip.textContent = dt_displayName(iso, dt_byIso[iso].name);
     const x = document.createElement('button'); x.className = 'm-chip-x'; x.innerHTML = '×';
     x.addEventListener('click', () => dt_toggle(iso)); chip.appendChild(x); c.appendChild(chip);
   });
@@ -785,7 +787,7 @@ function setupDtsModeToggle() {
     // En país: barras trae su propio default; al volver a líneas/área desde un
     // modo agregado (barras/flujos/tendencia) se restauran las grandes escuelas.
     if (dt_group() === 'pais') {
-      if (m === 'bar') state[11].selectedCountries = new Map(dt_barDefault(state[11].period[1]).map((iso, i) => [iso, i]));
+      if (m === 'bar') state[11].selectedCountries = new Map(dt_barDefault(state[11].period[0], state[11].period[1]).map((iso, i) => [iso, i]));
       else if ((m === 'line' || m === 'stack') && (prev === 'bar' || prev === 'sankey' || prev === 'trend')) state[11].selectedCountries = new Map(DT_BIG.map((iso, i) => [iso, i]));
     }
     sync(); dt_renderChips(); drawDts();
@@ -813,7 +815,7 @@ function setupDtsGroupToggle() {
   function applyDefaultSelection() {
     let isos;
     if (dt_group() === 'region') isos = DT_REGION_ORDER;
-    else if (state[11].mode === 'bar') isos = dt_barDefault(state[11].period[1]);  // país + barras
+    else if (state[11].mode === 'bar') isos = dt_barDefault(state[11].period[0], state[11].period[1]);  // país + barras
     else isos = DT_BIG;
     if (state[11].mode === 'bar') state[11].barCustom = false;   // volver al default reactiva el auto-ajuste
     state[11].selectedCountries = new Map(isos.map((iso, i) => [iso, i]));
@@ -868,7 +870,7 @@ function setupDtsSlider() {
       // En barras (sin edición manual) la selección por defecto se reajusta al
       // Mundial elegido. Si el usuario ya la editó (barCustom), queda fija.
       if (state[11].mode === 'bar' && !state[11].barCustom && dt_group() === 'pais') {
-        state[11].selectedCountries = new Map(dt_barDefault(state[11].period[1]).map((iso, i) => [iso, i]));
+        state[11].selectedCountries = new Map(dt_barDefault(state[11].period[0], state[11].period[1]).map((iso, i) => [iso, i]));
         dt_renderChips();
       }
       drawDts();
@@ -904,7 +906,10 @@ function initDts() {
   window.__atlasRedraw = drawDts;
   window.onBeforePngExportGetSourceText = function (chartId) {
     if (String(chartId) !== '11') return null;
-    return (typeof t === 'function' ? t('c11-sources-tpl') : '') || null;
+    // La tendencia (local vs. extranjero) habla de "extranjero", no de
+    // "exportado": la nota del PNG acompaña la vista.
+    const key = (state[11] && state[11].mode === 'trend') ? 'c11-sources-tpl-foreign' : 'c11-sources-tpl';
+    return (typeof t === 'function' ? t(key) : '') || null;
   };
   // El subtítulo del PNG refleja universo + métrica + período/Mundial.
   window.onBeforePngExportGetSubtitle = function (chartId) {

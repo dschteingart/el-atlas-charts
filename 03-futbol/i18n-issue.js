@@ -289,8 +289,9 @@ const ISSUE_I18N = {
     'c11-slider-period-label':'Mundiales',
     'c11-search-placeholder': 'Agregar nacionalidad…',
     'c11-label-otros':        'Otros',
-    'c11-sources':            'Datos: <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> — DTs de cada Mundial masculino 1930-2022 con su nacionalidad; los de 2026 son los actuales (Wikipedia), un Mundial aún no jugado. Un DT cuenta como "exportado" si dirige a una selección distinta de su país. Si una selección cambió de DT durante el torneo, cuentan ambos.',
-    'c11-sources-tpl':        'Datos: jfjelstul/worldcup — DTs por Mundial masculino 1930-2022; 2026 actuales (Wikipedia, Mundial no jugado).\n"Exportado" = dirige a una selección distinta de su país.',
+    'c11-sources':            'Datos: <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> — DTs de cada Mundial masculino 1930-2022 con su nacionalidad; los de 2026 son los actuales (Wikipedia), un Mundial aún no jugado. Un DT es "extranjero" (o "exportado", visto desde su país de origen) si dirige a una selección distinta de su país. Si una selección cambió de DT durante el torneo, cuentan ambos.',
+    'c11-sources-tpl':        'Datos: jfjelstul/worldcup — DTs por Mundial masculino 1930-2022; 2026 actuales (Wikipedia, Mundial no jugado).\n"Exportado" = un DT que dirige a una selección distinta de su país.',
+    'c11-sources-tpl-foreign':'Datos: jfjelstul/worldcup — DTs por Mundial masculino 1930-2022; 2026 actuales (Wikipedia, Mundial no jugado).\n"Extranjero" = un DT que dirige a una selección distinta de su país.',
 
     // Chart 8 — Lugares de nacimiento de los mundialistas (anexo: mundiales)
     'c8-title':              'De dónde salen los mundialistas',
@@ -572,8 +573,9 @@ const ISSUE_I18N = {
     'c11-slider-period-label':'World Cups',
     'c11-search-placeholder': 'Add a nationality…',
     'c11-label-otros':        'Others',
-    'c11-sources':            'Data: <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> — managers of each men\'s World Cup 1930-2022 with their nationality; the 2026 ones are the current coaches (Wikipedia), a World Cup not yet played. A manager counts as "exported" if they coach a national team other than their own country. If a team changed managers mid-tournament, both are counted.',
-    'c11-sources-tpl':        'Data: jfjelstul/worldcup — men\'s World Cup managers 1930-2022 with their nationality; 2026 are current coaches (Wikipedia, not yet played).\n"Exported" = coaching a national team other than their own country.',
+    'c11-sources':            'Data: <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> — managers of each men\'s World Cup 1930-2022 with their nationality; the 2026 ones are the current coaches (Wikipedia), a World Cup not yet played. A manager is "foreign" (or "exported", from their home country\'s view) if they coach a national team other than their own. If a team changed managers mid-tournament, both are counted.',
+    'c11-sources-tpl':        'Data: jfjelstul/worldcup — men\'s World Cup managers 1930-2022 with their nationality; 2026 are current coaches (Wikipedia, not yet played).\n"Exported" = a manager coaching a national team other than their own country.',
+    'c11-sources-tpl-foreign':'Data: jfjelstul/worldcup — men\'s World Cup managers 1930-2022 with their nationality; 2026 are current coaches (Wikipedia, not yet played).\n"Foreign" = a manager coaching a national team other than their own country.',
 
     // Chart 8 — Where World Cup players are born (annex: World Cups)
     'c8-title':              'Where World Cup players come from',
