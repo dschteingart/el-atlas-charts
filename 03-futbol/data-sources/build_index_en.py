@@ -29,7 +29,7 @@ src = replace_once(src, '<html lang="es">', '<html lang="en">', "html lang")
 
 # 2) bloque <head>: title + description + Open Graph/Twitter, todo en inglés
 ES_HEAD = '''<title>El Atlas N°3 — La geografía del talento futbolístico</title>
-<meta name="description" content="Dónde nacen los jugadores, dónde juegan y por qué algunos países rinden muy por encima del tamaño de su economía. 10 gráficos interactivos de El Atlas.">
+<meta name="description" content="Dónde nacen los jugadores, dónde juegan y por qué algunos países rinden muy por encima del tamaño de su economía. 11 gráficos interactivos de El Atlas.">
 
 <!-- Open Graph / Twitter: preview del link al compartir (X, WhatsApp, etc.).
      Las URLs deben ser ABSOLUTAS. Idioma del preview = español (las meta tags
@@ -48,7 +48,7 @@ ES_HEAD = '''<title>El Atlas N°3 — La geografía del talento futbolístico</t
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-birthplace.png">'''
 
 EN_HEAD = '''<title>The Atlas N°3 — The geography of football talent</title>
-<meta name="description" content="Where players are born, where they play, and why some countries punch far above the size of their economy. 10 interactive charts from The Atlas.">
+<meta name="description" content="Where players are born, where they play, and why some countries punch far above the size of their economy. 11 interactive charts from The Atlas.">
 
 <!-- Open Graph / Twitter (INGLÉS). Generado por data-sources/build_index_en.py
      desde index.html — NO editar a mano. Página completa (no redirección) para
@@ -71,8 +71,8 @@ src = replace_once(src, ES_HEAD, EN_HEAD, "head meta block")
 # 3) miniaturas: el src por defecto pasa a la versión .en (data-thumb-* intacto)
 src, n = re.subn(r'(<img class="idx-thumb" src="\./thumbs/chart-[a-z0-9-]+)\.png"',
                  r'\1.en.png"', src)
-if n != 10:
-    sys.exit("ERROR: esperaba 10 miniaturas, cambié %d." % n)
+if n != 11:
+    sys.exit("ERROR: esperaba 11 miniaturas, cambié %d." % n)
 
 # 4) toggle: marcar EN como activo (evita el flash de ES antes de que corra el JS)
 src = replace_once(src,

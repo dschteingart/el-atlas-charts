@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>De qué país nacen los mundialistas — El Atlas N°3</title>
+<title>De dónde son los técnicos de los Mundiales — El Atlas N°3</title>
 <!-- Open Graph / Twitter: preview al compartir este gráfico. URLs absolutas; preview en español. -->
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
-<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/chart-origenes.html">
-<meta property="og:title" content="De qué país nacen los mundialistas — El Atlas N°3">
-<meta property="og:description" content="País de nacimiento de los jugadores de cada Mundial, y cuántos representan a otra selección (migración).">
-<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-origenes.png">
-<meta property="og:image:alt" content="País de nacimiento de los mundialistas por Mundial">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/chart-dts.html">
+<meta property="og:title" content="De dónde son los técnicos de los Mundiales — El Atlas N°3">
+<meta property="og:description" content="Nacionalidad de los DTs de cada Mundial, y cuántos dirigen a una selección extranjera (la migración del banquillo).">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-dts.png">
+<meta property="og:image:alt" content="Nacionalidad de los directores técnicos por Mundial">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="De qué país nacen los mundialistas — El Atlas N°3">
-<meta name="twitter:description" content="País de nacimiento de los jugadores de cada Mundial, y cuántos representan a otra selección (migración).">
-<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-origenes.png">
+<meta name="twitter:title" content="De dónde son los técnicos de los Mundiales — El Atlas N°3">
+<meta name="twitter:description" content="Nacionalidad de los DTs de cada Mundial, y cuántos dirigen a una selección extranjera (la migración del banquillo).">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-dts.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -52,8 +52,8 @@
   .s-range-display { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--ink); min-width: 110px; font-variant-numeric: tabular-nums; text-align: right; }
   @media (max-width: 768px) { .s-range-block .m-ctrl-label { display: none; } .s-range-display { font-size: 13px; font-family: var(--sans); font-weight: 600; min-width: 76px; } }
   /* Modo barras: slider de UN solo año (se oculta el thumb "desde" y el tramo activo) */
-  .s-range-slider.s-range-single #og-slider-from { display: none; }
-  .s-range-slider.s-range-single #og-range-track-active { display: none; }
+  .s-range-slider.s-range-single #dt-slider-from { display: none; }
+  .s-range-slider.s-range-single #dt-range-track-active { display: none; }
 
   /* Toggles segmentados */
   .lg-mode { display: inline-flex; border: 1px solid var(--rule); border-radius: 15px; overflow: hidden; }
@@ -104,65 +104,65 @@
     </div>
   </header>
 
-  <section class="chart-block" data-chart="9" data-editor-id="origenes">
-    <h2 class="chart-title" data-i18n="c9-title">La migración en el fútbol mundial</h2>
-    <p class="chart-subtitle" data-i18n="c9-subtitle-all">Porcentaje de los jugadores de cada Mundial según su país de nacimiento.</p>
+  <section class="chart-block" data-chart="11" data-editor-id="dts">
+    <h2 class="chart-title" data-i18n="c11-title">La migración de los técnicos</h2>
+    <p class="chart-subtitle" data-i18n="c11-subtitle-all">DTs de cada Mundial que dirigen a una selección distinta de su país: de la nacionalidad del DT a la selección que dirige.</p>
 
     <div class="m-controls">
       <div class="lg-mode" role="group" aria-label="Universo">
-        <button type="button" class="lg-seg lg-seg-on" id="og-univ-all" aria-pressed="true" data-i18n="c9-univ-all">Todos</button>
-        <button type="button" class="lg-seg" id="og-univ-exp" aria-pressed="false" data-i18n="c9-univ-exp">Exportados</button>
+        <button type="button" class="lg-seg lg-seg-on" id="dt-univ-all" aria-pressed="true" data-i18n="c11-univ-all">Todos</button>
+        <button type="button" class="lg-seg" id="dt-univ-exp" aria-pressed="false" data-i18n="c11-univ-exp">Exportados</button>
       </div>
       <div class="lg-mode" role="group" aria-label="Agrupación">
-        <button type="button" class="lg-seg lg-seg-on" id="og-group-pais" aria-pressed="true" data-i18n="c9-group-pais">País</button>
-        <button type="button" class="lg-seg" id="og-group-region" aria-pressed="false" data-i18n="c9-group-region">Región</button>
+        <button type="button" class="lg-seg lg-seg-on" id="dt-group-pais" aria-pressed="true" data-i18n="c11-group-pais">País</button>
+        <button type="button" class="lg-seg" id="dt-group-region" aria-pressed="false" data-i18n="c11-group-region">Región</button>
       </div>
       <div class="lg-mode" role="group" aria-label="Tipo de gráfico">
-        <button type="button" class="lg-seg lg-seg-on" id="og-mode-line" aria-pressed="true" data-i18n="c9-mode-line">Líneas</button>
-        <button type="button" class="lg-seg" id="og-mode-stack" aria-pressed="false" data-i18n="c9-mode-stack">Área apilada</button>
-        <button type="button" class="lg-seg" id="og-mode-bar" aria-pressed="false" data-i18n="c9-mode-bar">Barras</button>
-        <button type="button" class="lg-seg" id="og-mode-sankey" aria-pressed="false" data-i18n="c9-mode-sankey">Flujos</button>
+        <button type="button" class="lg-seg lg-seg-on" id="dt-mode-line" aria-pressed="true" data-i18n="c11-mode-line">Líneas</button>
+        <button type="button" class="lg-seg" id="dt-mode-stack" aria-pressed="false" data-i18n="c11-mode-stack">Área apilada</button>
+        <button type="button" class="lg-seg" id="dt-mode-bar" aria-pressed="false" data-i18n="c11-mode-bar">Barras</button>
+        <button type="button" class="lg-seg" id="dt-mode-sankey" aria-pressed="false" data-i18n="c11-mode-sankey">Flujos</button>
       </div>
       <div class="lg-mode" role="group" aria-label="Métrica">
-        <button type="button" class="lg-seg lg-seg-on" id="og-metric-pct" aria-pressed="true" data-i18n="c9-metric-pct">%</button>
-        <button type="button" class="lg-seg" id="og-metric-abs" aria-pressed="false" data-i18n="c9-metric-abs">Cantidad</button>
+        <button type="button" class="lg-seg lg-seg-on" id="dt-metric-pct" aria-pressed="true" data-i18n="c11-metric-pct">%</button>
+        <button type="button" class="lg-seg" id="dt-metric-abs" aria-pressed="false" data-i18n="c11-metric-abs">Cantidad</button>
       </div>
       <div class="s-range-block">
-        <span class="m-ctrl-label" data-i18n="c9-slider-period-label">Mundiales</span>
-        <div class="s-range-slider" id="og-range-slider">
+        <span class="m-ctrl-label" data-i18n="c11-slider-period-label">Mundiales</span>
+        <div class="s-range-slider" id="dt-range-slider">
           <div class="s-range-track"></div>
-          <div class="s-range-track-active" id="og-range-track-active"></div>
-          <input type="range" id="og-slider-from" min="1930" max="2026" value="1930" step="1" aria-label="Desde">
-          <input type="range" id="og-slider-to"   min="1930" max="2026" value="2026" step="1" aria-label="Hasta">
+          <div class="s-range-track-active" id="dt-range-track-active"></div>
+          <input type="range" id="dt-slider-from" min="1930" max="2026" value="1930" step="1" aria-label="Desde">
+          <input type="range" id="dt-slider-to"   min="1930" max="2026" value="2026" step="1" aria-label="Hasta">
         </div>
-        <span class="s-range-display" id="og-range-display">1930–2026</span>
+        <span class="s-range-display" id="dt-range-display">1930–2026</span>
       </div>
     </div>
 
-    <div class="m-search-wrap" id="og-search-wrap">
-      <input type="text" id="og-search" class="m-search-input" data-i18n-placeholder="c9-search-placeholder" placeholder="Agregar país de nacimiento…" autocomplete="off">
-      <div id="og-search-results" class="m-search-results"></div>
+    <div class="m-search-wrap" id="dt-search-wrap">
+      <input type="text" id="dt-search" class="m-search-input" data-i18n-placeholder="c11-search-placeholder" placeholder="Agregar nacionalidad…" autocomplete="off">
+      <div id="dt-search-results" class="m-search-results"></div>
     </div>
-    <div class="m-selected-chips" id="og-selected-chips"></div>
+    <div class="m-selected-chips" id="dt-selected-chips"></div>
 
     <div class="chart-svg-wrap">
-      <svg id="chart9" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="tooltip" id="tooltip9"></div>
+      <svg id="chartDTS" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltipDTS"></div>
     </div>
   </section>
 
   <div class="footer">
     <p>
-      <button class="download" data-chart="9-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
-      <button class="download" data-png="9" data-i18n="footer-download-png">Descargar PNG</button>
+      <button class="download" data-chart="11-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="11" data-i18n="footer-download-png">Descargar PNG</button>
     </p>
     <div class="footer-row">
-      <p class="sources m-desktop-only" data-i18n="c9-sources">
-        Datos: base de mundialistas jfjelstul/worldcup (1930-2022) + Pantheon/Wikidata para el lugar de nacimiento, y FC Maps para 2026. Un jugador cuenta como "exportado" si nació en un país distinto al que representa. El salto 2022→2026 incluye la ampliación del Mundial a 48 selecciones.
+      <p class="sources m-desktop-only" data-i18n="c11-sources">
+        Datos: <a href="https://github.com/jfjelstul/worldcup" target="_blank" rel="noopener">jfjelstul/worldcup</a> — DTs de cada Mundial masculino 1930-2022 con su nacionalidad; los de 2026 son los actuales (Wikipedia), un Mundial aún no jugado. Un DT cuenta como "exportado" si dirige a una selección distinta de su país. Si una selección cambió de DT durante el torneo, cuentan ambos.
       </p>
       <details class="m-mobile-collapse">
         <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
-        <p data-i18n="c9-sources">Datos: jfjelstul/worldcup + Pantheon/Wikidata (nacimiento) + FC Maps (2026). "Exportado" = nació en otro país del que representa.</p>
+        <p data-i18n="c11-sources">Datos: jfjelstul/worldcup — DTs por Mundial masculino 1930-2022 con su nacionalidad; 2026 actuales (Wikipedia, Mundial no jugado). "Exportado" = dirige a una selección distinta de su país.</p>
       </details>
       <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
     </div>
@@ -176,21 +176,21 @@
 <script src="./i18n-issue.js?v=lang11"></script>
 <script src="./utils.js?v=7"></script>
 <script src="./country-names.js?v=7"></script>
-<script src="./data-origenes.js?v=14"></script>
+<script src="./data-dts.js?v=4"></script>
 <script src="./editor.js?v=7"></script>
-<script src="./origenes.js?v=18"></script>
+<script src="./dts.js?v=4"></script>
 <script src="./png-export.js?v=8"></script>
 <script src="./svg-export.js?v=7"></script>
 <script>
-  state[9] = { selectedCountries: null, period: [1930, 2026], mode: 'sankey', universe: 'all', group: 'pais', metric: 'pct' };
+  state[11] = { selectedCountries: null, period: [1930, 2026], mode: 'sankey', universe: 'all', group: 'pais', metric: 'pct' };
   // applyI18n() PRIMERO (setea los textos estáticos data-i18n), después
-  // initOrigenes() dibuja y pisa el subtítulo con el dinámico (si no, applyI18n
+  // initDts() dibuja y pisa el subtítulo con el dinámico (si no, applyI18n
   // clobbearía el subtítulo del Sankey con el de líneas en la carga inicial).
   applyI18n();
-  initOrigenes();
+  initDts();
   setupLangToggle(() => {
-    if (typeof og_renderChips === 'function') og_renderChips();
-    if (typeof drawOrigenes === 'function') drawOrigenes();
+    if (typeof dt_renderChips === 'function') dt_renderChips();
+    if (typeof drawDts === 'function') drawDts();
   });
 </script>
 <div id="chart-nav"></div>
