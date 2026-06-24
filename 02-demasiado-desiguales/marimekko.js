@@ -1328,6 +1328,11 @@ function initMarimekko() {
     initMarimekko._editorWired = true;
     window.addEventListener('atlas-editor-change', () => drawMarimekko());
   }
+  // Export PNG: este chart soporta formatos (cuadrado por defecto) y sabe
+  // re-dibujarse en el formato target vía drawMarimekko cuando el exportador
+  // setea __atlasPngFormatOverride.
+  window.__atlasSupportsFormats = true;
+  window.__atlasRedraw = drawMarimekko;
   renderMarimekkoLegend();
   drawMarimekko();
   setupMarimekkoSlider();

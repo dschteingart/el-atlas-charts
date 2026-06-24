@@ -352,14 +352,24 @@
     // Históricamente había un atajo Shift+Click → newsletter. Lo quitamos:
     // el dropdown del editor es el único camino para elegir formato. Sin
     // editor activo, descarga el "público" = lo que ves en pantalla.
+    // ── Determinar el formato target ──────────────────────────────────
+    // 1. Editor activo (abriste con ?nl en la URL) → respeta el formato del
+    //    dropdown. 2. Sin editor → default mobile-first CUADRADO para los
+    //    charts estándar que soportan formatos (1-3). El chart 4 (mapa d3)
+    //    NO entra acá: tiene su propio camino (isMapChart) más abajo.
     let format = null;
-    if (
+    const urlHasEditor = new URLSearchParams(location.search).has('nl');
+    const editorActive =
+      urlHasEditor &&
       window.AtlasEditor &&
-      typeof window.AtlasEditor.getConfig === 'function' &&
-      document.body.classList.contains('ae-ever-activated')
-    ) {
+      typeof window.AtlasEditor.getConfig === 'function';
+    if (editorActive) {
       const cfg = window.AtlasEditor.getConfig();
       if (cfg && cfg.format && PNG_FORMATS[cfg.format]) format = cfg.format;
+      else format = 'square';  // editor activo sin formato elegido → square
+    } else if (window.__atlasSupportsFormats && chartId !== '4') {
+      const def = window.__atlasDefaultPngFormat;
+      format = (def && PNG_FORMATS[def]) ? def : 'square';
     }
 
     // No hay re-render forzado: el SVG en pantalla es la única fuente de
@@ -380,6 +390,24 @@
       try { didPrepareMap = !!window.onBeforePngExportPrepare(chartId, format); } catch (_) {}
     }
     const mobileFirst  = isNewsletter || isSquare || isMobilePng || isMapChart;
+
+    // ── Forzar re-render del chart en el formato target ────────────────
+    // Charts estándar (1-3): el SVG en pantalla puede estar en desktop o
+    // mobile; lo forzamos al formato del PNG seteando __atlasPngFormatOverride
+    // y re-dibujando (__atlasRedraw), y restauramos al terminar. El mapa
+    // (chart 4) NO usa esto: tiene su propio reencuadre (didPrepareMap).
+    let pngOverrideApplied = false;
+    if (format && !isMapChart && window.__atlasSupportsFormats && typeof window.__atlasRedraw === 'function') {
+      window.__atlasPngFormatOverride = format;
+      pngOverrideApplied = true;
+      window.__atlasRedraw();  // re-render síncrono del SVG en `format`
+    }
+    function restorePngFormat() {
+      if (!pngOverrideApplied) return;
+      pngOverrideApplied = false;
+      window.__atlasPngFormatOverride = null;
+      if (typeof window.__atlasRedraw === 'function') window.__atlasRedraw();
+    }
 
     // Forzar carga de webfonts ANTES de medir/dibujar en canvas. El canvas
     // tiene un font-cache aparte que no siempre se sincroniza con
@@ -763,11 +791,13 @@
     } else {
       filename = FILENAMES[chartId]?.[lang] || `el-atlas-02-chart-${chartId}.png`;
     }
-    // Sufijo según formato. "public" no agrega sufijo (es el default).
-    const fmtSuffix =
+    // Sufijo según formato. El default mobile-first (square por override, sin
+    // editor) NO lleva sufijo — es la imagen principal. Los formatos elegidos
+    // a mano en el editor sí lo llevan para distinguirlos.
+    const fmtSuffix = pngOverrideApplied ? '' : (
       isNewsletter ? '-nl' :
       isSquare     ? '-sq' :
-      isMobilePng  ? '-mb' : '';
+      isMobilePng  ? '-mb' : '');
     if (fmtSuffix) {
       filename = filename.replace(/\.png$/i, fmtSuffix + '.png');
     }
@@ -786,6 +816,10 @@
     if (didPrepareMap && typeof window.onAfterPngExportRestore === 'function') {
       try { window.onAfterPngExportRestore(chartId); } catch (_) {}
     }
+    // Restaurar el render de pantalla de los charts estándar (deshace el
+    // override de formato cuadrado). El canvas ya quedó dibujado, así que esto
+    // no lo afecta.
+    restorePngFormat();
   }
 
   document.querySelectorAll('button[data-png]').forEach(btn => {
@@ -796,6 +830,13 @@
       downloadChartPNG(btn.dataset.png).catch(err => {
         console.error('PNG export failed:', err);
         alert('No se pudo generar el PNG. Mirá la consola para detalles.');
+        // Si el export se cortó antes de restaurar, limpiamos el override de
+        // formato y re-renderizamos a pantalla para no dejar el chart trabado
+        // en cuadrado.
+        if (window.__atlasPngFormatOverride) {
+          window.__atlasPngFormatOverride = null;
+          if (typeof window.__atlasRedraw === 'function') window.__atlasRedraw();
+        }
       });
     });
   });

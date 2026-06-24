@@ -64,6 +64,13 @@ const PNG_FORMATS = {
 // Cuando devuelve null → el chart usa sus dimensiones default (desktop o
 // mobile responsive según isMobileViewport).
 function getActivePngFormat() {
+  // Override del exportador PNG: cuando png-export.js va a generar la imagen
+  // sin editor activo, fuerza un formato (por default 'square' mobile-first)
+  // seteando window.__atlasPngFormatOverride. Tiene prioridad sobre todo:
+  // permite "default cuadrado al clic" sin tocar el estado del editor.
+  if (window.__atlasPngFormatOverride && PNG_FORMATS[window.__atlasPngFormatOverride]) {
+    return window.__atlasPngFormatOverride;
+  }
   if (!window.AtlasEditor || typeof window.AtlasEditor.getConfig !== 'function') {
     return null;
   }
