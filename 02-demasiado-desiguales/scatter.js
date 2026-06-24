@@ -1400,6 +1400,10 @@ function initScatter() {
     initScatter._editorWired = true;
     window.addEventListener('atlas-editor-change', () => drawScatter());
   }
+  // Export PNG: soporta formatos (cuadrado por defecto) y se re-dibuja vía
+  // drawScatter cuando el exportador fuerza un formato.
+  window.__atlasSupportsFormats = true;
+  window.__atlasRedraw = drawScatter;
   // Mobile (≤768px): botones tuerca + "Seleccionar". Singleton — si ya
   // lo llamó otro init en el index.html, no hace nada.
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();

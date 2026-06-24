@@ -988,6 +988,10 @@ function initDeciles() {
       drawDeciles();
     });
   }
+  // Export PNG: soporta formatos (cuadrado por defecto) y se re-dibuja vía
+  // drawDeciles cuando el exportador fuerza un formato.
+  window.__atlasSupportsFormats = true;
+  window.__atlasRedraw = drawDeciles;
   // Mobile (≤768px): botones tuerca + "Seleccionar". Singleton — si ya
   // lo llamó otro init en el index.html, no hace nada.
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
