@@ -17,11 +17,12 @@
 //==================================================================
 //  Constantes
 //==================================================================
+// Paleta estándar del Atlas (12 hues distintos en hue Y valor; del chart 3 de N°2).
+// Norma para todas las series por país/categoría del número. La primera
+// repetición recién aparece con 13+ series.
 const DT_PALETTE_EXT = [
-  '#2B5C8A', '#5BA152', '#C9A227', '#9A4FA8', '#2BA0A8', '#C0473A',
-  '#1B3956', '#386433', '#7D6418', '#5F3168', '#1B6368', '#772C24',
-  '#3A7BB9', '#8CC185', '#E0C261', '#BC85C6', '#4AC8D1', '#D68279',
-  '#18344E', '#284724', '#584711', '#44234A', '#154D51', '#541F1A'
+  '#234B85', '#2D6A3D', '#C9A227', '#6B3D8B', '#2C8484', '#7A2A3F',
+  '#1F8AC0', '#6CB04D', '#E07A23', '#B5639E', '#8A5A35', '#5A7A4F'
 ];
 function dt_colorForSlot(slot) { return DT_PALETTE_EXT[slot % DT_PALETTE_EXT.length]; }
 const DT_COL_OTH = '#CFC9BC', DT_COL_OTH_TXT = '#8A8170';
@@ -88,11 +89,18 @@ function dt_project() {
   dt_initData();
   const U = dt_universe(), G = dt_group();
   const den = dt_totals[U];
+  // Dentro del período activo del país (de su 1ª a su última aparición) mostramos
+  // 0 los Mundiales sin DT, no un gap. Fuera de ese span (antes de existir o tras
+  // desaparecer) no se dibuja — así Serbia no figura en 0 en 1950 (era Yugoslavia).
   const mk = (countsByYear) => {
+    const present = Object.keys(countsByYear).map(Number).filter(y => countsByYear[y] > 0).sort((a, b) => a - b);
+    if (!present.length) return [];
+    const first = present[0], last = present[present.length - 1];
     const pts = [];
-    Object.keys(countsByYear).map(Number).sort((a, b) => a - b).forEach(y => {
-      const n = countsByYear[y], D = den[y] || 0;
-      if (n > 0 && D > 0) pts.push([y, +(100 * n / D).toFixed(1), n]);
+    dt_years.forEach(y => {
+      if (y < first || y > last) return;
+      const D = den[y] || 0; if (D <= 0) return;
+      pts.push([y, +(100 * (countsByYear[y] || 0) / D).toFixed(1), countsByYear[y] || 0]);
     });
     return pts;
   };
@@ -185,10 +193,11 @@ function drawDts() {
   // (sankey) agrega un RANGO de Mundiales, así que usa el slider doble.
   const sliderEl = document.getElementById('dt-range-slider');
   if (sliderEl) sliderEl.classList.toggle('s-range-single', state[11].mode === 'bar');
-  // En flujos (sankey) se ocultan los toggles que no aplican (universo, métrica,
-  // agrupación); el buscador lo maneja dt_renderChips.
-  const dt_isSankey = state[11].mode === 'sankey';
-  ['dt-univ-all', 'dt-metric-pct', 'dt-group-pais'].forEach(id => { const e = document.getElementById(id); const g = e && e.closest('.lg-mode'); if (g) g.style.display = dt_isSankey ? 'none' : ''; });
+  // En flujos (sankey) y en la tendencia (local vs. extranjero) se ocultan los
+  // toggles que no aplican (universo, métrica, agrupación); el buscador lo
+  // maneja dt_renderChips.
+  const dt_aggView = state[11].mode === 'sankey' || state[11].mode === 'trend';
+  ['dt-univ-all', 'dt-metric-pct', 'dt-group-pais'].forEach(id => { const e = document.getElementById(id); const g = e && e.closest('.lg-mode'); if (g) g.style.display = dt_aggView ? 'none' : ''; });
 
   const aeCfg = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
@@ -227,6 +236,7 @@ function drawDts() {
   // por acá; no usa la maquinaria de líneas/área.
   if (state[11].mode === 'bar') { dt_drawBars(svg, { bigFmt, isPngFormat, wc: y1 }); dt_applyHeadings(aeCfg); return; }
   if (state[11].mode === 'sankey') { dt_drawSankey(svg, { bigFmt, isPngFormat, y0, y1 }); dt_applyHeadings(aeCfg); return; }
+  if (state[11].mode === 'trend') { dt_drawTrend(svg, { bigFmt, isPngFormat, y0, y1 }); dt_applyHeadings(aeCfg); return; }
 
   // escala Y (depende de la métrica: % o cantidad)
   const abs = dt_isAbs();
@@ -398,20 +408,15 @@ function drawDts() {
 // filtra por las selecciones presentes — un país puede aportar técnicos sin jugar.
 const DT_DEFUNCT = ['CSK', 'YUG', 'SUN', 'DDR', 'SCG'];   // estados desaparecidos
 const DT_BAR_COL = '#5E7E96';                            // azul coherente con el chart 2
-// Potencias del banquillo (las "escuelas" que se muestran aunque no estén en el top).
-const DT_IMPORTANT = ['BRA', 'ARG', 'DEU', 'FRA', 'ENG', 'ITA', 'ESP', 'NLD', 'URY', 'PRT', 'SRB', 'COL'];
-// Default de barras: todas las nacionalidades con ≥1 DT en ESE Mundial (ordenadas
-// por cantidad), hasta 15. Excluye estados desaparecidos.
+// Default de barras: las nacionalidades que MÁS aportaron DTs a ESE Mundial,
+// hasta 12 (= largo de la paleta, así cada barra tiene su color sin repetir).
+// Excluye estados desaparecidos.
 function dt_barDefault(wc) {
   dt_initData();
   const present = dt_rawTeams.map(t => { const p = t.all.find(q => q[0] === wc); return { iso: t.iso3, n: p ? p[1] : 0 }; })
     .filter(x => x.n > 0 && DT_DEFUNCT.indexOf(x.iso) < 0)
     .sort((a, b) => b.n - a.n || a.iso.localeCompare(b.iso));
-  const order = present.map(x => x.iso);
-  if (order.length <= 15) return order;
-  const top = order.slice(0, 12), chosen = new Set(top), important = [];
-  for (const iso of DT_IMPORTANT) { if (!chosen.has(iso) && order.indexOf(iso) >= 0) { important.push(iso); chosen.add(iso); if (important.length >= 3) break; } }
-  return top.concat(important);
+  return present.slice(0, 12).map(x => x.iso);
 }
 
 // Ranking horizontal de UN Mundial. Aplica universo (todos/exportados) y
@@ -536,6 +541,72 @@ function dt_drawSankey(svg, opt) {
   drawCol(srcNodes, sPos, leftX, 'src'); drawCol(tgtNodes, tPos, rightX, 'tgt');
 }
 
+// Vista "Local vs. extranjero" (estilo natividad, chart 6): dos líneas por
+// Mundial — % de selecciones con DT de su propio país vs. con DT extranjero.
+// Se cruzan en 2026. Es el modo por default. Datos: dt_totals (all/exp).
+const DT_COL_LOCAL = '#3E5A6E';     // DT local (azul pizarra, como natividad)
+const DT_COL_FOREIGN = '#BE5D32';   // DT extranjero (terracota — la historia)
+function dt_drawTrend(svg, opt) {
+  const bigFmt = opt.bigFmt, isPngFormat = opt.isPngFormat, y0 = opt.y0, y1 = opt.y1;
+  const SIZES = bigFmt ? { tick: 22, axisTitle: 26, label: 26 } : { tick: 11, axisTitle: 11.5, label: 11.5 };
+  const lineW = bigFmt ? 3.4 : 2, haloW = lineW + (bigFmt ? 5 : 3), labelHalo = bigFmt ? 6 : 3, dotR = bigFmt ? 4.5 : 2.6;
+  const localLbl = dt_tt('c11-trend-local', 'DT local'), foreignLbl = dt_tt('c11-trend-foreign', 'DT extranjero');
+  const sfx = isPngFormat ? '  100%' : '';
+  const maxLabelW = Math.max(dt_measureText(localLbl + sfx, SIZES.label, bigFmt ? 700 : 600), dt_measureText(foreignLbl + sfx, SIZES.label, bigFmt ? 700 : 600));
+  DT_MARGIN.right = Math.min(Math.round(DT_W * 0.42), Math.max(DT_MARGIN.right, (bigFmt ? 12 : 6) + maxLabelW + (bigFmt ? 16 : 8)));
+  const PLOT_W = DT_W - DT_MARGIN.left - DT_MARGIN.right, PLOT_H = DT_H - DT_MARGIN.top - DT_MARGIN.bottom;
+  const yScale = { max: 100, ticks: [0, 20, 40, 60, 80, 100] };
+  const xS = (yr) => DT_MARGIN.left + ((yr - y0) / (y1 - y0 || 1)) * PLOT_W;
+  const yS = (v) => DT_MARGIN.top + PLOT_H - (v / yScale.max) * PLOT_H;
+  // grid + eje X
+  dt_xTicks(y0, y1, PLOT_W, bigFmt ? 92 : 30).forEach(yr => {
+    const x = xS(yr);
+    const gl = dt_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x); gl.setAttribute('y1', DT_MARGIN.top); gl.setAttribute('y2', DT_MARGIN.top + PLOT_H); gl.setAttribute('class', 's-grid-line'); svg.appendChild(gl);
+    const lbl = dt_el('text'); lbl.setAttribute('x', x); lbl.setAttribute('y', DT_MARGIN.top + PLOT_H + (bigFmt ? 34 : 18)); lbl.setAttribute('text-anchor', 'middle'); lbl.setAttribute('class', 's-tick'); lbl.style.fontSize = SIZES.tick + 'px'; lbl.textContent = yr; svg.appendChild(lbl);
+  });
+  // grid + eje Y
+  yScale.ticks.forEach(v => {
+    const y = yS(v);
+    const gl = dt_el('line'); gl.setAttribute('x1', DT_MARGIN.left); gl.setAttribute('x2', DT_MARGIN.left + PLOT_W); gl.setAttribute('y1', y); gl.setAttribute('y2', y); gl.setAttribute('class', 's-grid-line'); svg.appendChild(gl);
+    const lbl = dt_el('text'); lbl.setAttribute('x', DT_MARGIN.left - (bigFmt ? 12 : 8)); lbl.setAttribute('y', y + (bigFmt ? 8 : 4)); lbl.setAttribute('text-anchor', 'end'); lbl.setAttribute('class', 's-tick'); lbl.style.fontSize = SIZES.tick + 'px'; lbl.textContent = v + '%'; svg.appendChild(lbl);
+  });
+  const yT = dt_el('text'); yT.setAttribute('class', 's-axis-title'); yT.setAttribute('text-anchor', 'middle');
+  yT.setAttribute('transform', `translate(${DT_MARGIN.left - (bigFmt ? 78 : 44)}, ${DT_MARGIN.top + PLOT_H / 2}) rotate(-90)`);
+  yT.style.fontSize = SIZES.axisTitle + 'px'; yT.textContent = dt_tt('c11-trend-axis', '% de las selecciones'); svg.appendChild(yT);
+  // series: local vs extranjero (de los totales por año)
+  const yrs = dt_years.filter(y => y >= y0 && y <= y1);
+  const localPts = [], foreignPts = [];
+  yrs.forEach(y => { const all = dt_totals.all[y] || 0, exp = dt_totals.exp[y] || 0; if (all > 0) { const f = +(100 * exp / all).toFixed(1); foreignPts.push([y, f, exp]); localPts.push([y, +(100 - f).toFixed(1), all - exp]); } });
+  const halosG = dt_el('g'); svg.appendChild(halosG); const linesG = dt_el('g'); svg.appendChild(linesG); const dotsG = dt_el('g'); svg.appendChild(dotsG);
+  const endLabels = [];
+  function drawLine(pts, color, label) {
+    if (!pts.length) return;
+    const d = 'M' + pts.map(p => xS(p[0]).toFixed(1) + ',' + yS(p[1]).toFixed(1)).join(' L');
+    const halo = dt_el('path'); halo.setAttribute('d', d); halo.setAttribute('fill', 'none'); halo.setAttribute('stroke', '#FAF8F3'); halo.setAttribute('stroke-width', haloW); halo.setAttribute('stroke-linejoin', 'round'); halo.setAttribute('stroke-linecap', 'round'); halosG.appendChild(halo);
+    const path = dt_el('path'); path.setAttribute('d', d); path.setAttribute('fill', 'none'); path.setAttribute('stroke', color); path.setAttribute('stroke-width', lineW); path.setAttribute('stroke-linejoin', 'round'); path.setAttribute('stroke-linecap', 'round'); linesG.appendChild(path);
+    pts.forEach(p => { const c = dt_el('circle'); c.setAttribute('cx', xS(p[0])); c.setAttribute('cy', yS(p[1])); c.setAttribute('r', dotR); c.setAttribute('fill', color); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', bigFmt ? 2 : 1.2); dotsG.appendChild(c); });
+    const last = pts[pts.length - 1];
+    endLabels.push({ color, text: label, x: xS(last[0]), idealY: yS(last[1]), valLast: last[1] });
+  }
+  drawLine(localPts, DT_COL_LOCAL, localLbl);
+  drawLine(foreignPts, DT_COL_FOREIGN, foreignLbl);
+  // etiquetas de fin con anti-colisión simple
+  const GAP = bigFmt ? SIZES.label + 6 : 13;
+  endLabels.sort((a, b) => a.idealY - b.idealY);
+  endLabels.forEach((l, i) => { l.y = (i === 0) ? Math.max(l.idealY, DT_MARGIN.top + (bigFmt ? 6 : 2)) : Math.max(l.idealY, endLabels[i - 1].y + GAP); });
+  const endG = dt_el('g'); svg.appendChild(endG);
+  endLabels.forEach(l => {
+    const txt = dt_el('text'); txt.setAttribute('x', l.x + (bigFmt ? 12 : 6)); txt.setAttribute('y', l.y + (bigFmt ? 8 : 4)); txt.setAttribute('fill', l.color); txt.setAttribute('font-weight', bigFmt ? 700 : 600); txt.style.fontSize = SIZES.label + 'px'; txt.style.fontFamily = 'var(--sans)';
+    txt.setAttribute('paint-order', 'stroke'); txt.setAttribute('stroke', '#FAF8F3'); txt.setAttribute('stroke-width', labelHalo); txt.setAttribute('stroke-linejoin', 'round');
+    txt.textContent = l.text + (isPngFormat ? '  ' + Math.round(l.valLast) + '%' : ''); endG.appendChild(txt);
+  });
+  if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER))
+    dt_setupHover(svg, { y0, y1, xS, yS, abs: false, series: [
+      { label: localLbl, color: DT_COL_LOCAL, pts: localPts.map(p => [p[0], p[1], p[1]]) },
+      { label: foreignLbl, color: DT_COL_FOREIGN, pts: foreignPts.map(p => [p[0], p[1], p[1]]) }
+    ] });
+}
+
 function dt_setupHover(svg, ctx) {
   const { y0, y1, xS, yS, series } = ctx;
   const unit = ctx.abs ? '' : '%';
@@ -607,6 +678,10 @@ function dt_periodPhrase(en) {
 function dt_subtitle() {
   const en = (typeof LANG !== 'undefined' && LANG === 'en'), abs = dt_isAbs(), exp = dt_universe() === 'exp';
   const per = dt_periodPhrase(en);
+  if (state[11].mode === 'trend') {
+    return en ? `Share of teams ${per} led by a manager of their own nationality vs. a foreign one.`
+              : `Porcentaje de selecciones ${per} dirigidas por un DT de su propio país vs. uno extranjero.`;
+  }
   if (state[11].mode === 'sankey') {
     return en ? `Managers ${per} directing a national team other than their own: from the manager's nationality (left) to the team they coach (right).`
               : `DTs ${per} que dirigen a una selección distinta de su país: de la nacionalidad del DT (izquierda) a la selección que dirige (derecha).`;
@@ -636,8 +711,8 @@ function dt_applyHeadings(aeCfg) {
 function dt_renderChips() {
   const c = document.getElementById('dt-selected-chips'); if (!c) return;
   c.innerHTML = ''; dt_project();
-  // Buscador/chips no aplican en región (6 regiones fijas) ni en flujos (sankey).
-  const hideSearch = (dt_group() === 'region') || (state[11].mode === 'sankey');
+  // Buscador/chips no aplican en región, ni en flujos, ni en la tendencia agregada.
+  const hideSearch = (dt_group() === 'region') || (state[11].mode === 'sankey') || (state[11].mode === 'trend');
   const wrap = document.getElementById('dt-search-wrap');
   if (wrap) wrap.style.display = hideSearch ? 'none' : '';
   if (hideSearch) return;
@@ -672,22 +747,22 @@ function setupDtsSearch() {
   });
   document.addEventListener('click', (ev) => { if (!input.contains(ev.target) && !results.contains(ev.target)) results.classList.remove('open'); });
 }
-// Toggle de forma: Líneas / Área apilada / Barras.
+// Toggle de forma: Local vs. extranjero / Líneas / Área / Barras / Flujos.
 function setupDtsModeToggle() {
-  const MODES = ['line', 'stack', 'bar', 'sankey'];
+  const MODES = ['trend', 'line', 'stack', 'bar', 'sankey'];
   const B = {}; MODES.forEach(m => B[m] = document.getElementById('dt-mode-' + m));
-  if (!B.line || !B.stack || !B.bar || !B.sankey) return;
+  if (!B.trend || !B.line || !B.stack || !B.bar || !B.sankey) return;
   function sync() { MODES.forEach(k => { B[k].classList.toggle('lg-seg-on', state[11].mode === k); B[k].setAttribute('aria-pressed', state[11].mode === k ? 'true' : 'false'); }); }
   function switchTo(m) {
     if (state[11].mode === m) return;
     const prev = state[11].mode;
     state[11].mode = m;
     if (m === 'bar') state[11].barCustom = false;          // default fresco: auto-ajusta al año
-    // En país: barras trae su propio default; al volver a líneas/área desde
-    // barras o flujos se restauran las grandes escuelas. (sankey no usa selección)
+    // En país: barras trae su propio default; al volver a líneas/área desde un
+    // modo agregado (barras/flujos/tendencia) se restauran las grandes escuelas.
     if (dt_group() === 'pais') {
       if (m === 'bar') state[11].selectedCountries = new Map(dt_barDefault(state[11].period[1]).map((iso, i) => [iso, i]));
-      else if ((m === 'line' || m === 'stack') && (prev === 'bar' || prev === 'sankey')) state[11].selectedCountries = new Map(DT_BIG.map((iso, i) => [iso, i]));
+      else if ((m === 'line' || m === 'stack') && (prev === 'bar' || prev === 'sankey' || prev === 'trend')) state[11].selectedCountries = new Map(DT_BIG.map((iso, i) => [iso, i]));
     }
     sync(); dt_renderChips(); drawDts();
   }
@@ -780,7 +855,7 @@ function initDts() {
   dt_initData();
   if (!state[11]) state[11] = {};
   if (!state[11].period) state[11].period = [DT_YEAR_MIN, DT_YEAR_MAX];
-  if (!state[11].mode) state[11].mode = 'sankey';   // por default, los flujos: la migración del banquillo de un vistazo
+  if (!state[11].mode) state[11].mode = 'trend';    // por default, la tendencia local vs. extranjero (estilo natividad)
   if (!state[11].universe) state[11].universe = 'all';
   if (!state[11].group) state[11].group = 'pais';
   if (!state[11].metric) state[11].metric = 'pct';

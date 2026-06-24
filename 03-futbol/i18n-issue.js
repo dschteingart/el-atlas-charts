@@ -258,8 +258,12 @@ const ISSUE_I18N = {
     'c10-sources-tpl':        'Datos: jfjelstul/worldcup + FC Maps (2026). Altura esperada = altura media de varones del país y año de nacimiento (NCD-RisC vía OWID).\nCurazao usa Países Bajos como proxy.',
 
     // Chart 11 — DTs (nacionalidad del entrenador + migración del banquillo)
-    'c11-title':              'La migración de los técnicos',
-    'c11-subtitle-all':       'Porcentaje de los DTs de cada Mundial según su nacionalidad.',
+    'c11-title':              'Cada vez más selecciones tienen un DT extranjero',
+    'c11-mode-trend':         'Local vs. extranjero',
+    'c11-trend-local':        'DT local',
+    'c11-trend-foreign':      'DT extranjero',
+    'c11-trend-axis':         '% de las selecciones',
+    'c11-subtitle-all':       'Porcentaje de selecciones de cada Mundial dirigidas por un DT de su propio país vs. uno extranjero.',
     'c11-subtitle-exp':       'DTs que dirigen a una selección distinta de su país, como % de los "exportados" de ese Mundial.',
     'c11-axis-y-all':         '% de DTs (según nacionalidad)',
     'c11-axis-y-exp':         '% de los DTs "exportados"',
@@ -535,8 +539,12 @@ const ISSUE_I18N = {
     'c10-sources-tpl':        'Data: jfjelstul/worldcup + FC Maps (2026). Expected height = mean height of men by birth country and year (NCD-RisC via OWID).\nCuraçao uses the Netherlands as a proxy.',
 
     // Chart 11 — Managers (nationality + migration of the bench)
-    'c11-title':              'The migration of managers',
-    'c11-subtitle-all':       'Share of each World Cup\'s managers by nationality.',
+    'c11-title':              'More and more teams have a foreign manager',
+    'c11-mode-trend':         'Local vs. foreign',
+    'c11-trend-local':        'Local coach',
+    'c11-trend-foreign':      'Foreign coach',
+    'c11-trend-axis':         '% of teams',
+    'c11-subtitle-all':       'Share of each World Cup\'s teams led by a manager of their own nationality vs. a foreign one.',
     'c11-subtitle-exp':       'Managers coaching a national team other than their own, as a share of that World Cup\'s "exported" managers.',
     'c11-axis-y-all':         '% of managers (by nationality)',
     'c11-axis-y-exp':         '% of "exported" managers',
