@@ -57,17 +57,24 @@ const DT_YEAR_MIN = 1930, DT_YEAR_MAX = 2026;   // 1930-2022 jfjelstul + 2026 (s
 //==================================================================
 //  Data + proyección según toggles
 //==================================================================
-let dt_years = null, dt_totals = null, dt_rawTeams = null, dt_names = null, dt_confed = null, dt_regionAgg = null;
+// Criterio de atribución del DT: 'byBirth' (país de nacimiento, Wikidata) o
+// 'byNat' (nacionalidad / home country de jfjelstul). El usuario alterna con el
+// toggle; cada uno tiene su propio {totals, teams, flows} en DTS.
+function dt_criterion() { return (state[11] && state[11].criterion === 'nat') ? 'byNat' : 'byBirth'; }
+let dt_years = null, dt_totals = null, dt_rawTeams = null, dt_names = null, dt_confed = null, dt_regionAgg = null, dt_loadedCrit = null;
 function dt_initData() {
-  if (dt_rawTeams) return;
-  if (typeof DTS === 'undefined') { console.error('[origenes] DTS no cargado'); dt_years = []; dt_rawTeams = []; dt_totals = { all: {}, exp: {} }; dt_names = {}; dt_confed = {}; return; }
+  const crit = dt_criterion();
+  if (dt_rawTeams && dt_loadedCrit === crit) return;   // ya cargado para este criterio
+  if (typeof DTS === 'undefined') { console.error('[dts] DTS no cargado'); dt_years = []; dt_rawTeams = []; dt_totals = { all: {}, exp: {} }; dt_names = {}; dt_confed = {}; return; }
+  dt_loadedCrit = crit;
   dt_years = DTS.years.slice();
   dt_names = DTS.names;
   dt_confed = DTS.confed;
+  const D = DTS[crit] || DTS.byBirth;
   dt_totals = { all: {}, exp: {} };
-  DTS.totals.all.forEach(p => dt_totals.all[p[0]] = p[1]);
-  DTS.totals.exp.forEach(p => dt_totals.exp[p[0]] = p[1]);
-  dt_rawTeams = DTS.teams;          // [{iso3, all:[[y,n]], exp:[[y,n]]}]
+  D.totals.all.forEach(p => dt_totals.all[p[0]] = p[1]);
+  D.totals.exp.forEach(p => dt_totals.exp[p[0]] = p[1]);
+  dt_rawTeams = D.teams;            // [{iso3, all:[[y,n]], exp:[[y,n]]}]
   // agregados por región (confederación) y universo
   dt_regionAgg = {};
   DT_REGION_ORDER.concat(['OTRO']).forEach(r => dt_regionAgg[r] = { all: {}, exp: {} });
@@ -288,7 +295,7 @@ function drawDts() {
   yT.style.fontSize = SIZES.axisTitle + 'px';
   yT.textContent = abs
     ? (dt_universe() === 'exp' ? tt('c11-axis-n-exp', 'DTs "exportados" (cantidad)') : tt('c11-axis-n-all', 'DTs (cantidad)'))
-    : (dt_universe() === 'exp' ? tt('c11-axis-y-exp', '% de los DTs "exportados"') : tt('c11-axis-y-all', '% de DTs (según nacionalidad)'));
+    : (dt_universe() === 'exp' ? tt('c11-axis-y-exp', '% de los DTs "exportados"') : tt('c11-axis-y-all', '% de DTs (según país de nacimiento)'));
   svg.appendChild(yT);
 
   function build(pts) { const v = pts.filter(p => p[1] != null); if (!v.length) return ''; return v.map((p, i) => (i === 0 ? 'M' : 'L') + xS(p[0]).toFixed(1) + ',' + yS(dt_mv(p)).toFixed(1)).join(' '); }
@@ -467,11 +474,12 @@ function dt_drawBars(svg, opt) {
 function dt_drawSankey(svg, opt) {
   const bigFmt = opt.bigFmt, isPngFormat = opt.isPngFormat, y0 = opt.y0, y1 = opt.y1;
   // Agregar los flujos de todos los Mundiales del rango: sumar n por par
-  // (nacionalidad → selección) a lo largo de [y0,y1].
+  // (país del DT → selección) a lo largo de [y0,y1], según el criterio activo.
+  const F = ((typeof DTS !== 'undefined' && DTS[dt_criterion()]) || {}).flows || {};
   const flowMap = {};
   ((typeof DTS !== 'undefined' && DTS.years) || []).forEach(y => {
     if (y < y0 || y > y1) return;
-    ((DTS.flows && DTS.flows[String(y)]) || []).forEach(([b, r, n]) => {
+    (F[String(y)] || []).forEach(([b, r, n]) => {
       const k = b + '|' + r; flowMap[k] = (flowMap[k] || 0) + n;
     });
   });
@@ -704,22 +712,28 @@ function dt_periodPhrase(en) {
 function dt_subtitle() {
   const en = (typeof LANG !== 'undefined' && LANG === 'en'), abs = dt_isAbs(), exp = dt_universe() === 'exp';
   const per = dt_periodPhrase(en);
+  const nat = state[11].criterion === 'nat';
+  const W = nat ? (en ? 'nationality' : 'nacionalidad') : (en ? 'country of birth' : 'país de nacimiento');
   if (state[11].mode === 'trend') {
-    return en ? `Share of teams ${per} led by a manager of their own nationality vs. a foreign one.`
-              : `Porcentaje de selecciones ${per} dirigidas por un DT de su propio país vs. uno extranjero.`;
+    if (nat) return en ? `Share of teams ${per} led by a manager of their own nationality vs. a foreign one.`
+                       : `Porcentaje de selecciones ${per} dirigidas por un DT de la misma nacionalidad vs. uno extranjero.`;
+    return en ? `Share of teams ${per} led by a manager born in the country they coach vs. born abroad.`
+              : `Porcentaje de selecciones ${per} dirigidas por un DT nacido en el mismo país vs. nacido en el extranjero.`;
   }
   if (state[11].mode === 'sankey') {
-    return en ? `Managers ${per} directing a national team other than their own: from the manager's nationality (left) to the team they coach (right).`
-              : `DTs ${per} que dirigen a una selección distinta de su país: de la nacionalidad del DT (izquierda) a la selección que dirige (derecha).`;
+    if (nat) return en ? `Managers ${per} coaching a national team other than their own: from the manager's nationality (left) to the team they coach (right).`
+                       : `DTs ${per} que dirigen a una selección distinta de su país: de la nacionalidad del DT (izquierda) a la selección que dirige (derecha).`;
+    return en ? `Managers ${per} coaching a team of a country other than the one they were born in: from the manager's birth country (left) to the team they coach (right).`
+              : `DTs ${per} que dirigen a una selección de un país distinto al que nacieron: del país de nacimiento del DT (izquierda) a la selección que dirige (derecha).`;
   }
   if (en) {
-    if (exp) return abs ? `Number of managers ${per} coaching a foreign national team, by their nationality.`
-                        : `Managers ${per} coaching a foreign team, as a share of the "exported", by their nationality.`;
-    return abs ? `Number of managers ${per}, by nationality.` : `Share of each World Cup's managers ${per}, by nationality.`;
+    if (exp) return abs ? `Number of managers ${per} coaching a foreign team, by their ${W}.`
+                        : `Managers ${per} coaching a foreign team, as a share of the "exported", by their ${W}.`;
+    return abs ? `Number of managers ${per}, by ${W}.` : `Share of each World Cup's managers ${per}, by ${W}.`;
   }
-  if (exp) return abs ? `Cantidad de DTs ${per} que dirigen a una selección extranjera, según su nacionalidad.`
-                      : `DTs ${per} que dirigen a una selección extranjera, como % de los «exportados», según su nacionalidad.`;
-  return abs ? `Cantidad de DTs ${per} según su nacionalidad.` : `Porcentaje de los DTs ${per} según su nacionalidad.`;
+  if (exp) return abs ? `Cantidad de DTs ${per} que dirigen a una selección extranjera, según su ${W}.`
+                      : `DTs ${per} que dirigen a una selección extranjera, como % de los «exportados», según su ${W}.`;
+  return abs ? `Cantidad de DTs ${per} según su ${W}.` : `Porcentaje de los DTs ${per} según su ${W}.`;
 }
 // Título dinámico: insight en la vista por default (tendencia), neutral al pasar
 // a otras vistas. Excepción: en Barras sobre TODO el período Y con Argentina en
@@ -730,7 +744,9 @@ function dt_title() {
   const fullRange = p[0] <= DT_YEAR_MIN && p[1] >= DT_YEAR_MAX;
   if (m === 'trend') return dt_tt('c11-title', 'Cada vez más selecciones tienen un DT extranjero');
   if (m === 'bar' && fullRange && dt_group() === 'pais' && dt_selMap().has('ARG'))
-    return dt_tt('c11-title-arg', 'Argentina, la mayor exportadora de técnicos del mundo');
+    return (state[11].criterion === 'nat')
+      ? dt_tt('c11-title-arg', 'Argentina, la mayor exportadora de técnicos del mundo')         // nacionalidad: sola #1
+      : dt_tt('c11-title-arg-birth', 'Argentina y Francia, las mayores fábricas de técnicos');  // nacimiento: empatan
   return dt_tt('c11-title-neutral', 'La migración de los técnicos');
 }
 function dt_applyHeadings(aeCfg) {
@@ -858,6 +874,27 @@ function setupDtsMetricToggle() {
   absBtn.addEventListener('click', () => { if (state[11].metric !== 'abs') { state[11].metric = 'abs'; sync(); drawDts(); } });
   sync();
 }
+// Toggle criterio: país de nacimiento (Wikidata) ↔ nacionalidad (jfjelstul).
+function setupDtsCriterionToggle() {
+  const birthBtn = document.getElementById('dt-crit-birth'), natBtn = document.getElementById('dt-crit-nat');
+  if (!birthBtn || !natBtn) return;
+  function sync() {
+    const nat = state[11].criterion === 'nat';
+    birthBtn.classList.toggle('lg-seg-on', !nat); natBtn.classList.toggle('lg-seg-on', nat);
+    birthBtn.setAttribute('aria-pressed', !nat ? 'true' : 'false'); natBtn.setAttribute('aria-pressed', nat ? 'true' : 'false');
+  }
+  function switchTo(c) {
+    if ((state[11].criterion || 'birth') === c) return;
+    state[11].criterion = c;
+    dt_initData();   // re-carga DTS[criterio] (totals/teams del nuevo criterio)
+    if (state[11].mode === 'bar' && !state[11].barCustom && dt_group() === 'pais')
+      state[11].selectedCountries = new Map(dt_barDefault(state[11].period[0], state[11].period[1]).map((iso, i) => [iso, i]));
+    sync(); dt_renderChips(); drawDts();
+  }
+  birthBtn.addEventListener('click', () => switchTo('birth'));
+  natBtn.addEventListener('click', () => switchTo('nat'));
+  sync();
+}
 
 //==================================================================
 //  CSV + Init + PNG
@@ -900,6 +937,7 @@ function initDts() {
   if (!state[11].universe) state[11].universe = 'all';
   if (!state[11].group) state[11].group = 'pais';
   if (!state[11].metric) state[11].metric = 'pct';
+  if (!state[11].criterion) state[11].criterion = 'birth';   // default: país de nacimiento (como chart 9)
   if (!(state[11].selectedCountries instanceof Map)) {
     const init = state[11].selectedCountries;
     state[11].selectedCountries = new Map(init || []);
@@ -912,6 +950,7 @@ function initDts() {
   setupDtsUnivToggle();
   setupDtsGroupToggle();
   setupDtsMetricToggle();
+  setupDtsCriterionToggle();
   setupDtsCSV();
   dt_renderChips();
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
