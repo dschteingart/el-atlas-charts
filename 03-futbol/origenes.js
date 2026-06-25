@@ -86,11 +86,18 @@ function og_project() {
   og_initData();
   const U = og_universe(), G = og_group();
   const den = og_totals[U];
+  // Dentro del período activo del país (de su 1ª a su última aparición) mostramos
+  // 0 los Mundiales sin jugadores, no un gap. Fuera de ese span (antes de existir
+  // o tras desaparecer) no se dibuja — así Serbia no figura en 0 en 1950.
   const mk = (countsByYear) => {
+    const present = Object.keys(countsByYear).map(Number).filter(y => countsByYear[y] > 0).sort((a, b) => a - b);
+    if (!present.length) return [];
+    const first = present[0], last = present[present.length - 1];
     const pts = [];
-    Object.keys(countsByYear).map(Number).sort((a, b) => a - b).forEach(y => {
-      const n = countsByYear[y], D = den[y] || 0;
-      if (n > 0 && D > 0) pts.push([y, +(100 * n / D).toFixed(1), n]);
+    og_years.forEach(y => {
+      if (y < first || y > last) return;
+      const D = den[y] || 0; if (D <= 0) return;
+      pts.push([y, +(100 * (countsByYear[y] || 0) / D).toFixed(1), countsByYear[y] || 0]);
     });
     return pts;
   };
@@ -216,9 +223,12 @@ function drawOrigenes() {
   const period = (state[9] && state[9].period) || [OG_YEAR_MIN, OG_YEAR_MAX];
   const y0 = period[0], y1 = period[1];
   const inP = (pts) => pts.filter(p => p[0] >= y0 && p[0] <= y1 && p[1] != null);
+  // Display del slider: flujos = un Mundial; el resto (líneas/área/barras) = rango.
+  const _ogDisp = document.getElementById('og-range-display');
+  if (_ogDisp) _ogDisp.textContent = (state[9].mode === 'sankey') ? y1 : (y0 === y1 ? y0 : (y0 + '–' + y1));
 
-  // Modo BARRAS: ranking de UN Mundial (el extremo derecho del slider). Sale
-  // por acá; no usa la maquinaria de líneas/área.
+  // Modo BARRAS: ranking del rango elegido. Sale por acá; no usa la maquinaria
+  // de líneas/área.
   if (state[9].mode === 'bar') { og_drawBars(svg, { bigFmt, isPngFormat, y0, y1 }); og_applyHeadings(aeCfg); return; }
   if (state[9].mode === 'sankey') { og_drawSankey(svg, { bigFmt, isPngFormat, wc: y1 }); og_applyHeadings(aeCfg); return; }
 
@@ -453,8 +463,6 @@ function og_drawBars(svg, opt) {
     vt.style.fontSize = fs + 'px'; vt.style.fontFamily = 'var(--sans)'; vt.style.fontWeight = '700'; vt.setAttribute('fill', 'var(--ink)'); vt.textContent = abs ? r.n : (r.v + '%'); svg.appendChild(vt);
     if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) { bar.style.cursor = 'pointer'; bar.addEventListener('click', () => og_toggle(r.iso)); }
   });
-  // en barras el slider representa el rango elegido
-  const disp = document.getElementById('og-range-display'); if (disp) disp.textContent = (y0 === y1 ? y0 : (y0 + '–' + y1));
 }
 
 // SANKEY: flujos nacimiento -> selección de los jugadores "exportados" de UN
@@ -550,7 +558,6 @@ function og_drawSankey(svg, opt) {
     });
   });
   drawCol(srcNodes, sPos, leftX, 'src'); drawCol(tgtNodes, tPos, rightX, 'tgt');
-  const disp = document.getElementById('og-range-display'); if (disp) disp.textContent = wc;
 }
 
 function og_setupHover(svg, ctx) {
