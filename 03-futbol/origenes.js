@@ -616,6 +616,8 @@ function og_periodPhrase(en) {
   if (state[9].mode === 'sankey') return en ? `in the ${state[9].period[1]} World Cup` : `del Mundial ${state[9].period[1]}`;
   const y0 = state[9].period[0], y1 = state[9].period[1];
   if (y0 === y1) return en ? `in the ${y1} World Cup` : `del Mundial ${y1}`;
+  // En barras (ranking agregado) el período explícito SIEMPRE, también el completo.
+  if (state[9].mode === 'bar') return en ? `in the ${y0}–${y1} World Cups` : `de los Mundiales ${y0}–${y1}`;
   if (y0 <= OG_YEAR_MIN && y1 >= OG_YEAR_MAX) return en ? 'in each World Cup' : 'de cada Mundial';
   return en ? `in the World Cups between ${y0} and ${y1}` : `de los Mundiales entre ${y0} y ${y1}`;
 }

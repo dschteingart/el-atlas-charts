@@ -693,6 +693,9 @@ function dt_emph(iso) {
 function dt_periodPhrase(en) {
   const y0 = state[11].period[0], y1 = state[11].period[1];
   if (y0 === y1) return en ? `in the ${y1} World Cup` : `del Mundial ${y1}`;
+  // En barras (ranking agregado) mostramos el período explícito SIEMPRE — también
+  // el completo: el ranking suma sobre esos años, así que el lector debe verlos.
+  if (state[11].mode === 'bar') return en ? `in the ${y0}–${y1} World Cups` : `de los Mundiales ${y0}–${y1}`;
   if (y0 <= DT_YEAR_MIN && y1 >= DT_YEAR_MAX) return en ? 'in each World Cup' : 'de cada Mundial';
   return en ? `in the World Cups between ${y0} and ${y1}` : `de los Mundiales entre ${y0} y ${y1}`;
 }
@@ -719,13 +722,15 @@ function dt_subtitle() {
   return abs ? `Cantidad de DTs ${per} según su nacionalidad.` : `Porcentaje de los DTs ${per} según su nacionalidad.`;
 }
 // Título dinámico: insight en la vista por default (tendencia), neutral al pasar
-// a otras vistas. Excepción: en Barras sobre TODO el período, el título habla de
-// Argentina (mayor exportadora histórica de técnicos, #1 en todos y exportados).
+// a otras vistas. Excepción: en Barras sobre TODO el período Y con Argentina en
+// la selección, el título habla de Argentina (mayor exportadora histórica de
+// técnicos, #1 en total y en exportados). Si se la saca de las barras → neutral.
 function dt_title() {
   const m = state[11].mode, p = (state[11] && state[11].period) || [DT_YEAR_MIN, DT_YEAR_MAX];
   const fullRange = p[0] <= DT_YEAR_MIN && p[1] >= DT_YEAR_MAX;
   if (m === 'trend') return dt_tt('c11-title', 'Cada vez más selecciones tienen un DT extranjero');
-  if (m === 'bar' && fullRange) return dt_tt('c11-title-arg', 'Argentina, la mayor exportadora de técnicos del mundo');
+  if (m === 'bar' && fullRange && dt_group() === 'pais' && dt_selMap().has('ARG'))
+    return dt_tt('c11-title-arg', 'Argentina, la mayor exportadora de técnicos del mundo');
   return dt_tt('c11-title-neutral', 'La migración de los técnicos');
 }
 function dt_applyHeadings(aeCfg) {
