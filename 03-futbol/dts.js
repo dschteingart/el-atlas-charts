@@ -743,10 +743,11 @@ function dt_title() {
   const m = state[11].mode, p = (state[11] && state[11].period) || [DT_YEAR_MIN, DT_YEAR_MAX];
   const fullRange = p[0] <= DT_YEAR_MIN && p[1] >= DT_YEAR_MAX;
   if (m === 'trend') return dt_tt('c11-title', 'Cada vez más selecciones tienen un DT extranjero');
-  if (m === 'bar' && fullRange && dt_group() === 'pais' && dt_selMap().has('ARG'))
-    return (state[11].criterion === 'nat')
-      ? dt_tt('c11-title-arg', 'Argentina, la mayor exportadora de técnicos del mundo')         // nacionalidad: sola #1
-      : dt_tt('c11-title-arg-birth', 'Argentina y Francia, las mayores fábricas de técnicos');  // nacimiento: empatan
+  // Sola en barras + período completo + Argentina seleccionada + criterio
+  // NACIONALIDAD (ahí Argentina es la #1 sola). Por nacimiento empata con Francia
+  // → título neutral.
+  if (m === 'bar' && fullRange && dt_group() === 'pais' && dt_selMap().has('ARG') && state[11].criterion === 'nat')
+    return dt_tt('c11-title-arg', 'Argentina, la mayor exportadora de técnicos del mundo');
   return dt_tt('c11-title-neutral', 'La migración de los técnicos');
 }
 function dt_applyHeadings(aeCfg) {
@@ -884,7 +885,7 @@ function setupDtsCriterionToggle() {
     birthBtn.setAttribute('aria-pressed', !nat ? 'true' : 'false'); natBtn.setAttribute('aria-pressed', nat ? 'true' : 'false');
   }
   function switchTo(c) {
-    if ((state[11].criterion || 'birth') === c) return;
+    if ((state[11].criterion || 'nat') === c) return;
     state[11].criterion = c;
     dt_initData();   // re-carga DTS[criterio] (totals/teams del nuevo criterio)
     if (state[11].mode === 'bar' && !state[11].barCustom && dt_group() === 'pais')
@@ -937,7 +938,7 @@ function initDts() {
   if (!state[11].universe) state[11].universe = 'all';
   if (!state[11].group) state[11].group = 'pais';
   if (!state[11].metric) state[11].metric = 'pct';
-  if (!state[11].criterion) state[11].criterion = 'birth';   // default: país de nacimiento (como chart 9)
+  if (!state[11].criterion) state[11].criterion = 'nat';   // default: nacionalidad (Argentina #1 sola)
   if (!(state[11].selectedCountries instanceof Map)) {
     const init = state[11].selectedCountries;
     state[11].selectedCountries = new Map(init || []);
