@@ -17,10 +17,9 @@
 //  Constantes
 //==================================================================
 const OG_PALETTE_EXT = [
-  '#2B5C8A', '#5BA152', '#C9A227', '#9A4FA8', '#2BA0A8', '#C0473A',
-  '#1B3956', '#386433', '#7D6418', '#5F3168', '#1B6368', '#772C24',
-  '#3A7BB9', '#8CC185', '#E0C261', '#BC85C6', '#4AC8D1', '#D68279',
-  '#18344E', '#284724', '#584711', '#44234A', '#154D51', '#541F1A'
+  // Paleta estandar del Atlas (12 hues distintos, del chart 3 de N2). Norma multiserie.
+  '#234B85', '#2D6A3D', '#C9A227', '#6B3D8B', '#2C8484', '#7A2A3F',
+  '#1F8AC0', '#6CB04D', '#E07A23', '#B5639E', '#8A5A35', '#5A7A4F'
 ];
 function og_colorForSlot(slot) { return OG_PALETTE_EXT[slot % OG_PALETTE_EXT.length]; }
 const OG_COL_OTH = '#CFC9BC', OG_COL_OTH_TXT = '#8A8170';
@@ -182,7 +181,7 @@ function drawOrigenes() {
   og_project();
   // En barras y flujos el slider representa UN Mundial → single-thumb.
   const sliderEl = document.getElementById('og-range-slider');
-  if (sliderEl) sliderEl.classList.toggle('s-range-single', state[9].mode === 'bar' || state[9].mode === 'sankey');
+  if (sliderEl) sliderEl.classList.toggle('s-range-single', state[9].mode === 'sankey');   // barras ahora usa rango; solo flujos es de un Mundial
   // En flujos (sankey) se ocultan los toggles que no aplican (universo, métrica,
   // agrupación); el buscador lo maneja og_renderChips.
   const og_isSankey = state[9].mode === 'sankey';
@@ -220,7 +219,7 @@ function drawOrigenes() {
 
   // Modo BARRAS: ranking de UN Mundial (el extremo derecho del slider). Sale
   // por acá; no usa la maquinaria de líneas/área.
-  if (state[9].mode === 'bar') { og_drawBars(svg, { bigFmt, isPngFormat, wc: y1 }); og_applyHeadings(aeCfg); return; }
+  if (state[9].mode === 'bar') { og_drawBars(svg, { bigFmt, isPngFormat, y0, y1 }); og_applyHeadings(aeCfg); return; }
   if (state[9].mode === 'sankey') { og_drawSankey(svg, { bigFmt, isPngFormat, wc: y1 }); og_applyHeadings(aeCfg); return; }
 
   // escala Y (depende de la métrica: % o cantidad)
@@ -397,12 +396,13 @@ const OG_BAR_COL = '#5E7E96';                            // azul coherente con e
 const OG_IMPORTANT = ['BRA', 'ARG', 'DEU', 'FRA', 'ENG', 'ITA', 'ESP', 'NLD', 'URY', 'PRT', 'BEL', 'MEX'];
 // Default de barras (entre los presentes en ESE Mundial): top 5 + bottom 5 +
 // 5 potencias importantes que hayan quedado afuera. Excluye estados defuntos.
-function og_barDefault(wc) {
+function og_barDefault(y0, y1) {
   og_initData();
-  // candidatos = selecciones que JUEGAN ese Mundial (no cualquier país de
-  // nacimiento), con al menos un jugador nacido en ellas.
-  const teamSet = new Set((typeof ORIGENES !== 'undefined' && ORIGENES.teams_wc && ORIGENES.teams_wc[String(wc)]) || []);
-  const present = og_rawTeams.map(t => { const p = t.all.find(q => q[0] === wc); return { iso: t.iso3, n: p ? p[1] : 0 }; })
+  // candidatos = selecciones que JUEGAN en algún Mundial del rango (no cualquier
+  // país de nacimiento), con al menos un jugador nacido en ellas.
+  const teamSet = new Set();
+  og_years.filter(y => y >= y0 && y <= y1).forEach(y => ((typeof ORIGENES !== 'undefined' && ORIGENES.teams_wc && ORIGENES.teams_wc[String(y)]) || []).forEach(t => teamSet.add(t)));
+  const present = og_rawTeams.map(t => { const n = t.all.filter(p => p[0] >= y0 && p[0] <= y1).reduce((s, p) => s + p[1], 0); return { iso: t.iso3, n }; })
     .filter(x => x.n > 0 && teamSet.has(x.iso) && OG_DEFUNCT.indexOf(x.iso) < 0)
     .sort((a, b) => b.n - a.n || a.iso.localeCompare(b.iso));
   const order = present.map(x => x.iso);
@@ -417,14 +417,15 @@ function og_barDefault(wc) {
 // Ranking horizontal de UN Mundial. Aplica universo (todos/exportados) y
 // métrica (% de ese Mundial / cantidad). Click en la barra la saca.
 function og_drawBars(svg, opt) {
-  const bigFmt = opt.bigFmt, isPngFormat = opt.isPngFormat, wc = opt.wc;
-  const abs = og_isAbs(), U = og_universe(), den = og_totals[U][wc] || 0;
+  const bigFmt = opt.bigFmt, isPngFormat = opt.isPngFormat, y0 = opt.y0, y1 = opt.y1;
+  const abs = og_isAbs(), U = og_universe();
+  const yrs = og_years.filter(y => y >= y0 && y <= y1);
+  const den = yrs.reduce((s, y) => s + (og_totals[U][y] || 0), 0);   // denominador del rango
   const rows = Array.from(og_selMap().keys()).filter(iso => og_byIso[iso]).map(iso => {
-    const p = og_byIso[iso].pts.find(q => q[0] === wc);
-    const n = p ? p[2] : 0;
+    const n = og_byIso[iso].pts.filter(p => p[0] >= y0 && p[0] <= y1).reduce((s, p) => s + p[2], 0);
     return { iso, name: og_displayName(iso, og_byIso[iso].name),
       n, v: abs ? n : (den ? +(100 * n / den).toFixed(1) : 0) };
-  }).filter(r => r.n > 0)                                 // solo países presentes en ese Mundial
+  }).filter(r => r.n > 0)                                 // solo países con jugadores en el rango
     .sort((a, b) => b.v - a.v || b.n - a.n);
 
   const fs = bigFmt ? 23 : 12.5;
@@ -452,8 +453,8 @@ function og_drawBars(svg, opt) {
     vt.style.fontSize = fs + 'px'; vt.style.fontFamily = 'var(--sans)'; vt.style.fontWeight = '700'; vt.setAttribute('fill', 'var(--ink)'); vt.textContent = abs ? r.n : (r.v + '%'); svg.appendChild(vt);
     if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) { bar.style.cursor = 'pointer'; bar.addEventListener('click', () => og_toggle(r.iso)); }
   });
-  // en barras el slider representa UN Mundial → mostrar solo ese año
-  const disp = document.getElementById('og-range-display'); if (disp) disp.textContent = wc;
+  // en barras el slider representa el rango elegido
+  const disp = document.getElementById('og-range-display'); if (disp) disp.textContent = (y0 === y1 ? y0 : (y0 + '–' + y1));
 }
 
 // SANKEY: flujos nacimiento -> selección de los jugadores "exportados" de UN
@@ -472,6 +473,9 @@ function og_drawSankey(svg, opt) {
   flows.forEach(([b, r, n]) => { srcTot[b] = (srcTot[b] || 0) + n; tgtTot[r] = (tgtTot[r] || 0) + n; });
   const srcSet = new Set(Object.keys(srcTot).sort((a, b) => srcTot[b] - srcTot[a]).slice(0, TOPN));
   const tgtSet = new Set(Object.keys(tgtTot).sort((a, b) => tgtTot[b] - tgtTot[a]).slice(0, TOPN));
+  // Para el tooltip de "Otros": el desglose de los que quedaron fuera del top-N.
+  const srcOthers = Object.keys(srcTot).filter(b => !srcSet.has(b)).sort((a, b) => srcTot[b] - srcTot[a]).map(b => [b, srcTot[b]]);
+  const tgtOthers = Object.keys(tgtTot).filter(r => !tgtSet.has(r)).sort((a, b) => tgtTot[b] - tgtTot[a]).map(r => [r, tgtTot[r]]);
   const agg = {};
   flows.forEach(([b, r, n]) => { const s = srcSet.has(b) ? b : OS, t = tgtSet.has(r) ? r : OT; agg[s + '|' + t] = (agg[s + '|' + t] || 0) + n; });
   const srcVal = {}, tgtVal = {};
@@ -516,6 +520,21 @@ function og_drawSankey(svg, opt) {
     linksG.appendChild(path);
   });
   const nodesG = og_el('g'); svg.appendChild(nodesG);
+  // Tooltip de nodo: total de jugadores por país (= grosor de la barra). En
+  // "Otros", total + desglose por país de los que quedaron fuera del top-N.
+  const jugN = (n) => n + ' ' + (n === 1 ? og_tt('c9-sankey-jug1', 'jugador') : og_tt('c9-sankey-jugN', 'jugadores'));
+  const moveTip = (ev) => { if (!tooltip) return; const rc = svg.getBoundingClientRect(); const _x = ev.clientX - rc.left, _w = tooltip.offsetWidth || 180; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; };
+  function nodeTipHtml(k, side) {
+    const total = (side === 'src' ? srcVal[k] : tgtVal[k]) || 0;
+    if (k !== OS && k !== OT) return `<strong>${nmOf(k)}</strong><br>${jugN(total)}`;
+    const list = (side === 'src' ? srcOthers : tgtOthers);
+    let html = `<strong>${og_tt('c9-sankey-otros', 'Otros')}</strong> · ${jugN(total)}<div style="margin-top:5px;display:grid;grid-template-columns:auto auto;gap:1px 12px;">`;
+    list.slice(0, 14).forEach(([iso, n]) => { html += `<span>${og_displayName(iso)}</span><strong style="text-align:right;font-variant-numeric:tabular-nums;">${n}</strong>`; });
+    html += '</div>';
+    if (list.length > 14) html += `<div style="margin-top:3px;opacity:.7;">+${list.length - 14} ${og_tt('c9-sankey-more', 'más')}</div>`;
+    return html;
+  }
+  const nodeHover = !isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
   const drawCol = (nodes, pos, x, side) => nodes.forEach(k => {
     const p = pos[k];
     const rect = og_el('rect'); rect.setAttribute('x', x); rect.setAttribute('y', p.y0); rect.setAttribute('width', nodeW); rect.setAttribute('height', Math.max(1.5, p.h));
@@ -523,6 +542,12 @@ function og_drawSankey(svg, opt) {
     const txt = og_el('text'); txt.setAttribute('x', side === 'src' ? x - padLbl : x + nodeW + padLbl); txt.setAttribute('y', (p.y0 + p.y1) / 2 + fs * 0.34);
     txt.setAttribute('text-anchor', side === 'src' ? 'end' : 'start'); txt.style.fontSize = fs + 'px'; txt.style.fontFamily = 'var(--sans)'; txt.style.fontWeight = '600'; txt.setAttribute('fill', 'var(--ink)');
     txt.textContent = nmOf(k); nodesG.appendChild(txt);
+    if (nodeHover) [rect, txt].forEach(el => {
+      el.style.cursor = 'pointer';
+      el.addEventListener('mouseenter', () => { if (tooltip) { tooltip.innerHTML = nodeTipHtml(k, side); tooltip.style.display = 'block'; tooltip.style.opacity = '1'; } });
+      el.addEventListener('mousemove', moveTip);
+      el.addEventListener('mouseleave', () => { if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; } });
+    });
   });
   drawCol(srcNodes, sPos, leftX, 'src'); drawCol(tgtNodes, tPos, rightX, 'tgt');
   const disp = document.getElementById('og-range-display'); if (disp) disp.textContent = wc;
@@ -586,10 +611,13 @@ function og_emph(iso) {
   });
 }
 
-// Fragmento de período: en barras un solo Mundial; en líneas/área el rango.
+// Fragmento de período: en flujos un solo Mundial; en líneas/área/barras el rango.
 function og_periodPhrase(en) {
-  if (state[9].mode === 'bar' || state[9].mode === 'sankey') return en ? `in the ${state[9].period[1]} World Cup` : `del Mundial ${state[9].period[1]}`;
+  if (state[9].mode === 'sankey') return en ? `in the ${state[9].period[1]} World Cup` : `del Mundial ${state[9].period[1]}`;
   const y0 = state[9].period[0], y1 = state[9].period[1];
+  if (y0 === y1) return en ? `in the ${y1} World Cup` : `del Mundial ${y1}`;
+  // En barras (ranking agregado) el período explícito SIEMPRE, también el completo.
+  if (state[9].mode === 'bar') return en ? `in the ${y0}–${y1} World Cups` : `de los Mundiales ${y0}–${y1}`;
   if (y0 <= OG_YEAR_MIN && y1 >= OG_YEAR_MAX) return en ? 'in each World Cup' : 'de cada Mundial';
   return en ? `in the World Cups between ${y0} and ${y1}` : `de los Mundiales entre ${y0} y ${y1}`;
 }
@@ -635,7 +663,10 @@ function og_renderChips() {
   Array.from(og_selMap().keys()).forEach(iso => {
     if (!og_byIso[iso]) return;
     const chip = document.createElement('span'); chip.className = 'm-selected-chip';
-    chip.style.background = og_getColor(iso); chip.textContent = og_displayName(iso, og_byIso[iso].name);
+    // En barras (todas del mismo color) los chips usan el color de la barra; en
+    // líneas/área cada chip lleva el color de su serie.
+    chip.style.background = (state[9].mode === 'bar') ? OG_BAR_COL : og_getColor(iso);
+    chip.textContent = og_displayName(iso, og_byIso[iso].name);
     const x = document.createElement('button'); x.className = 'm-chip-x'; x.innerHTML = '×';
     x.addEventListener('click', () => og_toggle(iso)); chip.appendChild(x); c.appendChild(chip);
   });
@@ -677,7 +708,7 @@ function setupOrigenesModeToggle() {
     // En país: barras trae su propio default; al volver a líneas/área desde
     // barras o flujos se restauran las grandes canteras. (sankey no usa selección)
     if (og_group() === 'pais') {
-      if (m === 'bar') state[9].selectedCountries = new Map(og_barDefault(state[9].period[1]).map((iso, i) => [iso, i]));
+      if (m === 'bar') state[9].selectedCountries = new Map(og_barDefault(state[9].period[0], state[9].period[1]).map((iso, i) => [iso, i]));
       else if ((m === 'line' || m === 'stack') && (prev === 'bar' || prev === 'sankey')) state[9].selectedCountries = new Map(OG_BIG.map((iso, i) => [iso, i]));
     }
     sync(); og_renderChips(); drawOrigenes();
@@ -705,7 +736,7 @@ function setupOrigenesGroupToggle() {
   function applyDefaultSelection() {
     let isos;
     if (og_group() === 'region') isos = OG_REGION_ORDER;
-    else if (state[9].mode === 'bar') isos = og_barDefault(state[9].period[1]);  // país + barras
+    else if (state[9].mode === 'bar') isos = og_barDefault(state[9].period[0], state[9].period[1]);  // país + barras
     else isos = OG_BIG;
     if (state[9].mode === 'bar') state[9].barCustom = false;   // volver al default reactiva el auto-ajuste
     state[9].selectedCountries = new Map(isos.map((iso, i) => [iso, i]));
@@ -760,7 +791,7 @@ function setupOrigenesSlider() {
       // En barras (sin edición manual) la selección por defecto se reajusta al
       // Mundial elegido. Si el usuario ya la editó (barCustom), queda fija.
       if (state[9].mode === 'bar' && !state[9].barCustom && og_group() === 'pais') {
-        state[9].selectedCountries = new Map(og_barDefault(state[9].period[1]).map((iso, i) => [iso, i]));
+        state[9].selectedCountries = new Map(og_barDefault(state[9].period[0], state[9].period[1]).map((iso, i) => [iso, i]));
         og_renderChips();
       }
       drawOrigenes();

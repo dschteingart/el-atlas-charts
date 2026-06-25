@@ -21,10 +21,9 @@
 //  Constantes
 //==================================================================
 const LG_PALETTE_EXT = [
-  '#2B5C8A', '#5BA152', '#C9A227', '#9A4FA8', '#2BA0A8', '#C0473A',
-  '#1B3956', '#386433', '#7D6418', '#5F3168', '#1B6368', '#772C24',
-  '#3A7BB9', '#8CC185', '#E0C261', '#BC85C6', '#4AC8D1', '#D68279',
-  '#18344E', '#284724', '#584711', '#44234A', '#154D51', '#541F1A'
+  // Paleta estandar del Atlas (12 hues distintos, del chart 3 de N2). Norma multiserie.
+  '#234B85', '#2D6A3D', '#C9A227', '#6B3D8B', '#2C8484', '#7A2A3F',
+  '#1F8AC0', '#6CB04D', '#E07A23', '#B5639E', '#8A5A35', '#5A7A4F'
 ];
 function lg_colorForSlot(slot) { return LG_PALETTE_EXT[slot % LG_PALETTE_EXT.length]; }
 
