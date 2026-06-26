@@ -47,6 +47,24 @@ for r in rows:
             p["c"] = c; p["iso"] = (r.get("iso_nacimiento") or "").strip()
             p["lat"] = round(lat, 3); p["lon"] = round(lon, 3)
 
+# Enriquecimiento Wikipedia: ciudad de nacimiento recuperada (por wd_id) para jugadores que
+# el master dejó sin ciudad geolocalizable. Generado por recover_birthplaces.py (Wikipedia
+# multi-idioma) + filtro de seguridad (solo ciudad en el país esperado). NO cambia el país de
+# nacimiento → chart 9 (origenes, que cuenta por país) queda IDÉNTICO: los dos charts siguen
+# leyendo el mismo master, solo que el mapa ahora ubica ~194 jugadores más. Wikidata solo no
+# alcanza porque para migrantes/nacionalizados devuelve el país de la selección (ej. Madibo).
+OVR = HERE / "birthplace_overrides.csv"
+if OVR.exists():
+    n_ovr = 0
+    ovr = {row["wd_id"]: row for row in csv.DictReader(open(OVR, encoding="utf-8"))}
+    for pid, p in players.items():
+        if not p["c"] and pid in ovr:
+            o = ovr[pid]; la, lo = fnum(o.get("lat")), fnum(o.get("lon"))
+            if (o.get("ciudad") or "").strip() and la is not None and lo is not None:
+                p["c"] = o["ciudad"].strip(); p["iso"] = (o.get("iso") or "").strip()
+                p["lat"] = round(la, 3); p["lon"] = round(lo, 3); n_ovr += 1
+    print(f"  overrides Wikipedia aplicados: {n_ovr}")
+
 # índice de ciudades + conteo all-time (para ordenar)
 city_idx = {}; city_meta = []; city_tot = defaultdict(int)
 def get_city(c, iso, lat, lon):
