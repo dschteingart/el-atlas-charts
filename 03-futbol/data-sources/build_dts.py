@@ -91,116 +91,129 @@ NAT2ISO = {
     "Uruguay": "URY", "Wales": "WAL", "Yugoslavia": "YUG",
 }
 
+# Estados históricos y sus países sucesores. Un DT nacido en un sucesor que dirige
+# al Estado histórico NO es extranjero (ej.: nacido en Serbia moderna dirigiendo
+# Yugoslavia = local). Sin esto, el nacimiento puro inflaría los "exportados" con
+# casos que en realidad eran domésticos (el equivalente del chart 9 lo tiene, es
+# una imperfección conocida; acá lo corregimos).
+HIST_SUCCESSORS = {
+    "YUG": {"YUG", "SRB", "HRV", "BIH", "MKD", "MNE", "SVN", "XKX"},
+    "SCG": {"SCG", "SRB", "MNE"},
+    "SUN": {"SUN", "RUS", "UKR", "BLR", "GEO", "ARM", "AZE", "KAZ", "UZB",
+            "TKM", "KGZ", "TJK", "MDA", "LTU", "LVA", "EST"},
+    "CSK": {"CSK", "CZE", "SVK"},
+    "DDR": {"DDR", "DEU"},
+}
+def is_foreign(birth, team):
+    if not birth or birth == team:
+        return False
+    succ = HIST_SUCCESSORS.get(team)
+    return not (succ and birth in succ)
+
+# --- país de NACIMIENTO de los DTs (Wikidata, vía enrich_dt_birthplace.py) ----
+# Atribuimos por NACIMIENTO real (como el chart 9 de jugadores), no por la
+# "nacionalidad/home country" de jfjelstul (que es inconsistente: a veces toma el
+# nacimiento, a veces la nacionalidad adoptada — p.ej. Kubala, nacido en Hungría,
+# figuraba como España). managers_birthcountry.csv: manager_id → birth_iso3
+# (vacío = sin lugar de nacimiento en Wikidata → fallback a jfjelstul).
+mid2birth = {}
+bcf = SRC / "managers_birthcountry.csv"
+if bcf.exists():
+    for r in csv.DictReader(open(bcf, encoding="utf-8")):
+        if (r.get("birth_iso3") or "").strip():
+            mid2birth[r["manager_id"]] = r["birth_iso3"].strip()
+
 # --- leer appointments (solo Mundial masculino) ------------------------------
 rows = [r for r in csv.DictReader(open(SRC / "manager_appointments.csv", encoding="utf-8"))
         if "Men's" in r["tournament_name"]]
 
-total_all = defaultdict(int)
-total_exp = defaultdict(int)
-team_all = defaultdict(lambda: defaultdict(int))   # nat_iso -> {year: n}
-team_exp = defaultdict(lambda: defaultdict(int))
-flows = defaultdict(lambda: defaultdict(int))      # year -> {(nat_iso, sel_iso): n}
-teams_wc = defaultdict(set)                         # year -> {selecciones que dirigió alguien}
+# selecciones que dirigió alguien por Mundial (independiente del criterio)
+sup = SRC / "managers_2026.csv"
+sup_rows = list(csv.DictReader(open(sup, encoding="utf-8"))) if sup.exists() else []
+teams_wc = defaultdict(set)
+for r in rows:
+    sel = (r.get("team_code") or "").strip()
+    if sel: teams_wc[int(r["tournament_id"].split("-")[1])].add(sel)
+for r in sup_rows:
+    sel = (r.get("team_iso") or "").strip()
+    if sel: teams_wc[2026].add(sel)
+
+isos_used = set()
 missing = set()
 
-for r in rows:
-    y = int(r["tournament_id"].split("-")[1])
-    sel = (r.get("team_code") or "").strip()           # selección dirigida (ya iso3)
-    if sel:
-        teams_wc[y].add(sel)
-    nat = NAT2ISO.get((r.get("country_name") or "").strip())
-    if not nat:
-        missing.add((r.get("country_name") or "").strip())
-        continue
-    total_all[y] += 1
-    team_all[nat][y] += 1
-    if nat != sel:                                      # dirige a OTRA selección = exportado
-        total_exp[y] += 1
-        team_exp[nat][y] += 1
-        flows[y][(nat, sel)] += 1
+# Agrega los DTs según una función de atribución (appointment → iso del DT).
+# Produce {totals, teams, flows} para un criterio (nacimiento o nacionalidad).
+def aggregate(attr_hist, attr_2026):
+    total_all = defaultdict(int); total_exp = defaultdict(int)
+    team_all = defaultdict(lambda: defaultdict(int)); team_exp = defaultdict(lambda: defaultdict(int))
+    flows = defaultdict(lambda: defaultdict(int))
+    def add(y, sel, nat):
+        if not nat: return
+        total_all[y] += 1; team_all[nat][y] += 1
+        if is_foreign(nat, sel):                        # dirige a un país distinto = exportado
+            total_exp[y] += 1; team_exp[nat][y] += 1; flows[y][(nat, sel)] += 1
+    for r in rows:
+        add(int(r["tournament_id"].split("-")[1]), (r.get("team_code") or "").strip(), attr_hist(r))
+    for r in sup_rows:
+        add(2026, (r.get("team_iso") or "").strip(), attr_2026(r))
+    yrs = sorted(total_all)
+    team_tot = {iso: sum(team_all[iso].values()) for iso in team_all}
+    teams = []
+    for iso in sorted(team_tot, key=lambda k: (-team_tot[k], k)):
+        isos_used.add(iso)
+        teams.append({"iso3": iso,
+                      "all": [[y, team_all[iso][y]] for y in sorted(team_all[iso])],
+                      "exp": [[y, team_exp[iso][y]] for y in sorted(team_exp[iso])]})
+    flows_out = {}
+    for y in yrs:
+        arr = []
+        for (nat, sel), n in sorted(flows[y].items(), key=lambda kv: -kv[1]):
+            arr.append([nat, sel, n]); isos_used.add(nat); isos_used.add(sel)
+        if arr: flows_out[str(y)] = arr
+    return {"totals": {"all": [[y, total_all[y]] for y in yrs], "exp": [[y, total_exp[y]] for y in yrs]},
+            "teams": teams, "flows": flows_out}, yrs
 
-# --- 2026: suplemento manual (jfjelstul corta en 2022) -----------------------
-# managers_2026.csv: una fila por selección (team_iso, nat_iso ya en ISO3).
-# Mundial aún no jugado → DTs actuales (ver col `src`: wiki=verificado en
-# Wikipedia, draft/verify=compilado a mano, revisar). Mismo esquema que arriba.
-sup = SRC / "managers_2026.csv"
-n2026 = 0
-if sup.exists():
-    for r in csv.DictReader(open(sup, encoding="utf-8")):
-        sel = (r.get("team_iso") or "").strip()
-        nat = (r.get("nat_iso") or "").strip()
-        if not sel or not nat:
-            continue
-        y = 2026
-        teams_wc[y].add(sel)
-        total_all[y] += 1
-        team_all[nat][y] += 1
-        n2026 += 1
-        if nat != sel:
-            total_exp[y] += 1
-            team_exp[nat][y] += 1
-            flows[y][(nat, sel)] += 1
+# Atribución por NACIMIENTO (Wikidata; fallback a jfjelstul) vs por NACIONALIDAD
+# (home country de jfjelstul). El usuario alterna con el toggle del chart.
+def b_hist(r): return mid2birth.get((r.get("manager_id") or "").strip()) or NAT2ISO.get((r.get("country_name") or "").strip())
+def b_2026(r): return (r.get("birth_iso3") or r.get("nat_iso") or "").strip()
+def n_hist(r):
+    iso = NAT2ISO.get((r.get("country_name") or "").strip())
+    if not iso: missing.add((r.get("country_name") or "").strip())
+    return iso
+def n_2026(r): return (r.get("nat_iso") or "").strip()
+byBirth, years = aggregate(b_hist, b_2026)
+byNat, _ = aggregate(n_hist, n_2026)
 
-years = sorted(total_all)
-
-# --- armar teams (nacionalidades de DT), ordenadas por total histórico --------
-team_tot = {iso: sum(team_all[iso].values()) for iso in team_all}
-teams = []
-isos_used = set()
-for iso in sorted(team_tot, key=lambda k: (-team_tot[k], k)):
-    isos_used.add(iso)
-    teams.append({
-        "iso3": iso,
-        "all": [[y, team_all[iso][y]] for y in sorted(team_all[iso])],
-        "exp": [[y, team_exp[iso][y]] for y in sorted(team_exp[iso])],
-    })
-
-# --- flows para el Sankey -----------------------------------------------------
-flows_out = {}
-for y in years:
-    items = sorted(flows[y].items(), key=lambda kv: -kv[1])
-    arr = []
-    for (nat, sel), n in items:
-        arr.append([nat, sel, n])
-        isos_used.add(nat); isos_used.add(sel)
-    if arr:
-        flows_out[str(y)] = arr
-
-# selecciones dirigidas también necesitan nombre/confed (aparecen en el Sankey)
-for y in years:
-    for sel in teams_wc[y]:
-        isos_used.add(sel)
-
-# --- names + confed solo de los iso usados -----------------------------------
+for y in teams_wc:
+    for sel in teams_wc[y]: isos_used.add(sel)
 names = {iso: nm(iso) for iso in sorted(isos_used)}
 confed = {iso: CONFED.get(iso, "OTRO") for iso in sorted(isos_used)}
 
 data = {
     "years": years,
-    "totals": {"all": [[y, total_all[y]] for y in years],
-               "exp": [[y, total_exp[y]] for y in years]},
     "names": names,
     "confed": confed,
-    "teams": teams,
-    "flows": flows_out,
     "teams_wc": {str(y): sorted(teams_wc[y]) for y in years},
+    "byBirth": byBirth,   # criterio: país de nacimiento (Wikidata)
+    "byNat": byNat,       # criterio: nacionalidad (home country de jfjelstul)
 }
 js = "// Generado por data-sources/build_dts.py — NO editar a mano.\n"
-js += "// Nacionalidad de los DTs por Mundial + flujos de migración del banquillo.\n"
+js += "// DTs por Mundial, atribuidos por país de NACIMIENTO (byBirth) y por\n"
+js += "// NACIONALIDAD (byNat); el chart alterna con un toggle. + flujos de migración.\n"
 js += "const DTS = " + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";\n"
 OUT.write_text(js, encoding="utf-8")
 
 # --- log ----------------------------------------------------------------------
-print(f"OK: {OUT.stat().st_size//1024} KB | nacionalidades: {len(teams)} | Mundiales: {len(years)}")
-print(f"   appointments: {sum(total_all.values())} | exportados: {sum(total_exp.values())} "
-      f"({100*sum(total_exp.values())/max(1,sum(total_all.values())):.0f}%)")
-print(f"   2022: {total_all[2022]} DTs, {total_exp[2022]} exportados | "
-      f"2026: {total_all.get(2026,0)} DTs, {total_exp.get(2026,0)} exportados ({n2026} del suplemento)")
+def stats(d):
+    ta = sum(v for _, v in d["totals"]["all"]); te = sum(v for _, v in d["totals"]["exp"])
+    top = sorted(d["teams"], key=lambda t: -sum(p[1] for p in t["exp"]))[:6]
+    return ta, te, [(t["iso3"], sum(p[1] for p in t["exp"])) for t in top]
+for label, d in [("NACIMIENTO", byBirth), ("NACIONALIDAD", byNat)]:
+    ta, te, top = stats(d)
+    print(f"{label:12s}: {ta} appointments | exportados {te} ({100*te/max(1,ta):.0f}%) | top {top}")
+print(f"OK: {OUT.stat().st_size//1024} KB | Mundiales: {len(years)} | {len(sup_rows)} DTs en 2026")
 miss2 = [m for m in missing if m]
 if miss2: print(f"   ⚠ nacionalidades sin mapear: {sorted(miss2)}")
 nocon = [iso for iso in isos_used if confed[iso] == "OTRO"]
 if nocon: print(f"   ⚠ iso sin confederación: {sorted(nocon)}")
-# top exportadores histórico
-exp_tot = {t["iso3"]: sum(p[1] for p in t["exp"]) for t in teams}
-top = sorted(exp_tot, key=lambda k: -exp_tot[k])[:8]
-print("   top exportadores de DTs:", [(iso, exp_tot[iso]) for iso in top])
