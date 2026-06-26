@@ -86,6 +86,15 @@ function bp_period() { return (state[8] && state[8].period) || [BIRTH.years[0], 
 function bp_isHeat() { return !!(state[8] && state[8].heat); }
 function bp_heatStyle() { return (state[8] && state[8].heatStyle) || 'hexbig'; }
 function bp_isGlow() { return bp_isHeat() && bp_heatStyle() === 'glow'; }
+// Unidad de conteo: 'uniq' = jugadores únicos (un jugador cuenta 1 aunque haya jugado
+// varios Mundiales del rango); 'apps' = apariciones (cuenta 1 por Mundial dentro del rango).
+// En un solo Mundial ambos coinciden; la distinción solo importa al sumar varios.
+function bp_unit() { return (state[8] && state[8].unit) || 'uniq'; }
+function bp_unitNoun(n) {
+  const apps = bp_unit() === 'apps';
+  return (n === 1) ? bp_t(apps ? 'c8-noun-apps-1' : 'c8-noun-1', apps ? 'aparición' : 'jugador')
+                   : bp_t(apps ? 'c8-noun-apps-n' : 'c8-noun-n', apps ? 'apariciones' : 'jugadores');
+}
 function bp_loadGeo() {
   if (bp_geo) return;
   // backdrop liviano (simplificado) para que el mapa renderice rápido; fallback
@@ -96,15 +105,18 @@ function bp_loadGeo() {
 }
 function bp_idxOf(year) { const ys = BIRTH.years; let bi = 0, bd = Infinity; for (let i = 0; i < ys.length; i++) { const d = Math.abs(ys[i] - year); if (d < bd) { bd = d; bi = i; } } return bi; }
 
-// Conteo de jugadores únicos por ciudad para el período [y0,y1].
+// Conteo por ciudad para el período [y0,y1]. Según la unidad: jugadores ÚNICOS (un
+// jugador suma 1 si jugó ≥1 Mundial del rango) o APARICIONES (suma 1 por cada Mundial
+// del rango que jugó).
 function bp_cityCounts(period) {
   const a = bp_idxOf(period[0]), b = bp_idxOf(period[1]);
+  const apps = (bp_unit() === 'apps');
   const counts = new Map();
   const P = BIRTH.players;
   for (let i = 0; i < P.length; i++) {
-    const yrs = P[i][1]; let hit = false;
-    for (let k = 0; k < yrs.length; k++) { if (yrs[k] >= a && yrs[k] <= b) { hit = true; break; } }
-    if (hit) { const ci = P[i][0]; counts.set(ci, (counts.get(ci) || 0) + 1); }
+    const yrs = P[i][1]; let inRange = 0;
+    for (let k = 0; k < yrs.length; k++) { if (yrs[k] >= a && yrs[k] <= b) inRange++; }
+    if (inRange) { const ci = P[i][0]; counts.set(ci, (counts.get(ci) || 0) + (apps ? inRange : 1)); }
   }
   return counts;
 }
@@ -353,7 +365,7 @@ function bp_sizeLegend(g, rScale, maxN, PW, PH, bigFmt) {
   const lg = g.append('g').attr('transform', `translate(${baseX},${baseY})`);
   lg.append('text').attr('x', 0).attr('y', -2 * rScale(maxN) - (bigFmt ? 10 : 6))
     .style('font-family', 'var(--sans)').style('font-size', fs + 'px').style('font-weight', 600)
-    .attr('fill', 'var(--ink-soft)').text(bp_t('c8-legend-size', 'Jugadores nacidos ahí'));
+    .attr('fill', 'var(--ink-soft)').text(bp_unit() === 'apps' ? bp_t('c8-legend-apps', 'Apariciones en Mundiales') : bp_t('c8-legend-size', 'Jugadores nacidos ahí'));
   let x = rScale(maxN);
   refs.forEach(v => {
     const r = rScale(v);
@@ -434,8 +446,8 @@ function bp_drawBars(svg, W, H, opt) {
 //------------------------------------------------------------------
 function bp_tip(d) {
   const tt = document.getElementById('tooltip8'); if (!tt) return;
-  const period = bp_period(), one = d.n === 1;
-  const noun = one ? bp_t('c8-noun-1', 'jugador') : bp_t('c8-noun-n', 'jugadores');
+  const period = bp_period();
+  const noun = bp_unitNoun(d.n);
   let scope;
   if (period[0] === period[1]) scope = bp_t('c8-tip-year', 'en el Mundial') + ' ' + period[0];
   else if (period[0] === BIRTH.years[0] && period[1] === BIRTH.years[BIRTH.years.length - 1]) scope = bp_t('c8-tip-all', '(todos los Mundiales)');
@@ -450,14 +462,16 @@ function bp_hexTip(bin) {
   let total = 0, top = bin[0];
   for (let i = 0; i < bin.length; i++) { total += bin[i].n; if (bin[i].n > top.n) top = bin[i]; }
   const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
+  const apps = bp_unit() === 'apps';
   const cityNm = bp_cityName(top.c.c), ctry = bp_countryName(top.c.iso);
+  const noun = bp_unitNoun(total);
   if (lang === 'en') {
-    tt.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">${total} ${total === 1 ? 'player' : 'players'} born in this area</div>`
+    const head = apps ? `${total} ${noun} from this area` : `${total} ${noun} born in this area`;
+    tt.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">${head}</div>`
       + `<div>Top city: ${cityNm}, ${ctry} <strong style="font-variant-numeric:tabular-nums;">(${top.n})</strong></div>`;
   } else {
-    const noun = total === 1 ? bp_t('c8-noun-1', 'jugador') : bp_t('c8-noun-n', 'jugadores');
-    const born = total === 1 ? 'nacido' : 'nacidos';
-    tt.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">${total} ${noun} ${born} en esta zona</div>`
+    const head = apps ? `${total} ${noun} desde esta zona` : `${total} ${noun} ${total === 1 ? 'nacido' : 'nacidos'} en esta zona`;
+    tt.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">${head}</div>`
       + `<div>Ciudad con más: ${cityNm}, ${ctry} <strong style="font-variant-numeric:tabular-nums;">(${top.n})</strong></div>`;
   }
   tt.style.display = 'block'; tt.style.opacity = '1';
@@ -499,6 +513,19 @@ function setupBirthplaceTabs() {
   }
   mapBtn.addEventListener('click', () => { if (bp_view() !== 'map') { state[8].view = 'map'; sync(); drawBirthplace(); } });
   barsBtn.addEventListener('click', () => { if (bp_view() !== 'bars') { state[8].view = 'bars'; bp_zoomT = null; sync(); drawBirthplace(); } });
+  sync();
+}
+// Toggle de unidad: jugadores únicos vs apariciones (tiene sentido al sumar varios Mundiales).
+function setupBirthplaceUnitToggle() {
+  const uBtn = document.getElementById('bp-unit-uniq'), aBtn = document.getElementById('bp-unit-apps');
+  if (!uBtn || !aBtn) return;
+  function sync() {
+    const apps = bp_unit() === 'apps';
+    uBtn.classList.toggle('lg-seg-on', !apps); aBtn.classList.toggle('lg-seg-on', apps);
+    uBtn.setAttribute('aria-pressed', !apps); aBtn.setAttribute('aria-pressed', apps);
+  }
+  uBtn.addEventListener('click', () => { if (bp_unit() !== 'uniq') { state[8].unit = 'uniq'; sync(); drawBirthplace(); } });
+  aBtn.addEventListener('click', () => { if (bp_unit() !== 'apps') { state[8].unit = 'apps'; sync(); drawBirthplace(); } });
   sync();
 }
 function setupBirthplaceSlider() {
@@ -559,6 +586,7 @@ function initBirthplace() {
   if (!state[8].period) state[8].period = [BIRTH.years[0], BIRTH.years[BIRTH.years.length - 1]];
   if (state[8].heat == null) state[8].heat = false;
   if (!state[8].heatStyle) state[8].heatStyle = 'hexsmall';
+  if (!state[8].unit) state[8].unit = 'uniq';
   bp_loadGeo();
   // Registrar hooks de PNG temprano (antes de los setup*, que dependen de los
   // datos): si algo falla luego, el export sigue configurado.
@@ -574,6 +602,7 @@ function initBirthplace() {
   };
   drawBirthplace();
   setupBirthplaceTabs();
+  setupBirthplaceUnitToggle();
   setupBirthplaceSlider();
   setupBirthplaceHeatToggle();
   setupBirthplaceHeatStyle();
