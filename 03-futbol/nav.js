@@ -21,7 +21,8 @@
     'chart-birthplace.html',
     'chart-origenes.html',
     'chart-dts.html',
-    'chart-altura.html'
+    'chart-altura.html',
+    'chart-edad.html'
   ];
   const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
   const T = {
