@@ -96,6 +96,10 @@ def repr_iso(team_code):
     tc = (team_code or "").strip()
     return TEAMCODE_FIX.get(tc, tc)
 
+def pid_of(r):   # jugador único (igual que build_birthplace): wd_id > player_id > nombre|ciudad
+    return (r.get("wd_id") or "").strip() or (r.get("player_id") or "").strip() or \
+           (r.get("nombre", "") + "|" + r.get("ciudad_nac", ""))
+
 # --- leer master ---------------------------------------------------------------
 rows = list(csv.DictReader(open(SRC / "master_consolidado.csv", encoding="utf-8")))
 total_all = defaultdict(int)
@@ -127,6 +131,35 @@ for r in rows:
         flows[y][(bi, ri)] += 1
 
 years = sorted(total_all)
+
+# --- modelo POR JUGADOR (para el toggle únicos/apariciones del modo barras del chart 9) ----
+# players[i] = [bi_idx, [[yearIdx, exp01], ...]]  (exp01 = nació afuera del país que representa).
+# isos = lista de países de NACIMIENTO que referencia bi_idx. El modo barras cuenta por país de
+# nacimiento; con esto el renderer deduplica jugadores únicos para cualquier rango de Mundiales.
+year_idx = {y: i for i, y in enumerate(years)}
+pmap = {}
+for r in rows:
+    bi = (r.get("iso_nacimiento") or "").strip()
+    if not bi:
+        continue
+    if bi == "GBR":
+        try: lat = float(r.get("lat_nac") or 0); lon = float(r.get("lon_nac") or 0)
+        except (TypeError, ValueError): lat = lon = 0.0
+        bi = gbr_birth_nation((r.get("ciudad_nac") or "").strip(), lat, lon)
+    yi = year_idx.get(int(r["year"]))
+    if yi is None:
+        continue
+    exp = 1 if (r.get("nacio_en_pais") or "").strip() == "0" else 0
+    p = pmap.setdefault(pid_of(r), {"bi": bi, "apps": []})
+    p["apps"].append([yi, exp])
+isos = sorted(team_all.keys())
+iso_idx = {iso: i for i, iso in enumerate(isos)}
+players_out = []
+for pid, p in pmap.items():
+    bidx = iso_idx.get(p["bi"])
+    if bidx is None:
+        continue
+    players_out.append([bidx, p["apps"]])
 
 # --- armar teams (países de nacimiento), ordenados por total histórico ---------
 team_tot = {iso: sum(team_all[iso].values()) for iso in team_all}
@@ -164,6 +197,8 @@ data = {
     "teams": teams,
     "flows": flows_out,
     "teams_wc": {str(y): sorted(teams_wc[y]) for y in years},   # selecciones por Mundial
+    "isos": isos,
+    "players": players_out,
 }
 js = "// Generado por data-sources/build_origenes.py — NO editar a mano.\n"
 js += "// País de nacimiento de los mundialistas por Mundial + flujos de migración.\n"

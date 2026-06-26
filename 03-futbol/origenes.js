@@ -55,6 +55,7 @@ const OG_YEAR_MIN = 1930, OG_YEAR_MAX = 2026;
 //  Data + proyección según toggles
 //==================================================================
 let og_years = null, og_totals = null, og_rawTeams = null, og_names = null, og_confed = null, og_regionAgg = null;
+let og_players = null, og_isos = null;
 function og_initData() {
   if (og_rawTeams) return;
   if (typeof ORIGENES === 'undefined') { console.error('[origenes] ORIGENES no cargado'); og_years = []; og_rawTeams = []; og_totals = { all: {}, exp: {} }; og_names = {}; og_confed = {}; return; }
@@ -73,12 +74,36 @@ function og_initData() {
     t.all.forEach(p => og_regionAgg[r].all[p[0]] = (og_regionAgg[r].all[p[0]] || 0) + p[1]);
     t.exp.forEach(p => og_regionAgg[r].exp[p[0]] = (og_regionAgg[r].exp[p[0]] || 0) + p[1]);
   });
+  og_isos = ORIGENES.isos || [];
+  og_players = ORIGENES.players || [];   // [[bi_idx,[[yearIdx,exp01],...]],...] para únicos/apariciones
 }
 function og_universe() { return (state[9] && state[9].universe === 'exp') ? 'exp' : 'all'; }
 function og_group() { return (state[9] && state[9].group === 'region') ? 'region' : 'pais'; }
 function og_isAbs() { return !!(state[9] && state[9].metric === 'abs'); }
 // Valor a graficar de un punto [year, pct, n]: cantidad o porcentaje.
 function og_mv(p) { return og_isAbs() ? p[2] : p[1]; }
+// Unidad del modo BARRAS: 'uniq' = jugadores únicos (1 por persona con ≥1 Mundial del rango);
+// 'apps' = apariciones (1 por cada Mundial). En 1 solo Mundial coinciden; importa al sumar varios.
+function og_unit() { return (state[9] && state[9].unit === 'apps') ? 'apps' : 'uniq'; }
+function og_yIdx(y) { return (og_years || []).indexOf(y); }
+// Conteo por país (o región) de NACIMIENTO en [y0,y1], 4 variantes: au/aa = todos
+// (únicos/apariciones), eu/ea = exportados (únicos/apariciones). Desde el modelo por-jugador.
+function og_barCounts(y0, y1, group) {
+  const a = og_yIdx(y0), b = og_yIdx(y1);
+  const m = new Map(), tot = { au: 0, aa: 0, eu: 0, ea: 0 };
+  const P = og_players || [];
+  for (let i = 0; i < P.length; i++) {
+    const biso = og_isos[P[i][0]], apps = P[i][1];
+    let inAll = 0, inExp = 0;
+    for (let k = 0; k < apps.length; k++) { const yi = apps[k][0]; if (yi >= a && yi <= b) { inAll++; if (apps[k][1]) inExp++; } }
+    if (!inAll) continue;
+    const key = (group === 'region') ? (og_confed[biso] || 'OTRO') : biso;
+    let e = m.get(key); if (!e) { e = { au: 0, aa: 0, eu: 0, ea: 0 }; m.set(key, e); }
+    e.au++; e.aa += inAll; tot.au++; tot.aa += inAll;
+    if (inExp) { e.eu++; e.ea += inExp; tot.eu++; tot.ea += inExp; }
+  }
+  return { m, tot };
+}
 
 // Construye la vista (byIso + lista) para los toggles actuales: pts=[[year,pct,n]]
 let og_byIso = null, og_teams = null;
@@ -193,6 +218,9 @@ function drawOrigenes() {
   // agrupación); el buscador lo maneja og_renderChips.
   const og_isSankey = state[9].mode === 'sankey';
   ['og-univ-all', 'og-metric-pct', 'og-group-pais'].forEach(id => { const e = document.getElementById(id); const g = e && e.closest('.lg-mode'); if (g) g.style.display = og_isSankey ? 'none' : ''; });
+  // El toggle únicos/apariciones solo tiene sentido al SUMAR varios Mundiales → solo en barras
+  // (en flujos es 1 Mundial; en líneas/área cada año ya es por-aparición). Se muestra solo ahí.
+  { const e = document.getElementById('og-unit-uniq'); const g = e && e.closest('.lg-mode'); if (g) g.style.display = (state[9].mode === 'bar') ? '' : 'none'; }
 
   const aeCfg = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
@@ -428,11 +456,12 @@ function og_barDefault(y0, y1) {
 // métrica (% de ese Mundial / cantidad). Click en la barra la saca.
 function og_drawBars(svg, opt) {
   const bigFmt = opt.bigFmt, isPngFormat = opt.isPngFormat, y0 = opt.y0, y1 = opt.y1;
-  const abs = og_isAbs(), U = og_universe();
-  const yrs = og_years.filter(y => y >= y0 && y <= y1);
-  const den = yrs.reduce((s, y) => s + (og_totals[U][y] || 0), 0);   // denominador del rango
+  const abs = og_isAbs(), U = og_universe(), unit = og_unit();
+  const bc = og_barCounts(y0, y1, og_group());     // conteo por-jugador (únicos o apariciones)
+  const pick = (e) => !e ? 0 : (U === 'exp' ? (unit === 'apps' ? e.ea : e.eu) : (unit === 'apps' ? e.aa : e.au));
+  const den = pick(bc.tot);                          // denominador del rango (misma unidad)
   const rows = Array.from(og_selMap().keys()).filter(iso => og_byIso[iso]).map(iso => {
-    const n = og_byIso[iso].pts.filter(p => p[0] >= y0 && p[0] <= y1).reduce((s, p) => s + p[2], 0);
+    const n = pick(bc.m.get(iso));
     return { iso, name: og_displayName(iso, og_byIso[iso].name),
       n, v: abs ? n : (den ? +(100 * n / den).toFixed(1) : 0) };
   }).filter(r => r.n > 0)                                 // solo países con jugadores en el rango
@@ -736,6 +765,19 @@ function setupOrigenesUnivToggle() {
   expBtn.addEventListener('click', () => { if (state[9].universe !== 'exp') { state[9].universe = 'exp'; sync(); drawOrigenes(); } });
   sync();
 }
+// Toggle jugadores únicos / apariciones (solo modo barras).
+function setupOrigenesUnitToggle() {
+  const uBtn = document.getElementById('og-unit-uniq'), aBtn = document.getElementById('og-unit-apps');
+  if (!uBtn || !aBtn) return;
+  function sync() {
+    const apps = state[9].unit === 'apps';
+    uBtn.classList.toggle('lg-seg-on', !apps); aBtn.classList.toggle('lg-seg-on', apps);
+    uBtn.setAttribute('aria-pressed', !apps ? 'true' : 'false'); aBtn.setAttribute('aria-pressed', apps ? 'true' : 'false');
+  }
+  uBtn.addEventListener('click', () => { if (state[9].unit !== 'uniq') { state[9].unit = 'uniq'; sync(); drawOrigenes(); } });
+  aBtn.addEventListener('click', () => { if (state[9].unit !== 'apps') { state[9].unit = 'apps'; sync(); drawOrigenes(); } });
+  sync();
+}
 // Toggle agrupación País ↔ Región. Al cambiar, resetea la selección al default.
 function setupOrigenesGroupToggle() {
   const paisBtn = document.getElementById('og-group-pais'), regBtn = document.getElementById('og-group-region');
@@ -810,6 +852,7 @@ function initOrigenes() {
   if (!state[9]) state[9] = {};
   if (!state[9].period) state[9].period = [OG_YEAR_MIN, OG_YEAR_MAX];
   if (!state[9].mode) state[9].mode = 'sankey';   // por default mostramos los flujos (lo que distingue a este gráfico del 8)
+  if (!state[9].unit) state[9].unit = 'uniq';     // modo barras: por default jugadores únicos
   if (!state[9].universe) state[9].universe = 'all';
   if (!state[9].group) state[9].group = 'pais';
   if (!state[9].metric) state[9].metric = 'pct';
@@ -823,6 +866,7 @@ function initOrigenes() {
   setupOrigenesSearch();
   setupOrigenesModeToggle();
   setupOrigenesUnivToggle();
+  setupOrigenesUnitToggle();
   setupOrigenesGroupToggle();
   setupOrigenesMetricToggle();
   setupOrigenesCSV();
