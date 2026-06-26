@@ -417,7 +417,7 @@ function ed_drawBars(svg, opt) {
   const rowH = rows.length ? Math.min(availH / rows.length, bigFmt ? 84 : 54) : 24;
   const barH = rowH * 0.58;
   const minV = Math.min(...rows.map(r => r.v)), maxV = Math.max(...rows.map(r => r.v));
-  const base = Math.max(140, Math.floor(minV) - 6);                 // baseline para que se note la diferencia
+  const base = Math.max(0, Math.floor(minV) - 2);                   // baseline (años) para que se note la diferencia
   const xW = (v) => Math.max(0, ((v - base) / Math.max(1, maxV * 1.005 - base)) * plotW);
   const yBase = (y) => y + fs * 0.34;
   rows.forEach((r, i) => {
