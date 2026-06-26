@@ -1,0 +1,516 @@
+wd_id,nombre,iso_master,status,lang,via,ciudad,city_qid,pais_ciudad,lat,lon
+Q2697451,Miguel Brito,BOL,solo_pais,en,text,Bolivia,Q750,BOL,-17.0569,-64.9912
+Q2697446,Gumercindo Gómez,BOL,solo_pais,en,link,Bolivia,Q750,BOL,-17.0569,-64.9912
+Q2697421,Constantino Noya,BOL,solo_pais,en,link,Bolivia,Q750,BOL,-17.0569,-64.9912
+Q2482034,Luis Reyes Peñaranda,BOL,solo_pais,fa,link,بولیوی,Q750,BOL,-17.0569,-64.9912
+Q682848,Jorge Valderrama,BOL,solo_pais,en,link,Bolivia,Q750,BOL,-17.0569,-64.9912
+Q1363125,Horacio Muñoz,CHL,ciudad_sin_resolver,es,link,Colico (Chile),,,,
+Q763529,Eberardo Villalobos,CHL,OK_ciudad,es,link,Osorno,Q51059,CHL,-40.5667,-73.15
+Q2635557,Jesús Castro,MEX,solo_pais,en,link,Mexico,Q96,MEX,23,-102
+Q924411,Roberto Gayón,CRI,solo_pais,es,link,Costa Rica,Q800,CRI,10,-84
+Q972927,Felipe Olivares,MEX,solo_pais,es,link,México,Q96,MEX,23,-102
+Q968691,Raymundo Rodríguez,MEX,solo_pais,es,link,México,Q96,MEX,23,-102
+Q2525511,Francisco Aguirre,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q2703867,Santiago Benítez,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q2697482,Saguier Carreras,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q2696797,Eustacio Chamorro,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q2697444,Eusebio Díaz,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q369357,Diógenes Domínguez,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q2697456,Romildo Etcheverry,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q2697427,Diego Florentín,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q2697493,Salvador Flores,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q2697437,José Miracca,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q2697476,Lino Nessi,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q2697432,Quiterio Olmedo,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q2897340,Bernabé Rivera,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q934726,Gerardo Romero,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q1770954,Julio Quintana,PER,solo_pais,es,link,Perú,Q419,PER,-9.4,-76
+Q2426509,Lizardo Rodríguez Nue,PER,solo_pais,es,link,Perú,Q419,PER,-9.4,-76
+Q2426460,Juan Alfonso Valle,PER,solo_pais,en,text,Peru,Q419,PER,-9.4,-76
+Q2696573,Ernesto Albarracín,ARG,solo_pais,es,link,Buenos Aires,Q1486,ARG,-34.5997,-58.3819
+Q2696508,Ramón Astudillo,ARG,solo_pais,en,link,Argentina,Q414,ARG,-34,-64
+Q2703796,Ernesto Belis,ARG,solo_pais,es,link,Argentina,Q414,ARG,-34,-64
+Q2696998,Enrique Chimento,ARG,solo_pais,en,link,Argentina,Q414,ARG,-34,-64
+Q1029372,Ángel Grippa,ARG,solo_pais,en,link,Argentina,Q414,ARG,-34,-64
+Q2365969,Luis Izzeta,ARG,solo_pais,en,link,Argentina,Q414,ARG,-34,-64
+Q2696498,Alfonso Lorenzo,ARG,solo_pais,en,link,Argentina,Q414,ARG,-34,-64
+Q2697871,Mohammed Bakhati,EGY,solo_pais,en,link,Egypt,Q79,EGY,27,29
+Q2697843,Mahmoud El-Nigero,EGY,solo_pais,en,link,Egypt,Q79,EGY,27,29
+Q2697831,Yacout El-Soury,EGY,solo_pais,en,link,Egypt,Q79,EGY,27,29
+Q2697536,Aziz Fahmy,EGY,solo_pais,en,link,Egypt,Q79,EGY,27,29
+Q4695839,Ahmed Halim Ibrahim,EGY,solo_pais,en,link,Egypt,Q79,EGY,27,29
+Q2698168,Hamidu,EGY,solo_pais,en,link,Egypt,Q79,EGY,27,29
+Q2698159,Hafez Kasseb,EGY,solo_pais,en,link,Egypt,Q79,EGY,27,29
+Q3214339,Labib Mahmoud,EGY,solo_pais,en,link,Egypt,Q79,EGY,27,29
+Q403476,Mustafa Mansour,EGY,OK_ciudad,en,link,El Cairo,Q85,EGY,30.0444,31.2358
+Q2482388,Kamel Mosaoud,EGY,solo_pais,en,link,Egypt,Q79,EGY,27,29
+Q402214,Ismail Rafaat,EGY,solo_pais,en,link,Egypt,Q79,EGY,27,29
+Q2482127,Hassan Raghab,EGY,solo_pais,en,link,Egypt,Q79,EGY,27,29
+Q123500,Willy Busch,DEU,solo_pais,es,link,Imperio alemán,Q43287,,52.5186,13.3761
+Q489837,Hans Schwartz,DEU,solo_pais,es,link,Imperio alemán,Q43287,,52.5186,13.3761
+Q568273,Josef Streb,DEU,solo_pais,es,link,Imperio alemán,Q43287,,52.5186,13.3761
+Q568282,Paul Zielinski,DEU,solo_pais,en,text,Germany,Q183,DEU,51,10
+Q666873,Gyula Futó,,solo_pais,en,link,Hungary,Q28,HUN,47,19
+Q905390,Imre Markos,,solo_pais,en,link,Austria-Hungary,Q28513,,48.2075,16.365
+Q745026,Gábor Szabó,HUN,solo_pais,en,link,Austria-Hungary,Q28513,,48.2075,16.365
+Q909338,István Tamássy,HUN,solo_pais,en,link,Hungary,Q28,HUN,47,19
+Q1984294,Sjef van Run,NLD,OK_ciudad,pt,link,Bolduque,Q2766547,NLD,51.7,5.3167
+Q7598953,Stanislau Konrad,POL,solo_pais,en,link,Poland,Q36,POL,52,19
+Q371128,Joseph Bossi,CHE,solo_pais,en,text,Switzerland,Q39,CHE,46.7986,8.232
+Q2635143,Albert Büche,CHE,OK_ciudad,fr,link,Basilea,Q78,CHE,47.5606,7.5906
+Q2635476,Otto Bühler,CHE,solo_pais,ru,link,Швейцария,Q39,CHE,46.7986,8.232
+Q2635301,Ernst Frick,CHE,solo_pais,fa,link,سوئیس,Q39,CHE,46.7986,8.232
+Q2635291,Louis Gobet,CHE,solo_pais,fa,link,سوئیس,Q39,CHE,46.7986,8.232
+Q2635272,Erwin Hochsträsser,,sin_birthplace_en_wiki,,,,,,,
+Q977369,Julius Hjulian,SWE,solo_pais,es,link,Suecia,Q34,,61,15
+Q2634326,Joe Martinelli,USA,solo_pais,en,link,United States,Q30,USA,39.8282,-98.5795
+Q2058542,Joaquín Arias,CUB,solo_pais,en,link,Cuba,Q241,CUB,22,-79.5
+Q2058551,Pedro Bergés,CUB,solo_pais,en,link,Cuba,Q241,CUB,22,-79.5
+Q2058183,Manuel Chorens,CUB,solo_pais,en,link,Cuba,Q241,CUB,22,-79.5
+Q2058569,Tomás Fernández,ESP,solo_pais,en,link,Spain,Q29,ESP,40.2,-3.5
+Q2058589,Pedro Ferrer,CUB,solo_pais,en,text,Cuba,Q241,CUB,22,-79.5
+Q604042,Carlos Oliveira,CUB,solo_pais,en,link,Cuba,Q241,CUB,22,-79.5
+Q2055239,Karel Černý,,sin_birthplace_en_wiki,,,,,,,
+Q748183,Josef Orth,CSK,sin_birthplace_en_wiki,,,,,,,
+Q2004628,Ladislav Šimůnek,CZE,solo_pais,fr,link,République tchèque,Q213,CZE,50,15
+Q2484030,Sutan Anwar,NLD,OK_ciudad,en,link,Padang,Q7253,IDN,-0.9556,100.3606
+Q3037265,Dorst,NLD,solo_pais,en,link,Dutch East Indies,Q188161,,-5,120
+Q2395036,Isaak Pattiwael,NLD,solo_pais,en,link,Dutch East Indies,Q188161,,-5,120
+Q2482236,Suvarte Soedarmadji,NLD,solo_pais,en,link,Dutch East Indies,Q188161,,-5,120
+Q3127011,Hans Taihuttu,NLD,solo_pais,en,link,Dutch East Indies,Q188161,,-5,120
+Q302868,Mo Heng Tan,NLD,solo_pais,en,link,Dutch East Indies,Q188161,,-5,120
+Q2058968,See Han Tan,NLD,solo_pais,en,link,Dutch East Indies,Q188161,,-5,120
+Q631007,Teilherber,NLD,solo_pais,en,link,Dutch East Indies,Q188161,,-5,120
+Q3414972,Rudi Telwe,NLD,solo_pais,en,link,Dutch East Indies,Q188161,,-5,120
+Q2244193,Hong Djien The,NLD,OK_ciudad,en,link,Surabaya,Q11462,IDN,-7.2463,112.7378
+Q2244204,Leen van Beuzekom,NLD,solo_pais,en,link,Dutch East Indies,Q188161,,-5,120
+Q648005,Van Den Burgh,NLD,solo_pais,en,link,Dutch East Indies,Q188161,,-5,120
+Q508208,Hendrikus Zomers,NLD,solo_pais,en,link,Dutch East Indies,Q188161,,-5,120
+Q840912,Mihály Bíró,,OK_ciudad,es,link,Budapest,Q1781,HUN,47.4983,19.0408
+Q3138770,Hjalmar Andresen,NOR,solo_pais,fa,link,نروژ,Q20,NOR,59.9333,10.6833
+Q635914,Sverre Berglie,,sin_birthplace_en_wiki,,,,,,,
+Q2343205,Øivind Holmsen,NOR,OK_ciudad,pt,link,Oslo,Q585,NOR,59.9133,10.7389
+Q748321,Henry Johansen,NOR,OK_ciudad,pt,link,Oslo,Q585,NOR,59.9133,10.7389
+Q2464884,Miklós Nagy,ROU,solo_pais,en,link,Romania,Q218,ROU,46,25
+Q372136,Gyula Prassler,ROU,OK_ciudad,en,link,Ocna Mureș,Q837152,ROU,46.39,23.86
+Q2464692,Oscar Rauch,CHE,OK_ciudad,de,link,Winterthur,Q9125,CHE,47.4992,8.7267
+Q778150,Eugen Rupf,CHE,solo_pais,fa,link,سوئیس,Q39,CHE,46.7986,8.232
+Q2462225,Adolf Stelzer,CHE,solo_pais,fa,link,سوئیس,Q39,CHE,46.7986,8.232
+Q2464677,Fritz Wagner,CHE,solo_pais,fa,link,سوئیس,Q39,CHE,46.7986,8.232
+Q1184863,Víctor Celestino Algarañaz,BOL,solo_pais,en,link,Bolivia,Q750,BOL,-17.0569,-64.9912
+Q2058467,Duberty Aráoz,BOL,solo_pais,en,link,Bolivia,Q750,BOL,-17.0569,-64.9912
+Q2482354,Víctor Brown,BOL,OK_ciudad,en,link,Tarija,Q35004,BOL,-21.5339,-64.7342
+Q2482206,José Bustamante,BOL,OK_ciudad,en,link,Padilla,Q1584051,BOL,-19.3075,-64.3022
+Q2482183,René Cabrera,,solo_pais,fr,link,Bolivie,Q750,BOL,-17.0569,-64.9912
+Q2481873,Roberto Capparelli,BOL,solo_pais,en,link,Argentina,Q414,ARG,-34,-64
+Q2059383,Benigno Gutiérrez,BOL,OK_ciudad,en,link,La Paz,Q1491,BOL,-16.4958,-68.1333
+Q2059304,Eduardo Gutiérrez,BOL,OK_ciudad,en,link,Cochabamba,Q183124,BOL,-17.3935,-66.157
+Q2481832,Benjamin Maldonado,BOL,OK_ciudad,en,link,Cochabamba,Q183124,BOL,-17.3935,-66.157
+Q2482363,Humberto Saavedra,BOL,solo_pais,en,link,Bolivia,Q750,BOL,-17.0569,-64.9912
+Q2482167,Eulogio Sandoval,BOL,solo_pais,en,link,Bolivia,Q750,BOL,-17.0569,-64.9912
+Q2635219,Manuel Álvarez Jiménez,CHL,solo_pais,es,link,Chile,Q298,CHL,-33,-71
+Q25399910,Carlos Ibáñez,,sin_birthplace_en_wiki,,,,,,,
+Q8338229,Carlos Rojas,,sin_birthplace_en_wiki,,,,,,,
+Q3069542,Fernando Roldán,CHL,solo_pais,es,link,Chile,Q298,CHL,-33,-71
+Q114578013,Francisco Urroz,,sin_birthplace_en_wiki,,,,,,,
+Q601967,Antonio Flores,MEX,OK_ciudad,en,link,Guadalajara,Q9022,MEX,20.6764,-103.3422
+Q1891533,Manuel Gutiérrez,MEX,solo_pais,en,text,Mexico,Q96,MEX,23,-102
+Q3229727,Leonardo Navarro,MEX,solo_pais,en,link,Mexico,Q96,MEX,23,-102
+Q509602,Mario Ochoa,MEX,solo_pais,en,link,Mexico,Q96,MEX,23,-102
+Q1642839,Héctor Ortiz,MEX,solo_pais,en,link,Mexico,Q96,MEX,23,-102
+Q1348776,Mario Pérez,MEX,solo_pais,en,link,Mexico,Q96,MEX,23,-102
+Q505635,Carlos Septién,MEX,solo_pais,es,link,México,Q96,MEX,23,-102
+Q2058398,Enrique Avalos,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q2244008,Marcial Avalos,PRY,OK_ciudad,pt,link,Asunción,Q2933,,-25.28,-57.6344
+Q2058543,Melanio Baez,PRY,OK_ciudad,en,link,Santísima Trinidad,Q9074492,,-25.2574,-57.5795
+Q2058950,Antonio Cabrera,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q658824,Lorenzo Calonga,PRY,OK_ciudad,pt,link,Arauca,Q230223,COL,6.6167,-70.9833
+Q2481567,Juan Cañete,PRY,solo_pais,en,text,Paraguay,Q733,,-23.5,-58
+Q2244051,Pablo Centurión,,solo_pais,es,link,Paraguay,Q733,,-23.5,-58
+Q2058807,Casiano Céspedes,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q2058372,Manuel Gavilán,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q2244129,Alberto González,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q568035,Elioro Paredes,PRY,solo_pais,en,link,Paraguay,Q733,,-23.5,-58
+Q2058986,Francisco Sosa,PRY,solo_pais,es,link,Paraguay,Q733,,-23.5,-58
+Q2002021,René Bader,CHE,OK_ciudad,es,link,Basilea,Q78,CHE,47.5606,7.5906
+Q2053304,Walter Beerli,CHE,solo_pais,en,link,Switzerland,Q39,CHE,46.7986,8.232
+Q2055718,Kurt Rey,CHE,solo_pais,en,link,Switzerland,Q39,CHE,46.7986,8.232
+Q2055742,Walter Schneiter,CHE,solo_pais,en,link,Switzerland,Q39,CHE,46.7986,8.232
+Q607304,Hans Siegenthaler,CHE,solo_pais,en,text,Switzerland,Q39,CHE,46.7986,8.232
+Q977165,William Martínez,URY,OK_ciudad,es,link,Montevideo,Q1335,URY,-34.9059,-56.1913
+Q29763,Carlos Romero,URY,solo_pais,en,link,Uruguay,Q77,URY,-33,-56
+Q2003180,Walter Kollmann,AUT,solo_pais,es,link,Primera República de Austria,Q518101,AUT,48.2,16.3667
+Q4017934,Walter Haummer,AUT,solo_pais,es,link,Primera República de Austria,Q518101,AUT,48.2,16.3667
+Q43333,Léopold Gernaey,BEL,OK_ciudad,en,link,Gistel,Q815948,BEL,51.1561,2.9672
+Q126911262,Dequinha,,sin_birthplace_en_wiki,,,,,,,
+Q3808511,Jiří Trnka,CSK,solo_pais,en,link,Czechoslovakia,Q33946,CSK,50.0833,14.4167
+Q3496807,Michal Benedikovič,,OK_ciudad,it,text,Trnava,Q26175,SVK,48.3777,17.5862
+Q2004638,Jan Hertl,,sin_birthplace_en_wiki,,,,,,,
+Q4023958,Zdeněk Procházka,CSK,solo_pais,en,link,Czechoslovakia,Q33946,CSK,50.0833,14.4167
+Q3496490,Jaroslav Košnar,CSK,solo_pais,en,link,Czechoslovakia,Q33946,CSK,50.0833,14.4167
+Q1178891,Ken Armstrong,GBR,ciudad_sin_resolver,pt,link,Bradford,Q229737,,,
+Q1112761,Maino Neri,ITA,OK_ciudad,pt,link,Módena,Q279,ITA,44.6458,10.9257
+Q2546696,Amleto Frignani,ITA,OK_ciudad,es,link,Q100041,Q100041,ITA,44.7833,10.885
+Q2126908,Rafael Ávalos,MEX,solo_pais,en,link,Mexico,Q96,MEX,23,-102
+Q3930819,Raúl Arellano,,sin_birthplace_en_wiki,,,,,,,
+Q1753362,Kyu-chung Park,,OK_ciudad,en,link,ocupación japonesa de Corea,Q503585,,37.5775,126.9769
+Q487301,Jae-seung Park,,OK_ciudad,en,link,ocupación japonesa de Corea,Q503585,,37.5775,126.9769
+Q3812751,Chang-gi Kang,,OK_ciudad,en,link,ocupación japonesa de Corea,Q503585,,37.5775,126.9769
+Q16069848,Sang-yi Lee,,sin_birthplace_en_wiki,,,,,,,
+Q2059305,Byung-dae Min,,OK_ciudad,en,link,ocupación japonesa de Corea,Q503585,,37.5775,126.9769
+Q4020780,Sang-kwon Woo,,OK_ciudad,es,link,ocupación japonesa de Corea,Q503585,,37.5775,126.9769
+Q3977018,Nak-woon Sung,,OK_ciudad,es,link,ocupación japonesa de Corea,Q503585,,37.5775,126.9769
+Q16067913,Ji-sung Kim,,sin_birthplace_en_wiki,,,,,,,
+Q2156546,Il-kap Park,,OK_ciudad,en,link,ocupación japonesa de Corea,Q503585,,37.5775,126.9769
+Q2059290,Yung-keun Choi,,OK_ciudad,en,link,ocupación japonesa de Corea,Q503585,,37.5775,126.9769
+Q1711663,Ki-joo Li,,OK_ciudad,en,link,ocupación japonesa de Corea,Q503585,,37.5775,126.9769
+Q488900,Kook-chin Chung,,OK_ciudad,en,link,ocupación japonesa de Corea,Q503585,,37.5775,126.9769
+Q504414,Marcel Flückiger,CHE,solo_pais,en,link,Switzerland,Q39,CHE,46.7986,8.232
+Q4006401,Urbano Rivera,URY,solo_pais,en,link,Uruguay,Q77,URY,-33,-56
+Q974701,Alfredo Pérez,ARG,solo_pais,es,link,Argentina,Q414,ARG,-34,-64
+Q1362455,Alan Hodgkinson,GBR,OK_ciudad,es,link,Sheffield,Q42448,GBR,53.3808,-1.4703
+Q888686,Bobby Smith,GBR,ciudad_sin_resolver,pt,link,Lingdale,,,,
+Q354222,Francisco Flores,,sin_birthplace_en_wiki,,,,,,,
+Q4910880,Billy Simpson,,sin_birthplace_en_wiki,,,,,,,
+Q1689389,Jimmy McIlroy,GBR,OK_ciudad,en,link,Lambeg,Q130397135,GBR,54.5264,-6.0382
+Q952522,Norman Uprichard,GBR,OK_ciudad,en,link,Lurgan,Q1702713,GBR,54.4647,-6.3322
+Q3992903,Tommy Hamill,GBR,solo_pais,en,text,Northern Ireland,Q26,GBR,54.6075,-6.6925
+Q3718981,Edelmiro Arévalo,PRY,solo_pais,en,text,Paraguay,Q733,,-23.5,-58
+Q3945902,Salvador Villalba,PRY,solo_pais,en,text,Paraguay,Q733,,-23.5,-58
+Q280921,Samuel Aguilar,PRY,OK_ciudad,pt,link,Asunción,Q2933,,-25.28,-57.6344
+Q3840417,Luis Santos Silva,PRY,solo_pais,en,text,Paraguay,Q733,,-23.5,-58
+Q3680102,Claudio Lezcano,PRY,solo_pais,en,text,Paraguay,Q733,,-23.5,-58
+Q3606945,Agustín Miranda,PRY,solo_pais,en,text,Paraguay,Q733,,-23.5,-58
+Q3809171,John Coyle,GBR,OK_ciudad,de,link,Dundee,Q123709,GBR,56.4606,-2.97
+Q1126776,Ken Jones,,sin_birthplace_en_wiki,,,,,,,
+Q725556,Roy Vernon,GBR,ciudad_sin_resolver,pt,link,Ffynnongroew,,,,
+Q515705,Wolfgang Peters,DEU,solo_pais,en,link,Germany,Q183,DEU,51,10
+Q1890271,Alberto Mariotti,ARG,solo_pais,es,link,Argentina,Q414,ARG,-34,-64
+Q538148,Petar Velichkov,BGR,OK_ciudad,en,link,Sofía,Q472,BGR,42.6979,23.3217
+Q3893431,Panteley Dimitrov,BGR,solo_pais,en,text,Bulgaria,Q219,BGR,42.75,25.5
+Q3295237,Armando Tobar,CHL,OK_ciudad,es,link,Viña del Mar,Q184345,CHL,-33.0245,-71.5518
+Q3806175,Jaime González,COL,solo_pais,es,link,Colombia,Q739,COL,4,-73.25
+Q662268,Héctor Echeverry,COL,solo_pais,en,link,Colombia,Q739,COL,4,-73.25
+Q3735004,Eusebio Escobar,COL,OK_ciudad,es,link,Cali,Q51103,COL,3.44,-76.5197
+Q3806204,Jairo Arias,COL,solo_pais,en,text,Colombia,Q739,COL,4,-73.25
+Q529479,Jozef Adamec,SVK,OK_ciudad,es,link,Vrbové,Q846444,SVK,48.6208,17.7225
+Q2054952,Vladimír Kos,CSK,solo_pais,es,link,Checoslovaquia,Q33946,CSK,50.0833,14.4167
+Q116816,Andrej Kvašňák,SVK,OK_ciudad,pt,link,Q25409,Q25409,SVK,48.7167,21.25
+Q2066760,Pedro Romero,MEX,solo_pais,en,text,Mexico,Q96,MEX,23,-102
+Q2215586,Salvador Farfán,MEX,solo_pais,es,link,México,Q96,MEX,23,-102
+Q864136,Aleksei Mamykin,RUS,OK_ciudad,es,link,Óblast de Riazán,Q2753,RUS,54.4,40.6
+Q136646028,Philippe Pottier,,sin_birthplace_en_wiki,,,,,,,
+Q2464704,Rolf Wüthrich,CHE,OK_ciudad,es,link,Zúrich,Q72,CHE,47.3744,8.5411
+Q3848882,Mario Méndez,URY,solo_pais,fr,link,Uruguay,Q77,URY,-33,-56
+Q2056408,Pedro Cubilla,URY,OK_ciudad,es,link,Paysandú,Q309442,URY,-32.3218,-58.0892
+Q2002012,Domingo Pérez,URY,OK_ciudad,pt,link,Paysandú,Q309442,URY,-32.3218,-58.0892
+Q555204,Luis Cubilla,URY,OK_ciudad,es,link,Paysandú,Q309442,URY,-32.3218,-58.0892
+Q1298658,Luis Maidana,URY,OK_ciudad,es,link,Piriápolis,Q1006155,URY,-34.8661,-55.2747
+Q556422,Rubén Soria,URY,solo_pais,en,text,Uruguay,Q77,URY,-33,-56
+Q980738,Nelson López,ARG,OK_ciudad,es,link,Bell Ville,Q284308,ARG,-32.6333,-62.6833
+Q1489510,Gabriel Núñez,MEX,OK_ciudad,es,link,Taxco de Alarcón,Q990095,MEX,18.5546,-99.6059
+Q1127293,Guillermo Hernández,,sin_birthplace_en_wiki,,,,,,,
+Q1185429,Chang-myung Lee,PRK,solo_pais,en,text,North Korea,Q423,PRK,40,127
+Q941465,Li-sup Pak,PRK,OK_ciudad,en,link,ocupación japonesa de Corea,Q503585,,37.5775,126.9769
+Q1185960,Yung-kyoo Shin,PRK,OK_ciudad,en,link,ocupación japonesa de Corea,Q503585,,37.5775,126.9769
+Q972847,Bong-chil Kang,,sin_birthplace_en_wiki,,,,,,,
+Q1138491,Seung-hwi Im,PRK,solo_pais,en,text,North Korea,Q423,PRK,40,127
+Q3829372,Keun-hak Lee,,solo_pais,en,link,North Korea,Q423,PRK,40,127
+Q550223,Ryong-woon Kang,PRK,solo_pais,en,link,Korea,Q18097,,38.3167,127.2333
+Q1338274,Yoon-kyung Oh,PRK,OK_ciudad,en,link,ocupación japonesa de Corea,Q503585,,37.5775,126.9769
+Q1741464,Bong-hwan Kim,,OK_ciudad,en,link,ocupación japonesa de Corea,Q503585,,37.5775,126.9769
+Q4020238,Willy Allemann,CHE,solo_pais,en,link,Switzerland,Q39,CHE,46.7986,8.232
+Q1985135,Václav Migas,CSK,solo_pais,fr,link,Tchécoslovaquie,Q33946,CSK,50.0833,14.4167
+Q2012712,Milan Albrecht,CSK,OK_ciudad,pt,link,Trenčín,Q145002,SVK,48.8942,18.0406
+Q3950851,Saturnino Osorio,SLV,OK_ciudad,es,link,San Miguel,Q672458,SLV,13.4804,-88.1772
+Q115585629,José Quintanilla,,sin_birthplace_en_wiki,,,,,,,
+Q3778106,Gualberto Fernández,SLV,OK_ciudad,es,link,Tegucigalpa,Q3238,HND,14.1058,-87.2047
+Q2753341,Elmer Acevedo,SLV,OK_ciudad,es,link,Quezaltepeque,Q1154058,SLV,13.8337,-89.2709
+Q2477460,Yitzchak Vissoker,ISR,sin_birthplace_en_wiki,,,,,,,
+Q2704945,Yehoshua Feigenbaum,AUT,OK_ciudad,es,link,Jaffa,Q180294,,32.0522,34.7531
+Q2735952,Yisha'ayahu Schwager,POL,solo_pais,en,link,Poland,Q36,POL,52,19
+Q2244320,Yechezekel Chazom,IRQ,solo_pais,en,text,Iraq,Q796,IRQ,33,43
+Q3722886,Eli Ben Rimoz,ISR,solo_pais,en,text,France,Q142,FRA,47,2
+Q2479229,Yair Nossovsky,ISR,solo_pais,fa,link,اسرائیل,Q801,ISR,31,35
+Q1472692,Abdallah Lamrani,MAR,solo_pais,es,link,Marruecos,Q1028,MAR,32,-6
+Q2921655,Boujemaa Benkhrif,MAR,solo_pais,es,link,Marruecos,Q1028,MAR,32,-6
+Q2056501,Mohammed Hazzaz,MAR,OK_ciudad,es,link,Fez,Q80985,MAR,34.0433,-5.0033
+Q2288941,Ahmed Alaoui,MAR,solo_pais,en,link,Morocco,Q1028,MAR,32,-6
+Q1604470,Abdelkader El Khiati,MAR,solo_pais,en,text,Morocco,Q1028,MAR,32,-6
+Q1376228,Kurt Axelsson,SWE,ciudad_sin_resolver,en,link,Rännberg,,,,
+Q946758,Sven-Gunnar Larsson,SWE,solo_pais,en,text,Sweden,Q34,,61,15
+Q722869,Leif Målberg,,solo_pais,en,link,Sweden,Q34,,61,15
+Q1370501,Ronney Pettersson,,solo_pais,en,text,Sweden,Q34,,61,15
+Q927023,Sten Pålsson,,solo_pais,en,link,Sweden,Q34,,61,15
+Q962204,Rodolfo Sandoval,URY,solo_pais,en,text,Uruguay,Q77,URY,-33,-56
+Q743173,Francisco Cámera,URY,solo_pais,en,link,Uruguay,Q77,URY,-33,-56
+Q3608362,Alberto Gómez,URY,solo_pais,en,text,Uruguay,Q77,URY,-33,-56
+Q1194117,Julio Losada,URY,solo_pais,en,link,Uruguay,Q77,URY,-33,-56
+Q2479084,Jimmy Mackay,GBR,OK_ciudad,en,link,Edimburgo,Q23436,GBR,55.9533,-3.1892
+Q2055002,Garry Manuel,AUS,sin_birthplace_en_wiki,,,,,,,
+Q2484292,Peter Ollerton,GBR,OK_ciudad,en,text,Preston,Q184090,GBR,53.7594,-2.6981
+Q2638342,Allan Maher,AUS,sin_birthplace_en_wiki,,,,,,,
+Q2635798,Rafael González,CHL,OK_ciudad,es,link,Santiago de Chile,Q2887,CHL,-33.4375,-70.65
+Q742268,Wilfried Louis,HTI,solo_pais,en,link,Haiti,Q790,HTI,19,-72.8
+Q3710160,Fritz André,HTI,OK_ciudad,es,link,Puerto Príncipe,Q34261,HTI,18.5469,-72.3403
+Q3710463,Serge Ducosté,HTI,OK_ciudad,es,link,Puerto Príncipe,Q34261,HTI,18.5469,-72.3403
+Q1987233,Pierre Bayonne,HTI,OK_ciudad,es,link,Puerto Príncipe,Q34261,HTI,18.5469,-72.3403
+Q2597660,Jean-Claude Désir,HTI,OK_ciudad,es,link,Puerto Príncipe,Q34261,HTI,18.5469,-72.3403
+Q2018209,Guy François,HTI,OK_ciudad,es,link,Puerto Príncipe,Q34261,HTI,18.5469,-72.3403
+Q3710181,Serge Racine,HTI,solo_pais,en,link,Haiti,Q790,HTI,19,-72.8
+Q3710476,Fritz Leandré,HTI,solo_pais,en,text,Haiti,Q790,HTI,19,-72.8
+Q3710204,Joseph-Marion Leandré,HTI,solo_pais,en,link,Haiti,Q790,HTI,19,-72.8
+Q2018254,Wilner Piquant,HTI,solo_pais,en,link,Haiti,Q790,HTI,19,-72.8
+Q3710192,Gérard Joseph,HTI,solo_pais,en,link,Haiti,Q790,HTI,19,-72.8
+Q353506,Joe Jordan,GBR,OK_ciudad,es,link,Cleland,Q3439048,GBR,55.8023,-3.9143
+Q1380274,Thomas Ahlström,SWE,solo_pais,en,link,Sweden,Q34,,61,15
+Q3942200,Rubén Corbo,URY,solo_pais,es,link,Uruguay,Q77,URY,-33,-56
+Q602241,Mario González,URY,OK_ciudad,pt,link,Montevideo,Q1335,URY,-34.9059,-56.1913
+Q3608200,Alberto Cardaccio,URY,solo_pais,en,link,Uruguay,Q77,URY,-33,-56
+Q3812722,Martin Kamunda Tshinabu,,OK_ciudad,es,link,Congo Belga,Q213510,,-4.3067,15.2803
+Q3844110,Mana Mamuwene,,OK_ciudad,es,link,Congo Belga,Q213510,,-4.3067,15.2803
+Q3844901,Kidumu Mantantu,,OK_ciudad,es,link,Mbanza-Ngungu,Q857577,COD,-5.25,14.8667
+Q3856001,Mwape Mialo,,OK_ciudad,es,link,Congo Belga,Q213510,,-4.3067,15.2803
+Q3812443,Kafula Ngoie,,OK_ciudad,es,link,Congo Belga,Q213510,,-4.3067,15.2803
+Q3720824,Mbungu Ekofa,,OK_ciudad,es,link,Congo Belga,Q213510,,-4.3067,15.2803
+Q1114691,István Kocsis,,sin_birthplace_en_wiki,,,,,,,
+Q2053316,Ali Reza Ghesghayan,IRN,OK_ciudad,en,link,Shiraz,Q6397066,IRN,29.61,52.5425
+Q2053306,Hamid Majd Teymouri,IRN,solo_pais,en,link,Iran,Q794,IRN,32,53
+Q116977390,Ali Shojaei,,sin_birthplace_en_wiki,,,,,,,
+Q1371342,Magnus Andersson,SWE,solo_pais,en,text,Sweden,Q34,,61,15
+Q722843,Ronald Åhman,,solo_pais,en,link,Sweden,Q34,,61,15
+Q2642003,Ali Kaabi,TUN,OK_ciudad,es,link,Túnez,Q3572,TUN,36.8008,10.18
+Q2476107,Khemais Labidi,TUN,solo_pais,en,link,Tunisia,Q948,TUN,34,10
+Q640332,Ohman Chehaibi,TUN,OK_ciudad,es,link,Cairuán,Q179570,TUN,35.6833,10.1
+Q2476168,Lamine Ben Aziza,TUN,ciudad_sin_resolver,es,link,Grombalia,,,,
+Q1997657,Yacine Bentalaa,DZA,solo_pais,en,link,Algeria,Q262,DZA,28,1
+Q651582,Alexandre Czerniatynski,BEL,OK_ciudad,es,link,Charleroi,Q81046,BEL,50.4167,4.4442
+Q3810228,Joseph Kamga,CMR,solo_pais,en,link,Cameroon,Q1009,CMR,5.1333,12.65
+Q3806047,Jacques N'Guea,CMR,OK_ciudad,es,link,Loum,Q1828275,CMR,4.7,9.73
+Q522730,Stanislav Seman,SVK,OK_ciudad,pt,link,Q25409,Q25409,SVK,48.7167,21.25
+Q3808595,Joaquín Ventura,SLV,OK_ciudad,es,link,La Unión,Q2420477,SLV,13.3371,-87.8431
+Q14021186,Eduardo Hernández,,sin_birthplace_en_wiki,,,,,,,
+Q362585,Terry Butcher,SGP,solo_pais,es,link,Singapur,Q334,,1.3,103.8
+Q3810542,Salomón Nazar,HND,OK_ciudad,es,link,Tegucigalpa,Q3238,HND,14.1058,-87.2047
+Q3938588,Roberto Bailey,HND,OK_ciudad,es,link,Tela,Q1027018,HND,15.7825,-87.4514
+Q2020201,Naeem Saad,KWT,solo_pais,en,link,Kuwait,Q817,KWT,29.1667,47.6
+Q3843434,Mahboub Juma'a,KWT,solo_pais,es,link,Kuwait,Q817,KWT,29.1667,47.6
+Q570708,Jamal Al-Qabendi,KWT,ciudad_sin_resolver,es,link,Kazmi,Q6136728,,,
+Q3944134,Saad Al-Houti,KWT,solo_pais,en,link,Kuwait,Q817,KWT,29.1667,47.6
+Q2017241,Abdulaziz Al-Anberi,KWT,ciudad_sin_resolver,es,link,Kaifan,,,,
+Q3870522,Nassir Al-Ghanim,KWT,solo_pais,en,link,Kuwait,Q817,KWT,29.1667,47.6
+Q4023102,Yussef Al-Suwayed,KWT,solo_pais,en,link,Kuwait,Q817,KWT,29.1667,47.6
+Q3866866,Mubarak Marzouq,KWT,solo_pais,en,link,Kuwait,Q817,KWT,29.1667,47.6
+Q3603412,Abdullah Mayouf,KWT,solo_pais,en,link,Kuwait,Q817,KWT,29.1667,47.6
+Q3946482,Sami Al-Hashash,KWT,solo_pais,en,link,Kuwait,Q817,KWT,29.1667,47.6
+Q2020704,Hamoud Al-Shemmari,KWT,solo_pais,es,link,Kuwait,Q817,KWT,29.1667,47.6
+Q3860135,Mohammed Karam,KWT,solo_pais,en,link,Kuwait,Q817,KWT,29.1667,47.6
+Q3866863,Muayad Al-Haddad,KWT,solo_pais,en,link,Kuwait,Q817,KWT,29.1667,47.6
+Q2052580,Abdulaziz Al-Buloushi,KWT,solo_pais,en,link,Kuwait,Q817,KWT,29.1667,47.6
+Q3604996,Adam Marjam,KWT,solo_pais,en,link,Kuwait,Q817,KWT,29.1667,47.6
+Q3807370,Jasem Bahman,KWT,solo_pais,en,link,Kuwait,Q817,KWT,29.1667,47.6
+Q2458876,Brian Turner,NZL,solo_pais,es,link,Nueva Zelanda,Q664,NZL,-41.2,174
+Q3703020,Dave Bright,GBR,OK_ciudad,pt,link,Maidstone,Q213180,GBR,51.2717,0.5294
+Q3771945,Glen Adam,NZL,solo_pais,en,text,New Zealand,Q664,NZL,-41.2,174
+Q3900946,Peter Simonsen,NZL,OK_ciudad,en,link,Christchurch,Q79990,NZL,-43.5311,172.6361
+Q3635246,Barry Pickering,NZL,OK_ciudad,en,link,Christchurch,Q79990,NZL,-43.5311,172.6361
+Q3886394,Oscar Arizaga,PER,OK_ciudad,es,link,Callao,Q105037,PER,-12.0522,-77.1392
+Q433612,Oleg Romantsev,RUS,OK_ciudad,pt,link,Óblast de Riazán,Q2753,RUS,54.4,40.6
+Q311227,José Antonio Camacho,ESP,OK_ciudad,pt,link,Murcia,Q12225,ESP,37.9833,-1.1303
+Q937640,Fawzi Benkhalidi,DZA,OK_ciudad,es,link,Médéa,Q1982137,DZA,36.2675,2.75
+Q3860100,Mohammed Chaib,DZA,OK_ciudad,es,link,Kouba,Q3086863,DZA,36.7336,3.0864
+Q3827055,Larbi El Hadi,DZA,OK_ciudad,en,link,Belouizdad,Q634748,DZA,36.7444,3.0778
+Q62691947,Kostadin Kostadinov,,sin_birthplace_en_wiki,,,,,,,
+Q3841882,Maad Ibrahim,IRQ,solo_pais,en,link,Iraq,Q796,IRQ,33,43
+Q3814935,Khalil Allawi,IRQ,solo_pais,en,link,Iraq,Q796,IRQ,33,43
+Q3611615,Ali Hussein Shihab,IRQ,solo_pais,en,text,Iraq,Q796,IRQ,33,43
+Q548436,Haris Mohammed,IRQ,solo_pais,en,link,Iraq,Q796,IRQ,33,43
+Q6370647,Karim Saddam,IRQ,solo_pais,en,text,Iraq,Q796,IRQ,33,43
+Q3603377,Rahim Hameed,IRQ,solo_pais,en,link,Iraq,Q796,IRQ,33,43
+Q3806421,Jamal Ali,IRQ,solo_pais,en,link,Iraq,Q796,IRQ,33,43
+Q3812990,Karim Allawi,IRQ,solo_pais,en,link,Iraq,Q796,IRQ,33,43
+Q3959043,Shaker Mahmoud,IRQ,solo_pais,en,link,Iraq,Q796,IRQ,33,43
+Q3617882,Anad Abid,IRQ,solo_pais,en,link,Iraq,Q796,IRQ,33,43
+Q3802591,Ismail Mohammed Sharif,IRQ,solo_pais,en,link,Iraq,Q796,IRQ,33,43
+Q927581,Basim Qasim,IRQ,OK_ciudad,en,link,Bagdad,Q1530,IRQ,33.3153,44.3661
+Q5437265,Fatah Nsaief,IRQ,solo_pais,en,text,Iraq,Q796,IRQ,33,43
+Q3606997,Ahmad Jassim,IRQ,solo_pais,en,link,Iraq,Q796,IRQ,33,43
+Q549326,Salvatore Bagni,ITA,OK_ciudad,es,link,Q111176,Q111176,ITA,44.7717,10.7806
+Q508196,Labid Khalifa,MAR,solo_pais,es,link,Marruecos,Q1028,MAR,32,-6
+Q3945292,Salahdine Hmied,MAR,OK_ciudad,es,link,Sidi Kacem,Q2089594,MAR,34.21,-5.7
+Q2655632,Abdelfettah Rhiati,MAR,OK_ciudad,es,link,Fez,Q80985,MAR,34.0433,-5.0033
+Q3866468,Mouncif El Haddaoui,MAR,solo_pais,es,link,Marruecos,Q1028,MAR,32,-6
+Q632766,Mohammed Sahil,MAR,solo_pais,en,link,Morocco,Q1028,MAR,32,-6
+Q304221,Abdellah Bidane,MAR,solo_pais,en,link,Morocco,Q1028,MAR,32,-6
+Q3603350,Abdelaziz Souleimani,MAR,solo_pais,es,link,Marruecos,Q1028,MAR,32,-6
+Q742935,Abdelfettah Mouddani,MAR,solo_pais,en,link,Morocco,Q1028,MAR,32,-6
+Q5483087,Francisco Alcaraz,PRY,OK_ciudad,pt,link,Asunción,Q2933,,-25.28,-57.6344
+Q3811204,Julián Coronel,PRY,OK_ciudad,es,link,Asunción,Q2933,,-25.28,-57.6344
+Q485833,Byung-deuk Cho,KOR,OK_ciudad,es,link,Ganghwa,Q50205,KOR,37.7389,126.4894
+Q497856,Jong-soo Chung,KOR,solo_pais,en,link,South Korea,Q884,KOR,36,128
+Q486635,Yong-hwan Chung,KOR,OK_ciudad,en,link,Busan,Q16520,KOR,35.18,129.075
+Q491645,Pyung-seok Kim,KOR,solo_pais,es,link,Corea del Sur,Q884,KOR,36,128
+Q487311,Soo-jin Noh,KOR,solo_pais,en,text,South Korea,Q884,KOR,36,128
+Q496110,Byung-ok Yoo,KOR,solo_pais,en,link,South Korea,Q884,KOR,36,128
+Q495870,Yun-kyo Oh,KOR,OK_ciudad,en,link,Seosan,Q42105,KOR,36.7817,126.4522
+Q485852,Deuk-soo Kang,KOR,solo_pais,en,link,South Korea,Q884,KOR,36,128
+Q2339265,José Serrizuela,ARG,ciudad_sin_resolver,es,link,Tala Pozo (Tucumán),,,,
+Q563065,Philippe Albert,BEL,OK_ciudad,es,link,Bouillon,Q843310,FRA,43.4942,-0.5011
+Q3857255,Miguel Davis,CRI,OK_ciudad,es,link,Pocora,Q3906874,CRI,10.143,-83.6335
+Q3943228,Rónald Marín,CRI,OK_ciudad,pt,link,San José,Q3070,CRI,9.9327,-84.0796
+Q920250,Ján Kocian,SVK,OK_ciudad,pt,link,Zlaté Moravce,Q207226,SVK,48.3781,18.3964
+Q2628960,Ashraf Kasem,EGY,solo_pais,es,link,Egipto,Q79,EGY,27,29
+Q2438955,Magdy Tolba,EGY,solo_pais,en,text,Egypt,Q79,EGY,27,29
+Q2628649,Ayman Shawky,EGY,solo_pais,en,link,Egypt,Q79,EGY,27,29
+Q1984189,Adel Abdel Rahman,EGY,solo_pais,es,link,Egipto,Q79,EGY,27,29
+Q2439720,Ayman Taher,EGY,solo_pais,en,link,Egypt,Q79,EGY,27,29
+Q487469,Poong-joo Kim,KOR,solo_pais,en,text,South Korea,Q884,KOR,36,128
+Q487477,Deok-yeo Yoon,KOR,OK_ciudad,fr,link,Seúl,Q8684,KOR,37.56,126.99
+Q486627,Hae-won Chung,KOR,solo_pais,es,link,Corea del Sur,Q884,KOR,36,128
+Q3807943,Gi-dong Jeong,KOR,solo_pais,en,link,South Korea,Q884,KOR,36,128
+Q486937,In-young Choi,KOR,OK_ciudad,pt,link,Paju,Q42153,KOR,37.8328,126.8169
+Q684263,Khalil Ghanim,ARE,solo_pais,en,link,United Arab Emirates,Q878,ARE,24.4,54.3
+Q1984448,Mubarak Ghanim,ARE,sin_birthplace_en_wiki,,,,,,,
+Q3603415,Abdualla Sultan,ARE,OK_ciudad,es,link,Sarja,Q188810,ARE,25.35,55.4331
+Q123421699,Abdulrahman Mohamed,,sin_birthplace_en_wiki,,,,,,,
+Q3814928,Khalid Ismaïl,ARE,OK_ciudad,es,link,Dubái,Q613,ARE,25.2644,55.3117
+Q3603400,Abdulaziz Mohamed,ARE,solo_pais,es,link,Emiratos Árabes Unidos,Q878,ARE,24.4,54.3
+Q730188,Hussain Ghuloum,ARE,OK_ciudad,es,link,Sarja,Q188810,ARE,25.35,55.4331
+Q3783615,Hassan Mohamed,ARE,OK_ciudad,es,link,Dubái,Q613,ARE,25.2644,55.3117
+Q1984432,Nasir Khamees,ARE,solo_pais,en,link,United Arab Emirates,Q878,ARE,24.4,54.3
+Q3791593,Ibrahim Meer,ARE,OK_ciudad,es,link,Sarja,Q188810,ARE,25.35,55.4331
+Q3860112,Mohamed Salim,ARE,solo_pais,en,link,United Arab Emirates,Q878,ARE,24.4,54.3
+Q3738369,Fahad Abdulrahman,ARE,solo_pais,en,link,Trucial States,Q1852345,GBR,23.7833,54
+Q3720770,Eissa Meer,ARE,OK_ciudad,es,link,Sarja,Q188810,ARE,25.35,55.4331
+Q1984425,Yousuf Hussain,ARE,solo_pais,es,link,Estados de la Tregua,Q1852345,GBR,23.7833,54
+Q3603418,Abdulrahman Al-Haddad,ARE,OK_ciudad,es,link,Sarja,Q188810,ARE,25.35,55.4331
+Q3603420,Abdulqadir Hassan,ARE,solo_pais,en,link,Trucial States,Q1852345,GBR,23.7833,54
+Q11781402,Christopher Sullivan,,sin_birthplace_en_wiki,,,,,,,
+Q112421409,Gabriel Correa,,sin_birthplace_en_wiki,,,,,,,
+Q610234,Alexis Alexandris,GRC,OK_ciudad,es,link,Kiato,Q3555045,GRC,38.0102,22.7493
+Q2626745,Alexis Alexiou,GRC,OK_ciudad,en,link,Salónica,Q17151,GRC,40.6403,22.9356
+Q1983332,Said Dghay,MAR,sin_birthplace_en_wiki,,,,,,,
+Q1983853,Abdelmajid Bouyboud,MAR,solo_pais,en,link,Morocco,Q1028,MAR,32,-6
+Q3603403,Abdullah Al-Dosari,SAU,solo_pais,es,link,Arabia Saudita,Q851,SAU,23.7167,44.1167
+Q2560378,Abdullah Sulaiman Zubromawi,SAU,OK_ciudad,es,link,Yeda,Q374365,SAU,21.5428,39.1728
+Q2440359,Fahad Al-Ghesheyan,SAU,OK_ciudad,es,link,Riad,Q3692,SAU,24.65,46.71
+Q548362,Fahad Al-Mehallel,SAU,OK_ciudad,es,link,Riad,Q3692,SAU,24.65,46.71
+Q3980345,Talal Jebreen,SAU,solo_pais,en,link,Saudi Arabia,Q851,SAU,23.7167,44.1167
+Q4022587,Yassir Al-Taifi,SAU,solo_pais,en,link,Saudi Arabia,Q851,SAU,23.7167,44.1167
+Q3631289,Awad Al-Anazi,SAU,solo_pais,en,link,Saudi Arabia,Q851,SAU,23.7167,44.1167
+Q2408967,Hamzah Saleh,SAU,OK_ciudad,es,link,Medina,Q35484,SAU,24.47,39.61
+Q959580,Hussein Al-Sadiq,SAU,solo_pais,en,link,Saudi Arabia,Q851,SAU,23.7167,44.1167
+Q3791584,Ibrahim Al-Helwah,SAU,solo_pais,en,link,Saudi Arabia,Q851,SAU,23.7167,44.1167
+Q1773046,Jong-son Chung,KOR,solo_pais,en,text,South Korea,Q884,KOR,36,128
+Q491859,Pan-keun Kim,KOR,OK_ciudad,pt,link,Paju,Q42153,KOR,37.8328,126.8169
+Q496138,Jung-bae Park,KOR,OK_ciudad,es,link,Gyeongsang del Sur,Q41151,KOR,35.238,128.6919
+Q491614,Ik-soo An,KOR,solo_pais,en,text,South Korea,Q884,KOR,36,128
+Q168406,Moon-sik Choi,KOR,OK_ciudad,en,link,Seúl,Q8684,KOR,37.56,126.99
+Q491587,Chul-woo Park,KOR,solo_pais,en,text,South Korea,Q884,KOR,36,128
+Q1362689,Frank Klopas,GRC,OK_ciudad,pt,text,Prosimna,Q2113414,GRC,37.7129,22.8411
+Q7964355,Walter Boyd,,sin_birthplace_en_wiki,,,,,,,
+Q973201,Mohammed Al-Jahani,SAU,OK_ciudad,en,link,Yeda,Q374365,SAU,21.5428,39.1728
+Q1381051,Obeid Al-Dosari,SAU,OK_ciudad,en,link,La Meca,Q5806,SAU,21.4225,39.8261
+Q117358249,Ibrahim Al-Harbi,,sin_birthplace_en_wiki,,,,,,,
+Q2618177,Abdulaziz Al-Janoubi,SAU,solo_pais,en,link,Saudi Arabia,Q851,SAU,23.7167,44.1167
+Q137690925,Jonathan Gould,,sin_birthplace_en_wiki,,,,,,,
+Q1773056,Hyung-seok Jang,KOR,solo_pais,en,link,South Korea,Q884,KOR,36,128
+Q2623543,Sabri Jaballah,TUN,solo_pais,en,link,Tunisia,Q948,TUN,34,10
+Q313000,Mauricio Pochettino,ARG,OK_ciudad,pt,link,Murphy,Q2563087,ARG,-33.6167,-61.8667
+Q44309,Daniel Van Buyten,BEL,OK_ciudad,es,link,Chimay,Q95380,BEL,50.0479,4.3173
+Q2308096,Daniel Vallejos,CRI,OK_ciudad,es,link,Nicoya,Q2486629,CRI,10.1062,-85.4862
+Q649431,Juan José Rodríguez,CRI,OK_ciudad,en,link,Cantón de Grecia,Q2594049,CRI,10.0722,-84.3111
+Q2602724,Mohsin Al-Harthi,SAU,solo_pais,en,link,Saudi Arabia,Q851,SAU,23.7167,44.1167
+Q317745,Abdullah Al-Jumaan,SAU,solo_pais,es,link,Arabia Saudita,Q851,SAU,23.7167,44.1167
+Q317750,Abdullah Al-Waked,SAU,solo_pais,es,link,Arabia Saudita,Q851,SAU,23.7167,44.1167
+Q285371,Al Hasan Al-Yami,SAU,OK_ciudad,en,link,Khafji,Q1771721,SAU,28.4211,48.4956
+Q2735301,Mohammed Al-Khojali,SAU,OK_ciudad,es,link,Riad,Q3692,SAU,24.65,46.71
+Q656965,Mansour Al-Thagafi,SAU,solo_pais,en,link,Saudi Arabia,Q851,SAU,23.7167,44.1167
+Q2604264,Pape Malick Diop,SEN,ciudad_sin_resolver,es,link,Cherif-Lô,,,,
+Q2602947,Moussa N'Diaye,SEN,ciudad_sin_resolver,es,link,Piré,,,,
+Q2435816,Ahmed El-Jaouachi,TUN,solo_pais,en,text,Tunisia,Q948,TUN,34,10
+Q47026,Gérard Gnanhouan,CIV,OK_ciudad,es,link,Adzopé,Q1270691,CIV,6.1035,-3.8648
+Q400901,Ahmed Al-Bahri,SAU,solo_pais,es,link,Arabia Saudita,Q851,SAU,23.7167,44.1167
+Q175196,Mohammad Massad,SAU,OK_ciudad,es,link,Yeda,Q374365,SAU,21.5428,39.1728
+Q726604,Mohammad Khouja,SAU,OK_ciudad,en,link,Medina,Q35484,SAU,24.47,39.61
+Q188983,Giorgos Karagounis,GRC,OK_ciudad,es,link,Pirgos,Q216307,GRC,37.673,21.4395
+Q14132,Song-chol Nam,,sin_birthplace_en_wiki,,,,,,,
+Q821740,Kyong-il Kim,,sin_birthplace_en_wiki,,,,,,,
+Q313160,Radoslav Zabavník,SVK,OK_ciudad,es,link,Q25409,Q25409,SVK,48.7167,21.25
+Q381199,Ján Kozák,SVK,OK_ciudad,en,link,Q25409,Q25409,SVK,48.7167,21.25
+Q349131,Marek Sapara,SVK,OK_ciudad,pt,link,Q25409,Q25409,SVK,48.7167,21.25
+Q128856,Erik Jendrišek,SVK,OK_ciudad,es,link,Trstená,Q847350,SVK,49.3667,19.6167
+Q208680,Walter Gargano,URY,OK_ciudad,es,link,Paysandú,Q309442,URY,-32.3218,-58.0892
+Q309808,Nicolás Lodeiro,URY,OK_ciudad,es,link,Paysandú,Q309442,URY,-32.3218,-58.0892
+Q315674,Egidio Arévalo Ríos,URY,OK_ciudad,es,link,Paysandú,Q309442,URY,-32.3218,-58.0892
+Q312534,Kostas Mitroglou,GRC,OK_ciudad,es,link,Kavala,Q187352,GRC,40.9396,24.4069
+Q719197,Panagiotis Tachtsidis,GRC,OK_ciudad,es,link,Nauplia,Q202337,GRC,37.5658,22.8
+Q17074511,Ederson,BRA,OK_ciudad,es,link,Q4035,Q4035,BRA,-23.5328,-46.7919
+Q166285,Fabian Delph,GBR,OK_ciudad,es,link,Q22905,Q22905,GBR,53.794,-1.751
+Q20675902,Abdiel Arroyo,PAN,OK_ciudad,es,link,Ciudad de Colón,Q12825018,PAN,9.3598,-79.9004
+Q13615295,Álex Rodríguez,PAN,OK_ciudad,es,link,Ciudad de Panamá,Q3306,PAN,8.9711,-79.5347
+Q3248924,Omar Hawsawi,SAU,OK_ciudad,es,link,Yeda,Q374365,SAU,21.5428,39.1728
+Q21344522,Mohammed Al-Breik,SAU,OK_ciudad,en,link,Riad,Q3692,SAU,24.65,46.71
+Q22278509,Mohamed Kanno,SAU,OK_ciudad,en,link,Khobar,Q311266,SAU,26.3,50.2167
+Q28716544,Abdullah Al-Khaibari,SAU,OK_ciudad,es,link,Riad,Q3692,SAU,24.65,46.71
+Q6893662,Muhannad Assiri,SAU,ciudad_sin_resolver,es,link,Muhayil,,,,
+Q4680085,Adama Mbengue,SEN,OK_ciudad,es,link,Rufisque,Q1019424,SEN,14.714,-17.2723
+Q20994107,Maxi Gómez,URY,OK_ciudad,es,link,Paysandú,Q309442,URY,-32.3218,-58.0892
+Q57017726,Cameron Devlin,AUS,OK_ciudad,es,link,Sídney,Q3130,AUS,-33.8678,151.21
+Q59205608,Antony,BRA,OK_ciudad,es,link,Q4035,Q4035,BRA,-23.5328,-46.7919
+Q42728914,Rodrygo,BRA,OK_ciudad,es,link,Q4035,Q4035,BRA,-23.5328,-46.7919
+Q38199356,Samuel Gouet,CMR,ciudad_sin_resolver,es,link,Ayos,Q609016,,,
+Q21523253,Lawrence Ati-Zigi,GHA,OK_ciudad,en,link,Tamale,Q217040,GHA,9.4075,-0.8533
+Q25939340,Gideon Mensah,GHA,OK_ciudad,en,link,Acra,Q3761,GHA,5.556,-0.1969
+Q68110291,Salis Abdul Samed,GHA,OK_ciudad,es,link,Acra,Q3761,GHA,5.556,-0.1969
+Q86269576,Kamaldeen Sulemana,GHA,OK_ciudad,es,link,Techiman,Q964069,GHA,7.5905,-1.9395
+Q24006658,Salem Al-Hajri,QAT,OK_ciudad,en,link,Doha,Q3861,QAT,25.2861,51.5294
+Q24007569,Yousef Hassan,QAT,OK_ciudad,es,link,Doha,Q3861,QAT,25.2861,51.5294
+Q85202073,Naif Al-Hadhrami,QAT,OK_ciudad,es,link,Rayán,Q18576873,QAT,25.2919,51.4244
+Q22541620,Sultan Al-Ghannam,SAU,ciudad_sin_resolver,es,link,Al Zulfi,,,,
+Q28923551,Abdulrahman Al-Aboud,SAU,OK_ciudad,es,link,Dammam,Q160320,SAU,26.4333,50.1
+Q47074246,Nasser Al-Dawsari,SAU,OK_ciudad,es,link,Riad,Q3692,SAU,24.65,46.71
+Q98103661,Haitham Asiri,SAU,ciudad_sin_resolver,es,link,Muhayil,,,,
+Q64433049,Moussa N'Diaye,SEN,OK_ciudad,en,link,Dakar,Q3718,SEN,14.6726,-17.432
+Q50420882,Cho Yu-min,KOR,OK_ciudad,es,link,Dalseo-gu,Q50370,KOR,35.8281,128.5333
+Q27469951,Michel Aebischer,CHE,OK_ciudad,es,link,Heitenried,Q68031,CHE,46.8276,7.3045
+Q55286732,Noah Okafor,CHE,OK_ciudad,es,link,Binningen,Q69621,CHE,47.5333,7.5667
+Q2409513,Youssef Msakni,TUN,OK_ciudad,en,link,Túnez,Q3572,TUN,36.8008,10.18
+Q64010525,Aaron Hickey,GBR,OK_ciudad,es,link,Glasgow,Q4093,GBR,55.8611,-4.25
+Q27064119,Abdul Mumin,GHA,solo_pais,es,link,Ghana,Q117,,7.9465,-1.0232
+Q85040729,Aimar Sher,IRQ,OK_ciudad,en,link,Kirkuk,Q173310,IRQ,35.4667,44.4
+Q47499724,Ali Majrashi,SAU,solo_pais,en,link,Saudi Arabia,Q851,SAU,23.7167,44.1167
+Q96654340,Ali Yousif,IRQ,OK_ciudad,en,link,Bagdad,Q1530,IRQ,33.3153,44.3661
+Q130495887,Amer Jamous,JOR,OK_ciudad,es,link,Sahab,Q1020853,JOR,31.8703,36.0048
+Q106212969,Benjamin Asare,GHA,solo_pais,en,text,Ghana,Q117,,7.9465,-1.0232
+Q130337999,Caleb Yirenkyi,GHA,ciudad_sin_resolver,es,link,Bechem,,,,
+Q62006806,Callan Elliot,GBR,OK_ciudad,en,link,Dumfries,Q652035,GBR,55.0667,-3.6167
+Q69523791,Emmanuel Agbadou,CIV,OK_ciudad,es,link,Abiyán,Q1515,CIV,5.3364,-4.0267
+Q111584129,Ernest Nuamah,GHA,OK_ciudad,es,link,Kumasi,Q182059,GHA,6.7,-1.625
+Q134513932,Hamza Abdelkarim,EGY,solo_pais,es,link,Egipto,Q79,EGY,27,29
+Q23712679,Hassan Kadesh,SAU,OK_ciudad,es,link,Dammam,Q160320,SAU,26.4333,50.1
+Q98937753,Hossam Abdelmaguid,EGY,OK_ciudad,es,link,El Cairo,Q85,EGY,30.0444,31.2358
+Q130244944,Husam Abu Dahab,JOR,solo_pais,en,link,Jordan,Q810,JOR,31.2,36.5
+Q45936149,Ibrahim Bayesh,IRQ,OK_ciudad,es,link,Bagdad,Q1530,IRQ,33.3153,44.3661
+Q102399064,Igor Matanovic,DEU,OK_ciudad,es,link,Hamburgo,Q1055,,53.55,10
+Q127514195,Ime Okon,ZAF,solo_pais,en,text,South Africa,Q258,ZAF,-29,24
+Q43303848,Jacob Italiano,AUS,OK_ciudad,es,link,Perth,Q3183,AUS,-31.9558,115.8597
+Q65964628,Jamie Leweling,DEU,OK_ciudad,es,link,Núremberg,Q2090,DEU,49.4539,11.0775
+Q107806484,Kelvin Pires,CPV,OK_ciudad,es,link,Mindelo,Q495547,CPV,16.8914,-24.988
+Q108000394,Lenny Joseph,FRA,OK_ciudad,es,link,París,Q90,FRA,48.8567,2.3522
+Q124247293,Mohammad Abu Hasheesh,JOR,solo_pais,en,link,Iraq,Q796,IRQ,33,43
+Q97698786,Moteb Al-Harbi,SAU,OK_ciudad,en,link,Riad,Q3692,SAU,24.65,46.71
+Q107094087,Nathan Ngoy,BEL,OK_ciudad,es,link,Bruselas,Q239,BEL,50.8467,4.3517
+Q64010197,Nicolas Seiwald,AUT,OK_ciudad,es,link,Kuchl,Q255581,AUT,47.6278,13.1472
+Q106916460,Nishan Velupillay,AUS,OK_ciudad,es,link,Melbourne,Q3141,AUS,-37.8142,144.9631
+Q130210573,Saed Al-Rosan,JOR,solo_pais,en,link,Jordan,Q810,JOR,31.2,36.5
+Q133794425,Samukele Kabini,ZAF,solo_pais,en,link,South Africa,Q258,ZAF,-29,24
+Q54232975,Shehab Ellethy,QAT,sin_birthplace_en_wiki,,,,,,,
+Q23887828,Simon Banza,FRA,OK_ciudad,es,link,Creil,Q331087,FRA,49.2578,2.4828
+Q106600820,Solomon Agbasi,GHA,solo_pais,en,link,Ghana,Q117,,7.9465,-1.0232
+Q27671280,Sultan Al-Brake,QAT,OK_ciudad,es,link,Doha,Q3861,QAT,25.2861,51.5294
+Q14948183,Théo Bongonda,BEL,OK_ciudad,es,link,Charleroi,Q81046,BEL,50.4167,4.4442
+Q108858343,Tyrick Bodak,NLD,OK_ciudad,en,link,Almere,Q83178,NLD,52.3758,5.2256
+Q109986890,Yassine Titraoui,DZA,OK_ciudad,en,link,M'Sila,Q402825,DZA,35.7058,4.5419
+Q131100987,Yousef Qashi,DEU,solo_pais,en,link,Germany,Q183,DEU,51,10
+Q64211871,Yusuf Abdurisag,QAT,OK_ciudad,es,link,Doha,Q3861,QAT,25.2861,51.5294
