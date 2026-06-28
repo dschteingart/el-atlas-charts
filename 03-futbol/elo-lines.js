@@ -471,7 +471,7 @@ function drawLines() {
     hit.style.cursor = 'pointer';
     hit.addEventListener('mouseenter', () => tl_setLineEmphasis(iso));
     hit.addEventListener('mouseleave', () => tl_setLineEmphasis(null));
-    hit.addEventListener('click', (ev) => { ev.stopPropagation(); tl_toggleSelect(iso); });
+    if (typeof HAS_HOVER === 'undefined' || HAS_HOVER) hit.addEventListener('click', (ev) => { ev.stopPropagation(); tl_toggleSelect(iso); });   // toggle solo desktop
     hitG.appendChild(hit);
   });
 
@@ -533,13 +533,11 @@ function drawLines() {
   //--------------------------------------------------------------
   // Capa de hover (vline + markers + tooltip) — solo desktop con hover
   //--------------------------------------------------------------
-  // Hover/tooltip: se engancha según la CAPACIDAD de hover del dispositivo
-  // (HAS_HOVER), NO según el ancho del viewport. Un desktop con la ventana
-  // angosta (≤768px) cae en la rama "mobile" de sizing pero igual tiene mouse
-  // → debe mostrar tooltip. Solo se omite en los formatos de export (PNG
-  // estático: square/newsletter/mobilePng).
+  // Hover/tooltip: se cablea siempre salvo en los formatos de export (PNG
+  // estático: square/newsletter/mobilePng). En desktop con mouse y en touch
+  // (tap → tooltip vía wireTouchScrub) funciona igual.
   const isPngFormat = newsletter || square || mobilePng;
-  if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER) && selected.length > 0) {
+  if (!isPngFormat && selected.length > 0) {
     tl_setupHover(svg, { y0, y1, mode, xScale, yScale, selected, PLOT_W, PLOT_H });
   }
 
@@ -641,20 +639,22 @@ function tl_setupHover(svg, ctx) {
   function yearAt(ev) {
     const rect = svg.getBoundingClientRect();
     const scale = rect.width / TL_W;
-    const localX = (ev.clientX - rect.left) / scale;
+    const localX = (evClientX(ev) - rect.left) / scale;
     return Math.round(y0 + (localX - TL_MARGIN.left) / (TL_W - TL_MARGIN.left - TL_MARGIN.right) * (y1 - y0));
   }
-  svg.addEventListener('mousemove', (ev) => {
+  const moveH = (ev) => {
     const yr = yearAt(ev);
     update(yr);
     if (tooltip) {
       const rect = svg.getBoundingClientRect();
-      const _x = ev.clientX - rect.left, _w = tooltip.offsetWidth || 170;   // si no entra a la derecha, a la izquierda del cursor
+      const _x = evClientX(ev) - rect.left, _w = tooltip.offsetWidth || 170;   // si no entra a la derecha, a la izquierda del cursor
       tooltip.style.left = ((_x + 14 + _w > rect.width || _x > rect.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px';
-      tooltip.style.top = (ev.clientY - rect.top + 14) + 'px';
+      tooltip.style.top = (evClientY(ev) - rect.top + 14) + 'px';
     }
-  });
+  };
+  svg.addEventListener('mousemove', moveH);
   svg.addEventListener('mouseleave', () => update(-1));
+  wireTouchScrub(svg, moveH);   // tap/arrastre con el dedo mueve el crosshair
 }
 
 //==================================================================

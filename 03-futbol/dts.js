@@ -404,7 +404,7 @@ function drawDts() {
     txt.textContent = l.text + valTxt; endG.appendChild(txt);
   });
 
-  if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER) && hoverSeries.length)
+  if (!isPngFormat && hoverSeries.length)
     dt_setupHover(svg, { y0, y1, xS, yS, series: hoverSeries, abs });
 
   dt_applyHeadings(aeCfg);
@@ -455,6 +455,8 @@ function dt_drawBars(svg, opt) {
   const barH = rowH * 0.6, maxV = Math.max(1, ...rows.map(r => r.v));
   const xW = (v) => Math.max(0, (v / maxV) * plotW);
   const baseline = (y) => y + fs * 0.34;
+  const _btip = document.getElementById('tooltip11');
+  const _bpos = (ev) => { if (!_btip) return; const rc = svg.getBoundingClientRect(); const _x = evClientX(ev) - rc.left, _w = _btip.offsetWidth || 160; _btip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; _btip.style.top = (evClientY(ev) - rc.top + 14) + 'px'; };
   // El Mundial mostrado va en el subtítulo (dt_subtitle), no dentro del gráfico.
 
   rows.forEach((r, i) => {
@@ -464,7 +466,14 @@ function dt_drawBars(svg, opt) {
     const bar = dt_el('rect'); bar.setAttribute('x', left); bar.setAttribute('y', midY - barH / 2); bar.setAttribute('width', bw); bar.setAttribute('height', barH); bar.setAttribute('rx', bigFmt ? 3 : 2); bar.setAttribute('fill', DT_BAR_COL); svg.appendChild(bar);
     const vt = dt_el('text'); vt.setAttribute('x', left + bw + (bigFmt ? 10 : 6)); vt.setAttribute('y', baseline(midY));
     vt.style.fontSize = fs + 'px'; vt.style.fontFamily = 'var(--sans)'; vt.style.fontWeight = '700'; vt.setAttribute('fill', 'var(--ink)'); vt.textContent = abs ? r.n : (r.v + '%'); svg.appendChild(vt);
-    if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) { bar.style.cursor = 'pointer'; bar.addEventListener('click', () => dt_toggle(r.iso)); }
+    if (!isPngFormat && _btip) {   // tooltip al tocar/hover (también en touch)
+      bar.style.cursor = 'pointer';
+      const _bh = `<div style="font-weight:600;margin-bottom:2px;">${r.name}</div>${abs ? r.n : r.v + '% · ' + r.n}`;
+      bar.addEventListener('mouseenter', (ev) => { _btip.innerHTML = _bh; _btip.style.display = 'block'; _btip.style.opacity = '1'; _bpos(ev); });
+      bar.addEventListener('mousemove', _bpos);
+      bar.addEventListener('mouseleave', () => { _btip.style.opacity = '0'; _btip.style.display = 'none'; });
+    }
+    if (typeof HAS_HOVER === 'undefined' || HAS_HOVER) bar.addEventListener('click', () => dt_toggle(r.iso));   // toggle solo desktop
   });
 }
 
@@ -532,10 +541,10 @@ function dt_drawSankey(svg, opt) {
     const x0 = leftX + nodeW, x1 = rightX, xm = (x0 + x1) / 2;
     const d = `M${x0},${y0} C${xm},${y0} ${xm},${y1} ${x1},${y1} L${x1},${y1 + h} C${xm},${y1 + h} ${xm},${y0 + h} ${x0},${y0 + h} Z`;
     const path = dt_el('path'); path.setAttribute('d', d); path.setAttribute('fill', srcColor[L.s]); path.setAttribute('fill-opacity', 0.42); path.setAttribute('stroke', 'none');
-    if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+    if (!isPngFormat) {
       path.style.cursor = 'default';
       path.addEventListener('mouseenter', () => { path.setAttribute('fill-opacity', 0.72); if (tooltip) { tooltip.innerHTML = `<strong>${nmOf(L.s)} → ${nmOf(L.t)}</strong><br>${L.n} ${L.n === 1 ? dt_tt('c11-sankey-dt1', 'DT') : dt_tt('c11-sankey-dtN', 'DTs')}`; tooltip.style.display = 'block'; tooltip.style.opacity = '1'; } });
-      path.addEventListener('mousemove', (ev) => { if (!tooltip) return; const rc = svg.getBoundingClientRect(); const _x = ev.clientX - rc.left, _w = tooltip.offsetWidth || 170; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; });   // si no entra a la derecha, a la izquierda del cursor
+      path.addEventListener('mousemove', (ev) => { if (!tooltip) return; const rc = svg.getBoundingClientRect(); const _x = evClientX(ev) - rc.left, _w = tooltip.offsetWidth || 170; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (evClientY(ev) - rc.top + 14) + 'px'; });   // si no entra a la derecha, a la izquierda del cursor
       path.addEventListener('mouseleave', () => { path.setAttribute('fill-opacity', 0.42); if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; } });
     }
     linksG.appendChild(path);
@@ -544,7 +553,7 @@ function dt_drawSankey(svg, opt) {
   // Tooltip de nodo: total de DTs por país (= grosor de la barra). En "Otros",
   // total + desglose por país de los que quedaron fuera del top-N.
   const dtN = (n) => n + ' ' + (n === 1 ? dt_tt('c11-sankey-dt1', 'DT') : dt_tt('c11-sankey-dtN', 'DTs'));
-  const moveTip = (ev) => { if (!tooltip) return; const rc = svg.getBoundingClientRect(); const _x = ev.clientX - rc.left, _w = tooltip.offsetWidth || 180; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; };
+  const moveTip = (ev) => { if (!tooltip) return; const rc = svg.getBoundingClientRect(); const _x = evClientX(ev) - rc.left, _w = tooltip.offsetWidth || 180; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (evClientY(ev) - rc.top + 14) + 'px'; };
   function nodeTipHtml(k, side) {
     const total = (side === 'src' ? srcVal[k] : tgtVal[k]) || 0;
     if (k !== OS && k !== OT) return `<strong>${nmOf(k)}</strong><br>${dtN(total)}`;
@@ -555,7 +564,7 @@ function dt_drawSankey(svg, opt) {
     if (list.length > 14) html += `<div style="margin-top:3px;opacity:.7;">+${list.length - 14} ${dt_tt('c11-sankey-more', 'más')}</div>`;
     return html;
   }
-  const nodeHover = !isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  const nodeHover = !isPngFormat;
   const drawCol = (nodes, pos, x, side) => nodes.forEach(k => {
     const p = pos[k];
     const rect = dt_el('rect'); rect.setAttribute('x', x); rect.setAttribute('y', p.y0); rect.setAttribute('width', nodeW); rect.setAttribute('height', Math.max(1.5, p.h));
@@ -632,7 +641,7 @@ function dt_drawTrend(svg, opt) {
     txt.setAttribute('paint-order', 'stroke'); txt.setAttribute('stroke', '#FAF8F3'); txt.setAttribute('stroke-width', labelHalo); txt.setAttribute('stroke-linejoin', 'round');
     txt.textContent = l.text + (isPngFormat ? '  ' + Math.round(l.valLast) + '%' : ''); endG.appendChild(txt);
   });
-  if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER))
+  if (!isPngFormat)
     dt_setupHover(svg, { y0, y1, xS, yS, abs: false, series: [
       { label: localLbl, color: DT_COL_LOCAL, pts: localPts.map(p => [p[0], p[1], p[1]]) },
       { label: foreignLbl, color: DT_COL_FOREIGN, pts: foreignPts.map(p => [p[0], p[1], p[1]]) }
@@ -667,14 +676,15 @@ function dt_setupHover(svg, ctx) {
   // Se guardan en el nodo para que dt_clearHover pueda quitarlos en el próximo
   // render — sin esto, al cambiar de modo queda vivo el hover del modo anterior.
   const moveH = (ev) => {
-    const rc = svg.getBoundingClientRect(); const sc = rc.width / DT_W; const lx = (ev.clientX - rc.left) / sc;
+    const rc = svg.getBoundingClientRect(); const sc = rc.width / DT_W; const lx = (evClientX(ev) - rc.left) / sc;
     if (lx < DT_MARGIN.left || lx > DT_W - DT_MARGIN.right) { update(null); return; }
     update(nearest(lx));
-    if (tooltip) { const _x = ev.clientX - rc.left, _w = tooltip.offsetWidth || 170; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; }   // si no entra a la derecha, a la izquierda del cursor
+    if (tooltip) { const _x = evClientX(ev) - rc.left, _w = tooltip.offsetWidth || 170; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (evClientY(ev) - rc.top + 14) + 'px'; }   // si no entra a la derecha, a la izquierda del cursor
   };
   const leaveH = () => update(null);
   svg.addEventListener('mousemove', moveH);
   svg.addEventListener('mouseleave', leaveH);
+  wireTouchScrub(svg, moveH);   // tap/arrastre con el dedo mueve el crosshair
   svg.__ogHoverMove = moveH; svg.__ogHoverLeave = leaveH;
 }
 // Quita los listeners de hover (líneas/área) que viven en el propio <svg> y
@@ -683,6 +693,7 @@ function dt_setupHover(svg, ctx) {
 function dt_clearHover(svg) {
   if (svg.__ogHoverMove) { svg.removeEventListener('mousemove', svg.__ogHoverMove); svg.__ogHoverMove = null; }
   if (svg.__ogHoverLeave) { svg.removeEventListener('mouseleave', svg.__ogHoverLeave); svg.__ogHoverLeave = null; }
+  if (svg.__atlasTouchScrub) { svg.removeEventListener('touchstart', svg.__atlasTouchScrub); svg.removeEventListener('touchmove', svg.__atlasTouchScrub); svg.__atlasTouchScrub = null; }
   const tt = document.getElementById('tooltip11');
   if (tt) { tt.style.opacity = '0'; tt.style.display = 'none'; }
 }

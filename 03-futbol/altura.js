@@ -88,7 +88,7 @@ const al_tt = (k, fb) => ((typeof t === 'function' ? t(k) : '') || fb);
 // (si no, contra el borde se comprime/deforma). Requiere el tooltip ya visible.
 function al_placeTip(tt, ev, svg) {
   const rc = svg.getBoundingClientRect();
-  const x = ev.clientX - rc.left, y = ev.clientY - rc.top, tw = tt.offsetWidth || 170;
+  const x = evClientX(ev) - rc.left, y = evClientY(ev) - rc.top, tw = tt.offsetWidth || 170;
   const left = (x + 16 + tw > rc.width || x > rc.width * 0.72) ? Math.max(2, x - tw - 16) : (x + 14);
   tt.style.left = left + 'px'; tt.style.top = (y + 14) + 'px';
 }
@@ -312,7 +312,7 @@ function al_wrapLabel(text, maxW, fs, fw) {
 //------------------------------------------------------------------
 function al_drawLines(svg, series, ctx) {
   const { xS, yS, y0, y1, bigFmt, isPngFormat, SIZES, lineW, haloW, labelHalo, dotR, inP } = ctx;
-  const interactive = !isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  const interactive = !isPngFormat;
   const halosG = al_el('g'); svg.appendChild(halosG);
   const linesG = al_el('g'); svg.appendChild(linesG);
   const dotsG = al_el('g'); svg.appendChild(dotsG);
@@ -366,7 +366,7 @@ function al_drawLines(svg, series, ctx) {
       txt.textContent = ln; endG.appendChild(txt);
     });
   });
-  if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER) && hoverSeries.length) al_setupHover(svg, { y0, y1, xS, yS, series: hoverSeries });
+  if (!isPngFormat && hoverSeries.length) al_setupHover(svg, { y0, y1, xS, yS, series: hoverSeries });
 }
 // Resalte: al pasar el mouse por una línea, las demás se atenúan. Las parejas
 // real/esperada comparten data-al (= código de selección), así se resaltan juntas.
@@ -397,7 +397,7 @@ function al_drawBox(svg, grp, ctx) {
     [ymn, ymx].forEach(yy => { const cap = al_el('line'); cap.setAttribute('x1', cx - bw * 0.22); cap.setAttribute('x2', cx + bw * 0.22); cap.setAttribute('y1', yy); cap.setAttribute('y2', yy); cap.setAttribute('stroke', grp.color); cap.setAttribute('stroke-width', bigFmt ? 1.6 : 1); cap.setAttribute('stroke-opacity', 0.7); g.appendChild(cap); });
     const rect = al_el('rect'); rect.setAttribute('x', cx - bw / 2); rect.setAttribute('y', yb3); rect.setAttribute('width', bw); rect.setAttribute('height', Math.max(1, yb1 - yb3)); rect.setAttribute('fill', grp.color); rect.setAttribute('fill-opacity', 0.32); rect.setAttribute('stroke', grp.color); rect.setAttribute('stroke-width', bigFmt ? 1.8 : 1.1); rect.setAttribute('rx', 2); g.appendChild(rect);
     const me = al_el('line'); me.setAttribute('x1', cx - bw / 2); me.setAttribute('x2', cx + bw / 2); me.setAttribute('y1', ymd); me.setAttribute('y2', ymd); me.setAttribute('stroke', grp.color); me.setAttribute('stroke-width', bigFmt ? 3 : 2); g.appendChild(me);
-    if (!isPngFormat && tooltip && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+    if (!isPngFormat && tooltip) {
       const hit = al_el('rect'); hit.setAttribute('x', cx - bw / 2 - 2); hit.setAttribute('y', ymx); hit.setAttribute('width', bw + 4); hit.setAttribute('height', Math.max(2, ymn - ymx)); hit.setAttribute('fill', 'transparent'); hit.style.cursor = 'pointer';
       hit.addEventListener('mouseenter', (ev) => { tooltip.innerHTML = `<div style="font-weight:600;margin-bottom:3px;">${grp.label} · ${yr}</div>${tMed} <strong>${md} cm</strong><br><span style="color:var(--ink-muted);">${mn}–${mx} cm (${tRange})</span>`; tooltip.style.display = 'block'; tooltip.style.opacity = '1'; al_placeTip(tooltip, ev, svg); });
       hit.addEventListener('mousemove', (ev) => al_placeTip(tooltip, ev, svg));
@@ -463,7 +463,7 @@ function al_scTicks(lo, hi) {
 }
 function al_drawScatter(svg, opt) {
   const { wc, bigFmt, isPngFormat, SIZES } = opt;
-  const interactive = !isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  const interactive = !isPngFormat;
   const en = (typeof LANG !== 'undefined' && LANG === 'en');
   const M = { top: bigFmt ? 40 : 28, right: bigFmt ? 44 : 36, bottom: bigFmt ? 100 : 66, left: bigFmt ? 100 : 60 };
   const availW = AL_W - M.left - M.right, availH = AL_H - M.top - M.bottom;
@@ -649,14 +649,16 @@ function al_setupHover(svg, ctx) {
       tooltip.innerHTML = html; tooltip.style.display = 'block'; tooltip.style.opacity = '1';
     }
   }
-  const moveH = (ev) => { const rc = svg.getBoundingClientRect(); const sc = rc.width / AL_W; const lx = (ev.clientX - rc.left) / sc; if (lx < AL_MARGIN.left || lx > AL_W - AL_MARGIN.right) { update(null); return; } update(nearest(lx)); if (tooltip) al_placeTip(tooltip, ev, svg); };
+  const moveH = (ev) => { const rc = svg.getBoundingClientRect(); const sc = rc.width / AL_W; const lx = (evClientX(ev) - rc.left) / sc; if (lx < AL_MARGIN.left || lx > AL_W - AL_MARGIN.right) { update(null); return; } update(nearest(lx)); if (tooltip) al_placeTip(tooltip, ev, svg); };
   const leaveH = () => update(null);
   svg.addEventListener('mousemove', moveH); svg.addEventListener('mouseleave', leaveH);
+  wireTouchScrub(svg, moveH);   // tap/arrastre con el dedo mueve el crosshair
   svg.__alHoverMove = moveH; svg.__alHoverLeave = leaveH;
 }
 function al_clearHover(svg) {
   if (svg.__alHoverMove) { svg.removeEventListener('mousemove', svg.__alHoverMove); svg.__alHoverMove = null; }
   if (svg.__alHoverLeave) { svg.removeEventListener('mouseleave', svg.__alHoverLeave); svg.__alHoverLeave = null; }
+  if (svg.__atlasTouchScrub) { svg.removeEventListener('touchstart', svg.__atlasTouchScrub); svg.removeEventListener('touchmove', svg.__atlasTouchScrub); svg.__atlasTouchScrub = null; }
   const tt = document.getElementById('tooltip10'); if (tt) { tt.style.opacity = '0'; tt.style.display = 'none'; }
 }
 
