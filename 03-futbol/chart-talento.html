@@ -323,12 +323,17 @@
     .m-mobile-collapse { display: block; }
     .m-desktop-only { display: none; }
     /* Los chips (18 por default) armaban ~6 filas y empujaban el gráfico muy
-       abajo. En mobile los acotamos a ~3 filas scrolleables. */
+       abajo. En mobile los hacemos más compactos y los acotamos a ~2 filas
+       scrolleables, para dejarle más aire al gráfico. */
     .m-selected-chips {
-      max-height: 92px;
+      max-height: 58px;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      gap: 5px;
     }
+    .m-selected-chip { font-size: 11px; padding: 2px 5px 2px 8px; gap: 5px; }
+    .m-chip-x { width: 16px; height: 16px; font-size: 12px; }
+    .m-chip-dot { width: 8px; height: 8px; }
   }
 </style>
 </head>
@@ -410,7 +415,7 @@
 <script src="../lib/i18n.js?v=12"></script>
 <script src="./regions-fifa.js?v=12"></script>
 <script src="./i18n-issue.js?v=lang21"></script>
-<script src="./utils.js?v=8"></script>
+<script src="./utils.js?v=9"></script>
 <script src="./country-names.js?v=12"></script>
 <script src="./data-talento.js?v=12"></script>
 <script src="./editor.js?v=12"></script>

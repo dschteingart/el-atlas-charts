@@ -88,6 +88,39 @@ function wireTouchScrub(svg, moveH) {
   svg.__atlasTouchScrub = h;
 }
 
+// (c) Clamp al VIEWPORT, automático. Cada chart posiciona su tooltip a su modo
+// (relativo al SVG), y cerca de un borde —sobre todo en mobile— se salía de la
+// pantalla. En vez de tocar cada renderer, un MutationObserver por tooltip
+// observa cambios de `style`: cuando se muestra o reposiciona, lo corre hacia
+// adentro si su rect real se pasa del viewport. Converge en 1-2 pasos (al
+// reposicionar deja de haber overflow → no vuelve a moverlo) y no toca el
+// posicionamiento de cada chart.
+(function () {
+  const PAD = 6;
+  function clampOne(tt) {
+    if (!tt || tt.style.display === 'none') return;
+    const r = tt.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    let l = parseFloat(tt.style.left) || 0, t = parseFloat(tt.style.top) || 0, nl = l, nt = t;
+    if (r.right > window.innerWidth - PAD) nl = l - (r.right - (window.innerWidth - PAD));
+    if (r.left + (nl - l) < PAD) nl = l + (PAD - r.left);         // si igual no entra (más ancho que el viewport), pegado a la izq
+    if (r.bottom > window.innerHeight - PAD) nt = t - (r.bottom - (window.innerHeight - PAD));
+    if (r.top + (nt - t) < PAD) nt = t + (PAD - r.top);
+    if (Math.abs(nl - l) > 0.5) tt.style.left = nl + 'px';
+    if (Math.abs(nt - t) > 0.5) tt.style.top = nt + 'px';
+  }
+  function wire() {
+    document.querySelectorAll('.tooltip').forEach(tt => {
+      if (tt.__atlasClamp) return;
+      const obs = new MutationObserver(() => clampOne(tt));
+      obs.observe(tt, { attributes: true, attributeFilter: ['style'] });
+      tt.__atlasClamp = obs;
+    });
+  }
+  if (document.readyState !== 'loading') wire();
+  else document.addEventListener('DOMContentLoaded', wire);
+})();
+
 // Slider de rango que SOLO permite años de Mundial (los thumbs "saltan" de
 // Mundial en Mundial; no caen en años intermedios como 1931 o 2015). Opera
 // internamente sobre índices del array `years` y mapea a años reales.
