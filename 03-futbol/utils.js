@@ -49,6 +49,45 @@ function isMobileViewport() {
   return window.matchMedia('(max-width: 768px)').matches;
 }
 
+// =============================================================
+// Interacción TÁCTIL de los tooltips (tap en móvil)
+// =============================================================
+// En desktop el tooltip aparece al hover (mouseenter/mousemove). En touch no
+// hay hover: el browser emite eventos de mouse SINTÉTICOS al tocar (mouseover
+// sobre el elemento tocado), así que alcanza con cablear los handlers SIEMPRE
+// (no gatearlos tras HAS_HOVER). Lo único que faltaba para que el tap funcione
+// bien es: (a) cerrar el tooltip al tocar fuera de un dato, y (b) en los charts
+// de "crosshair" (línea vertical que sigue el cursor) escuchar touchstart/
+// touchmove, porque el touch-drag NO emite mousemove.
+
+// (a) Cierre por tap-away GENÉRICO. En fase de CAPTURA ocultamos cualquier
+// tooltip abierto en cada touchstart; si el toque cayó sobre un dato, su propio
+// handler (mouseover sintético, que corre DESPUÉS en fase de burbuja) lo vuelve
+// a mostrar al instante. Si cayó en vacío, queda oculto. Así no hay que marcar
+// cada elemento. En desktop no hay touchstart → impacto cero.
+(function () {
+  function hideAllTips() {
+    document.querySelectorAll('.tooltip').forEach(t => { t.style.opacity = '0'; t.style.display = 'none'; });
+  }
+  document.addEventListener('touchstart', hideAllTips, true);
+})();
+
+// clientX/clientY desde un evento de mouse O de touch (primer dedo).
+function evClientX(ev) { return (ev.touches && ev.touches[0]) ? ev.touches[0].clientX : ev.clientX; }
+function evClientY(ev) { return (ev.touches && ev.touches[0]) ? ev.touches[0].clientY : ev.clientY; }
+
+// (b) Cablea touchstart+touchmove sobre el SVG de un chart de crosshair para
+// que la línea/tooltip sigan al dedo. `moveH` es el MISMO handler que usa
+// mousemove (debe leer la posición con evClientX/evClientY). preventDefault
+// frena el scroll de la página mientras se arrastra sobre el gráfico.
+function wireTouchScrub(svg, moveH) {
+  if (!svg) return;
+  const h = (ev) => { moveH(ev); if (ev.cancelable) ev.preventDefault(); };
+  svg.addEventListener('touchstart', h, { passive: false });
+  svg.addEventListener('touchmove', h, { passive: false });
+  svg.__atlasTouchScrub = h;
+}
+
 // Slider de rango que SOLO permite años de Mundial (los thumbs "saltan" de
 // Mundial en Mundial; no caen en años intermedios como 1931 o 2015). Opera
 // internamente sobre índices del array `years` y mapea a años reales.

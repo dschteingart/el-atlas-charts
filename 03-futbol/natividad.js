@@ -227,14 +227,14 @@ function drawNatividad() {
       c.setAttribute('fill', color); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', bigFmt ? 2 : 1.2);
       if (opts.iso) c.setAttribute('data-nv', opts.iso); dotsG.appendChild(c);
     });
-    // hit-area + hover (solo selecciones, desktop)
-    if (opts.iso && !isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+    // hit-area + hover (solo selecciones; en touch tap → tooltip)
+    if (opts.iso && !isPngFormat) {
       const hit = nv_el('path'); hit.setAttribute('d', d); hit.setAttribute('fill', 'none');
       hit.setAttribute('stroke', 'transparent'); hit.setAttribute('stroke-width', Math.max(lineW + 8, 9));
       hit.style.cursor = 'pointer';
       hit.addEventListener('mouseenter', () => nv_emph(opts.iso));
       hit.addEventListener('mouseleave', () => nv_emph(null));
-      hit.addEventListener('click', (ev) => { ev.stopPropagation(); nv_toggle(opts.iso); });
+      if (typeof HAS_HOVER === 'undefined' || HAS_HOVER) hit.addEventListener('click', (ev) => { ev.stopPropagation(); nv_toggle(opts.iso); });   // toggle solo desktop; en touch el tap muestra el crosshair
       hitG.appendChild(hit);
     }
     // etiqueta de fin
@@ -289,8 +289,8 @@ function drawNatividad() {
     txt.textContent = l.text + valTxt; endG.appendChild(txt);
   });
 
-  // Hover: vline + markers + tooltip (snap al Mundial más cercano). Solo desktop.
-  if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER) && hoverSeries.length)
+  // Hover: vline + markers + tooltip (snap al Mundial más cercano). En touch tap → tooltip.
+  if (!isPngFormat && hoverSeries.length)
     nv_setupHover(svg, { y0, y1, xS, yS, series: hoverSeries });
 
   nv_applyHeadings(hasSel, aeCfg);
@@ -324,13 +324,15 @@ function nv_setupHover(svg, ctx) {
       tooltip.innerHTML = html; tooltip.style.display = 'block'; tooltip.style.opacity = '1';
     }
   }
-  svg.addEventListener('mousemove', (ev) => {
-    const rc = svg.getBoundingClientRect(); const sc = rc.width / NV_W; const lx = (ev.clientX - rc.left) / sc;
+  const moveH = (ev) => {
+    const rc = svg.getBoundingClientRect(); const sc = rc.width / NV_W; const lx = (evClientX(ev) - rc.left) / sc;
     if (lx < NV_MARGIN.left || lx > NV_W - NV_MARGIN.right) { update(null); return; }
     update(nearest(lx));
-    if (tooltip) { const _x = ev.clientX - rc.left, _w = tooltip.offsetWidth || 170; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; }   // si no entra a la derecha, a la izquierda del cursor
-  });
-  svg.addEventListener('mouseleave', () => update(null));
+    if (tooltip) { const _x = evClientX(ev) - rc.left, _w = tooltip.offsetWidth || 170; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (evClientY(ev) - rc.top + 14) + 'px'; }   // si no entra a la derecha, a la izquierda del cursor
+  };
+  const leaveH = () => update(null);
+  svg.addEventListener('mousemove', moveH); svg.addEventListener('mouseleave', leaveH);
+  wireTouchScrub(svg, moveH);   // tap/arrastre con el dedo mueve el crosshair
 }
 
 // Énfasis al hover sobre una línea (atenúa el resto).

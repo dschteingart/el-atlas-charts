@@ -253,13 +253,13 @@ function drawLigas() {
       c.setAttribute('fill', color); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', bigFmt ? 2 : 1.2);
       if (opts.iso) c.setAttribute('data-lg', opts.iso); dotsG.appendChild(c);
     });
-    if (opts.iso && !isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+    if (opts.iso && !isPngFormat) {
       const hit = lg_el('path'); hit.setAttribute('d', d); hit.setAttribute('fill', 'none');
       hit.setAttribute('stroke', 'transparent'); hit.setAttribute('stroke-width', Math.max(lineW + 8, 9));
       hit.style.cursor = 'pointer';
       hit.addEventListener('mouseenter', () => lg_emph(opts.iso));
       hit.addEventListener('mouseleave', () => lg_emph(null));
-      if (opts.iso !== LG_EUR) hit.addEventListener('click', (ev) => { ev.stopPropagation(); lg_toggle(opts.iso); });
+      if ((typeof HAS_HOVER === 'undefined' || HAS_HOVER) && opts.iso !== LG_EUR) hit.addEventListener('click', (ev) => { ev.stopPropagation(); lg_toggle(opts.iso); });   // toggle solo desktop
       hitG.appendChild(hit);
     }
     const last = pts.filter(p => p[1] != null).slice(-1)[0];
@@ -287,11 +287,11 @@ function drawLigas() {
       area.setAttribute('stroke', '#FAF8F3'); area.setAttribute('stroke-width', bigFmt ? 1.6 : 1); area.setAttribute('stroke-linejoin', 'round');
       if (b.iso !== '_OTH') {
         area.setAttribute('data-lg', b.iso); area.classList.add('lg-colored'); area.setAttribute('data-base-w', bigFmt ? 1.6 : 1);
-        if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+        if (!isPngFormat) {
           area.style.cursor = 'pointer';
           area.addEventListener('mouseenter', () => lg_emph(b.iso));
           area.addEventListener('mouseleave', () => lg_emph(null));
-          area.addEventListener('click', (ev) => { ev.stopPropagation(); lg_toggle(b.iso); });
+          if (typeof HAS_HOVER === 'undefined' || HAS_HOVER) area.addEventListener('click', (ev) => { ev.stopPropagation(); lg_toggle(b.iso); });   // toggle solo desktop
         }
       }
       areasG.appendChild(area);
@@ -342,8 +342,8 @@ function drawLigas() {
     txt.textContent = l.text + valTxt; endG.appendChild(txt);
   });
 
-  // Hover (solo dispositivos con mouse; nunca en export PNG)
-  if (!isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER) && hoverSeries.length)
+  // Hover (en touch los handlers se cablean igual: tap → tooltip; nunca en export PNG)
+  if (!isPngFormat && hoverSeries.length)
     lg_setupHover(svg, { y0, y1, xS, yS, series: hoverSeries });
 
   lg_applyHeadings(aeCfg);
@@ -378,12 +378,14 @@ function lg_setupHover(svg, ctx) {
       tooltip.innerHTML = html; tooltip.style.display = 'block'; tooltip.style.opacity = '1';
     }
   }
-  svg.addEventListener('mousemove', (ev) => {
-    const rc = svg.getBoundingClientRect(); const sc = rc.width / LG_W; const lx = (ev.clientX - rc.left) / sc;
+  const moveH = (ev) => {
+    const rc = svg.getBoundingClientRect(); const sc = rc.width / LG_W; const lx = (evClientX(ev) - rc.left) / sc;
     if (lx < LG_MARGIN.left || lx > LG_W - LG_MARGIN.right) { update(null); return; }
     update(nearest(lx));
-    if (tooltip) { const _x = ev.clientX - rc.left, _w = tooltip.offsetWidth || 170; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (ev.clientY - rc.top + 14) + 'px'; }   // si no entra a la derecha, a la izquierda del cursor
-  });
+    if (tooltip) { const _x = evClientX(ev) - rc.left, _w = tooltip.offsetWidth || 170; tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tooltip.style.top = (evClientY(ev) - rc.top + 14) + 'px'; }   // si no entra a la derecha, a la izquierda del cursor
+  };
+  svg.addEventListener('mousemove', moveH);
+  wireTouchScrub(svg, moveH);   // tap/arrastre con el dedo mueve el crosshair
   svg.addEventListener('mouseleave', () => update(null));
 }
 

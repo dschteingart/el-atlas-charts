@@ -321,7 +321,7 @@ function bp_renderData(transform) {
         .attr('transform', b => `translate(${(b.x - _rx).toFixed(2)},${(b.y - _ry).toFixed(2)})`)
         .attr('d', hex).attr('fill', b => color(b._v)).attr('stroke', 'none');
       // hover por delegación: total de jugadores + ciudad con más del hexágono
-      if (!bp_isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+      if (!bp_isPng) {
         gHex.style('cursor', 'pointer')
           .on('mouseover', (ev) => { if (ev.target.tagName !== 'path') return; d3.select(ev.target).attr('stroke', '#FAF8F3').attr('stroke-width', bp_bigFmt ? 1.4 : 0.9).raise(); bp_hexTip(d3.select(ev.target).datum()); })
           .on('mousemove', () => bp_tipMove())
@@ -338,7 +338,7 @@ function bp_renderData(transform) {
       .attr('cx', o => o.sx).attr('cy', o => o.sy).attr('r', o => bp_rScale(o.d.n))
       .attr('fill', BP_ACCENT).attr('fill-opacity', 0.4)
       .attr('stroke', BP_ACCENT_DARK).attr('stroke-width', bp_baseStroke).attr('stroke-opacity', 0.85);
-    if (!bp_isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+    if (!bp_isPng) {
       gDots.style('cursor', 'pointer')
         .on('mouseover', (ev) => { if (ev.target.tagName !== 'circle') return; const c = d3.select(ev.target); c.attr('fill-opacity', 0.85).raise(); bp_tip(c.datum().d); })
         .on('mousemove', () => bp_tipMove())
@@ -480,7 +480,7 @@ function bp_tipMove() {
   const tt = document.getElementById('tooltip8'); if (!tt) return;
   const svg = document.getElementById('chart8'); const rc = svg.getBoundingClientRect();
   const ev = bp_tipMove._e;
-  if (ev) { const _x = ev.clientX - rc.left, _w = tt.offsetWidth || 170; tt.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tt.style.top = (ev.clientY - rc.top + 14) + 'px'; }   // si no entra a la derecha, a la izquierda del cursor
+  if (ev) { const _x = evClientX(ev) - rc.left, _w = tt.offsetWidth || 170; tt.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px'; tt.style.top = (evClientY(ev) - rc.top + 14) + 'px'; }   // si no entra a la derecha, a la izquierda del cursor
 }
 function bp_tipHide() { const tt = document.getElementById('tooltip8'); if (tt) { tt.style.opacity = '0'; tt.style.display = 'none'; } }
 
