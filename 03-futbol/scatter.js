@@ -424,147 +424,52 @@ function drawScatter() {
 
   const { xScale, yScale, xMinRaw, xMaxRaw, xDomain, yDomain } = s_makeScales(s_allPts);
 
-  // === ClipPath para que puntos/labels no se salgan del plot ===
-  const defs = s_ns('defs');
-  const clip = s_ns('clipPath');
+  // === Descriptores para drawScatterCore (lib/scatter-render.js) ===
+  // El render del esqueleto (clip, fondo, grid, ticks, ejes, títulos,
+  // regresión, puntos, labels) es COMPARTIDO con el scatter del N°2 vía
+  // drawScatterCore. Acá solo computamos lo chart-specific: valores y formato
+  // de ticks, textos de eje, el path de la regresión, el estilo de cada punto
+  // y qué países etiquetar.
   const clipId = 's-plot-clip';
-  clip.setAttribute('id', clipId);
-  const clipRect = s_ns('rect');
-  clipRect.setAttribute('x', S_MARGIN.left);
-  clipRect.setAttribute('y', S_MARGIN.top);
-  clipRect.setAttribute('width', S_PLOT_W);
-  clipRect.setAttribute('height', S_PLOT_H);
-  clip.appendChild(clipRect);
-  defs.appendChild(clip);
-  svg.appendChild(defs);
 
-  // === Background del área de plot ===
-  const bg = s_ns('rect');
-  bg.setAttribute('x', S_MARGIN.left);
-  bg.setAttribute('y', S_MARGIN.top);
-  bg.setAttribute('width', S_PLOT_W);
-  bg.setAttribute('height', S_PLOT_H);
-  bg.setAttribute('fill', 'var(--bg)');
-  svg.appendChild(bg);
-
-  // === Grid + ticks X ===
-  const gridG = s_ns('g'); gridG.setAttribute('class', 's-grid'); svg.appendChild(gridG);
-  const axisG = s_ns('g'); axisG.setAttribute('class', 's-axis'); svg.appendChild(axisG);
-
-  // Filtramos los ticks fijos al dominio actual.
+  // Ticks del eje X. Filtramos los ticks fijos al dominio actual; en formatos
+  // grandes (PNG mobile-first) ralear a POTENCIAS DE 10 (descartando 3e8, 3e9,
+  // …): con la tipografía agrandada, 12 etiquetas largas ("$100 mil M") se
+  // encimaban; con 6 entran holgadas. En desktop se mantienen los 12.
   let xTicksRaw = S_X_TICKS_RAW.filter(v => {
     const logV = Math.log10(v);
     return logV >= xDomain[0] - 0.001 && logV <= xDomain[1] + 0.001;
   });
-  // En formatos grandes (PNG mobile-first), ralear a POTENCIAS DE 10
-  // (1e8, 1e9, 1e10, …) descartando los intermedios (3e8, 3e9, …). Con la
-  // tipografía agrandada, 12 etiquetas largas ("$100 mil M") se encimaban;
-  // con 6 entran holgadas. En desktop se mantienen los 12 ticks.
   const bigFmt = newsletter || square || mobilePng || mobile;
   if (bigFmt) {
     xTicksRaw = xTicksRaw.filter(v =>
       Math.abs(Math.log10(v) - Math.round(Math.log10(v))) < 0.01);
   }
-  xTicksRaw.forEach(v => {
-    const x = xScale(Math.log10(v));
-    const line = s_ns('line');
-    line.setAttribute('x1', x); line.setAttribute('x2', x);
-    line.setAttribute('y1', S_MARGIN.top); line.setAttribute('y2', S_MARGIN.top + S_PLOT_H);
-    line.setAttribute('class', 's-grid-line');
-    gridG.appendChild(line);
-    const lbl = s_ns('text');
-    lbl.setAttribute('x', x);
-    const xTickGap = mobile ? 44 : mobilePng ? 38 : 18;
-    lbl.setAttribute('y', S_MARGIN.top + S_PLOT_H + xTickGap);
-    lbl.setAttribute('text-anchor', 'middle');
-    lbl.setAttribute('class', 's-tick');
-    // font-size como ESTILO INLINE (no atributo): la clase CSS .s-tick tiene
-    // font-size:11px, que le gana al atributo font-size en SVG. El estilo
-    // inline le gana a la clase → el tamaño de SIZES manda en pantalla Y en
-    // el PNG. (Bug raíz del "gráfico chico en el PNG".)
-    lbl.style.fontSize = SIZES.tick + 'px';
-    lbl.textContent = s_fmtMoney(v);
-    axisG.appendChild(lbl);
-  });
-
-  // === Grid + ticks Y ===
-  const yTicks = s_yTicks(yDomain, 6);
-  yTicks.forEach(v => {
-    const y = yScale(v);
-    if (y < S_MARGIN.top - 1 || y > S_MARGIN.top + S_PLOT_H + 1) return;
-    const line = s_ns('line');
-    line.setAttribute('x1', S_MARGIN.left); line.setAttribute('x2', S_MARGIN.left + S_PLOT_W);
-    line.setAttribute('y1', y); line.setAttribute('y2', y);
-    line.setAttribute('class', 's-grid-line');
-    gridG.appendChild(line);
-    const lbl = s_ns('text');
-    lbl.setAttribute('x', S_MARGIN.left - 8);
-    lbl.setAttribute('y', y + 4);
-    lbl.setAttribute('text-anchor', 'end');
-    lbl.setAttribute('class', 's-tick');
-    // font-size como ESTILO INLINE (no atributo): la clase CSS .s-tick tiene
-    // font-size:11px, que le gana al atributo font-size en SVG. El estilo
-    // inline le gana a la clase → el tamaño de SIZES manda en pantalla Y en
-    // el PNG. (Bug raíz del "gráfico chico en el PNG".)
-    lbl.style.fontSize = SIZES.tick + 'px';
-    lbl.textContent = Math.round(v);
-    axisG.appendChild(lbl);
-  });
-
-  // === Ejes (líneas finas) ===
-  const xAx = s_ns('line');
-  xAx.setAttribute('x1', S_MARGIN.left); xAx.setAttribute('x2', S_MARGIN.left + S_PLOT_W);
-  xAx.setAttribute('y1', S_MARGIN.top + S_PLOT_H); xAx.setAttribute('y2', S_MARGIN.top + S_PLOT_H);
-  xAx.setAttribute('class', 's-axis-line');
-  axisG.appendChild(xAx);
-  const yAx = s_ns('line');
-  yAx.setAttribute('x1', S_MARGIN.left); yAx.setAttribute('x2', S_MARGIN.left);
-  yAx.setAttribute('y1', S_MARGIN.top); yAx.setAttribute('y2', S_MARGIN.top + S_PLOT_H);
-  yAx.setAttribute('class', 's-axis-line');
-  axisG.appendChild(yAx);
-
-  // === Títulos de ejes ===
-  const xT = s_ns('text');
-  xT.setAttribute('class', 's-axis-title');
-  xT.setAttribute('x', S_MARGIN.left + S_PLOT_W / 2);
-  // Posicionar el título del eje X JUSTO debajo de los ticks (no pegado al
-  // fondo del SVG). Antes quedaba ~98px de aire entre el tick y el título.
-  // Lo anclamos al tick: posición-del-tick + alto-del-tick + gap chico.
   const _xTickGap = mobile ? 44 : mobilePng ? 38 : 18;
-  const xTitleY = S_MARGIN.top + S_PLOT_H + _xTickGap + SIZES.tick + 16;
-  xT.setAttribute('y', xTitleY);
-  xT.setAttribute('text-anchor', 'middle');
-  xT.style.fontSize = SIZES.axisTitle + 'px';  // inline gana a la clase CSS
+  const xTickLabelY = S_MARGIN.top + S_PLOT_H + _xTickGap;
+  const xTicks = xTicksRaw.map(v => ({ x: xScale(Math.log10(v)), text: s_fmtMoney(v) }));
+
+  // Ticks del eje Y (niceLinearTicks del rango del período).
+  const yTicks = s_yTicks(yDomain, 6).map(v => ({ y: yScale(v), text: Math.round(v) }));
+
+  // Títulos de ejes. El X se ancla JUSTO debajo de los ticks; el Y rotado -90
+  // necesita más aire a la izquierda en formatos grandes (24px → y=30) para que
+  // los trazos ascendentes no se salgan por el borde izquierdo.
   const customAxisX = (aeCfg?.texts?.[(aeCfg?.lang || 'es')]?.axisX || '').trim();
   const customAxisY = (aeCfg?.texts?.[(aeCfg?.lang || 'es')]?.axisY || '').trim();
-  xT.textContent = customAxisX || (typeof t === 'function' ? t('c1-axis-x') : 'PIB total (PPA, US$ int. constantes) — escala log');
-  svg.appendChild(xT);
+  const axisTitleX = {
+    text: customAxisX || (typeof t === 'function' ? t('c1-axis-x') : 'PIB total (PPA, US$ int. constantes) — escala log'),
+    y: S_MARGIN.top + S_PLOT_H + _xTickGap + SIZES.tick + 16,
+  };
+  const axisTitleY = {
+    text: customAxisY || (typeof t === 'function' ? t('c1-axis-y') : 'ELO promedio del período'),
+    y: (mobile || mobilePng) ? 36 : (square || newsletter) ? 30 : 16,
+  };
 
-  const yT = s_ns('text');
-  yT.setAttribute('class', 's-axis-title');
-  yT.setAttribute('x', -(S_MARGIN.top + S_PLOT_H / 2));
-  // y (post rotate(-90)) = posición horizontal de la baseline del título.
-  // En formatos grandes el título es de 24px: con y=16 los trazos
-  // ascendentes se salían por el borde izquierdo (x<0) → se veía cortado.
-  // Lo corremos a 30 (ascendentes a ~11px del borde, sin pisar los ticks).
-  yT.setAttribute('y', (mobile || mobilePng) ? 36 : (square || newsletter) ? 30 : 16);
-  yT.setAttribute('transform', 'rotate(-90)');
-  yT.setAttribute('text-anchor', 'middle');
-  yT.style.fontSize = SIZES.axisTitle + 'px';  // inline gana a la clase CSS
-  yT.textContent = customAxisY || (typeof t === 'function' ? t('c1-axis-y') : 'ELO promedio del período');
-  svg.appendChild(yT);
-
-  // === Línea de regresión ===
-  // Generamos un path sobre el rango visible. El modelo es en log10(gdp),
-  // así que sampleamos en log space.
+  // Línea de regresión: path sobre el rango visible. El modelo es en
+  // log10(gdp), así que sampleamos en log space.
+  let regression = null;
   if (s_reg) {
-    const regPath = s_ns('path');
-    regPath.setAttribute('class', 's-regression');
-    regPath.setAttribute('stroke', 'var(--ink)');
-    regPath.setAttribute('stroke-width', 1.4);
-    regPath.setAttribute('stroke-opacity', 0.6);
-    regPath.setAttribute('fill', 'none');
-    regPath.setAttribute('stroke-dasharray', '5 3');
     const N_SAMPLES = 60;
     let d = '';
     for (let i = 0; i <= N_SAMPLES; i++) {
@@ -574,16 +479,10 @@ function drawScatter() {
       const px = xScale(logX), py = yScale(yPred);
       d += (d ? ' L ' : 'M ') + px.toFixed(2) + ' ' + py.toFixed(2);
     }
-    regPath.setAttribute('d', d);
-    regPath.setAttribute('clip-path', `url(#${clipId})`);
-    svg.appendChild(regPath);
+    regression = { d, stroke: 'var(--ink)', strokeWidth: 1.4, strokeOpacity: 0.6, dash: '5 3' };
   }
 
-  // === Puntos ===
-  const ptsG = s_ns('g');
-  ptsG.setAttribute('clip-path', `url(#${clipId})`);
-  svg.appendChild(ptsG);
-
+  // === Puntos (descriptores; los emite drawScatterCore) ===
   // Filtramos por hiddenConfs, pero MANTENEMOS los seleccionados aunque su
   // confed esté oculta (la selección explícita del user prevalece). También
   // dejamos pasar la confed hovered. CONMEBOL NO se exenta: si el user
@@ -609,9 +508,7 @@ function drawScatter() {
 
   const tooltip = document.getElementById('tooltip1');
 
-  ordered.forEach(d => {
-    const cx = xScale(d.x);
-    const cy = yScale(d.elo);
+  const points = ordered.map(d => {
     const isSelected   = selectedSet.has(d.iso3);
     const isAutoLabel  = conmebolAuto(d);   // CONMEBOL agrandado solo si NO hay chips
     const isHovered    = hoverConf && d.confed === hoverConf;
@@ -637,31 +534,18 @@ function drawScatter() {
       r = S_POINT_R_OTHER * ptScale; fillOp = 0.78; stroke = 'white'; strokeW = 0.5;
     }
 
-    const c = s_ns('circle');
-    c.setAttribute('class', 's-point' + (isDimmed ? ' s-dim' : ''));
-    c.setAttribute('cx', cx);
-    c.setAttribute('cy', cy);
-    c.setAttribute('r', r);
-    c.setAttribute('fill', CONF_FIFA_COLORS[d.confed] || '#888');
-    c.setAttribute('fill-opacity', fillOp);
-    c.setAttribute('stroke', stroke);
-    c.setAttribute('stroke-width', strokeW);
-    c.dataset.iso3 = d.iso3;
-    c.dataset.confed = d.confed;
-
-    // Tooltip
-    if (tooltip) {
-      c.addEventListener('mouseenter', (e) => s_showTooltip(e, d, tooltip));
-      c.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
-      c.addEventListener('mousemove', (e) => s_positionTooltip(e, tooltip));
-    }
-    // Click: toggle label.
-    c.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      s_toggleLabel(d.iso3);
-    });
-
-    ptsG.appendChild(c);
+    return {
+      cx: xScale(d.x), cy: yScale(d.elo), r,
+      fill: CONF_FIFA_COLORS[d.confed] || '#888', fillOp, stroke, strokeW,
+      className: 's-point' + (isDimmed ? ' s-dim' : ''),
+      dataset: { iso3: d.iso3, confed: d.confed },
+      handlers: {
+        enter: tooltip ? (e) => s_showTooltip(e, d, tooltip) : null,
+        leave: tooltip ? () => { tooltip.style.opacity = '0'; } : null,
+        move:  tooltip ? (e) => s_positionTooltip(e, tooltip) : null,
+        click: (ev) => { ev.stopPropagation(); s_toggleLabel(d.iso3); },
+      },
+    };
   });
 
   // === Labels ===
@@ -696,6 +580,7 @@ function drawScatter() {
       text,
       textW,
       confed: d.confed,
+      fill: CONF_FIFA_LABEL_COLORS[d.confed] || '#444',
       iso3: d.iso3,
       forced: forced || isSelected || isAutoLabel,
       isSelected,
@@ -743,81 +628,26 @@ function drawScatter() {
     });
   }
 
-  const placed = s_layoutLabels(labelItems, plotBox);
-  // En formatos grandes (PNG) los labels caen apiñados y encima de sus puntos.
-  // Relajamos con anti-colisión label↔label + repulsión de los PUNTOS para
-  // sacarlos de encima de los marrones; después los reconectamos con una línea
-  // guía gris (abajo). En desktop no se toca.
-  const ptR = (l) => (l.isSelected ? S_POINT_R_SELECTED : S_POINT_R_LABELED) * ptScale;
-  if (bigFmt) {
-    const obstacles = placed.map(l => ({ x: l.cx, y: l.cy, r: ptR(l) }));
-    s_relaxLabels(placed, SIZES.label, plotBox, 260, obstacles);
-  }
-
   // En mobile-first los labels deben SALTAR a la vista: peso bold y halo
   // (stroke) grueso. Antes, con halo fino (2.5) y weight 500, al reducir
   // la imagen al celu las etiquetas terracota sobre crema se perdían
-  // ("no se ven nada"). Seteamos inline para pisar el CSS de la clase.
-  const isBigFmt = newsletter || square || mobilePng || mobile;
-  // Halo grueso (cream) = el label queda visualmente como CAPA SUPERIOR
-  // sobre los puntos terracota del mismo color (z-order ya es correcto, pero
-  // sin halo fuerte el texto se confundía con los puntos). 6px en grande.
-  const labelHalo = isBigFmt ? 6 : 2.5;
-  const labelWeight = isBigFmt ? 700 : null;  // null = usa el de la clase
+  // ("no se ven nada"). El core los setea inline para pisar el CSS de la clase.
+  const labelHalo = bigFmt ? 6 : 2.5;
+  const labelWeight = bigFmt ? 700 : null;  // null = usa el de la clase
 
-  // Líneas guía grises: conectan cada label corrido con su punto. Van DESPUÉS
-  // de los puntos (por encima) y ANTES de los labels (por debajo del halo).
-  // Solo en formatos grandes y si el label quedó claramente separado.
-  if (bigFmt) {
-    const leaderG = s_ns('g'); svg.appendChild(leaderG);
-    placed.forEach(l => {
-      const B = s_labelBox(l, SIZES.label);
-      const Px = l.cx, Py = l.cy, r = ptR(l);
-      const nx = Math.max(B.x1, Math.min(Px, B.x2));   // borde de la caja más cercano
-      const ny = Math.max(B.y1, Math.min(Py, B.y2));
-      const dx = nx - Px, dy = ny - Py;
-      const dist = Math.hypot(dx, dy);
-      if (dist > r + 7) {
-        const ux = dx / dist, uy = dy / dist;
-        const line = s_ns('line');
-        line.setAttribute('x1', Px + ux * r);   // arranca en el borde del punto
-        line.setAttribute('y1', Py + uy * r);
-        line.setAttribute('x2', nx - ux * 2);   // termina junto a la caja del label
-        line.setAttribute('y2', ny - uy * 2);
-        line.setAttribute('stroke', '#9a9488');  // gris cálido (matchea ejes)
-        line.setAttribute('stroke-width', 1.4);
-        line.setAttribute('stroke-opacity', 0.7);
-        line.setAttribute('stroke-linecap', 'round');
-        leaderG.appendChild(line);
-      }
-    });
-  }
-
-  const labelsG = s_ns('g'); svg.appendChild(labelsG);
-  placed.forEach(l => {
-    const txt = s_ns('text');
-    txt.setAttribute('class', 's-country-label' + (l.isSelected ? ' s-labeled-label' : ''));
-    txt.setAttribute('x', l.lx);
-    txt.setAttribute('y', l.ly);
-    txt.setAttribute('text-anchor', l.anchor);
-    txt.setAttribute('fill', CONF_FIFA_LABEL_COLORS[l.confed] || '#444');
-    txt.style.fontSize = SIZES.label + 'px';  // inline gana a .s-country-label
-    // Halo grueso para legibilidad sobre puntos del mismo color.
-    txt.style.stroke = 'var(--bg)';
-    txt.style.strokeWidth = labelHalo + 'px';
-    txt.style.paintOrder = 'stroke';
-    txt.style.strokeLinejoin = 'round';
-    if (labelWeight) txt.style.fontWeight = labelWeight;
-    txt.textContent = l.text;
-    labelsG.appendChild(txt);
+  // === Render del esqueleto SVG (compartido con el N°2) ===
+  drawScatterCore({
+    svg,
+    margin: S_MARGIN, plotW: S_PLOT_W, plotH: S_PLOT_H, clipId,
+    sizes: SIZES, bigFmt, labelHalo, labelWeight,
+    ptScale, labelRadii: { selected: S_POINT_R_SELECTED, base: S_POINT_R_LABELED },
+    xTicks, xTickLabelY, yTicks,
+    axisTitleX, axisTitleY,
+    regression, points,
+    labelItems, plotBox,
+    labelBaseClass: 's-country-label', labelSelectedClass: 's-labeled-label',
+    tooltip,
   });
-
-  // Click en zona vacía limpia tooltip (no limpia selección).
-  svg.onclick = (ev) => {
-    if (ev.target.tagName !== 'circle' && tooltip) {
-      tooltip.style.opacity = '0';
-    }
-  };
 
   // === Banner ===
   s_updateBanner();
