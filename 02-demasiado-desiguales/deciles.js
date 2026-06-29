@@ -310,6 +310,13 @@ function drawDeciles() {
         endLabel:  aeSizes?.special   ?? D_LABEL_FONT_SIZE
       };
 
+  // Formato grande (PNG mobile-first): gatea halo grueso + weight en las
+  // end-labels, dejando el render desktop interactivo casi intacto. Mismo
+  // criterio que N°3 (elo-lines) y el scatter.
+  const bigFmt = newsletter || square || mobilePng || mobile;
+  const labelHalo = bigFmt ? 6 : 2.5;
+  const labelWeight = bigFmt ? 700 : null;
+
   const s3 = state[3];
   const year = String(s3.year);
   const yearData = DATA_DECILES.data_by_year[year];
@@ -346,7 +353,7 @@ function drawDeciles() {
     txt.setAttribute('y', y + 4);
     txt.setAttribute('text-anchor', 'end');
     txt.setAttribute('class', 'd-tick');
-    txt.setAttribute('font-size', SIZES.tick);
+    txt.style.fontSize = SIZES.tick + 'px';  // INLINE (no atributo): la clase .d-tick lo pisaría
     txt.textContent = d_formatYTick(tv, yMode);
     svg.appendChild(txt);
   });
@@ -358,7 +365,7 @@ function drawDeciles() {
   const yTitle = d_ns('text');
   yTitle.setAttribute('class', 'd-axis-title');
   yTitle.setAttribute('text-anchor', 'middle');
-  yTitle.setAttribute('font-size', SIZES.axisTitle);
+  yTitle.style.fontSize = SIZES.axisTitle + 'px';  // INLINE: la clase .d-axis-title lo pisaría
   yTitle.setAttribute(
     'transform',
     `translate(${yTitleOffsetX}, ${D_MARGIN.top + D_PLOT_H / 2}) rotate(-90)`
@@ -380,7 +387,7 @@ function drawDeciles() {
     const xTitle = d_ns('text');
     xTitle.setAttribute('class', 'd-axis-title');
     xTitle.setAttribute('text-anchor', 'middle');
-    xTitle.setAttribute('font-size', SIZES.axisTitle);
+    xTitle.style.fontSize = SIZES.axisTitle + 'px';  // INLINE: la clase .d-axis-title lo pisaría
     xTitle.setAttribute('x', D_MARGIN.left + D_PLOT_W / 2);
     // Position: bajo los ticks "Decil N" + aclaración. Los ticks ocupan
     // ~xExtraOffset px; el axis-title va ~25px más abajo.
@@ -405,7 +412,7 @@ function drawDeciles() {
     txt.setAttribute('y', D_MARGIN.top + D_PLOT_H + xLabelOffset);
     txt.setAttribute('text-anchor', 'middle');
     txt.setAttribute('class', 'd-tick');
-    txt.setAttribute('font-size', SIZES.tick);
+    txt.style.fontSize = SIZES.tick + 'px';  // INLINE (no atributo): la clase .d-tick lo pisaría
     txt.textContent = t('c3-decile-prefix') + ' ' + d;
     svg.appendChild(txt);
     // Aclaración para extremos en segunda línea.
@@ -416,7 +423,7 @@ function drawDeciles() {
       extra.setAttribute('y', D_MARGIN.top + D_PLOT_H + xExtraOffset);
       extra.setAttribute('text-anchor', 'middle');
       extra.setAttribute('class', 'd-tick-extra');
-      extra.setAttribute('font-size', SIZES.tickExtra);
+      extra.style.fontSize = SIZES.tickExtra + 'px';  // INLINE: la clase .d-tick-extra lo pisaría
       extra.textContent = d === 1 ? t('c3-decile-poorest') : t('c3-decile-richest');
       svg.appendChild(extra);
     }
@@ -530,10 +537,18 @@ function drawDeciles() {
     txt.setAttribute('y', l.y + 4);  // baseline offset
     txt.setAttribute('class', 'd-end-label');
     txt.setAttribute('fill', l.color);
-    // Font-size inline: mobile escala 3× vs desktop para que en pantalla
-    // queden ~10.5px (legibles). Sin esto los end-labels en mobile salen
-    // a ~4.3px (ilegibles).
-    txt.setAttribute('font-size', SIZES.endLabel);
+    // Font-size INLINE (no atributo): la clase .d-end-label (font-size fijo en
+    // el <style> del HTML) pisaría el presentation attribute → end-labels
+    // diminutos en el PNG por más que subiéramos SIZES.endLabel. Mismo arreglo
+    // que el scatter / N°3. En mobile escala ~3× para quedar legible en pantalla.
+    txt.style.fontSize = SIZES.endLabel + 'px';
+    // Halo crema (paint-order: stroke) para que el texto salte sobre líneas y
+    // grid al rasterizar desde el SVG, igual que las end-labels de N°3.
+    txt.style.stroke = 'var(--bg)';
+    txt.style.strokeWidth = labelHalo + 'px';
+    txt.style.paintOrder = 'stroke';
+    txt.style.strokeLinejoin = 'round';
+    if (labelWeight) txt.style.fontWeight = labelWeight;
     txt.textContent = l.text;
     endLabelsG.appendChild(txt);
   });
@@ -904,29 +919,16 @@ function setupDecilesDownloadCSV() {
 }
 
 // =================== Hook PNG export ===================
-// Las end-labels SVG tienen el problema de que las webfonts en contexto
-// aislado de <img> a veces caen al fallback. Las mandamos a canvasLabels
-// para garantizar la tipografia. Tambien sacamos clase shifted-guide del
-// SVG (las guias quedan en el SVG, pero los textos van a canvas).
+// NOTA: antes acá repintábamos las end-labels en canvas con tamaño HARDCODEADO
+// D_LABEL_FONT_SIZE (11.5px) + display:none al SVG. Eso pisaba el font-size del
+// SVG → los labels salían diminutos en el cuadrado por más que subiéramos
+// SIZES.endLabel. Lo sacamos: ahora se rasterizan DESDE el SVG (con su
+// font-size inline + halo crema + weight), igual que el scatter y N°3. La
+// webfont la resuelve la fuente embebida (buildEmbeddedFontCss), así que el
+// truco del canvas sobra. Dejamos el hook como no-op documentado por si
+// png-export lo invoca.
 window.onBeforePngExport = (svgClone, chartId) => {
   if (chartId !== '3') return;
-  const canvasLabels = [];
-  const endLabelsG = svgClone.querySelector('#d-end-labels');
-  if (endLabelsG) {
-    endLabelsG.querySelectorAll('text.d-end-label').forEach(el => {
-      canvasLabels.push({
-        x: parseFloat(el.getAttribute('x')),
-        y: parseFloat(el.getAttribute('y')),
-        text: el.textContent,
-        fill: el.getAttribute('fill') || '#444',
-        weight: D_LABEL_FONT_WEIGHT,
-        size: D_LABEL_FONT_SIZE,
-        textAnchor: 'start',
-      });
-      el.style.display = 'none';
-    });
-  }
-  return { canvasLabels };
 };
 
 // Hook adicional: el caption del PNG depende del modo activo. El
