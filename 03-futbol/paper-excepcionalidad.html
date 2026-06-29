@@ -230,8 +230,8 @@ function drawBox(id,lang){
     // puntos
     svg.selectAll('c'+i).data(pts).join('circle').attr('class','bx-pt')
       .attr('cx',d=>x(d.elo)).attr('cy',d=>cy+(bxHash(d.iso)-0.5)*16).attr('r',3).attr('fill',col).attr('fill-opacity',.55).attr('stroke','#fff').attr('stroke-width',.5)
-      .on('mousemove',(ev,d)=>{bxTip.style.opacity=1;bxTip.style.left=(ev.clientX+13)+'px';bxTip.style.top=(ev.clientY-10)+'px';
-        bxTip.innerHTML=`<b>${d.name}</b> · ${d.confed}<br>${T.elo}: ${d.elo}<br>${T.rank} ${d.rank} ${T.of} ${N}`;})
+      .on('mousemove',(ev,d)=>{bxTip.innerHTML=`<b>${d.name}</b> · ${d.confed}<br>${T.elo}: ${d.elo}<br>${T.rank} ${d.rank} ${T.of} ${N}`;bxTip.style.opacity=1;
+        const tw=bxTip.offsetWidth||150,th=bxTip.offsetHeight||56;let lx=ev.clientX+13;if(lx+tw>window.innerWidth-6)lx=ev.clientX-tw-13;if(lx<6)lx=6;let ly=ev.clientY-10;if(ly+th>window.innerHeight-6)ly=window.innerHeight-th-6;if(ly<6)ly=6;bxTip.style.left=lx+'px';bxTip.style.top=ly+'px';})
       .on('mouseleave',()=>bxTip.style.opacity=0);
   });
   svg.append('line').attr('x1',ML).attr('y1',MT+6*rowH).attr('x2',W-MR).attr('y2',MT+6*rowH).attr('stroke','#7A766B').attr('stroke-width',.8);
