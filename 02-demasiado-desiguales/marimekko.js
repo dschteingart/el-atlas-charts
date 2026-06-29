@@ -190,7 +190,15 @@ function m_defaultLabelCodes(sortedData) {
     ? getActivePngFormat() : null;
   const mobile = !editorFormat
     && typeof isMobileViewport === 'function' && isMobileViewport();
-  const priority = mobile
+  // Formatos PNG angostos (cuadrado 1:1 y mobile portrait): a tamaño grande los
+  // ~15 nombres se enciman y a ⅓ en el celu quedan ilegibles. Reducimos a 5
+  // anclas curadas bien espaciadas; con los 2 extremos del ranking (NAM arriba,
+  // el menos desigual abajo) quedan ~7 callouts legibles. El apaisado
+  // (newsletter) y el desktop/público mantienen la lista completa de 15.
+  const narrowPng = editorFormat === 'square' || editorFormat === 'mobile';
+  const priority = narrowPng
+    ? ['BRA', 'ARG', 'USA', 'CHN', 'DEU']
+    : mobile
     ? ['NAM', 'COL', 'BRA', 'ARG', 'MEX', 'CHN', 'USA', 'DEU', 'NOR', 'SVK']
     : [
         'NAM', 'COL', 'BRA', 'CHL', 'ARG', 'MEX', 'CHN', 'NER',
@@ -1168,19 +1176,12 @@ function setupMarimekkoToggle() {
 // el PNG (en interactivo solo se ve la hovereada).
 window.onBeforePngExport = (svgClone, chartId) => {
   if (chartId !== '1') return;
-  // BUG histórico (8 rondas): hasSelection leía SOLO state[1].selectedCountries
-  // (la lista que se llena vía search/click del propio chart). Pero cuando el
-  // usuario tilda países desde los checkboxes del EDITOR, esa selección vive
-  // en AtlasEditor.getConfig().countries — no en state[1]. Resultado: con el
-  // editor activo y países tildados ahí, hasSelection era false, el branch
-  // sin selección cropeaba el viewBox a +8px abajo del eje X, y los textos
-  // rotados de los nombres caían FUERA del viewBox → no se rasterizaban.
-  // Lo único visible eran los primeros 8px de las líneas conectoras (las
-  // "rayitas cortas" que Daniel observó).
-  // Fix: también activar el branch sin crop cuando el editor tiene países.
-  const editorCfg = window.AtlasEditor?.getConfig?.();
-  const hasEditorSelection = Array.isArray(editorCfg?.countries) && editorCfg.countries.length > 0;
-  const hasSelection = (state[1]?.selectedCountries?.length > 0) || hasEditorSelection;
+  // El crop del bottom (más abajo) se decide por si HAY labels de país en el
+  // clon, no por "hay selección". Razón histórica: el crop se gateaba con
+  // hasSelection (state[1] + editor.countries); pero el set *priority* por
+  // default (los ~7 países curados) se dibuja SIN ninguna selección → el crop
+  // se disparaba y decapitaba los callouts, dejando solo las "rayitas cortas"
+  // que Daniel observó. Ahora chequeamos directamente la presencia de labels.
   const vb = svgClone.viewBox.baseVal;
   const canvasLabels = [];
 
@@ -1230,22 +1231,18 @@ window.onBeforePngExport = (svgClone, chartId) => {
     });
   }
 
-  if (!hasSelection) {
-    // PNG sin selección: solo barras + tabla regional arriba.
+  // Crop del bottom SOLO si NO hay ningún callout de país en el clon. Caso
+  // único: el editor está activo con la lista de países vacía (elección
+  // explícita "no mostrar labels") → el margen inferior queda como espacio
+  // muerto y lo recortamos a +8px bajo el eje X. Si HAY labels (el set priority
+  // por default, o selección manual, o editor con países), NO cropeamos: el
+  // bottom margin ya viene dimensionado (bottom dinámico en drawMarimekko) para
+  // alojar los callouts rotados -45°; cualquier crop acá los decapitaría.
+  const hasCountryLabels = svgClone.querySelectorAll('.m-country-label').length > 0;
+  if (!hasCountryLabels) {
     const bottomKeep = M_MARGIN.top + M_PLOT_H + 8;
     const cropFromBottom = Math.max(0, vb.height - bottomKeep);
     svgClone.setAttribute('viewBox', `${vb.x} ${vb.y} ${vb.width} ${vb.height - cropFromBottom}`);
-  } else {
-    // PNG con selección: barras + labels seleccionadas + callouts + tabla.
-    // El texto rotado -45° tiene la PRIMERA letra abajo-izquierda del ancla
-    // (yAnchor). La proyección vertical hacia abajo es ~cos(45°)*textW +
-    // sin(45°)*fontSize ≈ 0.707*(textW + fontSize). No cropeamos: dejamos
-    // que el viewBox conserve toda la M_MARGIN.bottom — los margins por
-    // formato ya están dimensionados para alojar callouts y textos rotados
-    // (especialmente mobile/portrait con bottom 200-300). Cualquier crop
-    // adicional acá termina cortando la primera letra de los países más
-    // largos ("República Centroafricana", "Trinidad y Tobago", etc.).
-    // No reasignamos viewBox: usamos el original tal cual.
   }
   // Devolver labels que png-export debe pintar directamente en canvas para
   // garantizar la tipografía correcta.
