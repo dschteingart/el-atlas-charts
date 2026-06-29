@@ -125,16 +125,23 @@ function estimateLabelWidth(text) {
   return text.length * 6.0 + 4;
 }
 
+// Escala de offsets/dimensiones de labels. 1 en el interactivo; en el export
+// cuadrado el viewBox y las fuentes son ~2.5× más grandes, así que los offsets
+// (separación label↔punto) y el rectángulo estimado se escalan igual para que
+// el label limpie el punto agrandado y la detección de colisión siga válida.
+let LABEL_SCALE = 1;
+
 // Construye el rectángulo de una etiqueta dado offset y centro de punto
 function buildRect(it, off) {
-  const w = estimateLabelWidth(it.text);
-  const lx = it.cx + off.dx;
-  const ly = it.cy + off.dy;
+  const s = LABEL_SCALE;
+  const w = estimateLabelWidth(it.text) * s;
+  const lx = it.cx + off.dx * s;
+  const ly = it.cy + off.dy * s;
   let x1, x2;
   if (off.anchor === 'start') { x1 = lx; x2 = lx + w; }
   else if (off.anchor === 'end') { x1 = lx - w; x2 = lx; }
   else { x1 = lx - w/2; x2 = lx + w/2; }
-  return { rect: { x1, x2, y1: ly - 12, y2: ly + 2 }, lx, ly, anchor: off.anchor };
+  return { rect: { x1, x2, y1: ly - 12 * s, y2: ly + 2 * s }, lx, ly, anchor: off.anchor };
 }
 
 function fitsInBox(rect, plotBox) {
@@ -152,7 +159,8 @@ function tryPlace(it, off, placedRects, plotBox) {
 // items: [{cx, cy, text, region, tier, country, subPriority}]
 // pointPositions: NO se usa
 // plotBox: { x1, y1, x2, y2 }
-function placeLabels(items, pointPositions, plotBox) {
+function placeLabels(items, pointPositions, plotBox, scale = 1) {
+  LABEL_SCALE = scale;
   const placed = [];
   const result = [];
 
@@ -278,10 +286,36 @@ function drawChart(chartId) {
       : d[yField]
   }));
 
-  const W = 760, H = 470;
-  const margin = { top: 18, right: 22, bottom: 54, left: 60 };
+  // Formato activo: null = interactivo (apaisado, fuentes de la clase CSS),
+  // 'square' = export PNG cuadrado mobile-first (todo sobredimensionado).
+  const fmt = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
+  const square = fmt === 'square';
+  const bigFmt = square;
+
+  let W, H, margin;
+  if (square) {
+    W = PNG_FORMATS.square.vbW; H = PNG_FORMATS.square.vbH;   // 1100 × 760
+    margin = { top: 30, right: 44, bottom: 96, left: 88 };
+  } else {
+    W = 760; H = 470;
+    margin = { top: 18, right: 22, bottom: 54, left: 60 };
+  }
   const innerW = W - margin.left - margin.right;
   const innerH = H - margin.top - margin.bottom;
+
+  // Tamaños mobile-first SOLO en el export cuadrado; en interactivo se aplican
+  // como inline (igual a la clase CSS) para no alterar la vista. Trampa #1:
+  // font-size va por el.style.fontSize (inline), nunca setAttribute (la clase
+  // CSS le ganaría). Ver skill graficos-atlas.
+  const SIZES = square
+    ? { tick: 22, axisTitle: 26, label: 26, halo: 6, weight: 700 }
+    : { tick: 12, axisTitle: 12.5, label: 10.5, halo: 0, weight: null };
+  // Los puntos se agrandan en el cuadrado (el canvas final se ve a ~⅓).
+  const ptScale = square ? 1.8 : 1;
+  // Escala de offsets/dims de labels para placeLabels (≈ ratio de fuente).
+  const labelScale = square ? SIZES.label / 10.5 : 1;
+
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
 
   // xMin fijo (padding editorial bajo el país más pobre, ~$1k).
   // xMax dinámico: redondeo hacia arriba al múltiplo de 10k del país más rico
@@ -350,8 +384,9 @@ function drawChart(chartId) {
     gridG.appendChild(line);
     const lbl = document.createElementNS(ns, 'text');
     lbl.setAttribute('x', x);
-    lbl.setAttribute('y', margin.top + innerH + 16);
+    lbl.setAttribute('y', margin.top + innerH + (square ? 32 : 16));
     lbl.setAttribute('text-anchor', 'middle');
+    if (square) lbl.style.fontSize = SIZES.tick + 'px';
     lbl.textContent = fmtTickGDP(v);
     axisG.appendChild(lbl);
   });
@@ -367,9 +402,10 @@ function drawChart(chartId) {
     line.setAttribute('y1', y); line.setAttribute('y2', y);
     gridG.appendChild(line);
     const lbl = document.createElementNS(ns, 'text');
-    lbl.setAttribute('x', margin.left - 8);
-    lbl.setAttribute('y', y + 4);
+    lbl.setAttribute('x', margin.left - (square ? 14 : 8));
+    lbl.setAttribute('y', y + (square ? 8 : 4));
     lbl.setAttribute('text-anchor', 'end');
+    if (square) lbl.style.fontSize = SIZES.tick + 'px';
     // Formateo del eje Y. Para chart 1: enteros. Para chart 2 lineal: enteros.
     // Para chart 2 en log: si v<1 con suficiente precisión (0.05 → "0.05", 0.1 → "0.1", 0.2 → "0.2")
     let label;
@@ -398,8 +434,9 @@ function drawChart(chartId) {
   const xT = document.createElementNS(ns, 'text');
   xT.setAttribute('class', 'axis-title');
   xT.setAttribute('x', margin.left + innerW / 2);
-  xT.setAttribute('y', H - 12);
+  xT.setAttribute('y', H - (square ? 22 : 12));
   xT.setAttribute('text-anchor', 'middle');
+  if (square) xT.style.fontSize = SIZES.axisTitle + 'px';
   xT.textContent = t('axis-x') + (scaleX === 'log' ? t('log-suffix') : '');
   svg.appendChild(xT);
 
@@ -407,9 +444,10 @@ function drawChart(chartId) {
   const yT = document.createElementNS(ns, 'text');
   yT.setAttribute('class', 'axis-title');
   yT.setAttribute('x', -(margin.top + innerH / 2));
-  yT.setAttribute('y', 16);
+  yT.setAttribute('y', square ? 28 : 16);
   yT.setAttribute('transform', 'rotate(-90)');
   yT.setAttribute('text-anchor', 'middle');
+  if (square) yT.style.fontSize = SIZES.axisTitle + 'px';
   yT.textContent = yLabel + (scaleY === 'log' ? t('log-suffix-y') : '');
   svg.appendChild(yT);
 
@@ -486,6 +524,9 @@ function drawChart(chartId) {
     } else {
       r = 3.8; fillOpacity = 0.7; stroke = 'white'; strokeWidth = 0.5;
     }
+    // Sobredimensionar puntos en el export cuadrado (el PNG se ve a ~⅓).
+    r *= ptScale;
+    if (square) strokeWidth *= 1.6;
 
     const isDimmed = (hoverReg && !isHovered && !isSpotlight)
                   || (spotCountry && !isSpotlight);
@@ -604,7 +645,7 @@ function drawChart(chartId) {
     y2: margin.top + innerH
   };
 
-  const placed = placeLabels(labelCandidates, pointPositions, plotBox);
+  const placed = placeLabels(labelCandidates, pointPositions, plotBox, labelScale);
 
   placed.forEach(lbl => {
     const t_el = document.createElementNS(ns, 'text');
@@ -613,6 +654,16 @@ function drawChart(chartId) {
     t_el.setAttribute('y', lbl.y);
     t_el.setAttribute('text-anchor', lbl.anchor);
     t_el.setAttribute('fill', REGION_LABEL_COLORS[lbl.region] || '#1A1A1A');
+    if (square) {
+      t_el.style.fontSize = SIZES.label + 'px';
+      // Halo crema para legibilidad sobre puntos del mismo color. stroke usa
+      // var(--bg): png-export lo resuelve a rgb al rasterizar (trampa #2).
+      t_el.style.stroke = 'var(--bg)';
+      t_el.style.strokeWidth = SIZES.halo + 'px';
+      t_el.style.paintOrder = 'stroke';
+      t_el.style.strokeLinejoin = 'round';
+      if (SIZES.weight) t_el.style.fontWeight = SIZES.weight;
+    }
     t_el.textContent = lbl.text;
     svg.appendChild(t_el);
   });
@@ -676,3 +727,18 @@ document.querySelectorAll('button[data-chart]').forEach(btn => {
     URL.revokeObjectURL(url);
   });
 });
+
+// === Registro para el export PNG mobile-first ===
+// png-export.js setea __atlasPngFormatOverride = 'square' y llama __atlasRedraw()
+// para re-renderizar el/los chart(s) en grande antes de rasterizar, y luego
+// restaura. Usamos un registro de funciones porque el index.html carga scatter.js
+// y timeseries.js juntos: cada uno empuja su redraw sin pisar al otro.
+window.__atlasSupportsFormats = true;
+window.__atlasDefaultPngFormat = 'square';
+window.__atlasRedrawFns = window.__atlasRedrawFns || [];
+window.__atlasRedrawFns.push(function () {
+  [1, 2].forEach(id => {
+    if (state[id] && document.getElementById('chart' + id)) drawChart(id);
+  });
+});
+window.__atlasRedraw = function () { window.__atlasRedrawFns.forEach(fn => fn()); };
