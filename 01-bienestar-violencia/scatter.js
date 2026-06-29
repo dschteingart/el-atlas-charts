@@ -258,6 +258,127 @@ function placeLabels(items, pointPositions, plotBox, scale = 1) {
 
   return result;
 }
+
+//==================================================================
+//  BUSCADOR DE PAÍSES + CHIPS
+//==================================================================
+// Portado del scatter del N°2 (análogo más cercano), parametrizado por chartId
+// porque los charts 1 y 2 comparten este archivo. Identificador: iso3.
+// La selección vive en state[chartId].selectedCountries (array de iso3) y
+// reemplaza al viejo spotlightCountry (single) por selección múltiple.
+function s_normalize(s) {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+function s_searchableCountries() {
+  const seen = new Set();
+  const list = [];
+  DATA.forEach(d => {
+    if (!d.iso3 || seen.has(d.iso3)) return;
+    seen.add(d.iso3);
+    const name = LANG === 'es' ? (d.country_es || d.country) : d.country;
+    list.push({ code: d.iso3, name, region: d.region });
+  });
+  return list.sort((a, b) => a.name.localeCompare(b.name, LANG));
+}
+
+function toggleCountrySelection(chartId, code) {
+  const arr = state[chartId].selectedCountries;
+  const idx = arr.indexOf(code);
+  if (idx >= 0) arr.splice(idx, 1);
+  else arr.push(code);
+  renderSelectedChips(chartId);
+  drawChart(chartId);
+}
+
+function renderSelectedChips(chartId) {
+  const container = document.getElementById('s-selected-chips-' + chartId);
+  if (!container) return;
+  container.innerHTML = '';
+  (state[chartId].selectedCountries || []).forEach(code => {
+    const sample = DATA.find(d => d.iso3 === code);
+    if (!sample) return;
+    const chip = document.createElement('span');
+    chip.className = 'm-selected-chip';
+    chip.style.background = REGION_COLORS[sample.region] || '#888';
+    chip.textContent = LANG === 'es' ? (sample.country_es || sample.country) : sample.country;
+    const x = document.createElement('button');
+    x.className = 'm-chip-x';
+    x.innerHTML = '×';
+    x.setAttribute('aria-label', 'Quitar');
+    x.addEventListener('click', () => toggleCountrySelection(chartId, code));
+    chip.appendChild(x);
+    container.appendChild(chip);
+  });
+}
+
+function setupCountrySearch(chartId) {
+  const input = document.getElementById('s-search-' + chartId);
+  const results = document.getElementById('s-search-results-' + chartId);
+  if (!input || !results) return;
+  let currentMatches = [];
+  let activeIdx = -1;
+
+  function getMatches(q) {
+    if (!q || q.length < 1) return [];
+    const qn = s_normalize(q);
+    return s_searchableCountries()
+      .filter(c => s_normalize(c.name).includes(qn))
+      .slice(0, 8);
+  }
+  function renderResults(matches, active) {
+    if (matches.length === 0) {
+      results.innerHTML = '';
+      results.classList.remove('open');
+      return;
+    }
+    const sel = new Set(state[chartId].selectedCountries || []);
+    results.innerHTML = matches.map((c, i) => {
+      const cls = 'm-search-result' + (i === active ? ' m-active' : '') + (sel.has(c.code) ? ' m-already' : '');
+      return `<div class="${cls}" data-code="${c.code}">${c.name}<span class="m-search-region">${t('reg.' + c.region) || ''}</span></div>`;
+    }).join('');
+    results.classList.add('open');
+    results.querySelectorAll('.m-search-result[data-code]').forEach(el => {
+      el.addEventListener('click', () => {
+        toggleCountrySelection(chartId, el.dataset.code);
+        input.value = '';
+        results.classList.remove('open');
+        input.focus();
+      });
+    });
+  }
+  input.addEventListener('input', () => {
+    currentMatches = getMatches(input.value);
+    activeIdx = currentMatches.length > 0 ? 0 : -1;
+    renderResults(currentMatches, activeIdx);
+  });
+  input.addEventListener('keydown', (ev) => {
+    if (!results.classList.contains('open')) return;
+    if (ev.key === 'ArrowDown') {
+      ev.preventDefault();
+      activeIdx = (activeIdx + 1) % currentMatches.length;
+      renderResults(currentMatches, activeIdx);
+    } else if (ev.key === 'ArrowUp') {
+      ev.preventDefault();
+      activeIdx = (activeIdx - 1 + currentMatches.length) % currentMatches.length;
+      renderResults(currentMatches, activeIdx);
+    } else if (ev.key === 'Enter' && activeIdx >= 0) {
+      ev.preventDefault();
+      toggleCountrySelection(chartId, currentMatches[activeIdx].code);
+      input.value = '';
+      results.classList.remove('open');
+    } else if (ev.key === 'Escape') {
+      results.classList.remove('open');
+      input.blur();
+    }
+  });
+  document.addEventListener('click', (ev) => {
+    if (!input.contains(ev.target) && !results.contains(ev.target)) {
+      results.classList.remove('open');
+    }
+  });
+}
+
 //==================================================================
 //  DRAW CHART
 //==================================================================
@@ -464,18 +585,20 @@ function drawChart(chartId) {
     svg.appendChild(regLine);
   }
 
-  // Estado de visibilidad, hover y spotlight pegado.
-  // spotlightCountry: cuando el usuario hace click (o tap en mobile) en un
-  // punto, ese país queda destacado y el resto atenuado al 12% hasta que se
-  // limpie (click en zona vacía o nuevo click sobre el mismo punto).
+  // Estado de visibilidad, hover y selección.
+  // selectedCountries (array de iso3): países elegidos por el buscador o por
+  // click/tap en un punto. Quedan destacados y el resto atenuado, hasta que se
+  // quiten (chip ×, re-click en el punto, o click en zona vacía).
   const visibleRegions = state[chartId].activeRegions;
   const hoverReg = state[chartId].hoverRegion;
-  const spotCountry = state[chartId].spotlightCountry || null;
+  const selectedSet = new Set(state[chartId].selectedCountries || []);
+  const hasSelection = selectedSet.size > 0;
   const drawnRegions = new Set(visibleRegions);
   if (hoverReg) drawnRegions.add(hoverReg);
-  if (spotCountry) {
-    const spotPoint = allPoints.find(d => d.country === spotCountry);
-    if (spotPoint) drawnRegions.add(spotPoint.region);
+  // Asegurar que los países seleccionados se dibujen aunque su región esté
+  // filtrada (su región completa entra, como hacía el viejo spotlight).
+  if (hasSelection) {
+    allPoints.forEach(d => { if (selectedSet.has(d.iso3)) drawnRegions.add(d.region); });
   }
 
   const ptsG = document.createElementNS(ns, 'g');
@@ -495,6 +618,7 @@ function drawChart(chartId) {
       let s = 0;
       if (d.region === 'Latin America') s += 1;
       if (hoverReg && d.region === hoverReg) s += 5;
+      if (selectedSet.has(d.iso3)) s += 10;   // seleccionados, encima de todo
       return s;
     };
     return score(a) - score(b);
@@ -506,20 +630,20 @@ function drawChart(chartId) {
     const cy = yScale(yval);
 
     const isLatam = d.region === 'Latin America';
-    const isSpotlight = spotCountry && d.country === spotCountry;
+    const isSelected = hasSelection && selectedSet.has(d.iso3);
     const isHovered = hoverReg && d.region === hoverReg;
-    const noHoverNorSpot = !hoverReg && !spotCountry;
+    const noHoverNorSel = !hoverReg && !hasSelection;
 
     // Tamaño y borde:
-    // - Con spotlight: el país en spotlight queda muy destacado, el resto atenuado.
+    // - Con selección: los seleccionados muy destacados, el resto atenuado.
     // - Con hover sobre región (solo desktop): la región hovereada destacada.
     // - Sin nada: LATAM grande con borde (protagonista del Atlas), demás chicos.
     let r, fillOpacity, stroke, strokeWidth;
-    if (isSpotlight) {
+    if (isSelected) {
       r = 7; fillOpacity = 1; stroke = '#1A1A1A'; strokeWidth = 1.3;
-    } else if (isHovered && !spotCountry) {
+    } else if (isHovered && !hasSelection) {
       r = 5.5; fillOpacity = 0.95; stroke = '#1A1A1A'; strokeWidth = 0.9;
-    } else if (isLatam && noHoverNorSpot) {
+    } else if (isLatam && noHoverNorSel) {
       r = 5; fillOpacity = 0.92; stroke = '#1A1A1A'; strokeWidth = 0.7;
     } else {
       r = 3.8; fillOpacity = 0.7; stroke = 'white'; strokeWidth = 0.5;
@@ -528,8 +652,8 @@ function drawChart(chartId) {
     r *= ptScale;
     if (square) strokeWidth *= 1.6;
 
-    const isDimmed = (hoverReg && !isHovered && !isSpotlight)
-                  || (spotCountry && !isSpotlight);
+    const isDimmed = (hoverReg && !isHovered && !isSelected)
+                  || (hasSelection && !isSelected);
     if (!isDimmed) {
       pointPositions.push({ cx, cy, r, region: d.region });
     }
@@ -577,27 +701,22 @@ function drawChart(chartId) {
     c.addEventListener('mouseleave', () => {
       tooltip.style.opacity = '0';
     });
-    // Click (tap en mobile) = toggle spotlight pegado. El stopPropagation
-    // impide que el click burbujee al SVG y se limpie inmediatamente.
+    // Click (tap en mobile) = toggle de selección (agrega/quita el país). El
+    // stopPropagation impide que el click burbujee al SVG y limpie todo.
     c.addEventListener('click', (ev) => {
       ev.stopPropagation();
-      if (state[chartId].spotlightCountry === d.country) {
-        state[chartId].spotlightCountry = null;
-        tooltip.style.opacity = '0';
-      } else {
-        state[chartId].spotlightCountry = d.country;
-      }
-      drawChart(chartId);
+      toggleCountrySelection(chartId, d.iso3);
     });
     ptsG.appendChild(c);
   });
 
-  // Click en zona vacía del SVG limpia spotlight y tooltip pegados.
+  // Click en zona vacía del SVG limpia toda la selección y el tooltip.
   // onclick (no addEventListener) para no acumular handlers en cada redraw.
   svg.onclick = (ev) => {
     if (ev.target.tagName !== 'circle') {
-      if (state[chartId].spotlightCountry) {
-        state[chartId].spotlightCountry = null;
+      if ((state[chartId].selectedCountries || []).length) {
+        state[chartId].selectedCountries = [];
+        renderSelectedChips(chartId);
         drawChart(chartId);
       }
       tooltip.style.opacity = '0';
@@ -605,14 +724,14 @@ function drawChart(chartId) {
   };
 
   // Etiquetas
-  // - Con spotlight: solo el país en spotlight (forzado a entrar).
-  // - Sin spotlight, con hover sobre región: todos los países de esa región
+  // - Con selección: solo los países seleccionados (forzados a entrar).
+  // - Sin selección, con hover sobre región: todos los países de esa región
   //   (con los garantizados de esa región como Tier 0 — ej. al hover en
   //   "Europa Occidental", Alemania, Francia, UK, España e Italia son Tier 0).
   // - Sin nada: solo países LATAM (los 5 grandes garantizados; el resto si entra).
   let labelTargets;
-  if (spotCountry) {
-    labelTargets = orderedDrawables.filter(d => d.country === spotCountry);
+  if (hasSelection) {
+    labelTargets = orderedDrawables.filter(d => selectedSet.has(d.iso3));
   } else if (hoverReg) {
     labelTargets = orderedDrawables.filter(d => d.region === hoverReg);
   } else {
@@ -627,7 +746,10 @@ function drawChart(chartId) {
 
     let tier;
     let subPriority = 99;
-    if (PRIORITY_GUARANTEED.has(d.country)) {
+    if (hasSelection && selectedSet.has(d.iso3)) {
+      tier = 0;          // los seleccionados siempre se etiquetan
+      subPriority = 0;
+    } else if (PRIORITY_GUARANTEED.has(d.country)) {
       tier = 0;
       subPriority = GUARANTEED_PRIORITY[d.country];
     } else {
@@ -646,6 +768,51 @@ function drawChart(chartId) {
   };
 
   const placed = placeLabels(labelCandidates, pointPositions, plotBox, labelScale);
+
+  // En el export grande (cuadrado) reusamos el motor compartido de elo-pib
+  // (lib/scatter-render.js) para: (a) relajar los labels en 2D y despejarlos de
+  // los puntos, y (b) reconectar cada label corrido con su punto vía línea guía
+  // (estilo OWID). En interactivo no corre → la vista queda igual.
+  if (bigFmt && typeof s_relaxLabels === 'function') {
+    const textScale = SIZES.label / 10.5;   // estimateLabelWidth está en px ~10.5
+    const relaxItems = placed.map(lbl => {
+      const cand = labelCandidates.find(c => c.text === lbl.text);
+      return {
+        lx: lbl.x, ly: lbl.y, anchor: lbl.anchor,
+        textW: estimateLabelWidth(lbl.text) * textScale,
+        px: cand ? cand.cx : lbl.x, py: cand ? cand.cy : lbl.y
+      };
+    });
+    const obstacles = pointPositions.map(p => ({ x: p.cx, y: p.cy, r: p.r }));
+    s_relaxLabels(relaxItems, SIZES.label, plotBox, 220, obstacles);
+
+    // Líneas guía: del punto al borde más cercano de la caja del label.
+    const r0 = (hasSelection ? 7 : 5) * ptScale;   // ~radio del punto etiquetado
+    const leaderG = document.createElementNS(ns, 'g');
+    svg.appendChild(leaderG);
+    relaxItems.forEach(l => {
+      const B = s_labelBox(l, SIZES.label);
+      const nx = Math.max(B.x1, Math.min(l.px, B.x2));
+      const ny = Math.max(B.y1, Math.min(l.py, B.y2));
+      const dx = nx - l.px, dy = ny - l.py;
+      const dist = Math.hypot(dx, dy);
+      if (dist > r0 + 8) {
+        const ux = dx / dist, uy = dy / dist;
+        const line = document.createElementNS(ns, 'line');
+        line.setAttribute('x1', l.px + ux * r0);
+        line.setAttribute('y1', l.py + uy * r0);
+        line.setAttribute('x2', nx - ux * 2);
+        line.setAttribute('y2', ny - uy * 2);
+        line.setAttribute('stroke', '#9a9488');
+        line.setAttribute('stroke-width', 1.4);
+        line.setAttribute('stroke-opacity', 0.7);
+        line.setAttribute('stroke-linecap', 'round');
+        leaderG.appendChild(line);
+      }
+    });
+    // Volcar las posiciones relajadas a placed para el render.
+    placed.forEach((lbl, i) => { lbl.x = relaxItems[i].lx; lbl.y = relaxItems[i].ly; });
+  }
 
   placed.forEach(lbl => {
     const t_el = document.createElementNS(ns, 'text');
