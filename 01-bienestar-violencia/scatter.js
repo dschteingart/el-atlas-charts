@@ -796,6 +796,39 @@ function drawChart(chartId) {
       if (d > maxDrift) { const k = maxDrift / d; l.lx = l.px + dx * k; l.ly = l.py + dy * k; }
     });
 
+    // Pull-back: la relajación minimiza solapes pero NO el largo de las guías
+    // (empuja por el eje de menor solape, que para labels anchos suele ser el
+    // horizontal → líneas largas al costado). Esta pasada acerca cada label de
+    // vuelta hacia su punto en pasos chicos, hasta el instante antes de volver a
+    // chocar con otro label o tapar un punto. Acorta cada guía al mínimo y deja
+    // sin línea a los que pueden volver a pegarse al punto (técnica OWID).
+    const PB_PAD = 8, PB_PT_PAD = 4, PB_STEP = 3;
+    const pbBoxesHit = (a, b) =>
+      !(a.x2 < b.x1 - PB_PAD || a.x1 > b.x2 + PB_PAD || a.y2 < b.y1 - PB_PAD || a.y1 > b.y2 + PB_PAD);
+    const pbCollides = (idx, lx, ly) => {
+      const box = s_labelBox({ ...relaxItems[idx], lx, ly }, SIZES.label);
+      for (let j = 0; j < relaxItems.length; j++) {
+        if (j === idx) continue;
+        if (pbBoxesHit(box, s_labelBox(relaxItems[j], SIZES.label))) return true;
+      }
+      for (const ob of obstacles) {
+        const nx = Math.max(box.x1, Math.min(ob.x, box.x2));
+        const ny = Math.max(box.y1, Math.min(ob.y, box.y2));
+        if (Math.hypot(nx - ob.x, ny - ob.y) < ob.r + PB_PT_PAD) return true;
+      }
+      return false;
+    };
+    relaxItems.forEach((l, i) => {
+      for (let iter = 0; iter < 40; iter++) {
+        const dx = l.px - l.lx, dy = l.py - l.ly;
+        const d = Math.hypot(dx, dy);
+        if (d < PB_STEP) break;
+        const nx = l.lx + (dx / d) * PB_STEP, ny = l.ly + (dy / d) * PB_STEP;
+        if (pbCollides(i, nx, ny)) break;
+        l.lx = nx; l.ly = ny;
+      }
+    });
+
     // Líneas guía: del punto al borde más cercano de la caja del label. Solo si
     // el label se corrió de verdad (umbral alto → sin stubs cortos que ensucian).
     const r0 = (hasSelection ? 7 : 5) * ptScale;   // ~radio del punto etiquetado
