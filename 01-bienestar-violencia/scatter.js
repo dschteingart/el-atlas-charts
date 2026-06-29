@@ -786,7 +786,18 @@ function drawChart(chartId) {
     const obstacles = pointPositions.map(p => ({ x: p.cx, y: p.cy, r: p.r }));
     s_relaxLabels(relaxItems, SIZES.label, plotBox, 220, obstacles);
 
-    // Líneas guía: del punto al borde más cercano de la caja del label.
+    // Cap de drift: ningún label debe alejarse demasiado de su punto. En racimos
+    // densos la relajación si no manda alguno al borde con una guía larguísima
+    // (ej. Chile en el chart 1). Lo traemos de vuelta a maxDrift del punto.
+    const maxDrift = 80;
+    relaxItems.forEach(l => {
+      const dx = l.lx - l.px, dy = l.ly - l.py;
+      const d = Math.hypot(dx, dy);
+      if (d > maxDrift) { const k = maxDrift / d; l.lx = l.px + dx * k; l.ly = l.py + dy * k; }
+    });
+
+    // Líneas guía: del punto al borde más cercano de la caja del label. Solo si
+    // el label se corrió de verdad (umbral alto → sin stubs cortos que ensucian).
     const r0 = (hasSelection ? 7 : 5) * ptScale;   // ~radio del punto etiquetado
     const leaderG = document.createElementNS(ns, 'g');
     svg.appendChild(leaderG);
@@ -796,7 +807,7 @@ function drawChart(chartId) {
       const ny = Math.max(B.y1, Math.min(l.py, B.y2));
       const dx = nx - l.px, dy = ny - l.py;
       const dist = Math.hypot(dx, dy);
-      if (dist > r0 + 8) {
+      if (dist > r0 + 16) {
         const ux = dx / dist, uy = dy / dist;
         const line = document.createElementNS(ns, 'line');
         line.setAttribute('x1', l.px + ux * r0);
@@ -804,8 +815,8 @@ function drawChart(chartId) {
         line.setAttribute('x2', nx - ux * 2);
         line.setAttribute('y2', ny - uy * 2);
         line.setAttribute('stroke', '#9a9488');
-        line.setAttribute('stroke-width', 1.4);
-        line.setAttribute('stroke-opacity', 0.7);
+        line.setAttribute('stroke-width', 1.2);
+        line.setAttribute('stroke-opacity', 0.6);
         line.setAttribute('stroke-linecap', 'round');
         leaderG.appendChild(line);
       }
