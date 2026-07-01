@@ -367,6 +367,14 @@
         <span class="ta-range-display" id="ta-range-display">1850–2015</span>
       </div>
 
+      <!-- Toggle País / Región -->
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c2-group-label">Ver por</span>
+        <div class="m-mode-toggle" data-toggle="group">
+          <button class="active" data-group="pais" data-i18n="c2-group-pais">País</button>
+          <button data-group="region" data-i18n="c2-group-region">Región</button>
+        </div>
+      </div>
       <!-- Toggle top N -->
       <div class="m-ctrl-group">
         <span class="m-ctrl-label" data-i18n="c2-topn-label">Top mundial</span>
@@ -378,12 +386,14 @@
       </div>
     </div>
 
-    <!-- Buscador países -->
-    <div class="m-search-wrap">
-      <input type="text" id="ta-search" class="m-search-input" data-i18n-placeholder="c2-search-placeholder" placeholder="Buscar país…" autocomplete="off">
-      <div id="ta-search-results" class="m-search-results"></div>
+    <!-- Buscador países + chips (solo en modo País; se ocultan en Región) -->
+    <div id="ta-country-picker">
+      <div class="m-search-wrap">
+        <input type="text" id="ta-search" class="m-search-input" data-i18n-placeholder="c2-search-placeholder" placeholder="Buscar país…" autocomplete="off">
+        <div id="ta-search-results" class="m-search-results"></div>
+      </div>
+      <div class="m-selected-chips" id="ta-selected-chips"></div>
     </div>
-    <div class="m-selected-chips" id="ta-selected-chips"></div>
 
     <!-- SVG barras + tooltip overlay -->
     <div class="chart-svg-wrap">
@@ -414,12 +424,13 @@
 <script src="../lib/regions.js?v=12"></script>
 <script src="../lib/i18n.js?v=12"></script>
 <script src="./regions-fifa.js?v=12"></script>
-<script src="./i18n-issue.js?v=lang22"></script>
+<script src="./i18n-issue.js?v=lang24"></script>
 <script src="./utils.js?v=9"></script>
 <script src="./country-names.js?v=12"></script>
 <script src="./data-talento.js?v=13"></script>
+<script src="./data-talento-confed.js?v=1"></script>
 <script src="./editor.js?v=12"></script>
-<script src="./talento.js?v=13"></script>
+<script src="./talento.js?v=16"></script>
 <script src="./png-export.js?v=12"></script>
 <script src="./svg-export.js?v=12"></script>
 <script>
