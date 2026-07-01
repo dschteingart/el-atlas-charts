@@ -99,6 +99,9 @@ function ta_isMobile() {
     : (window.innerWidth || document.documentElement.clientWidth) < 768;
 }
 
+// Agrupación: país (default) ↔ región (confederación FIFA).
+function ta_isRegion() { return !!(state[2] && state[2].group === 'region'); }
+
 //==================================================================
 //  Cómputo de la métrica
 //==================================================================
@@ -118,6 +121,34 @@ function ta_computeRates() {
   // slice es O(N) y barato.
   const topPool = PLAYERS_TALENTO.slice(0, N);
 
+  // === REGIÓN (confederación) ===
+  // Numerador y denominador AGREGADOS por confederación, recién ahí se divide:
+  // futbolistas de todos los países de la confed ÷ población total de la confed
+  // (suma de TODOS sus países miembro, no solo los que tienen futbolistas).
+  if (s.group === 'region' && typeof CONFED_TALENTO !== 'undefined' && typeof POP_CONFED_TALENTO !== 'undefined') {
+    const num = {};
+    for (let i = 0; i < topPool.length; i++) {
+      const p = topPool[i];
+      if (p[1] < y0 || p[1] > y1) continue;
+      const c = CONFED_TALENTO[p[0]];
+      if (c) num[c] = (num[c] || 0) + 1;
+    }
+    const order = (typeof CONF_FIFA_ORDER !== 'undefined') ? CONF_FIFA_ORDER
+      : ['CONMEBOL', 'UEFA', 'CONCACAF', 'CAF', 'AFC', 'OFC'];
+    const out = order.filter(c => POP_CONFED_TALENTO[c]).map(c => {
+      const ser = POP_CONFED_TALENTO[c];
+      let sumPop = 0, nYears = 0;
+      for (let y = y0; y <= y1; y++) { const v = ser[String(y)]; if (v != null) { sumPop += v; nYears++; } }
+      const avgPopThousands = nYears > 0 ? sumPop / nYears : 0;
+      const cnt = num[c] || 0;
+      const rate = avgPopThousands > 0 ? (cnt * 1000) / avgPopThousands : 0;
+      return { iso: c, confed: c, count: cnt, avgPopMillions: avgPopThousands / 1000, rate };
+    });
+    out.sort((a, b) => b.rate - a.rate);
+    return out;
+  }
+
+  // === PAÍS (default) ===
   // Contar por iso, filtrando por birth year.
   const counts = {};
   for (let i = 0; i < topPool.length; i++) {
@@ -187,6 +218,10 @@ function drawTalento() {
 
   const data = ta_computeRates();
   const n = data.length;
+  const region = ta_isRegion();
+  // El buscador + chips son de país; en región (6 confeds fijas) se ocultan.
+  const _picker = document.getElementById('ta-country-picker');
+  if (_picker) _picker.style.display = region ? 'none' : '';
 
   // Tamaños mobile-first (inline style). Los nombres de país son el label
   // protagonista → los más grandes.
@@ -289,8 +324,9 @@ function drawTalento() {
   const barsG = ta_ns('g'); svg.appendChild(barsG);
   data.forEach((d, i) => {
     const y = TA_MARGIN.top + i * (TA_BAR_H + TA_BAR_GAP);
-    const isCon = TA_CONMEBOL_ISOS.has(d.iso);
-    const color = isCon ? TA_COLOR_CONMEBOL : TA_COLOR_OTHER;
+    const isCon = region ? (d.confed === 'CONMEBOL') : TA_CONMEBOL_ISOS.has(d.iso);
+    const color = region ? ((typeof CONF_FIFA_COLORS !== 'undefined' && CONF_FIFA_COLORS[d.confed]) || TA_COLOR_OTHER) : (isCon ? TA_COLOR_CONMEBOL : TA_COLOR_OTHER);
+    const nameCol = region ? ((typeof CONF_FIFA_LABEL_COLORS !== 'undefined' && CONF_FIFA_LABEL_COLORS[d.confed]) || '#3A3530') : (isCon ? '#8B4220' : '#3A3530');
     const barW = xScale(d.rate) - TA_MARGIN.left;
 
     // Label izquierda: nombre país
@@ -302,8 +338,8 @@ function drawTalento() {
     nameTxt.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
     nameTxt.style.fontSize = SIZES.name + 'px';
     nameTxt.setAttribute('font-weight', isCon ? 600 : 500);
-    nameTxt.setAttribute('fill', isCon ? '#8B4220' : '#3A3530');
-    nameTxt.textContent = ta_displayName(d.iso);
+    nameTxt.setAttribute('fill', nameCol);
+    nameTxt.textContent = region ? d.confed : ta_displayName(d.iso);
     barsG.appendChild(nameTxt);
 
     // Barra. Listeners de tooltip al hover.
@@ -358,13 +394,17 @@ function drawTalento() {
   // por default; neutral si el usuario cambió período, top N o la selección.
   // El subtítulo ya es descriptivo, no cambia.
   const s2 = state[2];
-  const selDefault = s2.selected.length === TA_DEFAULT_SELECTED.length
-    && TA_DEFAULT_SELECTED.every(iso => s2.selected.includes(iso));
-  const isDefaultView = selDefault
-    && s2.period[0] === TA_PERIOD_DEFAULT[0] && s2.period[1] === TA_PERIOD_DEFAULT[1]
-    && s2.topN === 1000;
+  const periodDefault = s2.period[0] === TA_PERIOD_DEFAULT[0]
+    && s2.period[1] === TA_PERIOD_DEFAULT[1] && s2.topN === 1000;
   if (typeof atlasSetHeading === 'function') {
-    atlasSetHeading('2', isDefaultView, { title: 'c2-title', titleNeutral: 'c2-title-neutral' });
+    if (region) {
+      // Región tiene su propio insight (Sudamérica #1) en el estado por default.
+      atlasSetHeading('2', periodDefault, { title: 'c2-title-region', titleNeutral: 'c2-title-neutral' });
+    } else {
+      const selDefault = s2.selected.length === TA_DEFAULT_SELECTED.length
+        && TA_DEFAULT_SELECTED.every(iso => s2.selected.includes(iso));
+      atlasSetHeading('2', selDefault && periodDefault, { title: 'c2-title', titleNeutral: 'c2-title-neutral' });
+    }
   }
 }
 
@@ -386,7 +426,7 @@ function ta_showTooltip(event, d) {
   const tooltip = document.getElementById('tooltip1');
   if (!tooltip) return;
   const tt = (k, fb) => (typeof t === 'function' ? t(k) : fb);
-  const name = ta_displayName(d.iso);
+  const name = d.confed ? d.confed : ta_displayName(d.iso);
   // d.avgPopMillions y d.rate ya vienen calculadas en computeRates.
   const popLbl  = tt('c2-tt-pop',   'Población promedio');
   const cntLbl  = tt('c2-tt-count', 'Cantidad de futbolistas célebres');
@@ -484,6 +524,21 @@ function setupTalentoTopN() {
       state[2].topN = n;
       document.querySelectorAll('.m-mode-toggle[data-toggle="topn"] button')
         .forEach(b => b.classList.toggle('active', parseInt(b.dataset.topn, 10) === n));
+      drawTalento();
+    });
+  });
+}
+
+// Toggle País ↔ Región (confederación).
+function setupTalentoGroup() {
+  document.querySelectorAll('.m-mode-toggle[data-toggle="group"] button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const g = btn.dataset.group;
+      if (g !== 'pais' && g !== 'region') return;
+      if (state[2].group === g) return;
+      state[2].group = g;
+      document.querySelectorAll('.m-mode-toggle[data-toggle="group"] button')
+        .forEach(b => b.classList.toggle('active', b.dataset.group === g));
       drawTalento();
     });
   });
@@ -729,16 +784,19 @@ function initTalento() {
     state[2] = {
       period: [...TA_PERIOD_DEFAULT],
       topN: 1000,
-      selected: [...TA_DEFAULT_SELECTED]
+      selected: [...TA_DEFAULT_SELECTED],
+      group: 'pais'
     };
   } else {
     if (!state[2].period)   state[2].period = [...TA_PERIOD_DEFAULT];
     if (!state[2].topN)     state[2].topN = 1000;
     if (!state[2].selected) state[2].selected = [...TA_DEFAULT_SELECTED];
+    if (!state[2].group)    state[2].group = 'pais';
   }
 
   setupTalentoSlider();
   setupTalentoTopN();
+  setupTalentoGroup();
   setupTalentoSearch();
   setupTalentoDownloadCSV();
   renderTalentoChips();
