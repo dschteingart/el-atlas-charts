@@ -665,7 +665,7 @@ function setupTalentoDownloadCSV() {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
       let csv = '';
       csv += '# El Atlas N°3 — Futbolistas celebres por pais x ano de nacimiento\n';
-      csv += '# Fuente: Pantheon MIT 2025 (SOCCER PLAYER masculino, views_no_en >= 5000) + OWID poblacion.\n';
+      csv += '# Fuente: Pantheon Datawheel 2025 (SOCCER PLAYER masculino, views_no_en >= 5000) + OWID poblacion.\n';
       csv += '#\n';
       csv += '# Para reproducir la metrica del chart en un rango [y0, y1]:\n';
       csv += '#   total      = SUM(top{N}_count)         sobre [y0..y1]\n';
