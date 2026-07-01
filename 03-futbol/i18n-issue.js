@@ -82,7 +82,7 @@ const ISSUE_I18N = {
     // Neutral (cuando el usuario cambia período/topN/selección): solo el
     // título cambia; el subtítulo ya es descriptivo.
     'c2-title-neutral':      'Talento futbolístico ajustado por población',
-    'c2-subtitle':           'Futbolistas en el top mundial por HPI (Pantheon MIT, con visibilidad global mínima) dividido por la población promedio del país en el período de nacimiento seleccionado.',
+    'c2-subtitle':           'Futbolistas en el top mundial por HPI (Pantheon Datawheel, con visibilidad global mínima) dividido por la población promedio del país en el período de nacimiento seleccionado.',
     'c2-subtitle-tpl':       'Futbolistas célebres del top {N} mundial nacidos entre {Y0} y {Y1} por millón de habitantes.',
     'c2-axis-x':             'Futbolistas célebres por millón de habitantes',
     'c2-slider-label':       'Año de nacimiento',
@@ -91,12 +91,12 @@ const ISSUE_I18N = {
     'c2-tt-count':           'Cantidad de futbolistas célebres',
     'c2-tt-pop':             'Población promedio',
     'c2-tt-rate':            'Futbolistas célebres por millón',
-    'c2-sources':            'Datos: <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon (MIT Media Lab)</a> — figuras memorables de Wikipedia con HPI (Historical Popularity Index), edición 2025, filtrado a la ocupación SOCCER PLAYER y al género masculino. Restringido a jugadores con al menos 15 traducciones en Wikipedia y 5.000 vistas en Wikipedias no-inglesas, para evitar el sesgo de artículos auto-generados en Wikidata (J-League). <a href="https://ourworldindata.org/grapher/population" target="_blank" rel="noopener">Our World in Data</a> para población anual histórica. País de nacimiento según Pantheon. En terracota, países de la CONMEBOL.',
+    'c2-sources':            'Datos: <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon (Datawheel)</a> — figuras memorables de Wikipedia con HPI (Historical Popularity Index), edición 2025, filtrado a la ocupación SOCCER PLAYER y al género masculino. Restringido a jugadores con al menos 15 traducciones en Wikipedia y 5.000 vistas en Wikipedias no-inglesas, para evitar el sesgo de artículos auto-generados en Wikidata (J-League). <a href="https://ourworldindata.org/grapher/population" target="_blank" rel="noopener">Our World in Data</a> para población anual histórica. País de nacimiento según Pantheon. En terracota, países de la CONMEBOL.',
     // Plantilla PLANA y CORTA para la nota del PNG (estilizada). El hook
     // onBeforePngExportGetSourceText reemplaza {N}/{Y0}/{Y1} por el top N y los
     // años del slider. Aclara el color terracota. La metodología detallada
     // (filtro SOCCER PLAYER, sesgo J-League) queda en el footer del HTML.
-    'c2-sources-tpl':        'Datos: Pantheon (MIT Media Lab) y Our World in Data — futbolistas del top {N} mundial por su Historical Popularity Index (HPI), nacidos entre {Y0} y {Y1}, por millón de habitantes. En terracota, países de la CONMEBOL. Restringido a jugadores con al menos 15 traducciones en Wikipedia y más de 5.000 vistas.',
+    'c2-sources-tpl':        'Datos: Pantheon (Datawheel) y Our World in Data — futbolistas del top {N} mundial por su Historical Popularity Index (HPI), nacidos entre {Y0} y {Y1}, por millón de habitantes. En terracota, países de la CONMEBOL. Restringido a jugadores con al menos 15 traducciones en Wikipedia y más de 5.000 vistas.',
 
     // Chart 4 — Scatter: share fútbol vs antigüedad de clubes
     'c4-title':              'Sudamérica: clubes muy antiguos y talento monopolizado por el fútbol',
@@ -119,12 +119,12 @@ const ISSUE_I18N = {
     'c4-tt-clubage':         'Año mediano clubes',
     'c4-tt-cohort':          'Cohorte (fútbol / total)',
     'c4-empty':              'Sin datos en el rango seleccionado',
-    'c4-sources':            'Eje X: <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon (MIT Media Lab)</a> edición 2025 — deportistas físicos notables por país de nacimiento. El toggle "+5.000 visitas en Wikipedia" filtra figuras con muy pocas lecturas reales (sobre todo, J-League menores que inflan el conteo japonés). Eje Y: año mediano de fundación de los clubes según Wikidata, ponderado por la relevancia global del club (medida a partir de la cantidad de idiomas a los que está traducido el artículo en Wikipedia).',
+    'c4-sources':            'Eje X: <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon (Datawheel)</a> edición 2025 — deportistas físicos notables por país de nacimiento. El toggle "+5.000 visitas en Wikipedia" filtra figuras con muy pocas lecturas reales (sobre todo, J-League menores que inflan el conteo japonés). Eje Y: año mediano de fundación de los clubes según Wikidata, ponderado por la relevancia global del club (medida a partir de la cantidad de idiomas a los que está traducido el artículo en Wikipedia).',
     // Versión SIN la mención del toggle — usada en el PNG cuando el filtro
     // de visitas está desactivado (default).
-    'c4-sources-no-filter':  'Eje X: Pantheon (MIT Media Lab) edición 2025 — deportistas físicos notables por país de nacimiento. Eje Y: año mediano de fundación de los clubes según Wikidata, ponderado por la relevancia global del club (medida a partir de la cantidad de idiomas a los que está traducido el artículo en Wikipedia).',
+    'c4-sources-no-filter':  'Eje X: Pantheon (Datawheel) edición 2025 — deportistas físicos notables por país de nacimiento. Eje Y: año mediano de fundación de los clubes según Wikidata, ponderado por la relevancia global del club (medida a partir de la cantidad de idiomas a los que está traducido el artículo en Wikipedia).',
     // Versión CON el filtro aplicado — usada en el PNG cuando el toggle ON.
-    'c4-sources-with-filter':'Eje X: Pantheon (MIT Media Lab) edición 2025 — deportistas físicos notables por país de nacimiento, filtrados a perfiles con más de 5.000 visitas en Wikipedias no-inglesas. Eje Y: año mediano de fundación de los clubes según Wikidata, ponderado por la relevancia global del club (medida a partir de la cantidad de idiomas a los que está traducido el artículo en Wikipedia).',
+    'c4-sources-with-filter':'Eje X: Pantheon (Datawheel) edición 2025 — deportistas físicos notables por país de nacimiento, filtrados a perfiles con más de 5.000 visitas en Wikipedias no-inglesas. Eje Y: año mediano de fundación de los clubes según Wikidata, ponderado por la relevancia global del club (medida a partir de la cantidad de idiomas a los que está traducido el artículo en Wikipedia).',
 
     // Chart 3 — Mapa coroplético "antigüedad de los clubes"
     'c3-title':              'Dónde nació el fútbol moderno',
@@ -411,7 +411,7 @@ const ISSUE_I18N = {
     // Chart 2 — Footballing talent per million inhabitants
     'c2-title':              'Uruguay produces more famous footballers per capita than any country in the world',
     'c2-title-neutral':      'Footballing talent adjusted for population',
-    'c2-subtitle':           'Footballers in the global top by HPI (Pantheon MIT, minimum global visibility) divided by the country\'s average population over the selected birth-year period.',
+    'c2-subtitle':           'Footballers in the global top by HPI (Pantheon Datawheel, minimum global visibility) divided by the country\'s average population over the selected birth-year period.',
     'c2-subtitle-tpl':       'Famous footballers in the global top {N} born between {Y0} and {Y1}, per million inhabitants.',
     'c2-axis-x':             'Famous footballers per million inhabitants',
     'c2-slider-label':       'Birth year',
@@ -420,8 +420,8 @@ const ISSUE_I18N = {
     'c2-tt-count':           'Famous footballers',
     'c2-tt-pop':             'Average population',
     'c2-tt-rate':            'Famous footballers per million',
-    'c2-sources':            'Data: <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon (MIT Media Lab)</a> — Wikipedia memorable figures with HPI (Historical Popularity Index), 2025 release, filtered to occupation SOCCER PLAYER and male gender. Restricted to players with at least 15 Wikipedia translations and 5,000 views on non-English Wikipedias, to avoid the bias from Wikidata-autogenerated articles (J-League). <a href="https://ourworldindata.org/grapher/population" target="_blank" rel="noopener">Our World in Data</a> for annual population. Country of birth per Pantheon. In terracotta, CONMEBOL (South American) countries.',
-    'c2-sources-tpl':        'Data: Pantheon (MIT Media Lab) and Our World in Data — footballers in the global top {N} by their Historical Popularity Index (HPI), born between {Y0} and {Y1}, per million inhabitants. In terracotta, CONMEBOL (South American) countries. Restricted to players with at least 15 Wikipedia translations and more than 5,000 views.',
+    'c2-sources':            'Data: <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon (Datawheel)</a> — Wikipedia memorable figures with HPI (Historical Popularity Index), 2025 release, filtered to occupation SOCCER PLAYER and male gender. Restricted to players with at least 15 Wikipedia translations and 5,000 views on non-English Wikipedias, to avoid the bias from Wikidata-autogenerated articles (J-League). <a href="https://ourworldindata.org/grapher/population" target="_blank" rel="noopener">Our World in Data</a> for annual population. Country of birth per Pantheon. In terracotta, CONMEBOL (South American) countries.',
+    'c2-sources-tpl':        'Data: Pantheon (Datawheel) and Our World in Data — footballers in the global top {N} by their Historical Popularity Index (HPI), born between {Y0} and {Y1}, per million inhabitants. In terracotta, CONMEBOL (South American) countries. Restricted to players with at least 15 Wikipedia translations and more than 5,000 views.',
 
     // Chart 4 — Scatter: football share vs club age
     'c4-title':              'South America: very old clubs and talent monopolised by football',
@@ -443,9 +443,9 @@ const ISSUE_I18N = {
     'c4-tt-clubage':         'Median club year',
     'c4-tt-cohort':          'Cohort (football / total)',
     'c4-empty':              'No data in the selected range',
-    'c4-sources':            'X axis: <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon (MIT Media Lab)</a> 2025 release — notable physical athletes by birth country. The "+5,000 Wikipedia views" toggle filters figures with very few actual reads (mainly lower-tier J-League players that inflate Japan\'s count). Y axis: median founding year of each country\'s clubs (Wikidata), weighted by each club\'s global relevance (measured as the number of languages with a Wikipedia article).',
-    'c4-sources-no-filter':  'X axis: Pantheon (MIT Media Lab) 2025 release — notable physical athletes by birth country. Y axis: median founding year of each country\'s clubs (Wikidata), weighted by each club\'s global relevance (measured as the number of languages with a Wikipedia article).',
-    'c4-sources-with-filter':'X axis: Pantheon (MIT Media Lab) 2025 release — notable physical athletes by birth country, filtered to profiles with more than 5,000 views on non-English Wikipedias. Y axis: median founding year of each country\'s clubs (Wikidata), weighted by each club\'s global relevance (measured as the number of languages with a Wikipedia article).',
+    'c4-sources':            'X axis: <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon (Datawheel)</a> 2025 release — notable physical athletes by birth country. The "+5,000 Wikipedia views" toggle filters figures with very few actual reads (mainly lower-tier J-League players that inflate Japan\'s count). Y axis: median founding year of each country\'s clubs (Wikidata), weighted by each club\'s global relevance (measured as the number of languages with a Wikipedia article).',
+    'c4-sources-no-filter':  'X axis: Pantheon (Datawheel) 2025 release — notable physical athletes by birth country. Y axis: median founding year of each country\'s clubs (Wikidata), weighted by each club\'s global relevance (measured as the number of languages with a Wikipedia article).',
+    'c4-sources-with-filter':'X axis: Pantheon (Datawheel) 2025 release — notable physical athletes by birth country, filtered to profiles with more than 5,000 views on non-English Wikipedias. Y axis: median founding year of each country\'s clubs (Wikidata), weighted by each club\'s global relevance (measured as the number of languages with a Wikipedia article).',
 
     // Chart 3 — Choropleth map "age of clubs"
     'c3-title':              'Where modern football was born',
