@@ -82,7 +82,6 @@ const ISSUE_I18N = {
     // Neutral (cuando el usuario cambia período/topN/selección): solo el
     // título cambia; el subtítulo ya es descriptivo.
     'c2-title-neutral':      'Talento futbolístico ajustado por población',
-    'c2-title-region':       'Sudamérica produce más futbolistas célebres per cápita que cualquier otra región',
     'c2-group-label':        'Ver por',
     'c2-group-pais':         'País',
     'c2-group-region':       'Región',
@@ -415,7 +414,6 @@ const ISSUE_I18N = {
     // Chart 2 — Footballing talent per million inhabitants
     'c2-title':              'Uruguay produces more famous footballers per capita than any country in the world',
     'c2-title-neutral':      'Footballing talent adjusted for population',
-    'c2-title-region':       'South America produces more famous footballers per capita than any other region',
     'c2-group-label':        'View by',
     'c2-group-pais':         'Country',
     'c2-group-region':       'Region',

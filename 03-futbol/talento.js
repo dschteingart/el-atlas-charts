@@ -404,8 +404,9 @@ function drawTalento() {
     && s2.period[1] === TA_PERIOD_DEFAULT[1] && s2.topN === 1000;
   if (typeof atlasSetHeading === 'function') {
     if (region) {
-      // Región tiene su propio insight (Sudamérica #1) en el estado por default.
-      atlasSetHeading('2', periodDefault, { title: 'c2-title-region', titleNeutral: 'c2-title-neutral' });
+      // Quién rinde más per cápita por región NO es robusto al período ni al
+      // top N (a veces CONMEBOL, a veces UEFA) → título siempre neutral.
+      atlasSetHeading('2', false, { title: 'c2-title-neutral', titleNeutral: 'c2-title-neutral' });
     } else {
       const selDefault = s2.selected.length === TA_DEFAULT_SELECTED.length
         && TA_DEFAULT_SELECTED.every(iso => s2.selected.includes(iso));
