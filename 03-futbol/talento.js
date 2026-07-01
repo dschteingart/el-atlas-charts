@@ -244,9 +244,15 @@ function drawTalento() {
   } else {
     TA_W = 1100;
     TA_MARGIN = mobile ? { ...TA_MARGIN_MOBILE } : { ...TA_MARGIN_DESKTOP };
-    // En mobile el viewBox es ancho (1100) y se renderiza a ~360px → el alto
-    // colapsa. Barras más gruesas = gráfico bastante más alto y legible.
-    TA_BAR_H = mobile ? 42 : 20; TA_BAR_GAP = mobile ? 13 : 5;
+    if (region) {
+      // Región = solo 6 confeds → con barras finas el gráfico queda chato.
+      // Las engrosamos bastante para que ocupe más alto.
+      TA_BAR_H = mobile ? 62 : 44; TA_BAR_GAP = mobile ? 24 : 20;
+    } else {
+      // En mobile el viewBox es ancho (1100) y se renderiza a ~360px → el alto
+      // colapsa. Barras más gruesas = gráfico bastante más alto y legible.
+      TA_BAR_H = mobile ? 42 : 20; TA_BAR_GAP = mobile ? 13 : 5;
+    }
     plotH = n * (TA_BAR_H + TA_BAR_GAP) - TA_BAR_GAP;
     totalH = TA_MARGIN.top + plotH + TA_MARGIN.bottom;
   }
