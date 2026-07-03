@@ -850,12 +850,19 @@ function drawChart(chartId) {
     // (d) tenga la guía despejada. Puntaje = largo de la guía + penalización
     // fuerte si cruza un punto; se mueve solo si mejora sobre la posición actual.
     const up = SIZES.label * 0.78, dn = SIZES.label * 0.22;
-    const snapHits = (box, exceptIdx) => {
+    // ¿La caja pisa otra etiqueta o se mete en un punto etiquetado ajeno? El
+    // PROPIO punto NO es obstáculo (el label QUIERE quedar pegado a él); solo se
+    // rechaza si el propio punto queda DENTRO de la caja (tapado).
+    const snapHits = (box, exceptIdx, ownPx, ownPy) => {
       for (let j = 0; j < relaxItems.length; j++) {
         if (j === exceptIdx) continue;
         if (pbBoxesHit(box, s_labelBox(relaxItems[j], SIZES.label))) return true;
       }
       for (const ob of obstacles) {
+        if (Math.hypot(ob.x - ownPx, ob.y - ownPy) < 1) {   // su propio punto
+          if (ob.x > box.x1 && ob.x < box.x2 && ob.y > box.y1 && ob.y < box.y2) return true;
+          continue;
+        }
         const nx = Math.max(box.x1, Math.min(ob.x, box.x2));
         const ny = Math.max(box.y1, Math.min(ob.y, box.y2));
         if (Math.hypot(nx - ob.x, ny - ob.y) < ob.r + PB_PT_PAD) return true;
@@ -886,23 +893,31 @@ function drawChart(chartId) {
       const curDist = Math.hypot(cnx - l.px, cny - l.py);
       const curBlocked = lineBlocked(cur, l.px, l.py);
       if (curDist < 26 && !curBlocked) return;   // cerca y despejada → no tocar
-      const G = r0 + 14, D = 0.72;
-      const cands = [
-        { lx: l.px + G,   ly: l.py + dn * 0.6,     anchor: 'start'  }, // E
-        { lx: l.px + G*D, ly: l.py + up + 2,       anchor: 'start'  }, // SE
-        { lx: l.px + G*D, ly: l.py - dn - 2,       anchor: 'start'  }, // NE
-        { lx: l.px,       ly: l.py + r0 + 10 + up, anchor: 'middle' }, // S
-        { lx: l.px,       ly: l.py - r0 - 10 - dn, anchor: 'middle' }, // N
-        { lx: l.px - G*D, ly: l.py + up + 2,       anchor: 'end'    }, // SW
-        { lx: l.px - G*D, ly: l.py - dn - 2,       anchor: 'end'    }, // NW
-        { lx: l.px - G,   ly: l.py + dn * 0.6,     anchor: 'end'    }  // W
-      ];
+      // Candidatos: 8 direcciones × 3 separaciones. Colocamos el BORDE cercano de
+      // la caja a `g` del punto (no el centro), así el label queda PEGADO a su
+      // punto sin taparlo, con guía corta. Varias separaciones permiten encontrar
+      // el hueco oblicuo (ej. sudeste) cuando la más cercana está ocupada.
+      const gaps = [r0 + 4, r0 + 18, r0 + 36];
+      const dirs = [[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1]]; // N,NE,E,SE,S,SW,W,NW (y+ = abajo)
+      const cands = [];
+      for (const [sx, sy] of dirs) {
+        for (const g of gaps) {
+          let anchor, lx, ly;
+          if (sx > 0)      { anchor = 'start';  lx = l.px + g; }
+          else if (sx < 0) { anchor = 'end';    lx = l.px - g; }
+          else             { anchor = 'middle'; lx = l.px; }
+          if (sy > 0)      ly = l.py + g + up;          // caja abajo
+          else if (sy < 0) ly = l.py - g - dn;          // caja arriba
+          else             ly = l.py + (up - dn) / 2;   // centrada vertical
+          cands.push({ lx, ly, anchor });
+        }
+      }
       let best = null, bestScore = Infinity;
       for (const c of cands) {
         const box = s_labelBox({ ...l, ...c }, SIZES.label);
         if (box.x1 < plotBox.x1 || box.x2 > plotBox.x2 ||
             box.y1 < plotBox.y1 || box.y2 > plotBox.y2) continue;
-        if (snapHits(box, i)) continue;
+        if (snapHits(box, i, l.px, l.py)) continue;
         const ex = Math.max(box.x1, Math.min(l.px, box.x2));
         const ey = Math.max(box.y1, Math.min(l.py, box.y2));
         const len = Math.hypot(ex - l.px, ey - l.py);
