@@ -564,9 +564,9 @@ function drawMarimekko() {
   // slider, su valor gana — incluso en newsletter/square/mobilePng/public.
   // Esto asegura que el slider "Etiquetas país" tenga efecto siempre.
   const FMT_SIZES = newsletter
-    ? { tick: 20, axisLabel: 20, label: 16, tableTitle: 16, tableLabel: 20 }
+    ? { tick: 20, axisLabel: 20, label: 16, tableTitle: 20, tableLabel: 20 }
     : square
-    ? { tick: 20, axisLabel: 20, label: 24, tableTitle: 16, tableLabel: 20 }
+    ? { tick: 20, axisLabel: 20, label: 24, tableTitle: 20, tableLabel: 20 }
     : mobilePng
     ? { tick: 30, axisLabel: 26, label: 26, tableTitle: 26, tableLabel: 28 }
     : publicFmt
