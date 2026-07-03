@@ -251,68 +251,78 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
     });
   });
 
-  // 2. Greedy left→right por barX SIN priorizar seleccionados.
-  //    Procesamos todas en orden por posición de barra. Esto evita que un
-  //    seleccionado conserve "palito recto" (tx=barX) y obligue a las
-  //    priority adyacentes a hacer Z muy largas — todas siguen las mismas
-  //    reglas geométricas. Para garantizar que los seleccionados nunca se
-  //    omiten, hacemos un retry con allowOverflow si no entran sin él.
-  const orderedAnchors = anchors.slice().sort((a, b) => a.barX - b.barX);
+  // 2. Repartir las etiquetas a lo ancho (estilo OWID). En vez de amontonar
+  //    desde la izquierda y descartar las que no entran, distribuimos TODAS:
+  //    cada texto arranca en su ideal (arriba de su barra) y se corre lo justo
+  //    para no pisar al vecino; si el conjunto no entra al ancho disponible,
+  //    achicamos la tipografía lo mínimo para que entre. NUNCA se descarta un
+  //    chip (WYSIWYG). Cada texto se reconecta con su barra vía una línea
+  //    bracket (V-H-V), recta si quedó sobre la barra o doblada si se corrió.
+  //    tx = ancla del texto (borde derecho; footprint horizontal [tx-projW, tx],
+  //    porque el texto rotado -45° se proyecta hacia la izquierda).
+  const ordered = anchors.slice().sort((a, b) => a.barX - b.barX);
+  const n = ordered.length;
+  if (n === 0) return { labels: [], fontSize };
 
-  // Boxes de colisión ya colocados:
-  //   - text footprints: huella horizontal del texto en y=yAnchor (todos
-  //     comparten el mismo y, así que basta comparar rangos en x).
-  //   - callout segments: H y V finales de las S ya colocadas (para que
-  //     una nueva S no cruce visualmente a una previa).
-  const placedTextFootprints = [];  // {x1, x2}
-  const placedCalloutSegments = [];  // {kind:'H', y, x1, x2} o {kind:'V', x, y1, y2}
-  const toDraw = [];
-
-  // Encuentra un tx libre a partir de idealTx, avanzando hacia la derecha.
-  // El footprint del texto va de [tx - projW, tx] (proyectado a la izquierda).
-  // Greedy: si choca con un footprint previo, mueve tx a la derecha hasta
-  // que (tx - projW) >= prev.x2 + minGap. Devuelve null si no entra en el
-  // bound permitido. Mínimo absoluto: tx >= leftBound + projW (para que el
-  // texto no se salga por la izquierda del plot).
-  function findFreeTx(idealTx, projW, allowOverflow) {
-    const maxX = allowOverflow ? rightBound + 80 : rightBound;
-    const minX = leftBound + projW;
-    let tx = Math.max(minX, idealTx);
-    let guard = 0;
-    while (guard++ < 60) {
-      // Footprint propuesto: [tx - projW, tx]
-      const conflict = placedTextFootprints.find(f =>
-        !(tx <= f.x1 - minGap || (tx - projW) >= f.x2 + minGap)
-      );
-      if (!conflict) return tx <= maxX ? tx : null;
-      // Mover tx para que (tx - projW) = conflict.x2 + minGap
-      tx = conflict.x2 + minGap + projW;
-      if (tx > maxX) return null;
-    }
-    return null;
+  // Auto-fit: si la suma de las huellas + gaps excede el ancho disponible,
+  // achicar la fuente para que entren todas. projW escala ~lineal con el font,
+  // así que el factor de ancho aplica directo. Piso 8px (mejor chico que
+  // descartado). Con la selección curada (~8-10) no se dispara.
+  const availW = rightBound - leftBound;
+  let effFont = fontSize;
+  const totalW = () => ordered.reduce((s, a) => s + a.projW, 0) + (n - 1) * minGap;
+  if (totalW() > availW) {
+    effFont = Math.max(8, fontSize * (availW / totalW()) * 0.98);
+    ordered.forEach(a => {
+      a.textW = Math.max(22 * effFont / fontSize, m_measureText(a.text, effFont));
+      a.projW = cos * a.textW + sin * effFont + 2;
+    });
   }
 
-  // Para un callout S propuesto (barX → bendY → tx → yLine), verifica que
-  // ningún segmento existente lo cruce, considerando un padding de
-  // M_CALLOUT_PAD para que las líneas no se "rocen" visualmente aunque no
-  // se crucen geométricamente.
+  // Barrido 1 (izq→der): cada tx en su ideal (barX), corrido a la derecha lo
+  // justo para no pisar la huella del anterior.
+  let acc = leftBound;
+  ordered.forEach(a => {
+    a.tx = Math.max(a.barX, acc + a.projW);
+    acc = a.tx + minGap;
+  });
+  // Barrido 2 (der→izq): si el último se pasó del rightBound, tirar hacia la
+  // izquierda comprimiendo (reparte el excedente en vez de descartarlo).
+  let lim = rightBound;
+  for (let i = n - 1; i >= 0; i--) {
+    const a = ordered[i];
+    if (a.tx > lim) a.tx = lim;
+    lim = a.tx - a.projW - minGap;
+  }
+  // Clamp izquierdo: que el primer texto no se salga por la izquierda del plot.
+  let leftAcc = leftBound;
+  ordered.forEach(a => {
+    const minTx = leftAcc + a.projW;
+    if (a.tx < minTx) a.tx = minTx;
+    leftAcc = a.tx + minGap;
+  });
+
+  // 3. Para cada etiqueta: elegir la fila de quiebre (bendY) que no cruce las
+  //    líneas ya colocadas y armar el path bracket. Recta (palito) si el texto
+  //    quedó sobre su barra; V-H-V si se corrió.
+  const placedCalloutSegments = [];  // {kind:'H', y, x1, x2} | {kind:'V', x, y1, y2}
+  const toDraw = [];
+
+  // Verifica que un callout bracket propuesto (barX → bendY → tx → yLine) no
+  // cruce ninguno ya colocado (con padding M_CALLOUT_PAD).
   function calloutIsClear(barX, tx, bendY) {
     const pad = M_CALLOUT_PAD;
     const hSeg = { kind: 'H', y: bendY, x1: Math.min(barX, tx), x2: Math.max(barX, tx) };
     const vFinalSeg = { kind: 'V', x: tx, y1: bendY, y2: yLine };
     for (const s of placedCalloutSegments) {
       if (s.kind === 'H') {
-        // H vs H: muy cerca en y Y se solapan en x.
         if (Math.abs(s.y - hSeg.y) < pad &&
             !(hSeg.x2 + pad < s.x1 || hSeg.x1 > s.x2 + pad)) return false;
-        // H vs V propuesta.
         if (vFinalSeg.x >= s.x1 - pad && vFinalSeg.x <= s.x2 + pad &&
             s.y >= vFinalSeg.y1 - pad && s.y <= vFinalSeg.y2 + pad) return false;
       } else if (s.kind === 'V') {
-        // V vs H propuesta.
         if (s.x >= hSeg.x1 - pad && s.x <= hSeg.x2 + pad &&
             hSeg.y >= s.y1 - pad && hSeg.y <= s.y2 + pad) return false;
-        // V vs V: muy cerca en x Y se solapan en y.
         if (Math.abs(s.x - vFinalSeg.x) < pad &&
             !(vFinalSeg.y2 + pad < s.y1 || vFinalSeg.y1 > s.y2 + pad)) return false;
       }
@@ -320,79 +330,37 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
     return true;
   }
 
-  function tryPlace(a, allowOverflow) {
-    const idealTx = a.barX;  // posición ideal: línea guía vertical pura sobre la barra
-    const tx = findFreeTx(idealTx, a.projW, allowOverflow);
-    if (tx === null) return null;
-    const displaced = Math.abs(tx - a.barX) > 0.5;
-    let bendY = null;
-    if (displaced) {
-      // Probamos filas desde la MÁS CERCANA AL LABEL (bendY grande, V final
-      // corta) hacia la MÁS CERCANA AL EJE X (bendY chico, V final larga).
-      // Razón: si la label anterior dejó su V final cerca del label
-      // (bendY alto), la H actual puede pasar POR DEBAJO en SVG (y menor)
-      // sin cruzar esa V. Esto evita que las S sucesivas se enreden — la
-      // regla geométrica de OWID.
-      for (let r = M_BEND_ROW_COUNT - 1; r >= 0; r--) {
-        const candidateBendY = plotArea.bottom + M_BEND_ROW_OFFSET + r * M_BEND_ROW_GAP;
-        if (candidateBendY >= yLine - 4) continue;  // no debe pegarse al yLine
-        if (calloutIsClear(a.barX, tx, candidateBendY)) {
-          bendY = candidateBendY;
-          break;
-        }
-      }
-      if (bendY === null) {
-        // Fallback: la fila más cercana al eje X (último recurso).
-        bendY = plotArea.bottom + M_BEND_ROW_OFFSET;
-      }
-    }
-    return { ...a, tx, ty: yAnchor, yLine, bendY, displaced };
-  }
-
   function commit(p) {
-    // Footprint del texto: [tx - projW, tx] (texto se extiende hacia la izquierda de tx).
-    placedTextFootprints.push({ x1: p.tx - p.projW, x2: p.tx });
     if (p.displaced) {
-      placedCalloutSegments.push({
-        kind: 'H', y: p.bendY,
-        x1: Math.min(p.barX, p.tx), x2: Math.max(p.barX, p.tx)
-      });
-      // V final: de bendY hasta yLine (no hasta yAnchor; el texto empieza
-      // un poco más abajo, con un gap visual).
-      placedCalloutSegments.push({
-        kind: 'V', x: p.tx, y1: p.bendY, y2: yLine
-      });
-      placedCalloutSegments.push({
-        kind: 'V', x: p.barX, y1: plotArea.bottom, y2: p.bendY
-      });
+      placedCalloutSegments.push({ kind: 'H', y: p.bendY, x1: Math.min(p.barX, p.tx), x2: Math.max(p.barX, p.tx) });
+      placedCalloutSegments.push({ kind: 'V', x: p.tx, y1: p.bendY, y2: p.yLine });
+      placedCalloutSegments.push({ kind: 'V', x: p.barX, y1: plotArea.bottom, y2: p.bendY });
     } else {
-      placedCalloutSegments.push({
-        kind: 'V', x: p.barX, y1: plotArea.bottom, y2: yLine
-      });
+      placedCalloutSegments.push({ kind: 'V', x: p.barX, y1: plotArea.bottom, y2: p.yLine });
     }
     toDraw.push(p);
   }
 
-  // Fase 1: sin overflow (palitos y S dentro del plot).
-  const notPlacedForced = [];
-  orderedAnchors.forEach(a => {
-    const p = tryPlace(a, false);
-    if (p) commit(p);
-    else notPlacedForced.push(a);
-    // Todas las labels son chips → se garantiza su colocación (fase 2 con
-    // allowOverflow). El usuario eligió mostrarlas; ninguna se descarta en
-    // silencio (WYSIWYG con los chips).
+  ordered.forEach(a => {
+    const displaced = Math.abs(a.tx - a.barX) > 0.5;
+    let bendY = null;
+    if (displaced) {
+      // Filas de quiebre desde la más cercana al label hacia la más cercana al
+      // eje X; tomamos la primera que no cruce lo ya colocado (regla OWID).
+      for (let r = M_BEND_ROW_COUNT - 1; r >= 0; r--) {
+        const cand = plotArea.bottom + M_BEND_ROW_OFFSET + r * M_BEND_ROW_GAP;
+        if (cand >= yLine - 4) continue;
+        if (calloutIsClear(a.barX, a.tx, cand)) { bendY = cand; break; }
+      }
+      if (bendY === null) bendY = plotArea.bottom + M_BEND_ROW_OFFSET;
+    }
+    commit({ ...a, ty: yAnchor, yLine, bendY, displaced });
   });
 
-  // Fase 2: forzar colocación con allowOverflow (la patita puede
-  // extenderse fuera del rightBound). NUNCA se omiten selecciones ni
-  // extremos.
-  notPlacedForced.forEach(a => {
-    const p = tryPlace(a, true);
-    if (p) commit(p);
-  });
-
-  return toDraw;
+  // Devolvemos el font efectivo (puede ser < fontSize por el auto-fit) para que
+  // drawMarimekko renderee el texto al MISMO tamaño con el que se calculó el
+  // layout — si no, las posiciones (calculadas a effFont) no matchearían.
+  return { labels: toDraw, fontSize: effFont };
 }
 
 // =================== Render principal ===================
@@ -715,10 +683,14 @@ function drawMarimekko() {
     top: M_MARGIN.top,
     bottom: M_MARGIN.top + M_PLOT_H
   };
-  const placedLabels = m_layoutCountryLabels(
+  // m_layoutCountryLabels devuelve { labels, fontSize }: el fontSize puede ser
+  // menor que SIZES.label si hubo auto-fit (muchas etiquetas) — hay que
+  // renderear el texto con ESE tamaño para que matchee el layout.
+  const _layout = m_layoutCountryLabels(
     sortedData, barWidth, plotArea, s1.selectedCountries || [], aeCountries
   );
-  const fontSize = SIZES.label;
+  const placedLabels = _layout.labels;
+  const fontSize = _layout.fontSize;
   placedLabels.forEach(l => {
     // Callout (línea guía) estilo OWID:
     //   - Sin displacement: VERTICAL puro desde la base de la barra hasta
