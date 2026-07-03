@@ -790,6 +790,13 @@ function drawChart(chartId) {
     // en OWID). Así los labels se acomodan cerca de su punto en vez de huir al
     // borde. Cada punto etiquetado se protege con su radio r0.
     const obstacles = labelCandidates.map(c => ({ x: c.cx, y: c.cy, r: r0 }));
+    // Para la LÍNEA DE VISIÓN de las guías usamos TODOS los puntos resaltados
+    // (terracota grandes), no solo los etiquetados: una guía no debe cruzar
+    // ningún punto prominente, esté o no etiquetado. (Los grises de fondo sí se
+    // pueden cruzar.) Umbral de radio: los grandes son LATAM (5×) o selec (7×).
+    const losObstacles = pointPositions
+      .filter(p => p.r > 4.4 * ptScale)
+      .map(p => ({ x: p.cx, y: p.cy, r: p.r }));
     s_relaxLabels(relaxItems, SIZES.label, plotBox, 220, obstacles);
 
     // Cap de drift: ningún label debe alejarse demasiado de su punto. En racimos
@@ -835,13 +842,13 @@ function drawChart(chartId) {
       }
     });
 
-    // Vertical-snap: los labels que quedaron LEJOS de su punto están en un racimo
-    // horizontal denso (ej. Colombia/México/Brasil, misma altura). Correrlos al
-    // costado da guías largas; en cambio los reubicamos justo ARRIBA o ABAJO de
-    // su propio punto (sobre su misma X). Adjacentes a distinta altura no chocan
-    // aunque se solapen en X → guía corta y vertical. Probamos arriba y abajo y
-    // tomamos la primera libre; procesar en secuencia alterna solo/abajo.
-    const SNAP_GAP = 10;
+    // Reubicación direccional con LÍNEA DE VISIÓN: para los labels que quedaron
+    // lejos de su punto O cuya guía cruza otro punto etiquetado (el bug de
+    // Colombia: la recta atravesaba otro terracota), probar 8 direcciones
+    // alrededor de su PROPIO punto y elegir la mejor posición que: (a) entre en
+    // el plot, (b) no pise otra etiqueta, (c) no tape un punto etiquetado, y
+    // (d) tenga la guía despejada. Puntaje = largo de la guía + penalización
+    // fuerte si cruza un punto; se mueve solo si mejora sobre la posición actual.
     const up = SIZES.label * 0.78, dn = SIZES.label * 0.22;
     const snapHits = (box, exceptIdx) => {
       for (let j = 0; j < relaxItems.length; j++) {
@@ -855,21 +862,55 @@ function drawChart(chartId) {
       }
       return false;
     };
+    // Distancia de un punto (ox,oy) al segmento (ax,ay)-(bx,by).
+    const segPointDist = (ax, ay, bx, by, ox, oy) => {
+      const vx = bx - ax, vy = by - ay, L2 = vx * vx + vy * vy || 1;
+      let t = ((ox - ax) * vx + (oy - ay) * vy) / L2;
+      t = Math.max(0, Math.min(1, t));
+      return Math.hypot(ox - (ax + t * vx), oy - (ay + t * vy));
+    };
+    // ¿La guía (punto → borde más cercano de la caja) cruza OTRO punto etiquetado?
+    const lineBlocked = (box, px, py) => {
+      const ex = Math.max(box.x1, Math.min(px, box.x2));
+      const ey = Math.max(box.y1, Math.min(py, box.y2));
+      for (const ob of losObstacles) {
+        if (Math.hypot(ob.x - px, ob.y - py) < 1) continue;   // su propio punto
+        if (segPointDist(px, py, ex, ey, ob.x, ob.y) < ob.r + 2) return true;
+      }
+      return false;
+    };
     relaxItems.forEach((l, i) => {
       const cur = s_labelBox(l, SIZES.label);
       const cnx = Math.max(cur.x1, Math.min(l.px, cur.x2));
       const cny = Math.max(cur.y1, Math.min(l.py, cur.y2));
-      if (Math.hypot(cnx - l.px, cny - l.py) < 26) return;   // ya está cerca
+      const curDist = Math.hypot(cnx - l.px, cny - l.py);
+      const curBlocked = lineBlocked(cur, l.px, l.py);
+      if (curDist < 26 && !curBlocked) return;   // cerca y despejada → no tocar
+      const G = r0 + 14, D = 0.72;
       const cands = [
-        { lx: l.px, ly: l.py - r0 - SNAP_GAP - dn, anchor: 'middle' },  // arriba
-        { lx: l.px, ly: l.py + r0 + SNAP_GAP + up, anchor: 'middle' }   // abajo
+        { lx: l.px + G,   ly: l.py + dn * 0.6,     anchor: 'start'  }, // E
+        { lx: l.px + G*D, ly: l.py + up + 2,       anchor: 'start'  }, // SE
+        { lx: l.px + G*D, ly: l.py - dn - 2,       anchor: 'start'  }, // NE
+        { lx: l.px,       ly: l.py + r0 + 10 + up, anchor: 'middle' }, // S
+        { lx: l.px,       ly: l.py - r0 - 10 - dn, anchor: 'middle' }, // N
+        { lx: l.px - G*D, ly: l.py + up + 2,       anchor: 'end'    }, // SW
+        { lx: l.px - G*D, ly: l.py - dn - 2,       anchor: 'end'    }, // NW
+        { lx: l.px - G,   ly: l.py + dn * 0.6,     anchor: 'end'    }  // W
       ];
+      let best = null, bestScore = Infinity;
       for (const c of cands) {
         const box = s_labelBox({ ...l, ...c }, SIZES.label);
         if (box.x1 < plotBox.x1 || box.x2 > plotBox.x2 ||
             box.y1 < plotBox.y1 || box.y2 > plotBox.y2) continue;
-        if (!snapHits(box, i)) { l.lx = c.lx; l.ly = c.ly; l.anchor = c.anchor; break; }
+        if (snapHits(box, i)) continue;
+        const ex = Math.max(box.x1, Math.min(l.px, box.x2));
+        const ey = Math.max(box.y1, Math.min(l.py, box.y2));
+        const len = Math.hypot(ex - l.px, ey - l.py);
+        const score = len + (lineBlocked(box, l.px, l.py) ? 1000 : 0);
+        if (score < bestScore) { bestScore = score; best = c; }
       }
+      const curScore = curDist + (curBlocked ? 1000 : 0);
+      if (best && bestScore < curScore) { l.lx = best.lx; l.ly = best.ly; l.anchor = best.anchor; }
     });
 
     // Líneas guía: del punto al borde más cercano de la caja del label. Solo si
