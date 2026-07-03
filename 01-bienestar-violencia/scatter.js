@@ -775,6 +775,7 @@ function drawChart(chartId) {
   // (estilo OWID). En interactivo no corre → la vista queda igual.
   if (bigFmt && typeof s_relaxLabels === 'function') {
     const textScale = SIZES.label / 10.5;   // estimateLabelWidth está en px ~10.5
+    const r0 = (hasSelection ? 7 : 5) * ptScale;   // ~radio del punto etiquetado
     const relaxItems = placed.map(lbl => {
       const cand = labelCandidates.find(c => c.text === lbl.text);
       return {
@@ -783,7 +784,12 @@ function drawChart(chartId) {
         px: cand ? cand.cx : lbl.x, py: cand ? cand.cy : lbl.y
       };
     });
-    const obstacles = pointPositions.map(p => ({ x: p.cx, y: p.cy, r: p.r }));
+    // Obstáculos = SOLO los puntos etiquetados (los que importa que se vean), no
+    // la nube gris de fondo. Un label de 26px no puede esquivar los ~150 puntos
+    // en zona densa; sobre los grises SÍ puede pasar (el halo los tapa, es normal
+    // en OWID). Así los labels se acomodan cerca de su punto en vez de huir al
+    // borde. Cada punto etiquetado se protege con su radio r0.
+    const obstacles = labelCandidates.map(c => ({ x: c.cx, y: c.cy, r: r0 }));
     s_relaxLabels(relaxItems, SIZES.label, plotBox, 220, obstacles);
 
     // Cap de drift: ningún label debe alejarse demasiado de su punto. En racimos
@@ -829,9 +835,45 @@ function drawChart(chartId) {
       }
     });
 
+    // Vertical-snap: los labels que quedaron LEJOS de su punto están en un racimo
+    // horizontal denso (ej. Colombia/México/Brasil, misma altura). Correrlos al
+    // costado da guías largas; en cambio los reubicamos justo ARRIBA o ABAJO de
+    // su propio punto (sobre su misma X). Adjacentes a distinta altura no chocan
+    // aunque se solapen en X → guía corta y vertical. Probamos arriba y abajo y
+    // tomamos la primera libre; procesar en secuencia alterna solo/abajo.
+    const SNAP_GAP = 10;
+    const up = SIZES.label * 0.78, dn = SIZES.label * 0.22;
+    const snapHits = (box, exceptIdx) => {
+      for (let j = 0; j < relaxItems.length; j++) {
+        if (j === exceptIdx) continue;
+        if (pbBoxesHit(box, s_labelBox(relaxItems[j], SIZES.label))) return true;
+      }
+      for (const ob of obstacles) {
+        const nx = Math.max(box.x1, Math.min(ob.x, box.x2));
+        const ny = Math.max(box.y1, Math.min(ob.y, box.y2));
+        if (Math.hypot(nx - ob.x, ny - ob.y) < ob.r + PB_PT_PAD) return true;
+      }
+      return false;
+    };
+    relaxItems.forEach((l, i) => {
+      const cur = s_labelBox(l, SIZES.label);
+      const cnx = Math.max(cur.x1, Math.min(l.px, cur.x2));
+      const cny = Math.max(cur.y1, Math.min(l.py, cur.y2));
+      if (Math.hypot(cnx - l.px, cny - l.py) < 26) return;   // ya está cerca
+      const cands = [
+        { lx: l.px, ly: l.py - r0 - SNAP_GAP - dn, anchor: 'middle' },  // arriba
+        { lx: l.px, ly: l.py + r0 + SNAP_GAP + up, anchor: 'middle' }   // abajo
+      ];
+      for (const c of cands) {
+        const box = s_labelBox({ ...l, ...c }, SIZES.label);
+        if (box.x1 < plotBox.x1 || box.x2 > plotBox.x2 ||
+            box.y1 < plotBox.y1 || box.y2 > plotBox.y2) continue;
+        if (!snapHits(box, i)) { l.lx = c.lx; l.ly = c.ly; l.anchor = c.anchor; break; }
+      }
+    });
+
     // Líneas guía: del punto al borde más cercano de la caja del label. Solo si
     // el label se corrió de verdad (umbral alto → sin stubs cortos que ensucian).
-    const r0 = (hasSelection ? 7 : 5) * ptScale;   // ~radio del punto etiquetado
     const leaderG = document.createElementNS(ns, 'g');
     svg.appendChild(leaderG);
     relaxItems.forEach(l => {
