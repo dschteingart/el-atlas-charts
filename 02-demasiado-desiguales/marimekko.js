@@ -302,60 +302,20 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
     leftAcc = a.tx + minGap;
   });
 
-  // 3. Para cada etiqueta: elegir la fila de quiebre (bendY) que no cruce las
-  //    líneas ya colocadas y armar el path bracket. Recta (palito) si el texto
-  //    quedó sobre su barra; V-H-V si se corrió.
-  const placedCalloutSegments = [];  // {kind:'H', y, x1, x2} | {kind:'V', x, y1, y2}
-  const toDraw = [];
-
-  // Verifica que un callout bracket propuesto (barX → bendY → tx → yLine) no
-  // cruce ninguno ya colocado (con padding M_CALLOUT_PAD).
-  function calloutIsClear(barX, tx, bendY) {
-    const pad = M_CALLOUT_PAD;
-    const hSeg = { kind: 'H', y: bendY, x1: Math.min(barX, tx), x2: Math.max(barX, tx) };
-    const vFinalSeg = { kind: 'V', x: tx, y1: bendY, y2: yLine };
-    for (const s of placedCalloutSegments) {
-      if (s.kind === 'H') {
-        if (Math.abs(s.y - hSeg.y) < pad &&
-            !(hSeg.x2 + pad < s.x1 || hSeg.x1 > s.x2 + pad)) return false;
-        if (vFinalSeg.x >= s.x1 - pad && vFinalSeg.x <= s.x2 + pad &&
-            s.y >= vFinalSeg.y1 - pad && s.y <= vFinalSeg.y2 + pad) return false;
-      } else if (s.kind === 'V') {
-        if (s.x >= hSeg.x1 - pad && s.x <= hSeg.x2 + pad &&
-            hSeg.y >= s.y1 - pad && hSeg.y <= s.y2 + pad) return false;
-        if (Math.abs(s.x - vFinalSeg.x) < pad &&
-            !(vFinalSeg.y2 + pad < s.y1 || vFinalSeg.y1 > s.y2 + pad)) return false;
-      }
-    }
-    return true;
-  }
-
-  function commit(p) {
-    if (p.displaced) {
-      placedCalloutSegments.push({ kind: 'H', y: p.bendY, x1: Math.min(p.barX, p.tx), x2: Math.max(p.barX, p.tx) });
-      placedCalloutSegments.push({ kind: 'V', x: p.tx, y1: p.bendY, y2: p.yLine });
-      placedCalloutSegments.push({ kind: 'V', x: p.barX, y1: plotArea.bottom, y2: p.bendY });
-    } else {
-      placedCalloutSegments.push({ kind: 'V', x: p.barX, y1: plotArea.bottom, y2: p.yLine });
-    }
-    toDraw.push(p);
-  }
-
-  ordered.forEach(a => {
-    const displaced = Math.abs(a.tx - a.barX) > 0.5;
-    let bendY = null;
-    if (displaced) {
-      // Filas de quiebre desde la más cercana al label hacia la más cercana al
-      // eje X; tomamos la primera que no cruce lo ya colocado (regla OWID).
-      for (let r = M_BEND_ROW_COUNT - 1; r >= 0; r--) {
-        const cand = plotArea.bottom + M_BEND_ROW_OFFSET + r * M_BEND_ROW_GAP;
-        if (cand >= yLine - 4) continue;
-        if (calloutIsClear(a.barX, a.tx, cand)) { bendY = cand; break; }
-      }
-      if (bendY === null) bendY = plotArea.bottom + M_BEND_ROW_OFFSET;
-    }
-    commit({ ...a, ty: yAnchor, yLine, bendY, displaced });
-  });
+  // 3. Cada etiqueta se reconecta con su barra con una línea RECTA (diagonal)
+  //    de la base de la barra (barX, plotBottom) al ancla del texto (tx, yLine).
+  //    Como las barras Y los textos están ordenados de izquierda a derecha, las
+  //    diagonales se abren en abanico y NUNCA se cruzan entre sí (dos segmentos
+  //    entre extremos ordenados no se cruzan). Reemplaza al bracket V-H-V, cuyos
+  //    tramos horizontales se apilaban a la misma altura cuando había muchas
+  //    etiquetas y "se tocaban". Recta casi vertical si el texto quedó sobre su
+  //    barra; más inclinada cuanto más se corrió.
+  const toDraw = ordered.map(a => ({
+    ...a,
+    ty: yAnchor,
+    yLine,
+    displaced: Math.abs(a.tx - a.barX) > 0.5
+  }));
 
   // Devolvemos el font efectivo (puede ser < fontSize por el auto-fit) para que
   // drawMarimekko renderee el texto al MISMO tamaño con el que se calculó el
@@ -692,22 +652,13 @@ function drawMarimekko() {
   const placedLabels = _layout.labels;
   const fontSize = _layout.fontSize;
   placedLabels.forEach(l => {
-    // Callout (línea guía) estilo OWID:
-    //   - Sin displacement: VERTICAL puro desde la base de la barra hasta
-    //     el ancla del texto. Palito recto.
-    //   - Con displacement: forma "S/Z" — V corto desde la base de la barra
-    //     hasta bendY, después H horizontal ("patita") hasta x=tx, después
-    //     V final hasta y=ty (el ancla del texto). Los tres tramos varían
-    //     en largo según la fila de bend asignada y el desplazamiento
-    //     horizontal necesario.
+    // Callout (línea guía): RECTA de la base de la barra (barX) al ancla del
+    // texto (tx, yLine). Casi vertical si el texto quedó sobre su barra, más
+    // inclinada cuanto más se corrió. Como barras y textos van ordenados de
+    // izquierda a derecha, estas rectas se abren en abanico y no se cruzan.
     const path = m_ns('path');
     path.setAttribute('class', 'm-callout');
-    let d;
-    if (!l.displaced) {
-      d = `M ${l.barX},${plotArea.bottom + 1} V ${l.yLine}`;
-    } else {
-      d = `M ${l.barX},${plotArea.bottom + 1} V ${l.bendY} H ${l.tx} V ${l.yLine}`;
-    }
+    const d = `M ${l.barX},${plotArea.bottom + 1} L ${l.tx},${l.yLine}`;
     path.setAttribute('d', d);
     path.setAttribute('stroke', l.color);
     // Estilo uniforme (todas son chips): línea guía fina y discreta.
