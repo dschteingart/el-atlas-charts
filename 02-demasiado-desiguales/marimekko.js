@@ -132,12 +132,13 @@ const M_Y_TICKS = [0, 10, 20, 30, 40, 50, 60, 70];
 // pero el eje sigue dando lecturas inmediatas (0/20/40/60).
 const M_Y_TICKS_MOBILE = [0, 20, 40, 60];
 
-// Países cuyas etiquetas tienen prioridad en el anti-colisión (greedy).
-// Lista curada editorialmente por Daniel para que se vean por default.
-const M_PRIORITY_LABELS = new Set([
-  'NAM', 'COL', 'BRA', 'CHL', 'ARG', 'MEX', 'CHN', 'NER',
-  'ESP', 'JPN', 'USA', 'CAN', 'DEU', 'NOR', 'SVK'
-]);
+// Selección por default: los países que vienen YA tildados (chips) al cargar.
+// Modelo unificado (ver más abajo): los chips SON las etiquetas. Esta lista es
+// el set curado que aparece como chips + callouts por default; el usuario los
+// saca o agrega y el PNG exporta exactamente lo que ve. Spread editorial:
+// extremos (Namibia arriba, Eslovaquia abajo) + protagonistas Latam + economías
+// de referencia. ~8 → legibles en cuadrado a ⅓ en el celu.
+const M_DEFAULT_SELECTION = ['NAM', 'COL', 'BRA', 'ARG', 'USA', 'CHN', 'DEU', 'SVK'];
 
 // Helper: devuelve el nombre del país en el idioma activo, usando el
 // diccionario COUNTRY_NAMES (en country-names.js). Fallback al name que
@@ -173,78 +174,22 @@ function m_measureText(text, fontSize) {
   return m_measureText._ctx.measureText(text).width;
 }
 
-// Devuelve los iso3 a etiquetar en modo default (sin selección activa).
-// Usa la lista curada por Daniel (15 países editorialmente relevantes en
-// desktop; ~10 en mobile) más los extremos del ranking del año/modo
-// actual (rank 1 y rank último). Filtra a los que están presentes en
-// sortedData (algunos años pueden no tener ciertos países si su última
-// observación cae fuera de la ventana 15a).
-//
-// En mobile el ancho horizontal es chico (~360px) — con 160 barras de
-// 2px cada una las labels rotadas a 45° se solapan. Lista reducida así
-// las priority sí caben y son legibles.
-function m_defaultLabelCodes(sortedData) {
-  // mobile = pantalla chica Y editor sin formato activo. Si el editor
-  // tiene un formato seleccionado, ese controla todo (ignoramos viewport).
-  const editorFormat = typeof getActivePngFormat === 'function'
-    ? getActivePngFormat() : null;
-  const mobile = !editorFormat
-    && typeof isMobileViewport === 'function' && isMobileViewport();
-  // Formatos PNG angostos (cuadrado 1:1 y mobile portrait): a tamaño grande los
-  // ~15 nombres se enciman y a ⅓ en el celu quedan ilegibles. Reducimos a 5
-  // anclas curadas bien espaciadas; con los 2 extremos del ranking (NAM arriba,
-  // el menos desigual abajo) quedan ~7 callouts legibles. El apaisado
-  // (newsletter) y el desktop/público mantienen la lista completa de 15.
-  const narrowPng = editorFormat === 'square' || editorFormat === 'mobile';
-  const priority = narrowPng
-    ? ['BRA', 'ARG', 'USA', 'CHN', 'DEU']
-    : mobile
-    ? ['NAM', 'COL', 'BRA', 'ARG', 'MEX', 'CHN', 'USA', 'DEU', 'NOR', 'SVK']
-    : [
-        'NAM', 'COL', 'BRA', 'CHL', 'ARG', 'MEX', 'CHN', 'NER',
-        'ESP', 'JPN', 'USA', 'CAN', 'DEU', 'NOR', 'SVK'
-      ];
-  const present = new Set(sortedData.map(d => d.code));
-  const result = new Set(priority.filter(c => present.has(c)));
-  // Extremos del ranking — siempre presentes, sean quienes sean cada año.
-  if (sortedData.length > 0) {
-    result.add(sortedData[0].code);
-    result.add(sortedData[sortedData.length - 1].code);
-  }
-  return result;
-}
-
-// Devuelve los iso3 de los extremos del ranking actual (rank 1 y último).
-// Estos tienen tratamiento especial en el algoritmo de placement: si no
-// entran en la fase 1 (sin overflow), se reintenta con allowOverflow para
-// garantizar que siempre se rendereen.
-function m_extremeCodes(sortedData) {
-  if (sortedData.length === 0) return new Set();
-  return new Set([sortedData[0].code, sortedData[sortedData.length - 1].code]);
-}
-
 // Algoritmo de etiquetas estilo OWID. Devuelve array de objetos
 // {tx, ty, bendY, displaced, barX, text, color, isSelected, ...} con la
 // info necesaria para dibujar el callout (palito o S) + texto rotado.
 //
-// Modos:
-//   - default: 15 países priority (lista curada de Daniel).
-//   - con selección: priority + seleccionados. Los seleccionados se procesan
-//     primero (greedy) para que conserven su posición ideal.
+// Modelo unificado: las etiquetas son EXACTAMENTE los países seleccionados
+// (chips). No hay "priority" aparte ni extremos forzados — lo que está en los
+// chips es lo que se etiqueta, y el PNG exporta lo mismo (WYSIWYG). El default
+// viene con un set curado ya tildado (M_DEFAULT_SELECTION, aplicado en init).
 function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, editorCodes) {
-  // Si el editor pasa una lista explícita (editorCodes), esa REEMPLAZA la
-  // priority list curada de Daniel (m_defaultLabelCodes). Los extremos del
-  // ranking siguen forzados — son editorialmente importantes para entender
-  // el rango aún cuando el usuario configure un subset distinto.
   const present = new Set(sortedData.map(d => d.code));
-  // Array.isArray distingue [] (editor activo con lista vacía → no dibujar
-  // labels) de null/undefined (editor inactivo → fallback hardcoded).
-  const priorityCodes = Array.isArray(editorCodes)
+  // Fuente de labels: la lista del editor si está activa (Array.isArray
+  // distingue [] = "no mostrar labels" de null/undefined = editor inactivo),
+  // si no, la selección de chips del chart.
+  const codesToShow = Array.isArray(editorCodes)
     ? new Set(editorCodes.filter(c => present.has(c)))
-    : m_defaultLabelCodes(sortedData);
-  const extremeCodes = m_extremeCodes(sortedData);
-  const selSet = new Set(selectedCodes || []);
-  const codesToShow = new Set([...priorityCodes, ...selSet]);
+    : new Set((selectedCodes || []).filter(c => present.has(c)));
 
   // Detectar formato del editor (controla todo cuando está presente).
   const editorFormat = typeof getActivePngFormat === 'function'
@@ -267,7 +212,7 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
     ? window.AtlasEditor.getConfig() : null;
   const aeLabelSize = aeCfg2?.sizes?.labels;
   const fmtDefaultFontSize = newsletter ? 16
-    : square ? 17
+    : square ? 24
     : mobilePng ? 26
     : mobile ? M_LABEL_FONT_SIZE_MOBILE
     : M_LABEL_FONT_SIZE;
@@ -294,18 +239,15 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
     const text = m_displayName(d);
     const textW = Math.max(22, m_measureText(text, fontSize));
     const projW = cos * textW + sin * fontSize + 2;
-    const isSel = selSet.has(d.code);
-    const isPri = priorityCodes.has(d.code);
-    const isExtreme = extremeCodes.has(d.code);
     anchors.push({
       code: d.code,
       text,
       color: REGION_WB_LABEL_COLORS[d.region] || '#555',
       barX: plotArea.left + i * barWidth + barWidth / 2,
       textW, projW,
-      source: isSel ? (isPri ? 'both' : 'selected') : 'priority',
-      isSelected: isSel,
-      isExtreme
+      // Todas las labels son chips → mismo trato (forzado en fase 2, estilo
+      // uniforme). Se mantiene el flag para el forzado de colocación.
+      isSelected: true
     });
   });
 
@@ -436,11 +378,10 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
   orderedAnchors.forEach(a => {
     const p = tryPlace(a, false);
     if (p) commit(p);
-    else if (a.isSelected || a.isExtreme) notPlacedForced.push(a);
-    // Las priority "comunes" que no entran se descartan silenciosamente.
-    // Garantizamos colocación de: (a) las seleccionadas por el usuario y
-    // (b) los extremos del ranking (rank 1 y rank último) que son
-    // editorialmente clave para entender el rango.
+    else notPlacedForced.push(a);
+    // Todas las labels son chips → se garantiza su colocación (fase 2 con
+    // allowOverflow). El usuario eligió mostrarlas; ninguna se descarta en
+    // silencio (WYSIWYG con los chips).
   });
 
   // Fase 2: forzar colocación con allowOverflow (la patita puede
@@ -469,14 +410,11 @@ function drawMarimekko() {
   const aeCfg = (window.AtlasEditor && window.AtlasEditor.getConfig)
     ? window.AtlasEditor.getConfig() : null;
   const aeSizes = aeCfg?.sizes;
-  // Cuando el editor está activo, su lista de countries manda — incluso si
-  // está vacía. Que esté vacía es una elección del usuario: "no mostrar
-  // ningún label". Solo cae al fallback hardcoded (priority + extremos) si
-  // el editor NO está activo (versión pública). Sin esta distinción, cuando
-  // el usuario destildaba todos, caíamos al fallback y se dibujaban las
-  // líneas + textos de los priority, pero luego el branch !hasSelection
-  // cropeaba el viewBox y solo se veían las "rayitas huérfanas" (primeros
-  // 8px de las líneas) sin nombres.
+  // Cuando el editor está activo, su lista de countries manda como fuente de
+  // etiquetas — incluso si está vacía ([] = "no mostrar ningún label", elección
+  // explícita). Si el editor NO está activo (versión pública), las etiquetas
+  // salen de la selección de chips del chart (state[1].selectedCountries, que
+  // viene con el set curado por default).
   const aeCountries = aeCfg
     ? (aeCfg.countries || [])
     : null;
@@ -541,7 +479,7 @@ function drawMarimekko() {
     // SIZES.label aún no está computado en este punto del flujo —
     // reproducimos la fórmula (FMT_SIZES.label salvo override del editor).
     const fmtLabelDefault = newsletter ? 16
-      : square ? 17
+      : square ? 24
       : mobilePng ? 26
       : publicFmt ? 11
       : mobile ? M_LABEL_FONT_SIZE_MOBILE
@@ -550,8 +488,8 @@ function drawMarimekko() {
     const aOff = (mobile || mobilePng)
       ? M_LABEL_ANCHOR_Y_OFFSET_MOBILE
       : M_LABEL_ANCHOR_Y_OFFSET;
-    // Subset que va a etiquetarse: priority (editor o curado) + selección +
-    // extremos del ranking. Replica m_layoutCountryLabels — necesitamos los
+    // Subset que va a etiquetarse: las MISMAS chips que m_layoutCountryLabels
+    // (selección del chart, o lista del editor si está activa). Necesitamos los
     // mismos códigos para calcular requiredBottom antes de fijar M_PLOT_H.
     // Inlineamos state[1] porque s1 se declara más abajo en drawMarimekko.
     const s1pre = state[1] || { mode: 'raw', year: 2024, selectedCountries: [] };
@@ -559,12 +497,9 @@ function drawMarimekko() {
     const valKey0 = s1pre.mode === 'raw' ? 'gini_raw' : 'gini_adj';
     const sorted0 = [...data0].sort((a, b) => b[valKey0] - a[valKey0]);
     const present0 = new Set(sorted0.map(d => d.code));
-    const priorityCodes0 = Array.isArray(aeCountries)
+    const codesToShow0 = Array.isArray(aeCountries)
       ? new Set(aeCountries.filter(c => present0.has(c)))
-      : m_defaultLabelCodes(sorted0);
-    const extremeCodes0 = m_extremeCodes(sorted0);
-    const selSet0 = new Set(s1pre.selectedCountries || []);
-    const codesToShow0 = new Set([...priorityCodes0, ...selSet0, ...extremeCodes0]);
+      : new Set((s1pre.selectedCountries || []).filter(c => present0.has(c)));
     let maxTextW = 0;
     sorted0.forEach(d => {
       if (!codesToShow0.has(d.code)) return;
@@ -631,7 +566,7 @@ function drawMarimekko() {
   const FMT_SIZES = newsletter
     ? { tick: 20, axisLabel: 20, label: 16, tableTitle: 16, tableLabel: 20 }
     : square
-    ? { tick: 20, axisLabel: 20, label: 17, tableTitle: 16, tableLabel: 20 }
+    ? { tick: 20, axisLabel: 20, label: 24, tableTitle: 16, tableLabel: 20 }
     : mobilePng
     ? { tick: 30, axisLabel: 26, label: 26, tableTitle: 26, tableLabel: 28 }
     : publicFmt
@@ -723,7 +658,10 @@ function drawMarimekko() {
 
   // === Barras ===
   const tooltip = document.getElementById('tooltip1');
-  const barsG = m_ns('g'); svg.appendChild(barsG);
+  // class m-bars: habilita el dim-por-hover en CSS (al pasar el mouse por una
+  // barra, las demás se atenúan; ver chart-1.html). El hover es transitorio y
+  // CSS-only — no re-dibuja ni afecta el PNG.
+  const barsG = m_ns('g'); barsG.setAttribute('class', 'm-bars'); svg.appendChild(barsG);
   sortedData.forEach((d, i) => {
     const x = M_MARGIN.left + i * barWidth;
     const val = d[valKey];
@@ -734,14 +672,13 @@ function drawMarimekko() {
     rect.setAttribute('width', barInner);
     rect.setAttribute('height', M_MARGIN.top + M_PLOT_H - y);
     rect.setAttribute('fill', REGION_WB_COLORS[d.region] || '#888');
-    // Atenuación: solo las barras se atenúan. Las labels (abajo) mantienen
-    // su color sólido siempre (estilo OWID — el lector siempre puede leer
-    // el nombre del país aunque no esté destacado).
-    const hasSelection = s1.selectedCountries && s1.selectedCountries.length > 0;
-    const isSelected = hasSelection && s1.selectedCountries.includes(d.code);
-    const dimByRegion = s1.activeRegion && s1.activeRegion !== d.region;
-    const dimBySelection = hasSelection && !isSelected;
-    const isDimmed = dimByRegion || dimBySelection;
+    // Atenuación: SOLO por hover de región (transitorio). La selección NO
+    // atenúa nada — seleccionar un país muestra su etiqueta (chip = label) y
+    // las barras quedan a opacidad plena. (El dim al seleccionar tenía sentido
+    // como "spotlight" pero rompía la lectura del resto; el hover de barra
+    // —dim de las demás— se hace en CSS, ver chart-1.html.)
+    const isSelected = (s1.selectedCountries || []).includes(d.code);
+    const isDimmed = s1.activeRegion && s1.activeRegion !== d.region;
     rect.setAttribute('class', 'm-bar' + (isDimmed ? ' m-dim' : '') + (isSelected ? ' m-spotlight' : ''));
     rect.dataset.code = d.code;
     rect.dataset.region = d.region;
@@ -793,7 +730,6 @@ function drawMarimekko() {
     //     horizontal necesario.
     const path = m_ns('path');
     path.setAttribute('class', 'm-callout');
-    path.setAttribute('data-source', l.source);
     let d;
     if (!l.displaced) {
       d = `M ${l.barX},${plotArea.bottom + 1} V ${l.yLine}`;
@@ -802,8 +738,9 @@ function drawMarimekko() {
     }
     path.setAttribute('d', d);
     path.setAttribute('stroke', l.color);
-    path.setAttribute('stroke-width', l.isSelected ? '1.1' : '0.7');
-    path.setAttribute('stroke-opacity', l.isSelected ? '0.9' : '0.6');
+    // Estilo uniforme (todas son chips): línea guía fina y discreta.
+    path.setAttribute('stroke-width', '0.7');
+    path.setAttribute('stroke-opacity', '0.6');
     path.setAttribute('fill', 'none');
     labelsG.appendChild(path);
     // Texto rotado -45° con text-anchor:end. (tx, ty=yAnchor) es la línea
@@ -811,8 +748,7 @@ function drawMarimekko() {
     // abajo-izquierda: primera letra abajo-izquierda, última arriba-
     // derecha (al final de la línea guía, con pequeño gap visual).
     const txt = m_ns('text');
-    txt.setAttribute('class', 'm-country-label' + (l.isSelected ? ' m-spotlight-label' : ''));
-    txt.setAttribute('data-source', l.source);
+    txt.setAttribute('class', 'm-country-label');
     txt.setAttribute('x', l.tx);
     txt.setAttribute('y', l.ty);
     txt.setAttribute('transform', `rotate(-45 ${l.tx} ${l.ty})`);
@@ -824,7 +760,7 @@ function drawMarimekko() {
     // se rendereaba a 9.5px (casi invisible al rasterizar 1100×1650 en
     // 800×1200) y el slider "Etiquetas país" no tenía efecto.
     txt.style.fontSize = fontSize + 'px';
-    txt.setAttribute('font-weight', l.isSelected ? '700' : '500');
+    txt.setAttribute('font-weight', '500');
     txt.textContent = l.text;
     labelsG.appendChild(txt);
   });
@@ -1307,10 +1243,13 @@ window.onBeforePngExportGetSourceText = (chartId) => {
 
 // =================== Init ===================
 function initMarimekko() {
+  // Default: el chart arranca con el set curado YA tildado como chips. Esos
+  // chips SON las etiquetas (modelo unificado) y el PNG exporta lo mismo. El
+  // HTML siembra state[1] sin selectedCountries → cae acá y aplicamos el default.
   if (!state[1]) {
-    state[1] = { mode: 'raw', year: 2024, activeRegion: null, playing: false, selectedCountries: [] };
+    state[1] = { mode: 'raw', year: 2024, activeRegion: null, playing: false, selectedCountries: [...M_DEFAULT_SELECTION] };
   } else if (!state[1].selectedCountries) {
-    state[1].selectedCountries = [];
+    state[1].selectedCountries = [...M_DEFAULT_SELECTION];
   }
   // Editor sidebar: re-render cuando el usuario edita textos/sizes/países.
   // CRÍTICO que se wire ANTES del primer drawMarimekko: el inline-script de

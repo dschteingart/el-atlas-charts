@@ -172,7 +172,13 @@
     cursor: pointer;
   }
   .m-bar.m-dim { opacity: 0.15; }
-  .m-bar.m-spotlight { /* país seleccionado vía buscador — destacado */ }
+  .m-bar.m-spotlight { /* país seleccionado (chip) — la etiqueta lo destaca */ }
+  /* Hover sobre una barra → las demás se atenúan (preview transitorio).
+     CSS-only: no re-dibuja ni afecta el PNG (el raster no tiene :hover).
+     Solo en dispositivos con hover real (en touch, el tap selecciona). */
+  @media (hover: hover) {
+    .m-bars:hover .m-bar:not(:hover) { opacity: 0.35; }
+  }
   .m-country-label {
     font-family: var(--sans);
     font-size: 9.5px;
