@@ -151,29 +151,33 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
-<script src="../lib/regions.js?v=5"></script>
-<script src="../lib/i18n.js?v=5"></script>
-<script src="./regions-fifa.js?v=5"></script>
-<script src="./i18n-issue.js?v=5"></script>
-<script src="./utils.js?v=5"></script>
-<script src="./country-names.js?v=5"></script>
-<script src="./data-duelos.js?v=5"></script>
-<script src="./data-nombres.js?v=5"></script>
-<script src="./editor.js?v=5"></script>
-<script src="./ts-partidos.js?v=5"></script>
-<script src="./duelos.js?v=5"></script>
-<script src="./png-export.js?v=5"></script>
-<script src="./svg-export.js?v=5"></script>
+<script src="../lib/regions.js?v=14"></script>
+<script src="../lib/i18n.js?v=14"></script>
+<script src="./regions-fifa.js?v=14"></script>
+<script src="./i18n-issue.js?v=14"></script>
+<script src="./utils.js?v=14"></script>
+<script src="./country-names.js?v=14"></script>
+<script src="./data-duelos.js?v=14"></script>
+<script src="./data-nombres.js?v=14"></script>
+<script src="./editor.js?v=14"></script>
+<script src="./ts-partidos.js?v=14"></script>
+<script src="./duelos.js?v=14"></script>
+<script src="./png-export.js?v=14"></script>
+<script src="./svg-export.js?v=14"></script>
 <script>
+  window.__ESP_V = '14';
   state[4] = { period: 'all', minP: { all: 25, '90': 12 } };
   initDuelos();
   applyI18n();
+  // applyI18n pisa textos con data-i18n (p.ej. el subtítulo); un redibujo deja
+  // que el renderer vuelva a poner su subtítulo dinámico (métrica, suavizado…).
+  if (window.__atlasRedraw) window.__atlasRedraw();
   setupLangToggle(() => {
     if (typeof du_legend === 'function') du_legend();
     if (typeof drawDuelos === 'function') drawDuelos();
   });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=5"></script>
+<script src="./nav.js?v=14"></script>
 </body>
 </html>

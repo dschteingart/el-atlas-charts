@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>La muerte del amistoso — El Atlas · Especial</title>
+<title>El amistoso pierde terreno — El Atlas · Especial</title>
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/chart-amistosos.html">
-<meta property="og:title" content="La muerte del amistoso — El Atlas · Especial">
+<meta property="og:title" content="El amistoso pierde terreno — El Atlas · Especial">
 <meta property="og:description" content="Composición del calendario internacional por tipo de partido, 1946-2025.">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-amistosos.png">
-<meta property="og:image:alt" content="La muerte del amistoso">
+<meta property="og:image:alt" content="El amistoso pierde terreno">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="La muerte del amistoso — El Atlas · Especial">
+<meta name="twitter:title" content="El amistoso pierde terreno — El Atlas · Especial">
 <meta name="twitter:description" content="Composición del calendario internacional por tipo de partido, 1946-2025.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-amistosos.png">
 
@@ -109,15 +109,45 @@
   </header>
 
   <section class="chart-block" data-chart="2" data-editor-id="esp-amistosos">
-    <h2 class="chart-title" data-i18n="c2-title">La muerte del amistoso</h2>
+    <h2 class="chart-title" data-i18n="c2-title">El amistoso pierde terreno</h2>
     <p class="chart-subtitle" data-i18n="c2-subtitle">Composición del calendario internacional por tipo de partido, 1946-2025.</p>
 
       <div class="m-controls">
-        <div class="toggle" id="am-mode">
-          <button data-mode="share" class="active" data-i18n="c2-mode-share">Porcentaje</button>
-          <button data-mode="count" data-i18n="c2-mode-count">Cantidad</button>
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c2-mode-label">Escala</span>
+          <div class="toggle" id="am-mode">
+            <button data-mode="share" class="active" data-i18n="c2-mode-share">Porcentaje</button>
+            <button data-mode="count" data-i18n="c2-mode-count">Cantidad</button>
+          </div>
+        </div>
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c2-smooth-label">Suavizado</span>
+          <div class="toggle" id="am-smooth">
+            <button data-smooth="raw" data-i18n="c2-smooth-raw">Anual</button>
+            <button data-smooth="ma" class="active" data-i18n="c2-smooth-ma">Promedio móvil</button>
+          </div>
+        </div>
+        <div class="m-ctrl-group esp-slider" id="am-ma-group">
+          <input type="range" id="am-ma" min="2" max="8" step="1" value="4" style="width:110px;">
+          <span class="esp-slider-val" id="am-ma-val">4</span>
+          <span class="m-ctrl-label" data-i18n="c2-ma-years">años</span>
+        </div>
+        <div class="s-range-block">
+          <span class="m-ctrl-label" data-i18n="c2-slider-period-label">Período</span>
+          <div class="s-range-slider" id="am-range-slider">
+            <div class="s-range-track"></div>
+            <div class="s-range-track-active" id="am-range-track-active"></div>
+            <input type="range" id="am-slider-from" min="1872" max="2025" value="1950" step="1" aria-label="Desde">
+            <input type="range" id="am-slider-to"   min="1872" max="2025" value="2025" step="1" aria-label="Hasta">
+          </div>
+          <span class="s-range-display" id="am-range-display">1950–2025</span>
         </div>
       </div>
+      <div class="m-search-wrap" id="am-search-wrap">
+        <input type="text" id="am-search" class="m-search-input" data-i18n-placeholder="c2-search-placeholder" placeholder="Ver el calendario de…" autocomplete="off">
+        <div id="am-search-results" class="m-search-results"></div>
+      </div>
+      <div class="m-selected-chips" id="am-scope-chip"></div>
     <div class="chart-svg-wrap">
       <svg id="chart2" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="tooltip" id="tooltip2"></div>
@@ -141,28 +171,33 @@
 
 </div>
 
-<script src="../lib/regions.js?v=5"></script>
-<script src="../lib/i18n.js?v=5"></script>
-<script src="./regions-fifa.js?v=5"></script>
-<script src="./i18n-issue.js?v=5"></script>
-<script src="./utils.js?v=5"></script>
-<script src="./country-names.js?v=5"></script>
-<script src="./data-tipos.js?v=5"></script>
-<script src="./data-nombres.js?v=5"></script>
-<script src="./editor.js?v=5"></script>
-<script src="./ts-partidos.js?v=5"></script>
-<script src="./amistosos.js?v=5"></script>
-<script src="./png-export.js?v=5"></script>
-<script src="./svg-export.js?v=5"></script>
+<script src="../lib/regions.js?v=14"></script>
+<script src="../lib/i18n.js?v=14"></script>
+<script src="./regions-fifa.js?v=14"></script>
+<script src="./i18n-issue.js?v=14"></script>
+<script src="./utils.js?v=14"></script>
+<script src="./country-names.js?v=14"></script>
+<script src="./data-tipos.js?v=14"></script>
+<script src="./data-nombres.js?v=14"></script>
+<script src="./editor.js?v=14"></script>
+<script src="./ts-partidos.js?v=14"></script>
+<script src="./amistosos.js?v=14"></script>
+<script src="./png-export.js?v=14"></script>
+<script src="./svg-export.js?v=14"></script>
 <script>
-  state[2] = { mode: 'share' };
+  window.__ESP_V = '14';
+  state[2] = { mode: 'share', smooth: 'ma', maYears: 4, scope: { kind: 'mundo' }, period: [1950, 2025] };
   initAmistosos();
   applyI18n();
+  // applyI18n pisa textos con data-i18n (p.ej. el subtítulo); un redibujo deja
+  // que el renderer vuelva a poner su subtítulo dinámico (métrica, suavizado…).
+  if (window.__atlasRedraw) window.__atlasRedraw();
   setupLangToggle(() => {
+    if (typeof am_renderChip === 'function') am_renderChip();
     if (typeof drawAmistosos === 'function') drawAmistosos();
   });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=5"></script>
+<script src="./nav.js?v=14"></script>
 </body>
 </html>

@@ -57,6 +57,30 @@ function ts_emph(svg, key) {
   });
 }
 
+// Resaltado de una BANDA del apilado (hover sobre el área o su etiqueta): la
+// banda apuntada queda opaca y el resto se atenúa. Las etiquetas también.
+function ts_bandEmph(svg, key) {
+  svg.querySelectorAll('[data-band]').forEach(el => {
+    if (key == null) el.setAttribute('fill-opacity', el.getAttribute('data-band-op'));
+    else el.setAttribute('fill-opacity', el.getAttribute('data-band') === key ? 1 : 0.22);
+  });
+  svg.querySelectorAll('[data-band-label]').forEach(el => {
+    el.style.opacity = (key == null || el.getAttribute('data-band-label') === key) ? '' : '0.25';
+  });
+}
+
+// Parte una etiqueta larga en dos renglones (por el espacio más cercano al
+// medio), para que no coma ancho del gráfico. Cortas quedan en un renglón.
+function ts_wrapLabel(text) {
+  if (text.length <= 13 || text.indexOf(' ') < 0) return [text];
+  const mid = text.length / 2;
+  let best = -1, bestDist = Infinity;
+  for (let i = 0; i < text.length; i++) {
+    if (text[i] === ' ') { const d = Math.abs(i - mid); if (d < bestDist) { bestDist = d; best = i; } }
+  }
+  return best < 0 ? [text] : [text.slice(0, best), text.slice(best + 1)];
+}
+
 // Ticks de años "lindos" (décadas / múltiplos) con separación mínima en px.
 function ts_xTicks(x0, x1, plotW, minGapPx) {
   const span = x1 - x0;
@@ -92,16 +116,22 @@ function tsDraw(n, cfg) {
   const SIZES = bigFmt ? { tick: 22, axisTitle: 26, label: 26 } : { tick: 11, axisTitle: 11.5, label: 11.5 };
   const lineW = bigFmt ? 3.4 : 2, haloW = lineW + (bigFmt ? 5 : 3), labelHalo = bigFmt ? 6 : 3;
 
-  // margen derecho dinámico según etiquetas de fin
-  const labels = (cfg.mode === 'stack')
-    ? cfg.stack.cats.map(c => c.label)
-    : cfg.series.map(s => s.label);
+  // margen derecho dinámico según etiquetas de fin. En el apilado las etiquetas
+  // largas van en DOS renglones, así el gráfico queda más ancho y la etiqueta
+  // se pega al borde derecho.
+  const isStack = cfg.mode === 'stack';
+  const labels = isStack ? cfg.stack.cats.map(c => c.label) : cfg.series.map(s => s.label);
   let maxLabelW = 0;
   labels.forEach(nm => {
-    const w = ts_measure(nm + (isPngFormat ? '  0000' : ''), SIZES.label, bigFmt ? 700 : 600);
-    if (w > maxLabelW) maxLabelW = w;
+    const lines = isStack ? ts_wrapLabel(nm) : [nm];
+    lines.forEach(ln => {
+      const extra = (!isStack && isPngFormat) ? '  0000' : '';
+      const w = ts_measure(ln + extra, SIZES.label, bigFmt ? 700 : 600);
+      if (w > maxLabelW) maxLabelW = w;
+    });
   });
-  M.right = Math.min(Math.round(W * 0.4), Math.max(M.right, maxLabelW + (bigFmt ? 30 : 16)));
+  M.right = Math.min(Math.round(W * 0.34),
+    Math.max(bigFmt ? 84 : 40, maxLabelW + (bigFmt ? 18 : 12)));
   let PLOT_W = W - M.left - M.right;
   const PLOT_H = H - M.top - M.bottom;
 
@@ -165,11 +195,17 @@ function tsDraw(n, cfg) {
       d += 'Z';
       const path = ts_el('path'); path.setAttribute('d', d); path.setAttribute('fill', cat.color);
       path.setAttribute('fill-opacity', 0.92); path.setAttribute('stroke', TS_BG); path.setAttribute('stroke-width', bigFmt ? 1.6 : 1);
+      path.setAttribute('data-band', cat.key); path.setAttribute('data-band-op', 0.92);
+      if (!isPngFormat) {
+        path.style.cursor = 'default';
+        path.addEventListener('mouseenter', () => ts_bandEmph(svg, cat.key));
+        path.addEventListener('mouseleave', () => ts_bandEmph(svg, null));
+      }
       svg.appendChild(path);
       const lastK = inRange.length - 1;
       const midY = yS((base[lastK] + tops[lastK]) / 2);
       const bandPx = Math.abs(yS(base[lastK]) - yS(tops[lastK]));
-      endLabels.push({ color: cat.color, text: cat.label, x: xS(inRange[lastK].a), idealY: midY,
+      endLabels.push({ band: cat.key, color: cat.color, text: cat.label, x: xS(inRange[lastK].a), idealY: midY,
                        small: bandPx < (bigFmt ? SIZES.label + 4 : 12) });
       base = tops;
     });
@@ -216,7 +252,8 @@ function tsDraw(n, cfg) {
   }
 
   // ---- etiquetas de fin, anti-colisión vertical ----
-  const GAP = bigFmt ? SIZES.label + 6 : 13;
+  // (en el apilado las etiquetas pueden ir en 2 renglones, así que dejan más aire)
+  const GAP = isStack ? (bigFmt ? Math.round(SIZES.label * 1.7) : 20) : (bigFmt ? SIZES.label + 6 : 13);
   endLabels.sort((a, b) => a.idealY - b.idealY);
   endLabels.forEach((l, i) => {
     l.y = i === 0 ? l.idealY : Math.max(l.idealY, endLabels[i - 1].y + GAP);
@@ -232,21 +269,45 @@ function tsDraw(n, cfg) {
       g.setAttribute('stroke', l.color); g.setAttribute('stroke-width', bigFmt ? 1.4 : 0.8);
       g.setAttribute('stroke-opacity', 0.6); endG.appendChild(g);
     }
-    const txt = ts_el('text'); txt.setAttribute('x', l.x + (bigFmt ? 12 : 6)); txt.setAttribute('y', l.y + (bigFmt ? 8 : 4));
+    const lx = l.x + (bigFmt ? 12 : 6);
+    const txt = ts_el('text'); txt.setAttribute('x', lx);
     txt.setAttribute('fill', l.color); txt.setAttribute('font-weight', bigFmt ? 700 : 600);
     txt.style.fontSize = (l.ref ? SIZES.label * 0.85 : SIZES.label) + 'px'; txt.style.fontFamily = 'var(--sans)';
     txt.setAttribute('paint-order', 'stroke'); txt.setAttribute('stroke', TS_BG);
     txt.setAttribute('stroke-width', labelHalo); txt.setAttribute('stroke-linejoin', 'round');
     if (l.key) txt.setAttribute('data-ts', l.key);
+    // etiqueta de una banda apilada: hover sobre ella resalta esa banda
+    if (l.band) {
+      txt.setAttribute('data-band-label', l.band);
+      if (!isPngFormat) {
+        txt.style.cursor = 'default';
+        txt.addEventListener('mouseenter', () => ts_bandEmph(svg, l.band));
+        txt.addEventListener('mouseleave', () => ts_bandEmph(svg, null));
+      }
+    }
     const valTxt = (isPngFormat && l.valLast != null && !l.ref)
       ? '  ' + (cfg.endValFmt ? cfg.endValFmt(l.valLast) : Math.round(l.valLast)) : '';
-    txt.textContent = l.text + valTxt; endG.appendChild(txt);
+    // apilado: etiqueta larga en 2 renglones (centrada en l.y). Otros: 1 renglón.
+    const lines = l.band ? ts_wrapLabel(l.text) : [l.text + valTxt];
+    // interlineado con aire: si va muy justo, los halos crema de los dos
+    // renglones se superponen y el texto se ve grueso/embarrado.
+    const lineH = (l.ref ? SIZES.label * 0.85 : SIZES.label) * 1.2;
+    const yBase = l.y + (bigFmt ? 8 : 4) - (lines.length - 1) * lineH / 2;
+    lines.forEach((ln, k) => {
+      const ts = ts_el('tspan'); ts.setAttribute('x', lx); ts.setAttribute('y', yBase + k * lineH);
+      ts.textContent = ln; txt.appendChild(ts);
+    });
+    endG.appendChild(txt);
   });
 
   // ---- hover: línea vertical + tooltip (mouse y tap) ----
   if (!isPngFormat && cfg.ttRows) {
     const tooltip = document.getElementById(cfg.tooltipId);
-    const hoverG = ts_el('g'); hoverG.setAttribute('display', 'none'); svg.appendChild(hoverG);
+    const hoverG = ts_el('g'); hoverG.setAttribute('display', 'none');
+    // la vline y los puntitos NO deben capturar el mouse: si no, al pasar por
+    // encima de una banda le disparan mouseleave/mouseenter y el resaltado titila
+    hoverG.setAttribute('pointer-events', 'none');
+    svg.appendChild(hoverG);
     const vline = ts_el('line'); vline.setAttribute('stroke', '#9a9488'); vline.setAttribute('stroke-width', 1);
     vline.setAttribute('stroke-dasharray', '3 3'); vline.setAttribute('y1', M.top); vline.setAttribute('y2', M.top + PLOT_H);
     hoverG.appendChild(vline);
@@ -258,7 +319,21 @@ function tsDraw(n, cfg) {
       const rows = cfg.ttRows(year);
       if (!rows || !rows.length) { update(null); return; }
       hoverG.setAttribute('display', '');
+      while (hoverG.children.length > 1) hoverG.removeChild(hoverG.lastChild);   // limpiar puntitos viejos (mantiene la vline)
       const xAt = xS(year); vline.setAttribute('x1', xAt); vline.setAttribute('x2', xAt);
+      // en líneas, un puntito sobre cada serie en el año (el apilado usa
+      // resaltado de banda, no puntitos)
+      if (cfg.mode !== 'stack') {
+        cfg.series.forEach(s => {
+          if (s.ref) return;
+          const p = s.pts.find(q => q[0] === year);
+          if (p && p[1] != null && isFinite(yS(p[1]))) {
+            const c = ts_el('circle'); c.setAttribute('cx', xAt); c.setAttribute('cy', yS(p[1]));
+            c.setAttribute('r', 3.6); c.setAttribute('fill', s.color);
+            c.setAttribute('stroke', TS_BG); c.setAttribute('stroke-width', 1.5); hoverG.appendChild(c);
+          }
+        });
+      }
       if (tooltip) {
         let html = `<div style="font-weight:600;margin-bottom:4px;">${year}</div>`;
         rows.forEach(r => {
