@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La geografía de los partidos de fútbol — El Atlas · Especial</title>
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/">
+<meta property="og:title" content="La geografía de los partidos de fútbol — El Atlas · Especial">
+<meta property="og:description" content="Quién juega contra quién, dónde y cuánto: 49.000 partidos de selecciones desde 1872.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-ciudades.png">
+<meta property="og:image:alt" content="La geografía de los partidos de fútbol">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="La geografía de los partidos de fútbol — El Atlas · Especial">
+<meta name="twitter:description" content="Quién juega contra quién, dónde y cuánto: 49.000 partidos de selecciones desde 1872.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-ciudades.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<style>
+  .wrap-idx { max-width: 920px; margin: 0 auto; padding: 18px 20px 40px; }
+  .wrap-idx header { padding-bottom: 8px; margin-bottom: 18px; }
+  .wrap-idx h1 { margin: 0 0 6px; }
+  .wrap-idx .lede { margin: 0 0 4px; }
+
+  .idx-section-label {
+    font-family: var(--sans); font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.09em; color: var(--ink-muted);
+    margin: 26px 0 12px;
+  }
+
+  .idx-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 14px;
+  }
+  .idx-card {
+    display: flex; flex-direction: column; gap: 10px;
+    padding: 18px 20px;
+    background: var(--bg);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    text-decoration: none; color: inherit;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .idx-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  }
+  .idx-card-num {
+    font-family: var(--sans); font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-muted);
+  }
+  .idx-card h2 {
+    font-family: var(--serif); font-size: 17px; font-weight: 600;
+    line-height: 1.26; margin: 0; color: var(--ink);
+  }
+  .idx-card-go {
+    font-family: var(--sans); font-size: 13px; font-weight: 600;
+    color: var(--accent); margin-top: auto;
+  }
+  .idx-thumb {
+    display: block; width: calc(100% + 40px); height: 150px; object-fit: cover;
+    margin: -18px -20px 8px; border-radius: 10px 10px 0 0;
+    border-bottom: 1px solid var(--rule); background: var(--bg-soft);
+  }
+  .idx-companion {
+    margin-top: 22px; padding: 14px 18px;
+    border: 1px dashed var(--rule-strong); border-radius: 10px;
+    font-family: var(--serif); font-size: 14.5px; color: var(--ink-soft);
+  }
+  .idx-companion a { color: var(--accent); }
+  .idx-footer {
+    margin-top: 34px; padding-top: 16px; border-top: 1px solid var(--rule);
+    font-family: var(--sans); font-size: 12px; color: var(--ink-muted);
+  }
+  @media (max-width: 600px) {
+    .idx-card h2 { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap-idx">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="brand-tag">Cartografías del desarrollo</span> · <span data-i18n="issue-num">Especial</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+    <h1 data-i18n="page-title">La geografía de los partidos de fútbol</h1>
+    <p class="lede" data-i18n="page-lede">Quién juega contra quién, dónde y cuánto: 49.000 partidos de selecciones desde 1872. Compañero del N° 3, la geografía del talento.</p>
+    <div class="accent-rule"></div>
+  </header>
+
+  <div class="idx-section-label" data-i18n="index-charts-label">Gráficos interactivos</div>
+  <div class="idx-grid">
+
+    <a class="idx-card" href="./chart-actividad.html">
+      <img class="idx-thumb" src="./thumbs/chart-actividad.png" data-thumb-es="./thumbs/chart-actividad.png" data-thumb-en="./thumbs/chart-actividad.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <span class="idx-card-num">Gráfico 1</span>
+      <h2 data-i18n="c1-title">El planeta se llenó de fútbol</h2>
+      <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
+    </a>
+
+    <a class="idx-card" href="./chart-amistosos.html">
+      <img class="idx-thumb" src="./thumbs/chart-amistosos.png" data-thumb-es="./thumbs/chart-amistosos.png" data-thumb-en="./thumbs/chart-amistosos.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <span class="idx-card-num">Gráfico 2</span>
+      <h2 data-i18n="c2-title">La muerte del amistoso</h2>
+      <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
+    </a>
+
+    <a class="idx-card" href="./chart-globalizacion.html">
+      <img class="idx-thumb" src="./thumbs/chart-globalizacion.png" data-thumb-es="./thumbs/chart-globalizacion.png" data-thumb-en="./thumbs/chart-globalizacion.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <span class="idx-card-num">Gráfico 3</span>
+      <h2 data-i18n="c3-title">El fútbol que no se globalizó</h2>
+      <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
+    </a>
+
+    <a class="idx-card" href="./chart-duelos.html">
+      <img class="idx-thumb" src="./thumbs/chart-duelos.png" data-thumb-es="./thumbs/chart-duelos.png" data-thumb-en="./thumbs/chart-duelos.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <span class="idx-card-num">Gráfico 4</span>
+      <h2 data-i18n="c4-title">Seis islas que casi no se tocan</h2>
+      <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
+    </a>
+
+    <a class="idx-card" href="./chart-flujos.html">
+      <img class="idx-thumb" src="./thumbs/chart-flujos.png" data-thumb-es="./thumbs/chart-flujos.png" data-thumb-en="./thumbs/chart-flujos.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <span class="idx-card-num">Gráfico 5</span>
+      <h2 data-i18n="c5-title">El 85% del fútbol se juega puertas adentro</h2>
+      <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
+    </a>
+
+    <a class="idx-card" href="./chart-ciudades.html">
+      <img class="idx-thumb" src="./thumbs/chart-ciudades.png" data-thumb-es="./thumbs/chart-ciudades.png" data-thumb-en="./thumbs/chart-ciudades.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <span class="idx-card-num">Gráfico 6</span>
+      <h2 data-i18n="c6-title">Las capitales inesperadas del fútbol</h2>
+      <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
+    </a>
+
+    <a class="idx-card" href="./chart-neutral.html">
+      <img class="idx-thumb" src="./thumbs/chart-neutral.png" data-thumb-es="./thumbs/chart-neutral.png" data-thumb-en="./thumbs/chart-neutral.en.png" alt="" loading="lazy" onerror="this.remove()">
+      <span class="idx-card-num">Gráfico 7</span>
+      <h2 data-i18n="c7-title">El fútbol se muda a canchas ajenas</h2>
+      <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
+    </a>
+
+  </div>
+
+  <div class="idx-companion" data-i18n="index-companion">
+    Este especial es el compañero de <a href="../03-futbol/index.html">El Atlas N° 3: la geografía del talento futbolístico</a>.
+  </div>
+
+  <div class="idx-footer">
+    <span data-i18n="attribution-text">El Atlas · Daniel Schteingart</span>
+  </div>
+
+</div>
+
+<script src="../lib/regions.js?v=1"></script>
+<script src="../lib/i18n.js?v=1"></script>
+<script src="./regions-fifa.js?v=1"></script>
+<script src="./i18n-issue.js?v=1"></script>
+<script>
+  applyI18n();
+  setupLangToggle(() => {
+    document.querySelectorAll('.idx-thumb').forEach(img => {
+      const src = LANG === 'en' ? img.dataset.thumbEn : img.dataset.thumbEs;
+      if (src) img.src = src;
+    });
+  });
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=1"></script>
+</body>
+</html>
