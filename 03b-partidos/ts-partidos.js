@@ -150,6 +150,7 @@ function tsDraw(n, cfg) {
     const ticks = (typeof niceLinearTicks === 'function') ? niceLinearTicks(0, mx * 1.06, 5) : [mx];
     yMax = ticks.length ? ticks[ticks.length - 1] : mx;
     if (yMax < mx) yMax += (ticks.length > 1 ? ticks[1] - ticks[0] : mx * 0.1);
+    if (!(yMax > 0)) yMax = cfg.yMaxFloor || 10;   // serie toda en 0: piso para no dividir por cero
   }
   const yS = (v) => M.top + PLOT_H - (v / yMax) * PLOT_H;
 

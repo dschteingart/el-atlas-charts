@@ -117,8 +117,67 @@
     <h2 class="chart-title" data-i18n="c3-title">El fútbol que no se globalizó</h2>
     <p class="chart-subtitle" data-i18n="c3-subtitle">Porcentaje de partidos entre confederaciones distintas, 1950-2025.</p>
 
-      <p class="esp-hint" data-i18n="c3-legend-hint">Clic en una confederación para ver qué parte de su calendario es contra otras</p>
-      <div class="esp-legend" id="gl-legend"></div>
+      <div class="m-controls">
+        <div class="toggle" id="pc-tabs">
+          <button id="pc-tab-lines" class="active" data-i18n="pc-tab-lines">Evolución</button>
+          <button id="pc-tab-bars" data-i18n="pc-tab-bars">Comparación</button>
+        </div>
+        <div class="m-ctrl-group" id="pc-cat-group">
+          <span class="m-ctrl-label" data-i18n="c6-cat-label">Competencia</span>
+          <select id="pc-cat-select" class="m-select" aria-label="Competencia">
+            <option value="ALL" data-i18n="c6-cat-all">Todas</option>
+            <option value="0" data-i18n="c6-cat-0">Amistosos</option>
+            <option value="1" data-i18n="c6-cat-1">Eliminatorias del Mundial</option>
+            <option value="2" data-i18n="c6-cat-2">Mundial</option>
+            <option value="3" data-i18n="c6-cat-3">Eliminatorias continentales</option>
+            <option value="4" data-i18n="c6-cat-4">Copas continentales</option>
+            <option value="5" data-i18n="c6-cat-5">Ligas de Naciones</option>
+            <option value="6" data-i18n="c6-cat-6">Otros torneos</option>
+          </select>
+        </div>
+        <div class="s-range-block">
+          <span class="m-ctrl-label" data-i18n="c6-slider-period-label">Período</span>
+          <div class="s-range-slider" id="pc-range-slider">
+            <div class="s-range-track"></div>
+            <div class="s-range-track-active" id="pc-range-track-active"></div>
+            <input type="range" id="pc-slider-from" min="1872" max="2025" value="1872" step="1" aria-label="Desde">
+            <input type="range" id="pc-slider-to"   min="1872" max="2025" value="2025" step="1" aria-label="Hasta">
+          </div>
+          <span class="s-range-display" id="pc-range-display">1872–2025</span>
+        </div>
+      </div>
+      <div class="m-controls" id="pc-ambito-controls">
+        <div class="esp-legend" id="pc-legend"></div>
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="pc-add-label">Mostrar</span>
+          <div class="m-search-wrap" style="margin:0;min-width:200px;max-width:280px;">
+            <input type="text" id="pc-team-search" class="m-search-input" data-i18n-placeholder="pc-team-ph" placeholder="Agregar confederación o país…" autocomplete="off">
+            <div id="pc-team-results" class="m-search-results"></div>
+          </div>
+        </div>
+        <div class="m-selected-chips" id="pc-team-chips"></div>
+      </div>
+      <div class="m-controls">
+        <div class="m-ctrl-group" id="pc-smooth-group">
+          <span class="m-ctrl-label" data-i18n="c2-smooth-label">Suavizado</span>
+          <div class="toggle" id="pc-smooth">
+            <button data-smooth="raw" data-i18n="c2-smooth-raw">Anual</button>
+            <button data-smooth="ma" class="active" data-i18n="c2-smooth-ma">Promedio móvil</button>
+          </div>
+        </div>
+        <div class="m-ctrl-group esp-slider" id="pc-ma-group">
+          <input type="range" id="pc-ma" min="2" max="8" step="1" value="4" style="width:100px;">
+          <span class="esp-slider-val" id="pc-ma-val">4</span>
+          <span class="m-ctrl-label" data-i18n="c2-ma-years">años</span>
+        </div>
+        <div class="m-ctrl-group" id="pc-barsby-group" style="display:none;">
+          <span class="m-ctrl-label" data-i18n="pc-barsby-label">Comparar</span>
+          <div class="toggle" id="pc-barsby">
+            <button data-by="cat" class="active" data-i18n="pc-by-cat">Por competencia</button>
+            <button data-by="conf" data-i18n="pc-by-conf">Por confederación</button>
+          </div>
+        </div>
+      </div>
     <div class="chart-svg-wrap">
       <svg id="chart3" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="tooltip" id="tooltip3"></div>
@@ -142,33 +201,32 @@
 
 </div>
 
-<script src="../lib/regions.js?v=36"></script>
-<script src="../lib/i18n.js?v=36"></script>
-<script src="./regions-fifa.js?v=36"></script>
-<script src="./i18n-issue.js?v=36"></script>
-<script src="./utils.js?v=36"></script>
-<script src="./country-names.js?v=36"></script>
-<script src="./data-cruces.js?v=36"></script>
-<script src="./data-nombres.js?v=36"></script>
-<script src="./editor.js?v=36"></script>
-<script src="./ts-partidos.js?v=36"></script>
-<script src="./globalizacion.js?v=36"></script>
-<script src="./png-export.js?v=36"></script>
-<script src="./svg-export.js?v=36"></script>
+<script src="props-chart.js?v=40"></script>
+<script src="../lib/regions.js?v=40"></script>
+<script src="../lib/i18n.js?v=40"></script>
+<script src="./regions-fifa.js?v=40"></script>
+<script src="./i18n-issue.js?v=40"></script>
+<script src="./utils.js?v=40"></script>
+<script src="./country-names.js?v=40"></script>
+<script src="./data-props.js?v=40"></script>
+<script src="./data-nombres.js?v=40"></script>
+<script src="./editor.js?v=40"></script>
+<script src="./ts-partidos.js?v=40"></script>
+<script src="./globalizacion.js?v=40"></script>
+<script src="./png-export.js?v=40"></script>
+<script src="./svg-export.js?v=40"></script>
 <script>
-  window.__ESP_V = '36';
-  state[3] = { confs: new Set() };
+  window.__ESP_V = '40';
   initGlobalizacion();
   applyI18n();
   // applyI18n pisa textos con data-i18n (p.ej. el subtítulo); un redibujo deja
   // que el renderer vuelva a poner su subtítulo dinámico (métrica, suavizado…).
   if (window.__atlasRedraw) window.__atlasRedraw();
   setupLangToggle(() => {
-    if (typeof gl_renderChips === 'function') gl_renderChips();
     if (typeof drawGlobalizacion === 'function') drawGlobalizacion();
   });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=36"></script>
+<script src="./nav.js?v=40"></script>
 </body>
 </html>
