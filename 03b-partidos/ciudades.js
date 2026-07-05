@@ -634,8 +634,11 @@ function ci_sizeLegend(g, rScale, maxN, PW, PH, bigFmt) {
 //------------------------------------------------------------------
 //  Timelapse (animación del mapa año a año)
 //------------------------------------------------------------------
+// el timelapse respeta el slider de período: arranca en period[0] (ej 1930 si
+// filtrás Mundial) y el acumulado suma desde ahí, no desde 1872
 function ci_tlWin(year) {
-  return ci_tlMode === 'accum' ? [CI_YMIN, year] : [Math.max(CI_YMIN, year - (ci_tlWinYears - 1)), year];
+  const a0 = ci_state().period[0];
+  return ci_tlMode === 'accum' ? [a0, year] : [Math.max(a0, year - (ci_tlWinYears - 1)), year];
 }
 // pacing variable: rápido en los años vacíos, más lento donde pasa la acción
 function ci_tlStepFor(year) {
@@ -654,9 +657,9 @@ function ci_tlBuild() {
     for (let y = 0; y < N; y++) cum[y + 1] = cum[y] + ser[y];
     ci_tlProj.push({ sx: p[0], sy: p[1], c: C[i], cum });
   }
-  // máximo fijo sobre todos los cuadros, para que la escala no salte
+  // máximo fijo sobre todos los cuadros del período, para que la escala no salte
   let mx = 1;
-  for (let year = CI_YMIN; year <= CI_YMAX; year++) {
+  for (let year = s.period[0]; year <= s.period[1]; year++) {
     const [a, b] = ci_tlWin(year), ai = a - CI_YMIN, bi = b - CI_YMIN + 1;
     for (const o of ci_tlProj) { const n = o.cum[bi] - o.cum[ai]; if (n > mx) mx = n; }
   }
@@ -678,7 +681,12 @@ function ci_tlFrame(year) {
 function ci_tlSub() {
   const s = ci_state(), lang = (typeof LANG !== 'undefined') ? LANG : 'es';
   const noun = ci_t(s.cat === 'ALL' ? 'c6-tl-noun-all' : 'c6-tl-noun-' + s.cat, '');
-  const base = ci_t(ci_tlMode === 'accum' ? 'c6-tl-sub-accum' : 'c6-tl-sub-ma', '').replace('{noun}', noun);
+  let base = ci_t(ci_tlMode === 'accum' ? 'c6-tl-sub-accum' : 'c6-tl-sub-ma', '').replace('{noun}', noun);
+  if (base.indexOf('{desde}') >= 0) {
+    const y0 = ci_catFirstYear(s.cat);
+    const desde = (y0 <= CI_YMIN) ? ci_t('c6-tl-desde-all', '') : ci_t('c6-tl-desde-y', '').replace('{y}', y0);
+    base = base.replace('{desde}', desde);
+  }
   const extra = [];
   if (s.neutral) extra.push(ci_t('c6-scope-neutral', 'en cancha neutral'));
   if (s.geo) extra.push(ci_t('c6-scope-conf', lang === 'en' ? 'venues in' : 'sedes de') + ' ' + ci_geoLabel());
@@ -734,11 +742,12 @@ function ci_tlPlay() {
   if (!ci_projection || !ci_gData) drawCiudades();
   ci_tlBuild();
   ci_tlPlaying = true; ci_tlCtrls(); ci_tlSyncBtn(); ci_tlTitle(); ci_tlYearMake();
-  let year = CI_YMIN;
+  const yEnd = ci_state().period[1];
+  let year = ci_state().period[0];
   const step = () => {
     if (!ci_tlPlaying) return;
     ci_tlFrame(year);
-    if (year >= CI_YMAX) { ci_tlFinish(); return; }   // se queda en el último cuadro
+    if (year >= yEnd) { ci_tlFinish(); return; }   // se queda en el último cuadro
     const d = ci_tlStepFor(year); year++;
     ci_tlTimer = setTimeout(step, d);
   };
@@ -783,7 +792,7 @@ function ci_tlRecord() {
     items.push({ x: p[0] + M, y: p[1] + offY, cum });
   }
   let mx = 1;
-  for (let year = CI_YMIN; year <= CI_YMAX; year++) {
+  for (let year = s.period[0]; year <= s.period[1]; year++) {
     const [a, b] = ci_tlWin(year), ai = a - CI_YMIN, bi = b - CI_YMIN + 1;
     for (const o of items) { const n = o.cum[bi] - o.cum[ai]; if (n > mx) mx = n; }
   }
@@ -855,12 +864,13 @@ function ci_tlRecord() {
     ci_tlRecording = false; if (btn) { btn.textContent = ci_t('c6-tl-video-dl', 'Descargar video'); btn.disabled = false; }
   };
   ci_tlRecording = true; if (btn) btn.disabled = true;
-  frame(CI_YMIN); rec.start();
-  let year = CI_YMIN;
+  const y0 = s.period[0], y1 = s.period[1], span = Math.max(1, y1 - y0);
+  frame(y0); rec.start();
+  let year = y0;
   const step = () => {
     frame(year);
-    if (btn) btn.textContent = ci_t('c6-tl-rec', 'Grabando') + ' ' + Math.round((year - CI_YMIN) / (CI_YMAX - CI_YMIN) * 100) + '%';
-    if (year >= CI_YMAX) { setTimeout(() => rec.stop(), 700); return; }
+    if (btn) btn.textContent = ci_t('c6-tl-rec', 'Grabando') + ' ' + Math.round((year - y0) / span * 100) + '%';
+    if (year >= y1) { setTimeout(() => rec.stop(), 700); return; }
     const d = ci_tlStepFor(year); year++;
     setTimeout(step, d);
   };
@@ -1239,12 +1249,23 @@ function setupCiudadesNeutral() {
     ci_scheduleDraw();
   }));
 }
+// Primer año con datos de la competencia elegida (Mundial → 1930; ALL → 1872)
+function ci_catFirstYear(cat) {
+  if (cat === 'ALL') return CI_YMIN;
+  return (DATA_CIUDADES.catY0 && DATA_CIUDADES.catY0[cat]) || CI_YMIN;
+}
 function setupCiudadesCat() {
   const sel = document.getElementById('ci-cat-select');
   if (!sel) return;
   sel.value = String(ci_state().cat);
   sel.addEventListener('change', () => {
-    state[6].cat = sel.value === 'ALL' ? 'ALL' : +sel.value;
+    const s = ci_state();
+    s.cat = sel.value === 'ALL' ? 'ALL' : +sel.value;
+    // el slider de período arranca en el primer año de esa competencia
+    const y0 = ci_catFirstYear(s.cat);
+    if (s.period[1] < y0 + CI_MIN_WINDOW) s.period[1] = Math.min(CI_YMAX, y0 + CI_MIN_WINDOW);
+    s.period[0] = y0;
+    ci_updateSlider();
     ci_syncCtx();
     ci_ensureDet(() => ci_scheduleDraw());
     ci_scheduleDraw();
@@ -1419,38 +1440,44 @@ function setupCiudadesLineMode() {
     ci_scheduleDraw();
   }));
 }
-function setupCiudadesSlider() {
+// Actualiza el slider de período desde el estado (para cuando lo movemos por
+// código, ej al elegir competencia).
+function ci_updateSlider() {
   const s = ci_state();
   const fromEl = document.getElementById('ci-slider-from');
   const toEl = document.getElementById('ci-slider-to');
   const dispEl = document.getElementById('ci-range-display');
   const trackActiveEl = document.getElementById('ci-range-track-active');
   if (!fromEl || !toEl) return;
-  function updateDisplay() {
-    const [a, b] = s.period;
-    if (dispEl) dispEl.textContent = `${a}–${b}`;
-    if (trackActiveEl) {
-      const min = parseInt(fromEl.min, 10), max = parseInt(fromEl.max, 10), span = max - min;
-      if (span > 0) {
-        trackActiveEl.style.left = ((a - min) / span) * 100 + '%';
-        trackActiveEl.style.right = ((max - b) / span) * 100 + '%';
-      }
+  fromEl.value = s.period[0]; toEl.value = s.period[1];
+  const [a, b] = s.period;
+  if (dispEl) dispEl.textContent = `${a}–${b}`;
+  if (trackActiveEl) {
+    const min = parseInt(fromEl.min, 10), max = parseInt(fromEl.max, 10), span = max - min;
+    if (span > 0) {
+      trackActiveEl.style.left = ((a - min) / span) * 100 + '%';
+      trackActiveEl.style.right = ((max - b) / span) * 100 + '%';
     }
   }
-  function syncInputs() { fromEl.value = s.period[0]; toEl.value = s.period[1]; }
+}
+function setupCiudadesSlider() {
+  const s = ci_state();
+  const fromEl = document.getElementById('ci-slider-from');
+  const toEl = document.getElementById('ci-slider-to');
+  if (!fromEl || !toEl) return;
   fromEl.addEventListener('input', () => {
     let from = parseInt(fromEl.value, 10); const to = s.period[1];
     if (from > to - CI_MIN_WINDOW) from = to - CI_MIN_WINDOW;
-    s.period = [from, to]; syncInputs(); updateDisplay();
+    s.period = [from, to]; ci_updateSlider();
     ci_ensureDet(() => ci_scheduleDraw()); ci_scheduleDraw();
   });
   toEl.addEventListener('input', () => {
     const from = s.period[0]; let to = parseInt(toEl.value, 10);
     if (to < from + CI_MIN_WINDOW) to = from + CI_MIN_WINDOW;
-    s.period = [from, to]; syncInputs(); updateDisplay();
+    s.period = [from, to]; ci_updateSlider();
     ci_ensureDet(() => ci_scheduleDraw()); ci_scheduleDraw();
   });
-  syncInputs(); updateDisplay();
+  ci_updateSlider();
 }
 function setupCiudadesHeatToggle() {
   const btn = document.getElementById('ci-heat-toggle'); if (!btn) return;
