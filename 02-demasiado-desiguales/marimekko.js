@@ -228,122 +228,69 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
   const yLine = plotArea.bottom + anchorYOffset;       // fin de línea guía
   const yAnchor = yLine + 4;  // pequeño gap entre fin de guía y "a" final
 
-  // El motor de placement (greedy left→right + filas de quiebre con anti-cruce
-  // calloutIsClear) es el que ya andaba PERFECTO en la web. La ÚNICA diferencia
-  // del PNG es que la fuente es grande: a ese tamaño las etiquetas no entran
-  // "limpias" (sin cruces) y el algoritmo terminaba forzando (fallback) → cruces.
-  // Fix: correr el MISMO motor y, si a este font no queda limpio, achicar el
-  // font y reintentar hasta que entre limpio (exactamente como se ve en la web,
-  // solo que a otro tamaño). No se toca la lógica que ya funcionaba.
-  //
-  // runPlacement(fs): corre el greedy a un fontSize dado. Devuelve { toDraw,
-  // clean }. clean=true cuando TODAS entraron en fase 1 (sin overflow) y NINGUNA
-  // línea guía tuvo que usar el fallback — es decir, ninguna cruza a otra.
-  function runPlacement(fs) {
-    const anchors = [];
-    sortedData.forEach((d, i) => {
-      if (!codesToShow.has(d.code)) return;
-      const text = m_displayName(d);
-      const textW = Math.max(22, m_measureText(text, fs));
-      const projW = cos * textW + sin * fs + 2;
-      anchors.push({
-        code: d.code, text,
-        color: REGION_WB_LABEL_COLORS[d.region] || '#555',
-        barX: plotArea.left + i * barWidth + barWidth / 2,
-        textW, projW
-      });
-    });
-    const orderedAnchors = anchors.slice().sort((a, b) => a.barX - b.barX);
-    const placedTextFootprints = [];   // {x1, x2}
-    const placedCalloutSegments = [];  // {kind:'H',y,x1,x2} | {kind:'V',x,y1,y2}
-    const toDraw = [];
-    let usedFallback = false;
+  // === Placement estilo OWID (owid-grapher MarimekkoChart) ===
+  // Fuente FIJA — nunca se achica (achicarla la hacía ilegible). El ancho lo
+  // garantiza el FORMATO: si hay más etiquetas de las que entran grandes en el
+  // cuadrado, drawMarimekko elige el apaisado. Pasos:
+  //   1. Anchors a la fuente fija.
+  //   2. Barrido 1D de DOS pasadas (como OWID): reparte el texto a lo ancho.
+  //   3. Codos escalonados POR GRUPO (OWID markerStepSize): cada cluster de
+  //      etiquetas corridas reparte la altura de su codo parejo, así los tramos
+  //      horizontales no se apilan.
 
-    // Encuentra un tx libre desde idealTx hacia la derecha (footprint [tx-projW, tx]).
-    function findFreeTx(idealTx, projW, allowOverflow) {
-      const maxX = allowOverflow ? rightBound + 80 : rightBound;
-      const minX = leftBound + projW;
-      let tx = Math.max(minX, idealTx);
-      let guard = 0;
-      while (guard++ < 60) {
-        const conflict = placedTextFootprints.find(f =>
-          !(tx <= f.x1 - minGap || (tx - projW) >= f.x2 + minGap));
-        if (!conflict) return tx <= maxX ? tx : null;
-        tx = conflict.x2 + minGap + projW;
-        if (tx > maxX) return null;
-      }
-      return null;
-    }
-    // ¿El bracket propuesto (barX→bendY→tx→yLine) no cruza a ninguno colocado?
-    function calloutIsClear(barX, tx, bendY) {
-      const pad = M_CALLOUT_PAD;
-      const hSeg = { kind: 'H', y: bendY, x1: Math.min(barX, tx), x2: Math.max(barX, tx) };
-      const vFinalSeg = { kind: 'V', x: tx, y1: bendY, y2: yLine };
-      for (const s of placedCalloutSegments) {
-        if (s.kind === 'H') {
-          if (Math.abs(s.y - hSeg.y) < pad && !(hSeg.x2 + pad < s.x1 || hSeg.x1 > s.x2 + pad)) return false;
-          if (vFinalSeg.x >= s.x1 - pad && vFinalSeg.x <= s.x2 + pad && s.y >= vFinalSeg.y1 - pad && s.y <= vFinalSeg.y2 + pad) return false;
-        } else {
-          if (s.x >= hSeg.x1 - pad && s.x <= hSeg.x2 + pad && hSeg.y >= s.y1 - pad && hSeg.y <= s.y2 + pad) return false;
-          if (Math.abs(s.x - vFinalSeg.x) < pad && !(vFinalSeg.y2 + pad < s.y1 || vFinalSeg.y1 > s.y2 + pad)) return false;
-        }
-      }
-      return true;
-    }
-    function tryPlace(a, allowOverflow) {
-      const tx = findFreeTx(a.barX, a.projW, allowOverflow);
-      if (tx === null) return null;
-      const displaced = Math.abs(tx - a.barX) > 0.5;
-      let bendY = null;
-      if (displaced) {
-        // Filas desde la más cercana al label hacia la más cercana al eje;
-        // primera que no cruce lo ya colocado (regla OWID).
-        for (let r = M_BEND_ROW_COUNT - 1; r >= 0; r--) {
-          const cand = plotArea.bottom + M_BEND_ROW_OFFSET + r * M_BEND_ROW_GAP;
-          if (cand >= yLine - 4) continue;
-          if (calloutIsClear(a.barX, tx, cand)) { bendY = cand; break; }
-        }
-        if (bendY === null) { bendY = plotArea.bottom + M_BEND_ROW_OFFSET; usedFallback = true; }
-      }
-      return { ...a, tx, ty: yAnchor, yLine, bendY, displaced };
-    }
-    function commit(p) {
-      placedTextFootprints.push({ x1: p.tx - p.projW, x2: p.tx });
-      if (p.displaced) {
-        placedCalloutSegments.push({ kind: 'H', y: p.bendY, x1: Math.min(p.barX, p.tx), x2: Math.max(p.barX, p.tx) });
-        placedCalloutSegments.push({ kind: 'V', x: p.tx, y1: p.bendY, y2: yLine });
-        placedCalloutSegments.push({ kind: 'V', x: p.barX, y1: plotArea.bottom, y2: p.bendY });
-      } else {
-        placedCalloutSegments.push({ kind: 'V', x: p.barX, y1: plotArea.bottom, y2: yLine });
-      }
-      toDraw.push(p);
-    }
-    // Fase 1: sin overflow (palitos y brackets dentro del plot).
-    const notPlaced = [];
-    orderedAnchors.forEach(a => {
-      const p = tryPlace(a, false);
-      if (p) commit(p); else notPlaced.push(a);
+  // 1. Anchors. tx = ancla derecha del texto (rotado -45°, se proyecta a la
+  //    izquierda; footprint horizontal [tx - projW, tx]).
+  const ordered = [];
+  sortedData.forEach((d, i) => {
+    if (!codesToShow.has(d.code)) return;
+    const text = m_displayName(d);
+    const textW = Math.max(22, m_measureText(text, fontSize));
+    const projW = cos * textW + sin * fontSize + 2;
+    ordered.push({
+      code: d.code, text,
+      color: REGION_WB_LABEL_COLORS[d.region] || '#555',
+      barX: plotArea.left + i * barWidth + barWidth / 2,
+      textW, projW
     });
-    // Fase 2: forzar las que no entraron (con overflow) — nunca se descarta un
-    // chip. Si hay que forzar o usar fallback, este font NO quedó limpio.
-    notPlaced.forEach(a => {
-      const p = tryPlace(a, true);
-      if (p) commit(p);
-    });
-    return { toDraw, clean: notPlaced.length === 0 && !usedFallback };
-  }
+  });
+  ordered.sort((a, b) => a.barX - b.barX);
+  const n = ordered.length;
+  if (n === 0) return { labels: [], fontSize };
 
-  // Auto-fit del font: la web ya entra limpia a su tamaño; el PNG (font grande)
-  // achica hasta que entre limpio (sin cruces) o hasta el piso de 9px. Bajamos
-  // de a 1px y reintentamos. Devolvemos el font efectivo para que el render use
-  // el MISMO tamaño con el que se calculó el layout.
-  let effFont = fontSize;
-  let res = runPlacement(effFont);
-  while (!res.clean && effFont > 9) {
-    effFont = Math.max(9, effFont - 1);
-    res = runPlacement(effFont);
-  }
-  return { labels: res.toDraw, fontSize: effFont };
+  // 2. Barrido 1D (dos pasadas): izq→der empuja cada texto para no pisar la
+  //    huella del anterior; der→izq evita el overflow por la derecha; un clamp
+  //    izquierdo para que el primero no se salga.
+  let acc = leftBound;
+  ordered.forEach(a => { a.tx = Math.max(a.barX, acc + a.projW); acc = a.tx + minGap; });
+  let lim = rightBound;
+  for (let i = n - 1; i >= 0; i--) { const a = ordered[i]; if (a.tx > lim) a.tx = lim; lim = a.tx - a.projW - minGap; }
+  let leftAcc = leftBound;
+  ordered.forEach(a => { const minTx = leftAcc + a.projW; if (a.tx < minTx) a.tx = minTx; leftAcc = a.tx + minGap; });
+
+  // 3. Codos escalonados por grupo. Un grupo = corrida de etiquetas CORRIDAS
+  //    consecutivas cuyos brackets se solapan en x. Dentro del grupo, la altura
+  //    del codo se reparte parejo en la franja del marker (altura/(grupo+1)); la
+  //    más a la izquierda queda más abajo (cerca de las etiquetas) para
+  //    minimizar cruces. Las no-corridas van con palito recto (bendY null).
+  ordered.forEach(a => { a.displaced = Math.abs(a.tx - a.barX) > 0.5; });
+  const markerTop = plotArea.bottom + 3;
+  const markerBot = yLine - 3;
+  const groups = [];
+  let g = null;
+  ordered.forEach(a => {
+    if (!a.displaced) { g = null; return; }
+    const x1 = Math.min(a.barX, a.tx), x2 = Math.max(a.barX, a.tx);
+    if (g && x1 <= g.maxX2 + minGap) { g.items.push(a); g.maxX2 = Math.max(g.maxX2, x2); }
+    else { g = { items: [a], maxX2: x2 }; groups.push(g); }
+  });
+  groups.forEach(grp => {
+    const k = grp.items.length;
+    const step = (markerBot - markerTop) / (k + 1);
+    grp.items.forEach((it, i) => { it.bendY = markerBot - (i + 1) * step; });
+  });
+
+  const toDraw = ordered.map(a => ({ ...a, ty: yAnchor, yLine, bendY: a.displaced ? a.bendY : null }));
+  return { labels: toDraw, fontSize };
 }
 
 // =================== Render principal ===================
