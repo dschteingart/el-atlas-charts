@@ -1529,6 +1529,7 @@ function setupCiudadesVideoDownload() {
   if (!vb) {
     vb = document.createElement('button');
     vb.className = 'download'; vb.id = 'ci-tl-video-dl'; vb.type = 'button';
+    vb.setAttribute('data-i18n', 'c6-tl-video-dl');   // así applyI18n lo traduce al cambiar idioma
     vb.textContent = ci_t('c6-tl-video-dl', 'Descargar video');
     pngBtn.after(document.createTextNode(' '), vb);   // espacio como en el HTML (gap parejo)
     vb.addEventListener('click', () => { if (!ci_tlRecording) ci_ensureDet(() => ci_tlRecord()); });

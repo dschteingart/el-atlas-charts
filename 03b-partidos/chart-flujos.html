@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El 85% del fútbol se juega puertas adentro — El Atlas · Especial</title>
+<title>El 86% del fútbol se juega puertas adentro — El Atlas · Especial</title>
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/chart-flujos.html">
-<meta property="og:title" content="El 85% del fútbol se juega puertas adentro — El Atlas · Especial">
+<meta property="og:title" content="El 86% del fútbol se juega puertas adentro — El Atlas · Especial">
 <meta property="og:description" content="Flujos de partidos dentro de cada confederación y entre confederaciones.">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-flujos.png">
-<meta property="og:image:alt" content="El 85% del fútbol se juega puertas adentro">
+<meta property="og:image:alt" content="El 86% del fútbol se juega puertas adentro">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="El 85% del fútbol se juega puertas adentro — El Atlas · Especial">
+<meta name="twitter:title" content="El 86% del fútbol se juega puertas adentro — El Atlas · Especial">
 <meta name="twitter:description" content="Flujos de partidos dentro de cada confederación y entre confederaciones.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-flujos.png">
 
@@ -114,16 +114,39 @@
   </header>
 
   <section class="chart-block" data-chart="5" data-editor-id="esp-flujos">
-    <h2 class="chart-title" data-i18n="c5-title">El 85% del fútbol se juega puertas adentro</h2>
+    <h2 class="chart-title" data-i18n="c5-title">El 86% del fútbol se juega puertas adentro</h2>
     <p class="chart-subtitle" data-i18n="c5-subtitle">Flujos de partidos dentro de cada confederación y entre confederaciones.</p>
 
       <div class="m-controls">
-        <div class="toggle" id="fl-period">
-          <button data-period="reciente" class="active" data-i18n="c5-period-90">Desde 1990</button>
-          <button data-period="historia" data-i18n="c5-period-all">Toda la historia</button>
+        <div class="toggle" id="fl-view">
+          <button id="fl-tab-chord" class="active" data-i18n="c5-view-chord">Cuerdas</button>
+          <button id="fl-tab-matrix" data-i18n="c5-view-matrix">Matriz</button>
+        </div>
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c6-competencia-label">Competencia</span>
+          <select id="fl-cat-select" class="m-select">
+            <option value="ALL" data-i18n="c6-cat-all">Todas</option>
+            <option value="0" data-i18n="c6-cat-0">Amistosos</option>
+            <option value="1" data-i18n="c6-cat-1">Eliminatorias del Mundial</option>
+            <option value="2" data-i18n="c6-cat-2">Mundial</option>
+            <option value="3" data-i18n="c6-cat-3">Eliminatorias continentales</option>
+            <option value="4" data-i18n="c6-cat-4">Copas continentales</option>
+            <option value="5" data-i18n="c6-cat-5">Ligas de Naciones</option>
+            <option value="6" data-i18n="c6-cat-6">Otros torneos</option>
+          </select>
+        </div>
+        <div class="s-range-block">
+          <span class="m-ctrl-label" data-i18n="c6-slider-period-label">Período</span>
+          <div class="s-range-slider" id="fl-range-slider">
+            <div class="s-range-track"></div>
+            <div class="s-range-track-active" id="fl-range-track-active"></div>
+            <input type="range" id="fl-slider-from" min="1872" max="2025" value="1872" step="1" aria-label="Desde">
+            <input type="range" id="fl-slider-to"   min="1872" max="2025" value="2025" step="1" aria-label="Hasta">
+          </div>
+          <span class="s-range-display" id="fl-range-display">1872–2025</span>
         </div>
       </div>
-      <p class="esp-hint" data-i18n="c5-hint">Pasá el cursor por un arco o una cinta para aislarlo</p>
+      <p class="esp-hint" data-i18n="c5-hint">Pasá el cursor por un arco, una cinta o una celda para ver el detalle</p>
     <div class="chart-svg-wrap">
       <svg id="chart5" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="tooltip" id="tooltip5"></div>
@@ -148,22 +171,21 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
-<script src="../lib/regions.js?v=49"></script>
-<script src="../lib/i18n.js?v=49"></script>
-<script src="./regions-fifa.js?v=49"></script>
-<script src="./i18n-issue.js?v=49"></script>
-<script src="./utils.js?v=49"></script>
-<script src="./country-names.js?v=49"></script>
-<script src="./data-chord.js?v=49"></script>
-<script src="./data-nombres.js?v=49"></script>
-<script src="./editor.js?v=49"></script>
-<script src="./ts-partidos.js?v=49"></script>
-<script src="./flujos.js?v=49"></script>
-<script src="./png-export.js?v=49"></script>
-<script src="./svg-export.js?v=49"></script>
+<script src="../lib/regions.js?v=57"></script>
+<script src="../lib/i18n.js?v=57"></script>
+<script src="./regions-fifa.js?v=57"></script>
+<script src="./i18n-issue.js?v=57"></script>
+<script src="./utils.js?v=57"></script>
+<script src="./country-names.js?v=57"></script>
+<script src="./data-chord.js?v=57"></script>
+<script src="./data-nombres.js?v=57"></script>
+<script src="./editor.js?v=57"></script>
+<script src="./ts-partidos.js?v=57"></script>
+<script src="./flujos.js?v=57"></script>
+<script src="./png-export.js?v=57"></script>
+<script src="./svg-export.js?v=57"></script>
 <script>
-  window.__ESP_V = '49';
-  state[5] = { period: 'reciente' };
+  window.__ESP_V = '57';
   initFlujos();
   applyI18n();
   // applyI18n pisa textos con data-i18n (p.ej. el subtítulo); un redibujo deja
@@ -174,6 +196,6 @@
   });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=49"></script>
+<script src="./nav.js?v=57"></script>
 </body>
 </html>
