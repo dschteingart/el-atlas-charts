@@ -118,9 +118,15 @@
     <p class="chart-subtitle" data-i18n="c4-subtitle">La red de duelos del fútbol de selecciones: quién juega contra quién.</p>
 
       <div class="m-controls">
-        <div class="toggle" id="du-period">
-          <button data-period="all" class="active" data-i18n="c4-period-all">Toda la historia</button>
-          <button data-period="90" data-i18n="c4-period-90">Desde 1990</button>
+        <div class="s-range-block">
+          <span class="m-ctrl-label" data-i18n="c6-slider-period-label">Período</span>
+          <div class="s-range-slider" id="du-range-slider">
+            <div class="s-range-track"></div>
+            <div class="s-range-track-active" id="du-range-track-active"></div>
+            <input type="range" id="du-slider-from" min="1872" max="2025" value="1872" step="1" aria-label="Desde">
+            <input type="range" id="du-slider-to"   min="1872" max="2025" value="2025" step="1" aria-label="Hasta">
+          </div>
+          <span class="s-range-display" id="du-range-display">1872–2025</span>
         </div>
         <div class="esp-slider">
           <span class="m-ctrl-label" data-i18n="c4-slider-label">Duelos con al menos</span>
@@ -129,6 +135,16 @@
           <span class="m-ctrl-label" data-i18n="c4-slider-suffix">partidos</span>
         </div>
         <span class="m-ctrl-label" id="du-info"></span>
+      </div>
+      <div class="m-controls">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c4-search-label">Buscar</span>
+          <div class="m-search-wrap" style="margin:0;min-width:180px;max-width:250px;">
+            <input type="text" id="du-search" class="m-search-input" data-i18n-placeholder="c4-search-ph" placeholder="Destacar una selección…" autocomplete="off">
+            <div id="du-search-results" class="m-search-results"></div>
+          </div>
+          <span id="du-search-chip"></span>
+        </div>
       </div>
       <p class="esp-hint" data-i18n="c4-hint">Pasá el cursor por una selección para ver sus rivales más frecuentes · Arrastrá para reacomodar</p>
       <div class="esp-legend" id="du-legend"></div>
@@ -156,22 +172,21 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
-<script src="../lib/regions.js?v=40"></script>
-<script src="../lib/i18n.js?v=40"></script>
-<script src="./regions-fifa.js?v=40"></script>
-<script src="./i18n-issue.js?v=40"></script>
-<script src="./utils.js?v=40"></script>
-<script src="./country-names.js?v=40"></script>
-<script src="./data-duelos.js?v=40"></script>
-<script src="./data-nombres.js?v=40"></script>
-<script src="./editor.js?v=40"></script>
-<script src="./ts-partidos.js?v=40"></script>
-<script src="./duelos.js?v=40"></script>
-<script src="./png-export.js?v=40"></script>
-<script src="./svg-export.js?v=40"></script>
+<script src="../lib/regions.js?v=49"></script>
+<script src="../lib/i18n.js?v=49"></script>
+<script src="./regions-fifa.js?v=49"></script>
+<script src="./i18n-issue.js?v=49"></script>
+<script src="./utils.js?v=49"></script>
+<script src="./country-names.js?v=49"></script>
+<script src="./data-duelos.js?v=49"></script>
+<script src="./data-nombres.js?v=49"></script>
+<script src="./editor.js?v=49"></script>
+<script src="./ts-partidos.js?v=49"></script>
+<script src="./duelos.js?v=49"></script>
+<script src="./png-export.js?v=49"></script>
+<script src="./svg-export.js?v=49"></script>
 <script>
-  window.__ESP_V = '40';
-  state[4] = { period: 'all', minP: { all: 25, '90': 12 } };
+  window.__ESP_V = '49';
   initDuelos();
   applyI18n();
   // applyI18n pisa textos con data-i18n (p.ej. el subtítulo); un redibujo deja
@@ -183,6 +198,6 @@
   });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=40"></script>
+<script src="./nav.js?v=49"></script>
 </body>
 </html>
