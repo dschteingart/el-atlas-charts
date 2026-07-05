@@ -228,117 +228,122 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
   const yLine = plotArea.bottom + anchorYOffset;       // fin de línea guía
   const yAnchor = yLine + 4;  // pequeño gap entre fin de guía y "a" final
 
-  // 1. Construir anchors. (tx, ty=yAnchor) será la posición de la ÚLTIMA letra
-  //    del texto rotado -45° con text-anchor:end. El texto se proyecta hacia
-  //    abajo-izquierda: footprint horizontal = [tx - projW, tx].
-  //    projW = cos*textW + sin*fontSize (ancho de la huella del rectángulo
-  //    rotado proyectado sobre el eje X).
-  const anchors = [];
-  sortedData.forEach((d, i) => {
-    if (!codesToShow.has(d.code)) return;
-    const text = m_displayName(d);
-    const textW = Math.max(22, m_measureText(text, fontSize));
-    const projW = cos * textW + sin * fontSize + 2;
-    anchors.push({
-      code: d.code,
-      text,
-      color: REGION_WB_LABEL_COLORS[d.region] || '#555',
-      barX: plotArea.left + i * barWidth + barWidth / 2,
-      textW, projW,
-      // Todas las labels son chips → mismo trato (forzado en fase 2, estilo
-      // uniforme). Se mantiene el flag para el forzado de colocación.
-      isSelected: true
+  // El motor de placement (greedy left→right + filas de quiebre con anti-cruce
+  // calloutIsClear) es el que ya andaba PERFECTO en la web. La ÚNICA diferencia
+  // del PNG es que la fuente es grande: a ese tamaño las etiquetas no entran
+  // "limpias" (sin cruces) y el algoritmo terminaba forzando (fallback) → cruces.
+  // Fix: correr el MISMO motor y, si a este font no queda limpio, achicar el
+  // font y reintentar hasta que entre limpio (exactamente como se ve en la web,
+  // solo que a otro tamaño). No se toca la lógica que ya funcionaba.
+  //
+  // runPlacement(fs): corre el greedy a un fontSize dado. Devuelve { toDraw,
+  // clean }. clean=true cuando TODAS entraron en fase 1 (sin overflow) y NINGUNA
+  // línea guía tuvo que usar el fallback — es decir, ninguna cruza a otra.
+  function runPlacement(fs) {
+    const anchors = [];
+    sortedData.forEach((d, i) => {
+      if (!codesToShow.has(d.code)) return;
+      const text = m_displayName(d);
+      const textW = Math.max(22, m_measureText(text, fs));
+      const projW = cos * textW + sin * fs + 2;
+      anchors.push({
+        code: d.code, text,
+        color: REGION_WB_LABEL_COLORS[d.region] || '#555',
+        barX: plotArea.left + i * barWidth + barWidth / 2,
+        textW, projW
+      });
     });
-  });
+    const orderedAnchors = anchors.slice().sort((a, b) => a.barX - b.barX);
+    const placedTextFootprints = [];   // {x1, x2}
+    const placedCalloutSegments = [];  // {kind:'H',y,x1,x2} | {kind:'V',x,y1,y2}
+    const toDraw = [];
+    let usedFallback = false;
 
-  // 2. Repartir las etiquetas a lo ancho (estilo OWID). En vez de amontonar
-  //    desde la izquierda y descartar las que no entran, distribuimos TODAS:
-  //    cada texto arranca en su ideal (arriba de su barra) y se corre lo justo
-  //    para no pisar al vecino; si el conjunto no entra al ancho disponible,
-  //    achicamos la tipografía lo mínimo para que entre. NUNCA se descarta un
-  //    chip (WYSIWYG). Cada texto se reconecta con su barra vía una línea
-  //    bracket (V-H-V), recta si quedó sobre la barra o doblada si se corrió.
-  //    tx = ancla del texto (borde derecho; footprint horizontal [tx-projW, tx],
-  //    porque el texto rotado -45° se proyecta hacia la izquierda).
-  const ordered = anchors.slice().sort((a, b) => a.barX - b.barX);
-  const n = ordered.length;
-  if (n === 0) return { labels: [], fontSize };
+    // Encuentra un tx libre desde idealTx hacia la derecha (footprint [tx-projW, tx]).
+    function findFreeTx(idealTx, projW, allowOverflow) {
+      const maxX = allowOverflow ? rightBound + 80 : rightBound;
+      const minX = leftBound + projW;
+      let tx = Math.max(minX, idealTx);
+      let guard = 0;
+      while (guard++ < 60) {
+        const conflict = placedTextFootprints.find(f =>
+          !(tx <= f.x1 - minGap || (tx - projW) >= f.x2 + minGap));
+        if (!conflict) return tx <= maxX ? tx : null;
+        tx = conflict.x2 + minGap + projW;
+        if (tx > maxX) return null;
+      }
+      return null;
+    }
+    // ¿El bracket propuesto (barX→bendY→tx→yLine) no cruza a ninguno colocado?
+    function calloutIsClear(barX, tx, bendY) {
+      const pad = M_CALLOUT_PAD;
+      const hSeg = { kind: 'H', y: bendY, x1: Math.min(barX, tx), x2: Math.max(barX, tx) };
+      const vFinalSeg = { kind: 'V', x: tx, y1: bendY, y2: yLine };
+      for (const s of placedCalloutSegments) {
+        if (s.kind === 'H') {
+          if (Math.abs(s.y - hSeg.y) < pad && !(hSeg.x2 + pad < s.x1 || hSeg.x1 > s.x2 + pad)) return false;
+          if (vFinalSeg.x >= s.x1 - pad && vFinalSeg.x <= s.x2 + pad && s.y >= vFinalSeg.y1 - pad && s.y <= vFinalSeg.y2 + pad) return false;
+        } else {
+          if (s.x >= hSeg.x1 - pad && s.x <= hSeg.x2 + pad && hSeg.y >= s.y1 - pad && hSeg.y <= s.y2 + pad) return false;
+          if (Math.abs(s.x - vFinalSeg.x) < pad && !(vFinalSeg.y2 + pad < s.y1 || vFinalSeg.y1 > s.y2 + pad)) return false;
+        }
+      }
+      return true;
+    }
+    function tryPlace(a, allowOverflow) {
+      const tx = findFreeTx(a.barX, a.projW, allowOverflow);
+      if (tx === null) return null;
+      const displaced = Math.abs(tx - a.barX) > 0.5;
+      let bendY = null;
+      if (displaced) {
+        // Filas desde la más cercana al label hacia la más cercana al eje;
+        // primera que no cruce lo ya colocado (regla OWID).
+        for (let r = M_BEND_ROW_COUNT - 1; r >= 0; r--) {
+          const cand = plotArea.bottom + M_BEND_ROW_OFFSET + r * M_BEND_ROW_GAP;
+          if (cand >= yLine - 4) continue;
+          if (calloutIsClear(a.barX, tx, cand)) { bendY = cand; break; }
+        }
+        if (bendY === null) { bendY = plotArea.bottom + M_BEND_ROW_OFFSET; usedFallback = true; }
+      }
+      return { ...a, tx, ty: yAnchor, yLine, bendY, displaced };
+    }
+    function commit(p) {
+      placedTextFootprints.push({ x1: p.tx - p.projW, x2: p.tx });
+      if (p.displaced) {
+        placedCalloutSegments.push({ kind: 'H', y: p.bendY, x1: Math.min(p.barX, p.tx), x2: Math.max(p.barX, p.tx) });
+        placedCalloutSegments.push({ kind: 'V', x: p.tx, y1: p.bendY, y2: yLine });
+        placedCalloutSegments.push({ kind: 'V', x: p.barX, y1: plotArea.bottom, y2: p.bendY });
+      } else {
+        placedCalloutSegments.push({ kind: 'V', x: p.barX, y1: plotArea.bottom, y2: yLine });
+      }
+      toDraw.push(p);
+    }
+    // Fase 1: sin overflow (palitos y brackets dentro del plot).
+    const notPlaced = [];
+    orderedAnchors.forEach(a => {
+      const p = tryPlace(a, false);
+      if (p) commit(p); else notPlaced.push(a);
+    });
+    // Fase 2: forzar las que no entraron (con overflow) — nunca se descarta un
+    // chip. Si hay que forzar o usar fallback, este font NO quedó limpio.
+    notPlaced.forEach(a => {
+      const p = tryPlace(a, true);
+      if (p) commit(p);
+    });
+    return { toDraw, clean: notPlaced.length === 0 && !usedFallback };
+  }
 
-  // Auto-fit: si la suma de las huellas + gaps excede el ancho disponible,
-  // achicar la fuente para que entren todas. projW escala ~lineal con el font,
-  // así que el factor de ancho aplica directo. Piso 8px (mejor chico que
-  // descartado). Con la selección curada (~8-10) no se dispara.
-  const availW = rightBound - leftBound;
+  // Auto-fit del font: la web ya entra limpia a su tamaño; el PNG (font grande)
+  // achica hasta que entre limpio (sin cruces) o hasta el piso de 9px. Bajamos
+  // de a 1px y reintentamos. Devolvemos el font efectivo para que el render use
+  // el MISMO tamaño con el que se calculó el layout.
   let effFont = fontSize;
-  const totalW = () => ordered.reduce((s, a) => s + a.projW, 0) + (n - 1) * minGap;
-  if (totalW() > availW) {
-    effFont = Math.max(8, fontSize * (availW / totalW()) * 0.98);
-    ordered.forEach(a => {
-      a.textW = Math.max(22 * effFont / fontSize, m_measureText(a.text, effFont));
-      a.projW = cos * a.textW + sin * effFont + 2;
-    });
+  let res = runPlacement(effFont);
+  while (!res.clean && effFont > 9) {
+    effFont = Math.max(9, effFont - 1);
+    res = runPlacement(effFont);
   }
-
-  // Barrido 1 (izq→der): cada tx en su ideal (barX), corrido a la derecha lo
-  // justo para no pisar la huella del anterior.
-  let acc = leftBound;
-  ordered.forEach(a => {
-    a.tx = Math.max(a.barX, acc + a.projW);
-    acc = a.tx + minGap;
-  });
-  // Barrido 2 (der→izq): si el último se pasó del rightBound, tirar hacia la
-  // izquierda comprimiendo (reparte el excedente en vez de descartarlo).
-  let lim = rightBound;
-  for (let i = n - 1; i >= 0; i--) {
-    const a = ordered[i];
-    if (a.tx > lim) a.tx = lim;
-    lim = a.tx - a.projW - minGap;
-  }
-  // Clamp izquierdo: que el primer texto no se salga por la izquierda del plot.
-  let leftAcc = leftBound;
-  ordered.forEach(a => {
-    const minTx = leftAcc + a.projW;
-    if (a.tx < minTx) a.tx = minTx;
-    leftAcc = a.tx + minGap;
-  });
-
-  // 3. Líneas guía estilo OWID (bracket V-H-V): baja de la barra, tramo
-  //    HORIZONTAL para correrse hasta el texto, y baja al ancla. Para que los
-  //    tramos horizontales NO se apilen a la misma altura (lo que hacía que "se
-  //    tocaran"), cada bracket cuyo tramo horizontal se solapa con otro va a una
-  //    FILA de altura distinta — coloreo de intervalos: greedy por borde
-  //    izquierdo, cada uno a la fila más baja que no choque con un solape
-  //    previo. Las filas se reparten parejo en la franja entre el eje X y la
-  //    línea de anclaje.
-  ordered.forEach(a => {
-    a.displaced = Math.abs(a.tx - a.barX) > 0.5;
-    a.h1 = Math.min(a.barX, a.tx);
-    a.h2 = Math.max(a.barX, a.tx);
-  });
-  const disp = ordered.filter(a => a.displaced).sort((x, y) => x.h1 - y.h1);
-  const rowEnds = [];  // rowEnds[r] = último h2 (borde derecho) colocado en la fila r
-  disp.forEach(a => {
-    let r = 0;
-    while (r < rowEnds.length && rowEnds[r] > a.h1 - minGap) r++;
-    a.bendRow = r;
-    rowEnds[r] = a.h2;
-  });
-  const nRows = Math.max(1, rowEnds.length);
-  const bendTop = plotArea.bottom + 6;   // fila más cercana al eje X (arriba)
-  const bendBot = yLine - 6;             // fila más cercana a las etiquetas (abajo)
-  const bendStep = nRows > 1 ? (bendBot - bendTop) / (nRows - 1) : 0;
-  const toDraw = ordered.map(a => ({
-    ...a,
-    ty: yAnchor,
-    yLine,
-    // fila 0 (primera coloreada) arriba, cerca del eje; filas siguientes bajan.
-    bendY: a.displaced ? bendTop + a.bendRow * bendStep : null
-  }));
-
-  // Devolvemos el font efectivo (puede ser < fontSize por el auto-fit) para que
-  // drawMarimekko renderee el texto al MISMO tamaño con el que se calculó el
-  // layout — si no, las posiciones (calculadas a effFont) no matchearían.
-  return { labels: toDraw, fontSize: effFont };
+  return { labels: res.toDraw, fontSize: effFont };
 }
 
 // =================== Render principal ===================
