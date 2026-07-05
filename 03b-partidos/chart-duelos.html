@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El fútbol se juega entre vecinos — El Atlas · Especial</title>
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/chart-duelos.html">
+<meta property="og:title" content="El fútbol se juega entre vecinos — El Atlas · Especial">
+<meta property="og:description" content="La red de duelos del fútbol de selecciones: quién juega contra quién.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-duelos.png">
+<meta property="og:image:alt" content="El fútbol se juega entre vecinos">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="El fútbol se juega entre vecinos — El Atlas · Especial">
+<meta name="twitter:description" content="La red de duelos del fútbol de selecciones: quién juega contra quién.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-duelos.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<link rel="stylesheet" href="./editor.css">
+<style>
+  .wrap-wide { max-width: 1100px; padding: 6px 20px 10px; }
+  .wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
+  .wrap-wide .chart-block { margin: 4px 0 2px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+  .wrap-wide .chart-subtitle { margin: 0 0 4px; font-size: 13.5px; line-height: 1.35; }
+  .chart-svg-wrap { margin-top: 2px; position: relative; }
+  .footer { margin-top: 6px; }
+  .footer p { margin: 2px 0; }
+  .footer .download { margin-right: 8px; }   /* separación pareja entre botones de descarga */
+
+  .s-grid-line { stroke: var(--grid); stroke-width: 1; opacity: 0.55; }
+  .s-tick { font-family: var(--sans); font-size: 11px; fill: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .s-axis-title { font-family: var(--sans); font-size: 11.5px; fill: var(--ink-soft); font-weight: 500; }
+
+  .m-controls { display: flex; align-items: center; gap: 14px; margin: 4px 0 6px; flex-wrap: wrap; }
+  .m-ctrl-group { display: inline-flex; align-items: center; gap: 8px; }
+  .m-ctrl-label { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+
+  /* Toggles pill (estetica del N3: .lg-mode/.lg-seg, activo terracota) */
+  .toggle { display: inline-flex; border: 1px solid var(--rule); border-radius: 15px; overflow: hidden; background: var(--bg); }
+  .toggle button { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 13px; background: var(--bg); color: var(--ink-soft); border: none; cursor: pointer; white-space: nowrap; transition: background 0.12s ease, color 0.12s ease; }
+  .toggle button + button { border-left: 1px solid var(--rule); }
+  .toggle button.active { background: var(--accent); color: #fff; }
+
+  /* Menu desplegable (misma familia visual que los toggles pill) */
+  .m-select { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 28px 6px 13px; border: 1px solid var(--rule); border-radius: 15px; background-color: var(--bg); color: var(--ink-soft); cursor: pointer; -webkit-appearance: none; appearance: none; outline: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%238a8378' stroke-width='1.5'/></svg>"); background-repeat: no-repeat; background-position: right 11px center; }
+  .m-select:focus { border-color: var(--accent); }
+
+  /* Slider de rango (2 thumbs), patron N3 */
+  .s-range-block { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 280px; }
+  .s-range-slider { position: relative; flex: 1; height: 20px; min-width: 200px; }
+  .s-range-track { position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: var(--grid); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+  .s-range-track-active { position: absolute; top: 50%; height: 4px; background: var(--accent); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+  .s-range-slider input[type="range"] { position: absolute; top: 0; left: 0; width: 100%; height: 20px; margin: 0; -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; outline: none; }
+  .s-range-slider input[type="range"]::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .s-range-slider input[type="range"]::-moz-range-thumb { pointer-events: auto; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .s-range-slider input[type="range"]::-moz-range-track { background: transparent; border: none; }
+  .s-range-display { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--ink); min-width: 110px; font-variant-numeric: tabular-nums; text-align: right; }
+  @media (max-width: 768px) { .s-range-block .m-ctrl-label { display: none; } .s-range-display { font-size: 13px; font-family: var(--sans); font-weight: 600; min-width: 76px; } }
+
+  /* Chips de seleccionados (buscador), patron N3 */
+  .m-selected-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 0; margin: 2px 0 4px; }
+  .m-selected-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 10px; border-radius: 12px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: white; }
+  .m-chip-x { width: 18px; height: 18px; border-radius: 50%; border: none; background: rgba(255,255,255,0.25); color: white; font-size: 13px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .m-chip-x:hover { background: rgba(255,255,255,0.45); }
+  .esp-legend { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 6px; }
+  .esp-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); margin: 0 0 4px; }
+  .region-chip { padding: 3px 11px; border-radius: 11px; font-family: var(--sans); font-size: 12px; font-weight: 500; }
+  .region-chip.inactive { text-decoration: line-through; opacity: 0.55; }
+
+  .m-search-wrap { position: relative; margin: 6px 0 4px; max-width: 360px; }
+  .m-search-input { width: 100%; padding: 7px 10px; border: 1px solid var(--rule); border-radius: 5px; background: var(--bg); font-family: var(--sans); font-size: 13px; color: var(--ink); outline: none; }
+  .m-search-input:focus { border-color: var(--accent); }
+  .m-search-results { position: absolute; top: calc(100% + 2px); left: 0; right: 0; background: var(--bg); border: 1px solid var(--rule); border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-height: 240px; overflow-y: auto; z-index: 30; display: none; }
+  .m-search-results.open { display: block; }
+  .m-search-result { padding: 7px 10px; font-family: var(--sans); font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--grid); }
+  .m-search-result:last-child { border-bottom: none; }
+  .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
+
+  .esp-slider { display: flex; align-items: center; gap: 8px; }
+  .esp-slider input[type="range"] { width: 160px; accent-color: var(--accent); }
+  .esp-slider .esp-slider-val { font-family: var(--serif); font-weight: 700; min-width: 26px; text-align: center; }
+
+  @media (max-width: 768px) {
+    .m-search-wrap { max-width: 100%; }
+    .wrap-wide .chart-title { font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 4px; }
+    .wrap-wide .chart-subtitle { font-size: 12px; font-weight: 400; color: var(--ink-muted); line-height: 1.4; margin: 0 0 8px; }
+  }
+  .m-mobile-collapse { display: none; }
+  .m-mobile-collapse > summary { font-family: var(--sans); font-size: 11px; color: var(--accent); cursor: pointer; padding: 6px 0; list-style: none; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
+  .m-mobile-collapse > summary::before { content: '+ '; }
+  .m-mobile-collapse[open] > summary::before { content: '\2212 '; }
+  .m-mobile-collapse > p { margin: 4px 0 8px; font-family: var(--sans); font-size: 11px; color: var(--ink-soft); line-height: 1.45; }
+  @media (max-width: 768px) { .m-mobile-collapse { display: block; } .m-desktop-only { display: none; } }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">Especial</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="4" data-editor-id="esp-duelos">
+    <h2 class="chart-title" data-i18n="c4-title">El fútbol se juega entre vecinos</h2>
+    <p class="chart-subtitle" data-i18n="c4-subtitle">La red de duelos del fútbol de selecciones: quién juega contra quién.</p>
+
+      <div class="m-controls">
+        <div class="s-range-block">
+          <span class="m-ctrl-label" data-i18n="c6-slider-period-label">Período</span>
+          <div class="s-range-slider" id="du-range-slider">
+            <div class="s-range-track"></div>
+            <div class="s-range-track-active" id="du-range-track-active"></div>
+            <input type="range" id="du-slider-from" min="1872" max="2025" value="1872" step="1" aria-label="Desde">
+            <input type="range" id="du-slider-to"   min="1872" max="2025" value="2025" step="1" aria-label="Hasta">
+          </div>
+          <span class="s-range-display" id="du-range-display">1872–2025</span>
+        </div>
+        <div class="esp-slider">
+          <span class="m-ctrl-label" data-i18n="c4-slider-label">Duelos con al menos</span>
+          <input type="range" id="du-min" min="5" max="60" step="1" value="25">
+          <span class="esp-slider-val" id="du-min-val">25</span>
+          <span class="m-ctrl-label" data-i18n="c4-slider-suffix">partidos</span>
+        </div>
+        <span class="m-ctrl-label" id="du-info"></span>
+      </div>
+      <div class="m-controls">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c4-search-label">Buscar</span>
+          <div class="m-search-wrap" style="margin:0;min-width:180px;max-width:250px;">
+            <input type="text" id="du-search" class="m-search-input" data-i18n-placeholder="c4-search-ph" placeholder="Destacar una selección…" autocomplete="off">
+            <div id="du-search-results" class="m-search-results"></div>
+          </div>
+          <span id="du-search-chip"></span>
+        </div>
+      </div>
+      <p class="esp-hint" data-i18n="c4-hint">Pasá el cursor por una selección para ver sus rivales más frecuentes · Arrastrá para reacomodar</p>
+      <div class="esp-legend" id="du-legend"></div>
+    <div class="chart-svg-wrap">
+      <svg id="chart4" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip4"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" data-chart="4-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="4" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources m-desktop-only" data-i18n="c4-sources"></p>
+      <details class="m-mobile-collapse">
+        <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+        <p data-i18n="c4-sources"></p>
+      </details>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="../lib/regions.js?v=58"></script>
+<script src="../lib/i18n.js?v=58"></script>
+<script src="./regions-fifa.js?v=58"></script>
+<script src="./i18n-issue.js?v=58"></script>
+<script src="./utils.js?v=58"></script>
+<script src="./country-names.js?v=58"></script>
+<script src="./data-duelos.js?v=58"></script>
+<script src="./data-nombres.js?v=58"></script>
+<script src="./editor.js?v=58"></script>
+<script src="./ts-partidos.js?v=58"></script>
+<script src="./duelos.js?v=58"></script>
+<script src="./png-export.js?v=58"></script>
+<script src="./svg-export.js?v=58"></script>
+<script>
+  window.__ESP_V = '58';
+  initDuelos();
+  applyI18n();
+  // applyI18n pisa textos con data-i18n (p.ej. el subtítulo); un redibujo deja
+  // que el renderer vuelva a poner su subtítulo dinámico (métrica, suavizado…).
+  if (window.__atlasRedraw) window.__atlasRedraw();
+  setupLangToggle(() => {
+    if (typeof du_legend === 'function') du_legend();
+    if (typeof drawDuelos === 'function') drawDuelos();
+  });
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=58"></script>
+</body>
+</html>
