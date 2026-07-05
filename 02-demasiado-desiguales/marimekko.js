@@ -236,10 +236,11 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
   // Pasos:
   //   1. Anchors a la fuente del formato.
   //   2. Auto-ajuste con PISO legible: si a esa fuente no entran todas en el
-  //      ancho, se achica lo justo (nunca por debajo de M_LABEL_MIN_FONT) para
-  //      que entren TODAS sin que ninguna se salga del borde.
-  //   3. Barrido 1D de DOS pasadas (como OWID): reparte el texto a lo ancho.
-  //   4. Codos escalonados POR GRUPO (OWID markerStepSize): cada cluster de
+  //      ancho, se achica lo justo (nunca por debajo de M_LABEL_MIN_FONT).
+  //   3. TOPE DURO: si ni al piso entran todas, se ralean parejo hasta que sí
+  //      (garantiza que nada se salga del gráfico ni se pisen las guías).
+  //   4. Barrido 1D de DOS pasadas (como OWID): reparte el texto a lo ancho.
+  //   5. Codos escalonados POR GRUPO (OWID markerStepSize): cada cluster de
   //      etiquetas corridas reparte la altura de su codo parejo, así los tramos
   //      horizontales no se apilan.
 
@@ -259,37 +260,55 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
     });
   });
   ordered.sort((a, b) => a.barX - b.barX);
-  const n = ordered.length;
+  let n = ordered.length;
   if (n === 0) return { labels: [], fontSize };
 
-  // 2. Auto-ajuste con PISO LEGIBLE. La fuente del formato es fija; SOLO si a ese
-  //    tamaño las etiquetas no entran en el ancho (suma de huellas + gaps >
-  //    ancho disponible) la achicamos lo justo para que entren TODAS — pero
-  //    nunca por debajo de un piso legible (M_LABEL_MIN_FONT). Así ninguna se
-  //    sale del borde (lo que cortaba a India y las de la derecha) y tampoco
-  //    quedan ilegibles. projW escala ~lineal con la fuente. Con ~8 no se
-  //    dispara (24px); con ~13 baja a ~17px.
   const availW = rightBound - leftBound;
+  const totalW = () => ordered.reduce((s, a) => s + a.projW, 0) + (ordered.length - 1) * minGap;
+
+  // 2. Auto-ajuste con PISO LEGIBLE. La fuente del formato es fija; SOLO si a ese
+  //    tamaño las etiquetas no entran en el ancho la achicamos lo justo para que
+  //    entren TODAS — pero nunca por debajo de un piso legible (M_LABEL_MIN_FONT).
+  //    projW escala ~lineal con la fuente. Con ~8 no se dispara (24px); ~13 → ~20px.
   let effFont = fontSize;
-  const totalAt = () => ordered.reduce((s, a) => s + a.projW, 0) + (n - 1) * minGap;
-  if (totalAt() > availW) {
-    effFont = Math.max(M_LABEL_MIN_FONT, fontSize * (availW / totalAt()) * 0.97);
+  if (totalW() > availW) {
+    effFont = Math.max(M_LABEL_MIN_FONT, fontSize * (availW / totalW()) * 0.97);
     ordered.forEach(a => {
       a.textW = Math.max(22, m_measureText(a.text, effFont));
       a.projW = cos * a.textW + sin * effFont + 2;
     });
   }
 
-  // 3. Barrido 1D de dos pasadas: izq→der empuja cada texto para no pisar la
+  // 3. TOPE DURO. Si incluso al piso legible NO entran todas (demasiadas
+  //    seleccionadas), raleamos las etiquetas parejo por ranking —conservando
+  //    siempre los extremos— hasta que entren. Prioridad: que NINGUNA se salga
+  //    del gráfico y que NO se pisen las guías, por sobre etiquetarlas todas. Las
+  //    raleadas siguen como chip (selección del usuario) pero sin etiqueta en el
+  //    gráfico (mismo criterio que OWID, que topa ~20 y descarta parejo).
+  if (totalW() > availW) {
+    const full = ordered.slice();
+    const N = full.length;
+    let keep = full;
+    for (let C = N - 1; C >= 2; C--) {
+      keep = [];
+      for (let i = 0; i < C; i++) keep.push(full[Math.round(i * (N - 1) / (C - 1))]);
+      if (keep.reduce((s, a) => s + a.projW, 0) + (keep.length - 1) * minGap <= availW) break;
+    }
+    ordered.length = 0;
+    ordered.push(...keep);
+    n = ordered.length;
+  }
+
+  // 4. Barrido 1D de dos pasadas: izq→der empuja cada texto para no pisar la
   //    huella del anterior (arrancando en leftBound → no se sale por la
   //    izquierda); der→izq clampea al rightBound → no se sale por la derecha.
-  //    Con el auto-ajuste, todas entran; sin borde cortado en ningún caso.
+  //    Con el auto-ajuste + tope, todas entran; sin borde cortado en ningún caso.
   let acc = leftBound;
   ordered.forEach(a => { a.tx = Math.max(a.barX, acc + a.projW); acc = a.tx + minGap; });
   let lim = rightBound;
   for (let i = n - 1; i >= 0; i--) { const a = ordered[i]; if (a.tx > lim) a.tx = lim; lim = a.tx - a.projW - minGap; }
 
-  // 4. Codos escalonados por grupo. Un grupo = corrida de etiquetas CORRIDAS
+  // 5. Codos escalonados por grupo. Un grupo = corrida de etiquetas CORRIDAS
   //    consecutivas cuyos brackets se solapan en x. Dentro del grupo, la altura
   //    del codo se reparte parejo en la franja del marker (altura/(grupo+1)); la
   //    más a la izquierda queda más abajo (cerca de las etiquetas) para
