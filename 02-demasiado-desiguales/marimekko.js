@@ -302,19 +302,37 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
     leftAcc = a.tx + minGap;
   });
 
-  // 3. Cada etiqueta se reconecta con su barra con una línea RECTA (diagonal)
-  //    de la base de la barra (barX, plotBottom) al ancla del texto (tx, yLine).
-  //    Como las barras Y los textos están ordenados de izquierda a derecha, las
-  //    diagonales se abren en abanico y NUNCA se cruzan entre sí (dos segmentos
-  //    entre extremos ordenados no se cruzan). Reemplaza al bracket V-H-V, cuyos
-  //    tramos horizontales se apilaban a la misma altura cuando había muchas
-  //    etiquetas y "se tocaban". Recta casi vertical si el texto quedó sobre su
-  //    barra; más inclinada cuanto más se corrió.
+  // 3. Líneas guía estilo OWID (bracket V-H-V): baja de la barra, tramo
+  //    HORIZONTAL para correrse hasta el texto, y baja al ancla. Para que los
+  //    tramos horizontales NO se apilen a la misma altura (lo que hacía que "se
+  //    tocaran"), cada bracket cuyo tramo horizontal se solapa con otro va a una
+  //    FILA de altura distinta — coloreo de intervalos: greedy por borde
+  //    izquierdo, cada uno a la fila más baja que no choque con un solape
+  //    previo. Las filas se reparten parejo en la franja entre el eje X y la
+  //    línea de anclaje.
+  ordered.forEach(a => {
+    a.displaced = Math.abs(a.tx - a.barX) > 0.5;
+    a.h1 = Math.min(a.barX, a.tx);
+    a.h2 = Math.max(a.barX, a.tx);
+  });
+  const disp = ordered.filter(a => a.displaced).sort((x, y) => x.h1 - y.h1);
+  const rowEnds = [];  // rowEnds[r] = último h2 (borde derecho) colocado en la fila r
+  disp.forEach(a => {
+    let r = 0;
+    while (r < rowEnds.length && rowEnds[r] > a.h1 - minGap) r++;
+    a.bendRow = r;
+    rowEnds[r] = a.h2;
+  });
+  const nRows = Math.max(1, rowEnds.length);
+  const bendTop = plotArea.bottom + 6;   // fila más cercana al eje X (arriba)
+  const bendBot = yLine - 6;             // fila más cercana a las etiquetas (abajo)
+  const bendStep = nRows > 1 ? (bendBot - bendTop) / (nRows - 1) : 0;
   const toDraw = ordered.map(a => ({
     ...a,
     ty: yAnchor,
     yLine,
-    displaced: Math.abs(a.tx - a.barX) > 0.5
+    // fila 0 (primera coloreada) arriba, cerca del eje; filas siguientes bajan.
+    bendY: a.displaced ? bendTop + a.bendRow * bendStep : null
   }));
 
   // Devolvemos el font efectivo (puede ser < fontSize por el auto-fit) para que
@@ -652,13 +670,15 @@ function drawMarimekko() {
   const placedLabels = _layout.labels;
   const fontSize = _layout.fontSize;
   placedLabels.forEach(l => {
-    // Callout (línea guía): RECTA de la base de la barra (barX) al ancla del
-    // texto (tx, yLine). Casi vertical si el texto quedó sobre su barra, más
-    // inclinada cuanto más se corrió. Como barras y textos van ordenados de
-    // izquierda a derecha, estas rectas se abren en abanico y no se cruzan.
+    // Callout (línea guía) estilo OWID: palito vertical recto si el texto quedó
+    // sobre su barra; bracket V-H-V (baja, corre horizontal a su fila de altura,
+    // baja al texto) si se corrió. Las filas de altura las asigna
+    // m_layoutCountryLabels por coloreo de intervalos para que no se apilen.
     const path = m_ns('path');
     path.setAttribute('class', 'm-callout');
-    const d = `M ${l.barX},${plotArea.bottom + 1} L ${l.tx},${l.yLine}`;
+    const d = l.displaced
+      ? `M ${l.barX},${plotArea.bottom + 1} V ${l.bendY} H ${l.tx} V ${l.yLine}`
+      : `M ${l.barX},${plotArea.bottom + 1} V ${l.yLine}`;
     path.setAttribute('d', d);
     path.setAttribute('stroke', l.color);
     // Estilo uniforme (todas son chips): línea guía fina y discreta.
