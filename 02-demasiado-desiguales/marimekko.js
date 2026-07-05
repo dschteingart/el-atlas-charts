@@ -111,6 +111,10 @@ const M_BEND_ROW_GAP = 8;             // separación vertical entre filas de ben
 const M_BEND_ROW_OFFSET = 6;          // distancia eje X → primera fila de bend
 const M_LABEL_MIN_GAP_X = 5;          // gap mínimo entre huellas horizontales
 const M_CALLOUT_PAD = 2;              // separación mínima entre segmentos de callouts distintos
+// Piso del auto-ajuste de fuente de las etiquetas de país: si a la fuente del
+// formato no entran todas en el ancho, se achica lo justo pero NUNCA por debajo
+// de esto (para que sigan legibles). Debajo, se acepta que se aprieten.
+const M_LABEL_MIN_FONT = 14;
 // Plot area: recalculado al inicio de cada drawMarimekko() (depende de
 // M_W/M_H/M_MARGIN que cambian según viewport).
 let M_PLOT_W = M_W - M_MARGIN.left - M_MARGIN.right;
@@ -229,12 +233,13 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
   const yAnchor = yLine + 4;  // pequeño gap entre fin de guía y "a" final
 
   // === Placement estilo OWID (owid-grapher MarimekkoChart) ===
-  // Fuente FIJA — nunca se achica (achicarla la hacía ilegible). El ancho lo
-  // garantiza el FORMATO: si hay más etiquetas de las que entran grandes en el
-  // cuadrado, drawMarimekko elige el apaisado. Pasos:
-  //   1. Anchors a la fuente fija.
-  //   2. Barrido 1D de DOS pasadas (como OWID): reparte el texto a lo ancho.
-  //   3. Codos escalonados POR GRUPO (OWID markerStepSize): cada cluster de
+  // Pasos:
+  //   1. Anchors a la fuente del formato.
+  //   2. Auto-ajuste con PISO legible: si a esa fuente no entran todas en el
+  //      ancho, se achica lo justo (nunca por debajo de M_LABEL_MIN_FONT) para
+  //      que entren TODAS sin que ninguna se salga del borde.
+  //   3. Barrido 1D de DOS pasadas (como OWID): reparte el texto a lo ancho.
+  //   4. Codos escalonados POR GRUPO (OWID markerStepSize): cada cluster de
   //      etiquetas corridas reparte la altura de su codo parejo, así los tramos
   //      horizontales no se apilan.
 
@@ -257,17 +262,34 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
   const n = ordered.length;
   if (n === 0) return { labels: [], fontSize };
 
-  // 2. Barrido 1D (dos pasadas): izq→der empuja cada texto para no pisar la
-  //    huella del anterior; der→izq evita el overflow por la derecha; un clamp
-  //    izquierdo para que el primero no se salga.
+  // 2. Auto-ajuste con PISO LEGIBLE. La fuente del formato es fija; SOLO si a ese
+  //    tamaño las etiquetas no entran en el ancho (suma de huellas + gaps >
+  //    ancho disponible) la achicamos lo justo para que entren TODAS — pero
+  //    nunca por debajo de un piso legible (M_LABEL_MIN_FONT). Así ninguna se
+  //    sale del borde (lo que cortaba a India y las de la derecha) y tampoco
+  //    quedan ilegibles. projW escala ~lineal con la fuente. Con ~8 no se
+  //    dispara (24px); con ~13 baja a ~17px.
+  const availW = rightBound - leftBound;
+  let effFont = fontSize;
+  const totalAt = () => ordered.reduce((s, a) => s + a.projW, 0) + (n - 1) * minGap;
+  if (totalAt() > availW) {
+    effFont = Math.max(M_LABEL_MIN_FONT, fontSize * (availW / totalAt()) * 0.97);
+    ordered.forEach(a => {
+      a.textW = Math.max(22, m_measureText(a.text, effFont));
+      a.projW = cos * a.textW + sin * effFont + 2;
+    });
+  }
+
+  // 3. Barrido 1D de dos pasadas: izq→der empuja cada texto para no pisar la
+  //    huella del anterior (arrancando en leftBound → no se sale por la
+  //    izquierda); der→izq clampea al rightBound → no se sale por la derecha.
+  //    Con el auto-ajuste, todas entran; sin borde cortado en ningún caso.
   let acc = leftBound;
   ordered.forEach(a => { a.tx = Math.max(a.barX, acc + a.projW); acc = a.tx + minGap; });
   let lim = rightBound;
   for (let i = n - 1; i >= 0; i--) { const a = ordered[i]; if (a.tx > lim) a.tx = lim; lim = a.tx - a.projW - minGap; }
-  let leftAcc = leftBound;
-  ordered.forEach(a => { const minTx = leftAcc + a.projW; if (a.tx < minTx) a.tx = minTx; leftAcc = a.tx + minGap; });
 
-  // 3. Codos escalonados por grupo. Un grupo = corrida de etiquetas CORRIDAS
+  // 4. Codos escalonados por grupo. Un grupo = corrida de etiquetas CORRIDAS
   //    consecutivas cuyos brackets se solapan en x. Dentro del grupo, la altura
   //    del codo se reparte parejo en la franja del marker (altura/(grupo+1)); la
   //    más a la izquierda queda más abajo (cerca de las etiquetas) para
@@ -290,7 +312,7 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
   });
 
   const toDraw = ordered.map(a => ({ ...a, ty: yAnchor, yLine, bendY: a.displaced ? a.bendY : null }));
-  return { labels: toDraw, fontSize };
+  return { labels: toDraw, fontSize: effFont };
 }
 
 // =================== Render principal ===================
