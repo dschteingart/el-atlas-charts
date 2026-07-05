@@ -916,11 +916,14 @@
     // filename refleja el modo. En el N°3 no hay toggle similar — se usa
     // FILENAMES[chartId][lang] directo.
     let filename;
-    if (!IS_N3 && chartId === '1' && state && state[1]) {
+    // La rama raw/adj es SOLO del N°2 (marimekko del chart 1 con toggle). El
+    // especial y el N°3 usan FILENAMES[chartId][lang] directo (sin ella, el
+    // chart 1 del especial caía a "el-atlas-02-chart-1-raw.png").
+    if (!IS_N3 && !IS_ESPECIAL && chartId === '1' && state && state[1]) {
       const mode = state[1].mode || 'raw';  // 'raw' | 'adj'
       filename = FILENAMES['1']?.[`${lang}_${mode}`] || `el-atlas-02-chart-1-${mode}.png`;
     } else {
-      const prefix = IS_N3 ? 'el-atlas-03' : 'el-atlas-02';
+      const prefix = IS_ESPECIAL ? 'el-atlas-especial' : IS_N3 ? 'el-atlas-03' : 'el-atlas-02';
       filename = FILENAMES[chartId]?.[lang] || `${prefix}-chart-${chartId}.png`;
     }
     // Sufijo según formato. El default mobile-first (square por override,

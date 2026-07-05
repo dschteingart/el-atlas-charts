@@ -1172,10 +1172,11 @@ function ci_subtitle() {
     ? (lang === 'en' ? ', by competition' : ', por tipo de competencia') : '';
   if (lang === 'en') {
     if (bars) return `${catTxt}The ${CI_TOPN} ${country ? 'countries' : 'cities'} that hosted the most internationals (${period}${neuTxt}${geoTxt}${stackTxt}).`;
-    return `${catTxt}${heat ? 'Hosting density' : 'Matches hosted by each city'} (${period}${neuTxt}${geoTxt}).`;
+    // iluminación y burbujas comparten el mismo texto (cantidad, no "densidad")
+    return `${catTxt}Matches hosted by each city (${period}${neuTxt}${geoTxt}).`;
   }
   if (bars) return `${catTxt}${country ? 'Los' : 'Las'} ${CI_TOPN} ${country ? 'países' : 'ciudades'} que más partidos internacionales organizaron (${period}${neuTxt}${geoTxt}${stackTxt}).`;
-  return `${catTxt}${heat ? 'Densidad de partidos organizados' : 'Partidos organizados por cada ciudad'} (${period}${neuTxt}${geoTxt}).`;
+  return `${catTxt}Partidos organizados por cada ciudad (${period}${neuTxt}${geoTxt}).`;
 }
 function ci_applyHeadings() {
   const block = document.querySelector('.chart-block[data-chart="6"]') || document;

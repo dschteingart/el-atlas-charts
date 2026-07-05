@@ -133,7 +133,7 @@ const ISSUE_I18N = {
     'c5-sources-tpl':      'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia.',
 
     // ---- Chart 6: mapa de sedes
-    'c6-title':            'Las capitales inesperadas del fútbol',
+    'c6-title':            'Las sedes del fútbol internacional',
     'c6-subtitle':         'Kuala Lumpur, Bangkok y Doha organizaron más partidos internacionales que Londres.',
     'c6-title-neutral':    'Las sedes del fútbol internacional',
     'c6-title-line':       'Auge y caída de las sedes del fútbol',
@@ -215,7 +215,7 @@ const ISSUE_I18N = {
     'c6-sources-tpl':      'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia, 1872–jun 2026.',
 
     // ---- Chart 7: la era neutral
-    'c7-title':            'El fútbol se muda a canchas ajenas',
+    'c7-title':            'El fútbol se muda a canchas neutrales',
     'c7-subtitle':         'Uno de cada tres partidos de los 2020s se juega en cancha neutral: el nivel más alto de la historia.',
     'c7-title-neutral':    'Partidos en cancha neutral',
     'c7-subtitle-neutral': 'Porcentaje de partidos internacionales jugados en cancha neutral.',
@@ -367,7 +367,7 @@ const ISSUE_I18N = {
     'c5-sources':          'Data: Mart Jürisoo (martj42), own elaboration. Arcs are each confederation\'s matches; ribbons, matches between two confederations. A match between two teams of the same confederation is "within" (the ribbon that loops back) and counts once. Confederation as of the match date.',
     'c5-sources-tpl':      'Data: Mart Jürisoo (martj42), own elaboration.',
 
-    'c6-title':            'Football\'s unexpected capitals',
+    'c6-title':            'The venues of international football',
     'c6-subtitle':         'Kuala Lumpur, Bangkok and Doha have hosted more internationals than London.',
     'c6-title-neutral':    'The venues of international football',
     'c6-title-line':       'The rise and fall of football venues',
@@ -448,7 +448,7 @@ const ISSUE_I18N = {
     'c6-sources':          'Data: Mart Jürisoo (martj42), own elaboration, 1872–June 2026. Administrative city as recorded by the source (suburbs are not merged: Al Rayyan counts separately from Doha). "Neutral venue" = neither team played at home. Competition types: same classification as the calendar chart. Coordinates: Wikidata, GeoNames and OpenStreetMap.',
     'c6-sources-tpl':      'Data: Mart Jürisoo (martj42), own elaboration, 1872–Jun 2026.',
 
-    'c7-title':            'Football is moving to borrowed grounds',
+    'c7-title':            'Football is moving to neutral grounds',
     'c7-subtitle':         'One in three matches of the 2020s is played at a neutral venue: the highest level in history.',
     'c7-title-neutral':    'Matches at neutral venues',
     'c7-subtitle-neutral': 'Share of international matches played at neutral venues.',
