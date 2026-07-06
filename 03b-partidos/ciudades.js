@@ -805,7 +805,7 @@ function ci_tlRecord() {
   const titleTxt = ci_t(ci_tlMode === 'accum' ? 'c6-title-timelapse-accum' : 'c6-title-timelapse', '');
   const subTxt = ci_tlSub();
   const srcTxt = ci_t('c6-tl-source-vid', 'Datos: Mart Jürisoo y elaboración propia · 1872–2026');
-  const creditTxt = 'El Atlas · Daniel Schteingart';
+  const creditTxt = (typeof LANG !== 'undefined' && LANG === 'en' ? 'The Atlas' : 'El Atlas') + ' · Daniel Schteingart';
   const bandBg = glow ? '#141a20' : '#F4F0E6', mapBg = glow ? '#181e25' : CI_OCEAN;
   // el subtítulo es largo: achicamos su tamaño hasta que entre en una línea
   let subFs = 27;
