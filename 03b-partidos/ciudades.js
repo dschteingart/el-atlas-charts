@@ -777,7 +777,8 @@ function ci_tlRecord() {
   const yTop = proj([0, 80])[1], yBot = proj([0, -56])[1];   // -56: apenas al sur de Ushuaia
   const mapVisH = Math.round(yBot - yTop);
   const offY = topBand - yTop;                    // desplaza el mapa a la banda central
-  const ch = topBand + mapVisH + botBand;
+  let ch = topBand + mapVisH + botBand;
+  if (ch % 2) ch++;                               // alto par (H.264 exige dimensiones pares)
   const canvas = document.createElement('canvas'); canvas.width = cw; canvas.height = ch;
   const ctx = canvas.getContext('2d'); const path = d3.geoPath(proj, ctx);
   const k = mapW / 1084;    // escala vs el mapa en pantalla (plot 1084px)
@@ -852,29 +853,89 @@ function ci_tlRecord() {
     ctx.fillStyle = glow ? 'rgba(239,232,217,0.6)' : 'rgba(51,49,44,0.6)'; ctx.fillText(srcTxt, M, by + 62);
   }
 
+  ci_tlRecording = true; if (btn) btn.disabled = true;
+  const y0 = s.period[0], y1 = s.period[1], span = Math.max(1, y1 - y0);
+  const setProg = (pct) => { if (btn) btn.textContent = ci_t('c6-tl-rec', 'Grabando') + ' ' + pct + '%'; };
+  const done = () => { ci_tlRecording = false; if (btn) { btn.textContent = ci_t('c6-tl-video-dl', 'Descargar video'); btn.disabled = false; } };
+  // Preferimos MP4 (H.264): lo aceptan X y las redes, el WebM no. Si hay
+  // WebCodecs, codificamos frame a frame con VideoEncoder + mp4-muxer y sale un
+  // MP4 PROGRESIVO (moov al frente), universalmente compatible. Si no, WebM.
+  if (typeof VideoEncoder !== 'undefined' && typeof VideoFrame !== 'undefined') {
+    ci_ensureMuxer(
+      () => ci_tlRecMp4(canvas, frame, y0, y1, span, setProg, done),
+      () => ci_tlRecWebm(canvas, frame, y0, y1, span, setProg, done)   // CDN caído → WebM
+    );
+  } else {
+    ci_tlRecWebm(canvas, frame, y0, y1, span, setProg, done);
+  }
+}
+
+function ci_tlDownload(blob, ext) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'el-atlas-sedes-timelapse.' + ext;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
+}
+// carga mp4-muxer (una vez, bajo demanda) para armar el contenedor MP4
+function ci_ensureMuxer(ok, fail) {
+  if (typeof Mp4Muxer !== 'undefined') { ok(); return; }
+  const sc = document.createElement('script');
+  sc.src = 'https://cdn.jsdelivr.net/npm/mp4-muxer@5.2.1/build/mp4-muxer.min.js';
+  sc.onload = () => ok();
+  sc.onerror = () => { if (fail) fail(); };
+  document.head.appendChild(sc);
+}
+// WebM (fallback): graba en tiempo real con MediaRecorder + captureStream
+function ci_tlRecWebm(canvas, frame, y0, y1, span, setProg, done) {
   const mime = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'].find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm';
   const rec = new MediaRecorder(canvas.captureStream(30), { mimeType: mime, videoBitsPerSecond: 8e6 });
   const chunks = [];
   rec.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
-  rec.onstop = () => {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob(chunks, { type: 'video/webm' }));
-    a.download = 'el-atlas-sedes-timelapse.webm';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
-    ci_tlRecording = false; if (btn) { btn.textContent = ci_t('c6-tl-video-dl', 'Descargar video'); btn.disabled = false; }
-  };
-  ci_tlRecording = true; if (btn) btn.disabled = true;
-  const y0 = s.period[0], y1 = s.period[1], span = Math.max(1, y1 - y0);
+  rec.onstop = () => { ci_tlDownload(new Blob(chunks, { type: 'video/webm' }), 'webm'); done(); };
   frame(y0); rec.start();
   let year = y0;
   const step = () => {
-    frame(year);
-    if (btn) btn.textContent = ci_t('c6-tl-rec', 'Grabando') + ' ' + Math.round((year - y0) / span * 100) + '%';
+    frame(year); setProg(Math.round((year - y0) / span * 100));
     if (year >= y1) { setTimeout(() => rec.stop(), 700); return; }
-    const d = ci_tlStepFor(year); year++;
-    setTimeout(step, d);
+    const d = ci_tlStepFor(year); year++; setTimeout(step, d);
   };
   step();
+}
+// MP4 (preferido): codifica frame a frame con WebCodecs. Cada año se dibuja una
+// vez y se repite tantos frames como su duración a 30 fps (respeta el pacing).
+function ci_tlRecMp4(canvas, frame, y0, y1, span, setProg, done) {
+  (async () => {
+    const W = canvas.width, H = canvas.height, FPS = 30;
+    let codec = null;
+    for (const c of ['avc1.640028', 'avc1.4d0028', 'avc1.420028', 'avc1.640033']) {
+      try { const r = await VideoEncoder.isConfigSupported({ codec: c, width: W, height: H, bitrate: 8e6, framerate: FPS }); if (r && r.supported) { codec = c; break; } } catch (_) {}
+    }
+    if (!codec || typeof Mp4Muxer === 'undefined') { ci_tlRecWebm(canvas, frame, y0, y1, span, setProg, done); return; }
+    try {
+      const muxer = new Mp4Muxer.Muxer({ target: new Mp4Muxer.ArrayBufferTarget(), video: { codec: 'avc', width: W, height: H }, fastStart: 'in-memory' });
+      let failed = false;
+      const enc = new VideoEncoder({ output: (chunk, meta) => muxer.addVideoChunk(chunk, meta), error: () => { failed = true; } });
+      enc.configure({ codec, width: W, height: H, bitrate: 8e6, framerate: FPS });
+      const usPerFrame = 1e6 / FPS; let ts = 0, fno = 0;
+      for (let year = y0; year <= y1 && !failed; year++) {
+        frame(year);
+        const d = (year >= y1) ? 1000 : ci_tlStepFor(year);   // ~1s de freeze en el último año
+        const nf = Math.max(1, Math.round(d / 1000 * FPS));
+        for (let i = 0; i < nf; i++) {
+          const vf = new VideoFrame(canvas, { timestamp: ts, duration: usPerFrame });
+          enc.encode(vf, { keyFrame: fno % (FPS * 2) === 0 });   // keyframe cada 2s
+          vf.close(); ts += usPerFrame; fno++;
+        }
+        setProg(Math.round((year - y0) / span * 100));
+        while (enc.encodeQueueSize > 24) await new Promise(r => setTimeout(r, 0));   // backpressure
+        if (year % 6 === 0) await new Promise(r => setTimeout(r, 0));                // ceder el hilo
+      }
+      if (failed) { try { enc.close(); } catch (_) {} ci_tlRecWebm(canvas, frame, y0, y1, span, setProg, done); return; }
+      await enc.flush(); enc.close(); muxer.finalize();
+      ci_tlDownload(new Blob([muxer.target.buffer], { type: 'video/mp4' }), 'mp4');
+      done();
+    } catch (e) { ci_tlRecWebm(canvas, frame, y0, y1, span, setProg, done); }
+  })();
 }
 
 //------------------------------------------------------------------
