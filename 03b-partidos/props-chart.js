@@ -302,6 +302,23 @@ function pc_subtitle() {
   return (lang === 'en' ? `${cat}. Share of matches ${metric} (${period}${maTxt}).`
     : `${cat}. Porcentaje de partidos ${metric} (${period}${maTxt}).`);
 }
+// ---- nota de fuente/metodología dinámica ------------------------------------
+// La media móvil se aplica SOLO en la vista de líneas con suavizado móvil. En
+// barras es un agregado sobre el rango elegido (sin media móvil), y la ventana
+// puede no ser 4. Por eso la nota de fuente no puede afirmar "promedio móvil de
+// 4 años" siempre (como hacía el texto estático): se arma con el texto base y se
+// le agrega la cláusula de media móvil solo cuando de verdad se aplica.
+function pc_maActive() { const s = pc_state(); return s.view === 'lines' && s.smooth === 'ma'; }
+function pc_maClause() {
+  const s = pc_state(), lang = (typeof LANG !== 'undefined') ? LANG : 'es', n = s.maYears;
+  if (lang === 'en') return n === 4 ? '4-year moving average (one window covers a full World Cup cycle).' : n + '-year moving average.';
+  return n === 4 ? 'Promedio móvil de 4 años (una ventana cubre un ciclo mundialista completo).' : 'Promedio móvil de ' + n + ' años.';
+}
+function pc_sourceText(key) {
+  const base = pc_t(key, '');
+  if (!pc_maActive()) return base || null;
+  return (base ? base + ' ' : '') + pc_maClause();
+}
 function pc_applyHeadings() {
   const block = document.querySelector('.chart-block[data-chart="' + pc_cfg.n + '"]') || document;
   const aeCfg = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
@@ -311,6 +328,10 @@ function pc_applyHeadings() {
   if (titleEl && !(tx.title || '').trim()) titleEl.textContent = pc_t(pc_pristine() ? pc_cfg.titleKey : pc_cfg.titleNeutralKey, '');
   const subEl = block.querySelector('.chart-subtitle');
   if (subEl && !(tx.subtitle || '').trim()) subEl.textContent = pc_subtitle();
+  // footnote de metodología en vivo: applyI18n pone el texto base (estático);
+  // acá lo re-escribimos con la cláusula de media móvil según la vista actual.
+  const srcKey = 'c' + pc_cfg.n + '-sources', srcTxt = pc_sourceText(srcKey);
+  if (srcTxt) document.querySelectorAll('[data-i18n="' + srcKey + '"]').forEach(el => { el.textContent = srcTxt; });
 }
 
 // ---- controles --------------------------------------------------------------
@@ -481,7 +502,7 @@ function initPropsChart(cfg) {
   window.__atlasSupportsFormats = true;
   window.__atlasRedraw = drawPropsChart;
   window.onBeforePngExportGetSourceText = function (chartId) {
-    return String(chartId) === String(cfg.n) ? (pc_t(cfg.srcTpl, '') || null) : null;
+    return String(chartId) === String(cfg.n) ? pc_sourceText(cfg.srcTpl) : null;
   };
   window.onBeforePngExportGetSubtitle = function (chartId) {
     return String(chartId) === String(cfg.n) ? pc_subtitle() : null;
