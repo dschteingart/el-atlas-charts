@@ -11,7 +11,7 @@ const ISSUE_I18N = {
   es: {
     'issue-num':  'Especial',
     'page-title': 'La geografía de los partidos de fútbol',
-    'page-lede':  'Quién juega contra quién, dónde y cuánto: 49.000 partidos de selecciones desde 1872. Compañero del N° 3, la geografía del talento.',
+    'page-lede':  'Quién juega contra quién, dónde y cuánto: 49.000 partidos de selecciones desde 1872.',
 
     // ---- Chart 1: actividad (partidos, selecciones activas, debutantes)
     'c1-title':            'El planeta se llenó de fútbol',
@@ -246,13 +246,13 @@ const ISSUE_I18N = {
     'attribution-href':    'https://elatlas.substack.com',
     'index-see':           'Ver gráfico →',
     'index-charts-label':  'Gráficos interactivos',
-    'index-companion':     'Este especial es el compañero de <a href="../03-futbol/index.html">El Atlas N° 3: la geografía del talento futbolístico</a>.',
+    'index-companion':     'El otro mapa del fútbol de El Atlas. Su par es <a href="../03-futbol/index.html">el N° 3: la geografía del talento futbolístico</a>.',
   },
 
   en: {
     'issue-num':  'Special',
     'page-title': 'The geography of football matches',
-    'page-lede':  'Who plays whom, where and how often: 49,000 international matches since 1872. Companion to No. 3, the geography of talent.',
+    'page-lede':  'Who plays whom, where and how often: 49,000 international matches since 1872.',
 
     'c1-title':            'The planet filled up with football',
     'c1-title-neutral':    'International football activity',
@@ -476,7 +476,7 @@ const ISSUE_I18N = {
     'attribution-href':    'https://atlasdevelopment.substack.com',
     'index-see':           'See chart →',
     'index-charts-label':  'Interactive charts',
-    'index-companion':     'This special is the companion to <a href="../03-futbol/index.html">The Atlas No. 3: the geography of football talent</a>.',
+    'index-companion':     'The other football map from The Atlas. Its counterpart is <a href="../03-futbol/index-en.html">No. 3: the geography of football talent</a>.',
   }
 };
 
