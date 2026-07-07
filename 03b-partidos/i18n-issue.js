@@ -90,8 +90,8 @@ const ISSUE_I18N = {
     'pc-world-avg':        'Mundo (promedio)',
     'pc-matches':          'partidos',
     'pc-empty':            'No hay partidos para mostrar con estos filtros.',
-    'c3-sources':          'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. Promedio móvil de 4 años (una ventana cubre un ciclo mundialista completo). La confederación de cada selección es la vigente en la fecha del partido (Australia pasó a la AFC en 2006, Israel a la UEFA en 1994, Kazajistán en 2002). Serie hasta 2025.',
-    'c3-sources-tpl':      'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. Promedio móvil de 4 años, serie hasta 2025.',
+    'c3-sources':          'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. La confederación de cada selección es la vigente en la fecha del partido (Australia pasó a la AFC en 2006, Israel a la UEFA en 1994, Kazajistán en 2002). Serie hasta 2025.',
+    'c3-sources-tpl':      'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. Serie hasta 2025.',
 
     // ---- Chart 4: la red de duelos
     'c4-title':            'El fútbol se juega entre vecinos',
@@ -223,7 +223,7 @@ const ISSUE_I18N = {
     'c7-metric':           'en cancha neutral',
     'c7-serie-mm4':        'Promedio móvil 4 años',
     'c7-serie-anual':      'Dato anual',
-    'c7-sources':          'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. "Cancha neutral" = ninguno de los dos equipos jugaba de local (torneos en sede fija, amistosos en países terceros). Promedio móvil de 4 años; serie desde 1946, hasta 2025.',
+    'c7-sources':          'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. "Cancha neutral" = ninguno de los dos equipos jugaba de local (torneos en sede fija, amistosos en países terceros). Serie desde 1946, hasta 2025.',
     'c7-sources-tpl':      'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. Serie 1946–2025.',
 
     // Confederaciones (chips, leyendas, tooltips)
@@ -327,8 +327,8 @@ const ISSUE_I18N = {
     'pc-matches':          'matches',
     'pc-empty':            'No matches to show with these filters.',
     'c3-serie-global':     'World',
-    'c3-sources':          'Data: Mart Jürisoo (martj42), own elaboration. 4-year moving average (one window covers a full World Cup cycle). Each team\'s confederation is the one in force on the match date (Australia joined the AFC in 2006, Israel joined UEFA in 1994, Kazakhstan in 2002). Series through 2025.',
-    'c3-sources-tpl':      'Data: Mart Jürisoo (martj42), own elaboration. 4-year moving average, series through 2025.',
+    'c3-sources':          'Data: Mart Jürisoo (martj42), own elaboration. Each team\'s confederation is the one in force on the match date (Australia joined the AFC in 2006, Israel joined UEFA in 1994, Kazakhstan in 2002). Series through 2025.',
+    'c3-sources-tpl':      'Data: Mart Jürisoo (martj42), own elaboration. Series through 2025.',
 
     'c4-title':            'Football is played among neighbors',
     'c4-subtitle':         'Each bubble is a national team; its size, matches played. Lines link the teams that met most.',
@@ -456,7 +456,7 @@ const ISSUE_I18N = {
     'c7-metric':           'at neutral venues',
     'c7-serie-mm4':        '4-year moving average',
     'c7-serie-anual':      'Annual figure',
-    'c7-sources':          'Data: Mart Jürisoo (martj42), own elaboration. "Neutral venue" = neither team played at home (fixed-venue tournaments, friendlies in third countries). 4-year moving average; series from 1946 through 2025.',
+    'c7-sources':          'Data: Mart Jürisoo (martj42), own elaboration. "Neutral venue" = neither team played at home (fixed-venue tournaments, friendlies in third countries). Series from 1946 through 2025.',
     'c7-sources-tpl':      'Data: Mart Jürisoo (martj42), own elaboration. Series 1946–2025.',
 
     'conf.CONMEBOL': 'CONMEBOL', 'conf.UEFA': 'UEFA', 'conf.CONCACAF': 'CONCACAF',
