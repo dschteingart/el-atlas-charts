@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El fútbol que no se globalizó — El Atlas · Especial</title>
+<title>Solo dos confederaciones ganan fuera de su región — El Atlas · Especial</title>
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
-<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/chart-globalizacion.html">
-<meta property="og:title" content="El fútbol que no se globalizó — El Atlas · Especial">
-<meta property="og:description" content="Porcentaje de partidos entre confederaciones distintas, 1950-2025.">
-<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-globalizacion.png">
-<meta property="og:image:alt" content="El fútbol que no se globalizó">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/chart-versus.html">
+<meta property="og:title" content="Solo dos confederaciones ganan fuera de su región — El Atlas · Especial">
+<meta property="og:description" content="Rendimiento de cada confederación en partidos entre confederaciones distintas.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-versus.png">
+<meta property="og:image:alt" content="Solo dos confederaciones ganan fuera de su región">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="El fútbol que no se globalizó — El Atlas · Especial">
-<meta name="twitter:description" content="Porcentaje de partidos entre confederaciones distintas, 1950-2025.">
-<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-globalizacion.png">
+<meta name="twitter:title" content="Solo dos confederaciones ganan fuera de su región — El Atlas · Especial">
+<meta name="twitter:description" content="Rendimiento de cada confederación en partidos entre confederaciones distintas.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-versus.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -113,18 +113,18 @@
     </div>
   </header>
 
-  <section class="chart-block" data-chart="3" data-editor-id="esp-globalizacion">
-    <h2 class="chart-title" data-i18n="c3-title">El fútbol que no se globalizó</h2>
-    <p class="chart-subtitle" data-i18n="c3-subtitle">Porcentaje de partidos entre confederaciones distintas, 1950-2025.</p>
+  <section class="chart-block" data-chart="8" data-editor-id="esp-versus">
+    <h2 class="chart-title" data-i18n="c8-title">Solo dos confederaciones ganan fuera de su región</h2>
+    <p class="chart-subtitle" data-i18n="c8-subtitle">Rendimiento de cada confederación en partidos entre confederaciones distintas.</p>
 
       <div class="m-controls">
-        <div class="toggle" id="pc-tabs">
-          <button id="pc-tab-lines" class="active" data-i18n="pc-tab-lines">Evolución</button>
-          <button id="pc-tab-bars" data-i18n="pc-tab-bars">Comparación</button>
+        <div class="toggle" id="vs-tabs">
+          <button id="vs-tab-rank" class="active" data-i18n="c8-tab-rank">Tabla de posiciones</button>
+          <button id="vs-tab-evo" data-i18n="c8-tab-evo">Evolución</button>
         </div>
-        <div class="m-ctrl-group" id="pc-cat-group">
+        <div class="m-ctrl-group">
           <span class="m-ctrl-label" data-i18n="c6-cat-label">Competencia</span>
-          <select id="pc-cat-select" class="m-select" aria-label="Competencia">
+          <select id="vs-cat-select" class="m-select" aria-label="Competencia">
             <option value="ALL" data-i18n="c6-cat-all">Todas</option>
             <option value="0" data-i18n="c6-cat-0">Amistosos</option>
             <option value="1" data-i18n="c6-cat-1">Eliminatorias del Mundial</option>
@@ -137,63 +137,47 @@
         </div>
         <div class="s-range-block">
           <span class="m-ctrl-label" data-i18n="c6-slider-period-label">Período</span>
-          <div class="s-range-slider" id="pc-range-slider">
+          <div class="s-range-slider" id="vs-range-slider">
             <div class="s-range-track"></div>
-            <div class="s-range-track-active" id="pc-range-track-active"></div>
-            <input type="range" id="pc-slider-from" min="1872" max="2025" value="1872" step="1" aria-label="Desde">
-            <input type="range" id="pc-slider-to"   min="1872" max="2025" value="2025" step="1" aria-label="Hasta">
+            <div class="s-range-track-active" id="vs-range-track-active"></div>
+            <input type="range" id="vs-slider-from" min="1872" max="2025" value="1872" step="1" aria-label="Desde">
+            <input type="range" id="vs-slider-to"   min="1872" max="2025" value="2025" step="1" aria-label="Hasta">
           </div>
-          <span class="s-range-display" id="pc-range-display">1872–2025</span>
+          <span class="s-range-display" id="vs-range-display">1872–2025</span>
         </div>
       </div>
-      <div class="m-controls" id="pc-ambito-controls">
-        <div class="esp-legend" id="pc-legend"></div>
+      <div class="m-controls" id="vs-metric-group" style="display:none;">
         <div class="m-ctrl-group">
-          <span class="m-ctrl-label" data-i18n="pc-add-label">Mostrar</span>
-          <div class="m-search-wrap" style="margin:0;min-width:200px;max-width:280px;">
-            <input type="text" id="pc-team-search" class="m-search-input" data-i18n-placeholder="pc-team-ph" placeholder="Agregar confederación o país…" autocomplete="off">
-            <div id="pc-team-results" class="m-search-results"></div>
+          <span class="m-ctrl-label" data-i18n="c8-metric-label">Métrica</span>
+          <div class="toggle" id="vs-metric">
+            <button data-metric="eff" class="active" data-i18n="c8-metric-eff">Efectividad</button>
+            <button data-metric="gd" data-i18n="c8-metric-gd">Diferencia de gol</button>
           </div>
         </div>
-        <div class="m-selected-chips" id="pc-team-chips"></div>
-      </div>
-      <div class="m-controls">
-        <div class="m-ctrl-group" id="pc-smooth-group">
-          <span class="m-ctrl-label" data-i18n="c2-smooth-label">Suavizado</span>
-          <div class="toggle" id="pc-smooth">
-            <button data-smooth="raw" data-i18n="c2-smooth-raw">Anual</button>
-            <button data-smooth="ma" class="active" data-i18n="c2-smooth-ma">Promedio móvil</button>
-          </div>
-        </div>
-        <div class="m-ctrl-group esp-slider" id="pc-ma-group">
-          <input type="range" id="pc-ma" min="2" max="8" step="1" value="4" style="width:100px;">
-          <span class="esp-slider-val" id="pc-ma-val">4</span>
+        <div class="m-ctrl-group esp-slider" id="vs-ma-group">
+          <span class="m-ctrl-label" data-i18n="c8-smooth-label">Promedio móvil</span>
+          <input type="range" id="vs-ma" min="1" max="12" step="1" value="8" style="width:100px;">
+          <span class="esp-slider-val" id="vs-ma-val">8</span>
           <span class="m-ctrl-label" data-i18n="c2-ma-years">años</span>
         </div>
-        <div class="m-ctrl-group" id="pc-barsby-group" style="display:none;">
-          <span class="m-ctrl-label" data-i18n="pc-barsby-label">Comparar</span>
-          <div class="toggle" id="pc-barsby">
-            <button data-by="cat" class="active" data-i18n="pc-by-cat">Por competencia</button>
-            <button data-by="conf" data-i18n="pc-by-conf">Por confederación</button>
-          </div>
-        </div>
       </div>
+      <p class="esp-hint" data-i18n="c8-hint">Pasá el cursor por una barra o una línea para ver el detalle</p>
     <div class="chart-svg-wrap">
-      <svg id="chart3" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="tooltip" id="tooltip3"></div>
+      <svg id="chart8" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip8"></div>
     </div>
   </section>
 
   <div class="footer">
     <p>
-      <button class="download" data-chart="3-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
-      <button class="download" data-png="3" data-i18n="footer-download-png">Descargar PNG</button>
+      <button class="download" data-chart="8-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="8" data-i18n="footer-download-png">Descargar PNG</button>
     </p>
     <div class="footer-row">
-      <p class="sources m-desktop-only" data-i18n="c3-sources"></p>
+      <p class="sources m-desktop-only" data-i18n="c8-sources"></p>
       <details class="m-mobile-collapse">
         <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
-        <p data-i18n="c3-sources"></p>
+        <p data-i18n="c8-sources"></p>
       </details>
       <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
     </div>
@@ -201,29 +185,28 @@
 
 </div>
 
-<script src="props-chart.js?v=63"></script>
 <script src="../lib/regions.js?v=63"></script>
 <script src="../lib/i18n.js?v=63"></script>
 <script src="./regions-fifa.js?v=63"></script>
 <script src="./i18n-issue.js?v=63"></script>
 <script src="./utils.js?v=63"></script>
 <script src="./country-names.js?v=63"></script>
-<script src="./data-props.js?v=63"></script>
+<script src="./data-versus.js?v=63"></script>
 <script src="./data-nombres.js?v=63"></script>
 <script src="./editor.js?v=63"></script>
 <script src="./ts-partidos.js?v=63"></script>
-<script src="./globalizacion.js?v=63"></script>
+<script src="./versus.js?v=63"></script>
 <script src="./png-export.js?v=63"></script>
 <script src="./svg-export.js?v=63"></script>
 <script>
   window.__ESP_V = '63';
-  initGlobalizacion();
+  initVersus();
   applyI18n();
   // applyI18n pisa textos con data-i18n (p.ej. el subtítulo); un redibujo deja
   // que el renderer vuelva a poner su subtítulo dinámico (métrica, suavizado…).
   if (window.__atlasRedraw) window.__atlasRedraw();
   setupLangToggle(() => {
-    if (typeof drawGlobalizacion === 'function') drawGlobalizacion();
+    if (typeof drawVersus === 'function') drawVersus();
   });
 </script>
 <div id="chart-nav"></div>
