@@ -424,7 +424,18 @@ function vs_syncCtx() {
   show('vs-metric-group', lines);
   show('vs-ma-group', lines && s.metric === 'eff');
 }
-function vs_dataStartYear() { return vs_firstYear(vs_state().cat); }
+function vs_dataStartYear() {
+  const s = vs_state();
+  // en la vista de efectividad, el primer año dibujado depende del piso de muestra
+  // (no del primer cruce): arrancar ahí evita el vacío a la izquierda. En dif. de
+  // gol y en la tabla, el primer año con cruces.
+  if (s.view === 'lines' && s.metric === 'eff') {
+    let mn = null;
+    vs_series().forEach(se => { if (se.pts.length && (mn === null || se.pts[0][0] < mn)) mn = se.pts[0][0]; });
+    if (mn !== null) return mn;
+  }
+  return vs_firstYear(s.cat);
+}
 function vs_autofitPeriod() {
   const s = vs_state(); if (s.periodAuto === false) return;
   s.period = [Math.min(vs_dataStartYear(), DATA_VERSUS.y1 - 5), DATA_VERSUS.y1];
@@ -441,7 +452,7 @@ function vs_updateSlider() {
 }
 function vs_setupTabs() {
   const rb = document.getElementById('vs-tab-rank'), eb = document.getElementById('vs-tab-evo'); if (!rb || !eb) return;
-  const go = (v) => { const s = vs_state(); if (s.view === v) return; s.view = v; vs_touched = true; sync(); drawVersus(); };
+  const go = (v) => { const s = vs_state(); if (s.view === v) return; s.view = v; vs_touched = true; sync(); vs_autofitPeriod(); drawVersus(); };
   function sync() { const v = vs_state().view; rb.classList.toggle('active', v === 'rank'); eb.classList.toggle('active', v === 'lines'); vs_syncCtx(); }
   rb.addEventListener('click', () => go('rank'));
   eb.addEventListener('click', () => go('lines'));
@@ -458,7 +469,7 @@ function vs_setupCat() {
 function vs_setupMetric() {
   document.querySelectorAll('#vs-metric button').forEach(b => b.addEventListener('click', () => {
     document.querySelectorAll('#vs-metric button').forEach(x => x.classList.toggle('active', x === b));
-    vs_state().metric = b.dataset.metric; vs_touched = true; vs_syncCtx(); drawVersus();
+    vs_state().metric = b.dataset.metric; vs_touched = true; vs_syncCtx(); vs_autofitPeriod(); drawVersus();
   }));
   const ma = document.getElementById('vs-ma'), val = document.getElementById('vs-ma-val');
   if (ma) { ma.value = vs_state().maYears; if (val) val.textContent = ma.value; ma.addEventListener('input', () => { vs_state().maYears = +ma.value; if (val) val.textContent = ma.value; vs_touched = true; drawVersus(); }); }
