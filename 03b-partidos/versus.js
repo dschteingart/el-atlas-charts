@@ -399,9 +399,10 @@ function vs_subtitle() {
 }
 function vs_source() {
   const s = vs_state(), en = vs_lang() === 'en';
+  const yy = (typeof DATA_VERSUS !== 'undefined' && DATA_VERSUS.y1) ? DATA_VERSUS.y1 : 2026;
   let base = en
-    ? 'Data: Mart Jürisoo (martj42), own elaboration. Only matches between teams from different confederations. Effectiveness = points won over points available, with the current rule (3 for a win, 1 for a draw, 0 for a loss) applied across the whole series. Each team\'s confederation is the one in force on the match date. Series through 2025.'
-    : 'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. Solo partidos entre selecciones de confederaciones distintas. Efectividad = puntos obtenidos sobre posibles, con la regla actual (3 por victoria, 1 por empate, 0 por derrota) aplicada a toda la serie. La confederación de cada selección es la vigente en la fecha del partido. Serie hasta 2025.';
+    ? `Data: Mart Jürisoo (martj42), own elaboration. Only matches between teams from different confederations. Effectiveness = points won over points available, with the current rule (3 for a win, 1 for a draw, 0 for a loss) applied across the whole series. Each team's confederation is the one in force on the match date. Series through ${yy} (includes the matches already played at the ${yy} World Cup).`
+    : `Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. Solo partidos entre selecciones de confederaciones distintas. Efectividad = puntos obtenidos sobre posibles, con la regla actual (3 por victoria, 1 por empate, 0 por derrota) aplicada a toda la serie. La confederación de cada selección es la vigente en la fecha del partido. Serie hasta ${yy} (incluye los partidos ya jugados del Mundial ${yy}).`;
   if (s.view === 'lines' && s.metric === 'eff' && s.maYears > 1) base += en ? ` ${s.maYears}-year moving average.` : ` Promedio móvil de ${s.maYears} años.`;
   return base;
 }
