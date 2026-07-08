@@ -230,7 +230,7 @@ const ISSUE_I18N = {
     'c8-title':            'Solo dos confederaciones ganan fuera de su región',
     'c8-title-neutral':    'Rendimiento entre confederaciones',
     'c8-subtitle':         'Efectividad en puntos en partidos entre confederaciones distintas.',
-    'c8-tab-rank':         'Tabla de posiciones',
+    'c8-tab-rank':         'Posiciones',
     'c8-tab-evo':          'Evolución',
     'c8-metric-label':     'Métrica',
     'c8-metric-eff':       'Efectividad',
@@ -250,6 +250,10 @@ const ISSUE_I18N = {
     'c8-points':           'puntos',
     'c8-axis-eff':         'Efectividad (%)',
     'c8-axis-gd':          'Diferencia de gol acumulada',
+    'c8-tab-matrix':       'Enfrentamientos',
+    'c8-tab-scatter':      'Selecciones',
+    'c8-axis-played':      'Partidos entre confederaciones jugados',
+    'c8-loading':          'Cargando…',
     'c8-sources':          'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. Solo partidos entre selecciones de confederaciones distintas. Efectividad = puntos obtenidos sobre posibles, con la regla actual (3 por victoria, 1 por empate, 0 por derrota) aplicada a toda la serie. La confederación de cada selección es la vigente en la fecha del partido. Serie hasta 2025.',
 
     // Confederaciones (chips, leyendas, tooltips)
@@ -509,6 +513,10 @@ const ISSUE_I18N = {
     'c8-points':           'points',
     'c8-axis-eff':         'Effectiveness (%)',
     'c8-axis-gd':          'Cumulative goal difference',
+    'c8-tab-matrix':       'Head-to-head',
+    'c8-tab-scatter':      'Teams',
+    'c8-axis-played':      'Matches played between confederations',
+    'c8-loading':          'Loading…',
     'c8-sources':          'Data: Mart Jürisoo (martj42), own elaboration. Only matches between teams from different confederations. Effectiveness = points won over points available, with the current rule (3 for a win, 1 for a draw, 0 for a loss) applied across the whole series. Each team\'s confederation is the one in force on the match date. Series through 2025.',
 
     'conf.CONMEBOL': 'CONMEBOL', 'conf.UEFA': 'UEFA', 'conf.CONCACAF': 'CONCACAF',

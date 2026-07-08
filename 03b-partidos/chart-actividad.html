@@ -46,6 +46,9 @@
   .toggle button { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 13px; background: var(--bg); color: var(--ink-soft); border: none; cursor: pointer; white-space: nowrap; transition: background 0.12s ease, color 0.12s ease; }
   .toggle button + button { border-left: 1px solid var(--rule); }
   .toggle button.active { background: var(--accent); color: #fff; }
+  /* chart 8 tiene 4 pestañas: si no entran (mobile), que scrolleen en vez de recortarse */
+  #vs-tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+  #vs-tabs::-webkit-scrollbar { display: none; }
 
   /* Menu desplegable (misma familia visual que los toggles pill) */
   .m-select { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 28px 6px 13px; border: 1px solid var(--rule); border-radius: 15px; background-color: var(--bg); color: var(--ink-soft); cursor: pointer; -webkit-appearance: none; appearance: none; outline: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%238a8378' stroke-width='1.5'/></svg>"); background-repeat: no-repeat; background-position: right 11px center; }
@@ -177,21 +180,21 @@
 
 </div>
 
-<script src="../lib/regions.js?v=64"></script>
-<script src="../lib/i18n.js?v=64"></script>
-<script src="./regions-fifa.js?v=64"></script>
-<script src="./i18n-issue.js?v=64"></script>
-<script src="./utils.js?v=64"></script>
-<script src="./country-names.js?v=64"></script>
-<script src="./data-actividad.js?v=64"></script>
-<script src="./data-nombres.js?v=64"></script>
-<script src="./editor.js?v=64"></script>
-<script src="./ts-partidos.js?v=64"></script>
-<script src="./actividad.js?v=64"></script>
-<script src="./png-export.js?v=64"></script>
-<script src="./svg-export.js?v=64"></script>
+<script src="../lib/regions.js?v=65"></script>
+<script src="../lib/i18n.js?v=65"></script>
+<script src="./regions-fifa.js?v=65"></script>
+<script src="./i18n-issue.js?v=65"></script>
+<script src="./utils.js?v=65"></script>
+<script src="./country-names.js?v=65"></script>
+<script src="./data-actividad.js?v=65"></script>
+<script src="./data-nombres.js?v=65"></script>
+<script src="./editor.js?v=65"></script>
+<script src="./ts-partidos.js?v=65"></script>
+<script src="./actividad.js?v=65"></script>
+<script src="./png-export.js?v=65"></script>
+<script src="./svg-export.js?v=65"></script>
 <script>
-  window.__ESP_V = '64';
+  window.__ESP_V = '65';
   state[1] = { metric: 'partidos', period: [1900, 2025], mundo: true, teams: new Map(), confs: new Map(), debConf: 'ALL' };
   initActividad();
   applyI18n();
@@ -204,6 +207,6 @@
   });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=64"></script>
+<script src="./nav.js?v=65"></script>
 </body>
 </html>

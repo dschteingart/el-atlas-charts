@@ -56,6 +56,32 @@ function vs_pooledEff(a, b, cat) {
   DATA_VERSUS.confOrder.forEach(cf => { const o = vs_agg(cf, a, b, cat); num += 3 * o.w + o.d; den += 3 * o.m; });
   return den ? num / den * 100 : 0;
 }
+// agregado de un enfrentamiento fila-vs-columna (matriz). Usa el par canónico
+// (A antes que B en confOrder) y espeja si la fila es el segundo del par.
+function vs_pairAgg(rowCf, colCf, a, b, cat) {
+  if (rowCf === colCf) return null;
+  const ord = DATA_VERSUS.confOrder, i = ord.indexOf(rowCf), j = ord.indexOf(colCf);
+  const canon = i < j, key = canon ? rowCf + '|' + colCf : colCf + '|' + rowCf;
+  const rows = (DATA_VERSUS.pairs && DATA_VERSUS.pairs[key]) || [];
+  let m = 0, w = 0, d = 0, l = 0, gd = 0;
+  for (const r of rows) {
+    const y = r[0] + DATA_VERSUS.y0;
+    if (y < a || y > b) continue;
+    if (cat !== 'ALL' && r[1] !== cat) continue;
+    m += r[2]; w += r[3]; d += r[4]; l += r[5]; gd += r[6];
+  }
+  if (!canon) { const tmp = w; w = l; l = tmp; gd = -gd; }   // fila = B del par → espejar
+  return { m, w, d, l, gd, eff: m ? (3 * w + d) / (3 * m) * 100 : 0 };
+}
+// color divergente por efectividad: 50% neutro, verde arriba (gana más), rojo
+// abajo (pierde más). Dominio útil ~[25,75].
+function vs_diverge(eff) {
+  const t = Math.max(0, Math.min(1, (eff - 25) / 50));
+  const lerp = (c1, c2, u) => c1.map((v, k) => Math.round(v + (c2[k] - v) * u));
+  const R = [176, 74, 52], N = [238, 231, 216], G = [94, 145, 82];
+  const c = t < 0.5 ? lerp(R, N, t * 2) : lerp(N, G, (t - 0.5) * 2);
+  return `rgb(${c[0]},${c[1]},${c[2]})`;
+}
 // categorías con al menos un cruce (para no ofrecer competencias vacías)
 function vs_availCats() {
   const has = {};
@@ -116,7 +142,10 @@ function vs_ticks(lo, hi, target) {
 function drawVersus() {
   if (typeof DATA_VERSUS === 'undefined') return;
   const s = vs_state();
-  if (s.view === 'rank') vs_drawBars(); else vs_drawLines();
+  if (s.view === 'rank') vs_drawBars();
+  else if (s.view === 'matrix') vs_drawMatrix();
+  else if (s.view === 'scatter') vs_drawScatter();
+  else vs_drawLines();
   vs_applyHeadings();
 }
 function vs_svg() { return document.getElementById('chart' + VS_N); }
@@ -237,6 +266,147 @@ function vs_tipMove(ev) {
   tt.style.top = (ev.clientY - rc.top + 14) + 'px';
 }
 function vs_tipHide() { const tt = document.getElementById('tooltip' + VS_N); if (tt) { tt.style.opacity = '0'; tt.style.display = 'none'; } }
+
+// ---- DRAW: matriz de enfrentamientos (quién le gana a quién) ----------------
+function vs_drawMatrix() {
+  const svg = vs_svg(); if (!svg) return;
+  svg.innerHTML = ''; vs_clearHover(svg);
+  const s = vs_state(), a = s.period[0], b = s.period[1], ord = DATA_VERSUS.confOrder, n = ord.length;
+  const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
+  const mobile = !editorFormat && (typeof isMobileViewport === 'function') && isMobileViewport();
+  const bigFmt = !!editorFormat || mobile;
+  let W = 1100, H = 520;
+  if (editorFormat && typeof PNG_FORMATS !== 'undefined' && PNG_FORMATS[editorFormat]) { W = PNG_FORMATS[editorFormat].vbW; H = Math.max(PNG_FORMATS[editorFormat].vbH, 760); }
+  else if (mobile) { W = 1100; H = 820; }
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
+  const fs = bigFmt ? 20 : 13, fsCell = bigFmt ? 24 : 15;
+  const M = { top: bigFmt ? 96 : 60, right: bigFmt ? 44 : 26, bottom: bigFmt ? 34 : 20, left: bigFmt ? 220 : 140 };
+  const gridW = W - M.left - M.right, gridH = H - M.top - M.bottom;
+  const cw = gridW / n, ch = gridH / n;
+  const g = vs_el('g'); svg.appendChild(g);
+  const txt = (x, y, s2, o) => { const e = vs_el('text'); e.setAttribute('x', x); e.setAttribute('y', y); e.style.fontFamily = 'var(--sans)'; e.style.fontSize = ((o && o.fs) || fs) + 'px'; if (o && o.anchor) e.setAttribute('text-anchor', o.anchor); e.setAttribute('font-weight', (o && o.weight) || 400); e.setAttribute('fill', (o && o.fill) || 'var(--ink)'); e.textContent = s2; g.appendChild(e); return e; };
+  const hover = !editorFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  // headers: columna (arriba) y fila (izquierda), en el color de cada confederación
+  for (let j = 0; j < n; j++) txt(M.left + j * cw + cw / 2, M.top - (bigFmt ? 16 : 9), ord[j], { anchor: 'middle', weight: 600, fs: bigFmt ? 17 : 11.5, fill: CONF_FIFA_COLORS[ord[j]] });
+  for (let i = 0; i < n; i++) txt(M.left - (bigFmt ? 14 : 8), M.top + i * ch + ch / 2 + (bigFmt ? 6 : 4), vs_confLabel(ord[i]), { anchor: 'end', weight: 600, fs: bigFmt ? 17 : 12, fill: CONF_FIFA_COLORS[ord[i]] });
+  // celdas: fila = confederación, columna = rival; color por efectividad de la fila
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    const x = M.left + j * cw, y = M.top + i * ch;
+    const rect = vs_el('rect'); rect.setAttribute('x', x + 1.5); rect.setAttribute('y', y + 1.5); rect.setAttribute('width', cw - 3); rect.setAttribute('height', ch - 3); rect.setAttribute('rx', 3);
+    if (i === j) { rect.setAttribute('fill', '#E7E1D4'); rect.setAttribute('fill-opacity', 0.55); g.appendChild(rect); continue; }
+    const o = vs_pairAgg(ord[i], ord[j], a, b, s.cat);
+    if (!o || !o.m) { rect.setAttribute('fill', '#E7E1D4'); rect.setAttribute('fill-opacity', 0.3); g.appendChild(rect); txt(x + cw / 2, y + ch / 2 + 4, '·', { anchor: 'middle', fill: 'var(--ink-muted)' }); continue; }
+    rect.setAttribute('fill', vs_diverge(o.eff)); g.appendChild(rect);
+    txt(x + cw / 2, y + ch / 2 + (bigFmt ? 3 : 1), Math.round(o.eff) + '%', { anchor: 'middle', weight: 700, fs: fsCell, fill: '#2A2824' });
+    if (hover) {
+      rect.style.cursor = 'default';
+      rect.addEventListener('mouseenter', () => { rect.setAttribute('stroke', '#33312C'); rect.setAttribute('stroke-width', 2); vs_matTip(ord[i], ord[j], o); });
+      rect.addEventListener('mousemove', (ev) => vs_tipMove(ev));
+      rect.addEventListener('mouseleave', () => { rect.removeAttribute('stroke'); vs_tipHide(); });
+    }
+  }
+}
+function vs_matTip(rowCf, colCf, o) {
+  const tt = document.getElementById('tooltip' + VS_N); if (!tt) return;
+  tt.innerHTML = `<div style="font-weight:600;margin-bottom:3px;">${vs_confLabel(rowCf)} <span style="opacity:.6;">vs</span> ${vs_confLabel(colCf)}</div>`
+    + `<div style="line-height:1.5;"><strong>${vs_nf(o.w)}</strong> ${vs_t('c8-won', 'Ganó')} · <strong>${vs_nf(o.d)}</strong> ${vs_t('c8-drew', 'Empató')} · <strong>${vs_nf(o.l)}</strong> ${vs_t('c8-lost', 'Perdió')}</div>`
+    + `<div style="opacity:.85;line-height:1.5;">${vs_nf(o.m)} ${vs_t('c8-played', 'jugados')} · ${vs_t('c8-eff-tip', 'Efectividad')} <strong>${o.eff.toFixed(0)}%</strong> · ${vs_t('c8-col-gd', 'Dif. de gol')} <strong>${o.gd > 0 ? '+' : ''}${vs_nf(o.gd)}</strong></div>`;
+  tt.style.display = 'block'; tt.style.opacity = '1';
+}
+
+// ---- DRAW: scatter por selección (volumen de partidos vs efectividad) --------
+let vs_teamsLoading = false;
+function vs_hasTeams() { return typeof DATA_VERSUS_TEAMS !== 'undefined'; }
+function vs_ensureTeams(cb) {
+  if (vs_hasTeams()) { if (cb) cb(); return; }
+  if (vs_teamsLoading) return;
+  vs_teamsLoading = true;
+  const sc = document.createElement('script');
+  sc.src = './data-versus-teams.js?v=' + (window.__ESP_V || '1');
+  sc.onload = () => { vs_teamsLoading = false; if (cb) cb(); };
+  sc.onerror = () => { vs_teamsLoading = false; };
+  document.head.appendChild(sc);
+}
+function vs_teamName(n) { return (typeof atlasCountryName === 'function') ? atlasCountryName(n) : n; }
+function vs_teamAgg(o, a, b, cat) {
+  let m = 0, w = 0, d = 0, l = 0, gd = 0;
+  for (const r of o.r) { const y = r[0] + DATA_VERSUS.y0; if (y < a || y > b) continue; if (cat !== 'ALL' && r[1] !== cat) continue; m += r[2]; w += r[3]; d += r[4]; l += r[5]; gd += r[6]; }
+  return { n: o.n, c: o.c, m, w, d, l, gd, eff: m ? (3 * w + d) / (3 * m) * 100 : 0 };
+}
+const VS_SCATTER_MIN = 20;   // mínimo de partidos cruzados para entrar al scatter
+function vs_drawScatter() {
+  const svg = vs_svg(); if (!svg) return;
+  if (!vs_hasTeams()) {
+    svg.innerHTML = ''; vs_clearHover(svg); vs_ensureTeams(() => drawVersus());
+    const e = vs_el('text'); e.setAttribute('x', 550); e.setAttribute('y', 260); e.setAttribute('text-anchor', 'middle'); e.style.fontFamily = 'var(--sans)'; e.style.fontSize = '15px'; e.setAttribute('fill', 'var(--ink-muted)'); e.textContent = vs_t('c8-loading', 'Cargando…'); svg.appendChild(e); return;
+  }
+  svg.innerHTML = ''; vs_clearHover(svg);
+  const s = vs_state(), a = s.period[0], b = s.period[1];
+  const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
+  const square = editorFormat === 'square', newsletter = editorFormat === 'newsletter', mobilePng = editorFormat === 'mobile';
+  const mobile = !editorFormat && (typeof isMobileViewport === 'function') && isMobileViewport();
+  const bigFmt = square || newsletter || mobilePng || mobile, isPng = square || newsletter || mobilePng;
+  let W = 1100, H = 520, M;
+  if (editorFormat) { const f = PNG_FORMATS[editorFormat]; W = f.vbW; H = square ? 910 : newsletter ? 860 : f.vbH; M = { top: 30, right: 42, bottom: 80, left: 78 }; }
+  else if (mobile) { W = 1100; H = 820; M = { top: 24, right: 36, bottom: 108, left: 84 }; }
+  else { W = 1100; H = 520; M = { top: 20, right: 32, bottom: 48, left: 70 }; }
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
+  const SIZES = bigFmt ? { tick: 22, axisTitle: 23, label: 21 } : { tick: 11, axisTitle: 11.5, label: 12 };
+  const pts = DATA_VERSUS_TEAMS.map(o => vs_teamAgg(o, a, b, s.cat)).filter(o => o.m >= VS_SCATTER_MIN);
+  if (!pts.length) { vs_drawEmpty(); return; }
+  const PW = W - M.left - M.right, PH = H - M.top - M.bottom;
+  const maxM = Math.max(...pts.map(p => p.m));
+  const xS = (m) => M.left + Math.sqrt(m / maxM) * PW;   // raíz: despliega el racimo de pocos partidos
+  const yS = (e) => M.top + PH - (e / 100) * PH;
+  [0, 25, 50, 75, 100].forEach(v => {
+    const y = yS(v);
+    const gl = vs_el('line'); gl.setAttribute('x1', M.left); gl.setAttribute('x2', M.left + PW); gl.setAttribute('y1', y); gl.setAttribute('y2', y);
+    if (v === 50) { gl.setAttribute('stroke', 'var(--ink-soft)'); gl.setAttribute('stroke-dasharray', '4 3'); gl.setAttribute('stroke-opacity', 0.7); } else gl.setAttribute('class', 's-grid-line');
+    svg.appendChild(gl);
+    const lb = vs_el('text'); lb.setAttribute('x', M.left - (bigFmt ? 12 : 8)); lb.setAttribute('y', y + (bigFmt ? 8 : 4)); lb.setAttribute('text-anchor', 'end'); lb.setAttribute('class', 's-tick'); lb.style.fontSize = SIZES.tick + 'px'; lb.textContent = v + '%'; svg.appendChild(lb);
+  });
+  [25, 50, 100, 200, 400].filter(v => v <= maxM).forEach(v => {
+    const x = xS(v);
+    const gl = vs_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x); gl.setAttribute('y1', M.top); gl.setAttribute('y2', M.top + PH); gl.setAttribute('class', 's-grid-line'); svg.appendChild(gl);
+    const lb = vs_el('text'); lb.setAttribute('x', x); lb.setAttribute('y', M.top + PH + (bigFmt ? 32 : 18)); lb.setAttribute('text-anchor', 'middle'); lb.setAttribute('class', 's-tick'); lb.style.fontSize = SIZES.tick + 'px'; lb.textContent = v; svg.appendChild(lb);
+  });
+  const yT = vs_el('text'); yT.setAttribute('class', 's-axis-title'); yT.setAttribute('text-anchor', 'middle'); yT.setAttribute('transform', `translate(${M.left - (bigFmt ? 58 : 44)}, ${M.top + PH / 2}) rotate(-90)`); yT.style.fontSize = SIZES.axisTitle + 'px'; yT.textContent = vs_t('c8-axis-eff', 'Efectividad (%)'); svg.appendChild(yT);
+  const xT = vs_el('text'); xT.setAttribute('class', 's-axis-title'); xT.setAttribute('text-anchor', 'middle'); xT.setAttribute('x', M.left + PW / 2); xT.setAttribute('y', M.top + PH + (bigFmt ? 66 : 40)); xT.style.fontSize = SIZES.axisTitle + 'px'; xT.textContent = vs_t('c8-axis-played', 'Partidos entre confederaciones jugados'); svg.appendChild(xT);
+  const dotsG = vs_el('g'); svg.appendChild(dotsG);
+  const rad = bigFmt ? 7 : 5;
+  pts.forEach(p => {
+    const c = vs_el('circle'); c.setAttribute('cx', xS(p.m)); c.setAttribute('cy', yS(p.eff)); c.setAttribute('r', rad);
+    c.setAttribute('fill', CONF_FIFA_COLORS[p.c] || '#888'); c.setAttribute('fill-opacity', 0.82); c.setAttribute('stroke', VS_BG); c.setAttribute('stroke-width', bigFmt ? 1.5 : 1);
+    if (!isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+      c.style.cursor = 'default';
+      c.addEventListener('mouseenter', () => { c.setAttribute('r', rad + 2); vs_scatterTip(p); });
+      c.addEventListener('mousemove', (ev) => vs_tipMove(ev));
+      c.addEventListener('mouseleave', () => { c.setAttribute('r', rad); vs_tipHide(); });
+    }
+    dotsG.appendChild(c);
+  });
+  // etiquetas: los de más partidos + los extremos de efectividad, con anti-solape simple
+  const labeled = [], cand = pts.slice().sort((x, y) => y.m - x.m).slice(0, bigFmt ? 16 : 20);
+  const byEff = pts.slice().sort((x, y) => y.eff - x.eff);
+  [byEff[0], byEff[byEff.length - 1]].forEach(p => { if (p && cand.indexOf(p) < 0) cand.push(p); });
+  cand.forEach(p => {
+    const px = xS(p.m), py = yS(p.eff);
+    if (labeled.some(q => Math.abs(q.x - px) < (bigFmt ? 74 : 54) && Math.abs(q.y - py) < (bigFmt ? 18 : 13))) return;
+    labeled.push({ x: px, y: py });
+    const e = vs_el('text'); e.setAttribute('x', px + (rad + 3)); e.setAttribute('y', py + (bigFmt ? 7 : 4)); e.style.fontFamily = 'var(--sans)'; e.style.fontSize = SIZES.label + 'px'; e.setAttribute('font-weight', bigFmt ? 600 : 500); e.setAttribute('fill', 'var(--ink)');
+    e.setAttribute('paint-order', 'stroke'); e.setAttribute('stroke', VS_BG); e.setAttribute('stroke-width', bigFmt ? 4 : 2.5); e.setAttribute('stroke-linejoin', 'round');
+    e.textContent = vs_teamName(p.n); svg.appendChild(e);
+  });
+}
+function vs_scatterTip(p) {
+  const tt = document.getElementById('tooltip' + VS_N); if (!tt) return;
+  tt.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">${vs_teamName(p.n)} <span style="opacity:.6;">${vs_confLabel(p.c)}</span></div>`
+    + `<div style="line-height:1.5;">${vs_nf(p.m)} ${vs_t('c8-played', 'jugados')} · <strong>${vs_nf(p.w)}-${vs_nf(p.d)}-${vs_nf(p.l)}</strong></div>`
+    + `<div style="opacity:.85;">${vs_t('c8-eff-tip', 'Efectividad')} <strong>${p.eff.toFixed(0)}%</strong> · ${vs_t('c8-col-gd', 'Dif. de gol')} <strong>${p.gd > 0 ? '+' : ''}${vs_nf(p.gd)}</strong></div>`;
+  tt.style.display = 'block'; tt.style.opacity = '1';
+}
 
 // ---- DRAW: evolución (líneas, renderer propio con negativos) ----------------
 function vs_drawLines() {
@@ -385,6 +555,14 @@ function vs_catTxt() {
 function vs_subtitle() {
   const s = vs_state(), en = vs_lang() === 'en', per = vs_periodTxt(), cat = vs_catTxt();
   const base = en ? 'in matches between different confederations' : 'en partidos entre confederaciones distintas';
+  if (s.view === 'matrix') {
+    return en ? `${cat}Points effectiveness of each confederation (row) against each rival (column) ${base} (${per}). Green: wins more.`
+      : `${cat}Efectividad en puntos de cada confederación (fila) contra cada rival (columna) ${base} (${per}). Verde: gana más.`;
+  }
+  if (s.view === 'scatter') {
+    return en ? `${cat}Each national team's points effectiveness ${base}, against how many it has played (${per}). Teams with 20+ matches.`
+      : `${cat}Efectividad en puntos de cada selección ${base}, según cuántos jugó (${per}). Selecciones con 20 partidos o más.`;
+  }
   if (s.view === 'rank') {
     return en ? `${cat}Points won (3 for a win, 1 for a draw) ${base} (${per}).`
       : `${cat}Efectividad en puntos (3 por victoria, 1 por empate) ${base} (${per}).`;
@@ -425,6 +603,12 @@ function vs_syncCtx() {
   show('vs-metric-group', lines);
   show('vs-ma-group', lines && s.metric === 'eff');
 }
+function vs_setActiveTab() {
+  const v = vs_state().view;
+  [['vs-tab-rank', 'rank'], ['vs-tab-matrix', 'matrix'], ['vs-tab-evo', 'lines'], ['vs-tab-scatter', 'scatter']].forEach(([id, val]) => {
+    const btn = document.getElementById(id); if (btn) btn.classList.toggle('active', v === val);
+  });
+}
 function vs_dataStartYear() {
   const s = vs_state();
   // en la vista de efectividad, el primer año dibujado depende del piso de muestra
@@ -452,12 +636,10 @@ function vs_updateSlider() {
   if (tr) { const mn = +f.min, mx = +f.max, sp = mx - mn; if (sp > 0) { tr.style.left = ((s.period[0] - mn) / sp * 100) + '%'; tr.style.right = ((mx - s.period[1]) / sp * 100) + '%'; } }
 }
 function vs_setupTabs() {
-  const rb = document.getElementById('vs-tab-rank'), eb = document.getElementById('vs-tab-evo'); if (!rb || !eb) return;
-  const go = (v) => { const s = vs_state(); if (s.view === v) return; s.view = v; vs_touched = true; sync(); vs_autofitPeriod(); drawVersus(); };
-  function sync() { const v = vs_state().view; rb.classList.toggle('active', v === 'rank'); eb.classList.toggle('active', v === 'lines'); vs_syncCtx(); }
-  rb.addEventListener('click', () => go('rank'));
-  eb.addEventListener('click', () => go('lines'));
-  sync();
+  const map = [['vs-tab-rank', 'rank'], ['vs-tab-matrix', 'matrix'], ['vs-tab-evo', 'lines'], ['vs-tab-scatter', 'scatter']];
+  const go = (v) => { const s = vs_state(); if (s.view === v) return; s.view = v; vs_touched = true; if (v === 'scatter') vs_ensureTeams(() => drawVersus()); vs_setActiveTab(); vs_syncCtx(); vs_autofitPeriod(); drawVersus(); };
+  map.forEach(([id, v]) => { const btn = document.getElementById(id); if (btn) btn.addEventListener('click', () => go(v)); });
+  vs_setActiveTab(); vs_syncCtx();
 }
 function vs_setupCat() {
   const sel = document.getElementById('vs-cat-select'); if (!sel) return;
