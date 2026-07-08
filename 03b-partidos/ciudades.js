@@ -26,6 +26,9 @@ const CI_BASE_DOTS = 1200;          // ciudades visibles a zoom 1 (más al acerc
 const CI_HEAT_RAMP = ['#F6E7DC', '#E7AE89', '#CF7B4E', '#BE5D32', '#7A2E16'];
 const CI_GLOW_MAX = 4000;
 const CI_YMIN = 1872, CI_YMAX = 2026, CI_MIN_WINDOW = 5;
+// último año COMPLETO (2026 va a medias por el Mundial en curso): la vista línea
+// (serie anual) corta acá por default para no mostrar el bajón del año parcial.
+const CI_YEAR_COMPLETE = 2025;
 // Vista Evolución (líneas): paleta categórica SIN terracota (el terracota es el
 // acento del tablero: usarlo para un país confunde). Colores distintos y
 // alternando cálido/frío para que 3-4 líneas se lean bien. El color queda FIJO
@@ -80,6 +83,7 @@ function ci_state() {
   const s = state[6];
   if (!s.view) s.view = 'map';                    // 'map' | 'bars' | 'line'
   if (!s.period) s.period = [CI_YMIN, CI_YMAX];
+  if (s.periodTouched == null) s.periodTouched = false;   // el usuario movió el slider a mano
   if (s.heat == null) s.heat = false;
   if (!s.heatStyle) s.heatStyle = 'glow';          // 'glow' | 'hexsmall' (iluminación por default)
   if (s.neutral == null) s.neutral = false;       // solo cancha neutral
@@ -687,10 +691,15 @@ function ci_tlSub() {
     const desde = (y0 <= CI_YMIN) ? ci_t('c6-tl-desde-all', '') : ci_t('c6-tl-desde-y', '').replace('{y}', y0);
     base = base.replace('{desde}', desde);
   }
-  const extra = [];
+  // Modo explícito (para que el video/imagen exportado se explique solo: si es
+  // acumulado desde el inicio, o una ventana móvil de N años). Va primero.
+  const modeTxt = ci_tlMode === 'accum'
+    ? ci_t('c6-tl-accum', 'Acumulado')
+    : ci_t('c6-tl-ma', 'Móvil') + ' (' + ci_tlWinYears + (lang === 'en' ? ' yr)' : ' años)');
+  const extra = [modeTxt];
   if (s.neutral) extra.push(ci_t('c6-scope-neutral', 'en cancha neutral'));
   if (s.geo) extra.push(ci_t('c6-scope-conf', lang === 'en' ? 'venues in' : 'sedes de') + ' ' + ci_geoLabel());
-  return extra.length ? base + ' · ' + extra.join(' · ') : base;
+  return base + ' · ' + extra.join(' · ');
 }
 function ci_tlTitle() {
   const block = document.querySelector('.chart-block[data-chart="6"]') || document;
@@ -1291,6 +1300,15 @@ function setupCiudadesTabs() {
   }
   function go(v, resetZoom) {
     if (ci_state().view === v) return;
+    const s = state[6];
+    // La vista línea es una serie anual: por default corta en el último año
+    // COMPLETO (2025), no en 2026 (a medio jugar, que mete un bajón al final).
+    // El slider igual llega a 2026 por si se lo quiere correr a mano. En mapa/
+    // timelapse volvemos al rango completo. Solo mientras el usuario no tocó el slider.
+    if (!s.periodTouched) {
+      if (v === 'line' && s.period[1] > CI_YEAR_COMPLETE) { s.period = [s.period[0], CI_YEAR_COMPLETE]; ci_updateSlider(); }
+      else if (v !== 'line' && s.period[1] === CI_YEAR_COMPLETE && CI_YMAX > CI_YEAR_COMPLETE) { s.period = [s.period[0], CI_YMAX]; ci_updateSlider(); }
+    }
     state[6].view = v;
     if (resetZoom) ci_zoomT = null;
     if (v === 'line') { ci_ensureDefaultCities(); if (ci_renderCityChips) ci_renderCityChips(); }
@@ -1530,13 +1548,13 @@ function setupCiudadesSlider() {
   fromEl.addEventListener('input', () => {
     let from = parseInt(fromEl.value, 10); const to = s.period[1];
     if (from > to - CI_MIN_WINDOW) from = to - CI_MIN_WINDOW;
-    s.period = [from, to]; ci_updateSlider();
+    s.period = [from, to]; s.periodTouched = true; ci_updateSlider();
     ci_ensureDet(() => ci_scheduleDraw()); ci_scheduleDraw();
   });
   toEl.addEventListener('input', () => {
     const from = s.period[0]; let to = parseInt(toEl.value, 10);
     if (to < from + CI_MIN_WINDOW) to = from + CI_MIN_WINDOW;
-    s.period = [from, to]; ci_updateSlider();
+    s.period = [from, to]; s.periodTouched = true; ci_updateSlider();
     ci_ensureDet(() => ci_scheduleDraw()); ci_scheduleDraw();
   });
   ci_updateSlider();
