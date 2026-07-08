@@ -23,6 +23,7 @@ function vs_lang() { return (typeof LANG !== 'undefined') ? LANG : 'es'; }
 function vs_nf(v) { return Math.round(v).toLocaleString(vs_lang() === 'en' ? 'en-US' : 'es-AR'); }
 function vs_confLabel(cf) { return vs_t('c6-conf-' + cf, cf); }
 let vs_touched = false;
+let vs_renderTeamChips = null;   // asignado por vs_setupTeamSearch (scatter)
 
 function vs_state() {
   if (!window.state) window.state = {};
@@ -34,6 +35,7 @@ function vs_state() {
   if (!s.maYears) s.maYears = 8;
   if (!s.period) s.period = [DATA_VERSUS.y0, DATA_VERSUS.y1];
   if (s.periodAuto == null) s.periodAuto = true;
+  if (s.teamsSel === undefined) s.teamsSel = null;   // scatter: null = set destacado por default; array = custom
   return s;
 }
 
@@ -246,6 +248,13 @@ function vs_drawBars() {
     }
   });
 }
+// una fila de tooltip: etiqueta a la izquierda, valor (bold) a la derecha, con
+// punto de color opcional. Evita que "N Ganó · N Empató…" se parta feo.
+function vs_tipRow(label, val, dot) {
+  return '<div style="display:flex;align-items:center;gap:8px;line-height:1.65;">'
+    + (dot ? `<span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${dot};flex:none;"></span>` : '')
+    + `<span style="flex:1;white-space:nowrap;">${label}</span><strong style="font-variant-numeric:tabular-nums;margin-left:12px;">${val}</strong></div>`;
+}
 function vs_barTip(d) {
   const tt = document.getElementById('tooltip' + VS_N); if (!tt) return;
   const pts = 3 * d.w + d.d;
@@ -309,9 +318,17 @@ function vs_drawMatrix() {
 }
 function vs_matTip(rowCf, colCf, o) {
   const tt = document.getElementById('tooltip' + VS_N); if (!tt) return;
-  tt.innerHTML = `<div style="font-weight:600;margin-bottom:3px;">${vs_confLabel(rowCf)} <span style="opacity:.6;">vs</span> ${vs_confLabel(colCf)}</div>`
-    + `<div style="line-height:1.5;"><strong>${vs_nf(o.w)}</strong> ${vs_t('c8-won', 'Ganó')} · <strong>${vs_nf(o.d)}</strong> ${vs_t('c8-drew', 'Empató')} · <strong>${vs_nf(o.l)}</strong> ${vs_t('c8-lost', 'Perdió')}</div>`
-    + `<div style="opacity:.85;line-height:1.5;">${vs_nf(o.m)} ${vs_t('c8-played', 'jugados')} · ${vs_t('c8-eff-tip', 'Efectividad')} <strong>${o.eff.toFixed(0)}%</strong> · ${vs_t('c8-col-gd', 'Dif. de gol')} <strong>${o.gd > 0 ? '+' : ''}${vs_nf(o.gd)}</strong></div>`;
+  const en = vs_lang() === 'en';
+  const hd = en ? 'vs' : 'contra';
+  tt.innerHTML = `<div style="font-weight:600;">${vs_confLabel(rowCf)}</div>`
+    + `<div style="opacity:.7;margin-bottom:6px;">${hd} ${vs_confLabel(colCf)}</div>`
+    + vs_tipRow(vs_t('c8-won', 'Ganó'), vs_nf(o.w), VS_WIN)
+    + vs_tipRow(vs_t('c8-drew', 'Empató'), vs_nf(o.d), VS_DRAW)
+    + vs_tipRow(vs_t('c8-lost', 'Perdió'), vs_nf(o.l), VS_LOSS)
+    + '<div style="border-top:1px solid rgba(255,255,255,.2);margin:6px 0 4px;"></div>'
+    + vs_tipRow(vs_t('c8-played-cap', 'Jugados'), vs_nf(o.m))
+    + vs_tipRow(vs_t('c8-eff-tip', 'Efectividad'), o.eff.toFixed(0) + '%')
+    + vs_tipRow(vs_t('c8-col-gd', 'Dif. de gol'), (o.gd > 0 ? '+' : '') + vs_nf(o.gd));
   tt.style.display = 'block'; tt.style.opacity = '1';
 }
 
@@ -334,7 +351,26 @@ function vs_teamAgg(o, a, b, cat) {
   for (const r of o.r) { const y = r[0] + DATA_VERSUS.y0; if (y < a || y > b) continue; if (cat !== 'ALL' && r[1] !== cat) continue; m += r[2]; w += r[3]; d += r[4]; l += r[5]; gd += r[6]; }
   return { n: o.n, c: o.c, m, w, d, l, gd, eff: m ? (3 * w + d) / (3 * m) * 100 : 0 };
 }
-const VS_SCATTER_MIN = 20;   // mínimo de partidos cruzados para entrar al scatter
+const VS_SCATTER_MIN = 1;    // mostrar todas las selecciones con al menos un cruce
+const VS_DEFAULT_TEAMS = ['Argentina', 'Brazil', 'Uruguay', 'Colombia', 'Mexico', 'Germany', 'England', 'Spain', 'France', 'Italy', 'Australia', 'Japan', 'South Korea', 'Netherlands', 'United States'];
+// selecciones destacadas (con etiqueta). null = destacar el set por default; en
+// cuanto el usuario elige/clickea una, pasa a custom y los defaults desaparecen.
+function vs_highlightSet() {
+  const s = vs_state();
+  const list = (s.teamsSel === null) ? VS_DEFAULT_TEAMS : s.teamsSel;
+  const have = new Set((vs_hasTeams() ? DATA_VERSUS_TEAMS : []).map(o => o.n));
+  return list.filter(n => have.has(n));
+}
+function vs_toggleTeam(name) {
+  const s = vs_state();
+  if (s.teamsSel === null) s.teamsSel = [];      // primer custom: se van los defaults
+  const i = s.teamsSel.indexOf(name);
+  if (i >= 0) s.teamsSel.splice(i, 1); else s.teamsSel.push(name);
+  if (!s.teamsSel.length) s.teamsSel = null;     // se vació → vuelven los defaults
+  vs_touched = true;
+  if (vs_renderTeamChips) vs_renderTeamChips();
+  drawVersus();
+}
 function vs_drawScatter() {
   const svg = vs_svg(); if (!svg) return;
   if (!vs_hasTeams()) {
@@ -374,38 +410,93 @@ function vs_drawScatter() {
   });
   const yT = vs_el('text'); yT.setAttribute('class', 's-axis-title'); yT.setAttribute('text-anchor', 'middle'); yT.setAttribute('transform', `translate(${M.left - (bigFmt ? 58 : 44)}, ${M.top + PH / 2}) rotate(-90)`); yT.style.fontSize = SIZES.axisTitle + 'px'; yT.textContent = vs_t('c8-axis-eff', 'Efectividad (%)'); svg.appendChild(yT);
   const xT = vs_el('text'); xT.setAttribute('class', 's-axis-title'); xT.setAttribute('text-anchor', 'middle'); xT.setAttribute('x', M.left + PW / 2); xT.setAttribute('y', M.top + PH + (bigFmt ? 66 : 40)); xT.style.fontSize = SIZES.axisTitle + 'px'; xT.textContent = vs_t('c8-axis-played', 'Partidos entre confederaciones jugados'); svg.appendChild(xT);
+  const hiSet = new Set(vs_highlightSet());
   const dotsG = vs_el('g'); svg.appendChild(dotsG);
-  const rad = bigFmt ? 7 : 5;
-  pts.forEach(p => {
-    const c = vs_el('circle'); c.setAttribute('cx', xS(p.m)); c.setAttribute('cy', yS(p.eff)); c.setAttribute('r', rad);
-    c.setAttribute('fill', CONF_FIFA_COLORS[p.c] || '#888'); c.setAttribute('fill-opacity', 0.82); c.setAttribute('stroke', VS_BG); c.setAttribute('stroke-width', bigFmt ? 1.5 : 1);
-    if (!isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
-      c.style.cursor = 'default';
-      c.addEventListener('mouseenter', () => { c.setAttribute('r', rad + 2); vs_scatterTip(p); });
+  const rad = bigFmt ? 7 : 5, radOff = bigFmt ? 4 : 3;
+  const interact = !isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  // los tenues (no destacados) primero, los destacados encima
+  pts.slice().sort((x, y) => (hiSet.has(x.n) ? 1 : 0) - (hiSet.has(y.n) ? 1 : 0)).forEach(p => {
+    const on = hiSet.has(p.n);
+    const c = vs_el('circle'); c.setAttribute('cx', xS(p.m)); c.setAttribute('cy', yS(p.eff)); c.setAttribute('r', on ? rad : radOff);
+    c.setAttribute('fill', CONF_FIFA_COLORS[p.c] || '#888'); c.setAttribute('fill-opacity', on ? 0.92 : 0.26);
+    if (on) { c.setAttribute('stroke', VS_BG); c.setAttribute('stroke-width', bigFmt ? 1.8 : 1.2); }
+    if (interact) {
+      c.style.cursor = 'pointer';
+      c.addEventListener('mouseenter', () => { c.setAttribute('r', (on ? rad : radOff) + 2); c.setAttribute('fill-opacity', 1); vs_scatterTip(p); });
       c.addEventListener('mousemove', (ev) => vs_tipMove(ev));
-      c.addEventListener('mouseleave', () => { c.setAttribute('r', rad); vs_tipHide(); });
+      c.addEventListener('mouseleave', () => { c.setAttribute('r', on ? rad : radOff); c.setAttribute('fill-opacity', on ? 0.92 : 0.26); vs_tipHide(); });
+      c.addEventListener('click', () => vs_toggleTeam(p.n));
     }
     dotsG.appendChild(c);
   });
-  // etiquetas: los de más partidos + los extremos de efectividad, con anti-solape simple
-  const labeled = [], cand = pts.slice().sort((x, y) => y.m - x.m).slice(0, bigFmt ? 16 : 20);
-  const byEff = pts.slice().sort((x, y) => y.eff - x.eff);
-  [byEff[0], byEff[byEff.length - 1]].forEach(p => { if (p && cand.indexOf(p) < 0) cand.push(p); });
-  cand.forEach(p => {
-    const px = xS(p.m), py = yS(p.eff);
-    if (labeled.some(q => Math.abs(q.x - px) < (bigFmt ? 74 : 54) && Math.abs(q.y - py) < (bigFmt ? 18 : 13))) return;
-    labeled.push({ x: px, y: py });
-    const e = vs_el('text'); e.setAttribute('x', px + (rad + 3)); e.setAttribute('y', py + (bigFmt ? 7 : 4)); e.style.fontFamily = 'var(--sans)'; e.style.fontSize = SIZES.label + 'px'; e.setAttribute('font-weight', bigFmt ? 600 : 500); e.setAttribute('fill', 'var(--ink)');
+  // etiquetas: SIEMPRE el set destacado (no se descartan). Se prueba a la derecha
+  // del punto y, si se pisa con otra, a la izquierda; último recurso, derecha igual.
+  const labeled = [], lblH = bigFmt ? 17 : 12;
+  const approxW = (str) => str.length * (bigFmt ? 11 : 6.3) + 6;
+  pts.filter(p => hiSet.has(p.n)).sort((x, y) => x.m - y.m).forEach(p => {
+    const px = xS(p.m), py = yS(p.eff), nm = vs_teamName(p.n), w = approxW(nm);
+    const cands = [
+      { tx: px + (rad + 3), anchor: 'start', x0: px + (rad + 3), x1: px + (rad + 3) + w },
+      { tx: px - (rad + 3), anchor: 'end', x0: px - (rad + 3) - w, x1: px - (rad + 3) }
+    ];
+    const pl = cands.find(cn => !labeled.some(q => cn.x0 < q.x1 && cn.x1 > q.x0 && Math.abs(q.cy - py) < lblH)) || cands[0];
+    labeled.push({ x0: pl.x0, x1: pl.x1, cy: py });
+    const e = vs_el('text'); e.setAttribute('x', pl.tx); e.setAttribute('y', py + (bigFmt ? 6 : 4)); e.setAttribute('text-anchor', pl.anchor); e.style.fontFamily = 'var(--sans)'; e.style.fontSize = SIZES.label + 'px'; e.setAttribute('font-weight', bigFmt ? 600 : 500); e.setAttribute('fill', 'var(--ink)');
     e.setAttribute('paint-order', 'stroke'); e.setAttribute('stroke', VS_BG); e.setAttribute('stroke-width', bigFmt ? 4 : 2.5); e.setAttribute('stroke-linejoin', 'round');
-    e.textContent = vs_teamName(p.n); svg.appendChild(e);
+    e.textContent = nm; svg.appendChild(e);
   });
 }
 function vs_scatterTip(p) {
   const tt = document.getElementById('tooltip' + VS_N); if (!tt) return;
-  tt.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">${vs_teamName(p.n)} <span style="opacity:.6;">${vs_confLabel(p.c)}</span></div>`
-    + `<div style="line-height:1.5;">${vs_nf(p.m)} ${vs_t('c8-played', 'jugados')} · <strong>${vs_nf(p.w)}-${vs_nf(p.d)}-${vs_nf(p.l)}</strong></div>`
-    + `<div style="opacity:.85;">${vs_t('c8-eff-tip', 'Efectividad')} <strong>${p.eff.toFixed(0)}%</strong> · ${vs_t('c8-col-gd', 'Dif. de gol')} <strong>${p.gd > 0 ? '+' : ''}${vs_nf(p.gd)}</strong></div>`;
+  const rec = vs_nf(p.w) + '-' + vs_nf(p.d) + '-' + vs_nf(p.l);
+  tt.innerHTML = `<div style="font-weight:600;">${vs_teamName(p.n)}</div>`
+    + `<div style="opacity:.7;margin-bottom:6px;">${vs_confLabel(p.c)}</div>`
+    + vs_tipRow(vs_t('c8-played-cap', 'Jugados'), vs_nf(p.m))
+    + vs_tipRow(vs_t('c8-record', 'Ganó-empató-perdió'), rec)
+    + vs_tipRow(vs_t('c8-eff-tip', 'Efectividad'), p.eff.toFixed(0) + '%')
+    + vs_tipRow(vs_t('c8-col-gd', 'Dif. de gol'), (p.gd > 0 ? '+' : '') + vs_nf(p.gd));
   tt.style.display = 'block'; tt.style.opacity = '1';
+}
+// buscador + chips para destacar selecciones en el scatter (patrón de la casa).
+function vs_setupTeamSearch() {
+  const input = document.getElementById('vs-team-search'), results = document.getElementById('vs-team-results'), chips = document.getElementById('vs-team-chips');
+  if (!input || !results || !chips) return;
+  function renderChips() {
+    const s = vs_state(); chips.innerHTML = '';
+    if (s.teamsSel === null) {
+      const hint = document.createElement('span'); hint.className = 'esp-hint'; hint.style.margin = '0';
+      hint.textContent = vs_t('c8-default-hint', 'Selecciones destacadas por defecto. Buscá o hacé clic en un punto para elegir otras.');
+      chips.appendChild(hint); return;
+    }
+    s.teamsSel.forEach(name => {
+      const o = (vs_hasTeams() ? DATA_VERSUS_TEAMS : []).find(t => t.n === name);
+      const el = document.createElement('span'); el.className = 'm-selected-chip'; el.style.background = o ? (CONF_FIFA_COLORS[o.c] || '#888') : '#888';
+      el.innerHTML = `<span>${vs_teamName(name)}</span>`;
+      const x = document.createElement('button'); x.className = 'm-chip-x'; x.type = 'button'; x.textContent = '×';
+      x.addEventListener('click', () => vs_toggleTeam(name));
+      el.appendChild(x); chips.appendChild(el);
+    });
+  }
+  vs_renderTeamChips = renderChips;
+  function items() {
+    const q = input.value.trim().toLowerCase(); if (!q) return [];
+    const sel = new Set(vs_state().teamsSel || []);
+    return (vs_hasTeams() ? DATA_VERSUS_TEAMS : []).filter(o => !sel.has(o.n) && vs_teamName(o.n).toLowerCase().includes(q)).slice(0, 9);
+  }
+  function renderResults() {
+    results.innerHTML = '';
+    items().forEach(o => {
+      const r = document.createElement('div'); r.className = 'm-search-result';
+      r.innerHTML = `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${CONF_FIFA_COLORS[o.c] || '#888'};margin-right:7px;vertical-align:middle;"></span><span>${vs_teamName(o.n)}</span>`;
+      r.addEventListener('mousedown', (e) => { e.preventDefault(); input.value = ''; results.classList.remove('open'); vs_toggleTeam(o.n); });
+      results.appendChild(r);
+    });
+    results.classList.toggle('open', results.children.length > 0);
+  }
+  input.addEventListener('focus', () => { vs_ensureTeams(renderResults); renderResults(); });
+  input.addEventListener('input', () => { vs_ensureTeams(renderResults); renderResults(); });
+  input.addEventListener('blur', () => setTimeout(() => results.classList.remove('open'), 130));
+  renderChips();
 }
 
 // ---- DRAW: evolución (líneas, renderer propio con negativos) ----------------
@@ -547,7 +638,7 @@ function vs_pristine() {
   const s = vs_state();
   return !vs_touched && s.view === 'rank' && s.cat === 'ALL';
 }
-function vs_periodTxt() { const s = vs_state(); return s.period[0] + '–' + s.period[1]; }
+function vs_periodTxt() { const s = vs_state(); return s.period[0] === s.period[1] ? String(s.period[0]) : s.period[0] + '–' + s.period[1]; }
 function vs_catTxt() {
   const s = vs_state(); if (s.cat === 'ALL') return '';
   return vs_t('c6-cat-' + s.cat, '') + '. ';
@@ -560,8 +651,8 @@ function vs_subtitle() {
       : `${cat}Efectividad en puntos de cada confederación (fila) contra cada rival (columna) ${base} (${per}). Verde: gana más.`;
   }
   if (s.view === 'scatter') {
-    return en ? `${cat}Each national team's points effectiveness ${base}, against how many it has played (${per}). Teams with 20+ matches.`
-      : `${cat}Efectividad en puntos de cada selección ${base}, según cuántos jugó (${per}). Selecciones con 20 partidos o más.`;
+    return en ? `${cat}Each national team's points effectiveness ${base}, against how many it has played (${per}).`
+      : `${cat}Efectividad en puntos de cada selección ${base}, según cuántos jugó (${per}).`;
   }
   if (s.view === 'rank') {
     return en ? `${cat}Points won (3 for a win, 1 for a draw) ${base} (${per}).`
@@ -602,6 +693,7 @@ function vs_syncCtx() {
   const show = (id, on) => { const e = document.getElementById(id); if (e) e.style.display = on ? '' : 'none'; };
   show('vs-metric-group', lines);
   show('vs-ma-group', lines && s.metric === 'eff');
+  show('vs-teams-controls', s.view === 'scatter');
 }
 function vs_setActiveTab() {
   const v = vs_state().view;
@@ -632,7 +724,7 @@ function vs_updateSlider() {
   const disp = document.getElementById('vs-range-display'), tr = document.getElementById('vs-range-track-active');
   if (!f || !tt) return;
   f.value = s.period[0]; tt.value = s.period[1];
-  if (disp) disp.textContent = `${s.period[0]}–${s.period[1]}`;
+  if (disp) disp.textContent = s.period[0] === s.period[1] ? String(s.period[0]) : `${s.period[0]}–${s.period[1]}`;
   if (tr) { const mn = +f.min, mx = +f.max, sp = mx - mn; if (sp > 0) { tr.style.left = ((s.period[0] - mn) / sp * 100) + '%'; tr.style.right = ((mx - s.period[1]) / sp * 100) + '%'; } }
 }
 function vs_setupTabs() {
@@ -659,7 +751,7 @@ function vs_setupMetric() {
 }
 function vs_setupSlider() {
   const f = document.getElementById('vs-slider-from'), tt = document.getElementById('vs-slider-to'); if (!f || !tt) return;
-  const MINW = 5;
+  const MINW = 0;   // permite aislar un solo año (p. ej. 2026-2026, el Mundial solo)
   f.addEventListener('input', () => { const s = vs_state(); let x = +f.value; if (x > s.period[1] - MINW) x = s.period[1] - MINW; s.period[0] = x; s.periodAuto = false; vs_touched = true; vs_updateSlider(); drawVersus(); });
   tt.addEventListener('input', () => { const s = vs_state(); let x = +tt.value; if (x < s.period[0] + MINW) x = s.period[0] + MINW; s.period[1] = x; s.periodAuto = false; vs_touched = true; vs_updateSlider(); drawVersus(); });
   vs_updateSlider();
@@ -683,7 +775,7 @@ function initVersus() {
   window.__atlasDefaultPngFormat = 'square';
   window.onBeforePngExportGetSubtitle = function (chartId) { return String(chartId) === String(VS_N) ? vs_subtitle() : null; };
   window.onBeforePngExportGetSourceText = function (chartId) { return String(chartId) === String(VS_N) ? vs_source() : null; };
-  vs_setupTabs(); vs_setupCat(); vs_setupMetric(); vs_setupSlider(); vs_setupCSV();
+  vs_setupTabs(); vs_setupCat(); vs_setupMetric(); vs_setupSlider(); vs_setupCSV(); vs_setupTeamSearch();
   vs_syncCtx();
   vs_autofitPeriod();
   drawVersus();

@@ -166,7 +166,17 @@
           <span class="m-ctrl-label" data-i18n="c2-ma-years">años</span>
         </div>
       </div>
-      <p class="esp-hint" data-i18n="c8-hint">Pasá el cursor por una barra o una línea para ver el detalle</p>
+      <div class="m-controls" id="vs-teams-controls" style="display:none;">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c8-highlight-label">Destacar</span>
+          <div class="m-search-wrap" style="margin:0;min-width:200px;max-width:280px;">
+            <input type="text" id="vs-team-search" class="m-search-input" data-i18n-placeholder="c8-team-ph" placeholder="Buscar selección…" autocomplete="off">
+            <div id="vs-team-results" class="m-search-results"></div>
+          </div>
+        </div>
+        <div class="m-selected-chips" id="vs-team-chips"></div>
+      </div>
+      <p class="esp-hint" data-i18n="c8-hint">Pasá el cursor por una barra o una línea para ver el detalle · En Selecciones, hacé clic para destacar</p>
     <div class="chart-svg-wrap">
       <svg id="chart8" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="tooltip" id="tooltip8"></div>
