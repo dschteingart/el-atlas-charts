@@ -429,22 +429,45 @@ function vs_drawScatter() {
     }
     dotsG.appendChild(c);
   });
-  // etiquetas: SIEMPRE el set destacado (no se descartan). Se prueba a la derecha
-  // del punto y, si se pisa con otra, a la izquierda; último recurso, derecha igual.
-  const labeled = [], lblH = bigFmt ? 17 : 12;
-  const approxW = (str) => str.length * (bigFmt ? 11 : 6.3) + 6;
-  pts.filter(p => hiSet.has(p.n)).sort((x, y) => x.m - y.m).forEach(p => {
-    const px = xS(p.m), py = yS(p.eff), nm = vs_teamName(p.n), w = approxW(nm);
-    const cands = [
-      { tx: px + (rad + 3), anchor: 'start', x0: px + (rad + 3), x1: px + (rad + 3) + w },
-      { tx: px - (rad + 3), anchor: 'end', x0: px - (rad + 3) - w, x1: px - (rad + 3) }
-    ];
-    const pl = cands.find(cn => !labeled.some(q => cn.x0 < q.x1 && cn.x1 > q.x0 && Math.abs(q.cy - py) < lblH)) || cands[0];
-    labeled.push({ x0: pl.x0, x1: pl.x1, cy: py });
-    const e = vs_el('text'); e.setAttribute('x', pl.tx); e.setAttribute('y', py + (bigFmt ? 6 : 4)); e.setAttribute('text-anchor', pl.anchor); e.style.fontFamily = 'var(--sans)'; e.style.fontSize = SIZES.label + 'px'; e.setAttribute('font-weight', bigFmt ? 600 : 500); e.setAttribute('fill', 'var(--ink)');
-    e.setAttribute('paint-order', 'stroke'); e.setAttribute('stroke', VS_BG); e.setAttribute('stroke-width', bigFmt ? 4 : 2.5); e.setAttribute('stroke-linejoin', 'round');
-    e.textContent = nm; svg.appendChild(e);
-  });
+  // etiquetas del set destacado con el motor de placement del N°3
+  // (lib/scatter-render.js): greedy + relajación 2D + despeje de los puntos,
+  // reconectadas con líneas guía. Etiqueta en el color oscuro de su confederación.
+  const hiPts = pts.filter(p => hiSet.has(p.n));
+  const labelH = SIZES.label;
+  const lblColor = (typeof CONF_FIFA_LABEL_COLORS !== 'undefined') ? CONF_FIFA_LABEL_COLORS : {};
+  const measW = (str) => (typeof ts_measure === 'function' ? ts_measure(str, labelH, bigFmt ? 700 : 600) : str.length * labelH * 0.56) + 2;
+  if (typeof s_layoutLabels === 'function') {
+    const plotBox = { x1: M.left + 1, y1: M.top + 1, x2: M.left + PW - 1, y2: M.top + PH - 1 };
+    const items = hiPts.map(p => ({ cx: xS(p.m), cy: yS(p.eff), text: vs_teamName(p.n), textW: measW(vs_teamName(p.n)), confed: p.c, forced: true, subPriority: 0 }));
+    const placed = s_layoutLabels(items, plotBox);
+    if (typeof s_relaxLabels === 'function') s_relaxLabels(placed, labelH, plotBox, 240, hiPts.map(p => ({ x: xS(p.m), y: yS(p.eff), r: rad })));
+    // líneas guía: del punto al borde de la etiqueta corrida
+    const leaderG = vs_el('g'); svg.appendChild(leaderG);
+    placed.forEach(l => {
+      const B = s_labelBox(l, labelH);
+      const nx = Math.max(B.x1, Math.min(l.cx, B.x2)), ny = Math.max(B.y1, Math.min(l.cy, B.y2));
+      const dx = nx - l.cx, dy = ny - l.cy, dist = Math.hypot(dx, dy);
+      if (dist > rad + (bigFmt ? 7 : 5)) {
+        const ux = dx / dist, uy = dy / dist, ln = vs_el('line');
+        ln.setAttribute('x1', l.cx + ux * rad); ln.setAttribute('y1', l.cy + uy * rad);
+        ln.setAttribute('x2', nx - ux * 2); ln.setAttribute('y2', ny - uy * 2);
+        ln.setAttribute('stroke', '#9a9488'); ln.setAttribute('stroke-width', bigFmt ? 1.4 : 0.9); ln.setAttribute('stroke-opacity', 0.7); ln.setAttribute('stroke-linecap', 'round');
+        leaderG.appendChild(ln);
+      }
+    });
+    const labelsG = vs_el('g'); svg.appendChild(labelsG);
+    placed.forEach(l => {
+      const e = vs_el('text'); e.setAttribute('x', l.lx); e.setAttribute('y', l.ly); e.setAttribute('text-anchor', l.anchor);
+      e.style.fontFamily = 'var(--sans)'; e.style.fontSize = labelH + 'px'; e.setAttribute('font-weight', bigFmt ? 700 : 600); e.setAttribute('fill', lblColor[l.confed] || 'var(--ink)');
+      e.setAttribute('paint-order', 'stroke'); e.setAttribute('stroke', VS_BG); e.setAttribute('stroke-width', bigFmt ? 5 : 3); e.setAttribute('stroke-linejoin', 'round');
+      e.textContent = l.text; labelsG.appendChild(e);
+    });
+  } else {
+    // fallback mínimo si no cargó el motor (no debería pasar)
+    hiPts.forEach(p => {
+      const e = vs_el('text'); e.setAttribute('x', xS(p.m) + rad + 3); e.setAttribute('y', yS(p.eff) + 4); e.style.fontSize = labelH + 'px'; e.style.fontFamily = 'var(--sans)'; e.setAttribute('fill', lblColor[p.c] || 'var(--ink)'); e.setAttribute('paint-order', 'stroke'); e.setAttribute('stroke', VS_BG); e.setAttribute('stroke-width', 3); e.textContent = vs_teamName(p.n); svg.appendChild(e);
+    });
+  }
 }
 function vs_scatterTip(p) {
   const tt = document.getElementById('tooltip' + VS_N); if (!tt) return;
@@ -464,7 +487,8 @@ function vs_setupTeamSearch() {
   function renderChips() {
     const s = vs_state(); chips.innerHTML = '';
     if (s.teamsSel === null) {
-      const hint = document.createElement('span'); hint.className = 'esp-hint'; hint.style.margin = '0';
+      const hint = document.createElement('span');
+      hint.style.cssText = 'font-family:var(--sans);font-size:11px;color:var(--ink-muted);align-self:center;';
       hint.textContent = vs_t('c8-default-hint', 'Selecciones destacadas por defecto. Buscá o hacé clic en un punto para elegir otras.');
       chips.appendChild(hint); return;
     }
@@ -675,6 +699,14 @@ function vs_source() {
   if (s.view === 'lines' && s.metric === 'eff' && s.maYears > 1) base += en ? ` ${s.maYears}-year moving average.` : ` Promedio móvil de ${s.maYears} años.`;
   return base;
 }
+// hint contextual: cada vista tiene su forma (barra / celda / línea / punto)
+function vs_hint() {
+  const s = vs_state(), en = vs_lang() === 'en';
+  if (s.view === 'rank') return en ? 'Hover over a bar for the details.' : 'Pasá el cursor por una barra para ver el detalle.';
+  if (s.view === 'matrix') return en ? 'Hover over a cell for the head-to-head record.' : 'Pasá el cursor por una celda para ver el mano a mano.';
+  if (s.view === 'scatter') return en ? 'Hover over a dot for the details · click to highlight a team.' : 'Pasá el cursor por un punto para ver el detalle · hacé clic para destacar una selección.';
+  return en ? 'Hover over a line for the details.' : 'Pasá el cursor por una línea para ver el detalle.';
+}
 function vs_applyHeadings() {
   const block = document.querySelector('.chart-block[data-chart="' + VS_N + '"]') || document;
   const aeCfg = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
@@ -685,6 +717,7 @@ function vs_applyHeadings() {
   if (subEl && !(tx.subtitle || '').trim()) subEl.textContent = vs_subtitle();
   const srcTxt = vs_source();
   document.querySelectorAll('[data-i18n="c8-sources"]').forEach(el => { el.textContent = srcTxt; });
+  const hintEl = block.querySelector('p.esp-hint'); if (hintEl) hintEl.textContent = vs_hint();
 }
 
 // ---- controles --------------------------------------------------------------
