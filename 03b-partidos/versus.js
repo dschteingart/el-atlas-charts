@@ -440,7 +440,11 @@ function vs_drawScatter() {
     const plotBox = { x1: M.left + 1, y1: M.top + 1, x2: M.left + PW - 1, y2: M.top + PH - 1 };
     const items = hiPts.map(p => ({ cx: xS(p.m), cy: yS(p.eff), text: vs_teamName(p.n), textW: measW(vs_teamName(p.n)), confed: p.c, forced: true, subPriority: 0 }));
     const placed = s_layoutLabels(items, plotBox);
-    if (typeof s_relaxLabels === 'function') s_relaxLabels(placed, labelH, plotBox, 240, hiPts.map(p => ({ x: xS(p.m), y: yS(p.eff), r: rad })));
+    // La relajación física (que despega y separa) solo en el PNG grande, donde
+    // la tipografía enorme hace que el greedy deje solapes. En pantalla NO: el
+    // greedy ya deja cada etiqueta en el hueco libre más cercano a su punto;
+    // relajar acá las hacía derivar lejos (líneas guía larguísimas). Igual que el N°3.
+    if (bigFmt && typeof s_relaxLabels === 'function') s_relaxLabels(placed, labelH, plotBox, 260, hiPts.map(p => ({ x: xS(p.m), y: yS(p.eff), r: rad })));
     // líneas guía: del punto al borde de la etiqueta corrida
     const leaderG = vs_el('g'); svg.appendChild(leaderG);
     placed.forEach(l => {
