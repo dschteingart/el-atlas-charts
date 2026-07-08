@@ -46,6 +46,9 @@
   .toggle button { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 13px; background: var(--bg); color: var(--ink-soft); border: none; cursor: pointer; white-space: nowrap; transition: background 0.12s ease, color 0.12s ease; }
   .toggle button + button { border-left: 1px solid var(--rule); }
   .toggle button.active { background: var(--accent); color: #fff; }
+  /* chart 8 tiene 4 pestañas: si no entran (mobile), que scrolleen en vez de recortarse */
+  #vs-tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+  #vs-tabs::-webkit-scrollbar { display: none; }
 
   /* Menu desplegable (misma familia visual que los toggles pill) */
   .m-select { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 28px 6px 13px; border: 1px solid var(--rule); border-radius: 15px; background-color: var(--bg); color: var(--ink-soft); cursor: pointer; -webkit-appearance: none; appearance: none; outline: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%238a8378' stroke-width='1.5'/></svg>"); background-repeat: no-repeat; background-position: right 11px center; }
@@ -120,7 +123,9 @@
       <div class="m-controls">
         <div class="toggle" id="vs-tabs">
           <button id="vs-tab-rank" class="active" data-i18n="c8-tab-rank">Tabla de posiciones</button>
+          <button id="vs-tab-matrix" data-i18n="c8-tab-matrix">Enfrentamientos</button>
           <button id="vs-tab-evo" data-i18n="c8-tab-evo">Evolución</button>
+          <button id="vs-tab-scatter" data-i18n="c8-tab-scatter">Selecciones</button>
         </div>
         <div class="m-ctrl-group">
           <span class="m-ctrl-label" data-i18n="c6-cat-label">Competencia</span>
@@ -140,10 +145,10 @@
           <div class="s-range-slider" id="vs-range-slider">
             <div class="s-range-track"></div>
             <div class="s-range-track-active" id="vs-range-track-active"></div>
-            <input type="range" id="vs-slider-from" min="1872" max="2025" value="1872" step="1" aria-label="Desde">
-            <input type="range" id="vs-slider-to"   min="1872" max="2025" value="2025" step="1" aria-label="Hasta">
+            <input type="range" id="vs-slider-from" min="1872" max="2026" value="1872" step="1" aria-label="Desde">
+            <input type="range" id="vs-slider-to"   min="1872" max="2026" value="2026" step="1" aria-label="Hasta">
           </div>
-          <span class="s-range-display" id="vs-range-display">1872–2025</span>
+          <span class="s-range-display" id="vs-range-display">1872–2026</span>
         </div>
       </div>
       <div class="m-controls" id="vs-metric-group" style="display:none;">
@@ -161,7 +166,17 @@
           <span class="m-ctrl-label" data-i18n="c2-ma-years">años</span>
         </div>
       </div>
-      <p class="esp-hint" data-i18n="c8-hint">Pasá el cursor por una barra o una línea para ver el detalle</p>
+      <div class="m-controls" id="vs-teams-controls" style="display:none;">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c8-highlight-label">Destacar</span>
+          <div class="m-search-wrap" style="margin:0;min-width:200px;max-width:280px;">
+            <input type="text" id="vs-team-search" class="m-search-input" data-i18n-placeholder="c8-team-ph" placeholder="Buscar selección…" autocomplete="off">
+            <div id="vs-team-results" class="m-search-results"></div>
+          </div>
+        </div>
+        <div class="m-selected-chips" id="vs-team-chips"></div>
+      </div>
+      <p class="esp-hint" data-i18n="c8-hint">Pasá el cursor por una barra o una línea para ver el detalle · En Selecciones, hacé clic para destacar</p>
     <div class="chart-svg-wrap">
       <svg id="chart8" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="tooltip" id="tooltip8"></div>
@@ -185,21 +200,21 @@
 
 </div>
 
-<script src="../lib/regions.js?v=63"></script>
-<script src="../lib/i18n.js?v=63"></script>
-<script src="./regions-fifa.js?v=63"></script>
-<script src="./i18n-issue.js?v=63"></script>
-<script src="./utils.js?v=63"></script>
-<script src="./country-names.js?v=63"></script>
-<script src="./data-versus.js?v=63"></script>
-<script src="./data-nombres.js?v=63"></script>
-<script src="./editor.js?v=63"></script>
-<script src="./ts-partidos.js?v=63"></script>
-<script src="./versus.js?v=63"></script>
-<script src="./png-export.js?v=63"></script>
-<script src="./svg-export.js?v=63"></script>
+<script src="../lib/regions.js?v=65"></script>
+<script src="../lib/i18n.js?v=65"></script>
+<script src="./regions-fifa.js?v=65"></script>
+<script src="./i18n-issue.js?v=65"></script>
+<script src="./utils.js?v=65"></script>
+<script src="./country-names.js?v=65"></script>
+<script src="./data-versus.js?v=65"></script>
+<script src="./data-nombres.js?v=65"></script>
+<script src="./editor.js?v=65"></script>
+<script src="./ts-partidos.js?v=65"></script>
+<script src="./versus.js?v=65"></script>
+<script src="./png-export.js?v=65"></script>
+<script src="./svg-export.js?v=65"></script>
 <script>
-  window.__ESP_V = '63';
+  window.__ESP_V = '65';
   initVersus();
   applyI18n();
   // applyI18n pisa textos con data-i18n (p.ej. el subtítulo); un redibujo deja
@@ -210,6 +225,6 @@
   });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=63"></script>
+<script src="./nav.js?v=65"></script>
 </body>
 </html>
