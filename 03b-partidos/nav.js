@@ -17,7 +17,8 @@
     'chart-duelos.html',
     'chart-flujos.html',
     'chart-ciudades.html',
-    'chart-neutral.html'
+    'chart-neutral.html',
+    'chart-versus.html'
   ];
   const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
   const T = {
