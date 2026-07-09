@@ -36,6 +36,9 @@ function vs_state() {
   if (!s.period) s.period = [DATA_VERSUS.y0, DATA_VERSUS.y1];
   if (s.periodAuto == null) s.periodAuto = true;
   if (s.teamsSel === undefined) s.teamsSel = null;   // scatter: null = set destacado por default; array = custom
+  if (!s.matrixMode) s.matrixMode = 'conf';          // matriz: 'conf' (6×6 confed) | 'teams' (países × confed)
+  if (s.teamRows === undefined) s.teamRows = null;   // matriz-teams: null = representantes por default; array = custom
+  if (s.lineSel === undefined) s.lineSel = null;     // evolución: null = las 6 confederaciones; array = custom (confeds + países)
   return s;
 }
 
@@ -84,6 +87,61 @@ function vs_diverge(eff) {
   const c = t < 0.5 ? lerp(R, N, t * 2) : lerp(N, G, (t - 0.5) * 2);
   return `rgb(${c[0]},${c[1]},${c[2]})`;
 }
+// ---- helpers de país / confederación (matriz-teams, evolución, scatter) ------
+const VS_DEFAULT_REPS = { CONMEBOL: 'Brazil', UEFA: 'Germany', CONCACAF: 'Mexico', CAF: 'Egypt', AFC: 'Japan', OFC: 'New Zealand' };
+function vs_isConf(key) { return DATA_VERSUS.confOrder.indexOf(key) >= 0; }
+function vs_teamObj(name) { if (!vs_hasTeams()) return null; if (!vs_teamObj._m) { vs_teamObj._m = new Map(); DATA_VERSUS_TEAMS.forEach(o => vs_teamObj._m.set(o.n, o)); } return vs_teamObj._m.get(name) || null; }
+// filas del head-to-head modo Selecciones (default = representantes; array = custom)
+function vs_teamRowSet() {
+  const s = vs_state();
+  if (s.teamRows) return s.teamRows;
+  return DATA_VERSUS.confOrder.map(cf => VS_DEFAULT_REPS[cf]).filter(n => vs_teamObj(n));
+}
+// agregado de un país contra una confederación rival (celda de la matriz-teams)
+function vs_teamVsConf(name, oppConf, a, b, cat) {
+  const o = vs_teamObj(name); if (!o || !o.byConf || !o.byConf[oppConf]) return null;
+  let m = 0, w = 0, d = 0, l = 0, gd = 0;
+  for (const r of o.byConf[oppConf]) { const y = r[0] + DATA_VERSUS.y0; if (y < a || y > b) continue; if (cat !== 'ALL' && r[1] !== cat) continue; m += r[2]; w += r[3]; d += r[4]; l += r[5]; gd += r[6]; }
+  return m ? { m, w, d, l, gd, eff: (3 * w + d) / (3 * m) * 100 } : null;
+}
+// paleta de colores para PAÍSES en la evolución (color fijo por país: primera
+// ranura libre al agregar, se libera al sacar). Las confederaciones ya tienen color.
+const VS_TEAM_PALETTE = ['#A62A47', '#2D4B8E', '#147D64', '#6A3D99', '#C74E8B', '#B5761F', '#3F7A8C'];
+let vs_teamColorMap = {};
+function vs_teamLineColor(name) {
+  if (vs_teamColorMap[name] == null) {
+    const used = new Set(Object.values(vs_teamColorMap));
+    let i = 0; while (i < VS_TEAM_PALETTE.length && used.has(i)) i++;
+    vs_teamColorMap[name] = (i < VS_TEAM_PALETTE.length) ? i : (Object.keys(vs_teamColorMap).length % VS_TEAM_PALETTE.length);
+  }
+  return VS_TEAM_PALETTE[vs_teamColorMap[name]];
+}
+function vs_itemColor(key) { return vs_isConf(key) ? CONF_FIFA_COLORS[key] : vs_teamLineColor(key); }
+function vs_itemLabel(key) { return vs_isConf(key) ? vs_confLabel(key) : vs_teamName(key); }
+// ítems de la evolución (default = las 6 confederaciones; array = custom con países)
+function vs_lineItemsSel() { const s = vs_state(); return s.lineSel ? s.lineSel : DATA_VERSUS.confOrder.slice(); }
+let vs_hoverConf = null;                 // scatter: confederación resaltada por hover en leyenda
+let vs_hiddenScatterConfs = {};          // scatter: confederaciones ocultas por click en leyenda
+let vs_renderMatrixChips = null, vs_renderLineChips = null;   // asignados por sus setups
+// agregar/sacar un país de las filas del head-to-head modo Selecciones
+function vs_matrixTeamToggle(name) {
+  const s = vs_state();
+  let arr = (s.teamRows || vs_teamRowSet()).slice();
+  const i = arr.indexOf(name);
+  if (i >= 0) arr.splice(i, 1); else arr.push(name);
+  s.teamRows = arr.length ? arr : null;
+  vs_touched = true; if (vs_renderMatrixChips) vs_renderMatrixChips(); drawVersus();
+}
+// agregar/sacar una confederación o país de la evolución
+function vs_lineToggle(key) {
+  const s = vs_state();
+  let arr = (s.lineSel || DATA_VERSUS.confOrder.slice()).slice();
+  const i = arr.indexOf(key);
+  if (i >= 0) { arr.splice(i, 1); if (!vs_isConf(key)) delete vs_teamColorMap[key]; }  // liberar ranura de color del país
+  else arr.push(key);
+  s.lineSel = arr.length ? arr : null;
+  vs_touched = true; if (vs_renderLineChips) vs_renderLineChips(); drawVersus();
+}
 // categorías con al menos un cruce (para no ofrecer competencias vacías)
 function vs_availCats() {
   const has = {};
@@ -104,9 +162,11 @@ function vs_firstYear(cat) {
 function vs_series() {
   const s = vs_state(), y0 = DATA_VERSUS.y0, cat = s.cat, w = s.maYears;
   const N = DATA_VERSUS.y1 - y0 + 1;
-  return DATA_VERSUS.confOrder.map(cf => {
+  // una serie por ítem del ámbito: confederación (porConf) o país (team.r)
+  return vs_lineItemsSel().map(key => {
+    const rows = vs_isConf(key) ? (DATA_VERSUS.porConf[key] || []) : ((vs_teamObj(key) || {}).r || []);
     const num = new Array(N).fill(0), den = new Array(N).fill(0), gdy = new Array(N).fill(0);
-    (DATA_VERSUS.porConf[cf] || []).forEach(r => {
+    rows.forEach(r => {
       if (cat !== 'ALL' && r[1] !== cat) return;
       num[r[0]] += 3 * r[3] + r[4]; den[r[0]] += 3 * r[2]; gdy[r[0]] += r[6];
     });
@@ -126,7 +186,7 @@ function vs_series() {
       let acc = 0;
       for (let i = 0; i < N; i++) { const yr = y0 + i; if (yr < s.period[0]) continue; acc += gdy[i]; pts.push([yr, acc]); }
     }
-    return { key: cf, label: cf, color: CONF_FIFA_COLORS[cf], pts };
+    return { key, label: vs_isConf(key) ? key : vs_teamName(key), color: vs_itemColor(key), pts };
   });
 }
 
@@ -285,10 +345,18 @@ function vs_tipMove(ev) {
 function vs_tipHide() { const tt = document.getElementById('tooltip' + VS_N); if (tt) { tt.style.opacity = '0'; tt.style.display = 'none'; } }
 
 // ---- DRAW: matriz de enfrentamientos (quién le gana a quién) ----------------
+// Dos modos: 'conf' (6×6 confederación × confederación) y 'teams' (país en las
+// filas × confederación en las columnas: cómo le fue a ese país contra cada una).
 function vs_drawMatrix() {
   const svg = vs_svg(); if (!svg) return;
   svg.innerHTML = ''; vs_clearHover(svg);
-  const s = vs_state(), a = s.period[0], b = s.period[1], ord = DATA_VERSUS.confOrder, n = ord.length;
+  const s = vs_state(), a = s.period[0], b = s.period[1];
+  const teamsMode = s.matrixMode === 'teams';
+  if (teamsMode && !vs_hasTeams()) { vs_ensureTeams(() => drawVersus()); vs_matLoading(svg); return; }
+  const colKeys = DATA_VERSUS.confOrder;                    // columnas = confederaciones (siempre)
+  const rowKeys = teamsMode ? vs_teamRowSet() : DATA_VERSUS.confOrder;
+  const nr = rowKeys.length, nc = colKeys.length;
+  if (!nr) { vs_drawEmpty(); return; }
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const mobile = !editorFormat && (typeof isMobileViewport === 'function') && isMobileViewport();
   const bigFmt = !!editorFormat || mobile;
@@ -298,43 +366,48 @@ function vs_drawMatrix() {
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
   const fs = bigFmt ? 20 : 13, fsCell = bigFmt ? 24 : 15;
-  // margen izquierdo adaptativo a la etiqueta de fila más larga (nombre completo
-  // de la confederación). Regla de la casa: nunca texto fuera del marco del PNG.
+  const rowLabelOf = (k) => teamsMode ? vs_teamName(k) : vs_confLabel(k);
+  const rowColorOf = (k) => teamsMode ? ((typeof CONF_FIFA_LABEL_COLORS !== 'undefined' && CONF_FIFA_LABEL_COLORS[(vs_teamObj(k) || {}).c]) || 'var(--ink)') : CONF_FIFA_COLORS[k];
+  // margen izquierdo adaptativo a la etiqueta de fila más larga. Regla de la casa:
+  // nunca texto fuera del marco del PNG.
   const _rowFs = bigFmt ? 17 : 12, _rowPad = bigFmt ? 14 : 8;
-  const _mMeasure = (str, size) => (typeof ts_measure === 'function') ? ts_measure(str, size, 600) : str.length * size * 0.56;
-  const _mWidest = Math.max(...ord.map(cf => _mMeasure(vs_confLabel(cf), _rowFs)));
+  const _mMeasure = (str, size) => (typeof ts_measure === 'function') ? ts_measure(String(str), size, 600) : String(str).length * size * 0.56;
+  const _mWidest = Math.max(0, ...rowKeys.map(k => _mMeasure(rowLabelOf(k), _rowFs)));
   const M = { top: bigFmt ? 96 : 60, right: bigFmt ? 44 : 26, bottom: bigFmt ? 34 : 20, left: Math.min(Math.round(W * 0.44), Math.max(bigFmt ? 200 : 120, Math.ceil(_mWidest + _rowPad + 6))) };
   const gridW = W - M.left - M.right, gridH = H - M.top - M.bottom;
-  const cw = gridW / n, ch = gridH / n;
+  const cw = gridW / nc, ch = gridH / nr;
   const g = vs_el('g'); svg.appendChild(g);
   const txt = (x, y, s2, o) => { const e = vs_el('text'); e.setAttribute('x', x); e.setAttribute('y', y); e.style.fontFamily = 'var(--sans)'; e.style.fontSize = ((o && o.fs) || fs) + 'px'; if (o && o.anchor) e.setAttribute('text-anchor', o.anchor); e.setAttribute('font-weight', (o && o.weight) || 400); e.setAttribute('fill', (o && o.fill) || 'var(--ink)'); e.textContent = s2; g.appendChild(e); return e; };
   const hover = !editorFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
-  // headers: columna (arriba) y fila (izquierda), en el color de cada confederación
-  for (let j = 0; j < n; j++) txt(M.left + j * cw + cw / 2, M.top - (bigFmt ? 16 : 9), ord[j], { anchor: 'middle', weight: 600, fs: bigFmt ? 17 : 11.5, fill: CONF_FIFA_COLORS[ord[j]] });
-  for (let i = 0; i < n; i++) txt(M.left - (bigFmt ? 14 : 8), M.top + i * ch + ch / 2 + (bigFmt ? 6 : 4), vs_confLabel(ord[i]), { anchor: 'end', weight: 600, fs: bigFmt ? 17 : 12, fill: CONF_FIFA_COLORS[ord[i]] });
-  // celdas: fila = confederación, columna = rival; color por efectividad de la fila
-  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
-    const x = M.left + j * cw, y = M.top + i * ch;
+  for (let j = 0; j < nc; j++) txt(M.left + j * cw + cw / 2, M.top - (bigFmt ? 16 : 9), colKeys[j], { anchor: 'middle', weight: 600, fs: bigFmt ? 17 : 11.5, fill: CONF_FIFA_COLORS[colKeys[j]] });
+  for (let i = 0; i < nr; i++) txt(M.left - (bigFmt ? 14 : 8), M.top + i * ch + ch / 2 + (bigFmt ? 6 : 4), rowLabelOf(rowKeys[i]), { anchor: 'end', weight: 600, fs: bigFmt ? 17 : 12, fill: rowColorOf(rowKeys[i]) });
+  for (let i = 0; i < nr; i++) for (let j = 0; j < nc; j++) {
+    const rk = rowKeys[i], ck = colKeys[j], x = M.left + j * cw, y = M.top + i * ch;
     const rect = vs_el('rect'); rect.setAttribute('x', x + 1.5); rect.setAttribute('y', y + 1.5); rect.setAttribute('width', cw - 3); rect.setAttribute('height', ch - 3); rect.setAttribute('rx', 3);
-    if (i === j) { rect.setAttribute('fill', '#E7E1D4'); rect.setAttribute('fill-opacity', 0.55); g.appendChild(rect); continue; }
-    const o = vs_pairAgg(ord[i], ord[j], a, b, s.cat);
+    const isOwn = teamsMode ? ((vs_teamObj(rk) || {}).c === ck) : (rk === ck);   // celda propia confederación (sin cruce)
+    if (isOwn) { rect.setAttribute('fill', '#E7E1D4'); rect.setAttribute('fill-opacity', 0.55); g.appendChild(rect); continue; }
+    const o = teamsMode ? vs_teamVsConf(rk, ck, a, b, s.cat) : vs_pairAgg(rk, ck, a, b, s.cat);
     if (!o || !o.m) { rect.setAttribute('fill', '#E7E1D4'); rect.setAttribute('fill-opacity', 0.3); g.appendChild(rect); txt(x + cw / 2, y + ch / 2 + 4, '·', { anchor: 'middle', fill: 'var(--ink-muted)' }); continue; }
     rect.setAttribute('fill', vs_diverge(o.eff)); g.appendChild(rect);
     txt(x + cw / 2, y + ch / 2 + (bigFmt ? 3 : 1), Math.round(o.eff) + '%', { anchor: 'middle', weight: 700, fs: fsCell, fill: '#2A2824' });
     if (hover) {
+      const rl = rowLabelOf(rk), cl = vs_confLabel(ck);
       rect.style.cursor = 'default';
-      rect.addEventListener('mouseenter', () => { rect.setAttribute('stroke', '#33312C'); rect.setAttribute('stroke-width', 2); vs_matTip(ord[i], ord[j], o); });
+      rect.addEventListener('mouseenter', () => { rect.setAttribute('stroke', '#33312C'); rect.setAttribute('stroke-width', 2); vs_matTip(rl, cl, o); });
       rect.addEventListener('mousemove', (ev) => vs_tipMove(ev));
       rect.addEventListener('mouseleave', () => { rect.removeAttribute('stroke'); vs_tipHide(); });
     }
   }
 }
-function vs_matTip(rowCf, colCf, o) {
+function vs_matLoading(svg) {
+  const e = vs_el('text'); e.setAttribute('x', 550); e.setAttribute('y', 260); e.setAttribute('text-anchor', 'middle'); e.style.fontFamily = 'var(--sans)'; e.style.fontSize = '15px'; e.setAttribute('fill', 'var(--ink-muted)'); e.textContent = vs_t('c8-loading', 'Cargando…'); svg.appendChild(e);
+}
+function vs_matTip(rowLabel, colLabel, o) {
   const tt = document.getElementById('tooltip' + VS_N); if (!tt) return;
   const en = vs_lang() === 'en';
   const hd = en ? 'vs' : 'contra';
-  tt.innerHTML = `<div style="font-weight:600;">${vs_confLabel(rowCf)}</div>`
-    + `<div style="opacity:.7;margin-bottom:6px;">${hd} ${vs_confLabel(colCf)}</div>`
+  tt.innerHTML = `<div style="font-weight:600;">${rowLabel}</div>`
+    + `<div style="opacity:.7;margin-bottom:6px;">${hd} ${colLabel}</div>`
     + vs_tipRow(vs_t('c8-won', 'Ganó'), vs_nf(o.w), VS_WIN)
     + vs_tipRow(vs_t('c8-drew', 'Empató'), vs_nf(o.d), VS_DRAW)
     + vs_tipRow(vs_t('c8-lost', 'Perdió'), vs_nf(o.l), VS_LOSS)
@@ -454,13 +527,15 @@ function vs_drawScatter() {
   const mobile = !editorFormat && (typeof isMobileViewport === 'function') && isMobileViewport();
   const bigFmt = square || newsletter || mobilePng || mobile, isPng = square || newsletter || mobilePng;
   let W = 1100, H = 520, M;
-  if (editorFormat) { const f = PNG_FORMATS[editorFormat]; W = f.vbW; H = square ? 910 : newsletter ? 860 : f.vbH; M = { top: 30, right: 42, bottom: 80, left: 78 }; }
-  else if (mobile) { W = 1100; H = 820; M = { top: 24, right: 36, bottom: 108, left: 84 }; }
-  else { W = 1100; H = 520; M = { top: 20, right: 32, bottom: 48, left: 70 }; }
+  const legendH = bigFmt ? 44 : 28;   // banda superior para la leyenda de confederaciones
+  if (editorFormat) { const f = PNG_FORMATS[editorFormat]; W = f.vbW; H = square ? 910 : newsletter ? 860 : f.vbH; M = { top: 30 + legendH, right: 42, bottom: 80, left: 78 }; }
+  else if (mobile) { W = 1100; H = 820; M = { top: 24 + legendH, right: 36, bottom: 108, left: 84 }; }
+  else { W = 1100; H = 520; M = { top: 20 + legendH, right: 32, bottom: 48, left: 70 }; }
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
   const SIZES = bigFmt ? { tick: 22, axisTitle: 23, label: 21 } : { tick: 11, axisTitle: 11.5, label: 12 };
-  const pts = DATA_VERSUS_TEAMS.map(o => vs_teamAgg(o, a, b, s.cat)).filter(o => o.m >= VS_SCATTER_MIN);
+  const hovC = vs_hoverConf;
+  const pts = DATA_VERSUS_TEAMS.map(o => vs_teamAgg(o, a, b, s.cat)).filter(o => o.m >= VS_SCATTER_MIN && !vs_hiddenScatterConfs[o.c]);
   if (!pts.length) { vs_drawEmpty(); return; }
   const PW = W - M.left - M.right, PH = H - M.top - M.bottom;
   const maxM = Math.max(...pts.map(p => p.m));
@@ -484,17 +559,21 @@ function vs_drawScatter() {
   const dotsG = vs_el('g'); svg.appendChild(dotsG);
   const rad = bigFmt ? 7 : 5, radOff = bigFmt ? 4 : 3;
   const interact = !isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
-  // los tenues (no destacados) primero, los destacados encima
-  pts.slice().sort((x, y) => (hiSet.has(x.n) ? 1 : 0) - (hiSet.has(y.n) ? 1 : 0)).forEach(p => {
-    const on = hiSet.has(p.n);
-    const c = vs_el('circle'); c.setAttribute('cx', xS(p.m)); c.setAttribute('cy', yS(p.eff)); c.setAttribute('r', on ? rad : radOff);
-    c.setAttribute('fill', CONF_FIFA_COLORS[p.c] || '#888'); c.setAttribute('fill-opacity', on ? 0.92 : 0.26);
-    if (on) { c.setAttribute('stroke', VS_BG); c.setAttribute('stroke-width', bigFmt ? 1.8 : 1.2); }
+  // orden: tenues primero; destacados encima; y si hay hover en la leyenda, los de
+  // esa confederación arriba de todo. hover en leyenda = resaltar esa confed y
+  // atenuar el resto (mismo comportamiento que el scatter del N°3).
+  const dotScore = (p) => (hiSet.has(p.n) ? 1 : 0) + (hovC && p.c === hovC ? 2 : 0);
+  pts.slice().sort((x, y) => dotScore(x) - dotScore(y)).forEach(p => {
+    const on = hiSet.has(p.n), hovOn = hovC && p.c === hovC, dim = hovC && p.c !== hovC;
+    const baseR = (hovOn || on) ? rad : radOff, baseOp = dim ? 0.08 : (hovOn ? 0.95 : (on ? 0.92 : 0.26));
+    const c = vs_el('circle'); c.setAttribute('cx', xS(p.m)); c.setAttribute('cy', yS(p.eff)); c.setAttribute('r', baseR);
+    c.setAttribute('fill', CONF_FIFA_COLORS[p.c] || '#888'); c.setAttribute('fill-opacity', baseOp);
+    if ((on || hovOn) && !dim) { c.setAttribute('stroke', VS_BG); c.setAttribute('stroke-width', bigFmt ? 1.8 : 1.2); }
     if (interact) {
       c.style.cursor = 'pointer';
-      c.addEventListener('mouseenter', () => { c.setAttribute('r', (on ? rad : radOff) + 2); c.setAttribute('fill-opacity', 1); vs_scatterTip(p); });
+      c.addEventListener('mouseenter', () => { c.setAttribute('r', baseR + 2); c.setAttribute('fill-opacity', 1); vs_scatterTip(p); });
       c.addEventListener('mousemove', (ev) => vs_tipMove(ev));
-      c.addEventListener('mouseleave', () => { c.setAttribute('r', on ? rad : radOff); c.setAttribute('fill-opacity', on ? 0.92 : 0.26); vs_tipHide(); });
+      c.addEventListener('mouseleave', () => { c.setAttribute('r', baseR); c.setAttribute('fill-opacity', baseOp); vs_tipHide(); });
       c.addEventListener('click', () => vs_toggleTeam(p.n));
     }
     dotsG.appendChild(c);
@@ -532,7 +611,35 @@ function vs_drawScatter() {
     const e = vs_el('text'); e.setAttribute('x', l.lx); e.setAttribute('y', l.ly); e.setAttribute('text-anchor', l.anchor);
     e.style.fontFamily = 'var(--sans)'; e.style.fontSize = labelH + 'px'; e.setAttribute('font-weight', bigFmt ? 700 : 600); e.setAttribute('fill', lblColor[l.confed] || 'var(--ink)');
     e.setAttribute('paint-order', 'stroke'); e.setAttribute('stroke', VS_BG); e.setAttribute('stroke-width', bigFmt ? 5 : 3); e.setAttribute('stroke-linejoin', 'round');
+    if (hovC && l.confed !== hovC) e.setAttribute('opacity', 0.2);
     e.textContent = l.text; labelsG.appendChild(e);
+  });
+  // leyenda de confederaciones en la banda superior (entra al PNG). Hover resalta
+  // esa confed y atenúa el resto; click la oculta/muestra (como el scatter del N°3).
+  vs_scatterLegend(svg, W, M.top, legendH, bigFmt, interact);
+}
+function vs_scatterLegend(svg, W, mTop, legendH, bigFmt, interact) {
+  const ord = DATA_VERSUS.confOrder, lbl = (typeof CONF_FIFA_LABEL_COLORS !== 'undefined') ? CONF_FIFA_LABEL_COLORS : {};
+  const fs = bigFmt ? 19 : 12, sw = bigFmt ? 15 : 10, gap = bigFmt ? 8 : 5, itemGap = bigFmt ? 24 : 15;
+  const meas = (str) => (typeof ts_measure === 'function') ? ts_measure(str, fs, 600) : str.length * fs * 0.56;
+  const widths = ord.map(cf => sw + gap + meas(cf));
+  const total = widths.reduce((s, w) => s + w, 0) + itemGap * (ord.length - 1);
+  let x = Math.max(4, (W - total) / 2);
+  const cy = mTop - legendH / 2;
+  const g = vs_el('g'); svg.appendChild(g);
+  ord.forEach((cf, k) => {
+    const hidden = !!vs_hiddenScatterConfs[cf];
+    const r = vs_el('rect'); r.setAttribute('x', x); r.setAttribute('y', cy - sw / 2); r.setAttribute('width', sw); r.setAttribute('height', sw); r.setAttribute('rx', 2); r.setAttribute('fill', CONF_FIFA_COLORS[cf]); r.setAttribute('fill-opacity', hidden ? 0.25 : 1); g.appendChild(r);
+    const t = vs_el('text'); t.setAttribute('x', x + sw + gap); t.setAttribute('y', cy + fs * 0.34); t.style.fontFamily = 'var(--sans)'; t.style.fontSize = fs + 'px'; t.setAttribute('font-weight', 600); t.setAttribute('fill', hidden ? 'var(--ink-muted)' : (lbl[cf] || 'var(--ink)'));
+    if (hidden) t.setAttribute('text-decoration', 'line-through');
+    t.textContent = cf; g.appendChild(t);
+    if (interact) {
+      const hit = vs_el('rect'); hit.setAttribute('x', x - 3); hit.setAttribute('y', cy - legendH / 2); hit.setAttribute('width', widths[k] + 6); hit.setAttribute('height', legendH); hit.setAttribute('fill', 'transparent'); hit.style.cursor = 'pointer'; g.appendChild(hit);
+      hit.addEventListener('mouseenter', () => { if (!vs_hiddenScatterConfs[cf] && vs_hoverConf !== cf) { vs_hoverConf = cf; drawVersus(); } });
+      hit.addEventListener('mouseleave', () => { if (vs_hoverConf) { vs_hoverConf = null; drawVersus(); } });
+      hit.addEventListener('click', () => { if (vs_hiddenScatterConfs[cf]) delete vs_hiddenScatterConfs[cf]; else vs_hiddenScatterConfs[cf] = true; vs_hoverConf = null; drawVersus(); });
+    }
+    x += widths[k] + itemGap;
   });
 }
 function vs_scatterTip(p) {
@@ -587,6 +694,59 @@ function vs_setupTeamSearch() {
   input.addEventListener('input', () => { vs_ensureTeams(renderResults); renderResults(); });
   input.addEventListener('blur', () => setTimeout(() => results.classList.remove('open'), 130));
   renderChips();
+}
+// buscador + chips genérico (matriz-teams y evolución). o = {selected, pool,
+// label, chipColor, dotColor, toggle}. Devuelve renderChips.
+function vs_wireSearch(inputId, resultsId, chipsId, o) {
+  const input = document.getElementById(inputId), results = document.getElementById(resultsId), chips = document.getElementById(chipsId);
+  if (!input || !results || !chips) return null;
+  function renderChips() {
+    chips.innerHTML = '';
+    o.selected().forEach(key => {
+      const el = document.createElement('span'); el.className = 'm-selected-chip'; el.style.background = o.chipColor(key);
+      el.innerHTML = `<span>${o.label(key)}</span>`;
+      const x = document.createElement('button'); x.className = 'm-chip-x'; x.type = 'button'; x.textContent = '×';
+      x.addEventListener('click', () => o.toggle(key));
+      el.appendChild(x); chips.appendChild(el);
+    });
+  }
+  function renderResults() {
+    results.innerHTML = '';
+    const q = input.value.trim().toLowerCase(); if (!q) { results.classList.remove('open'); return; }
+    const sel = new Set(o.selected());
+    o.pool().filter(k => !sel.has(k) && o.label(k).toLowerCase().includes(q)).slice(0, 9).forEach(k => {
+      const r = document.createElement('div'); r.className = 'm-search-result';
+      r.innerHTML = `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${o.dotColor(k)};margin-right:7px;vertical-align:middle;"></span><span>${o.label(k)}</span>`;
+      r.addEventListener('mousedown', (e) => { e.preventDefault(); input.value = ''; results.classList.remove('open'); o.toggle(k); });
+      results.appendChild(r);
+    });
+    results.classList.toggle('open', results.children.length > 0);
+  }
+  input.addEventListener('focus', () => { vs_ensureTeams(renderResults); renderResults(); });
+  input.addEventListener('input', () => { vs_ensureTeams(renderResults); renderResults(); });
+  input.addEventListener('blur', () => setTimeout(() => results.classList.remove('open'), 130));
+  renderChips();
+  return renderChips;
+}
+function vs_setupMatrixSearch() {
+  vs_renderMatrixChips = vs_wireSearch('vs-mrow-search', 'vs-mrow-results', 'vs-mrow-chips', {
+    selected: () => vs_teamRowSet(),
+    pool: () => (vs_hasTeams() ? DATA_VERSUS_TEAMS.map(t => t.n) : []),
+    label: (n) => vs_teamName(n),
+    chipColor: (n) => CONF_FIFA_COLORS[(vs_teamObj(n) || {}).c] || '#888',
+    dotColor: (n) => CONF_FIFA_COLORS[(vs_teamObj(n) || {}).c] || '#888',
+    toggle: vs_matrixTeamToggle
+  });
+}
+function vs_setupLineSearch() {
+  vs_renderLineChips = vs_wireSearch('vs-line-search', 'vs-line-results', 'vs-line-chips', {
+    selected: () => vs_lineItemsSel(),
+    pool: () => DATA_VERSUS.confOrder.concat(vs_hasTeams() ? DATA_VERSUS_TEAMS.map(t => t.n) : []),
+    label: (k) => vs_isConf(k) ? k : vs_teamName(k),   // sigla para confeds (chips cortos); el tooltip usa el nombre completo
+    chipColor: (k) => vs_itemColor(k),
+    dotColor: (k) => vs_isConf(k) ? CONF_FIFA_COLORS[k] : '#c9c4ba',   // país sin asignar color hasta agregarlo
+    toggle: vs_lineToggle
+  });
 }
 
 // ---- DRAW: evolución (líneas, renderer propio con negativos) ----------------
@@ -706,7 +866,7 @@ function vs_drawLines() {
       series.forEach(se => {
         const p = se.pts.find(q => q[0] === year); if (!p || p[1] == null) return;
         const c = vs_el('circle'); c.setAttribute('cx', xAt); c.setAttribute('cy', yS(p[1])); c.setAttribute('r', 3.6); c.setAttribute('fill', se.color); c.setAttribute('stroke', VS_BG); c.setAttribute('stroke-width', 1.5); hoverG.appendChild(c);
-        rows.push({ label: vs_confLabel(se.key), color: se.color, v: isEff ? Math.round(p[1]) + '%' : (p[1] > 0 ? '+' : '') + vs_nf(p[1]), sort: p[1] });
+        rows.push({ label: vs_itemLabel(se.key), color: se.color, v: isEff ? Math.round(p[1]) + '%' : (p[1] > 0 ? '+' : '') + vs_nf(p[1]), sort: p[1] });
       });
       if (!rows.length) { update(null); return; }
       rows.sort((p, q) => q.sort - p.sort);
@@ -747,6 +907,10 @@ function vs_subtitle() {
   const s = vs_state(), en = vs_lang() === 'en', per = vs_periodTxt(), cat = vs_catTxt();
   const base = en ? 'in matches between different confederations' : 'en partidos entre confederaciones distintas';
   if (s.view === 'matrix') {
+    if (s.matrixMode === 'teams') {
+      return en ? `${cat}Points effectiveness of each team (row) against each confederation (column) ${base} (${per}). Green: wins more.`
+        : `${cat}Efectividad en puntos de cada selección (fila) contra cada confederación (columna) ${base} (${per}). Verde: gana más.`;
+    }
     return en ? `${cat}Points effectiveness of each confederation (row) against each rival (column) ${base} (${per}). Green: wins more.`
       : `${cat}Efectividad en puntos de cada confederación (fila) contra cada rival (columna) ${base} (${per}). Verde: gana más.`;
   }
@@ -803,6 +967,18 @@ function vs_syncCtx() {
   show('vs-metric-group', lines);
   show('vs-ma-group', lines && s.metric === 'eff');
   show('vs-teams-controls', s.view === 'scatter');
+  show('vs-matrix-mode-group', s.view === 'matrix');
+  show('vs-mrow-controls', s.view === 'matrix' && s.matrixMode === 'teams');
+  show('vs-line-controls', lines);
+}
+function vs_setupMatrixMode() {
+  document.querySelectorAll('#vs-matrix-mode button').forEach(b => b.addEventListener('click', () => {
+    if (vs_state().matrixMode === b.dataset.mm) return;
+    document.querySelectorAll('#vs-matrix-mode button').forEach(x => x.classList.toggle('active', x === b));
+    vs_state().matrixMode = b.dataset.mm; vs_touched = true;
+    if (b.dataset.mm === 'teams') vs_ensureTeams(() => { if (vs_renderMatrixChips) vs_renderMatrixChips(); drawVersus(); });
+    vs_syncCtx(); drawVersus();
+  }));
 }
 function vs_setActiveTab() {
   const v = vs_state().view;
@@ -838,7 +1014,7 @@ function vs_updateSlider() {
 }
 function vs_setupTabs() {
   const map = [['vs-tab-rank', 'rank'], ['vs-tab-matrix', 'matrix'], ['vs-tab-evo', 'lines'], ['vs-tab-scatter', 'scatter']];
-  const go = (v) => { const s = vs_state(); if (s.view === v) return; s.view = v; vs_touched = true; if (v === 'scatter') vs_ensureTeams(() => drawVersus()); vs_setActiveTab(); vs_syncCtx(); vs_autofitPeriod(); drawVersus(); };
+  const go = (v) => { const s = vs_state(); if (s.view === v) return; s.view = v; vs_touched = true; vs_hoverConf = null; if (v === 'scatter' || (v === 'matrix' && s.matrixMode === 'teams')) vs_ensureTeams(() => drawVersus()); vs_setActiveTab(); vs_syncCtx(); vs_autofitPeriod(); drawVersus(); };
   map.forEach(([id, v]) => { const btn = document.getElementById(id); if (btn) btn.addEventListener('click', () => go(v)); });
   vs_setActiveTab(); vs_syncCtx();
 }
@@ -884,7 +1060,7 @@ function initVersus() {
   window.__atlasDefaultPngFormat = 'square';
   window.onBeforePngExportGetSubtitle = function (chartId) { return String(chartId) === String(VS_N) ? vs_subtitle() : null; };
   window.onBeforePngExportGetSourceText = function (chartId) { return String(chartId) === String(VS_N) ? vs_source() : null; };
-  vs_setupTabs(); vs_setupCat(); vs_setupMetric(); vs_setupSlider(); vs_setupCSV(); vs_setupTeamSearch();
+  vs_setupTabs(); vs_setupCat(); vs_setupMetric(); vs_setupSlider(); vs_setupCSV(); vs_setupTeamSearch(); vs_setupMatrixMode(); vs_setupMatrixSearch(); vs_setupLineSearch();
   vs_syncCtx();
   vs_autofitPeriod();
   drawVersus();
