@@ -384,6 +384,63 @@ function vs_toggleTeam(name) {
   if (vs_renderTeamChips) vs_renderTeamChips();
   drawVersus();
 }
+// Coloca las etiquetas del scatter con el árbol que propuso Daniel:
+//  1) posiciones CARDINALES primero (12/3/6/9), después DIAGONALES (1:30/4:30/
+//     7:30/10:30); 2) entre las que entran sin pisar, la de MÁS espacio (más
+//     lejos de las etiquetas vecinas y de los puntos). Si ninguna entra libre,
+//     la que menos pisa. Después se reconecta con línea guía si quedó lejos.
+function vs_placeScatterLabels(items, plotBox, ptR, labelH) {
+  const gap = Math.max(4, ptR * 0.6), up = labelH * 0.78, dn = labelH * 0.22;
+  const OFF = [
+    { dx: 0, dy: -(ptR + gap), a: 'middle', tier: 0 },                              // 12
+    { dx: ptR + gap, dy: dn * 1.4, a: 'start', tier: 0 },                           // 3
+    { dx: 0, dy: ptR + gap + up, a: 'middle', tier: 0 },                            // 6
+    { dx: -(ptR + gap), dy: dn * 1.4, a: 'end', tier: 0 },                          // 9
+    { dx: ptR * 0.7 + gap, dy: -(ptR * 0.5 + gap * 0.5), a: 'start', tier: 1 },     // 1:30
+    { dx: ptR * 0.7 + gap, dy: ptR * 0.5 + gap * 0.5 + up, a: 'start', tier: 1 },   // 4:30
+    { dx: -(ptR * 0.7 + gap), dy: ptR * 0.5 + gap * 0.5 + up, a: 'end', tier: 1 },  // 7:30
+    { dx: -(ptR * 0.7 + gap), dy: -(ptR * 0.5 + gap * 0.5), a: 'end', tier: 1 }     // 10:30
+  ];
+  const boxOf = (cx, cy, textW, off) => {
+    const lx = cx + off.dx, ly = cy + off.dy; let x1, x2;
+    if (off.a === 'start') { x1 = lx; x2 = lx + textW; }
+    else if (off.a === 'end') { x1 = lx - textW; x2 = lx; }
+    else { x1 = lx - textW / 2; x2 = lx + textW / 2; }
+    return { x1, x2, y1: ly - up, y2: ly + dn, lx, ly, anchor: off.a, tier: off.tier };
+  };
+  const fits = (b) => b.x1 >= plotBox.x1 && b.x2 <= plotBox.x2 && b.y1 >= plotBox.y1 && b.y2 <= plotBox.y2;
+  const overlaps = (b, placed) => placed.some(p => !(b.x2 < p.x1 || b.x1 > p.x2 || b.y2 < p.y1 || b.y1 > p.y2));
+  const overlapArea = (b, placed) => { let ar = 0; placed.forEach(p => { const ox = Math.min(b.x2, p.x2) - Math.max(b.x1, p.x1), oy = Math.min(b.y2, p.y2) - Math.max(b.y1, p.y1); if (ox > 0 && oy > 0) ar += ox * oy; }); return ar; };
+  const allPts = items.map(it => ({ x: it.cx, y: it.cy }));
+  const clearance = (b, placed) => {
+    let mn = 1e9;
+    placed.forEach(p => { const dx = Math.max(p.x1 - b.x2, b.x1 - p.x2, 0), dy = Math.max(p.y1 - b.y2, b.y1 - p.y2, 0); mn = Math.min(mn, Math.hypot(dx, dy)); });
+    allPts.forEach(pt => { const nx = Math.max(b.x1, Math.min(pt.x, b.x2)), ny = Math.max(b.y1, Math.min(pt.y, b.y2)); mn = Math.min(mn, Math.hypot(nx - pt.x, ny - pt.y)); });
+    return mn;
+  };
+  const placed = [];
+  items.slice().sort((p, q) => q.cx - p.cx).forEach(it => {
+    const cands = OFF.map(off => boxOf(it.cx, it.cy, it.textW, off)).filter(fits);
+    const free = cands.filter(b => !overlaps(b, placed));
+    let pick;
+    if (free.length) {
+      const bestTier = Math.min(...free.map(b => b.tier));           // cardinales antes que diagonales
+      const pool = free.filter(b => b.tier === bestTier);
+      pick = pool.reduce((best, b) => clearance(b, placed) > clearance(best, placed) ? b : best);  // la de más espacio
+    } else if (cands.length) {
+      pick = cands.reduce((best, b) => overlapArea(b, placed) < overlapArea(best, placed) ? b : best);
+    } else {
+      pick = boxOf(it.cx, it.cy, it.textW, OFF[0]);
+    }
+    // clamp al recuadro (garantía anti-clip, incluso en el caso borde sin candidatos)
+    if (pick.x1 < plotBox.x1) { const s = plotBox.x1 - pick.x1; pick.x1 += s; pick.x2 += s; pick.lx += s; }
+    if (pick.x2 > plotBox.x2) { const s = pick.x2 - plotBox.x2; pick.x1 -= s; pick.x2 -= s; pick.lx -= s; }
+    if (pick.y1 < plotBox.y1) { const s = plotBox.y1 - pick.y1; pick.y1 += s; pick.y2 += s; pick.ly += s; }
+    if (pick.y2 > plotBox.y2) { const s = pick.y2 - plotBox.y2; pick.y1 -= s; pick.y2 -= s; pick.ly -= s; }
+    placed.push(Object.assign(pick, { cx: it.cx, cy: it.cy, text: it.text, textW: it.textW, confed: it.confed }));
+  });
+  return placed;
+}
 function vs_drawScatter() {
   const svg = vs_svg(); if (!svg) return;
   if (!vs_hasTeams()) {
@@ -449,42 +506,34 @@ function vs_drawScatter() {
   const labelH = SIZES.label;
   const lblColor = (typeof CONF_FIFA_LABEL_COLORS !== 'undefined') ? CONF_FIFA_LABEL_COLORS : {};
   const measW = (str) => (typeof ts_measure === 'function' ? ts_measure(str, labelH, bigFmt ? 700 : 600) : str.length * labelH * 0.56) + 2;
-  if (typeof s_layoutLabels === 'function') {
-    const plotBox = { x1: M.left + 1, y1: M.top + 1, x2: M.left + PW - 1, y2: M.top + PH - 1 };
-    const items = hiPts.map(p => ({ cx: xS(p.m), cy: yS(p.eff), text: vs_teamName(p.n), textW: measW(vs_teamName(p.n)), confed: p.c, forced: true, subPriority: 0 }));
-    const placed = s_layoutLabels(items, plotBox);
-    // La relajación física (que despega y separa) solo en el PNG grande, donde
-    // la tipografía enorme hace que el greedy deje solapes. En pantalla NO: el
-    // greedy ya deja cada etiqueta en el hueco libre más cercano a su punto;
-    // relajar acá las hacía derivar lejos (líneas guía larguísimas). Igual que el N°3.
-    if (bigFmt && typeof s_relaxLabels === 'function') s_relaxLabels(placed, labelH, plotBox, 260, hiPts.map(p => ({ x: xS(p.m), y: yS(p.eff), r: rad })));
-    // líneas guía: del punto al borde de la etiqueta corrida
-    const leaderG = vs_el('g'); svg.appendChild(leaderG);
-    placed.forEach(l => {
-      const B = s_labelBox(l, labelH);
-      const nx = Math.max(B.x1, Math.min(l.cx, B.x2)), ny = Math.max(B.y1, Math.min(l.cy, B.y2));
-      const dx = nx - l.cx, dy = ny - l.cy, dist = Math.hypot(dx, dy);
-      if (dist > rad + (bigFmt ? 7 : 5)) {
-        const ux = dx / dist, uy = dy / dist, ln = vs_el('line');
-        ln.setAttribute('x1', l.cx + ux * rad); ln.setAttribute('y1', l.cy + uy * rad);
-        ln.setAttribute('x2', nx - ux * 2); ln.setAttribute('y2', ny - uy * 2);
-        ln.setAttribute('stroke', '#9a9488'); ln.setAttribute('stroke-width', bigFmt ? 1.4 : 0.9); ln.setAttribute('stroke-opacity', 0.7); ln.setAttribute('stroke-linecap', 'round');
-        leaderG.appendChild(ln);
-      }
-    });
-    const labelsG = vs_el('g'); svg.appendChild(labelsG);
-    placed.forEach(l => {
-      const e = vs_el('text'); e.setAttribute('x', l.lx); e.setAttribute('y', l.ly); e.setAttribute('text-anchor', l.anchor);
-      e.style.fontFamily = 'var(--sans)'; e.style.fontSize = labelH + 'px'; e.setAttribute('font-weight', bigFmt ? 700 : 600); e.setAttribute('fill', lblColor[l.confed] || 'var(--ink)');
-      e.setAttribute('paint-order', 'stroke'); e.setAttribute('stroke', VS_BG); e.setAttribute('stroke-width', bigFmt ? 5 : 3); e.setAttribute('stroke-linejoin', 'round');
-      e.textContent = l.text; labelsG.appendChild(e);
-    });
-  } else {
-    // fallback mínimo si no cargó el motor (no debería pasar)
-    hiPts.forEach(p => {
-      const e = vs_el('text'); e.setAttribute('x', xS(p.m) + rad + 3); e.setAttribute('y', yS(p.eff) + 4); e.style.fontSize = labelH + 'px'; e.style.fontFamily = 'var(--sans)'; e.setAttribute('fill', lblColor[p.c] || 'var(--ink)'); e.setAttribute('paint-order', 'stroke'); e.setAttribute('stroke', VS_BG); e.setAttribute('stroke-width', 3); e.textContent = vs_teamName(p.n); svg.appendChild(e);
-    });
-  }
+  const plotBox = { x1: M.left + 1, y1: M.top + 1, x2: M.left + PW - 1, y2: M.top + PH - 1 };
+  const items = hiPts.map(p => ({ cx: xS(p.m), cy: yS(p.eff), text: vs_teamName(p.n), textW: measW(vs_teamName(p.n)), confed: p.c }));
+  const placed = vs_placeScatterLabels(items, plotBox, rad, labelH);
+  // en el PNG grande (tipografía enorme) una relajación extra separa residuales;
+  // en pantalla no hace falta (el árbol cardinal ya deja cada una en su hueco).
+  if (bigFmt && typeof s_relaxLabels === 'function') s_relaxLabels(placed, labelH, plotBox, 260, items.map(it => ({ x: it.cx, y: it.cy, r: rad })));
+  const boxFor = (l) => (typeof s_labelBox === 'function') ? s_labelBox(l, labelH) : { x1: l.x1, x2: l.x2, y1: l.y1, y2: l.y2 };
+  // líneas guía: solo si la etiqueta quedó separada de su punto
+  const leaderG = vs_el('g'); svg.appendChild(leaderG);
+  placed.forEach(l => {
+    const B = boxFor(l);
+    const nx = Math.max(B.x1, Math.min(l.cx, B.x2)), ny = Math.max(B.y1, Math.min(l.cy, B.y2));
+    const dx = nx - l.cx, dy = ny - l.cy, dist = Math.hypot(dx, dy);
+    if (dist > rad + (bigFmt ? 7 : 5)) {
+      const ux = dx / dist, uy = dy / dist, ln = vs_el('line');
+      ln.setAttribute('x1', l.cx + ux * rad); ln.setAttribute('y1', l.cy + uy * rad);
+      ln.setAttribute('x2', nx - ux * 2); ln.setAttribute('y2', ny - uy * 2);
+      ln.setAttribute('stroke', '#9a9488'); ln.setAttribute('stroke-width', bigFmt ? 1.4 : 0.9); ln.setAttribute('stroke-opacity', 0.7); ln.setAttribute('stroke-linecap', 'round');
+      leaderG.appendChild(ln);
+    }
+  });
+  const labelsG = vs_el('g'); svg.appendChild(labelsG);
+  placed.forEach(l => {
+    const e = vs_el('text'); e.setAttribute('x', l.lx); e.setAttribute('y', l.ly); e.setAttribute('text-anchor', l.anchor);
+    e.style.fontFamily = 'var(--sans)'; e.style.fontSize = labelH + 'px'; e.setAttribute('font-weight', bigFmt ? 700 : 600); e.setAttribute('fill', lblColor[l.confed] || 'var(--ink)');
+    e.setAttribute('paint-order', 'stroke'); e.setAttribute('stroke', VS_BG); e.setAttribute('stroke-width', bigFmt ? 5 : 3); e.setAttribute('stroke-linejoin', 'round');
+    e.textContent = l.text; labelsG.appendChild(e);
+  });
 }
 function vs_scatterTip(p) {
   const tt = document.getElementById('tooltip' + VS_N); if (!tt) return;
