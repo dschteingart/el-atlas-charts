@@ -120,18 +120,28 @@ function tsDraw(n, cfg) {
   // largas van en DOS renglones, así el gráfico queda más ancho y la etiqueta
   // se pega al borde derecho.
   const isStack = cfg.mode === 'stack';
-  const labels = isStack ? cfg.stack.cats.map(c => c.label) : cfg.series.map(s => s.label);
   let maxLabelW = 0;
-  labels.forEach(nm => {
-    const lines = isStack ? ts_wrapLabel(nm) : [nm];
-    lines.forEach(ln => {
-      const extra = (!isStack && isPngFormat) ? '  0000' : '';
-      const w = ts_measure(ln + extra, SIZES.label, bigFmt ? 700 : 600);
+  if (isStack) {
+    cfg.stack.cats.forEach(c => ts_wrapLabel(c.label).forEach(ln => { const w = ts_measure(ln, SIZES.label, bigFmt ? 700 : 600); if (w > maxLabelW) maxLabelW = w; }));
+  } else {
+    // medir la etiqueta de fin REAL (nombre + valor que se pinta en el PNG),
+    // no un sufijo fijo '0000' (más angosto que '100%'/'1.192' → se cortaba).
+    cfg.series.forEach(s => {
+      let valTxt = '';
+      if (isPngFormat && !s.ref) {
+        const ip = s.pts.filter(p => p[0] >= cfg.xMin && p[0] <= cfg.xMax && p[1] != null);
+        if (ip.length) valTxt = '  ' + (cfg.endValFmt ? cfg.endValFmt(ip[ip.length - 1][1]) : Math.round(ip[ip.length - 1][1]));
+      }
+      const w = ts_measure(s.label + valTxt, SIZES.label, bigFmt ? 700 : 600);
       if (w > maxLabelW) maxLabelW = w;
     });
-  });
-  M.right = Math.min(Math.round(W * 0.34),
-    Math.max(bigFmt ? 84 : 40, maxLabelW + (bigFmt ? 18 : 12)));
+  }
+  const _rGap = (bigFmt ? 18 : 12) + labelHalo, _rCap = Math.round(W * 0.40);
+  M.right = Math.min(_rCap, Math.max(bigFmt ? 84 : 40, Math.ceil(maxLabelW + _rGap)));
+  // si ni con el tope entra la etiqueta más ancha, achicar SOLO las etiquetas de
+  // fin (endLabelScale) para que nunca se corten. En el caso normal = 1.
+  const _rBudget = M.right - _rGap;
+  const endLabelScale = (maxLabelW > _rBudget && maxLabelW > 0) ? Math.max(0.6, _rBudget / maxLabelW) : 1;
   let PLOT_W = W - M.left - M.right;
   const PLOT_H = H - M.top - M.bottom;
 
@@ -177,7 +187,7 @@ function tsDraw(n, cfg) {
   });
   if (cfg.axisY) {
     const yT = ts_el('text'); yT.setAttribute('class', 's-axis-title'); yT.setAttribute('text-anchor', 'middle');
-    yT.setAttribute('transform', `translate(${M.left - (bigFmt ? 80 : 44)}, ${M.top + PLOT_H / 2}) rotate(-90)`);
+    yT.setAttribute('transform', `translate(${M.left - Math.min(bigFmt ? 80 : 44, M.left - Math.ceil(SIZES.axisTitle))}, ${M.top + PLOT_H / 2}) rotate(-90)`);
     yT.style.fontSize = SIZES.axisTitle + 'px'; yT.textContent = cfg.axisY; svg.appendChild(yT);
   }
 
@@ -273,7 +283,7 @@ function tsDraw(n, cfg) {
     const lx = l.x + (bigFmt ? 12 : 6);
     const txt = ts_el('text'); txt.setAttribute('x', lx);
     txt.setAttribute('fill', l.color); txt.setAttribute('font-weight', bigFmt ? 700 : 600);
-    txt.style.fontSize = (l.ref ? SIZES.label * 0.85 : SIZES.label) + 'px'; txt.style.fontFamily = 'var(--sans)';
+    txt.style.fontSize = (l.ref ? SIZES.label * 0.85 : SIZES.label) * endLabelScale + 'px'; txt.style.fontFamily = 'var(--sans)';
     txt.setAttribute('paint-order', 'stroke'); txt.setAttribute('stroke', TS_BG);
     txt.setAttribute('stroke-width', labelHalo); txt.setAttribute('stroke-linejoin', 'round');
     if (l.key) txt.setAttribute('data-ts', l.key);

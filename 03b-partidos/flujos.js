@@ -115,7 +115,14 @@ function fl_hideTT() { const tt = fl_tt(); if (tt) { tt.style.opacity = '0'; tt.
 function fl_drawChord(svg, d, M, st) {
   const confs = DATA_CHORD.confs, bigFmt = d.bigFmt;
   const SIZES = bigFmt ? { label: 24, sub: 20 } : { label: 13, sub: 11 };
-  const R = Math.min(d.W, d.H) / 2 - (bigFmt ? 110 : 74);
+  // R limitado por DOS restricciones: la general (vertical) y la HORIZONTAL, para
+  // que las etiquetas a las 3/9 (las más anchas, CONMEBOL/CONCACAF) entren en el
+  // marco. Sin esto, en formato cuadrado/mobile (W≈H) R queda grande y la etiqueta
+  // horizontal se salía del PNG. Regla de la casa: nunca texto fuera del marco.
+  const _flMaxLw = Math.max(0, ...confs.map(c => (t('conf.' + c) || '').length * SIZES.label * 0.56));
+  const _flArcGap = bigFmt ? 22 : 14, _flOff = Math.max(bigFmt ? 18 : 10, (Math.min(d.W, d.H) / 2) * 0.09), _flMrg = bigFmt ? 8 : 5;
+  const R = Math.min(Math.min(d.W, d.H) / 2 - (bigFmt ? 110 : 74),
+                     d.W / 2 - _flArcGap - _flOff - _flMaxLw - _flMrg);
   const cx = d.W / 2, cy = d.H / 2;
   // solo confederaciones con partidos en el filtro: sin esto, las que dan 0 meten
   // un arco de ancho cero y su etiqueta cae encima de la vecina (colisión).
