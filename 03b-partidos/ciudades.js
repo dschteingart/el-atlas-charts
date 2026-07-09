@@ -972,9 +972,16 @@ function ci_drawBars(svg, W, H, opt) {
     });
   }
 
-  const fs = bigFmt ? 22 : 12.5;
+  let fs = bigFmt ? 22 : 12.5;
   const legendH = doStack ? (bigFmt ? 54 : 34) : 0;
-  const M = { top: (bigFmt ? 24 : 14) + legendH, right: bigFmt ? 92 : 52, bottom: bigFmt ? 28 : 18, left: bigFmt ? 360 : 208 };
+  // margen izquierdo adaptativo al nombre de ciudad/país más largo (ej. "Ciudad
+  // de Guatemala (Guatemala)"); si no entra ni con el tope, achicar la fuente.
+  // Regla de la casa: nunca texto fuera del marco del PNG.
+  const _lPad = bigFmt ? 14 : 8, _lCap = Math.round(W * 0.46);
+  const _lMeas = (str, size) => (typeof ts_measure === 'function') ? ts_measure(String(str), size, 400) : String(str).length * size * 0.56;
+  let _lWide = Math.max(0, ...rows.map(d => _lMeas(d.label, fs)));
+  while (fs > (bigFmt ? 14 : 9) && _lWide + _lPad + 8 > _lCap) { fs -= 1; _lWide = Math.max(0, ...rows.map(d => _lMeas(d.label, fs))); }
+  const M = { top: (bigFmt ? 24 : 14) + legendH, right: bigFmt ? 92 : 52, bottom: bigFmt ? 28 : 18, left: Math.min(_lCap, Math.max(bigFmt ? 300 : 180, Math.ceil(_lWide + _lPad + 8))) };
   const PW = W - M.left - M.right, PH = H - M.top - M.bottom;
 
   const g = svg.append('g').attr('transform', `translate(${M.left},${M.top})`);
@@ -1074,7 +1081,7 @@ function ci_drawLine(svg, W, H, opt) {
   const share = s.lineMode === 'share';
   const fs = bigFmt ? 20 : 12;
   const M = { top: bigFmt ? 20 : 12, right: bigFmt ? 150 : 116, bottom: bigFmt ? 44 : 30, left: bigFmt ? 78 : 52 };
-  const PW = W - M.left - M.right, PH = H - M.top - M.bottom;
+  let PW = W - M.left - M.right; const PH = H - M.top - M.bottom;
   const g = svg.append('g').attr('transform', `translate(${M.left},${M.top})`);
   const [a, b] = s.period;
 
@@ -1085,6 +1092,15 @@ function ci_drawLine(svg, W, H, opt) {
       .style('font-family', 'var(--sans)').style('font-size', (fs + 1) + 'px').attr('fill', 'var(--ink-muted)')
       .text(ci_t('c6-line-empty', 'Elegí una o más ciudades para ver su evolución.'));
     return;
+  }
+  // margen derecho adaptativo a la etiqueta de fin más larga (nombre de ciudad/
+  // país). Regla de la casa: nunca texto fuera del marco del PNG.
+  {
+    const _eFs = bigFmt ? 17 : 11.5;
+    const _eMeas = (str) => (typeof ts_measure === 'function') ? ts_measure(String(str), _eFs, 600) : String(str).length * _eFs * 0.56;
+    const _eWide = Math.max(0, ...items.map(it => _eMeas(it.label)));
+    M.right = Math.min(Math.round(W * 0.40), Math.max(M.right, Math.ceil(_eWide + 8 + (bigFmt ? 10 : 6))));
+    PW = W - M.left - M.right;
   }
   if (!ci_hasDet()) { ci_ensureDet(() => ci_scheduleDraw()); }
 

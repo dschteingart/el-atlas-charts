@@ -220,8 +220,16 @@ function pc_drawBars() {
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
 
   const rows = pc_barData();
-  const fs = bigFmt ? 22 : 13;
-  const M = { top: bigFmt ? 22 : 14, right: bigFmt ? 96 : 60, bottom: bigFmt ? 24 : 16, left: bigFmt ? 300 : 190 };
+  let fs = bigFmt ? 22 : 13;
+  // margen izquierdo ADAPTATIVO a la etiqueta más larga (nombre de confederación
+  // como "Norte y Centroamérica (CONCACAF)"); si no entra ni con el tope, achicar
+  // la fuente. Regla de la casa: nunca texto fuera del marco del PNG.
+  const _lPad = bigFmt ? 14 : 8, _lCap = Math.round(W * 0.46);
+  const _lMeas = (str, size) => (typeof ts_measure === 'function') ? ts_measure(str, size, 500) : str.length * size * 0.56;
+  const _lTexts = rows.map(r => String(r.label || ''));
+  let _lWide = Math.max(0, ..._lTexts.map(t => _lMeas(t, fs)));
+  while (fs > (bigFmt ? 14 : 10) && _lWide + _lPad + 8 > _lCap) { fs -= 1; _lWide = Math.max(0, ..._lTexts.map(t => _lMeas(t, fs))); }
+  const M = { top: bigFmt ? 22 : 14, right: bigFmt ? 96 : 60, bottom: bigFmt ? 24 : 16, left: Math.min(_lCap, Math.max(bigFmt ? 260 : 150, Math.ceil(_lWide + _lPad + 8))) };
   const PW = W - M.left - M.right, PH = H - M.top - M.bottom;
   const maxV = Math.max(10, ...rows.map(r => r.pct));
   const x = (v) => (v / maxV) * PW;

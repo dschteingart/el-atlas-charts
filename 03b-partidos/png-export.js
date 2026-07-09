@@ -491,8 +491,16 @@
       'italic 20px "Source Serif 4"',
       '400 15px "Source Sans 3"',
       '400 14px "Source Sans 3"',
-      '600 14px "Source Sans 3"'
+      '500 14px "Source Sans 3"',
+      '600 14px "Source Sans 3"',
+      '700 14px "Source Sans 3"'
     ]);
+
+    // RE-RENDER en formato DESPUÉS de cargar las webfonts. Los charts que miden
+    // el ancho del texto para adaptar sus márgenes (regla: nunca texto fuera del
+    // marco) tienen que medir con la webfont YA cargada; el primer redraw (arriba)
+    // pudo medir con la fuente fallback (más angosta) y dejar márgenes cortos.
+    if (pngOverrideApplied && typeof window.__atlasRedraw === 'function') window.__atlasRedraw();
 
     const titleText    = block.querySelector('.chart-title')?.textContent.trim()    || '';
     let   subtitleText = block.querySelector('.chart-subtitle')?.textContent.trim() || '';

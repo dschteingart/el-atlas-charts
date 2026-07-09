@@ -184,8 +184,16 @@ function vs_drawBars() {
   if (!rows.length) { vs_drawEmpty(); return; }
   rows.sort((x, y) => y.eff - x.eff);
 
-  const fs = bigFmt ? 24 : 14, fsSmall = bigFmt ? 17 : 11;
-  const M = { top: bigFmt ? 92 : 54, right: bigFmt ? 250 : 168, bottom: bigFmt ? 28 : 18, left: bigFmt ? 360 : 268 };
+  let fs = bigFmt ? 24 : 14; const fsSmall = bigFmt ? 17 : 11;
+  // Margen izquierdo ADAPTATIVO: que entre la etiqueta de confederación más larga
+  // ("Norte y Centroamérica (CONCACAF)"). Si ni con el tope entra, achicar la
+  // fuente hasta que entre. Regla de la casa: nunca texto fuera del marco del PNG.
+  const _leftPad = bigFmt ? 16 : 10, _leftCap = Math.round(W * 0.46);
+  const _measure = (str, size) => (typeof ts_measure === 'function') ? ts_measure(str, size, 500) : str.length * size * 0.56;
+  const _labels = rows.map(r => vs_confLabel(r.cf));
+  let _widest = Math.max(..._labels.map(t => _measure(t, fs)));
+  while (fs > (bigFmt ? 15 : 10) && _widest + _leftPad + 8 > _leftCap) { fs -= 1; _widest = Math.max(..._labels.map(t => _measure(t, fs))); }
+  const M = { top: bigFmt ? 92 : 54, right: bigFmt ? 250 : 168, bottom: bigFmt ? 28 : 18, left: Math.min(_leftCap, Math.max(bigFmt ? 300 : 220, Math.ceil(_widest + _leftPad + 8))) };
   const PW = W - M.left - M.right, PH = H - M.top - M.bottom;
   const step = PH / rows.length, bh = Math.min(bigFmt ? 74 : 44, step * 0.62);
   const x0 = M.left, barW = PW;
@@ -290,7 +298,12 @@ function vs_drawMatrix() {
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
   const fs = bigFmt ? 20 : 13, fsCell = bigFmt ? 24 : 15;
-  const M = { top: bigFmt ? 96 : 60, right: bigFmt ? 44 : 26, bottom: bigFmt ? 34 : 20, left: bigFmt ? 220 : 140 };
+  // margen izquierdo adaptativo a la etiqueta de fila más larga (nombre completo
+  // de la confederación). Regla de la casa: nunca texto fuera del marco del PNG.
+  const _rowFs = bigFmt ? 17 : 12, _rowPad = bigFmt ? 14 : 8;
+  const _mMeasure = (str, size) => (typeof ts_measure === 'function') ? ts_measure(str, size, 600) : str.length * size * 0.56;
+  const _mWidest = Math.max(...ord.map(cf => _mMeasure(vs_confLabel(cf), _rowFs)));
+  const M = { top: bigFmt ? 96 : 60, right: bigFmt ? 44 : 26, bottom: bigFmt ? 34 : 20, left: Math.min(Math.round(W * 0.44), Math.max(bigFmt ? 200 : 120, Math.ceil(_mWidest + _rowPad + 6))) };
   const gridW = W - M.left - M.right, gridH = H - M.top - M.bottom;
   const cw = gridW / n, ch = gridH / n;
   const g = vs_el('g'); svg.appendChild(g);
@@ -371,6 +384,63 @@ function vs_toggleTeam(name) {
   if (vs_renderTeamChips) vs_renderTeamChips();
   drawVersus();
 }
+// Coloca las etiquetas del scatter con el árbol que propuso Daniel:
+//  1) posiciones CARDINALES primero (12/3/6/9), después DIAGONALES (1:30/4:30/
+//     7:30/10:30); 2) entre las que entran sin pisar, la de MÁS espacio (más
+//     lejos de las etiquetas vecinas y de los puntos). Si ninguna entra libre,
+//     la que menos pisa. Después se reconecta con línea guía si quedó lejos.
+function vs_placeScatterLabels(items, plotBox, ptR, labelH) {
+  const gap = Math.max(4, ptR * 0.6), up = labelH * 0.78, dn = labelH * 0.22;
+  const OFF = [
+    { dx: 0, dy: -(ptR + gap), a: 'middle', tier: 0 },                              // 12
+    { dx: ptR + gap, dy: dn * 1.4, a: 'start', tier: 0 },                           // 3
+    { dx: 0, dy: ptR + gap + up, a: 'middle', tier: 0 },                            // 6
+    { dx: -(ptR + gap), dy: dn * 1.4, a: 'end', tier: 0 },                          // 9
+    { dx: ptR * 0.7 + gap, dy: -(ptR * 0.5 + gap * 0.5), a: 'start', tier: 1 },     // 1:30
+    { dx: ptR * 0.7 + gap, dy: ptR * 0.5 + gap * 0.5 + up, a: 'start', tier: 1 },   // 4:30
+    { dx: -(ptR * 0.7 + gap), dy: ptR * 0.5 + gap * 0.5 + up, a: 'end', tier: 1 },  // 7:30
+    { dx: -(ptR * 0.7 + gap), dy: -(ptR * 0.5 + gap * 0.5), a: 'end', tier: 1 }     // 10:30
+  ];
+  const boxOf = (cx, cy, textW, off) => {
+    const lx = cx + off.dx, ly = cy + off.dy; let x1, x2;
+    if (off.a === 'start') { x1 = lx; x2 = lx + textW; }
+    else if (off.a === 'end') { x1 = lx - textW; x2 = lx; }
+    else { x1 = lx - textW / 2; x2 = lx + textW / 2; }
+    return { x1, x2, y1: ly - up, y2: ly + dn, lx, ly, anchor: off.a, tier: off.tier };
+  };
+  const fits = (b) => b.x1 >= plotBox.x1 && b.x2 <= plotBox.x2 && b.y1 >= plotBox.y1 && b.y2 <= plotBox.y2;
+  const overlaps = (b, placed) => placed.some(p => !(b.x2 < p.x1 || b.x1 > p.x2 || b.y2 < p.y1 || b.y1 > p.y2));
+  const overlapArea = (b, placed) => { let ar = 0; placed.forEach(p => { const ox = Math.min(b.x2, p.x2) - Math.max(b.x1, p.x1), oy = Math.min(b.y2, p.y2) - Math.max(b.y1, p.y1); if (ox > 0 && oy > 0) ar += ox * oy; }); return ar; };
+  const allPts = items.map(it => ({ x: it.cx, y: it.cy }));
+  const clearance = (b, placed) => {
+    let mn = 1e9;
+    placed.forEach(p => { const dx = Math.max(p.x1 - b.x2, b.x1 - p.x2, 0), dy = Math.max(p.y1 - b.y2, b.y1 - p.y2, 0); mn = Math.min(mn, Math.hypot(dx, dy)); });
+    allPts.forEach(pt => { const nx = Math.max(b.x1, Math.min(pt.x, b.x2)), ny = Math.max(b.y1, Math.min(pt.y, b.y2)); mn = Math.min(mn, Math.hypot(nx - pt.x, ny - pt.y)); });
+    return mn;
+  };
+  const placed = [];
+  items.slice().sort((p, q) => q.cx - p.cx).forEach(it => {
+    const cands = OFF.map(off => boxOf(it.cx, it.cy, it.textW, off)).filter(fits);
+    const free = cands.filter(b => !overlaps(b, placed));
+    let pick;
+    if (free.length) {
+      const bestTier = Math.min(...free.map(b => b.tier));           // cardinales antes que diagonales
+      const pool = free.filter(b => b.tier === bestTier);
+      pick = pool.reduce((best, b) => clearance(b, placed) > clearance(best, placed) ? b : best);  // la de más espacio
+    } else if (cands.length) {
+      pick = cands.reduce((best, b) => overlapArea(b, placed) < overlapArea(best, placed) ? b : best);
+    } else {
+      pick = boxOf(it.cx, it.cy, it.textW, OFF[0]);
+    }
+    // clamp al recuadro (garantía anti-clip, incluso en el caso borde sin candidatos)
+    if (pick.x1 < plotBox.x1) { const s = plotBox.x1 - pick.x1; pick.x1 += s; pick.x2 += s; pick.lx += s; }
+    if (pick.x2 > plotBox.x2) { const s = pick.x2 - plotBox.x2; pick.x1 -= s; pick.x2 -= s; pick.lx -= s; }
+    if (pick.y1 < plotBox.y1) { const s = plotBox.y1 - pick.y1; pick.y1 += s; pick.y2 += s; pick.ly += s; }
+    if (pick.y2 > plotBox.y2) { const s = pick.y2 - plotBox.y2; pick.y1 -= s; pick.y2 -= s; pick.ly -= s; }
+    placed.push(Object.assign(pick, { cx: it.cx, cy: it.cy, text: it.text, textW: it.textW, confed: it.confed }));
+  });
+  return placed;
+}
 function vs_drawScatter() {
   const svg = vs_svg(); if (!svg) return;
   if (!vs_hasTeams()) {
@@ -429,21 +499,40 @@ function vs_drawScatter() {
     }
     dotsG.appendChild(c);
   });
-  // etiquetas: SIEMPRE el set destacado (no se descartan). Se prueba a la derecha
-  // del punto y, si se pisa con otra, a la izquierda; último recurso, derecha igual.
-  const labeled = [], lblH = bigFmt ? 17 : 12;
-  const approxW = (str) => str.length * (bigFmt ? 11 : 6.3) + 6;
-  pts.filter(p => hiSet.has(p.n)).sort((x, y) => x.m - y.m).forEach(p => {
-    const px = xS(p.m), py = yS(p.eff), nm = vs_teamName(p.n), w = approxW(nm);
-    const cands = [
-      { tx: px + (rad + 3), anchor: 'start', x0: px + (rad + 3), x1: px + (rad + 3) + w },
-      { tx: px - (rad + 3), anchor: 'end', x0: px - (rad + 3) - w, x1: px - (rad + 3) }
-    ];
-    const pl = cands.find(cn => !labeled.some(q => cn.x0 < q.x1 && cn.x1 > q.x0 && Math.abs(q.cy - py) < lblH)) || cands[0];
-    labeled.push({ x0: pl.x0, x1: pl.x1, cy: py });
-    const e = vs_el('text'); e.setAttribute('x', pl.tx); e.setAttribute('y', py + (bigFmt ? 6 : 4)); e.setAttribute('text-anchor', pl.anchor); e.style.fontFamily = 'var(--sans)'; e.style.fontSize = SIZES.label + 'px'; e.setAttribute('font-weight', bigFmt ? 600 : 500); e.setAttribute('fill', 'var(--ink)');
-    e.setAttribute('paint-order', 'stroke'); e.setAttribute('stroke', VS_BG); e.setAttribute('stroke-width', bigFmt ? 4 : 2.5); e.setAttribute('stroke-linejoin', 'round');
-    e.textContent = nm; svg.appendChild(e);
+  // etiquetas del set destacado con el motor de placement del N°3
+  // (lib/scatter-render.js): greedy + relajación 2D + despeje de los puntos,
+  // reconectadas con líneas guía. Etiqueta en el color oscuro de su confederación.
+  const hiPts = pts.filter(p => hiSet.has(p.n));
+  const labelH = SIZES.label;
+  const lblColor = (typeof CONF_FIFA_LABEL_COLORS !== 'undefined') ? CONF_FIFA_LABEL_COLORS : {};
+  const measW = (str) => (typeof ts_measure === 'function' ? ts_measure(str, labelH, bigFmt ? 700 : 600) : str.length * labelH * 0.56) + 2;
+  const plotBox = { x1: M.left + 1, y1: M.top + 1, x2: M.left + PW - 1, y2: M.top + PH - 1 };
+  const items = hiPts.map(p => ({ cx: xS(p.m), cy: yS(p.eff), text: vs_teamName(p.n), textW: measW(vs_teamName(p.n)), confed: p.c }));
+  const placed = vs_placeScatterLabels(items, plotBox, rad, labelH);
+  // en el PNG grande (tipografía enorme) una relajación extra separa residuales;
+  // en pantalla no hace falta (el árbol cardinal ya deja cada una en su hueco).
+  if (bigFmt && typeof s_relaxLabels === 'function') s_relaxLabels(placed, labelH, plotBox, 260, items.map(it => ({ x: it.cx, y: it.cy, r: rad })));
+  const boxFor = (l) => (typeof s_labelBox === 'function') ? s_labelBox(l, labelH) : { x1: l.x1, x2: l.x2, y1: l.y1, y2: l.y2 };
+  // líneas guía: solo si la etiqueta quedó separada de su punto
+  const leaderG = vs_el('g'); svg.appendChild(leaderG);
+  placed.forEach(l => {
+    const B = boxFor(l);
+    const nx = Math.max(B.x1, Math.min(l.cx, B.x2)), ny = Math.max(B.y1, Math.min(l.cy, B.y2));
+    const dx = nx - l.cx, dy = ny - l.cy, dist = Math.hypot(dx, dy);
+    if (dist > rad + (bigFmt ? 7 : 5)) {
+      const ux = dx / dist, uy = dy / dist, ln = vs_el('line');
+      ln.setAttribute('x1', l.cx + ux * rad); ln.setAttribute('y1', l.cy + uy * rad);
+      ln.setAttribute('x2', nx - ux * 2); ln.setAttribute('y2', ny - uy * 2);
+      ln.setAttribute('stroke', '#9a9488'); ln.setAttribute('stroke-width', bigFmt ? 1.4 : 0.9); ln.setAttribute('stroke-opacity', 0.7); ln.setAttribute('stroke-linecap', 'round');
+      leaderG.appendChild(ln);
+    }
+  });
+  const labelsG = vs_el('g'); svg.appendChild(labelsG);
+  placed.forEach(l => {
+    const e = vs_el('text'); e.setAttribute('x', l.lx); e.setAttribute('y', l.ly); e.setAttribute('text-anchor', l.anchor);
+    e.style.fontFamily = 'var(--sans)'; e.style.fontSize = labelH + 'px'; e.setAttribute('font-weight', bigFmt ? 700 : 600); e.setAttribute('fill', lblColor[l.confed] || 'var(--ink)');
+    e.setAttribute('paint-order', 'stroke'); e.setAttribute('stroke', VS_BG); e.setAttribute('stroke-width', bigFmt ? 5 : 3); e.setAttribute('stroke-linejoin', 'round');
+    e.textContent = l.text; labelsG.appendChild(e);
   });
 }
 function vs_scatterTip(p) {
@@ -464,7 +553,8 @@ function vs_setupTeamSearch() {
   function renderChips() {
     const s = vs_state(); chips.innerHTML = '';
     if (s.teamsSel === null) {
-      const hint = document.createElement('span'); hint.className = 'esp-hint'; hint.style.margin = '0';
+      const hint = document.createElement('span');
+      hint.style.cssText = 'font-family:var(--sans);font-size:11px;color:var(--ink-muted);align-self:center;';
       hint.textContent = vs_t('c8-default-hint', 'Selecciones destacadas por defecto. Buscá o hacé clic en un punto para elegir otras.');
       chips.appendChild(hint); return;
     }
@@ -526,6 +616,16 @@ function vs_drawLines() {
   else { const pad = (vmax - vmin) * 0.08 || 10; yMin = Math.min(0, vmin) - pad; yMax = Math.max(0, vmax) + pad; }
   const tk = vs_ticks(yMin, yMax, bigFmt ? 5 : 6);
   yMin = Math.min(yMin, tk.ticks[0]); yMax = Math.max(yMax, tk.ticks[tk.ticks.length - 1]);
+
+  // margen derecho ADAPTATIVO a la etiqueta de fin más ancha (sigla + valor en el
+  // PNG, ej "CONMEBOL +1.759"). Regla de la casa: nunca texto fuera del marco.
+  {
+    const _fmtEnd = (v) => isPng ? '  ' + (isEff ? Math.round(v) + '%' : (v > 0 ? '+' : '') + vs_nf(v)) : '';
+    const _em = (str) => (typeof ts_measure === 'function') ? ts_measure(str, SIZES.label, bigFmt ? 700 : 600) : str.length * SIZES.label * 0.56;
+    let _ew = 0;
+    series.forEach(se => { const inr = se.pts.filter(p => p[0] >= a && p[0] <= b && p[1] != null); if (!inr.length) return; _ew = Math.max(_ew, _em(se.label + _fmtEnd(inr[inr.length - 1][1]))); });
+    if (_ew) M.right = Math.min(Math.round(W * 0.34), Math.max(M.right, Math.ceil(_ew + (bigFmt ? 18 : 10))));
+  }
 
   const PW = W - M.left - M.right, PH = H - M.top - M.bottom;
   const xS = (yr) => M.left + ((yr - a) / ((b - a) || 1)) * PW;
@@ -675,6 +775,14 @@ function vs_source() {
   if (s.view === 'lines' && s.metric === 'eff' && s.maYears > 1) base += en ? ` ${s.maYears}-year moving average.` : ` Promedio móvil de ${s.maYears} años.`;
   return base;
 }
+// hint contextual: cada vista tiene su forma (barra / celda / línea / punto)
+function vs_hint() {
+  const s = vs_state(), en = vs_lang() === 'en';
+  if (s.view === 'rank') return en ? 'Hover over a bar for the details.' : 'Pasá el cursor por una barra para ver el detalle.';
+  if (s.view === 'matrix') return en ? 'Hover over a cell for the head-to-head record.' : 'Pasá el cursor por una celda para ver el mano a mano.';
+  if (s.view === 'scatter') return en ? 'Hover over a dot for the details · click to highlight a team.' : 'Pasá el cursor por un punto para ver el detalle · hacé clic para destacar una selección.';
+  return en ? 'Hover over a line for the details.' : 'Pasá el cursor por una línea para ver el detalle.';
+}
 function vs_applyHeadings() {
   const block = document.querySelector('.chart-block[data-chart="' + VS_N + '"]') || document;
   const aeCfg = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
@@ -685,6 +793,7 @@ function vs_applyHeadings() {
   if (subEl && !(tx.subtitle || '').trim()) subEl.textContent = vs_subtitle();
   const srcTxt = vs_source();
   document.querySelectorAll('[data-i18n="c8-sources"]').forEach(el => { el.textContent = srcTxt; });
+  const hintEl = block.querySelector('p.esp-hint'); if (hintEl) hintEl.textContent = vs_hint();
 }
 
 // ---- controles --------------------------------------------------------------
