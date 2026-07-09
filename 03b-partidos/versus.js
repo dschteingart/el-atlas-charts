@@ -99,9 +99,14 @@ function vs_teamRowSet() {
 }
 // agregado de un país contra una confederación rival (celda de la matriz-teams)
 function vs_teamVsConf(name, oppConf, a, b, cat) {
-  const o = vs_teamObj(name); if (!o || !o.byConf || !o.byConf[oppConf]) return null;
+  const o = vs_teamObj(name); if (!o) return null;
+  // la columna de la propia confederación es intraconfederación y vive en otro archivo (lazy);
+  // las demás columnas (cruces) están en byConf
+  const rows = (o.c === oppConf) ? (vs_hasIntra() ? DATA_VERSUS_INTRA[name] : null)
+                                 : (o.byConf ? o.byConf[oppConf] : null);
+  if (!rows) return null;
   let m = 0, w = 0, d = 0, l = 0, gd = 0;
-  for (const r of o.byConf[oppConf]) { const y = r[0] + DATA_VERSUS.y0; if (y < a || y > b) continue; if (cat !== 'ALL' && r[1] !== cat) continue; m += r[2]; w += r[3]; d += r[4]; l += r[5]; gd += r[6]; }
+  for (const r of rows) { const y = r[0] + DATA_VERSUS.y0; if (y < a || y > b) continue; if (cat !== 'ALL' && r[1] !== cat) continue; m += r[2]; w += r[3]; d += r[4]; l += r[5]; gd += r[6]; }
   return m ? { m, w, d, l, gd, eff: (3 * w + d) / (3 * m) * 100 } : null;
 }
 // paleta de colores para PAÍSES en la evolución (color fijo por país: primera
@@ -352,7 +357,7 @@ function vs_drawMatrix() {
   svg.innerHTML = ''; vs_clearHover(svg);
   const s = vs_state(), a = s.period[0], b = s.period[1];
   const teamsMode = s.matrixMode === 'teams';
-  if (teamsMode && !vs_hasTeams()) { vs_ensureTeams(() => drawVersus()); vs_matLoading(svg); return; }
+  if (teamsMode && (!vs_hasTeams() || !vs_hasIntra())) { vs_ensureTeams(() => vs_ensureIntra(() => drawVersus())); vs_matLoading(svg); return; }
   const colKeys = DATA_VERSUS.confOrder;                    // columnas = confederaciones (siempre)
   const rowKeys = teamsMode ? vs_teamRowSet() : DATA_VERSUS.confOrder;
   const nr = rowKeys.length, nc = colKeys.length;
@@ -384,7 +389,7 @@ function vs_drawMatrix() {
   for (let i = 0; i < nr; i++) for (let j = 0; j < nc; j++) {
     const rk = rowKeys[i], ck = colKeys[j], x = M.left + j * cw, y = M.top + i * ch;
     const rect = vs_el('rect'); rect.setAttribute('x', x + 1.5); rect.setAttribute('y', y + 1.5); rect.setAttribute('width', cw - 3); rect.setAttribute('height', ch - 3); rect.setAttribute('rx', 3);
-    const isOwn = teamsMode ? ((vs_teamObj(rk) || {}).c === ck) : (rk === ck);   // celda propia confederación (sin cruce)
+    const isOwn = !teamsMode && (rk === ck);   // en modo confederaciones la diagonal no es cruce; en modo selecciones la confederación propia es intraconfederación y SÍ se muestra
     if (isOwn) { rect.setAttribute('fill', '#E7E1D4'); rect.setAttribute('fill-opacity', 0.55); g.appendChild(rect); continue; }
     const o = teamsMode ? vs_teamVsConf(rk, ck, a, b, s.cat) : vs_pairAgg(rk, ck, a, b, s.cat);
     if (!o || !o.m) { rect.setAttribute('fill', '#E7E1D4'); rect.setAttribute('fill-opacity', 0.3); g.appendChild(rect); txt(x + cw / 2, y + ch / 2 + 4, '·', { anchor: 'middle', fill: 'var(--ink-muted)' }); continue; }
@@ -419,18 +424,27 @@ function vs_matTip(rowLabel, colLabel, o) {
 }
 
 // ---- DRAW: scatter por selección (volumen de partidos vs efectividad) --------
-let vs_teamsLoading = false;
-function vs_hasTeams() { return typeof DATA_VERSUS_TEAMS !== 'undefined'; }
-function vs_ensureTeams(cb) {
-  if (vs_hasTeams()) { if (cb) cb(); return; }
-  if (vs_teamsLoading) return;
-  vs_teamsLoading = true;
+// carga perezosa con reintentos. El server local de FUNDAR corta conexiones al azar
+// (ERR_CONNECTION_RESET), más seguido cuanto más grande el archivo; si el script no
+// llegó completo, reintentamos con un parámetro nuevo para forzar una conexión limpia.
+// En producción (GitHub Pages) esto no pasa, pero el reintento no molesta.
+function vs_lazy(url, isReady, flagKey, cb, tries) {
+  if (isReady()) { vs_lazy._f[flagKey] = false; if (cb) cb(); return; }
+  if (!tries) { if (vs_lazy._f[flagKey]) return; vs_lazy._f[flagKey] = true; }
+  tries = tries || 0;
+  const onerr = () => { if (tries < 5) setTimeout(() => vs_lazy(url, isReady, flagKey, cb, tries + 1), 350); else vs_lazy._f[flagKey] = false; };
   const sc = document.createElement('script');
-  sc.src = './data-versus-teams.js?v=' + (window.__ESP_V || '1');
-  sc.onload = () => { vs_teamsLoading = false; if (cb) cb(); };
-  sc.onerror = () => { vs_teamsLoading = false; };
+  sc.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'r=' + tries;
+  sc.onload = () => { if (isReady()) { vs_lazy._f[flagKey] = false; if (cb) cb(); } else onerr(); };
+  sc.onerror = onerr;
   document.head.appendChild(sc);
 }
+vs_lazy._f = {};
+function vs_hasTeams() { return typeof DATA_VERSUS_TEAMS !== 'undefined'; }
+function vs_ensureTeams(cb) { vs_lazy('./data-versus-teams.js?v=' + (window.__ESP_V || '1'), vs_hasTeams, 'teams', cb); }
+// intraconfederación (columna de la propia confederación en la matriz modo Selecciones), archivo aparte
+function vs_hasIntra() { return typeof DATA_VERSUS_INTRA !== 'undefined'; }
+function vs_ensureIntra(cb) { vs_lazy('./data-versus-intra.js?v=' + (window.__ESP_V || '1'), vs_hasIntra, 'intra', cb); }
 function vs_teamName(n) { return (typeof atlasCountryName === 'function') ? atlasCountryName(n) : n; }
 function vs_teamAgg(o, a, b, cat) {
   let m = 0, w = 0, d = 0, l = 0, gd = 0;
@@ -908,8 +922,8 @@ function vs_subtitle() {
   const base = en ? 'in matches between different confederations' : 'en partidos entre confederaciones distintas';
   if (s.view === 'matrix') {
     if (s.matrixMode === 'teams') {
-      return en ? `${cat}Points effectiveness of each team (row) against each confederation (column) ${base} (${per}). Green: wins more.`
-        : `${cat}Efectividad en puntos de cada selección (fila) contra cada confederación (columna) ${base} (${per}). Verde: gana más.`;
+      return en ? `${cat}Points effectiveness of each team (row) against each confederation (column), including its own (${per}). Green: wins more.`
+        : `${cat}Efectividad en puntos de cada selección (fila) contra cada confederación (columna), incluida la propia (${per}). Verde: gana más.`;
     }
     return en ? `${cat}Points effectiveness of each confederation (row) against each rival (column) ${base} (${per}). Green: wins more.`
       : `${cat}Efectividad en puntos de cada confederación (fila) contra cada rival (columna) ${base} (${per}). Verde: gana más.`;
@@ -933,9 +947,15 @@ function vs_subtitle() {
 function vs_source() {
   const s = vs_state(), en = vs_lang() === 'en';
   const yy = (typeof DATA_VERSUS !== 'undefined' && DATA_VERSUS.y1) ? DATA_VERSUS.y1 : 2026;
+  const teams = s.view === 'matrix' && s.matrixMode === 'teams';
+  const scope = teams
+    ? (en ? 'In the head-to-head by team, each team is measured against every confederation, including its own, so intra-confederation matches also count.'
+          : 'En el mano a mano por selección se mide a cada equipo contra todas las confederaciones, incluida la propia, así que también cuentan los partidos intraconfederación.')
+    : (en ? 'Only matches between teams from different confederations.'
+          : 'Solo partidos entre selecciones de confederaciones distintas.');
   let base = en
-    ? `Data: Mart Jürisoo (martj42), own elaboration. Only matches between teams from different confederations. Effectiveness = points won over points available, with the current rule (3 for a win, 1 for a draw, 0 for a loss) applied across the whole series. Each team's confederation is the one in force on the match date. Series through ${yy} (includes the matches already played at the ${yy} World Cup).`
-    : `Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. Solo partidos entre selecciones de confederaciones distintas. Efectividad = puntos obtenidos sobre posibles, con la regla actual (3 por victoria, 1 por empate, 0 por derrota) aplicada a toda la serie. La confederación de cada selección es la vigente en la fecha del partido. Serie hasta ${yy} (incluye los partidos ya jugados del Mundial ${yy}).`;
+    ? `Data: Mart Jürisoo (martj42), own elaboration. ${scope} Effectiveness = points won over points available, with the current rule (3 for a win, 1 for a draw, 0 for a loss) applied across the whole series. Each team's confederation is the one in force on the match date. Series through ${yy} (includes the matches already played at the ${yy} World Cup).`
+    : `Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. ${scope} Efectividad = puntos obtenidos sobre posibles, con la regla actual (3 por victoria, 1 por empate, 0 por derrota) aplicada a toda la serie. La confederación de cada selección es la vigente en la fecha del partido. Serie hasta ${yy} (incluye los partidos ya jugados del Mundial ${yy}).`;
   if (s.view === 'lines' && s.metric === 'eff' && s.maYears > 1) base += en ? ` ${s.maYears}-year moving average.` : ` Promedio móvil de ${s.maYears} años.`;
   return base;
 }
@@ -976,7 +996,7 @@ function vs_setupMatrixMode() {
     if (vs_state().matrixMode === b.dataset.mm) return;
     document.querySelectorAll('#vs-matrix-mode button').forEach(x => x.classList.toggle('active', x === b));
     vs_state().matrixMode = b.dataset.mm; vs_touched = true;
-    if (b.dataset.mm === 'teams') vs_ensureTeams(() => { if (vs_renderMatrixChips) vs_renderMatrixChips(); drawVersus(); });
+    if (b.dataset.mm === 'teams') vs_ensureTeams(() => vs_ensureIntra(() => { if (vs_renderMatrixChips) vs_renderMatrixChips(); drawVersus(); }));
     vs_syncCtx(); drawVersus();
   }));
 }

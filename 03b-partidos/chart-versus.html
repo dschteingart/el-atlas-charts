@@ -31,7 +31,7 @@
   .chart-svg-wrap { margin-top: 2px; position: relative; }
   .footer { margin-top: 6px; }
   .footer p { margin: 2px 0; }
-  .footer .download { margin-right: 8px; }   /* separación pareja entre botones de descarga */
+  .footer .download { margin-right: 8px; margin-bottom: 8px; }   /* separación pareja entre botones de descarga; el margen inferior evita que se peguen al envolver en mobile */
 
   .s-grid-line { stroke: var(--grid); stroke-width: 1; opacity: 0.55; }
   .s-tick { font-family: var(--sans); font-size: 11px; fill: var(--ink-soft); font-variant-numeric: tabular-nums; }
@@ -224,22 +224,22 @@
 
 </div>
 
-<script src="../lib/regions.js?v=67"></script>
-<script src="../lib/scatter-render.js?v=67"></script>
-<script src="../lib/i18n.js?v=67"></script>
-<script src="./regions-fifa.js?v=67"></script>
-<script src="./i18n-issue.js?v=67"></script>
-<script src="./utils.js?v=67"></script>
-<script src="./country-names.js?v=67"></script>
-<script src="./data-versus.js?v=67"></script>
-<script src="./data-nombres.js?v=67"></script>
-<script src="./editor.js?v=67"></script>
-<script src="./ts-partidos.js?v=67"></script>
-<script src="./versus.js?v=67"></script>
-<script src="./png-export.js?v=67"></script>
-<script src="./svg-export.js?v=67"></script>
+<script src="../lib/regions.js?v=69"></script>
+<script src="../lib/scatter-render.js?v=69"></script>
+<script src="../lib/i18n.js?v=69"></script>
+<script src="./regions-fifa.js?v=69"></script>
+<script src="./i18n-issue.js?v=69"></script>
+<script src="./utils.js?v=69"></script>
+<script src="./country-names.js?v=69"></script>
+<script src="./data-versus.js?v=69"></script>
+<script src="./data-nombres.js?v=69"></script>
+<script src="./editor.js?v=69"></script>
+<script src="./ts-partidos.js?v=69"></script>
+<script src="./versus.js?v=69"></script>
+<script src="./png-export.js?v=69"></script>
+<script src="./svg-export.js?v=69"></script>
 <script>
-  window.__ESP_V = '67';
+  window.__ESP_V = '69';
   initVersus();
   applyI18n();
   // applyI18n pisa textos con data-i18n (p.ej. el subtítulo); un redibujo deja
@@ -250,6 +250,6 @@
   });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=67"></script>
+<script src="./nav.js?v=69"></script>
 </body>
 </html>
