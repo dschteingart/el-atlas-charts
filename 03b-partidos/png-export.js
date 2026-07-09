@@ -40,7 +40,8 @@
     '4': { es: 'el-atlas-especial-duelos.png',        en: 'the-atlas-special-rivalries.png'     },
     '5': { es: 'el-atlas-especial-flujos.png',        en: 'the-atlas-special-flows.png'         },
     '6': { es: 'el-atlas-especial-ciudades.png',      en: 'the-atlas-special-cities.png'        },
-    '7': { es: 'el-atlas-especial-neutral.png',       en: 'the-atlas-special-neutral.png'       }
+    '7': { es: 'el-atlas-especial-neutral.png',       en: 'the-atlas-special-neutral.png'       },
+    '8': { es: 'el-atlas-especial-versus.png',        en: 'the-atlas-special-head-to-head.png'  }
   } : IS_N3 ? {
     '1': { es: 'el-atlas-03-elo-vs-pib.png',         en: 'the-atlas-03-elo-vs-gdp.png'         },
     '2': { es: 'el-atlas-03-talento-per-capita.png', en: 'the-atlas-03-talent-per-million.png' },
