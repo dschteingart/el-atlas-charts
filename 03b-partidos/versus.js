@@ -184,8 +184,16 @@ function vs_drawBars() {
   if (!rows.length) { vs_drawEmpty(); return; }
   rows.sort((x, y) => y.eff - x.eff);
 
-  const fs = bigFmt ? 24 : 14, fsSmall = bigFmt ? 17 : 11;
-  const M = { top: bigFmt ? 92 : 54, right: bigFmt ? 250 : 168, bottom: bigFmt ? 28 : 18, left: bigFmt ? 360 : 268 };
+  let fs = bigFmt ? 24 : 14; const fsSmall = bigFmt ? 17 : 11;
+  // Margen izquierdo ADAPTATIVO: que entre la etiqueta de confederación más larga
+  // ("Norte y Centroamérica (CONCACAF)"). Si ni con el tope entra, achicar la
+  // fuente hasta que entre. Regla de la casa: nunca texto fuera del marco del PNG.
+  const _leftPad = bigFmt ? 16 : 10, _leftCap = Math.round(W * 0.46);
+  const _measure = (str, size) => (typeof ts_measure === 'function') ? ts_measure(str, size, 500) : str.length * size * 0.56;
+  const _labels = rows.map(r => vs_confLabel(r.cf));
+  let _widest = Math.max(..._labels.map(t => _measure(t, fs)));
+  while (fs > (bigFmt ? 15 : 10) && _widest + _leftPad + 8 > _leftCap) { fs -= 1; _widest = Math.max(..._labels.map(t => _measure(t, fs))); }
+  const M = { top: bigFmt ? 92 : 54, right: bigFmt ? 250 : 168, bottom: bigFmt ? 28 : 18, left: Math.min(_leftCap, Math.max(bigFmt ? 300 : 220, Math.ceil(_widest + _leftPad + 8))) };
   const PW = W - M.left - M.right, PH = H - M.top - M.bottom;
   const step = PH / rows.length, bh = Math.min(bigFmt ? 74 : 44, step * 0.62);
   const x0 = M.left, barW = PW;
@@ -290,7 +298,12 @@ function vs_drawMatrix() {
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
   const fs = bigFmt ? 20 : 13, fsCell = bigFmt ? 24 : 15;
-  const M = { top: bigFmt ? 96 : 60, right: bigFmt ? 44 : 26, bottom: bigFmt ? 34 : 20, left: bigFmt ? 220 : 140 };
+  // margen izquierdo adaptativo a la etiqueta de fila más larga (nombre completo
+  // de la confederación). Regla de la casa: nunca texto fuera del marco del PNG.
+  const _rowFs = bigFmt ? 17 : 12, _rowPad = bigFmt ? 14 : 8;
+  const _mMeasure = (str, size) => (typeof ts_measure === 'function') ? ts_measure(str, size, 600) : str.length * size * 0.56;
+  const _mWidest = Math.max(...ord.map(cf => _mMeasure(vs_confLabel(cf), _rowFs)));
+  const M = { top: bigFmt ? 96 : 60, right: bigFmt ? 44 : 26, bottom: bigFmt ? 34 : 20, left: Math.min(Math.round(W * 0.44), Math.max(bigFmt ? 200 : 120, Math.ceil(_mWidest + _rowPad + 6))) };
   const gridW = W - M.left - M.right, gridH = H - M.top - M.bottom;
   const cw = gridW / n, ch = gridH / n;
   const g = vs_el('g'); svg.appendChild(g);
@@ -554,6 +567,16 @@ function vs_drawLines() {
   else { const pad = (vmax - vmin) * 0.08 || 10; yMin = Math.min(0, vmin) - pad; yMax = Math.max(0, vmax) + pad; }
   const tk = vs_ticks(yMin, yMax, bigFmt ? 5 : 6);
   yMin = Math.min(yMin, tk.ticks[0]); yMax = Math.max(yMax, tk.ticks[tk.ticks.length - 1]);
+
+  // margen derecho ADAPTATIVO a la etiqueta de fin más ancha (sigla + valor en el
+  // PNG, ej "CONMEBOL +1.759"). Regla de la casa: nunca texto fuera del marco.
+  {
+    const _fmtEnd = (v) => isPng ? '  ' + (isEff ? Math.round(v) + '%' : (v > 0 ? '+' : '') + vs_nf(v)) : '';
+    const _em = (str) => (typeof ts_measure === 'function') ? ts_measure(str, SIZES.label, bigFmt ? 700 : 600) : str.length * SIZES.label * 0.56;
+    let _ew = 0;
+    series.forEach(se => { const inr = se.pts.filter(p => p[0] >= a && p[0] <= b && p[1] != null); if (!inr.length) return; _ew = Math.max(_ew, _em(se.label + _fmtEnd(inr[inr.length - 1][1]))); });
+    if (_ew) M.right = Math.min(Math.round(W * 0.34), Math.max(M.right, Math.ceil(_ew + (bigFmt ? 18 : 10))));
+  }
 
   const PW = W - M.left - M.right, PH = H - M.top - M.bottom;
   const xS = (yr) => M.left + ((yr - a) / ((b - a) || 1)) * PW;
