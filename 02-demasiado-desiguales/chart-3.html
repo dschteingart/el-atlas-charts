@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../lib/style.css">
+<link rel="stylesheet" href="../lib/style.css?v=3">
 <link rel="stylesheet" href="../lib/editor.css?v=1">
 <style>
   /* === Estilos específicos del chart 3 (deciles) === */
@@ -399,7 +399,7 @@
 
     .chart-svg-wrap svg {
       width: 100%;
-      height: min(65vh, 540px);
+      max-height: min(65vh, 540px);
       display: block;
     }
 
@@ -538,7 +538,7 @@
 <script src="../lib/country-names.js?v=2"></script>
 <script src="./data-deciles.js"></script>
 <script src="../lib/editor.js?v=2"></script>
-<script src="./deciles.js?v=2"></script>
+<script src="./deciles.js?v=3"></script>
 <script src="../lib/svg-export.js?v=1"></script>
 <script src="../lib/png-export.js?v=2"></script>
 <script>
