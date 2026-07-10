@@ -112,3 +112,24 @@ function atlasWireClearButtons() {
   document.querySelectorAll('[id*="-selected-chips"]').forEach(wire);
 }
 window.addEventListener('load', () => setTimeout(atlasWireClearButtons, 0));
+
+// Aplica los textos CUSTOM del editor (?nl=1) al DOM — COPIA de lib/utils.js
+// (el N°1 todavía usa su stack local; se des-duplica cuando pase a lib/).
+function atlasApplyEditorTexts() {
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig)
+    ? window.AtlasEditor.getConfig() : null;
+  if (!ae) return;
+  const lang = ae.lang || (typeof LANG !== 'undefined' ? LANG : 'es');
+  const tx = (ae.texts && ae.texts[lang]) || {};
+  const dict = (typeof I18N !== 'undefined' && I18N[lang]) || {};
+  const apply = (el, custom) => {
+    const c = (custom || '').trim();
+    if (c) el.textContent = c;
+    else if (el.dataset.i18n && dict[el.dataset.i18n]) el.innerHTML = dict[el.dataset.i18n];
+  };
+  document.querySelectorAll('.chart-title').forEach(el => apply(el, tx.title));
+  document.querySelectorAll('.chart-subtitle').forEach(el => apply(el, tx.subtitle));
+  document.querySelectorAll('.footer p[data-i18n$="sources"]').forEach(el => apply(el, tx.caption));
+}
+window.addEventListener('atlas-editor-change', atlasApplyEditorTexts);
+window.addEventListener('load', () => setTimeout(atlasApplyEditorTexts, 0));
