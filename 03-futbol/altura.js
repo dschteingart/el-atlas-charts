@@ -92,7 +92,19 @@ function al_placeTip(tt, ev, svg) {
   const left = (x + 16 + tw > rc.width || x > rc.width * 0.72) ? Math.max(2, x - tw - 16) : (x + 14);
   tt.style.left = left + 'px'; tt.style.top = (y + 14) + 'px';
 }
-function al_teamName(code) { if (code === AL_WORLD) return al_totalName(); const lang = (typeof LANG !== 'undefined') ? LANG : 'es'; const nm = al_teamNames && al_teamNames[code]; return nm ? (lang === 'en' ? nm[1] : nm[0]) : code; }
+function al_teamName(code) {
+  if (code === AL_WORLD) return al_totalName();
+  const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
+  // Fuente única de nombres: COUNTRY_NAMES (lib) primero — incluye naciones
+  // FIFA e históricas. Fallback al par local solo si un código no está en la
+  // lib. Antes leía SOLO el par local (inglés en ambos slots para
+  // ENG/SCO/WAL/NIR/SUN/DDR/CSK/SCG) → "England" en la vista en español.
+  if (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[code]) {
+    return COUNTRY_NAMES[code][lang] || COUNTRY_NAMES[code].en || code;
+  }
+  const nm = al_teamNames && al_teamNames[code];
+  return nm ? (lang === 'en' ? nm[1] : nm[0]) : code;
+}
 function al_posName(p) { const lang = (typeof LANG !== 'undefined') ? LANG : 'es'; const nm = AL_POS_NAME[p]; return nm ? (lang === 'en' ? nm[1] : nm[0]) : p; }
 function al_totalName() { return al_tt('c10-real', 'Mundialistas'); }
 function al_selMap() { if (!(state[10].selectedTeams instanceof Map)) state[10].selectedTeams = new Map(state[10].selectedTeams || []); return state[10].selectedTeams; }
