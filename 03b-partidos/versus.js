@@ -134,7 +134,9 @@ function vs_matrixTeamToggle(name) {
   let arr = (s.teamRows || vs_teamRowSet()).slice();
   const i = arr.indexOf(name);
   if (i >= 0) arr.splice(i, 1); else arr.push(name);
-  s.teamRows = arr.length ? arr : null;
+  // Regla de selección (criterio 11): vaciar es legítimo — la lista vacía se
+  // queda vacía (los defaults recién vuelven al recargar), no resucita sola.
+  s.teamRows = arr;
   vs_touched = true; if (vs_renderMatrixChips) vs_renderMatrixChips(); drawVersus();
 }
 // agregar/sacar una confederación o país de la evolución
@@ -144,7 +146,8 @@ function vs_lineToggle(key) {
   const i = arr.indexOf(key);
   if (i >= 0) { arr.splice(i, 1); if (!vs_isConf(key)) delete vs_teamColorMap[key]; }  // liberar ranura de color del país
   else arr.push(key);
-  s.lineSel = arr.length ? arr : null;
+  // Regla de selección (criterio 11): vaciar es legítimo, no resucita defaults.
+  s.lineSel = arr;
   vs_touched = true; if (vs_renderLineChips) vs_renderLineChips(); drawVersus();
 }
 // categorías con al menos un cruce (para no ofrecer competencias vacías)
@@ -466,7 +469,8 @@ function vs_toggleTeam(name) {
   if (s.teamsSel === null) s.teamsSel = [];      // primer custom: se van los defaults
   const i = s.teamsSel.indexOf(name);
   if (i >= 0) s.teamsSel.splice(i, 1); else s.teamsSel.push(name);
-  if (!s.teamsSel.length) s.teamsSel = null;     // se vació → vuelven los defaults
+  // Regla de selección (criterio 11): vaciar es legítimo — scatter sin
+  // destacados hasta recargar, los defaults no resucitan solos.
   vs_touched = true;
   if (vs_renderTeamChips) vs_renderTeamChips();
   drawVersus();
