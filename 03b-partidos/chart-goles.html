@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cada vez se hacen menos goles — El Atlas · Especial</title>
+<title>La caída y el renacer del gol — El Atlas · Especial</title>
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/chart-goles.html">
-<meta property="og:title" content="Cada vez se hacen menos goles — El Atlas · Especial">
+<meta property="og:title" content="La caída y el renacer del gol — El Atlas · Especial">
 <meta property="og:description" content="Goles por partido en el fútbol internacional, 1872-2025. Filtrable por competencia y confederación.">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-goles.png">
-<meta property="og:image:alt" content="Cada vez se hacen menos goles">
+<meta property="og:image:alt" content="La caída y el renacer del gol">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Cada vez se hacen menos goles — El Atlas · Especial">
+<meta name="twitter:title" content="La caída y el renacer del gol — El Atlas · Especial">
 <meta name="twitter:description" content="Goles por partido en el fútbol internacional, 1872-2025. Filtrable por competencia y confederación.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-goles.png">
 
@@ -107,7 +107,7 @@
   </header>
 
   <section class="chart-block" data-chart="9" data-editor-id="esp-goles">
-    <h2 class="chart-title" data-i18n="c9-title">Cada vez se hacen menos goles</h2>
+    <h2 class="chart-title" data-i18n="c9-title">La caída y el renacer del gol</h2>
     <p class="chart-subtitle" data-i18n="c9-subtitle">Goles por partido en el fútbol internacional, 1872-2025.</p>
 
       <div class="m-controls">
@@ -140,17 +140,17 @@
           <div class="s-range-slider" id="gl-range-slider">
             <div class="s-range-track"></div>
             <div class="s-range-track-active" id="gl-range-track-active"></div>
-            <input type="range" id="gl-slider-from" min="1872" max="2025" value="1872" step="1" aria-label="Desde">
-            <input type="range" id="gl-slider-to"   min="1872" max="2025" value="2025" step="1" aria-label="Hasta">
+            <input type="range" id="gl-slider-from" min="1900" max="2026" value="1900" step="1" aria-label="Desde">
+            <input type="range" id="gl-slider-to"   min="1900" max="2026" value="2026" step="1" aria-label="Hasta">
           </div>
-          <span class="s-range-display" id="gl-range-display">1872–2025</span>
+          <span class="s-range-display" id="gl-range-display">1900–2026</span>
         </div>
       </div>
       <div class="m-controls" id="gl-ambito-controls">
         <div class="m-ctrl-group">
           <span class="m-ctrl-label" data-i18n="pc-add-label">Mostrar</span>
           <div class="m-search-wrap" style="margin:0;min-width:200px;max-width:280px;">
-            <input type="text" id="gl-team-search" class="m-search-input" data-i18n-placeholder="c9-ambito-ph" placeholder="Agregar confederación…" autocomplete="off">
+            <input type="text" id="gl-team-search" class="m-search-input" data-i18n-placeholder="c9-ambito-ph" placeholder="Agregar confederación o selección…" autocomplete="off">
             <div id="gl-team-results" class="m-search-results"></div>
           </div>
         </div>
@@ -200,21 +200,21 @@
 
 </div>
 
-<script src="../lib/regions.js?v=73"></script>
-<script src="../lib/scatter-render.js?v=73"></script>
-<script src="../lib/i18n.js?v=73"></script>
-<script src="./regions-fifa.js?v=73"></script>
-<script src="./i18n-issue.js?v=73"></script>
+<script src="../lib/regions.js?v=75"></script>
+<script src="../lib/scatter-render.js?v=75"></script>
+<script src="../lib/i18n.js?v=75"></script>
+<script src="./regions-fifa.js?v=75"></script>
+<script src="./i18n-issue.js?v=75"></script>
 <script src="../lib/utils.js?v=3"></script>
-<script src="../lib/country-names.js?v=1"></script>
-<script src="./data-goles.js?v=73"></script>
-<script src="./data-nombres.js?v=73"></script>
+<script src="../lib/country-names.js?v=2"></script>
+<script src="./data-goles.js?v=75"></script>
+<script src="./data-nombres.js?v=75"></script>
 <script src="../lib/editor.js?v=1"></script>
-<script src="./ts-partidos.js?v=73"></script>
-<script src="./goles.js?v=73"></script>
+<script src="./ts-partidos.js?v=75"></script>
+<script src="./goles.js?v=75"></script>
 <script src="../lib/png-export.js?v=2"></script>
 <script>
-  window.__ESP_V = '73';
+  window.__ESP_V = '75';
   initGoles();
   applyI18n();
   if (window.__atlasRedraw) window.__atlasRedraw();
@@ -223,6 +223,6 @@
   });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=73"></script>
+<script src="./nav.js?v=75"></script>
 </body>
 </html>

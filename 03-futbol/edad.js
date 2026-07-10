@@ -89,7 +89,19 @@ function ed_placeTip(tt, ev, svg) {
   const left = (x + 16 + tw > rc.width || x > rc.width * 0.72) ? Math.max(2, x - tw - 16) : (x + 14);
   tt.style.left = left + 'px'; tt.style.top = (y + 14) + 'px';
 }
-function ed_teamName(code) { if (code === ED_WORLD) return ed_totalName(); const lang = (typeof LANG !== 'undefined') ? LANG : 'es'; const nm = ed_teamNames && ed_teamNames[code]; return nm ? (lang === 'en' ? nm[1] : nm[0]) : code; }
+function ed_teamName(code) {
+  if (code === ED_WORLD) return ed_totalName();
+  const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
+  // Fuente única de nombres: COUNTRY_NAMES (lib) primero — incluye naciones
+  // FIFA e históricas. Fallback al par local del dataset solo si un código
+  // no está en la lib. Antes leía SOLO el par local, que tenía inglés en
+  // ambos slots (ENG/SCO/WAL/NIR/SUN/DDR/CSK/SCG) → "England" en la vista ES.
+  if (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[code]) {
+    return COUNTRY_NAMES[code][lang] || COUNTRY_NAMES[code].en || code;
+  }
+  const nm = ed_teamNames && ed_teamNames[code];
+  return nm ? (lang === 'en' ? nm[1] : nm[0]) : code;
+}
 function ed_posName(p) { const lang = (typeof LANG !== 'undefined') ? LANG : 'es'; const nm = ED_POS_NAME[p]; return nm ? (lang === 'en' ? nm[1] : nm[0]) : p; }
 function ed_totalName() { return ed_tt('c12-real', 'Mundialistas'); }
 function ed_selMap() { if (!(state[12].selectedTeams instanceof Map)) state[12].selectedTeams = new Map(state[12].selectedTeams || []); return state[12].selectedTeams; }
