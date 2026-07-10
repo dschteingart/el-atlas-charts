@@ -474,6 +474,14 @@ function drawDeciles() {
         );
         c.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
         c.addEventListener('mousemove', (e) => d_positionTooltip(e, tooltip));
+        // Regla de selección (criterio 11f): en desktop, click en el marcador
+        // saca el país (mismo gesto que en las líneas de los charts hermanos).
+        // En touch no: el tap es del tooltip.
+        c.style.cursor = 'pointer';
+        c.addEventListener('click', () => {
+          tooltip.style.opacity = '0';
+          d_toggleCountrySelection(country.code);
+        });
       } else {
         // Mobile: tap muestra el tooltip y queda visible hasta que el
         // usuario haga tap en otro marker (cambia) o en otro lugar
