@@ -30,10 +30,11 @@ const D_W_MOBILE  = 1100, D_H_MOBILE  = 1500;
 // cada línea. En mobile usamos right 200 — los end-labels van escaladas
 // (font 28 SVG) y necesitan espacio horizontal para textos típicos
 // ("Argentina", "Noruega"...) que en mobile ocupan ~150-180px SVG.
-// Bottom 240 da aire para el axis-x: "Decil N" en dos líneas a 32px.
+// Bottom 150 da aire para el axis-x: "Decil N" en dos líneas a 32px (los
+// labels usan ~91px; antes eran 240 → ~149px muertos abajo en el celu).
 // Left 140 para los ticks Y escalados ("$1k", "$10k", "$100k").
 const D_MARGIN_DESKTOP = { top: 24, right: 180, bottom: 56, left: 70 };
-const D_MARGIN_MOBILE  = { top: 110, right: 200, bottom: 240, left: 140 };
+const D_MARGIN_MOBILE  = { top: 110, right: 200, bottom: 150, left: 140 };
 
 // Margins por formato del editor (cuando el editor está activo).
 function d_getMargins(format) {
