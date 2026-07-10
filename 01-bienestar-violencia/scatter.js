@@ -125,16 +125,23 @@ function estimateLabelWidth(text) {
   return text.length * 6.0 + 4;
 }
 
+// Escala de offsets/dimensiones de labels. 1 en el interactivo; en el export
+// cuadrado el viewBox y las fuentes son ~2.5× más grandes, así que los offsets
+// (separación label↔punto) y el rectángulo estimado se escalan igual para que
+// el label limpie el punto agrandado y la detección de colisión siga válida.
+let LABEL_SCALE = 1;
+
 // Construye el rectángulo de una etiqueta dado offset y centro de punto
 function buildRect(it, off) {
-  const w = estimateLabelWidth(it.text);
-  const lx = it.cx + off.dx;
-  const ly = it.cy + off.dy;
+  const s = LABEL_SCALE;
+  const w = estimateLabelWidth(it.text) * s;
+  const lx = it.cx + off.dx * s;
+  const ly = it.cy + off.dy * s;
   let x1, x2;
   if (off.anchor === 'start') { x1 = lx; x2 = lx + w; }
   else if (off.anchor === 'end') { x1 = lx - w; x2 = lx; }
   else { x1 = lx - w/2; x2 = lx + w/2; }
-  return { rect: { x1, x2, y1: ly - 12, y2: ly + 2 }, lx, ly, anchor: off.anchor };
+  return { rect: { x1, x2, y1: ly - 12 * s, y2: ly + 2 * s }, lx, ly, anchor: off.anchor };
 }
 
 function fitsInBox(rect, plotBox) {
@@ -152,7 +159,8 @@ function tryPlace(it, off, placedRects, plotBox) {
 // items: [{cx, cy, text, region, tier, country, subPriority}]
 // pointPositions: NO se usa
 // plotBox: { x1, y1, x2, y2 }
-function placeLabels(items, pointPositions, plotBox) {
+function placeLabels(items, pointPositions, plotBox, scale = 1) {
+  LABEL_SCALE = scale;
   const placed = [];
   const result = [];
 
@@ -250,6 +258,127 @@ function placeLabels(items, pointPositions, plotBox) {
 
   return result;
 }
+
+//==================================================================
+//  BUSCADOR DE PAÍSES + CHIPS
+//==================================================================
+// Portado del scatter del N°2 (análogo más cercano), parametrizado por chartId
+// porque los charts 1 y 2 comparten este archivo. Identificador: iso3.
+// La selección vive en state[chartId].selectedCountries (array de iso3) y
+// reemplaza al viejo spotlightCountry (single) por selección múltiple.
+function s_normalize(s) {
+  return s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+function s_searchableCountries() {
+  const seen = new Set();
+  const list = [];
+  DATA.forEach(d => {
+    if (!d.iso3 || seen.has(d.iso3)) return;
+    seen.add(d.iso3);
+    const name = LANG === 'es' ? (d.country_es || d.country) : d.country;
+    list.push({ code: d.iso3, name, region: d.region });
+  });
+  return list.sort((a, b) => a.name.localeCompare(b.name, LANG));
+}
+
+function toggleCountrySelection(chartId, code) {
+  const arr = state[chartId].selectedCountries;
+  const idx = arr.indexOf(code);
+  if (idx >= 0) arr.splice(idx, 1);
+  else arr.push(code);
+  renderSelectedChips(chartId);
+  drawChart(chartId);
+}
+
+function renderSelectedChips(chartId) {
+  const container = document.getElementById('s-selected-chips-' + chartId);
+  if (!container) return;
+  container.innerHTML = '';
+  (state[chartId].selectedCountries || []).forEach(code => {
+    const sample = DATA.find(d => d.iso3 === code);
+    if (!sample) return;
+    const chip = document.createElement('span');
+    chip.className = 'm-selected-chip';
+    chip.style.background = REGION_COLORS[sample.region] || '#888';
+    chip.textContent = LANG === 'es' ? (sample.country_es || sample.country) : sample.country;
+    const x = document.createElement('button');
+    x.className = 'm-chip-x';
+    x.innerHTML = '×';
+    x.setAttribute('aria-label', 'Quitar');
+    x.addEventListener('click', () => toggleCountrySelection(chartId, code));
+    chip.appendChild(x);
+    container.appendChild(chip);
+  });
+}
+
+function setupCountrySearch(chartId) {
+  const input = document.getElementById('s-search-' + chartId);
+  const results = document.getElementById('s-search-results-' + chartId);
+  if (!input || !results) return;
+  let currentMatches = [];
+  let activeIdx = -1;
+
+  function getMatches(q) {
+    if (!q || q.length < 1) return [];
+    const qn = s_normalize(q);
+    return s_searchableCountries()
+      .filter(c => s_normalize(c.name).includes(qn))
+      .slice(0, 8);
+  }
+  function renderResults(matches, active) {
+    if (matches.length === 0) {
+      results.innerHTML = '';
+      results.classList.remove('open');
+      return;
+    }
+    const sel = new Set(state[chartId].selectedCountries || []);
+    results.innerHTML = matches.map((c, i) => {
+      const cls = 'm-search-result' + (i === active ? ' m-active' : '') + (sel.has(c.code) ? ' m-already' : '');
+      return `<div class="${cls}" data-code="${c.code}">${c.name}<span class="m-search-region">${t('reg.' + c.region) || ''}</span></div>`;
+    }).join('');
+    results.classList.add('open');
+    results.querySelectorAll('.m-search-result[data-code]').forEach(el => {
+      el.addEventListener('click', () => {
+        toggleCountrySelection(chartId, el.dataset.code);
+        input.value = '';
+        results.classList.remove('open');
+        input.focus();
+      });
+    });
+  }
+  input.addEventListener('input', () => {
+    currentMatches = getMatches(input.value);
+    activeIdx = currentMatches.length > 0 ? 0 : -1;
+    renderResults(currentMatches, activeIdx);
+  });
+  input.addEventListener('keydown', (ev) => {
+    if (!results.classList.contains('open')) return;
+    if (ev.key === 'ArrowDown') {
+      ev.preventDefault();
+      activeIdx = (activeIdx + 1) % currentMatches.length;
+      renderResults(currentMatches, activeIdx);
+    } else if (ev.key === 'ArrowUp') {
+      ev.preventDefault();
+      activeIdx = (activeIdx - 1 + currentMatches.length) % currentMatches.length;
+      renderResults(currentMatches, activeIdx);
+    } else if (ev.key === 'Enter' && activeIdx >= 0) {
+      ev.preventDefault();
+      toggleCountrySelection(chartId, currentMatches[activeIdx].code);
+      input.value = '';
+      results.classList.remove('open');
+    } else if (ev.key === 'Escape') {
+      results.classList.remove('open');
+      input.blur();
+    }
+  });
+  document.addEventListener('click', (ev) => {
+    if (!input.contains(ev.target) && !results.contains(ev.target)) {
+      results.classList.remove('open');
+    }
+  });
+}
+
 //==================================================================
 //  DRAW CHART
 //==================================================================
@@ -278,10 +407,36 @@ function drawChart(chartId) {
       : d[yField]
   }));
 
-  const W = 760, H = 470;
-  const margin = { top: 18, right: 22, bottom: 54, left: 60 };
+  // Formato activo: null = interactivo (apaisado, fuentes de la clase CSS),
+  // 'square' = export PNG cuadrado mobile-first (todo sobredimensionado).
+  const fmt = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
+  const square = fmt === 'square';
+  const bigFmt = square;
+
+  let W, H, margin;
+  if (square) {
+    W = PNG_FORMATS.square.vbW; H = PNG_FORMATS.square.vbH;   // 1100 × 760
+    margin = { top: 30, right: 44, bottom: 96, left: 88 };
+  } else {
+    W = 760; H = 470;
+    margin = { top: 18, right: 22, bottom: 54, left: 60 };
+  }
   const innerW = W - margin.left - margin.right;
   const innerH = H - margin.top - margin.bottom;
+
+  // Tamaños mobile-first SOLO en el export cuadrado; en interactivo se aplican
+  // como inline (igual a la clase CSS) para no alterar la vista. Trampa #1:
+  // font-size va por el.style.fontSize (inline), nunca setAttribute (la clase
+  // CSS le ganaría). Ver skill graficos-atlas.
+  const SIZES = square
+    ? { tick: 22, axisTitle: 26, label: 26, halo: 6, weight: 700 }
+    : { tick: 12, axisTitle: 12.5, label: 10.5, halo: 0, weight: null };
+  // Los puntos se agrandan en el cuadrado (el canvas final se ve a ~⅓).
+  const ptScale = square ? 1.8 : 1;
+  // Escala de offsets/dims de labels para placeLabels (≈ ratio de fuente).
+  const labelScale = square ? SIZES.label / 10.5 : 1;
+
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
 
   // xMin fijo (padding editorial bajo el país más pobre, ~$1k).
   // xMax dinámico: redondeo hacia arriba al múltiplo de 10k del país más rico
@@ -350,8 +505,9 @@ function drawChart(chartId) {
     gridG.appendChild(line);
     const lbl = document.createElementNS(ns, 'text');
     lbl.setAttribute('x', x);
-    lbl.setAttribute('y', margin.top + innerH + 16);
+    lbl.setAttribute('y', margin.top + innerH + (square ? 32 : 16));
     lbl.setAttribute('text-anchor', 'middle');
+    if (square) lbl.style.fontSize = SIZES.tick + 'px';
     lbl.textContent = fmtTickGDP(v);
     axisG.appendChild(lbl);
   });
@@ -367,9 +523,10 @@ function drawChart(chartId) {
     line.setAttribute('y1', y); line.setAttribute('y2', y);
     gridG.appendChild(line);
     const lbl = document.createElementNS(ns, 'text');
-    lbl.setAttribute('x', margin.left - 8);
-    lbl.setAttribute('y', y + 4);
+    lbl.setAttribute('x', margin.left - (square ? 14 : 8));
+    lbl.setAttribute('y', y + (square ? 8 : 4));
     lbl.setAttribute('text-anchor', 'end');
+    if (square) lbl.style.fontSize = SIZES.tick + 'px';
     // Formateo del eje Y. Para chart 1: enteros. Para chart 2 lineal: enteros.
     // Para chart 2 en log: si v<1 con suficiente precisión (0.05 → "0.05", 0.1 → "0.1", 0.2 → "0.2")
     let label;
@@ -398,8 +555,9 @@ function drawChart(chartId) {
   const xT = document.createElementNS(ns, 'text');
   xT.setAttribute('class', 'axis-title');
   xT.setAttribute('x', margin.left + innerW / 2);
-  xT.setAttribute('y', H - 12);
+  xT.setAttribute('y', H - (square ? 22 : 12));
   xT.setAttribute('text-anchor', 'middle');
+  if (square) xT.style.fontSize = SIZES.axisTitle + 'px';
   xT.textContent = t('axis-x') + (scaleX === 'log' ? t('log-suffix') : '');
   svg.appendChild(xT);
 
@@ -407,9 +565,10 @@ function drawChart(chartId) {
   const yT = document.createElementNS(ns, 'text');
   yT.setAttribute('class', 'axis-title');
   yT.setAttribute('x', -(margin.top + innerH / 2));
-  yT.setAttribute('y', 16);
+  yT.setAttribute('y', square ? 28 : 16);
   yT.setAttribute('transform', 'rotate(-90)');
   yT.setAttribute('text-anchor', 'middle');
+  if (square) yT.style.fontSize = SIZES.axisTitle + 'px';
   yT.textContent = yLabel + (scaleY === 'log' ? t('log-suffix-y') : '');
   svg.appendChild(yT);
 
@@ -426,18 +585,20 @@ function drawChart(chartId) {
     svg.appendChild(regLine);
   }
 
-  // Estado de visibilidad, hover y spotlight pegado.
-  // spotlightCountry: cuando el usuario hace click (o tap en mobile) en un
-  // punto, ese país queda destacado y el resto atenuado al 12% hasta que se
-  // limpie (click en zona vacía o nuevo click sobre el mismo punto).
+  // Estado de visibilidad, hover y selección.
+  // selectedCountries (array de iso3): países elegidos por el buscador o por
+  // click/tap en un punto. Quedan destacados y el resto atenuado, hasta que se
+  // quiten (chip ×, re-click en el punto, o click en zona vacía).
   const visibleRegions = state[chartId].activeRegions;
   const hoverReg = state[chartId].hoverRegion;
-  const spotCountry = state[chartId].spotlightCountry || null;
+  const selectedSet = new Set(state[chartId].selectedCountries || []);
+  const hasSelection = selectedSet.size > 0;
   const drawnRegions = new Set(visibleRegions);
   if (hoverReg) drawnRegions.add(hoverReg);
-  if (spotCountry) {
-    const spotPoint = allPoints.find(d => d.country === spotCountry);
-    if (spotPoint) drawnRegions.add(spotPoint.region);
+  // Asegurar que los países seleccionados se dibujen aunque su región esté
+  // filtrada (su región completa entra, como hacía el viejo spotlight).
+  if (hasSelection) {
+    allPoints.forEach(d => { if (selectedSet.has(d.iso3)) drawnRegions.add(d.region); });
   }
 
   const ptsG = document.createElementNS(ns, 'g');
@@ -457,6 +618,7 @@ function drawChart(chartId) {
       let s = 0;
       if (d.region === 'Latin America') s += 1;
       if (hoverReg && d.region === hoverReg) s += 5;
+      if (selectedSet.has(d.iso3)) s += 10;   // seleccionados, encima de todo
       return s;
     };
     return score(a) - score(b);
@@ -468,27 +630,30 @@ function drawChart(chartId) {
     const cy = yScale(yval);
 
     const isLatam = d.region === 'Latin America';
-    const isSpotlight = spotCountry && d.country === spotCountry;
+    const isSelected = hasSelection && selectedSet.has(d.iso3);
     const isHovered = hoverReg && d.region === hoverReg;
-    const noHoverNorSpot = !hoverReg && !spotCountry;
+    const noHoverNorSel = !hoverReg && !hasSelection;
 
     // Tamaño y borde:
-    // - Con spotlight: el país en spotlight queda muy destacado, el resto atenuado.
+    // - Con selección: los seleccionados muy destacados, el resto atenuado.
     // - Con hover sobre región (solo desktop): la región hovereada destacada.
     // - Sin nada: LATAM grande con borde (protagonista del Atlas), demás chicos.
     let r, fillOpacity, stroke, strokeWidth;
-    if (isSpotlight) {
+    if (isSelected) {
       r = 7; fillOpacity = 1; stroke = '#1A1A1A'; strokeWidth = 1.3;
-    } else if (isHovered && !spotCountry) {
+    } else if (isHovered && !hasSelection) {
       r = 5.5; fillOpacity = 0.95; stroke = '#1A1A1A'; strokeWidth = 0.9;
-    } else if (isLatam && noHoverNorSpot) {
+    } else if (isLatam && noHoverNorSel) {
       r = 5; fillOpacity = 0.92; stroke = '#1A1A1A'; strokeWidth = 0.7;
     } else {
       r = 3.8; fillOpacity = 0.7; stroke = 'white'; strokeWidth = 0.5;
     }
+    // Sobredimensionar puntos en el export cuadrado (el PNG se ve a ~⅓).
+    r *= ptScale;
+    if (square) strokeWidth *= 1.6;
 
-    const isDimmed = (hoverReg && !isHovered && !isSpotlight)
-                  || (spotCountry && !isSpotlight);
+    const isDimmed = (hoverReg && !isHovered && !isSelected)
+                  || (hasSelection && !isSelected);
     if (!isDimmed) {
       pointPositions.push({ cx, cy, r, region: d.region });
     }
@@ -536,27 +701,22 @@ function drawChart(chartId) {
     c.addEventListener('mouseleave', () => {
       tooltip.style.opacity = '0';
     });
-    // Click (tap en mobile) = toggle spotlight pegado. El stopPropagation
-    // impide que el click burbujee al SVG y se limpie inmediatamente.
+    // Click (tap en mobile) = toggle de selección (agrega/quita el país). El
+    // stopPropagation impide que el click burbujee al SVG y limpie todo.
     c.addEventListener('click', (ev) => {
       ev.stopPropagation();
-      if (state[chartId].spotlightCountry === d.country) {
-        state[chartId].spotlightCountry = null;
-        tooltip.style.opacity = '0';
-      } else {
-        state[chartId].spotlightCountry = d.country;
-      }
-      drawChart(chartId);
+      toggleCountrySelection(chartId, d.iso3);
     });
     ptsG.appendChild(c);
   });
 
-  // Click en zona vacía del SVG limpia spotlight y tooltip pegados.
+  // Click en zona vacía del SVG limpia toda la selección y el tooltip.
   // onclick (no addEventListener) para no acumular handlers en cada redraw.
   svg.onclick = (ev) => {
     if (ev.target.tagName !== 'circle') {
-      if (state[chartId].spotlightCountry) {
-        state[chartId].spotlightCountry = null;
+      if ((state[chartId].selectedCountries || []).length) {
+        state[chartId].selectedCountries = [];
+        renderSelectedChips(chartId);
         drawChart(chartId);
       }
       tooltip.style.opacity = '0';
@@ -564,14 +724,14 @@ function drawChart(chartId) {
   };
 
   // Etiquetas
-  // - Con spotlight: solo el país en spotlight (forzado a entrar).
-  // - Sin spotlight, con hover sobre región: todos los países de esa región
+  // - Con selección: solo los países seleccionados (forzados a entrar).
+  // - Sin selección, con hover sobre región: todos los países de esa región
   //   (con los garantizados de esa región como Tier 0 — ej. al hover en
   //   "Europa Occidental", Alemania, Francia, UK, España e Italia son Tier 0).
   // - Sin nada: solo países LATAM (los 5 grandes garantizados; el resto si entra).
   let labelTargets;
-  if (spotCountry) {
-    labelTargets = orderedDrawables.filter(d => d.country === spotCountry);
+  if (hasSelection) {
+    labelTargets = orderedDrawables.filter(d => selectedSet.has(d.iso3));
   } else if (hoverReg) {
     labelTargets = orderedDrawables.filter(d => d.region === hoverReg);
   } else {
@@ -586,7 +746,10 @@ function drawChart(chartId) {
 
     let tier;
     let subPriority = 99;
-    if (PRIORITY_GUARANTEED.has(d.country)) {
+    if (hasSelection && selectedSet.has(d.iso3)) {
+      tier = 0;          // los seleccionados siempre se etiquetan
+      subPriority = 0;
+    } else if (PRIORITY_GUARANTEED.has(d.country)) {
       tier = 0;
       subPriority = GUARANTEED_PRIORITY[d.country];
     } else {
@@ -604,7 +767,194 @@ function drawChart(chartId) {
     y2: margin.top + innerH
   };
 
-  const placed = placeLabels(labelCandidates, pointPositions, plotBox);
+  const placed = placeLabels(labelCandidates, pointPositions, plotBox, labelScale);
+
+  // En el export grande (cuadrado) reusamos el motor compartido de elo-pib
+  // (lib/scatter-render.js) para: (a) relajar los labels en 2D y despejarlos de
+  // los puntos, y (b) reconectar cada label corrido con su punto vía línea guía
+  // (estilo OWID). En interactivo no corre → la vista queda igual.
+  if (bigFmt && typeof s_relaxLabels === 'function') {
+    const textScale = SIZES.label / 10.5;   // estimateLabelWidth está en px ~10.5
+    const r0 = (hasSelection ? 7 : 5) * ptScale;   // ~radio del punto etiquetado
+    const relaxItems = placed.map(lbl => {
+      const cand = labelCandidates.find(c => c.text === lbl.text);
+      return {
+        lx: lbl.x, ly: lbl.y, anchor: lbl.anchor,
+        textW: estimateLabelWidth(lbl.text) * textScale,
+        px: cand ? cand.cx : lbl.x, py: cand ? cand.cy : lbl.y
+      };
+    });
+    // Obstáculos = SOLO los puntos etiquetados (los que importa que se vean), no
+    // la nube gris de fondo. Un label de 26px no puede esquivar los ~150 puntos
+    // en zona densa; sobre los grises SÍ puede pasar (el halo los tapa, es normal
+    // en OWID). Así los labels se acomodan cerca de su punto en vez de huir al
+    // borde. Cada punto etiquetado se protege con su radio r0.
+    const obstacles = labelCandidates.map(c => ({ x: c.cx, y: c.cy, r: r0 }));
+    // Para la LÍNEA DE VISIÓN de las guías usamos TODOS los puntos resaltados
+    // (terracota grandes), no solo los etiquetados: una guía no debe cruzar
+    // ningún punto prominente, esté o no etiquetado. (Los grises de fondo sí se
+    // pueden cruzar.) Umbral de radio: los grandes son LATAM (5×) o selec (7×).
+    const losObstacles = pointPositions
+      .filter(p => p.r > 4.4 * ptScale)
+      .map(p => ({ x: p.cx, y: p.cy, r: p.r }));
+    s_relaxLabels(relaxItems, SIZES.label, plotBox, 220, obstacles);
+
+    // Cap de drift: ningún label debe alejarse demasiado de su punto. En racimos
+    // densos la relajación si no manda alguno al borde con una guía larguísima
+    // (ej. Chile en el chart 1). Lo traemos de vuelta a maxDrift del punto.
+    const maxDrift = 80;
+    relaxItems.forEach(l => {
+      const dx = l.lx - l.px, dy = l.ly - l.py;
+      const d = Math.hypot(dx, dy);
+      if (d > maxDrift) { const k = maxDrift / d; l.lx = l.px + dx * k; l.ly = l.py + dy * k; }
+    });
+
+    // Pull-back: la relajación minimiza solapes pero NO el largo de las guías
+    // (empuja por el eje de menor solape, que para labels anchos suele ser el
+    // horizontal → líneas largas al costado). Esta pasada acerca cada label de
+    // vuelta hacia su punto en pasos chicos, hasta el instante antes de volver a
+    // chocar con otro label o tapar un punto. Acorta cada guía al mínimo y deja
+    // sin línea a los que pueden volver a pegarse al punto (técnica OWID).
+    const PB_PAD = 8, PB_PT_PAD = 4, PB_STEP = 3;
+    const pbBoxesHit = (a, b) =>
+      !(a.x2 < b.x1 - PB_PAD || a.x1 > b.x2 + PB_PAD || a.y2 < b.y1 - PB_PAD || a.y1 > b.y2 + PB_PAD);
+    const pbCollides = (idx, lx, ly) => {
+      const box = s_labelBox({ ...relaxItems[idx], lx, ly }, SIZES.label);
+      for (let j = 0; j < relaxItems.length; j++) {
+        if (j === idx) continue;
+        if (pbBoxesHit(box, s_labelBox(relaxItems[j], SIZES.label))) return true;
+      }
+      for (const ob of obstacles) {
+        const nx = Math.max(box.x1, Math.min(ob.x, box.x2));
+        const ny = Math.max(box.y1, Math.min(ob.y, box.y2));
+        if (Math.hypot(nx - ob.x, ny - ob.y) < ob.r + PB_PT_PAD) return true;
+      }
+      return false;
+    };
+    relaxItems.forEach((l, i) => {
+      for (let iter = 0; iter < 40; iter++) {
+        const dx = l.px - l.lx, dy = l.py - l.ly;
+        const d = Math.hypot(dx, dy);
+        if (d < PB_STEP) break;
+        const nx = l.lx + (dx / d) * PB_STEP, ny = l.ly + (dy / d) * PB_STEP;
+        if (pbCollides(i, nx, ny)) break;
+        l.lx = nx; l.ly = ny;
+      }
+    });
+
+    // Reubicación direccional con LÍNEA DE VISIÓN: para los labels que quedaron
+    // lejos de su punto O cuya guía cruza otro punto etiquetado (el bug de
+    // Colombia: la recta atravesaba otro terracota), probar 8 direcciones
+    // alrededor de su PROPIO punto y elegir la mejor posición que: (a) entre en
+    // el plot, (b) no pise otra etiqueta, (c) no tape un punto etiquetado, y
+    // (d) tenga la guía despejada. Puntaje = largo de la guía + penalización
+    // fuerte si cruza un punto; se mueve solo si mejora sobre la posición actual.
+    const up = SIZES.label * 0.78, dn = SIZES.label * 0.22;
+    // ¿La caja pisa otra etiqueta o se mete en un punto etiquetado ajeno? El
+    // PROPIO punto NO es obstáculo (el label QUIERE quedar pegado a él); solo se
+    // rechaza si el propio punto queda DENTRO de la caja (tapado).
+    const snapHits = (box, exceptIdx, ownPx, ownPy) => {
+      for (let j = 0; j < relaxItems.length; j++) {
+        if (j === exceptIdx) continue;
+        if (pbBoxesHit(box, s_labelBox(relaxItems[j], SIZES.label))) return true;
+      }
+      for (const ob of obstacles) {
+        if (Math.hypot(ob.x - ownPx, ob.y - ownPy) < 1) {   // su propio punto
+          if (ob.x > box.x1 && ob.x < box.x2 && ob.y > box.y1 && ob.y < box.y2) return true;
+          continue;
+        }
+        const nx = Math.max(box.x1, Math.min(ob.x, box.x2));
+        const ny = Math.max(box.y1, Math.min(ob.y, box.y2));
+        if (Math.hypot(nx - ob.x, ny - ob.y) < ob.r + PB_PT_PAD) return true;
+      }
+      return false;
+    };
+    // Distancia de un punto (ox,oy) al segmento (ax,ay)-(bx,by).
+    const segPointDist = (ax, ay, bx, by, ox, oy) => {
+      const vx = bx - ax, vy = by - ay, L2 = vx * vx + vy * vy || 1;
+      let t = ((ox - ax) * vx + (oy - ay) * vy) / L2;
+      t = Math.max(0, Math.min(1, t));
+      return Math.hypot(ox - (ax + t * vx), oy - (ay + t * vy));
+    };
+    // ¿La guía (punto → borde más cercano de la caja) cruza OTRO punto etiquetado?
+    const lineBlocked = (box, px, py) => {
+      const ex = Math.max(box.x1, Math.min(px, box.x2));
+      const ey = Math.max(box.y1, Math.min(py, box.y2));
+      for (const ob of losObstacles) {
+        if (Math.hypot(ob.x - px, ob.y - py) < 1) continue;   // su propio punto
+        if (segPointDist(px, py, ex, ey, ob.x, ob.y) < ob.r + 2) return true;
+      }
+      return false;
+    };
+    relaxItems.forEach((l, i) => {
+      const cur = s_labelBox(l, SIZES.label);
+      const cnx = Math.max(cur.x1, Math.min(l.px, cur.x2));
+      const cny = Math.max(cur.y1, Math.min(l.py, cur.y2));
+      const curDist = Math.hypot(cnx - l.px, cny - l.py);
+      const curBlocked = lineBlocked(cur, l.px, l.py);
+      if (curDist < 26 && !curBlocked) return;   // cerca y despejada → no tocar
+      // Candidatos: 8 direcciones × 3 separaciones. Colocamos el BORDE cercano de
+      // la caja a `g` del punto (no el centro), así el label queda PEGADO a su
+      // punto sin taparlo, con guía corta. Varias separaciones permiten encontrar
+      // el hueco oblicuo (ej. sudeste) cuando la más cercana está ocupada.
+      const gaps = [r0 + 4, r0 + 18, r0 + 36];
+      const dirs = [[0,-1],[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1]]; // N,NE,E,SE,S,SW,W,NW (y+ = abajo)
+      const cands = [];
+      for (const [sx, sy] of dirs) {
+        for (const g of gaps) {
+          let anchor, lx, ly;
+          if (sx > 0)      { anchor = 'start';  lx = l.px + g; }
+          else if (sx < 0) { anchor = 'end';    lx = l.px - g; }
+          else             { anchor = 'middle'; lx = l.px; }
+          if (sy > 0)      ly = l.py + g + up;          // caja abajo
+          else if (sy < 0) ly = l.py - g - dn;          // caja arriba
+          else             ly = l.py + (up - dn) / 2;   // centrada vertical
+          cands.push({ lx, ly, anchor });
+        }
+      }
+      let best = null, bestScore = Infinity;
+      for (const c of cands) {
+        const box = s_labelBox({ ...l, ...c }, SIZES.label);
+        if (box.x1 < plotBox.x1 || box.x2 > plotBox.x2 ||
+            box.y1 < plotBox.y1 || box.y2 > plotBox.y2) continue;
+        if (snapHits(box, i, l.px, l.py)) continue;
+        const ex = Math.max(box.x1, Math.min(l.px, box.x2));
+        const ey = Math.max(box.y1, Math.min(l.py, box.y2));
+        const len = Math.hypot(ex - l.px, ey - l.py);
+        const score = len + (lineBlocked(box, l.px, l.py) ? 1000 : 0);
+        if (score < bestScore) { bestScore = score; best = c; }
+      }
+      const curScore = curDist + (curBlocked ? 1000 : 0);
+      if (best && bestScore < curScore) { l.lx = best.lx; l.ly = best.ly; l.anchor = best.anchor; }
+    });
+
+    // Líneas guía: del punto al borde más cercano de la caja del label. Solo si
+    // el label se corrió de verdad (umbral alto → sin stubs cortos que ensucian).
+    const leaderG = document.createElementNS(ns, 'g');
+    svg.appendChild(leaderG);
+    relaxItems.forEach(l => {
+      const B = s_labelBox(l, SIZES.label);
+      const nx = Math.max(B.x1, Math.min(l.px, B.x2));
+      const ny = Math.max(B.y1, Math.min(l.py, B.y2));
+      const dx = nx - l.px, dy = ny - l.py;
+      const dist = Math.hypot(dx, dy);
+      if (dist > r0 + 16) {
+        const ux = dx / dist, uy = dy / dist;
+        const line = document.createElementNS(ns, 'line');
+        line.setAttribute('x1', l.px + ux * r0);
+        line.setAttribute('y1', l.py + uy * r0);
+        line.setAttribute('x2', nx - ux * 2);
+        line.setAttribute('y2', ny - uy * 2);
+        line.setAttribute('stroke', '#9a9488');
+        line.setAttribute('stroke-width', 1.2);
+        line.setAttribute('stroke-opacity', 0.6);
+        line.setAttribute('stroke-linecap', 'round');
+        leaderG.appendChild(line);
+      }
+    });
+    // Volcar las posiciones relajadas a placed para el render.
+    placed.forEach((lbl, i) => { lbl.x = relaxItems[i].lx; lbl.y = relaxItems[i].ly; });
+  }
 
   placed.forEach(lbl => {
     const t_el = document.createElementNS(ns, 'text');
@@ -613,6 +963,16 @@ function drawChart(chartId) {
     t_el.setAttribute('y', lbl.y);
     t_el.setAttribute('text-anchor', lbl.anchor);
     t_el.setAttribute('fill', REGION_LABEL_COLORS[lbl.region] || '#1A1A1A');
+    if (square) {
+      t_el.style.fontSize = SIZES.label + 'px';
+      // Halo crema para legibilidad sobre puntos del mismo color. stroke usa
+      // var(--bg): png-export lo resuelve a rgb al rasterizar (trampa #2).
+      t_el.style.stroke = 'var(--bg)';
+      t_el.style.strokeWidth = SIZES.halo + 'px';
+      t_el.style.paintOrder = 'stroke';
+      t_el.style.strokeLinejoin = 'round';
+      if (SIZES.weight) t_el.style.fontWeight = SIZES.weight;
+    }
     t_el.textContent = lbl.text;
     svg.appendChild(t_el);
   });
@@ -676,3 +1036,18 @@ document.querySelectorAll('button[data-chart]').forEach(btn => {
     URL.revokeObjectURL(url);
   });
 });
+
+// === Registro para el export PNG mobile-first ===
+// png-export.js setea __atlasPngFormatOverride = 'square' y llama __atlasRedraw()
+// para re-renderizar el/los chart(s) en grande antes de rasterizar, y luego
+// restaura. Usamos un registro de funciones porque el index.html carga scatter.js
+// y timeseries.js juntos: cada uno empuja su redraw sin pisar al otro.
+window.__atlasSupportsFormats = true;
+window.__atlasDefaultPngFormat = 'square';
+window.__atlasRedrawFns = window.__atlasRedrawFns || [];
+window.__atlasRedrawFns.push(function () {
+  [1, 2].forEach(id => {
+    if (state[id] && document.getElementById('chart' + id)) drawChart(id);
+  });
+});
+window.__atlasRedraw = function () { window.__atlasRedrawFns.forEach(fn => fn()); };

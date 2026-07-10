@@ -61,3 +61,28 @@ function fmtTickGDP(v) {
   }
   return '$' + v;
 }
+
+//==================================================================
+//  FORMATOS DE EXPORT PNG (mobile-first)
+//==================================================================
+// El N°1 no tiene editor de formatos: el interactivo se renderiza apaisado
+// (viewBox chico, fuentes de la clase CSS) y SOLO al exportar el PNG se fuerza
+// el formato `square` (1:1, mobile-first) vía window.__atlasPngFormatOverride.
+// Cada chart-N.html prende window.__atlasDefaultPngFormat = 'square' (o lo deja
+// y png-export usa 'square' por defecto). Clonado de la maquinaria del N°2/N°3.
+//
+//   vbW/vbH   = dimensiones del viewBox del SVG en ese formato (el gráfico).
+//   nominalW/H = tamaño del canvas PNG final (el lienzo completo con chrome).
+const PNG_FORMATS = {
+  square: { vbW: 1100, vbH: 760, nominalW: 1200, nominalH: 1200 }
+};
+
+// Devuelve la key del formato activo, o null si estamos en el interactivo.
+// png-export.js setea __atlasPngFormatOverride justo antes de rasterizar y lo
+// limpia después; el renderer (scatter.js / timeseries.js) consulta esto para
+// decidir si dibuja en grande.
+function getActivePngFormat() {
+  const ov = window.__atlasPngFormatOverride;
+  if (ov && PNG_FORMATS[ov]) return ov;
+  return null;
+}
