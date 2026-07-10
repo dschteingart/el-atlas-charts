@@ -9,7 +9,7 @@
 // Autocontenido: lee el idioma del global LANG (fallback a <html lang>), y se
 // re-renderiza al togglear idioma. No depende de i18n-issue.js.
 (function () {
-  // Orden de los 7 gráficos del especial (= orden del index).
+  // Orden de los 9 gráficos del especial (= orden del index).
   const CHARTS = [
     'chart-actividad.html',
     'chart-amistosos.html',
@@ -18,7 +18,8 @@
     'chart-flujos.html',
     'chart-ciudades.html',
     'chart-neutral.html',
-    'chart-versus.html'
+    'chart-versus.html',
+    'chart-goles.html'
   ];
   const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
   const T = {

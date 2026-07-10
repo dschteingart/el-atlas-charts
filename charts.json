@@ -1,6 +1,6 @@
 {
   "descripcion": "Catálogo de los gráficos publicados de El Atlas. Lo usan (a futuro) la galería de revisión y las sesiones de Claude Code como mapa del repo. Actualizar al agregar un chart (parte del checklist de integración).",
-  "actualizado": "2026-07-09",
+  "actualizado": "2026-07-10",
   "numeros": [
     {
       "numero": "1", "slug": "bienestar-violencia", "carpeta": "01-bienestar-violencia",
@@ -54,7 +54,8 @@
         { "archivo": "chart-flujos.html", "tipo": "cuerdas + matriz", "tema": "flujos entre confederaciones" },
         { "archivo": "chart-ciudades.html", "tipo": "mapa burbujas + timelapse", "tema": "ciudades sede", "formatoPng": "worldmap", "extra": "timelapse con descarga de video" },
         { "archivo": "chart-neutral.html", "tipo": "líneas + barras", "tema": "partidos en cancha neutral" },
-        { "archivo": "chart-versus.html", "tipo": "ranking/matriz/líneas/dispersión", "tema": "rendimiento entre confederaciones" }
+        { "archivo": "chart-versus.html", "tipo": "ranking/matriz/líneas/dispersión", "tema": "rendimiento entre confederaciones" },
+        { "archivo": "chart-goles.html", "tipo": "líneas + barras", "tema": "goles por partido y diferencia de gol en el tiempo" }
       ]
     }
   ]
