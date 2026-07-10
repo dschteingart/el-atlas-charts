@@ -16,7 +16,12 @@
 let gl_cfg = null, gl_touched = false, gl_lastLang = null;
 const GL_WORLD_COLOR = '#33312C';
 const GL_CAT_PALETTE = ['#234B85', '#E0B84C', '#7A2A3F', '#7FA968', '#5B3A7A', '#5FB0BC', '#CFC9BC'];
+// paleta de selecciones (tonos joya, sin terracota que es el acento de confederaciones)
+const GL_TEAM_PALETTE = ['#A62A47', '#2D4B8E', '#147D64', '#6A3D99', '#C74E8B'];
+const GL_TEAM_MAX = 5;
+const GL_MIN = 1900;          // arranque por default del gráfico (el dato existe desde 1872, pero antes de 1900 son 4 selecciones británicas y ruido)
 const GL_N = 9;
+let gl_teamColorMap = {}, gl_teamsLoading = false, gl_teamMap = null;
 
 function gl_t(k, fb) { return ((typeof t === 'function' ? t(k) : '') || fb); }
 function gl_lang() { return (typeof LANG !== 'undefined') ? LANG : 'es'; }
@@ -29,7 +34,7 @@ function gl_state() {
   if (s.cat == null) s.cat = 'ALL';
   if (!s.smooth) s.smooth = 'ma';
   if (!s.maYears) s.maYears = 4;
-  if (!s.period) s.period = [DATA_GOLES.y0, DATA_GOLES.y1];
+  if (!s.period) s.period = [GL_MIN, DATA_GOLES.y1];
   if (s.periodAuto == null) s.periodAuto = true;
   if (!s.barsBy) s.barsBy = 'cat';
   return s;
@@ -41,11 +46,41 @@ function gl_catName(k) { return gl_t('c6-cat-' + k, DATA_GOLES.cats[k]); }
 // formato de valor: numero con 2 decimales; coma decimal en es, punto en en
 function gl_fmt(v, dec) { const d = dec == null ? 2 : dec; const s = v.toFixed(d); return gl_lang() === 'en' ? s : s.replace('.', ','); }
 
-// ---- ambito: filas / color / etiqueta (Mundo o confederacion) ---------------
+// ---- selecciones individuales (lazy, con reintento; el server local corta) ---
+function gl_hasTeams() { return typeof DATA_GOLES_TEAMS !== 'undefined'; }
+function gl_ensureTeams(cb, tries) {
+  if (gl_hasTeams()) { if (cb) cb(); return; }
+  if (!tries) { if (gl_teamsLoading) return; gl_teamsLoading = true; }
+  tries = tries || 0;
+  const onerr = () => { if (tries < 5) setTimeout(() => gl_ensureTeams(cb, tries + 1), 350); else gl_teamsLoading = false; };
+  const sc = document.createElement('script');
+  sc.src = './data-goles-teams.js?v=' + (window.__ESP_V || '1') + '&r=' + tries;
+  sc.onload = () => { if (gl_hasTeams()) { gl_teamsLoading = false; if (cb) cb(); } else onerr(); };
+  sc.onerror = onerr;
+  document.head.appendChild(sc);
+}
+function gl_teamRows(name) {
+  if (!gl_hasTeams()) return null;
+  if (!gl_teamMap) { gl_teamMap = new Map(); DATA_GOLES_TEAMS.forEach(o => gl_teamMap.set(o.n, o)); }
+  const o = gl_teamMap.get(name); return o ? o.r : null;
+}
+// color FIJO por seleccion: primera ranura libre al agregar, se libera al sacar
+function gl_teamColor(name) {
+  if (gl_teamColorMap[name] == null) {
+    const used = new Set(Object.values(gl_teamColorMap));
+    let i = 0; while (i < GL_TEAM_PALETTE.length && used.has(i)) i++;
+    gl_teamColorMap[name] = (i < GL_TEAM_PALETTE.length) ? i : (Object.keys(gl_teamColorMap).length % GL_TEAM_PALETTE.length);
+  }
+  return GL_TEAM_PALETTE[gl_teamColorMap[name]];
+}
+function gl_teamCount() { return (gl_state().sel || []).filter(gl_isTeam).length; }
+
+// ---- ambito: filas / color / etiqueta (Mundo, confederacion o seleccion) -----
 function gl_isConf(key) { return !!(typeof CONF_FIFA_COLORS !== 'undefined' && CONF_FIFA_COLORS[key]); }
-function gl_ambitoRows(key) { return key === 'W' ? DATA_GOLES.mundo : DATA_GOLES.porConf[key]; }
-function gl_ambColor(key) { return key === 'W' ? GL_WORLD_COLOR : (CONF_FIFA_COLORS[key] || '#888'); }
-function gl_ambLabel(key) { return key === 'W' ? gl_t('pc-world', 'Mundo') : t('conf.' + key); }
+function gl_isTeam(key) { return key !== 'W' && !gl_isConf(key); }
+function gl_ambitoRows(key) { return key === 'W' ? DATA_GOLES.mundo : (DATA_GOLES.porConf[key] || gl_teamRows(key)); }
+function gl_ambColor(key) { return key === 'W' ? GL_WORLD_COLOR : (gl_isConf(key) ? CONF_FIFA_COLORS[key] : gl_teamColor(key)); }
+function gl_ambLabel(key) { return key === 'W' ? gl_t('pc-world', 'Mundo') : (gl_isConf(key) ? t('conf.' + key) : (typeof atlasCountryName === 'function' ? atlasCountryName(key) : key)); }
 
 // ---- calculo ----------------------------------------------------------------
 // suma movil hacia atras (para ratio ponderado por volumen; w<=1 => crudo)
@@ -319,7 +354,7 @@ function gl_seriesFirstYear(key) {
 function gl_dataStartYear() {
   const s = gl_state(); let mn = null;
   (s.sel || []).forEach(key => { const y = gl_seriesFirstYear(key); if (y !== null && (mn === null || y < mn)) mn = y; });
-  return mn === null ? DATA_GOLES.y0 : mn;
+  return Math.max(GL_MIN, mn === null ? DATA_GOLES.y0 : mn);   // piso 1900
 }
 function gl_autofitPeriod() {
   const s = gl_state(); if (s.periodAuto === false) return;
@@ -358,38 +393,46 @@ function gl_setupAmbito() {
       const x = document.createElement('button'); x.className = 'm-chip-x'; x.type = 'button'; x.textContent = '×';
       x.addEventListener('click', () => {
         gl_state().sel = (gl_state().sel || []).filter(v => v !== key);
+        if (gl_isTeam(key)) delete gl_teamColorMap[key];   // liberar la ranura de color de la selección
         gl_touched = true; renderChips(); renderResults(); gl_autofitPeriod(); drawGoles();
       });
       el.appendChild(x); chips.appendChild(el);
     });
   }
   gl_renderChips = renderChips;
+  // pool: Mundo + confederaciones + selecciones (lazy), menos lo ya elegido
   function pool() {
     const chosen = new Set(gl_state().sel || []), out = [];
     if (!chosen.has('W')) out.push({ key: 'W', label: gl_t('pc-world', 'Mundo'), alt: '' });
     CONF_FIFA_ORDER.forEach(cf => { if (!chosen.has(cf)) out.push({ key: cf, label: t('conf.' + cf), alt: gl_t('c6-conf-' + cf, '') }); });
+    if (gl_hasTeams()) DATA_GOLES_TEAMS.forEach(o => { if (!chosen.has(o.n)) out.push({ key: o.n, label: (typeof atlasCountryName === 'function' ? atlasCountryName(o.n) : o.n), alt: o.n }); });
     return out;
   }
   function items() {
-    const q = input.value.trim().toLowerCase(); if (!q) return pool().slice(0, 9);
+    const q = input.value.trim().toLowerCase();
+    if (!q) return pool().filter(o => o.key === 'W' || gl_isConf(o.key)).slice(0, 9);   // sin texto: solo Mundo + confeds
     return pool().filter(o => o.label.toLowerCase().includes(q) || (o.alt || '').toLowerCase().includes(q) || o.key.toLowerCase().includes(q)).slice(0, 9);
   }
   function renderResults() {
     results.innerHTML = '';
+    const teamFull = gl_teamCount() >= GL_TEAM_MAX;
     items().forEach(o => {
+      const isTeam = gl_isTeam(o.key), blocked = isTeam && teamFull;
       const r = document.createElement('div'); r.className = 'm-search-result';
-      r.innerHTML = `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${gl_ambColor(o.key)};margin-right:7px;vertical-align:middle;"></span><span>${o.label}</span>`;
+      const dot = isTeam ? '#c9c4ba' : gl_ambColor(o.key);   // país sin color hasta agregarlo
+      r.innerHTML = `<span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${dot};margin-right:7px;vertical-align:middle;"></span><span>${o.label}</span>`;
+      if (blocked) { r.style.opacity = '0.4'; r.style.cursor = 'not-allowed'; r.title = gl_t('pc-team-max', ''); }
       r.addEventListener('mousedown', (e) => {
-        e.preventDefault();
+        e.preventDefault(); if (isTeam && gl_teamCount() >= GL_TEAM_MAX) return;
         gl_state().sel = (gl_state().sel || []).concat(o.key); gl_touched = true;
-        input.value = ''; results.classList.remove('open'); renderChips(); renderResults(); gl_autofitPeriod(); drawGoles();
+        input.value = ''; results.classList.remove('open'); renderChips(); gl_autofitPeriod(); drawGoles();
       });
       results.appendChild(r);
     });
     results.classList.toggle('open', results.children.length > 0);
   }
-  input.addEventListener('focus', () => { renderResults(); });
-  input.addEventListener('input', () => { renderResults(); });
+  input.addEventListener('focus', () => { gl_ensureTeams(renderResults); renderResults(); });
+  input.addEventListener('input', () => { gl_ensureTeams(renderResults); renderResults(); });
   input.addEventListener('blur', () => setTimeout(() => results.classList.remove('open'), 130));
   renderChips();
 }
@@ -421,4 +464,5 @@ function initGoles() {
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initGoles._wired) { initGoles._wired = true; window.addEventListener('atlas-editor-change', () => drawGoles()); }
   document.getElementById('chart' + GL_N)?.addEventListener('mousemove', (e) => { gl_tipMove._e = e; });
+  setTimeout(() => gl_ensureTeams(), 400);   // precargar selecciones para el buscador
 }

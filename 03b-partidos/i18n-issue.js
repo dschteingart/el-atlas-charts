@@ -273,7 +273,7 @@ const ISSUE_I18N = {
     'c9-metric-label':     'Medida',
     'c9-metric-goles':     'Goles por partido',
     'c9-metric-margen':    'Diferencia de gol',
-    'c9-ambito-ph':        'Agregar confederación…',
+    'c9-ambito-ph':        'Agregar confederación o selección…',
     'c9-sources':          'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. Goles por partido = goles totales sobre partidos jugados; diferencia de gol = margen absoluto promedio por partido. Por confederación se cuentan los partidos en los que participa (un cruce entre dos cuenta para las dos). Serie anual hasta 2025.',
     'c9-sources-tpl':      'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. Serie hasta 2025.',
 
@@ -557,7 +557,7 @@ const ISSUE_I18N = {
     'c9-metric-label':     'Metric',
     'c9-metric-goles':     'Goals per match',
     'c9-metric-margen':    'Goal difference',
-    'c9-ambito-ph':        'Add a confederation…',
+    'c9-ambito-ph':        'Add a confederation or team…',
     'c9-sources':          'Data: Mart Jürisoo (martj42), own elaboration. Goals per match = total goals over matches played; goal difference = average absolute margin per match. By confederation, matches it takes part in are counted (a match between two counts for both). Annual series through 2025.',
     'c9-sources-tpl':      'Data: Mart Jürisoo (martj42), own elaboration. Series through 2025.',
 
