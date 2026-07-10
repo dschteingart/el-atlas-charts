@@ -103,6 +103,10 @@ function ed_toggleTeam(code) {
   } else {
     if (sel.has(code)) sel.delete(code); else sel.set(code, ed_nextFreeSlot());
   }
+  // Regla de selección (criterio 11): si la lista queda vacía, el fallback al
+  // agregado se hace VISIBLE — vuelve el chip "Mundialistas" (nunca una serie
+  // dibujada sin chip, como pasaba con el fallback silencioso del draw).
+  if (sel.size === 0) sel.set(ED_WORLD, 0);
   ed_renderChips(); drawEdad();
 }
 function ed_seriesByYear(obj, field) { const r = []; (ed_years || []).forEach(y => { const d = obj[String(y)]; if (d && d[field] != null) r.push([y, d[field]]); }); return r; }

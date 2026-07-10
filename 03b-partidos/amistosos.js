@@ -190,16 +190,21 @@ function am_renderChip() {
   const s = am_state();
   c.innerHTML = '';
   // Siempre hay un chip del ámbito (Mundo por default, gris carbón), para que
-  // sea consistente con el chart 1. La × vuelve a Mundo.
+  // sea consistente con el chart 1. La × de un ámbito elegido vuelve a Mundo.
+  // Regla de selección (criterio 11): "Mundo" es el PISO de este single-select,
+  // así que su chip va SIN × — una × que no saca nada simula removibilidad.
   const chip = document.createElement('span');
   chip.className = 'm-selected-chip';
   chip.style.background = s.scope.kind === 'conf' ? CONF_FIFA_COLORS[s.scope.id] : '#33312C';
   chip.textContent = am_scopeLabel();
-  const x = document.createElement('button');
-  x.className = 'm-chip-x'; x.innerHTML = '×';
-  x.setAttribute('aria-label', t('chip-remove'));
-  x.addEventListener('click', () => { am_setScope({ kind: 'mundo' }); });
-  chip.appendChild(x); c.appendChild(chip);
+  if (s.scope.kind !== 'mundo') {
+    const x = document.createElement('button');
+    x.className = 'm-chip-x'; x.innerHTML = '×';
+    x.setAttribute('aria-label', t('chip-remove'));
+    x.addEventListener('click', () => { am_setScope({ kind: 'mundo' }); });
+    chip.appendChild(x);
+  }
+  c.appendChild(chip);
 }
 
 // Cambia el ámbito y ajusta el período: mundo/confederación desde 1946; una
