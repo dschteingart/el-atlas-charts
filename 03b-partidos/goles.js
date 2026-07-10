@@ -39,12 +39,17 @@ function gl_state() {
   if (!s.barsBy) s.barsBy = 'cat';
   return s;
 }
-// columna del numerador segun metrica (den siempre col 2 = partidos)
-function gl_numIdx() { return gl_state().metric === 'margen' ? 4 : 3; }
+// metrica -> columna del numerador (den siempre col 2 = partidos):
+//   goles por partido (3) · diferencia de gol con signo (4) · % empates (5) · % goleadas (6)
+function gl_numIdx() { return ({ goles: 3, gd: 4, emp: 5, gol: 6 })[gl_state().metric] || 3; }
+function gl_isPct() { const m = gl_state().metric; return m === 'emp' || m === 'gol'; }   // % (0-100)
+function gl_isSigned() { return gl_state().metric === 'gd'; }                             // eje que cruza el 0
 function gl_catName(k) { return gl_t('c6-cat-' + k, DATA_GOLES.cats[k]); }
 
-// formato de valor: numero con 2 decimales; coma decimal en es, punto en en
+// formato numerico: 2 decimales, coma decimal en es
 function gl_fmt(v, dec) { const d = dec == null ? 2 : dec; const s = v.toFixed(d); return gl_lang() === 'en' ? s : s.replace('.', ','); }
+// valor ya calculado (los % vienen en 0-100); withSign muestra el + en los positivos (diferencia)
+function gl_fmtVal(v, withSign) { if (gl_isPct()) return Math.round(v) + '%'; const s = gl_fmt(v, 2); return (withSign && v > 0) ? '+' + s : s; }
 
 // ---- selecciones individuales (lazy, con reintento; el server local corta) ---
 function gl_hasTeams() { return typeof DATA_GOLES_TEAMS !== 'undefined'; }
@@ -97,8 +102,8 @@ function gl_series(rows, cat, w) {
   const y0 = DATA_GOLES.y0, N = DATA_GOLES.y1 - y0 + 1, mi = gl_numIdx();
   const num = new Array(N).fill(0), den = new Array(N).fill(0);
   for (let k = 0; k < rows.length; k++) { const r = rows[k]; if (cat !== 'ALL' && r[1] !== cat) continue; num[r[0]] += r[mi]; den[r[0]] += r[2]; }
-  const nS = gl_ma(num, w), dS = gl_ma(den, w), pts = [];
-  for (let i = 0; i < N; i++) if (dS[i] > 0) pts.push([y0 + i, nS[i] / dS[i]]);
+  const nS = gl_ma(num, w), dS = gl_ma(den, w), pts = [], pct = gl_isPct();
+  for (let i = 0; i < N; i++) if (dS[i] > 0) pts.push([y0 + i, pct ? nS[i] / dS[i] * 100 : nS[i] / dS[i]]);
   return pts;
 }
 function gl_lineSeries() {
@@ -112,23 +117,24 @@ function gl_lineSeries() {
 // datos para barras: valor promedio por competencia o por confederacion, mas una
 // barra de referencia con el promedio mundial
 function gl_barData() {
-  const s = gl_state(), a = s.period[0], b = s.period[1], y0 = DATA_GOLES.y0, mi = gl_numIdx();
+  const s = gl_state(), a = s.period[0], b = s.period[1], y0 = DATA_GOLES.y0, mi = gl_numIdx(), pct = gl_isPct();
   const inP = (yoff) => { const y = y0 + yoff; return y >= a && y <= b; };
+  const bv = (n, d) => d > 0 ? (pct ? n / d * 100 : n / d) : 0;
   const byCat = s.barsBy === 'cat';
   let wn = 0, wd = 0;
   for (const r of DATA_GOLES.mundo) { if (!inP(r[0])) continue; if (!byCat && s.cat !== 'ALL' && r[1] !== s.cat) continue; wn += r[mi]; wd += r[2]; }
-  const worldBar = { label: gl_t('pc-world-avg', 'Mundo (promedio)'), color: GL_WORLD_COLOR, val: wd > 0 ? wn / wd : 0, den: wd, world: true };
+  const worldBar = { label: gl_t('pc-world-avg', 'Mundo (promedio)'), color: GL_WORLD_COLOR, val: bv(wn, wd), den: wd, world: true };
   let out;
   if (byCat) {
     const num = new Array(7).fill(0), den = new Array(7).fill(0);
     for (const r of DATA_GOLES.mundo) { if (!inP(r[0])) continue; num[r[1]] += r[mi]; den[r[1]] += r[2]; }
-    out = DATA_GOLES.cats.map((nm, k) => ({ label: gl_catName(k), color: GL_CAT_PALETTE[k], val: den[k] > 0 ? num[k] / den[k] : 0, den: den[k] })).filter(o => o.den > 0);
+    out = DATA_GOLES.cats.map((nm, k) => ({ label: gl_catName(k), color: GL_CAT_PALETTE[k], val: bv(num[k], den[k]), den: den[k] })).filter(o => o.den > 0);
   } else {
     const cat = s.cat;
     out = CONF_FIFA_ORDER.map(cf => {
       const rows = gl_ambitoRows(cf); let num = 0, den = 0;
       for (const r of rows) { if (!inP(r[0])) continue; if (cat !== 'ALL' && r[1] !== cat) continue; num += r[mi]; den += r[2]; }
-      return { label: gl_t('c6-conf-' + cf, t('conf.' + cf)), color: CONF_FIFA_COLORS[cf], val: den > 0 ? num / den : 0, den };
+      return { label: gl_t('c6-conf-' + cf, t('conf.' + cf)), color: CONF_FIFA_COLORS[cf], val: bv(num, den), den };
     }).filter(o => o.den >= 10);
   }
   out.push(worldBar);
@@ -158,20 +164,24 @@ function gl_drawEmpty() {
 }
 function gl_axisY() {
   const en = gl_lang() === 'en', m = gl_state().metric;
-  if (m === 'margen') return en ? 'avg. goal difference' : 'diferencia de gol por partido';
+  if (m === 'gd') return en ? 'goal difference (net)' : 'diferencia de gol (a favor)';
+  if (m === 'emp') return en ? '% of draws' : '% de empates';
+  if (m === 'gol') return en ? '% blowouts (3+)' : '% de goleadas (3+)';
   return en ? 'goals per match' : 'goles por partido';
 }
 function gl_drawLines() {
   const s = gl_state(), series = gl_lineSeries(), a = s.period[0], b = s.period[1];
   if (!series.some(sr => sr.pts.some(p => p[0] >= a && p[0] <= b && p[1] != null))) { gl_drawEmpty(); return; }
+  const signed = gl_isSigned(), pct = gl_isPct();
   tsDraw(GL_N, {
     svgId: 'chart' + GL_N, tooltipId: 'tooltip' + GL_N, mode: 'lines',
-    xMin: s.period[0], xMax: s.period[1], yMax: 'auto',
-    yFmt: (v) => gl_fmt(v, 1), axisY: gl_axisY(),
-    series, endValFmt: (v) => gl_fmt(v, 2),
+    xMin: s.period[0], xMax: s.period[1], yMax: 'auto', yMin: signed ? 'auto' : 0,
+    yFmt: (v) => pct ? Math.round(v) + '%' : ((signed && v > 0 ? '+' : '') + gl_fmt(v, 1)),
+    axisY: gl_axisY(),
+    series, endValFmt: (v) => gl_fmtVal(v, signed),
     ttRows: (year) => series.map(sr => {
       const p = sr.pts.find(q => q[0] === year);
-      return p && p[1] != null ? { label: sr.label, color: sr.color, v: gl_fmt(p[1], 2) } : null;
+      return p && p[1] != null ? { label: sr.label, color: sr.color, v: gl_fmtVal(p[1], signed) } : null;
     }).filter(Boolean),
   });
 }
@@ -199,8 +209,13 @@ function gl_drawBars() {
   while (fs > (bigFmt ? 14 : 10) && _lWide + _lPad + 8 > _lCap) { fs -= 1; _lWide = Math.max(0, ..._lTexts.map(tx => _lMeas(tx, fs))); }
   const M = { top: bigFmt ? 22 : 14, right: bigFmt ? 108 : 68, bottom: bigFmt ? 24 : 16, left: Math.min(_lCap, Math.max(bigFmt ? 260 : 150, Math.ceil(_lWide + _lPad + 8))) };
   const PW = W - M.left - M.right, PH = H - M.top - M.bottom;
-  const maxV = Math.max(0.1, ...rows.map(r => r.val)) * 1.02;
-  const x = (v) => (v / maxV) * PW;
+  // escala: con signo (diferencia) las barras divergen desde el 0; si no, desde la izquierda
+  const signed = gl_isSigned();
+  const vmax = Math.max(...rows.map(r => r.val), signed ? 0.05 : 0.1);
+  const vmin = signed ? Math.min(...rows.map(r => r.val), 0) : 0;
+  const span = ((vmax - vmin) || 1) * (signed ? 1.1 : 1.02);
+  const x = (v) => ((v - vmin) / span) * PW;
+  const zeroX = x(0);
   const bh = rows.length ? Math.min(bigFmt ? 66 : 40, PH / rows.length * 0.72) : 20;
   const step = rows.length ? PH / rows.length : 0;
   const g = document.createElementNS(NS, 'g'); g.setAttribute('transform', `translate(${M.left},${M.top})`); svg.appendChild(g);
@@ -212,16 +227,23 @@ function gl_drawBars() {
     if (opt && opt.weight) e.style.fontWeight = opt.weight;
     e.setAttribute('fill', (opt && opt.fill) || 'var(--ink)'); e.textContent = s2; g.appendChild(e); return e;
   };
+  if (signed) {   // línea del 0
+    const zl = document.createElementNS(NS, 'line'); zl.setAttribute('x1', zeroX); zl.setAttribute('x2', zeroX);
+    zl.setAttribute('y1', -2); zl.setAttribute('y2', PH); zl.setAttribute('stroke', 'var(--ink-soft)'); zl.setAttribute('stroke-width', 1); zl.setAttribute('opacity', 0.55); g.appendChild(zl);
+  }
   const hover = !editorFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  const gap = bigFmt ? 12 : 7;
   rows.forEach((d, i) => {
-    const yy = i * step + step / 2, w = Math.max(x(d.val), 1.5);
+    const yy = i * step + step / 2, xv = x(d.val);
+    const bx = signed ? Math.min(zeroX, xv) : 0, bw = Math.max(signed ? Math.abs(xv - zeroX) : xv, 1.5);
     const rect = document.createElementNS(NS, 'rect');
-    rect.setAttribute('x', 0); rect.setAttribute('y', yy - bh / 2); rect.setAttribute('width', w); rect.setAttribute('height', bh);
+    rect.setAttribute('x', bx); rect.setAttribute('y', yy - bh / 2); rect.setAttribute('width', bw); rect.setAttribute('height', bh);
     rect.setAttribute('fill', d.color); rect.setAttribute('rx', bigFmt ? 4 : 2);
     if (d.world) { rect.setAttribute('fill-opacity', 0.85); rect.setAttribute('stroke', GL_WORLD_COLOR); rect.setAttribute('stroke-dasharray', '4 3'); rect.setAttribute('stroke-width', 1); }
     g.appendChild(rect);
     txt(-(bigFmt ? 14 : 8), yy, d.label, { anchor: 'end', weight: d.world ? 700 : null });
-    txt(w + (bigFmt ? 12 : 7), yy, gl_fmt(d.val, 2), { weight: 700 });
+    const neg = signed && d.val < 0;
+    txt(neg ? xv - gap : xv + gap, yy, gl_fmtVal(d.val, signed), { weight: 700, anchor: neg ? 'end' : 'start' });
     if (hover) {
       const hit = document.createElementNS(NS, 'rect');
       hit.setAttribute('x', -M.left); hit.setAttribute('y', yy - step / 2); hit.setAttribute('width', W); hit.setAttribute('height', step);
@@ -234,14 +256,16 @@ function gl_drawBars() {
 }
 function gl_metricNoun() {
   const en = gl_lang() === 'en', m = gl_state().metric;
-  if (m === 'margen') return en ? 'goal difference per match' : 'de diferencia de gol por partido';
+  if (m === 'gd') return en ? 'goal difference (net, per match)' : 'de diferencia de gol a favor, por partido';
+  if (m === 'emp') return en ? 'of matches drawn' : 'de partidos empatados';
+  if (m === 'gol') return en ? 'decided by 3+ goals' : 'de goleadas (3+ goles)';
   return en ? 'goals per match' : 'goles por partido';
 }
 function gl_barTip(d) {
   const tt = document.getElementById('tooltip' + GL_N); if (!tt) return;
   const noun = gl_metricNoun();
   tt.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">${d.label}</div>`
-    + `<div><strong style="font-variant-numeric:tabular-nums;">${gl_fmt(d.val, 2)}</strong> ${noun}</div>`
+    + `<div><strong style="font-variant-numeric:tabular-nums;">${gl_fmtVal(d.val, gl_isSigned())}</strong> ${noun}</div>`
     + `<div style="opacity:.7;">${d.den.toLocaleString(gl_lang() === 'en' ? 'en' : 'es')} ${gl_t('pc-matches', 'partidos')}</div>`;
   tt.style.display = 'block'; tt.style.opacity = '1';
 }
@@ -260,11 +284,16 @@ function gl_pristine() {
   const s = gl_state();
   return !gl_touched && s.view === 'lines' && s.metric === 'goles' && s.cat === 'ALL' && (s.sel || []).length === 1 && s.sel[0] === 'W';
 }
+function gl_measurePhrase() {
+  const en = gl_lang() === 'en', m = gl_state().metric;
+  if (m === 'gd') return en ? 'Average goal difference (for/against) per match' : 'Diferencia de gol promedio a favor, por partido';
+  if (m === 'emp') return en ? 'Share of matches drawn' : 'Porcentaje de partidos empatados';
+  if (m === 'gol') return en ? 'Share of matches decided by 3+ goals' : 'Porcentaje de partidos ganados por 3 o más goles';
+  return en ? 'Goals per match' : 'Goles por partido';
+}
 function gl_subtitle() {
   const s = gl_state(), en = gl_lang() === 'en', period = s.period[0] + '–' + s.period[1];
-  const measure = s.metric === 'margen'
-    ? (en ? 'Average goal difference per match' : 'Diferencia de gol promedio por partido')
-    : (en ? 'Goals per match' : 'Goles por partido');
+  const measure = gl_measurePhrase();
   if (s.view === 'bars') {
     const by = s.barsBy === 'cat' ? (en ? 'type of competition' : 'tipo de competencia') : (en ? 'confederation' : 'confederación');
     const lead = (s.barsBy === 'conf' && s.cat !== 'ALL') ? gl_catName(s.cat) + '. ' : '';
@@ -438,8 +467,8 @@ function gl_setupAmbito() {
 }
 function gl_setupCSV() {
   document.querySelectorAll('button.download[data-chart="' + GL_N + '-csv"]').forEach(btn => btn.addEventListener('click', () => {
-    let csv = 'anio,cat,partidos,goles_totales,margen_total\n';
-    DATA_GOLES.mundo.forEach(r => { csv += `${r[0] + DATA_GOLES.y0},${DATA_GOLES.cats[r[1]]},${r[2]},${r[3]},${r[4]}\n`; });
+    let csv = 'anio,cat,partidos,goles_totales,dif_gol_con_signo,empates,goleadas_3plus\n';
+    DATA_GOLES.mundo.forEach(r => { csv += `${r[0] + DATA_GOLES.y0},${DATA_GOLES.cats[r[1]]},${r[2]},${r[3]},${r[4]},${r[5]},${r[6]}\n`; });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     a.download = 'el-atlas-especial-goles.csv'; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);

@@ -148,21 +148,29 @@ function tsDraw(n, cfg) {
   const x0 = cfg.xMin, x1 = cfg.xMax;
   const xS = (yr) => M.left + ((yr - x0) / (x1 - x0)) * PLOT_W;
 
-  // tope Y
+  // tope Y (y piso: cfg.yMin permite eje que cruza el 0, p.ej. diferencia con signo;
+  // por default yMin=0 y el comportamiento es idéntico al de siempre)
   let yMax = cfg.yMax;
+  let yMin = (cfg.yMin != null && cfg.yMin !== 'auto') ? cfg.yMin : 0;
   if (yMax === 'auto') {
-    let mx = 0;
+    let mx = 0, mn = 0;
     if (cfg.mode === 'stack') {
       cfg.stack.anios.forEach((a, i) => { if (a >= x0 && a <= x1) { const v = cfg.stack.total(i); if (v > mx) mx = v; } });
     } else {
-      cfg.series.forEach(s => s.pts.forEach(p => { if (p[0] >= x0 && p[0] <= x1 && p[1] != null && p[1] > mx) mx = p[1]; }));
+      cfg.series.forEach(s => s.pts.forEach(p => { if (p[0] >= x0 && p[0] <= x1 && p[1] != null) { if (p[1] > mx) mx = p[1]; if (p[1] < mn) mn = p[1]; } }));
     }
     const ticks = (typeof niceLinearTicks === 'function') ? niceLinearTicks(0, mx * 1.06, 5) : [mx];
     yMax = ticks.length ? ticks[ticks.length - 1] : mx;
     if (yMax < mx) yMax += (ticks.length > 1 ? ticks[1] - ticks[0] : mx * 0.1);
     if (!(yMax > 0)) yMax = cfg.yMaxFloor || 10;   // serie toda en 0: piso para no dividir por cero
+    if (cfg.yMin === 'auto' && mn < 0) {            // piso negativo redondeado
+      const tn = (typeof niceLinearTicks === 'function') ? niceLinearTicks(mn * 1.06, 0, 4) : [mn];
+      yMin = tn.length ? tn[0] : mn;
+      if (yMin > mn) yMin -= (tn.length > 1 ? tn[1] - tn[0] : Math.abs(mn) * 0.1);
+    }
   }
-  const yS = (v) => M.top + PLOT_H - (v / yMax) * PLOT_H;
+  const ySpan = (yMax - yMin) || 1;
+  const yS = (v) => M.top + PLOT_H - ((v - yMin) / ySpan) * PLOT_H;
 
   // grid + ejes
   ts_xTicks(x0, x1, PLOT_W, bigFmt ? 100 : 44).forEach(yr => {
@@ -174,13 +182,17 @@ function tsDraw(n, cfg) {
     lbl.setAttribute('text-anchor', 'middle'); lbl.setAttribute('class', 's-tick');
     lbl.style.fontSize = SIZES.tick + 'px'; lbl.textContent = yr; svg.appendChild(lbl);
   });
-  const yTicks = (typeof niceLinearTicks === 'function') ? niceLinearTicks(0, yMax, bigFmt ? 4 : 5) : [0, yMax];
-  if (yTicks[0] !== 0) yTicks.unshift(0);
+  const yTicks = (typeof niceLinearTicks === 'function') ? niceLinearTicks(yMin, yMax, bigFmt ? 4 : 5) : [yMin, yMax];
+  if (yMin >= 0 && yTicks[0] !== 0) yTicks.unshift(0);
+  else if (yMin < 0 && yTicks.indexOf(0) < 0) yTicks.push(0);
   yTicks.forEach(v => {
-    if (v > yMax + 1e-9) return;
+    if (v > yMax + 1e-9 || v < yMin - 1e-9) return;
     const y = yS(v);
+    const isZero = Math.abs(v) < 1e-9 && yMin < 0;   // línea del 0 resaltada cuando hay negativos
     const gl = ts_el('line'); gl.setAttribute('x1', M.left); gl.setAttribute('x2', M.left + PLOT_W);
-    gl.setAttribute('y1', y); gl.setAttribute('y2', y); gl.setAttribute('class', 's-grid-line'); svg.appendChild(gl);
+    gl.setAttribute('y1', y); gl.setAttribute('y2', y); gl.setAttribute('class', 's-grid-line');
+    if (isZero) { gl.setAttribute('stroke', 'var(--ink-soft)'); gl.setAttribute('stroke-width', '1.3'); gl.setAttribute('opacity', '0.85'); }
+    svg.appendChild(gl);
     const lbl = ts_el('text'); lbl.setAttribute('x', M.left - (bigFmt ? 12 : 8)); lbl.setAttribute('y', y + (bigFmt ? 8 : 4));
     lbl.setAttribute('text-anchor', 'end'); lbl.setAttribute('class', 's-tick'); lbl.style.fontSize = SIZES.tick + 'px';
     lbl.textContent = cfg.yFmt ? cfg.yFmt(v) : v; svg.appendChild(lbl);
