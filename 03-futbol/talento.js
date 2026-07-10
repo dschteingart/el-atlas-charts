@@ -368,6 +368,13 @@ function drawTalento() {
       rect.setAttribute('fill-opacity', 0.92);
       ta_hideTooltip();
     });
+    // Regla de selección (criterio 11f): en desktop, click en la barra saca
+    // el país (mismo gesto que en las líneas de dts/origenes/ligas). Solo en
+    // modo País (en Región las 6 barras son fijas) y solo con hover real —
+    // en touch el tap es del tooltip.
+    if (!region && HAS_HOVER) {
+      rect.addEventListener('click', () => { ta_hideTooltip(); ta_toggleSelect(d.iso); });
+    }
     barsG.appendChild(rect);
 
     // Valor numérico a la derecha de la barra (sin el "(n=X)" — eso va al
