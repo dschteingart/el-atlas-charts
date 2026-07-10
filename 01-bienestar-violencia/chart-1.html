@@ -8,6 +8,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../lib/style.css?v=2">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/01-bienestar-violencia/chart-1.html">
+<meta property="og:title" content="El Atlas — Bienestar y PIB per cápita">
+<meta property="og:description" content="Los países latinoamericanos están, en promedio, más satisfechos con su vida de lo que predeciría su nivel de desarrollo.">
+<meta name="twitter:card" content="summary">
+<link rel="stylesheet" href="../lib/editor.css?v=1">
 </head>
 <body>
 <div class="wrap">
@@ -22,7 +30,7 @@
     </div>
   </header>
 
-  <section class="chart-block">
+  <section class="chart-block" data-chart="1" data-editor-id="bienestar-pib">
     <h2 class="chart-title" data-i18n="c1-title">Bienestar subjetivo vs. PIB per cápita</h2>
     <p class="chart-subtitle" data-i18n="c1-subtitle">Los países latinoamericanos están, en promedio, más satisfechos con su vida de lo que predeciría su nivel de desarrollo.</p>
 
@@ -67,12 +75,13 @@
 
 <script src="../lib/regions.js"></script>
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=14"></script>
-<script src="./utils.js?v=14"></script>
-<script src="./data-scatter.js?v=14"></script>
+<script src="./i18n-issue.js?v=15"></script>
+<script src="./utils.js?v=15"></script>
+<script src="../lib/editor.js?v=2"></script>
+<script src="./data-scatter.js?v=15"></script>
 <script src="../lib/scatter-render.js?v=1"></script>
-<script src="./scatter.js?v=14"></script>
-<script src="./png-export.js?v=14"></script>
+<script src="./scatter.js?v=15"></script>
+<script src="./png-export.js?v=15"></script>
 <script>
 state[1] = { scaleX: 'log', scaleY: 'linear', activeRegions: new Set(REGION_ORDER), hoverRegion: null, selectedCountries: [] };
 renderRegionFilters(1);
@@ -86,5 +95,7 @@ setupLangToggle(() => {
   drawChart(1);
 });
 </script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=15"></script>
 </body>
 </html>
