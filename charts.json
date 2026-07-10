@@ -1,0 +1,61 @@
+{
+  "descripcion": "Catálogo de los gráficos publicados de El Atlas. Lo usan (a futuro) la galería de revisión y las sesiones de Claude Code como mapa del repo. Actualizar al agregar un chart (parte del checklist de integración).",
+  "actualizado": "2026-07-09",
+  "numeros": [
+    {
+      "numero": "1", "slug": "bienestar-violencia", "carpeta": "01-bienestar-violencia",
+      "titulo": "Más feliz de lo que debería, más violenta de lo tolerable",
+      "en": "toggle + ?lang=en (sin páginas EN propias)",
+      "charts": [
+        { "archivo": "chart-1.html", "tipo": "dispersión", "tema": "satisfacción de vida vs PIB per cápita" },
+        { "archivo": "chart-2.html", "tipo": "dispersión", "tema": "homicidios vs PIB per cápita" },
+        { "archivo": "chart-3.html", "tipo": "líneas (spaghetti)", "tema": "evolución de homicidios por país" }
+      ]
+    },
+    {
+      "numero": "2", "slug": "demasiado-desiguales", "carpeta": "02-demasiado-desiguales",
+      "titulo": "¿Es América Latina realmente la región más desigual del mundo?",
+      "en": "index-en.html + landings chart-N-en.html + ?lang=en",
+      "charts": [
+        { "archivo": "chart-1.html", "tipo": "barras marimekko", "tema": "ranking Gini original vs ajustado" },
+        { "archivo": "chart-2.html", "tipo": "dispersión", "tema": "Gini vs PIB per cápita" },
+        { "archivo": "chart-3.html", "tipo": "líneas por decil", "tema": "ingreso por decil y país" },
+        { "archivo": "chart-4.html", "tipo": "barras + mapa + líneas", "tema": "ingreso por decil, comparador mundial" }
+      ]
+    },
+    {
+      "numero": "3", "slug": "futbol", "carpeta": "03-futbol",
+      "titulo": "La geografía del talento futbolístico",
+      "en": "index-en.html + ?lang=en",
+      "charts": [
+        { "archivo": "chart-elo-pib.html", "tipo": "dispersión", "tema": "fuerza futbolística (Elo) vs PIB" },
+        { "archivo": "chart-talento.html", "tipo": "barras", "tema": "talento per cápita por país" },
+        { "archivo": "chart-clubage-map.html", "tipo": "mapa coroplético", "tema": "antigüedad de los clubes", "formatoPng": "worldmap" },
+        { "archivo": "chart-talento-clubes.html", "tipo": "dispersión", "tema": "talento vs antigüedad de clubes" },
+        { "archivo": "chart-elo-trayectoria.html", "tipo": "líneas", "tema": "trayectoria Elo/ranking histórica" },
+        { "archivo": "chart-natividad.html", "tipo": "líneas", "tema": "mundialistas nacidos fuera del país" },
+        { "archivo": "chart-ligas.html", "tipo": "líneas/área", "tema": "en qué ligas juegan los mundialistas" },
+        { "archivo": "chart-birthplace.html", "tipo": "mapa burbujas/heat + ranking", "tema": "dónde nacen los mundialistas", "formatoPng": "worldmap" },
+        { "archivo": "chart-origenes.html", "tipo": "líneas/área/barras/sankey", "tema": "orígenes y destinos de jugadores" },
+        { "archivo": "chart-dts.html", "tipo": "líneas/área/barras/sankey", "tema": "DTs locales vs extranjeros" },
+        { "archivo": "chart-altura.html", "tipo": "líneas/distribución/barras/dispersión", "tema": "altura de los mundialistas" },
+        { "archivo": "chart-edad.html", "tipo": "líneas/distribución/barras", "tema": "edad de los mundialistas" }
+      ]
+    },
+    {
+      "numero": "especial", "slug": "partidos", "carpeta": "03b-partidos",
+      "titulo": "La geografía de los partidos de fútbol",
+      "en": "index-eng.html (index-en.html redirige) + ?lang=en",
+      "charts": [
+        { "archivo": "chart-actividad.html", "tipo": "multilínea temporal", "tema": "partidos por año y confederación" },
+        { "archivo": "chart-amistosos.html", "tipo": "área apilada", "tema": "amistosos vs competitivos" },
+        { "archivo": "chart-globalizacion.html", "tipo": "líneas + barras", "tema": "partidos inter-confederación" },
+        { "archivo": "chart-duelos.html", "tipo": "red de fuerza", "tema": "quién juega contra quién" },
+        { "archivo": "chart-flujos.html", "tipo": "cuerdas + matriz", "tema": "flujos entre confederaciones" },
+        { "archivo": "chart-ciudades.html", "tipo": "mapa burbujas + timelapse", "tema": "ciudades sede", "formatoPng": "worldmap", "extra": "timelapse con descarga de video" },
+        { "archivo": "chart-neutral.html", "tipo": "líneas + barras", "tema": "partidos en cancha neutral" },
+        { "archivo": "chart-versus.html", "tipo": "ranking/matriz/líneas/dispersión", "tema": "rendimiento entre confederaciones" }
+      ]
+    }
+  ]
+}
