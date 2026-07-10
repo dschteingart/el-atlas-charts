@@ -86,3 +86,29 @@ function getActivePngFormat() {
   if (ov && PNG_FORMATS[ov]) return ov;
   return null;
 }
+
+// Botón "Limpiar" universal (regla de selección, criterio 11e) — COPIA de
+// lib/utils.js (el N°1 todavía usa su stack local; se des-duplica cuando
+// pase a lib/). Limpiar = clickear todas las ✕ del contenedor.
+function atlasWireClearButtons() {
+  const wire = (cont) => {
+    if (!cont || cont.__atlasClearWired) return;
+    cont.__atlasClearWired = true;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'atlas-clear-btn';
+    btn.addEventListener('click', () => {
+      Array.from(cont.querySelectorAll('.m-chip-x, .ts-chip-x')).forEach(x => x.click());
+    });
+    cont.insertAdjacentElement('afterend', btn);
+    const sync = () => {
+      const n = cont.querySelectorAll('.m-chip-x, .ts-chip-x').length;
+      btn.textContent = (typeof LANG !== 'undefined' && LANG === 'en') ? 'Clear' : 'Limpiar';
+      btn.style.display = n >= 2 ? '' : 'none';
+    };
+    new MutationObserver(sync).observe(cont, { childList: true, subtree: true });
+    sync();
+  };
+  document.querySelectorAll('[id*="-selected-chips"]').forEach(wire);
+}
+window.addEventListener('load', () => setTimeout(atlasWireClearButtons, 0));
