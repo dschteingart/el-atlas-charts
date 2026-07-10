@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — Galería de revisión (interna)</title>
+<meta name="robots" content="noindex, nofollow">
+<!-- Herramienta INTERNA de control de calidad (Fase 4 de la auditoría,
+     jul-2026). No está linkeada desde el sitio público. Muestra los 27
+     charts en iframes de 360px de ancho — el ancho de un celular — para
+     detectar roturas de un vistazo después de tocar un motor o antes de
+     publicar un número. Se alimenta de charts.json (el catálogo). -->
+<link rel="stylesheet" href="./lib/style.css">
+<style>
+  body { padding: 24px 28px 60px; }
+  h1 { margin: 0 0 4px; }
+  .g-sub { font-family: var(--sans); font-size: 13px; color: var(--ink-muted); margin: 0 0 8px; }
+  .g-controls { font-family: var(--sans); font-size: 13px; margin: 10px 0 22px; }
+  .g-controls button { font-family: var(--sans); font-size: 12.5px; padding: 5px 14px;
+    border: 1px solid var(--rule-strong, #CFC9BC); border-radius: 999px;
+    background: var(--bg-soft, #F4F1E8); cursor: pointer; }
+  h2 { font-size: 19px; margin: 30px 0 12px; border-bottom: 1px solid var(--rule); padding-bottom: 6px; }
+  .g-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(372px, 1fr)); gap: 18px; }
+  .g-card { border: 1px solid var(--rule); border-radius: 8px; background: #fff; overflow: hidden; }
+  .g-meta { display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+    padding: 8px 12px; font-family: var(--sans); font-size: 12px; }
+  .g-meta .g-file { font-weight: 600; color: var(--ink); }
+  .g-meta .g-tipo { color: var(--ink-muted); }
+  .g-meta a { color: var(--accent); text-decoration: none; white-space: nowrap; }
+  .g-frame { width: 360px; height: 640px; border: 0; border-top: 1px solid var(--grid);
+    display: block; margin: 0 auto; background: var(--bg); }
+  .g-placeholder { width: 360px; height: 640px; margin: 0 auto; display: flex; align-items: center;
+    justify-content: center; font-family: var(--sans); font-size: 13px; color: var(--ink-muted);
+    border-top: 1px solid var(--grid); background: var(--bg-soft, #F4F1E8); }
+</style>
+</head>
+<body>
+<h1>Galería de revisión</h1>
+<p class="g-sub">Los 27 gráficos a 360px de ancho (vista celular). Herramienta interna — una pasada visual antes de publicar o después de tocar un motor.</p>
+<div class="g-controls">
+  <button id="g-load-all" type="button">Cargar todos los gráficos</button>
+  <span id="g-status" style="margin-left:10px; color:var(--ink-muted);"></span>
+</div>
+<div id="g-root">Cargando catálogo…</div>
+<script>
+(async function () {
+  const root = document.getElementById('g-root');
+  let cat;
+  try {
+    cat = await fetch('./charts.json').then(r => r.json());
+  } catch (e) {
+    root.textContent = 'No se pudo leer charts.json: ' + e.message;
+    return;
+  }
+  root.innerHTML = '';
+  const frames = [];
+  cat.numeros.forEach(num => {
+    const h = document.createElement('h2');
+    h.textContent = (num.numero === 'especial' ? 'Especial' : 'N°' + num.numero) + ' — ' + num.titulo;
+    root.appendChild(h);
+    const grid = document.createElement('div');
+    grid.className = 'g-grid';
+    num.charts.forEach(ch => {
+      const url = './' + num.carpeta + '/' + ch.archivo;
+      const card = document.createElement('div');
+      card.className = 'g-card';
+      card.innerHTML =
+        '<div class="g-meta"><span><span class="g-file">' + ch.archivo + '</span> ' +
+        '<span class="g-tipo">· ' + ch.tipo + '</span></span>' +
+        '<a href="' + url + '" target="_blank" rel="noopener">abrir ↗</a></div>' +
+        '<div class="g-placeholder">clic en «Cargar todos» para previsualizar</div>';
+      card.dataset.url = url;
+      grid.appendChild(card);
+      frames.push(card);
+    });
+    root.appendChild(grid);
+  });
+  // Carga bajo demanda: 27 iframes de una es pesado; el botón los carga en
+  // tandas de 4 para no ahogar al server (los data files son grandes).
+  const status = document.getElementById('g-status');
+  document.getElementById('g-load-all').addEventListener('click', async () => {
+    for (let i = 0; i < frames.length; i += 4) {
+      const tanda = frames.slice(i, i + 4);
+      tanda.forEach(card => {
+        const f = document.createElement('iframe');
+        f.className = 'g-frame';
+        f.src = card.dataset.url;
+        card.querySelector('.g-placeholder').replaceWith(f);
+      });
+      status.textContent = Math.min(i + 4, frames.length) + ' / ' + frames.length;
+      await new Promise(r => setTimeout(r, 1200));
+    }
+    status.textContent = frames.length + ' / ' + frames.length + ' — listo';
+  });
+})();
+</script>
+</body>
+</html>

@@ -138,13 +138,13 @@
 
 <script src="../lib/regions.js"></script>
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=14"></script>
-<script src="./utils.js?v=14"></script>
-<script src="./data-scatter.js?v=14"></script>
-<script src="./data-timeseries.js?v=14"></script>
+<script src="./i18n-issue.js?v=15"></script>
+<script src="./utils.js?v=15"></script>
+<script src="./data-scatter.js?v=15"></script>
+<script src="./data-timeseries.js?v=15"></script>
 <script src="../lib/scatter-render.js?v=1"></script>
-<script src="./scatter.js?v=14"></script>
-<script src="./timeseries.js?v=14"></script>
+<script src="./scatter.js?v=15"></script>
+<script src="./timeseries.js?v=15"></script>
 <script>
 state[1] = { scaleX: 'log', scaleY: 'linear', activeRegions: new Set(REGION_ORDER), hoverRegion: null, selectedCountries: [] };
 state[2] = { scaleX: 'log', scaleY: 'linear', activeRegions: new Set(REGION_ORDER), hoverRegion: null, selectedCountries: [] };
@@ -171,5 +171,7 @@ setupLangToggle(() => {
   renderChipsTS();
 });
 </script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=15"></script>
 </body>
 </html>
