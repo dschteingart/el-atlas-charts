@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../lib/style.css">
-<link rel="stylesheet" href="./editor.css">
+<link rel="stylesheet" href="../lib/editor.css?v=1">
 <style>
   /* === Estilos específicos del marimekko (chart 1 del N°2) === */
   /* El marimekko necesita más ancho que el default del .wrap (760px) */
@@ -625,12 +625,13 @@
 <script src="../lib/i18n.js"></script>
 <script src="./regions-wb.js"></script>
 <script src="./i18n-issue.js"></script>
-<script src="./utils.js"></script>
-<script src="./country-names.js"></script>
+<script src="../lib/utils.js?v=1"></script>
+<script src="../lib/country-names.js?v=1"></script>
 <script src="./data-marimekko.js"></script>
-<script src="./editor.js?v=2"></script>
+<script src="../lib/editor.js?v=1"></script>
 <script src="./marimekko.js"></script>
-<script src="./png-export.js"></script>
+<script src="../lib/svg-export.js?v=1"></script>
+<script src="../lib/png-export.js?v=1"></script>
 <script>
 state[1] = { mode: 'raw', year: 2024, activeRegion: null, playing: false };
 initMarimekko();
