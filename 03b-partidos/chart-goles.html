@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El fútbol se juega entre vecinos — El Atlas · Especial</title>
+<title>Cada vez se hacen menos goles — El Atlas · Especial</title>
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
-<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/chart-duelos.html">
-<meta property="og:title" content="El fútbol se juega entre vecinos — El Atlas · Especial">
-<meta property="og:description" content="La red de duelos del fútbol de selecciones: quién juega contra quién.">
-<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-duelos.png">
-<meta property="og:image:alt" content="El fútbol se juega entre vecinos">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/chart-goles.html">
+<meta property="og:title" content="Cada vez se hacen menos goles — El Atlas · Especial">
+<meta property="og:description" content="Goles por partido en el fútbol internacional, 1872-2025. Filtrable por competencia y confederación.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-goles.png">
+<meta property="og:image:alt" content="Cada vez se hacen menos goles">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="El fútbol se juega entre vecinos — El Atlas · Especial">
-<meta name="twitter:description" content="La red de duelos del fútbol de selecciones: quién juega contra quién.">
-<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-duelos.png">
+<meta name="twitter:title" content="Cada vez se hacen menos goles — El Atlas · Especial">
+<meta name="twitter:description" content="Goles por partido en el fútbol internacional, 1872-2025. Filtrable por competencia y confederación.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-goles.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,7 +31,7 @@
   .chart-svg-wrap { margin-top: 2px; position: relative; }
   .footer { margin-top: 6px; }
   .footer p { margin: 2px 0; }
-  .footer .download { margin-right: 8px; margin-bottom: 8px; }   /* separación pareja entre botones de descarga; el margen inferior evita que se peguen al envolver en mobile */
+  .footer .download { margin-right: 8px; margin-bottom: 8px; }
 
   .s-grid-line { stroke: var(--grid); stroke-width: 1; opacity: 0.55; }
   .s-tick { font-family: var(--sans); font-size: 11px; fill: var(--ink-soft); font-variant-numeric: tabular-nums; }
@@ -41,20 +41,14 @@
   .m-ctrl-group { display: inline-flex; align-items: center; gap: 8px; }
   .m-ctrl-label { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
 
-  /* Toggles pill (estetica del N3: .lg-mode/.lg-seg, activo terracota) */
   .toggle { display: inline-flex; border: 1px solid var(--rule); border-radius: 15px; overflow: hidden; background: var(--bg); }
   .toggle button { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 13px; background: var(--bg); color: var(--ink-soft); border: none; cursor: pointer; white-space: nowrap; transition: background 0.12s ease, color 0.12s ease; }
   .toggle button + button { border-left: 1px solid var(--rule); }
   .toggle button.active { background: var(--accent); color: #fff; }
-  /* chart 8 tiene 4 pestañas: si no entran (mobile), que scrolleen en vez de recortarse */
-  #vs-tabs { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
-  #vs-tabs::-webkit-scrollbar { display: none; }
 
-  /* Menu desplegable (misma familia visual que los toggles pill) */
   .m-select { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 28px 6px 13px; border: 1px solid var(--rule); border-radius: 15px; background-color: var(--bg); color: var(--ink-soft); cursor: pointer; -webkit-appearance: none; appearance: none; outline: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%238a8378' stroke-width='1.5'/></svg>"); background-repeat: no-repeat; background-position: right 11px center; }
   .m-select:focus { border-color: var(--accent); }
 
-  /* Slider de rango (2 thumbs), patron N3 */
   .s-range-block { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 280px; }
   .s-range-slider { position: relative; flex: 1; height: 20px; min-width: 200px; }
   .s-range-track { position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: var(--grid); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
@@ -66,15 +60,11 @@
   .s-range-display { font-family: var(--serif); font-size: 16px; font-weight: 700; color: var(--ink); min-width: 110px; font-variant-numeric: tabular-nums; text-align: right; }
   @media (max-width: 768px) { .s-range-block .m-ctrl-label { display: none; } .s-range-display { font-size: 13px; font-family: var(--sans); font-weight: 600; min-width: 76px; } }
 
-  /* Chips de seleccionados (buscador), patron N3 */
   .m-selected-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 0; margin: 2px 0 4px; }
   .m-selected-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 10px; border-radius: 12px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: white; }
   .m-chip-x { width: 18px; height: 18px; border-radius: 50%; border: none; background: rgba(255,255,255,0.25); color: white; font-size: 13px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
   .m-chip-x:hover { background: rgba(255,255,255,0.45); }
-  .esp-legend { display: flex; flex-wrap: wrap; gap: 6px; margin: 2px 0 6px; }
   .esp-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); margin: 0 0 4px; }
-  .region-chip { padding: 3px 11px; border-radius: 11px; font-family: var(--sans); font-size: 12px; font-weight: 500; }
-  .region-chip.inactive { text-decoration: line-through; opacity: 0.55; }
 
   .m-search-wrap { position: relative; margin: 6px 0 4px; max-width: 360px; }
   .m-search-input { width: 100%; padding: 7px 10px; border: 1px solid var(--rule); border-radius: 5px; background: var(--bg); font-family: var(--sans); font-size: 13px; color: var(--ink); outline: none; }
@@ -116,57 +106,93 @@
     </div>
   </header>
 
-  <section class="chart-block" data-chart="4" data-editor-id="esp-duelos">
-    <h2 class="chart-title" data-i18n="c4-title">El fútbol se juega entre vecinos</h2>
-    <p class="chart-subtitle" data-i18n="c4-subtitle">La red de duelos del fútbol de selecciones: quién juega contra quién.</p>
+  <section class="chart-block" data-chart="9" data-editor-id="esp-goles">
+    <h2 class="chart-title" data-i18n="c9-title">Cada vez se hacen menos goles</h2>
+    <p class="chart-subtitle" data-i18n="c9-subtitle">Goles por partido en el fútbol internacional, 1872-2025.</p>
 
       <div class="m-controls">
+        <div class="toggle" id="gl-tabs">
+          <button id="gl-tab-lines" class="active" data-i18n="pc-tab-lines">Evolución</button>
+          <button id="gl-tab-bars" data-i18n="pc-tab-bars">Comparación</button>
+        </div>
+        <div class="m-ctrl-group" id="gl-metric-group">
+          <span class="m-ctrl-label" data-i18n="c9-metric-label">Medida</span>
+          <div class="toggle" id="gl-metric">
+            <button data-metric="goles" class="active" data-i18n="c9-metric-goles">Goles por partido</button>
+            <button data-metric="margen" data-i18n="c9-metric-margen">Diferencia de gol</button>
+          </div>
+        </div>
+        <div class="m-ctrl-group" id="gl-cat-group">
+          <span class="m-ctrl-label" data-i18n="c6-cat-label">Competencia</span>
+          <select id="gl-cat-select" class="m-select" aria-label="Competencia">
+            <option value="ALL" data-i18n="c6-cat-all">Todas</option>
+            <option value="0" data-i18n="c6-cat-0">Amistosos</option>
+            <option value="1" data-i18n="c6-cat-1">Eliminatorias del Mundial</option>
+            <option value="2" data-i18n="c6-cat-2">Mundial</option>
+            <option value="3" data-i18n="c6-cat-3">Eliminatorias continentales</option>
+            <option value="4" data-i18n="c6-cat-4">Copas continentales</option>
+            <option value="5" data-i18n="c6-cat-5">Ligas de Naciones</option>
+            <option value="6" data-i18n="c6-cat-6">Otros torneos</option>
+          </select>
+        </div>
         <div class="s-range-block">
           <span class="m-ctrl-label" data-i18n="c6-slider-period-label">Período</span>
-          <div class="s-range-slider" id="du-range-slider">
+          <div class="s-range-slider" id="gl-range-slider">
             <div class="s-range-track"></div>
-            <div class="s-range-track-active" id="du-range-track-active"></div>
-            <input type="range" id="du-slider-from" min="1872" max="2025" value="1872" step="1" aria-label="Desde">
-            <input type="range" id="du-slider-to"   min="1872" max="2025" value="2025" step="1" aria-label="Hasta">
+            <div class="s-range-track-active" id="gl-range-track-active"></div>
+            <input type="range" id="gl-slider-from" min="1872" max="2025" value="1872" step="1" aria-label="Desde">
+            <input type="range" id="gl-slider-to"   min="1872" max="2025" value="2025" step="1" aria-label="Hasta">
           </div>
-          <span class="s-range-display" id="du-range-display">1872–2025</span>
+          <span class="s-range-display" id="gl-range-display">1872–2025</span>
         </div>
-        <div class="esp-slider">
-          <span class="m-ctrl-label" data-i18n="c4-slider-label">Duelos con al menos</span>
-          <input type="range" id="du-min" min="5" max="60" step="1" value="25">
-          <span class="esp-slider-val" id="du-min-val">25</span>
-          <span class="m-ctrl-label" data-i18n="c4-slider-suffix">partidos</span>
+      </div>
+      <div class="m-controls" id="gl-ambito-controls">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="pc-add-label">Mostrar</span>
+          <div class="m-search-wrap" style="margin:0;min-width:200px;max-width:280px;">
+            <input type="text" id="gl-team-search" class="m-search-input" data-i18n-placeholder="c9-ambito-ph" placeholder="Agregar confederación…" autocomplete="off">
+            <div id="gl-team-results" class="m-search-results"></div>
+          </div>
         </div>
-        <span class="m-ctrl-label" id="du-info"></span>
+        <div class="m-selected-chips" id="gl-selected-chips"></div>
       </div>
       <div class="m-controls">
-        <div class="m-ctrl-group">
-          <span class="m-ctrl-label" data-i18n="c4-search-label">Buscar</span>
-          <div class="m-search-wrap" style="margin:0;min-width:180px;max-width:250px;">
-            <input type="text" id="du-search" class="m-search-input" data-i18n-placeholder="c4-search-ph" placeholder="Destacar una selección…" autocomplete="off">
-            <div id="du-search-results" class="m-search-results"></div>
+        <div class="m-ctrl-group" id="gl-smooth-group">
+          <span class="m-ctrl-label" data-i18n="c2-smooth-label">Suavizado</span>
+          <div class="toggle" id="gl-smooth">
+            <button data-smooth="raw" data-i18n="c2-smooth-raw">Anual</button>
+            <button data-smooth="ma" class="active" data-i18n="c2-smooth-ma">Promedio móvil</button>
           </div>
-          <span id="du-search-chip"></span>
+        </div>
+        <div class="m-ctrl-group esp-slider" id="gl-ma-group">
+          <input type="range" id="gl-ma" min="2" max="8" step="1" value="4" style="width:100px;">
+          <span class="esp-slider-val" id="gl-ma-val">4</span>
+          <span class="m-ctrl-label" data-i18n="c2-ma-years">años</span>
+        </div>
+        <div class="m-ctrl-group" id="gl-barsby-group" style="display:none;">
+          <span class="m-ctrl-label" data-i18n="pc-barsby-label">Comparar</span>
+          <div class="toggle" id="gl-barsby">
+            <button data-by="cat" class="active" data-i18n="pc-by-cat">Por competencia</button>
+            <button data-by="conf" data-i18n="pc-by-conf">Por confederación</button>
+          </div>
         </div>
       </div>
-      <p class="esp-hint" data-i18n="c4-hint">Pasá el cursor por una selección para ver sus rivales más frecuentes · Arrastrá para reacomodar</p>
-      <div class="esp-legend" id="du-legend"></div>
     <div class="chart-svg-wrap">
-      <svg id="chart4" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="tooltip" id="tooltip4"></div>
+      <svg id="chart9" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip9"></div>
     </div>
   </section>
 
   <div class="footer">
     <p>
-      <button class="download" data-chart="4-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
-      <button class="download" data-png="4" data-i18n="footer-download-png">Descargar PNG</button>
+      <button class="download" data-chart="9-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="9" data-i18n="footer-download-png">Descargar PNG</button>
     </p>
     <div class="footer-row">
-      <p class="sources m-desktop-only" data-i18n="c4-sources"></p>
+      <p class="sources m-desktop-only" data-i18n="c9-sources"></p>
       <details class="m-mobile-collapse">
         <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
-        <p data-i18n="c4-sources"></p>
+        <p data-i18n="c9-sources"></p>
       </details>
       <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
     </div>
@@ -174,7 +200,6 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 <script src="../lib/regions.js?v=73"></script>
 <script src="../lib/scatter-render.js?v=73"></script>
 <script src="../lib/i18n.js?v=73"></script>
@@ -182,22 +207,19 @@
 <script src="./i18n-issue.js?v=73"></script>
 <script src="../lib/utils.js?v=3"></script>
 <script src="../lib/country-names.js?v=1"></script>
-<script src="./data-duelos.js?v=73"></script>
+<script src="./data-goles.js?v=73"></script>
 <script src="./data-nombres.js?v=73"></script>
-<script src="../lib/editor.js?v=2"></script>
+<script src="../lib/editor.js?v=1"></script>
 <script src="./ts-partidos.js?v=73"></script>
-<script src="./duelos.js?v=73"></script>
+<script src="./goles.js?v=73"></script>
 <script src="../lib/png-export.js?v=2"></script>
 <script>
   window.__ESP_V = '73';
-  initDuelos();
+  initGoles();
   applyI18n();
-  // applyI18n pisa textos con data-i18n (p.ej. el subtítulo); un redibujo deja
-  // que el renderer vuelva a poner su subtítulo dinámico (métrica, suavizado…).
   if (window.__atlasRedraw) window.__atlasRedraw();
   setupLangToggle(() => {
-    if (typeof du_legend === 'function') du_legend();
-    if (typeof drawDuelos === 'function') drawDuelos();
+    if (typeof drawGoles === 'function') drawGoles();
   });
 </script>
 <div id="chart-nav"></div>

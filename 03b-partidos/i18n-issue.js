@@ -266,6 +266,17 @@ const ISSUE_I18N = {
     'c8-loading':          'Cargando…',
     'c8-sources':          'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. Solo partidos entre selecciones de confederaciones distintas. Efectividad = puntos obtenidos sobre posibles, con la regla actual (3 por victoria, 1 por empate, 0 por derrota) aplicada a toda la serie. La confederación de cada selección es la vigente en la fecha del partido. Serie hasta 2025.',
 
+    // ---- Chart 9: goles por partido / diferencia de gol
+    'c9-title':            'Cada vez se hacen menos goles',
+    'c9-title-neutral':    'Goles por partido en el fútbol internacional',
+    'c9-subtitle':         'Goles por partido en el fútbol internacional, 1872-2025.',
+    'c9-metric-label':     'Medida',
+    'c9-metric-goles':     'Goles por partido',
+    'c9-metric-margen':    'Diferencia de gol',
+    'c9-ambito-ph':        'Agregar confederación…',
+    'c9-sources':          'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. Goles por partido = goles totales sobre partidos jugados; diferencia de gol = margen absoluto promedio por partido. Por confederación se cuentan los partidos en los que participa (un cruce entre dos cuenta para las dos). Serie anual hasta 2025.',
+    'c9-sources-tpl':      'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. Serie hasta 2025.',
+
     // Confederaciones (chips, leyendas, tooltips)
     'conf.CONMEBOL': 'CONMEBOL', 'conf.UEFA': 'UEFA', 'conf.CONCACAF': 'CONCACAF',
     'conf.CAF': 'CAF', 'conf.AFC': 'AFC', 'conf.OFC': 'OFC',
@@ -538,6 +549,17 @@ const ISSUE_I18N = {
     'c8-axis-played':      'Matches played between confederations',
     'c8-loading':          'Loading…',
     'c8-sources':          'Data: Mart Jürisoo (martj42), own elaboration. Only matches between teams from different confederations. Effectiveness = points won over points available, with the current rule (3 for a win, 1 for a draw, 0 for a loss) applied across the whole series. Each team\'s confederation is the one in force on the match date. Series through 2025.',
+
+    // ---- Chart 9: goals per match / goal difference
+    'c9-title':            'Football keeps scoring fewer goals',
+    'c9-title-neutral':    'Goals per match in international football',
+    'c9-subtitle':         'Goals per match in international football, 1872-2025.',
+    'c9-metric-label':     'Metric',
+    'c9-metric-goles':     'Goals per match',
+    'c9-metric-margen':    'Goal difference',
+    'c9-ambito-ph':        'Add a confederation…',
+    'c9-sources':          'Data: Mart Jürisoo (martj42), own elaboration. Goals per match = total goals over matches played; goal difference = average absolute margin per match. By confederation, matches it takes part in are counted (a match between two counts for both). Annual series through 2025.',
+    'c9-sources-tpl':      'Data: Mart Jürisoo (martj42), own elaboration. Series through 2025.',
 
     'conf.CONMEBOL': 'CONMEBOL', 'conf.UEFA': 'UEFA', 'conf.CONCACAF': 'CONCACAF',
     'conf.CAF': 'CAF', 'conf.AFC': 'AFC', 'conf.OFC': 'OFC',
