@@ -1119,10 +1119,67 @@ function initRanking() {
   if (s.mapLabels == null) s.mapLabels = false;
   if (!(s.excluded instanceof Set)) s.excluded = new Set(s.excluded || []);   // países que el user sacó (no reaparecen como máx/mín)
 
+  // CSV: el chart 4 usa el MISMO dataset que el chart 3 (DATA_DECILES), así que
+  // exporta las mismas columnas y con el mismo filename que setupDecilesDownloadCSV
+  // (deciles.js). El botón existía desde siempre pero nadie lo escuchaba.
+  function rk_setupDownloadCSV() {
+    document.querySelectorAll('button.download[data-chart="4-csv"]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cols = ['iso3', 'country', 'region', 'year', 'year_obs',
+                      'welfare', 'decile', 'income_daily_ppp',
+                      'world_percentile', 'mean_daily_ppp'];
+        const rows = [];
+        Object.entries(DATA_DECILES.data_by_year).forEach(([year, yearObj]) => {
+          Object.entries(yearObj.countries).forEach(([code, c]) => {
+            c.deciles.forEach(d => {
+              rows.push([
+                code,
+                (COUNTRY_NAMES[code]?.en) || c.name,
+                c.region,
+                year,
+                c.year_obs,
+                c.welfare_type,
+                d.decile,
+                d.income_daily_ppp,
+                d.world_percentile,
+                c.mean_daily_ppp,
+              ]);
+            });
+          });
+        });
+        rows.sort((a, b) =>
+          a[0].localeCompare(b[0]) ||
+          Number(a[3]) - Number(b[3]) ||
+          a[6] - b[6]
+        );
+        let csv = cols.join(',') + '\n';
+        rows.forEach(r => {
+          csv += r.map(v => {
+            if (v === null || v === undefined) return '';
+            if (typeof v === 'string' && (v.includes(',') || v.includes('"'))) {
+              return '"' + v.replace(/"/g, '""') + '"';
+            }
+            return v;
+          }).join(',') + '\n';
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'el-atlas-02-deciles.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
+    });
+  }
+
   rk_setupToggles();
   rk_setupSearch();
   rk_renderChips();
   rk_renderDecileButtons();
+  rk_setupDownloadCSV();
   drawRanking();
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initRanking._wired) { initRanking._wired = true; window.addEventListener('atlas-editor-change', () => drawRanking()); }

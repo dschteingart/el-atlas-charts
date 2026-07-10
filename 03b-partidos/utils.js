@@ -28,6 +28,37 @@ function atlasSetHeading(chartId, isDefault, keys) {
   }
 }
 
+// Aplica los textos CUSTOM del editor (?nl=1) al DOM. El editor solo guarda la
+// config y emite 'atlas-editor-change' — NO escribe la página. En el N°2 cada
+// renderer aplicaba el custom por su cuenta (ej. marimekko.js:868) y esa mitad
+// se perdió al fotocopiar la infraestructura: quedaron solo los guards de "no
+// pisar", con lo cual el título/subtítulo/caption custom no aparecía ni en
+// pantalla ni en el PNG (png-export lee el DOM). Esta pasada central lo
+// restituye para todos los charts de la carpeta.
+// Orden garantizado: utils.js carga antes que los renderers, así que este
+// listener corre PRIMERO en cada 'atlas-editor-change'; el redraw del chart
+// corre después y sus guards evitan pisar lo aplicado acá. Si el custom está
+// vacío, restaura el default del i18n (los títulos dinámicos se recalculan
+// solos en el redraw que sigue).
+function atlasApplyEditorTexts() {
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig)
+    ? window.AtlasEditor.getConfig() : null;
+  if (!ae) return;
+  const lang = ae.lang || (typeof LANG !== 'undefined' ? LANG : 'es');
+  const tx = (ae.texts && ae.texts[lang]) || {};
+  const dict = (typeof I18N !== 'undefined' && I18N[lang]) || {};
+  const apply = (el, custom) => {
+    const c = (custom || '').trim();
+    if (c) el.textContent = c;
+    else if (el.dataset.i18n && dict[el.dataset.i18n]) el.innerHTML = dict[el.dataset.i18n];
+  };
+  document.querySelectorAll('.chart-title').forEach(el => apply(el, tx.title));
+  document.querySelectorAll('.chart-subtitle').forEach(el => apply(el, tx.subtitle));
+  document.querySelectorAll('.footer p[data-i18n$="sources"]').forEach(el => apply(el, tx.caption));
+}
+window.addEventListener('atlas-editor-change', atlasApplyEditorTexts);
+window.addEventListener('load', () => setTimeout(atlasApplyEditorTexts, 0));
+
 // Detección de dispositivo con hover (desktop con mouse) vs solo touch (mobile).
 // En mobile el hover no funciona bien — los handlers mouseenter/mouseleave
 // quedan pegados después del tap. Cuando HAS_HOVER es false, los charts

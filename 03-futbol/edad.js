@@ -501,8 +501,13 @@ function ed_title() {
 }
 function ed_applyHeadings() {
   const block = document.querySelector('.chart-block[data-chart="12"]') || document;
-  const titleEl = block.querySelector('.chart-title'); if (titleEl) titleEl.textContent = ed_title();
-  const subEl = block.querySelector('.chart-subtitle'); if (subEl) subEl.textContent = ed_subtitle();
+  // Guard del editor (?nl=1): si hay texto custom seteado, no pisarlo en cada
+  // redraw (mismo patrón que natividad/ligas/origenes/dts).
+  const aeCfg = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
+  const tx = (aeCfg && aeCfg.texts && aeCfg.texts[lang]) || {};
+  const titleEl = block.querySelector('.chart-title'); if (titleEl && !(tx.title || '').trim()) titleEl.textContent = ed_title();
+  const subEl = block.querySelector('.chart-subtitle'); if (subEl && !(tx.subtitle || '').trim()) subEl.textContent = ed_subtitle();
 }
 
 //==================================================================
