@@ -214,7 +214,7 @@
   }
 
   function getCountryUniverse() {
-    if (!ae.countryUniverse) {
+    if (!ae.countryUniverse || !ae.countryUniverse.length) {
       ae.countryUniverse = buildCountryUniverse();
     }
     return ae.countryUniverse;
@@ -475,6 +475,23 @@
     if (axisXField) {
       axisXField.style.display = (ae.chartId === 'marimekko-gini') ? 'none' : '';
     }
+
+    // Secciones según lo que el chart realmente escucha (filosofía OWID: el
+    // panel no promete lo que el chart no consume). Textos y Formato aplican
+    // a todos. Ejes y Tamaños solo si la página lo declara:
+    // <div class="chart-block" data-editor-caps="axis,sizes">.
+    // Países se oculta cuando el universo del chart está vacío (ej. el mapa
+    // del chart 4, que no tiene labels de país editables).
+    const capsBlock = document.querySelector('.chart-block[data-editor-caps]');
+    const caps = ((capsBlock && capsBlock.dataset.editorCaps) || '')
+      .split(',').map(s => s.trim()).filter(Boolean);
+    const showSection = (name, on) => {
+      const el = ae.panelEl.querySelector(`[data-ae-section="${name}"]`);
+      if (el) el.style.display = on ? '' : 'none';
+    };
+    showSection('axisTitles', caps.includes('axis'));
+    showSection('sizes', caps.includes('sizes'));
+    showSection('countries', getCountryUniverse().length > 0);
 
     // Sliders de tamaño.
     ['ticks', 'labels', 'special', 'axisTitle'].forEach(k => {
