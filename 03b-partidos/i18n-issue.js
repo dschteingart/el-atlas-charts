@@ -267,7 +267,7 @@ const ISSUE_I18N = {
     'c8-sources':          'Datos: la base de resultados internacionales de Mart Jürisoo (martj42) y elaboración propia. Solo partidos entre selecciones de confederaciones distintas. Efectividad = puntos obtenidos sobre posibles, con la regla actual (3 por victoria, 1 por empate, 0 por derrota) aplicada a toda la serie. La confederación de cada selección es la vigente en la fecha del partido. Serie hasta 2025.',
 
     // ---- Chart 9: goles por partido / diferencia de gol
-    'c9-title':            'La caída y el renacer del gol',
+    'c9-title':            'Los goles del fútbol internacional',
     'c9-title-neutral':    'Goles por partido en el fútbol internacional',
     'c9-subtitle':         'Goles por partido en el fútbol internacional, 1872-2025.',
     'c9-metric-label':     'Medida',
@@ -553,7 +553,7 @@ const ISSUE_I18N = {
     'c8-sources':          'Data: Mart Jürisoo (martj42), own elaboration. Only matches between teams from different confederations. Effectiveness = points won over points available, with the current rule (3 for a win, 1 for a draw, 0 for a loss) applied across the whole series. Each team\'s confederation is the one in force on the match date. Series through 2025.',
 
     // ---- Chart 9: goals per match / goal difference
-    'c9-title':            'The fall and revival of the goal',
+    'c9-title':            'Goals in international football',
     'c9-title-neutral':    'Goals per match in international football',
     'c9-subtitle':         'Goals per match in international football, 1872-2025.',
     'c9-metric-label':     'Metric',
