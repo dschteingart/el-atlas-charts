@@ -411,12 +411,21 @@ function drawChart(chartId) {
   // 'square' = export PNG cuadrado mobile-first (todo sobredimensionado).
   const fmt = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const square = fmt === 'square';
-  const bigFmt = square;
+  // Modo móvil interactivo: sin formato PNG activo + viewport de celu. Usa las
+  // MISMAS dimensiones/fuentes grandes que el cuadrado (probadas, legibles),
+  // pero como vista en pantalla. Antes el N°1 dibujaba siempre 760×470 con
+  // tick 12 → a 360px quedaba en ~5px, lo más ilegible del repo (2026-07-11).
+  const mobile = !fmt && typeof isMobileViewport === 'function' && isMobileViewport();
+  const big = square || mobile;
+  const bigFmt = big;
 
   let W, H, margin;
-  if (square) {
+  if (big) {
     W = PNG_FORMATS.square.vbW; H = PNG_FORMATS.square.vbH;   // 1100 × 760
-    margin = { top: 30, right: 44, bottom: 96, left: 88 };
+    // En mobile la leyenda va en HTML (chips), no bajo el SVG → menos margen
+    // inferior que el PNG (que sí dibuja la leyenda en el canvas).
+    margin = mobile ? { top: 26, right: 44, bottom: 64, left: 84 }
+                    : { top: 30, right: 44, bottom: 96, left: 88 };
   } else {
     W = 760; H = 470;
     margin = { top: 18, right: 22, bottom: 54, left: 60 };
@@ -424,17 +433,17 @@ function drawChart(chartId) {
   const innerW = W - margin.left - margin.right;
   const innerH = H - margin.top - margin.bottom;
 
-  // Tamaños mobile-first SOLO en el export cuadrado; en interactivo se aplican
-  // como inline (igual a la clase CSS) para no alterar la vista. Trampa #1:
-  // font-size va por el.style.fontSize (inline), nunca setAttribute (la clase
-  // CSS le ganaría). Ver skill graficos-atlas.
-  const SIZES = square
+  // Tamaños mobile-first en el export cuadrado Y en el interactivo móvil; en
+  // desktop se aplican como inline (igual a la clase CSS) para no alterar la
+  // vista. Trampa #1: font-size va por el.style.fontSize (inline), nunca
+  // setAttribute (la clase CSS le ganaría). Ver skill graficos-atlas.
+  const SIZES = big
     ? { tick: 22, axisTitle: 26, label: 26, halo: 6, weight: 700 }
     : { tick: 12, axisTitle: 12.5, label: 10.5, halo: 0, weight: null };
-  // Los puntos se agrandan en el cuadrado (el canvas final se ve a ~⅓).
-  const ptScale = square ? 1.8 : 1;
+  // Los puntos se agrandan cuando el gráfico se ve a ~⅓ (PNG o celu).
+  const ptScale = big ? 1.8 : 1;
   // Escala de offsets/dims de labels para placeLabels (≈ ratio de fuente).
-  const labelScale = square ? SIZES.label / 10.5 : 1;
+  const labelScale = big ? SIZES.label / 10.5 : 1;
 
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
 
@@ -505,9 +514,9 @@ function drawChart(chartId) {
     gridG.appendChild(line);
     const lbl = document.createElementNS(ns, 'text');
     lbl.setAttribute('x', x);
-    lbl.setAttribute('y', margin.top + innerH + (square ? 32 : 16));
+    lbl.setAttribute('y', margin.top + innerH + (big ? 32 : 16));
     lbl.setAttribute('text-anchor', 'middle');
-    if (square) lbl.style.fontSize = SIZES.tick + 'px';
+    if (big) lbl.style.fontSize = SIZES.tick + 'px';
     lbl.textContent = fmtTickGDP(v);
     axisG.appendChild(lbl);
   });
@@ -523,10 +532,10 @@ function drawChart(chartId) {
     line.setAttribute('y1', y); line.setAttribute('y2', y);
     gridG.appendChild(line);
     const lbl = document.createElementNS(ns, 'text');
-    lbl.setAttribute('x', margin.left - (square ? 14 : 8));
-    lbl.setAttribute('y', y + (square ? 8 : 4));
+    lbl.setAttribute('x', margin.left - (big ? 14 : 8));
+    lbl.setAttribute('y', y + (big ? 8 : 4));
     lbl.setAttribute('text-anchor', 'end');
-    if (square) lbl.style.fontSize = SIZES.tick + 'px';
+    if (big) lbl.style.fontSize = SIZES.tick + 'px';
     // Formateo del eje Y. Para chart 1: enteros. Para chart 2 lineal: enteros.
     // Para chart 2 en log: si v<1 con suficiente precisión (0.05 → "0.05", 0.1 → "0.1", 0.2 → "0.2")
     let label;
@@ -555,9 +564,9 @@ function drawChart(chartId) {
   const xT = document.createElementNS(ns, 'text');
   xT.setAttribute('class', 'axis-title');
   xT.setAttribute('x', margin.left + innerW / 2);
-  xT.setAttribute('y', H - (square ? 22 : 12));
+  xT.setAttribute('y', H - (big ? 22 : 12));
   xT.setAttribute('text-anchor', 'middle');
-  if (square) xT.style.fontSize = SIZES.axisTitle + 'px';
+  if (big) xT.style.fontSize = SIZES.axisTitle + 'px';
   xT.textContent = t('axis-x') + (scaleX === 'log' ? t('log-suffix') : '');
   svg.appendChild(xT);
 
@@ -565,10 +574,10 @@ function drawChart(chartId) {
   const yT = document.createElementNS(ns, 'text');
   yT.setAttribute('class', 'axis-title');
   yT.setAttribute('x', -(margin.top + innerH / 2));
-  yT.setAttribute('y', square ? 28 : 16);
+  yT.setAttribute('y', big ? 28 : 16);
   yT.setAttribute('transform', 'rotate(-90)');
   yT.setAttribute('text-anchor', 'middle');
-  if (square) yT.style.fontSize = SIZES.axisTitle + 'px';
+  if (big) yT.style.fontSize = SIZES.axisTitle + 'px';
   yT.textContent = yLabel + (scaleY === 'log' ? t('log-suffix-y') : '');
   svg.appendChild(yT);
 
@@ -650,7 +659,7 @@ function drawChart(chartId) {
     }
     // Sobredimensionar puntos en el export cuadrado (el PNG se ve a ~⅓).
     r *= ptScale;
-    if (square) strokeWidth *= 1.6;
+    if (big) strokeWidth *= 1.6;
 
     const isDimmed = (hoverReg && !isHovered && !isSelected)
                   || (hasSelection && !isSelected);
@@ -963,7 +972,7 @@ function drawChart(chartId) {
     t_el.setAttribute('y', lbl.y);
     t_el.setAttribute('text-anchor', lbl.anchor);
     t_el.setAttribute('fill', REGION_LABEL_COLORS[lbl.region] || '#1A1A1A');
-    if (square) {
+    if (big) {
       t_el.style.fontSize = SIZES.label + 'px';
       // Halo crema para legibilidad sobre puntos del mismo color. stroke usa
       // var(--bg): png-export lo resuelve a rgb al rasterizar (trampa #2).
