@@ -580,7 +580,7 @@ function ci_renderData(transform) {
       gHex.selectAll('path').data(bins).join('path')
         .attr('transform', b => `translate(${(b.x - _rx).toFixed(2)},${(b.y - _ry).toFixed(2)})`)
         .attr('d', hex).attr('fill', b => color(b._v)).attr('stroke', 'none');
-      if (!ci_isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+      if (!ci_isPng) {
         gHex.style('cursor', 'pointer')
           .on('mouseover', (ev) => { if (ev.target.tagName !== 'path') return; d3.select(ev.target).attr('stroke', '#FAF8F3').attr('stroke-width', ci_bigFmt ? 1.4 : 0.9).raise(); ci_hexTip(d3.select(ev.target).datum()); })
           .on('mousemove', () => ci_tipMove())
@@ -597,7 +597,7 @@ function ci_renderData(transform) {
       .attr('cx', o => o.sx).attr('cy', o => o.sy).attr('r', o => ci_rScale(o.d.n))
       .attr('fill', CI_ACCENT).attr('fill-opacity', 0.4)
       .attr('stroke', CI_ACCENT_DARK).attr('stroke-width', ci_baseStroke).attr('stroke-opacity', 0.85);
-    if (!ci_isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+    if (!ci_isPng) {
       gDots.style('cursor', 'pointer')
         .on('mouseover', (ev) => { if (ev.target.tagName !== 'circle') return; const c = d3.select(ev.target); c.attr('fill-opacity', 0.85).raise(); ci_tip(c.datum().d); })
         .on('mousemove', () => ci_tipMove())
@@ -1026,7 +1026,7 @@ function ci_drawBars(svg, W, H, opt) {
   }
 
   // overlay transparente por fila: tooltip con el desglose (anda en total y apilado)
-  if (!opt.isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+  if (!opt.isPngFormat) {
     const gov = g.append('g');
     rows.forEach((d, i) => {
       gov.append('rect').attr('x', -M.left).attr('y', y(i)).attr('width', M.left + PW).attr('height', bh)
@@ -1163,7 +1163,7 @@ function ci_drawLine(svg, W, H, opt) {
   });
 
   // hover: guía vertical + puntos + tooltip con el valor de cada ciudad
-  if (!opt.isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) {
+  if (!opt.isPngFormat) {
     const hoverG = g.append('g').style('pointer-events', 'none').style('display', 'none');
     const vline = hoverG.append('line').attr('y1', 0).attr('y2', PH).attr('stroke', 'var(--ink-soft)').attr('stroke-width', 1).attr('stroke-dasharray', '3,3');
     const dots = series.map(ss => hoverG.append('circle').attr('r', bigFmt ? 5 : 3.5).attr('fill', ss.color).attr('stroke', '#fff').attr('stroke-width', 1.2));

@@ -267,7 +267,7 @@ function fl_drawMatrix(svg, d, M, st) {
     mk(ox + i * cell + cell / 2, oy - (bigFmt ? 16 : 10), t('conf.' + confs[i]), { anchor: 'middle', weight: 700, fill: CONF_FIFA_LABEL_COLORS[confs[i]], fs: bigFmt ? 18 : 11.5 });
     mk(ox - (bigFmt ? 12 : 7), oy + i * cell + cell / 2, t('conf.' + confs[i]), { anchor: 'end', weight: 700, fill: CONF_FIFA_LABEL_COLORS[confs[i]], fs: bigFmt ? 18 : 11.5 });
   }
-  const hover = !d.isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  const hover = !d.isPng;
   for (let i = 0; i < C; i++) for (let j = 0; j < C; j++) {
     const v = M[i][j], x = ox + j * cell, y = oy + i * cell;
     const diag = i === j;
