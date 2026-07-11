@@ -87,6 +87,35 @@ function getActivePngFormat() {
   return null;
 }
 
+// Modo móvil (COPIA de lib/utils.js — el N°1 usa su stack local). En el celu
+// el scatter/timeseries dibujan sobredimensionados (mismas dimensiones que el
+// PNG cuadrado pero como vista interactiva); en desktop, apaisado chico.
+function isMobileViewport() {
+  return window.matchMedia('(max-width: 768px)').matches;
+}
+
+// Re-dibuja al cambiar la CLASE de viewport (rotar el celu, redimensionar, o
+// primer-render-malo antes de que se aplique el meta viewport). Sin esto, un
+// chart que carga en desktop y se mira en mobile queda con fuentes desktop =
+// ~⅓, ilegible. Mismo mecanismo que lib/utils.js (bug 2026-07-11).
+let _n1LastMobile = isMobileViewport();
+let _n1ResizeRaf = null;
+function n1ResponsiveRedraw() {
+  const nowMobile = isMobileViewport();
+  if (nowMobile === _n1LastMobile) return;
+  _n1LastMobile = nowMobile;
+  if (typeof window.__atlasRedraw === 'function') window.__atlasRedraw();
+}
+window.addEventListener('resize', () => {
+  if (_n1ResizeRaf) return;
+  _n1ResizeRaf = requestAnimationFrame(() => { _n1ResizeRaf = null; n1ResponsiveRedraw(); });
+});
+window.addEventListener('orientationchange', n1ResponsiveRedraw);
+window.addEventListener('load', () => setTimeout(() => {
+  _n1LastMobile = isMobileViewport();
+  if (typeof window.__atlasRedraw === 'function') window.__atlasRedraw();
+}, 80));
+
 // Botón "Limpiar" universal (regla de selección, criterio 11e) — COPIA de
 // lib/utils.js (el N°1 todavía usa su stack local; se des-duplica cuando
 // pase a lib/). Limpiar = clickear todas las ✕ del contenedor.

@@ -41,8 +41,19 @@ function drawChart3() {
   svg.innerHTML = '';
 
   const ns = 'http://www.w3.org/2000/svg';
+  // Modo móvil: mismas dimensiones (760×470) pero fuentes sobredimensionadas
+  // (inline, pisan la clase CSS) para que a ~360px de pantalla se lean. Antes
+  // el N°1 dibujaba siempre con las fuentes de clase (11-12px) → ~5px en el
+  // celu, lo más ilegible del repo (2026-07-11). Los valores desktop de SZ
+  // replican las clases CSS (.axis 12, .axis-title 12.5, .ts-end-label 11.5).
+  const mobile = typeof isMobileViewport === 'function' && isMobileViewport();
+  const SZ = mobile
+    ? { tick: 22, axisTitle: 24, endLabel: 19, hover: 22 }
+    : { tick: 12, axisTitle: 12.5, endLabel: 11.5, hover: 12 };
   const W = 760, H = 470;
-  const margin = { top: 18, right: 130, bottom: 54, left: 60 };
+  const margin = mobile
+    ? { top: 24, right: 152, bottom: 74, left: 86 }
+    : { top: 18, right: 130, bottom: 54, left: 60 };
   const innerW = W - margin.left - margin.right;
   const innerH = H - margin.top - margin.bottom;
 
@@ -96,9 +107,10 @@ function drawChart3() {
     gl.setAttribute('class', 'grid-line');
     svg.appendChild(gl);
     const lbl = document.createElementNS(ns, 'text');
-    lbl.setAttribute('x', x); lbl.setAttribute('y', margin.top + innerH + 18);
+    lbl.setAttribute('x', x); lbl.setAttribute('y', margin.top + innerH + (mobile ? 30 : 18));
     lbl.setAttribute('text-anchor', 'middle');
     lbl.setAttribute('class', 'axis');
+    if (mobile) lbl.style.fontSize = SZ.tick + 'px';
     lbl.textContent = yr;
     svg.appendChild(lbl);
   });
@@ -117,9 +129,10 @@ function drawChart3() {
     gl.setAttribute('class', 'grid-line');
     svg.appendChild(gl);
     const lbl = document.createElementNS(ns, 'text');
-    lbl.setAttribute('x', margin.left - 8); lbl.setAttribute('y', y + 4);
+    lbl.setAttribute('x', margin.left - (mobile ? 12 : 8)); lbl.setAttribute('y', y + 4);
     lbl.setAttribute('text-anchor', 'end');
     lbl.setAttribute('class', 'axis');
+    if (mobile) lbl.style.fontSize = SZ.tick + 'px';
     lbl.textContent = v;
     svg.appendChild(lbl);
   });
@@ -128,7 +141,8 @@ function drawChart3() {
   const yTitle = document.createElementNS(ns, 'text');
   yTitle.setAttribute('class', 'axis-title');
   yTitle.setAttribute('text-anchor', 'middle');
-  yTitle.setAttribute('transform', `translate(${margin.left - 42}, ${margin.top + innerH/2}) rotate(-90)`);
+  if (mobile) yTitle.style.fontSize = SZ.axisTitle + 'px';
+  yTitle.setAttribute('transform', `translate(${margin.left - (mobile ? 64 : 42)}, ${margin.top + innerH/2}) rotate(-90)`);
   yTitle.textContent = (I18N[LANG]['c3-axis-y'] || I18N.es['c3-axis-y']) + (useLog ? ' — log' : '');
   svg.appendChild(yTitle);
 
@@ -229,7 +243,11 @@ function drawChart3() {
       idealY: yScale(last.rate),
       cssClass: 'ts-end-label ' + key,
       fill: null,  // viene del CSS (.ts-end-label.latam_caribe / .world)
-      text: I18N[LANG]['c3-legend-' + (key === 'latam_caribe' ? 'latam' : 'world')] || '',
+      // En mobile el nombre largo ("América Latina y el Caribe") a fuente
+      // sobredimensionada se salía del borde derecho → versión corta.
+      text: (key === 'latam_caribe')
+        ? (I18N[LANG][mobile ? 'c3-legend-latam-short' : 'c3-legend-latam'] || '')
+        : (I18N[LANG]['c3-legend-world'] || ''),
       leaderColor: key === 'latam_caribe' ? '#8B3F1E' : '#243B4E',
     });
   });
@@ -278,6 +296,7 @@ function drawChart3() {
     lbl.setAttribute('x', l.lineEndX + 6);
     lbl.setAttribute('y', l.y + 4);  // baseline offset
     lbl.setAttribute('class', l.cssClass);
+    if (mobile) lbl.style.fontSize = SZ.endLabel + 'px';
     if (l.fill) lbl.setAttribute('fill', l.fill);
     lbl.textContent = l.text;
     endLabelsGroup.appendChild(lbl);
@@ -298,6 +317,7 @@ function drawChart3() {
   // Etiqueta del país hovereado en spaghetti (se muestra al final de la línea)
   const hoverLabel = document.createElementNS(ns, 'text');
   hoverLabel.setAttribute('class', 'ts-hover-label');
+  if (mobile) hoverLabel.style.fontSize = SZ.hover + 'px';
   hoverLabel.setAttribute('display', 'none');
   svg.appendChild(hoverLabel);
 
@@ -692,3 +712,10 @@ document.querySelectorAll('button[data-chart="3"]').forEach(btn => {
     URL.revokeObjectURL(url);
   });
 });
+
+// Contrato de re-dibujo (para el re-render on-resize de 01/utils.js y para el
+// export PNG cuadrado). Antes el timeseries no lo registraba → no se
+// re-dibujaba al cambiar de viewport ni al exportar.
+window.__atlasSupportsFormats = true;
+window.__atlasRedraw = drawChart3;
+window.__atlasDefaultPngFormat = 'square';
