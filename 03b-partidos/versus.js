@@ -288,7 +288,7 @@ function vs_drawBars() {
     lx += sw + 12 + (lab.length * fsSmall * 0.58) + 14;
   });
 
-  const hover = !editorFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  const hover = !editorFormat;
   let dividerDrawn = false;
   rows.forEach((d, i) => {
     const yc = M.top + i * step + step / 2, by = yc - bh / 2;
@@ -386,7 +386,7 @@ function vs_drawMatrix() {
   const cw = gridW / nc, ch = gridH / nr;
   const g = vs_el('g'); svg.appendChild(g);
   const txt = (x, y, s2, o) => { const e = vs_el('text'); e.setAttribute('x', x); e.setAttribute('y', y); e.style.fontFamily = 'var(--sans)'; e.style.fontSize = ((o && o.fs) || fs) + 'px'; if (o && o.anchor) e.setAttribute('text-anchor', o.anchor); e.setAttribute('font-weight', (o && o.weight) || 400); e.setAttribute('fill', (o && o.fill) || 'var(--ink)'); e.textContent = s2; g.appendChild(e); return e; };
-  const hover = !editorFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  const hover = !editorFormat;
   for (let j = 0; j < nc; j++) txt(M.left + j * cw + cw / 2, M.top - (bigFmt ? 16 : 9), colKeys[j], { anchor: 'middle', weight: 600, fs: bigFmt ? 17 : 11.5, fill: CONF_FIFA_COLORS[colKeys[j]] });
   for (let i = 0; i < nr; i++) txt(M.left - (bigFmt ? 14 : 8), M.top + i * ch + ch / 2 + (bigFmt ? 6 : 4), rowLabelOf(rowKeys[i]), { anchor: 'end', weight: 600, fs: bigFmt ? 17 : 12, fill: rowColorOf(rowKeys[i]) });
   for (let i = 0; i < nr; i++) for (let j = 0; j < nc; j++) {
@@ -576,7 +576,7 @@ function vs_drawScatter() {
   const hiSet = new Set(vs_highlightSet());
   const dotsG = vs_el('g'); svg.appendChild(dotsG);
   const rad = bigFmt ? 7 : 5, radOff = bigFmt ? 4 : 3;
-  const interact = !isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  const interact = !isPng;
   // orden: tenues primero; destacados encima; y si hay hover en la leyenda, los de
   // esa confederación arriba de todo. hover en leyenda = resaltar esa confed y
   // atenuar el resto (mismo comportamiento que el scatter del N°3).

@@ -686,19 +686,39 @@ function drawScatter() {
     c.dataset.code = d.code;
     c.dataset.region = d.region;
 
-    // Tooltip
-    c.addEventListener('mouseenter', (e) => s_showTooltip(e, d, model, tooltip));
-    c.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
-    c.addEventListener('mousemove', (e) => s_positionTooltip(e, tooltip));
-    // Click: toggle selección. stopPropagation para no limpiar la
-    // selección con el click handler del SVG (no hay tal handler acá,
-    // pero por las dudas si lo agregamos después).
-    c.addEventListener('click', (ev) => {
-      ev.stopPropagation();
-      s_toggleCountrySelection(d.code);
-    });
+    // Tooltip — desktop (hover): mouseenter/move/leave + click togglea la
+    // selección. En touch el tap dispara mouseenter pero nunca mouseleave
+    // (el tooltip queda pegado), así que gateamos por HAS_HOVER y en touch
+    // el tap va por un hit-area (abajo). Cierre = svg.onclick (tap fuera).
+    if (HAS_HOVER) {
+      c.addEventListener('mouseenter', (e) => s_showTooltip(e, d, model, tooltip));
+      c.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
+      c.addEventListener('mousemove', (e) => s_positionTooltip(e, tooltip));
+      c.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        s_toggleCountrySelection(d.code);
+      });
+    }
 
     ptsG.appendChild(c);
+
+    // Hit-area táctil (touch): el punto mide ~2px en pantalla a 360px → tap
+    // imposible. Círculo transparente grande encima que muestra el tooltip
+    // (info del país). La selección se hace por el buscador. Receta OWID.
+    if (!HAS_HOVER) {
+      const hit = s_ns('circle');
+      hit.setAttribute('cx', cx);
+      hit.setAttribute('cy', cy);
+      hit.setAttribute('r', Math.max(r, 30));
+      hit.setAttribute('fill', 'transparent');
+      hit.setAttribute('class', 's-point-hit');
+      hit.style.cursor = 'pointer';
+      hit.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        s_showTooltip(ev, d, model, tooltip);
+      });
+      ptsG.appendChild(hit);
+    }
   });
 
   // === Labels ===

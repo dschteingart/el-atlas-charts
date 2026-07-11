@@ -244,7 +244,7 @@ function pc_drawBars() {
     if (opt && opt.weight) e.style.fontWeight = opt.weight;
     e.setAttribute('fill', (opt && opt.fill) || 'var(--ink)'); e.textContent = s2; g.appendChild(e); return e;
   };
-  const hover = !editorFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  const hover = !editorFormat;
   rows.forEach((d, i) => {
     const yy = i * step + step / 2, w = Math.max(x(d.pct), 1.5);
     const rect = document.createElementNS(NS, 'rect');
