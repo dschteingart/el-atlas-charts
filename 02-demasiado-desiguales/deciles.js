@@ -459,12 +459,18 @@ function drawDeciles() {
     path.setAttribute('data-code', country.code);
     linesG.appendChild(path);
 
-    // Markers en cada decil
+    // Markers en cada decil. En mobile el marker visible es más grande (a
+    // r=3.5 en el viewBox 1500 quedaba en ~1px de pantalla → invisible) y,
+    // sobre todo, lleva una ZONA TÁCTIL invisible mucho mayor: sin ella el
+    // tap "no anda" en el celu porque el dedo nunca le pega a un punto de 1px
+    // (receta OWID: hit-area generosa, criterio 3 de la skill).
+    const markerR = mobile ? 8 : 3.5;
+    const hitR    = mobile ? 30 : 0;   // ~9px de radio en pantalla a 360px
     points.forEach(p => {
       const c = d_ns('circle');
       c.setAttribute('cx', p.x);
       c.setAttribute('cy', p.y);
-      c.setAttribute('r', 3.5);
+      c.setAttribute('r', markerR);
       c.setAttribute('fill', color);
       c.setAttribute('class', 'd-marker');
       c.setAttribute('data-code', country.code);
@@ -483,17 +489,27 @@ function drawDeciles() {
           tooltip.style.opacity = '0';
           d_toggleCountrySelection(country.code);
         });
+        linesG.appendChild(c);
       } else {
-        // Mobile: tap muestra el tooltip y queda visible hasta que el
-        // usuario haga tap en otro marker (cambia) o en otro lugar
-        // (handler global en document que cierra). stopPropagation evita
-        // que el global cierre el recién abierto.
-        c.addEventListener('click', (e) => {
+        // Mobile: tap muestra el tooltip y queda visible hasta que el usuario
+        // haga tap en otro marker (cambia) o en otro lugar (handler global en
+        // document que cierra). stopPropagation evita que el global cierre el
+        // recién abierto. El handler va en el HIT-AREA transparente (grande),
+        // no en el marker visible (chico).
+        linesG.appendChild(c);
+        const hit = d_ns('circle');
+        hit.setAttribute('cx', p.x);
+        hit.setAttribute('cy', p.y);
+        hit.setAttribute('r', hitR);
+        hit.setAttribute('fill', 'transparent');
+        hit.setAttribute('class', 'd-marker-hit');
+        hit.style.cursor = 'pointer';
+        hit.addEventListener('click', (e) => {
           e.stopPropagation();
           d_showTooltip(e, country, p.d, tooltip);
         });
+        linesG.appendChild(hit);
       }
-      linesG.appendChild(c);
     });
   });
 
