@@ -172,6 +172,14 @@ function tsDraw(n, cfg) {
   const ySpan = (yMax - yMin) || 1;
   const yS = (v) => M.top + PLOT_H - ((v - yMin) / ySpan) * PLOT_H;
 
+  // bandas de fondo cuando el eje cruza el 0 (diferencia con signo): verde tenue
+  // arriba del cero (a favor), coral tenue abajo (en contra). Detrás de la grilla.
+  if (cfg.zeroBands && yMin < 0) {
+    const zy = yS(0);
+    const bA = ts_el('rect'); bA.setAttribute('x', M.left); bA.setAttribute('y', M.top); bA.setAttribute('width', PLOT_W); bA.setAttribute('height', Math.max(0, zy - M.top)); bA.setAttribute('fill', '#5E9152'); bA.setAttribute('opacity', 0.07); svg.appendChild(bA);
+    const bB = ts_el('rect'); bB.setAttribute('x', M.left); bB.setAttribute('y', zy); bB.setAttribute('width', PLOT_W); bB.setAttribute('height', Math.max(0, M.top + PLOT_H - zy)); bB.setAttribute('fill', '#A0442E'); bB.setAttribute('opacity', 0.07); svg.appendChild(bB);
+  }
+
   // grid + ejes
   ts_xTicks(x0, x1, PLOT_W, bigFmt ? 100 : 44).forEach(yr => {
     const x = xS(yr);

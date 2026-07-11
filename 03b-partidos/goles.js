@@ -110,7 +110,11 @@ function gl_lineSeries() {
   const s = gl_state(), w = s.smooth === 'ma' ? s.maYears : 1, out = [];
   (s.sel || []).forEach(key => {
     const rows = gl_ambitoRows(key); if (!rows) return;
-    out.push({ label: gl_ambLabel(key), color: gl_ambColor(key), width: key === 'W' ? 1.8 : undefined, pts: gl_series(rows, s.cat, w) });
+    let pts = gl_series(rows, s.cat, w);
+    // en "diferencia a favor" el Mundo no domina a nadie (es zero-sum): línea base en 0,
+    // en vez de la ventaja de localía. Los equipos/confederaciones se desvían de ahí.
+    if (s.metric === 'gd' && key === 'W') pts = pts.map(p => [p[0], 0]);
+    out.push({ label: gl_ambLabel(key), color: gl_ambColor(key), width: key === 'W' ? 1.8 : undefined, pts });
   });
   return out;
 }
@@ -120,7 +124,7 @@ function gl_barData() {
   const s = gl_state(), a = s.period[0], b = s.period[1], y0 = DATA_GOLES.y0, mi = gl_numIdx(), pct = gl_isPct();
   const inP = (yoff) => { const y = y0 + yoff; return y >= a && y <= b; };
   const bv = (n, d) => d > 0 ? (pct ? n / d * 100 : n / d) : 0;
-  const byCat = s.barsBy === 'cat';
+  const byCat = s.barsBy === 'cat' && s.metric !== 'gd';   // en "diferencia a favor" solo por confederación (dominio); por competencia seria localia, no dominio
   let wn = 0, wd = 0;
   for (const r of DATA_GOLES.mundo) { if (!inP(r[0])) continue; if (!byCat && s.cat !== 'ALL' && r[1] !== s.cat) continue; wn += r[mi]; wd += r[2]; }
   const worldBar = { label: gl_t('pc-world-avg', 'Mundo (promedio)'), color: GL_WORLD_COLOR, val: bv(wn, wd), den: wd, world: true };
@@ -137,7 +141,7 @@ function gl_barData() {
       return { label: gl_t('c6-conf-' + cf, t('conf.' + cf)), color: CONF_FIFA_COLORS[cf], val: bv(num, den), den };
     }).filter(o => o.den >= 10);
   }
-  out.push(worldBar);
+  if (s.metric !== 'gd') out.push(worldBar);   // en diferencia a favor el Mundo es 0 (la línea del cero ya es la referencia)
   out.sort((x, y) => y.val - x.val);
   return out;
 }
@@ -173,9 +177,16 @@ function gl_drawLines() {
   const s = gl_state(), series = gl_lineSeries(), a = s.period[0], b = s.period[1];
   if (!series.some(sr => sr.pts.some(p => p[0] >= a && p[0] <= b && p[1] != null))) { gl_drawEmpty(); return; }
   const signed = gl_isSigned(), pct = gl_isPct();
+  let yMinArg = 0, yMaxArg = 'auto';
+  if (signed) {   // rango simétrico con piso, para que el 0 quede centrado con sus bandas
+    let mn = 0, mx = 0;
+    series.forEach(sr => sr.pts.forEach(p => { if (p[0] >= a && p[0] <= b && p[1] != null) { if (p[1] < mn) mn = p[1]; if (p[1] > mx) mx = p[1]; } }));
+    yMinArg = Math.min(-0.6, mn * 1.1);
+    yMaxArg = Math.max(0.6, mx * 1.1);
+  }
   tsDraw(GL_N, {
     svgId: 'chart' + GL_N, tooltipId: 'tooltip' + GL_N, mode: 'lines',
-    xMin: s.period[0], xMax: s.period[1], yMax: 'auto', yMin: signed ? 'auto' : 0,
+    xMin: s.period[0], xMax: s.period[1], yMax: yMaxArg, yMin: yMinArg, zeroBands: signed,
     yFmt: (v) => pct ? Math.round(v) + '%' : ((signed && v > 0 ? '+' : '') + gl_fmt(v, 1)),
     axisY: gl_axisY(),
     series, endValFmt: (v) => gl_fmtVal(v, signed),
@@ -209,13 +220,23 @@ function gl_drawBars() {
   while (fs > (bigFmt ? 14 : 10) && _lWide + _lPad + 8 > _lCap) { fs -= 1; _lWide = Math.max(0, ..._lTexts.map(tx => _lMeas(tx, fs))); }
   const M = { top: bigFmt ? 22 : 14, right: bigFmt ? 108 : 68, bottom: bigFmt ? 24 : 16, left: Math.min(_lCap, Math.max(bigFmt ? 260 : 150, Math.ceil(_lWide + _lPad + 8))) };
   const PW = W - M.left - M.right, PH = H - M.top - M.bottom;
-  // escala: con signo (diferencia) las barras divergen desde el 0; si no, desde la izquierda
+  // escala: con signo (diferencia) las barras divergen desde el 0; si no, desde la izquierda.
+  // En el modo divergente reservamos espacio en las puntas para las etiquetas de valor,
+  // así las negativas no se montan sobre las etiquetas de confederación.
   const signed = gl_isSigned();
-  const vmax = Math.max(...rows.map(r => r.val), signed ? 0.05 : 0.1);
-  const vmin = signed ? Math.min(...rows.map(r => r.val), 0) : 0;
-  const span = ((vmax - vmin) || 1) * (signed ? 1.1 : 1.02);
-  const x = (v) => ((v - vmin) / span) * PW;
-  const zeroX = x(0);
+  const gap = bigFmt ? 12 : 7;
+  let x, zeroX;
+  if (signed) {
+    const rawMax = Math.max(...rows.map(r => r.val), 0.05), rawMin = Math.min(...rows.map(r => r.val), -0.05);
+    const rawSpan = (rawMax - rawMin) || 1;
+    const roomPx = Math.max(0, ...rows.map(r => _lMeas(gl_fmtVal(r.val, true), fs))) + gap + (bigFmt ? 10 : 6);
+    const usable = Math.max(10, PW - 2 * roomPx);
+    x = (v) => roomPx + ((v - rawMin) / rawSpan) * usable;
+    zeroX = x(0);
+  } else {
+    const maxV = Math.max(0.1, ...rows.map(r => r.val)) * 1.02;
+    x = (v) => (v / maxV) * PW; zeroX = 0;
+  }
   const bh = rows.length ? Math.min(bigFmt ? 66 : 40, PH / rows.length * 0.72) : 20;
   const step = rows.length ? PH / rows.length : 0;
   const g = document.createElementNS(NS, 'g'); g.setAttribute('transform', `translate(${M.left},${M.top})`); svg.appendChild(g);
@@ -232,7 +253,6 @@ function gl_drawBars() {
     zl.setAttribute('y1', -2); zl.setAttribute('y2', PH); zl.setAttribute('stroke', 'var(--ink-soft)'); zl.setAttribute('stroke-width', 1); zl.setAttribute('opacity', 0.55); g.appendChild(zl);
   }
   const hover = !editorFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
-  const gap = bigFmt ? 12 : 7;
   rows.forEach((d, i) => {
     const yy = i * step + step / 2, xv = x(d.val);
     const bx = signed ? Math.min(zeroX, xv) : 0, bw = Math.max(signed ? Math.abs(xv - zeroX) : xv, 1.5);
@@ -327,11 +347,12 @@ function gl_applyHeadings() {
 function gl_syncCtx() {
   const s = gl_state(), lines = s.view === 'lines';
   const show = (id, on) => { const e = document.getElementById(id); if (e) e.style.display = on ? '' : 'none'; };
+  const effByCat = s.barsBy === 'cat' && s.metric !== 'gd';   // "diferencia a favor" fuerza por confederación
   show('gl-ambito-controls', lines);
   show('gl-smooth-group', lines);
   show('gl-ma-group', lines && s.smooth === 'ma');
-  show('gl-barsby-group', !lines);
-  show('gl-cat-group', lines || s.barsBy === 'conf');
+  show('gl-barsby-group', !lines && s.metric !== 'gd');
+  show('gl-cat-group', lines || !effByCat);
 }
 function gl_setupTabs() {
   const lb = document.getElementById('gl-tab-lines'), bb = document.getElementById('gl-tab-bars');
@@ -346,7 +367,7 @@ function gl_setupMetric() {
   document.querySelectorAll('#gl-metric button').forEach(b => b.addEventListener('click', () => {
     if (gl_state().metric === b.dataset.metric) return;
     document.querySelectorAll('#gl-metric button').forEach(x => x.classList.toggle('active', x === b));
-    gl_state().metric = b.dataset.metric; gl_touched = true; drawGoles();
+    gl_state().metric = b.dataset.metric; gl_touched = true; gl_syncCtx(); drawGoles();
   }));
 }
 function gl_setupCat() {
@@ -439,7 +460,7 @@ function gl_setupAmbito() {
   }
   function items() {
     const q = input.value.trim().toLowerCase();
-    if (!q) return pool().filter(o => o.key === 'W' || gl_isConf(o.key)).slice(0, 9);   // sin texto: solo Mundo + confeds
+    if (!q) return [];   // el desplegable aparece al escribir (mismo criterio que el resto de los charts)
     return pool().filter(o => o.label.toLowerCase().includes(q) || (o.alt || '').toLowerCase().includes(q) || o.key.toLowerCase().includes(q)).slice(0, 9);
   }
   function renderResults() {
@@ -463,6 +484,7 @@ function gl_setupAmbito() {
   input.addEventListener('focus', () => { gl_ensureTeams(renderResults); renderResults(); });
   input.addEventListener('input', () => { gl_ensureTeams(renderResults); renderResults(); });
   input.addEventListener('blur', () => setTimeout(() => results.classList.remove('open'), 130));
+  input.addEventListener('keydown', (e) => { if (e.key === 'Escape') { results.classList.remove('open'); input.blur(); } });
   renderChips();
 }
 function gl_setupCSV() {
