@@ -728,3 +728,21 @@
   text-underline-offset: 2px;
 }
 .atlas-clear-btn:hover { color: var(--ink); }
+
+/* ===== Layout móvil compartido (auditoría 2026-07-10) =====
+   Convergencia al patrón del especial a ancho de celular. Gated en 768px:
+   cero impacto desktop. */
+@media (max-width: 768px) {
+  /* (a) La nota de fuentes ya no comparte fila con la atribución: pasa a
+     ancho completo (antes quedaba en una columna de ~170px que partía el
+     texto largo del N°2 en una palabra por renglón). La firma baja a su
+     propia línea, a la derecha. Cubre la <p class="sources"> visible (N°1)
+     y el <details> colapsable (N°2/3/especial). */
+  .footer-row { flex-wrap: wrap; row-gap: 6px; }
+  .footer-row .sources,
+  .footer-row > details { flex: 1 1 100%; min-width: 0; }
+  .footer-row .attribution { margin-left: auto; }
+  /* (b) Menos aire entre el gráfico y los botones (converge al ~6px del
+     especial; los charts que ya lo pisan localmente mantienen el suyo). */
+  .footer { margin-top: 14px; padding-top: 10px; }
+}
