@@ -562,6 +562,17 @@ function rk_drawMap(svg, ctx) {
   const tooltip = document.getElementById('tooltip4');
   const en = (typeof LANG !== 'undefined' && LANG === 'en');
   const interactive = !ctx.isPngFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  // Touch (celu): el hover no existe → antes el mapa quedaba SIN tooltip (todos
+  // los handlers gateados por interactive=false). Ahora el tap muestra el valor
+  // del país (info), sin cambiar el benchmark (eso es el gesto de desktop).
+  const touchMap = !ctx.isPngFormat && (typeof HAS_HOVER !== 'undefined' && !HAS_HOVER);
+  // Compone el HTML del tooltip de un país (reusado por hover y tap).
+  const rk_countryTipHtml = (iso, v) => {
+    let html = `<div style="font-weight:600;margin-bottom:3px;">${rk_name(iso)}</div><strong style="font-variant-numeric:tabular-nums;">${rk_fmt(v, unit)}</strong> ${rk_unitSuffix()}`;
+    if (benchOn && benchV && iso !== state[4].benchmark) { const pct = Math.round((v / benchV - 1) * 100); html += `<div style="color:var(--ink-muted);margin-top:2px;">${pct >= 0 ? '+' : ''}${pct}% vs ${rk_name(state[4].benchmark)}</div>`; }
+    else if (benchOn && iso === state[4].benchmark) { html += `<div style="color:var(--ink-muted);margin-top:2px;">${en ? 'reference' : 'referencia'}</div>`; }
+    return html;
+  };
   g.append('g').selectAll('path.rk-country').data(feats).join('path')
     .attr('class', 'rk-country').attr('d', rk_map_path)
     .attr('data-iso', d => rk_isoOf(d))
@@ -570,14 +581,11 @@ function rk_drawMap(svg, ctx) {
     .attr('stroke', d => (benchOn && rk_isoOf(d) === state[4].benchmark) ? '#1A1A1A' : 'rgba(255,255,255,0.55)')
     .attr('stroke-width', d => (benchOn && rk_isoOf(d) === state[4].benchmark) ? (bigFmt ? 2.2 : 1.6) : 0.5)
     .attr('vector-effect', 'non-scaling-stroke')
-    .style('cursor', interactive ? 'pointer' : 'default')
+    .style('cursor', (interactive || touchMap) ? 'pointer' : 'default')
     .on('mouseenter', interactive ? function (ev, d) {
       const iso = rk_isoOf(d), v = vals[iso]; if (v == null) { if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; } return; }
       d3.select(this).attr('stroke', '#1A1A1A').attr('stroke-width', bigFmt ? 2 : 1.4).raise();
-      let html = `<div style="font-weight:600;margin-bottom:3px;">${rk_name(iso)}</div><strong style="font-variant-numeric:tabular-nums;">${rk_fmt(v, unit)}</strong> ${rk_unitSuffix()}`;
-      if (benchOn && benchV && iso !== state[4].benchmark) { const pct = Math.round((v / benchV - 1) * 100); html += `<div style="color:var(--ink-muted);margin-top:2px;">${pct >= 0 ? '+' : ''}${pct}% vs ${rk_name(state[4].benchmark)}</div>`; }
-      else if (benchOn && iso === state[4].benchmark) { html += `<div style="color:var(--ink-muted);margin-top:2px;">${en ? 'reference' : 'referencia'}</div>`; }
-      if (tooltip) { tooltip.innerHTML = html; tooltip.style.display = 'block'; tooltip.style.opacity = '1'; rk_placeTip(tooltip, ev, svg); }
+      if (tooltip) { tooltip.innerHTML = rk_countryTipHtml(iso, v); tooltip.style.display = 'block'; tooltip.style.opacity = '1'; rk_placeTip(tooltip, ev, svg); }
     } : null)
     .on('mousemove', interactive ? (ev) => { if (tooltip) rk_placeTip(tooltip, ev, svg); } : null)
     .on('mouseleave', interactive ? function (ev, d) {
@@ -585,7 +593,24 @@ function rk_drawMap(svg, ctx) {
       d3.select(this).attr('stroke', (benchOn && iso === state[4].benchmark) ? '#1A1A1A' : 'rgba(255,255,255,0.55)').attr('stroke-width', (benchOn && iso === state[4].benchmark) ? (bigFmt ? 2.2 : 1.6) : 0.5);
       if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }
     } : null)
-    .on('click', interactive ? function (ev, d) { const iso = rk_isoOf(d); if (vals[iso] != null) { state[4].benchmark = iso; state[4].mapMode = 'bench'; drawRanking(); } } : null);   // clic en cualquier país → comparar contra él
+    .on('click', function (ev, d) {
+      const iso = rk_isoOf(d), v = vals[iso];
+      if (interactive) { if (v != null) { state[4].benchmark = iso; state[4].mapMode = 'bench'; drawRanking(); } return; }   // desktop: comparar contra ese país
+      if (touchMap && tooltip) {   // celu: tap = mostrar el valor del país
+        ev.stopPropagation();
+        if (v == null) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; return; }
+        d3.select(this).attr('stroke', '#1A1A1A').attr('stroke-width', bigFmt ? 2 : 1.4).raise();
+        tooltip.innerHTML = rk_countryTipHtml(iso, v); tooltip.style.display = 'block'; tooltip.style.opacity = '1'; rk_placeTip(tooltip, ev, svg);
+      }
+    });
+  // Cierre del tooltip al tap fuera de un país (celu). Una sola vez.
+  if (touchMap && tooltip && !rk_drawMap._tapCloseWired) {
+    rk_drawMap._tapCloseWired = true;
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.closest && e.target.closest('path.rk-country')) return;
+      tooltip.style.opacity = '0'; tooltip.style.display = 'none';
+    });
+  }
 
   if (state[4].mapLabels) {
     const fillByIso = {}; feats.forEach(f => { fillByIso[rk_isoOf(f)] = paint(rk_isoOf(f)).fill; });
