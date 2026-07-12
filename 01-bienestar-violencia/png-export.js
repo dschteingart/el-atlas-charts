@@ -276,7 +276,13 @@
       // viewBox del SVG (ya re-renderizado en `format` si corresponde), con
       // extensión a la derecha para el chart 3 (end-labels largos en EN).
       const vb = svg.viewBox.baseVal;
-      const extension = VIEWBOX_RIGHT_EXTENSION[chartId] || 0;
+      // La extensión +80 es SOLO para rasterizar el render de ESCRITORIO
+      // (labels que desbordan el viewBox 760). En square el render ya
+      // contiene las labels dentro de su margen derecho (185) → extender
+      // acá duplicaba el margen y dejaba ~80px de aire a la derecha del
+      // PNG (4ª ronda de Daniel, 12/7).
+      const pngFmtActivo = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
+      const extension = pngFmtActivo ? 0 : (VIEWBOX_RIGHT_EXTENSION[chartId] || 0);
       const effectiveVbW = (vb && vb.width) ? vb.width + extension : 760 + extension;
       const effectiveVbH = (vb && vb.height) ? vb.height : 470;
       const svgAspect = effectiveVbW / effectiveVbH;
