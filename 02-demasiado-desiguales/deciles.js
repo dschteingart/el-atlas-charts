@@ -347,7 +347,7 @@ function drawDeciles() {
     txt.setAttribute('y', y + 4);
     txt.setAttribute('text-anchor', 'end');
     txt.setAttribute('class', 'd-tick');
-    txt.setAttribute('font-size', SIZES.tick);
+    txt.style.fontSize = SIZES.tick + 'px';
     txt.textContent = d_formatYTick(tv, yMode);
     svg.appendChild(txt);
   });
@@ -359,7 +359,7 @@ function drawDeciles() {
   const yTitle = d_ns('text');
   yTitle.setAttribute('class', 'd-axis-title');
   yTitle.setAttribute('text-anchor', 'middle');
-  yTitle.setAttribute('font-size', SIZES.axisTitle);
+  yTitle.style.fontSize = SIZES.axisTitle + 'px';
   yTitle.setAttribute(
     'transform',
     `translate(${yTitleOffsetX}, ${D_MARGIN.top + D_PLOT_H / 2}) rotate(-90)`
@@ -381,7 +381,7 @@ function drawDeciles() {
     const xTitle = d_ns('text');
     xTitle.setAttribute('class', 'd-axis-title');
     xTitle.setAttribute('text-anchor', 'middle');
-    xTitle.setAttribute('font-size', SIZES.axisTitle);
+    xTitle.style.fontSize = SIZES.axisTitle + 'px';
     xTitle.setAttribute('x', D_MARGIN.left + D_PLOT_W / 2);
     // Position: bajo los ticks "Decil N" + aclaración. Los ticks ocupan
     // ~xExtraOffset px; el axis-title va ~25px más abajo.
@@ -406,7 +406,7 @@ function drawDeciles() {
     txt.setAttribute('y', D_MARGIN.top + D_PLOT_H + xLabelOffset);
     txt.setAttribute('text-anchor', 'middle');
     txt.setAttribute('class', 'd-tick');
-    txt.setAttribute('font-size', SIZES.tick);
+    txt.style.fontSize = SIZES.tick + 'px';
     txt.textContent = t('c3-decile-prefix') + ' ' + d;
     svg.appendChild(txt);
     // Aclaración para extremos en segunda línea.
@@ -417,7 +417,7 @@ function drawDeciles() {
       extra.setAttribute('y', D_MARGIN.top + D_PLOT_H + xExtraOffset);
       extra.setAttribute('text-anchor', 'middle');
       extra.setAttribute('class', 'd-tick-extra');
-      extra.setAttribute('font-size', SIZES.tickExtra);
+      extra.style.fontSize = SIZES.tickExtra + 'px';
       extra.textContent = d === 1 ? t('c3-decile-poorest') : t('c3-decile-richest');
       svg.appendChild(extra);
     }
@@ -558,7 +558,7 @@ function drawDeciles() {
     // Font-size inline: mobile escala 3× vs desktop para que en pantalla
     // queden ~10.5px (legibles). Sin esto los end-labels en mobile salen
     // a ~4.3px (ilegibles).
-    txt.setAttribute('font-size', SIZES.endLabel);
+    txt.style.fontSize = SIZES.endLabel + 'px';
     txt.textContent = l.text;
     endLabelsG.appendChild(txt);
   });
