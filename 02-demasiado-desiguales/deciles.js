@@ -202,7 +202,7 @@ function d_placeEndLabels(labels) {
   // Gap proporcional al endLabel. Con los SIZES del PNG subidos a 22 (2026-07),
   // el gap de desktop (~14) dejaba que Chile/Portugal/Brasil/Argentina se
   // pisaran; newsletter/square necesitan ~30 como mobilePng.
-  const gap = (newsletter || square) ? 36 : mobilePng ? 30 : mobile ? 34 : D_END_LABEL_GAP;
+  const gap = (newsletter || square) ? 30 : mobilePng ? 30 : mobile ? 34 : D_END_LABEL_GAP;
   labels.sort((a, b) => a.idealY - b.idealY);
   // Forward sweep: empujar hacia abajo si choca con la previa.
   labels.forEach((l, i) => {
@@ -305,9 +305,9 @@ function drawDeciles() {
   // tick 18 / endLabel 18 → en el PNG a ⅓ en el celu quedaban chicos). El eje
   // X ya va abreviado "D1..D10" (arriba), así que "tick 22" entra sin pisarse.
   const SIZES = newsletter
-    ? { tick: 28, tickExtra: 22, axisTitle: 30, endLabel: 26 }
+    ? { tick: 24, tickExtra: 19, axisTitle: 24, endLabel: 22 }
     : square
-    ? { tick: 28, tickExtra: 22, axisTitle: 30, endLabel: 26 }
+    ? { tick: 24, tickExtra: 19, axisTitle: 24, endLabel: 22 }
     : mobilePng
     ? { tick: 28, tickExtra: 22, axisTitle: 30, endLabel: 24 }
     : mobile
