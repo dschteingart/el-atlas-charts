@@ -54,13 +54,16 @@ function drawChart3() {
   const SZ = big
     ? { tick: 22, axisTitle: 24, endLabel: 19, hover: 22 }
     : { tick: 12, axisTitle: 12.5, endLabel: 11.5, hover: 12 };
-  // Square 1100×910 (no 760): con 760 el PNG cuadrado quedaba con ~200px de
-  // espacio vacío abajo (2ª ronda de Daniel, 12/7) — este chart no dibuja
-  // leyenda en el canvas como los scatters, así que el gráfico debe ser más
-  // alto para llenar el 1200×1200 (mismo alto que usan las líneas del especial).
-  const W = square ? 1100 : 760, H = square ? 910 : 470;
+  // Square 1100×780: con 760 el PNG quedaba con espacio vacío ABAJO (el
+  // chart no dibuja leyenda en canvas como los scatters); con 910 quedó
+  // height-limited y el export lo achicó/centró dejando aire a la DERECHA
+  // (3ª ronda de Daniel, 12/7). 780 ≈ el aspect que llena el ancho del
+  // canvas con el chrome real (título+subtítulo de 3 líneas+nota). El
+  // margen derecho 185 = lo que mide "Latam & Caribbean" (EN, el más
+  // largo) a 19px + guía, sin aire de sobra.
+  const W = square ? 1100 : 760, H = square ? 780 : 470;
   const margin = square
-    ? { top: 34, right: 200, bottom: 110, left: 118 }
+    ? { top: 34, right: 185, bottom: 106, left: 118 }
     : mobile
     ? { top: 24, right: 152, bottom: 74, left: 86 }
     : { top: 18, right: 130, bottom: 54, left: 60 };
