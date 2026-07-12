@@ -547,7 +547,10 @@ function vs_drawScatter() {
   let W = 1100, H = 520, M;
   const legendH = bigFmt ? 44 : 28;   // banda superior para la leyenda de confederaciones
   if (editorFormat) { const f = PNG_FORMATS[editorFormat]; W = f.vbW; H = square ? 910 : newsletter ? 860 : f.vbH; M = { top: 30 + legendH, right: 42, bottom: 80, left: 78 }; }
-  else if (mobile) { W = 1100; H = 820; M = { top: 24 + legendH, right: 36, bottom: 108, left: 84 }; }
+  // H más alto en mobile (Daniel: el scatter se veía más chico que otros).
+  // 1120 le da al plot un aspecto más cercano al portrait de los scatters
+  // del N°2/N°3, aprovechando el alto de la pantalla del celu.
+  else if (mobile) { W = 1100; H = 1120; M = { top: 24 + legendH, right: 36, bottom: 108, left: 84 }; }
   else { W = 1100; H = 520; M = { top: 20 + legendH, right: 32, bottom: 48, left: 70 }; }
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
@@ -592,7 +595,13 @@ function vs_drawScatter() {
       c.addEventListener('mouseenter', () => { c.setAttribute('r', baseR + 2); c.setAttribute('fill-opacity', 1); vs_scatterTip(p); });
       c.addEventListener('mousemove', (ev) => vs_tipMove(ev));
       c.addEventListener('mouseleave', () => { c.setAttribute('r', baseR); c.setAttribute('fill-opacity', baseOp); vs_tipHide(); });
-      c.addEventListener('click', () => vs_toggleTeam(p.n));
+      // El click DESTACA el país (lo agrega a la selección). En touch el tap
+      // ya dispara mouseenter → tooltip con el país; sumarle el toggle hacía
+      // que tocar para ver info encima seleccionara (confuso — Daniel, 12/7).
+      // Toggle solo en desktop; en el celu el tap es solo-info.
+      if (typeof HAS_HOVER === 'undefined' || HAS_HOVER) {
+        c.addEventListener('click', () => vs_toggleTeam(p.n));
+      }
     }
     dotsG.appendChild(c);
   });
