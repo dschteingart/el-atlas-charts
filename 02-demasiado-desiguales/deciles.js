@@ -197,7 +197,12 @@ function d_placeEndLabels(labels) {
   const mobile = !editorFormat
     && typeof isMobileViewport === 'function' && isMobileViewport();
   const mobilePng = editorFormat === 'mobile';
-  const gap = mobilePng ? 30 : mobile ? 34 : D_END_LABEL_GAP;
+  const newsletter = editorFormat === 'newsletter';
+  const square = editorFormat === 'square';
+  // Gap proporcional al endLabel. Con los SIZES del PNG subidos a 22 (2026-07),
+  // el gap de desktop (~14) dejaba que Chile/Portugal/Brasil/Argentina se
+  // pisaran; newsletter/square necesitan ~30 como mobilePng.
+  const gap = (mobilePng || newsletter || square) ? 30 : mobile ? 34 : D_END_LABEL_GAP;
   labels.sort((a, b) => a.idealY - b.idealY);
   // Forward sweep: empujar hacia abajo si choca con la previa.
   labels.forEach((l, i) => {
@@ -296,10 +301,13 @@ function drawDeciles() {
   // SIZES base por viewport. En desktop el editor puede sobreescribir cada
   // bucket; newsletter/square/mobilePng/mobile siguen pinned. El bucket
   // "special" del editor aplica al endLabel (nombres al final de la línea).
+  // PNG newsletter/square: subidos al estándar mobile-first del Atlas (antes
+  // tick 18 / endLabel 18 → en el PNG a ⅓ en el celu quedaban chicos). El eje
+  // X ya va abreviado "D1..D10" (arriba), así que "tick 22" entra sin pisarse.
   const SIZES = newsletter
-    ? { tick: 18, tickExtra: 15, axisTitle: 19, endLabel: 18 }
+    ? { tick: 22, tickExtra: 18, axisTitle: 24, endLabel: 22 }
     : square
-    ? { tick: 18, tickExtra: 15, axisTitle: 19, endLabel: 18 }
+    ? { tick: 22, tickExtra: 18, axisTitle: 24, endLabel: 22 }
     : mobilePng
     ? { tick: 28, tickExtra: 22, axisTitle: 30, endLabel: 24 }
     : mobile
@@ -407,7 +415,10 @@ function drawDeciles() {
     txt.setAttribute('text-anchor', 'middle');
     txt.setAttribute('class', 'd-tick');
     txt.style.fontSize = SIZES.tick + 'px';
-    txt.textContent = t('c3-decile-prefix') + ' ' + d;
+    // Con fuentes grandes (mobile/PNG) "Decil 1..Decil 10" NO entra en el
+    // ancho → se pisan. Abreviamos a "D1..D10"; en desktop (tick chico) va
+    // el "Decil N" completo. (Bug del eje X pisado en el celu, 2026-07-12.)
+    txt.textContent = (SIZES.tick >= 16 ? 'D' : t('c3-decile-prefix') + ' ') + d;
     svg.appendChild(txt);
     // Aclaración para extremos en segunda línea.
     if (d === 1 || d === 10) {
