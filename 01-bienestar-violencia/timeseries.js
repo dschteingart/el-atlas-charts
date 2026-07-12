@@ -54,9 +54,13 @@ function drawChart3() {
   const SZ = big
     ? { tick: 22, axisTitle: 24, endLabel: 19, hover: 22 }
     : { tick: 12, axisTitle: 12.5, endLabel: 11.5, hover: 12 };
-  const W = square ? 1100 : 760, H = square ? 760 : 470;
+  // Square 1100×910 (no 760): con 760 el PNG cuadrado quedaba con ~200px de
+  // espacio vacío abajo (2ª ronda de Daniel, 12/7) — este chart no dibuja
+  // leyenda en el canvas como los scatters, así que el gráfico debe ser más
+  // alto para llenar el 1200×1200 (mismo alto que usan las líneas del especial).
+  const W = square ? 1100 : 760, H = square ? 910 : 470;
   const margin = square
-    ? { top: 34, right: 200, bottom: 104, left: 118 }
+    ? { top: 34, right: 200, bottom: 110, left: 118 }
     : mobile
     ? { top: 24, right: 152, bottom: 74, left: 86 }
     : { top: 18, right: 130, bottom: 54, left: 60 };
