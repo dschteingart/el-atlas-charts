@@ -47,6 +47,45 @@
     'display', 'visibility'
   ];
 
+  // Webfonts embebidas como data: URLs — COPIA de lib/png-export.js. Sin esto
+  // el SVG rasterizado en el <img> aislado NO ve las fonts del documento y el
+  // PNG cae a la tipografía del sistema (Daniel lo notó, 12/7: "otra
+  // tipografía"). Cache por sesión: la primera descarga tarda, después es
+  // inmediato.
+  let cachedEmbeddedFontCss = null;
+  async function buildEmbeddedFontCss() {
+    if (cachedEmbeddedFontCss !== null) return cachedEmbeddedFontCss;
+    const fontLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"]'))
+      .filter(l => l.href && l.href.includes('fonts.googleapis.com'));
+    if (fontLinks.length === 0) { cachedEmbeddedFontCss = ''; return ''; }
+    let allCss = '';
+    for (const link of fontLinks) {
+      try {
+        const cssRes = await fetch(link.href, { credentials: 'omit' });
+        let css = await cssRes.text();
+        const urlMatches = [...new Set([...css.matchAll(/url\((https:\/\/[^)]+)\)/g)].map(m => m[1]))];
+        const fontFetches = await Promise.all(urlMatches.map(async fontUrl => {
+          try {
+            const fontRes = await fetch(fontUrl, { credentials: 'omit' });
+            const buf = await fontRes.arrayBuffer();
+            const bytes = new Uint8Array(buf);
+            let binary = '';
+            for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+            const b64 = btoa(binary);
+            const mime = fontUrl.endsWith('.woff2') ? 'font/woff2'
+                       : fontUrl.endsWith('.woff')  ? 'font/woff'
+                       : 'application/octet-stream';
+            return { fontUrl, dataUrl: `data:${mime};base64,${b64}` };
+          } catch (e) { return null; }
+        }));
+        fontFetches.forEach(f => { if (f) css = css.split(f.fontUrl).join(f.dataUrl); });
+        allCss += css + '\n';
+      } catch (e) { /* sin red: el PNG sale con fallback, no rompe */ }
+    }
+    cachedEmbeddedFontCss = allCss;
+    return allCss;
+  }
+
   function inlineStyles(sourceRoot, targetRoot) {
     const sourceNodes = sourceRoot.querySelectorAll('*');
     const targetNodes = targetRoot.querySelectorAll('*');
@@ -237,7 +276,13 @@
       // viewBox del SVG (ya re-renderizado en `format` si corresponde), con
       // extensión a la derecha para el chart 3 (end-labels largos en EN).
       const vb = svg.viewBox.baseVal;
-      const extension = VIEWBOX_RIGHT_EXTENSION[chartId] || 0;
+      // La extensión +80 es SOLO para rasterizar el render de ESCRITORIO
+      // (labels que desbordan el viewBox 760). En square el render ya
+      // contiene las labels dentro de su margen derecho (185) → extender
+      // acá duplicaba el margen y dejaba ~80px de aire a la derecha del
+      // PNG (4ª ronda de Daniel, 12/7).
+      const pngFmtActivo = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
+      const extension = pngFmtActivo ? 0 : (VIEWBOX_RIGHT_EXTENSION[chartId] || 0);
       const effectiveVbW = (vb && vb.width) ? vb.width + extension : 760 + extension;
       const effectiveVbH = (vb && vb.height) ? vb.height : 470;
       const svgAspect = effectiveVbW / effectiveVbH;
@@ -301,6 +346,15 @@
       }
       if (!svgClone.getAttribute('xmlns'))       svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
       if (!svgClone.getAttribute('xmlns:xlink')) svgClone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+
+      // Embeber las webfonts en el clon (ver buildEmbeddedFontCss arriba):
+      // sin esto el rasterizado cae a la tipografía del sistema.
+      const fontCss = await buildEmbeddedFontCss();
+      if (fontCss) {
+        const styleEl = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+        styleEl.textContent = fontCss;
+        svgClone.insertBefore(styleEl, svgClone.firstChild);
+      }
 
       const svgString = new XMLSerializer().serializeToString(svgClone);
       const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });

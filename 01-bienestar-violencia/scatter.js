@@ -422,9 +422,10 @@ function drawChart(chartId) {
   let W, H, margin;
   if (big) {
     W = PNG_FORMATS.square.vbW; H = PNG_FORMATS.square.vbH;   // 1100 × 760
-    // En mobile la leyenda va en HTML (chips), no bajo el SVG → menos margen
-    // inferior que el PNG (que sí dibuja la leyenda en el canvas).
-    margin = mobile ? { top: 26, right: 44, bottom: 64, left: 84 }
+    // Mismo margen inferior que el PNG: con 64 el título del eje X (y=H-22,
+    // font 26) pisaba los ticks (y=innerH+32, font 22) — Daniel lo vio en el
+    // celu. Con 96 quedan ~42px de aire, como en el export cuadrado.
+    margin = mobile ? { top: 26, right: 44, bottom: 96, left: 84 }
                     : { top: 30, right: 44, bottom: 96, left: 88 };
   } else {
     W = 760; H = 470;

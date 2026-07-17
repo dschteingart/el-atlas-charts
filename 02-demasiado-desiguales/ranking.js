@@ -185,6 +185,16 @@ function drawRanking() {
   // visibilidad de controles por vista
   const view = rk_view();
   const isMap = view === 'map';
+  // PNG: el formato del lienzo se elige según el aspecto del continente. El mapa
+  // ancho (mundo/Asia/Oceanía) baja apaisado (worldmap 1200×920, como el mapa de
+  // clubes del N°3) — con 'square' quedaba flotando con medio lienzo vacío abajo.
+  // Los continentes altos o cuadrados (Europa/África/América) SIGUEN en 'square':
+  // el lienzo cuadrado ya encuadra bien un mapa vertical, y un apaisado los
+  // achicaría dejando huecos a los lados. Barras y líneas: siempre 'square'.
+  // Los dos formatos ya están calibrados (chrome mobile-first). png-export lee
+  // este global al tocar "Descargar PNG" (default cuando no hay editor abierto).
+  const RK_APAISADO = { all: 1, asia: 1, oceania: 1 };
+  window.__atlasDefaultPngFormat = (isMap && RK_APAISADO[state[4].continent]) ? 'worldmap' : 'square';
   const sng = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
   sng('rk-year-block', view !== 'lines');                  // año: barras y mapa
   sng('rk-search-wrap', true);                             // buscador: siempre (barras/líneas: agregar países; mapa: elegir país a comparar)
@@ -598,6 +608,12 @@ function rk_drawMap(svg, ctx) {
       if (interactive) { if (v != null) { state[4].benchmark = iso; state[4].mapMode = 'bench'; drawRanking(); } return; }   // desktop: comparar contra ese país
       if (touchMap && tooltip) {   // celu: tap = mostrar el valor del país
         ev.stopPropagation();
+        // Des-marcar el país tocado anteriormente (Daniel: quedaba el contorno
+        // pegado hasta cambiar la configuración). Reset de todos los strokes
+        // al default (respetando el benchmark) antes de marcar el nuevo.
+        d3.select(svg).selectAll('path.rk-country')
+          .attr('stroke', dd => (benchOn && rk_isoOf(dd) === state[4].benchmark) ? '#1A1A1A' : 'rgba(255,255,255,0.55)')
+          .attr('stroke-width', dd => (benchOn && rk_isoOf(dd) === state[4].benchmark) ? (bigFmt ? 2.2 : 1.6) : 0.5);
         if (v == null) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; return; }
         d3.select(this).attr('stroke', '#1A1A1A').attr('stroke-width', bigFmt ? 2 : 1.4).raise();
         tooltip.innerHTML = rk_countryTipHtml(iso, v); tooltip.style.display = 'block'; tooltip.style.opacity = '1'; rk_placeTip(tooltip, ev, svg);

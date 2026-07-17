@@ -745,4 +745,9 @@
   /* (b) Menos aire entre el gráfico y los botones (converge al ~6px del
      especial; los charts que ya lo pisan localmente mantienen el suyo). */
   .footer { margin-top: 14px; padding-top: 10px; }
+  /* (c) Botones de descarga (CSV/PNG): al envolver a dos líneas en el celu
+     se pisaban (Daniel lo vio en el N°1, que tiene varios). Separación
+     universal — criterio para todos los charts (el especial ya lo hacía
+     localmente). */
+  .download { margin-right: 8px; margin-bottom: 8px; }
 }

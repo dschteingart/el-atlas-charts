@@ -197,7 +197,12 @@ function d_placeEndLabels(labels) {
   const mobile = !editorFormat
     && typeof isMobileViewport === 'function' && isMobileViewport();
   const mobilePng = editorFormat === 'mobile';
-  const gap = mobilePng ? 30 : mobile ? 34 : D_END_LABEL_GAP;
+  const newsletter = editorFormat === 'newsletter';
+  const square = editorFormat === 'square';
+  // Gap proporcional al endLabel. Con los SIZES del PNG subidos a 22 (2026-07),
+  // el gap de desktop (~14) dejaba que Chile/Portugal/Brasil/Argentina se
+  // pisaran; newsletter/square necesitan ~30 como mobilePng.
+  const gap = (newsletter || square) ? 30 : mobilePng ? 30 : mobile ? 34 : D_END_LABEL_GAP;
   labels.sort((a, b) => a.idealY - b.idealY);
   // Forward sweep: empujar hacia abajo si choca con la previa.
   labels.forEach((l, i) => {
@@ -296,10 +301,13 @@ function drawDeciles() {
   // SIZES base por viewport. En desktop el editor puede sobreescribir cada
   // bucket; newsletter/square/mobilePng/mobile siguen pinned. El bucket
   // "special" del editor aplica al endLabel (nombres al final de la línea).
+  // PNG newsletter/square: subidos al estándar mobile-first del Atlas (antes
+  // tick 18 / endLabel 18 → en el PNG a ⅓ en el celu quedaban chicos). El eje
+  // X ya va abreviado "D1..D10" (arriba), así que "tick 22" entra sin pisarse.
   const SIZES = newsletter
-    ? { tick: 18, tickExtra: 15, axisTitle: 19, endLabel: 18 }
+    ? { tick: 24, tickExtra: 19, axisTitle: 24, endLabel: 22 }
     : square
-    ? { tick: 18, tickExtra: 15, axisTitle: 19, endLabel: 18 }
+    ? { tick: 24, tickExtra: 19, axisTitle: 24, endLabel: 22 }
     : mobilePng
     ? { tick: 28, tickExtra: 22, axisTitle: 30, endLabel: 24 }
     : mobile
@@ -347,7 +355,7 @@ function drawDeciles() {
     txt.setAttribute('y', y + 4);
     txt.setAttribute('text-anchor', 'end');
     txt.setAttribute('class', 'd-tick');
-    txt.setAttribute('font-size', SIZES.tick);
+    txt.style.fontSize = SIZES.tick + 'px';
     txt.textContent = d_formatYTick(tv, yMode);
     svg.appendChild(txt);
   });
@@ -359,7 +367,7 @@ function drawDeciles() {
   const yTitle = d_ns('text');
   yTitle.setAttribute('class', 'd-axis-title');
   yTitle.setAttribute('text-anchor', 'middle');
-  yTitle.setAttribute('font-size', SIZES.axisTitle);
+  yTitle.style.fontSize = SIZES.axisTitle + 'px';
   yTitle.setAttribute(
     'transform',
     `translate(${yTitleOffsetX}, ${D_MARGIN.top + D_PLOT_H / 2}) rotate(-90)`
@@ -381,7 +389,7 @@ function drawDeciles() {
     const xTitle = d_ns('text');
     xTitle.setAttribute('class', 'd-axis-title');
     xTitle.setAttribute('text-anchor', 'middle');
-    xTitle.setAttribute('font-size', SIZES.axisTitle);
+    xTitle.style.fontSize = SIZES.axisTitle + 'px';
     xTitle.setAttribute('x', D_MARGIN.left + D_PLOT_W / 2);
     // Position: bajo los ticks "Decil N" + aclaración. Los ticks ocupan
     // ~xExtraOffset px; el axis-title va ~25px más abajo.
@@ -406,8 +414,11 @@ function drawDeciles() {
     txt.setAttribute('y', D_MARGIN.top + D_PLOT_H + xLabelOffset);
     txt.setAttribute('text-anchor', 'middle');
     txt.setAttribute('class', 'd-tick');
-    txt.setAttribute('font-size', SIZES.tick);
-    txt.textContent = t('c3-decile-prefix') + ' ' + d;
+    txt.style.fontSize = SIZES.tick + 'px';
+    // Con fuentes grandes (mobile/PNG) "Decil 1..Decil 10" NO entra en el
+    // ancho → se pisan. Abreviamos a "D1..D10"; en desktop (tick chico) va
+    // el "Decil N" completo. (Bug del eje X pisado en el celu, 2026-07-12.)
+    txt.textContent = (SIZES.tick >= 16 ? 'D' : t('c3-decile-prefix') + ' ') + d;
     svg.appendChild(txt);
     // Aclaración para extremos en segunda línea.
     if (d === 1 || d === 10) {
@@ -417,7 +428,7 @@ function drawDeciles() {
       extra.setAttribute('y', D_MARGIN.top + D_PLOT_H + xExtraOffset);
       extra.setAttribute('text-anchor', 'middle');
       extra.setAttribute('class', 'd-tick-extra');
-      extra.setAttribute('font-size', SIZES.tickExtra);
+      extra.style.fontSize = SIZES.tickExtra + 'px';
       extra.textContent = d === 1 ? t('c3-decile-poorest') : t('c3-decile-richest');
       svg.appendChild(extra);
     }
@@ -558,7 +569,7 @@ function drawDeciles() {
     // Font-size inline: mobile escala 3× vs desktop para que en pantalla
     // queden ~10.5px (legibles). Sin esto los end-labels en mobile salen
     // a ~4.3px (ilegibles).
-    txt.setAttribute('font-size', SIZES.endLabel);
+    txt.style.fontSize = SIZES.endLabel + 'px';
     txt.textContent = l.text;
     endLabelsG.appendChild(txt);
   });
