@@ -161,7 +161,14 @@ function in_draw(svg, W, H, bigFmt, rows) {
   });
   txt(M.left, H - (bigFmt ? 16 : 11), in_axisLabel(), { fs: bigFmt ? 16 : 10, fill: 'var(--ink-muted)' });
 
-  const hover = !in_pngMode() && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  // REGLA DE LA CASA: el tooltip NO se gatea tras HAS_HOVER. En touch HAS_HOVER es
+  // false y el listener no se anclaba nunca, o sea que en el celu no habia tooltip.
+  // Un tap emite mouseenter/mousemove sinteticos, asi que el handler de mouse
+  // alcanza, y el cierre por tap-away global ya vive en lib/utils.js.
+  const hover = !in_pngMode();
+  // El resaltado si se gatea a desktop: en touch no hay mouseleave y quedaria
+  // pegado, con el resto de las filas apagadas para siempre.
+  const puedeResaltar = (typeof HAS_HOVER === 'undefined') || HAS_HOVER;
   const grupos = [];
   const COL = 'var(--ink)';
   rows.forEach((r, k) => {
@@ -195,12 +202,15 @@ function in_draw(svg, W, H, bigFmt, rows) {
     if (r.nueva) {
       const gapV = bigFmt ? 14 : 9;
       const nx = in_isPct() ? X(r.mean) + gapV + meas(in_fmt(r.mean), FSV, 700) + gapV : X(r.mean) + (bigFmt ? 26 : 16);
-      gr.appendChild(txt(nx, y + (bigFmt ? 6 : 4), in_t('c10-nueva', in_en() ? 'debut 2026' : 'estreno 2026'), { fs: bigFmt ? 13 : 8.5, fill: 'var(--ink-muted)', italic: true }));
+      gr.appendChild(txt(nx, y + (bigFmt ? 6 : 4), in_t('c10-nueva', in_en() ? 'debut 2026' : 'estreno 2026'), { fs: bigFmt ? 15.5 : 8.5, fill: 'var(--ink-muted)', italic: true }));
     }
     if (hover) {
       const hit = mk('rect', { x: 0, y: y - LANE / 2, width: W, height: LANE, fill: 'transparent' });
       hit.style.cursor = 'default';
-      hit.addEventListener('mouseenter', () => { grupos.forEach((o, j) => o.setAttribute('opacity', j === k ? 1 : .25)); in_tip(r); });
+      hit.addEventListener('mouseenter', () => {
+        if (puedeResaltar) grupos.forEach((o, j) => o.setAttribute('opacity', j === k ? 1 : .25));
+        in_tip(r);
+      });
       hit.addEventListener('mousemove', e => { in_tipMove._e = e; in_tipMove(); });
       hit.addEventListener('mouseleave', () => { grupos.forEach(o => o.setAttribute('opacity', 1)); in_tipHide(); });
     }
@@ -244,6 +254,7 @@ function in_tip(r) {
     }
   }
   tt.innerHTML = html; tt.style.display = 'block'; tt.style.opacity = '1';
+  in_tipMove();   // en touch el tap puede no traer mousemove: lo ubicamos ya
 }
 function in_metricNoun() {
   const s = in_state(), en = in_en();
@@ -253,6 +264,17 @@ function in_metricNoun() {
 }
 function in_tipMove() {
   const tt = document.getElementById('tooltip' + IN_N); if (!tt) return;
+  // En pantalla angosta el tooltip NO flota bajo el dedo: se ancla al borde
+  // inferior, asi la mano no tapa justo el dato que se quiere leer.
+  const angosta = (typeof isMobileViewport === 'function')
+    ? isMobileViewport() : window.matchMedia('(max-width: 768px)').matches;
+  if (angosta) {
+    tt.style.position = 'fixed';
+    tt.style.left = '8px'; tt.style.right = '8px';
+    tt.style.bottom = '8px'; tt.style.top = 'auto'; tt.style.maxWidth = 'none';
+    return;
+  }
+  tt.style.position = ''; tt.style.right = ''; tt.style.bottom = ''; tt.style.maxWidth = '';
   const svg = document.getElementById('chart' + IN_N), rc = svg.getBoundingClientRect(), ev = in_tipMove._e;
   if (!ev) return;
   const x = ev.clientX - rc.left, w = tt.offsetWidth || 180;
@@ -271,13 +293,19 @@ function drawInstancias() {
   const fmt = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const mobile = !fmt && (typeof isMobileViewport === 'function') && isMobileViewport();
   const bigFmt = !!fmt || mobile;
-  // el alto sigue a la cantidad de filas: con los formatos historicos ocultos son
-  // siete, y dejar el alto de nueve sobraria espacio en blanco
+  // El alto sigue a la cantidad de filas: con los formatos historicos ocultos son
+  // siete, y dejar el alto de nueve sobraria espacio en blanco.
+  //
+  // En el celu el viewBox se angosta a 620 (no 1100). Con 1100 la escala contra un
+  // telefono de ~412px es 0,375, asi que una tipografia de 22 termina en 8px
+  // efectivos: ilegible. A 620 la escala sube a ~0,66 y esa misma tipografia
+  // rinde ~15px. Ademas el alto pasa a formato retrato, para que el grafico llene
+  // la pantalla en vez de quedar en una banda de 200px.
   let W = 1100, H = 92 + rows.length * 46;
   if (fmt && typeof PNG_FORMATS !== 'undefined' && PNG_FORMATS[fmt]) {
     W = PNG_FORMATS[fmt].vbW;
     H = Math.max(PNG_FORMATS[fmt].vbH, 150 + rows.length * 74);
-  } else if (mobile) H = 130 + rows.length * 62;
+  } else if (mobile) { W = 620; H = 128 + rows.length * 74; }
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, fmt);
   in_draw(svg, W, H, bigFmt, rows);
