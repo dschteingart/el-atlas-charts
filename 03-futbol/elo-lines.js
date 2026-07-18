@@ -279,6 +279,22 @@ function drawLines() {
   const haloW   = lineW + (bigFmt ? 5 : 3);
   const labelHalo = bigFmt ? 6 : 3;
 
+  // Margen izquierdo SUFICIENTE para que entren, con aire: borde + título del eje
+  // (texto rotado) + gap + los números del eje. En el PNG los números son grandes y
+  // en modo Elo son de 4 dígitos: con el margen fijo, el título quedaba pegado a los
+  // números (o se cortaba contra el borde). Si no alcanza, agrandamos el margen
+  // (achica un poco el plot, pero nada se solapa ni se corta).
+  const _tickGap  = bigFmt ? 12 : 8;
+  const _titleGap = bigFmt ? 18 : 10;
+  const _edgeAir  = bigFmt ? 18 : 10;
+  const _titleW   = SIZES.axisTitle * 1.5;   // ancho horizontal del texto rotado (~1.5x el font-size)
+  const _tickWRef = tl_measureText(mode === 'rank' ? '100°' : '2200', SIZES.tick, 400);
+  const _needLeft = Math.ceil(_edgeAir + _titleW + _titleGap + _tickWRef + _tickGap);
+  if (_needLeft > TL_MARGIN.left) {
+    TL_MARGIN.left = _needLeft;
+    PLOT_W = TL_W - TL_MARGIN.left - TL_MARGIN.right;
+  }
+
   // Países seleccionados (en orden de colorIdx para estabilidad visual).
   const sel = tl_selMap();
   const selected = Array.from(sel.keys()).filter(iso => tl_byIso[iso]);
@@ -391,13 +407,12 @@ function drawLines() {
   const yT = tl_el('text');
   yT.setAttribute('class', 's-axis-title');
   yT.setAttribute('text-anchor', 'middle');
-  // X dinámica: a un gap fijo a la izquierda del número de eje MÁS ANCHO (en el
-  // PNG los números son grandes y el título quedaba pegado). Clamp para que el
-  // texto rotado no se salga por el borde izquierdo.
-  const _tickGap = bigFmt ? 12 : 8;
+  // X dinámica: a _titleGap a la izquierda del número de eje MÁS ANCHO (el margen
+  // ya se dimensionó arriba para que entre). Clamp de _edgeAir para que el texto
+  // rotado nunca se corte contra el borde izquierdo.
   const _widestTick = Math.max(0, ...yTicks.map(v => tl_measureText((mode === 'rank') ? (v + '°') : ('' + v), SIZES.tick, 400)));
   const _tickLeft = TL_MARGIN.left - _tickGap - _widestTick;
-  const yTitleX = Math.max(SIZES.axisTitle * 0.5 + 2, _tickLeft - (bigFmt ? 16 : 9) - SIZES.axisTitle * 0.5);
+  const yTitleX = Math.max(_edgeAir + _titleW / 2, _tickLeft - _titleGap - _titleW / 2);
   yT.setAttribute('transform', `translate(${yTitleX}, ${TL_MARGIN.top + PLOT_H / 2}) rotate(-90)`);
   yT.style.fontSize = SIZES.axisTitle + 'px';
   const tt = (k, fb) => (typeof t === 'function' ? t(k) : '') || fb;
