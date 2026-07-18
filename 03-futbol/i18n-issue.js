@@ -156,7 +156,7 @@ const ISSUE_I18N = {
     'c5-axis-y-rank':        'Posición en el ranking',
     'c5-axis-y-elo':         'Puntaje Elo',
     'c5-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (rating Elo de selecciones nacionales, valor al cierre de cada año —al 31 de diciembre; 2026, al 17 de julio—; serie 1901-2026). La "posición en el ranking" es el ranking mundial de eloratings.net. Inglaterra, Escocia, Gales e Irlanda del Norte van por separado (son miembros FIFA). Confederaciones según afiliación FIFA actual.',
-    'c5-sources-tpl':        'Datos: eloratings.net (rating Elo de selecciones nacionales, valor al cierre de cada año).',
+    'c5-sources-tpl':        'Datos: eloratings.net (rating Elo de selecciones nacionales, valor al cierre de cada año; 2026, al 17 de julio).',
 
     // Index del número (landing)
     'index-see':             'Ver gráfico →',
@@ -479,7 +479,7 @@ const ISSUE_I18N = {
     'c5-axis-y-rank':        'World ranking position',
     'c5-axis-y-elo':         'Elo rating',
     'c5-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo ratings of national teams, year-end value —December 31; 2026 as of July 17—; 1901-2026). "Ranking position" is the eloratings.net world ranking. England, Scotland, Wales and Northern Ireland are shown separately (all FIFA members). Confederations per current FIFA affiliation.',
-    'c5-sources-tpl':        'Data: eloratings.net (Elo rating of national teams, year-end value).',
+    'c5-sources-tpl':        'Data: eloratings.net (Elo ratings of national teams, year-end value; 2026 as of July 17).',
 
     // Issue index (landing)
     'index-see':             'View chart →',
