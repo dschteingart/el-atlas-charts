@@ -109,6 +109,40 @@ function in_fmt(v) {
   return (in_isCent() && v > 0) ? '+' + s : s;
 }
 function in_pngMode() { return (typeof getActivePngFormat === 'function') && !!getActivePngFormat(); }
+function in_narrow() {
+  return (typeof isMobileViewport === 'function')
+    ? isMobileViewport() : window.matchMedia('(max-width: 768px)').matches;
+}
+
+// Nota de fuente. Los numeros van DINAMICOS: si el slider recorta el periodo, una
+// nota fija ("1.066 partidos, 1930-2026") contradice al subtitulo y al grafico.
+// Y aclara que son las pelotitas, que sin eso no se sabe que es cada marca.
+function in_sourceText(largo) {
+  const s = in_state(), en = in_en(), rows = in_rows();
+  const nPart = rows.reduce((a, r) => a + r.n, 0);
+  const eds = DATA_INST.eds.filter(y => y >= s.from && y <= s.to).length;
+  const num = n => n.toLocaleString(en ? 'en-US' : 'es-AR');
+  const universo = en
+    ? `${num(nPart)} matches across ${eds} editions, ${s.from}-${s.to}.`
+    : `${num(nPart)} partidos de ${eds} ediciones, ${s.from}-${s.to}.`;
+  const marcas = in_isPct()
+    ? (en ? 'The bar is the share for that stage.' : 'La barra es el porcentaje de esa instancia.')
+    : (en ? 'Each dot is one World Cup and the thick black mark is the average for that stage.'
+          : 'Cada pelotita es un Mundial y la marca negra gruesa es el promedio de esa instancia.');
+  const base = en
+    ? 'Data: martj42 (matches and goal minutes) and Joshua Fjelstul (stage).'
+    : 'Datos: martj42 (partidos y minuto del gol) y Joshua Fjelstul (instancia).';
+  const cierre = en
+    ? 'Goals in the first 90 minutes; scores include extra time but not penalties.'
+    : 'Goles de los primeros 90 minutos; los marcadores incluyen alargue pero no penales.';
+  if (!largo) return `${base} ${marcas} ${universo} ${cierre}`;
+  // la version larga agrega la metodologia, que en el PNG no entra
+  return `${base} ${marcas} ${universo} ${cierre} ${in_t('c10-metodo', '')}`.trim();
+}
+function in_syncSources() {
+  const largo = in_sourceText(true);
+  document.querySelectorAll('[data-i18n="c10-sources"]').forEach(el => { el.textContent = largo; });
+}
 
 // --- dibujo -----------------------------------------------------------------
 function in_draw(svg, W, H, bigFmt, rows) {
@@ -232,25 +266,41 @@ function in_axisLabel() {
 }
 
 // --- tooltip ----------------------------------------------------------------
+// OJO: `.tooltip strong` de lib/style.css es `display:block` (es el titular del
+// tooltip de la casa, no enfasis inline). Usar <strong> para resaltar un numero
+// adentro de un renglon le come una linea entera a cada uno. Va <b>.
 function in_tip(r) {
   const tt = document.getElementById('tooltip' + IN_N); if (!tt) return;
-  const en = in_en();
-  let html = `<div style="font-weight:600;margin-bottom:3px;">${r.label}</div>`;
-  // con n chico no promediamos: mostramos los partidos, que es lo que hay
+  const en = in_en(), corto = in_narrow();
+  const nm = n => n.toLocaleString(en ? 'en-US' : 'es-AR');
+  const tab = 'font-variant-numeric:tabular-nums;';
+  let html = '';
   if (r.n <= 4) {
-    html += `<div style="opacity:.75;margin-bottom:3px;">${r.n} ${en ? 'match' + (r.n > 1 ? 'es' : '') : 'partido' + (r.n > 1 ? 's' : '')}, ${en ? 'too few to average' : 'muy pocos para promediar'}</div>`;
-    r.list.slice(0, 5).forEach(m => {
-      html += `<div style="font-variant-numeric:tabular-nums;">${m[0]}: ${atlasCountryName(DATA_INST.teams[m[2]])} ${m[4]}-${m[5]} ${atlasCountryName(DATA_INST.teams[m[3]])}${m[8] ? (en ? ' (a.e.t.)' : ' (alargue)') : ''}</div>`;
+    // con n chico no promediamos: mostramos los partidos, que es lo que hay
+    html += `<div style="font-weight:600;">${r.label}</div>`
+      + `<div style="opacity:.75;margin-bottom:2px;">${r.n} ${en ? 'match' + (r.n > 1 ? 'es' : '') : 'partido' + (r.n > 1 ? 's' : '')}, ${en ? 'too few to average' : 'muy pocos para promediar'}</div>`;
+    r.list.slice(0, corto ? 3 : 5).forEach(m => {
+      html += `<div style="${tab}">${m[0]}: ${atlasCountryName(DATA_INST.teams[m[2]])} ${m[4]}-${m[5]} ${atlasCountryName(DATA_INST.teams[m[3]])}${m[8] ? (en ? ' (a.e.t.)' : ' (alargue)') : ''}</div>`;
     });
+    if (r.list.length > (corto ? 3 : 5)) html += `<div style="opacity:.6;">+${r.list.length - (corto ? 3 : 5)}</div>`;
+  } else if (corto) {
+    // en el celu el tooltip se ancla al borde inferior y tapa pantalla: va compacto,
+    // tres renglones en vez de cinco
+    html += `<div style="font-weight:600;">${r.label} <span style="opacity:.65;font-weight:400;">· ${nm(r.n)} ${en ? 'matches' : 'part.'}, ${r.eds} ${en ? 'eds.' : 'ed.'}</span></div>`
+      + `<div style="${tab}"><b>${in_fmt(r.mean)}</b> ${in_metricNoun()}</div>`;
+    if (!in_isPct() && r.max && r.min && r.max.ed !== r.min.ed) {
+      html += `<div style="${tab}opacity:.8;">${en ? 'Most' : 'Máx'} <b>${r.max.ed}</b> (${in_fmt(r.max.v)}) · ${en ? 'fewest' : 'mín'} <b>${r.min.ed}</b> (${in_fmt(r.min.v)})</div>`;
+    }
   } else {
-    html += `<div><strong style="font-variant-numeric:tabular-nums;">${in_fmt(r.mean)}</strong> ${in_metricNoun()}</div>`;
-    html += `<div style="opacity:.7;">${r.n.toLocaleString(en ? 'en' : 'es')} ${en ? 'matches' : 'partidos'}, ${r.eds} ${en ? 'editions' : 'ediciones'}</div>`;
+    html += `<div style="font-weight:600;margin-bottom:3px;">${r.label}</div>`
+      + `<div style="${tab}"><b>${in_fmt(r.mean)}</b> ${in_metricNoun()}</div>`
+      + `<div style="opacity:.7;">${nm(r.n)} ${en ? 'matches' : 'partidos'}, ${r.eds} ${en ? 'editions' : 'ediciones'}</div>`;
     // a que Mundial corresponden los extremos: sin esto los puntos de las puntas
     // son anonimos y no se puede leer la dispersion
     if (!in_isPct() && r.max && r.min && r.max.ed !== r.min.ed) {
-      html += `<div style="margin-top:4px;font-variant-numeric:tabular-nums;">`
-        + `<span style="opacity:.7;">${en ? 'Most' : 'Máximo'}:</span> <strong>${r.max.ed}</strong> (${in_fmt(r.max.v)})<br>`
-        + `<span style="opacity:.7;">${en ? 'Fewest' : 'Mínimo'}:</span> <strong>${r.min.ed}</strong> (${in_fmt(r.min.v)})</div>`;
+      html += `<div style="margin-top:4px;${tab}">`
+        + `<span style="opacity:.7;">${en ? 'Most' : 'Máximo'}:</span> <b>${r.max.ed}</b> (${in_fmt(r.max.v)})<br>`
+        + `<span style="opacity:.7;">${en ? 'Fewest' : 'Mínimo'}:</span> <b>${r.min.ed}</b> (${in_fmt(r.min.v)})</div>`;
     }
   }
   tt.innerHTML = html; tt.style.display = 'block'; tt.style.opacity = '1';
@@ -266,15 +316,15 @@ function in_tipMove() {
   const tt = document.getElementById('tooltip' + IN_N); if (!tt) return;
   // En pantalla angosta el tooltip NO flota bajo el dedo: se ancla al borde
   // inferior, asi la mano no tapa justo el dato que se quiere leer.
-  const angosta = (typeof isMobileViewport === 'function')
-    ? isMobileViewport() : window.matchMedia('(max-width: 768px)').matches;
-  if (angosta) {
+  if (in_narrow()) {
     tt.style.position = 'fixed';
     tt.style.left = '8px'; tt.style.right = '8px';
     tt.style.bottom = '8px'; tt.style.top = 'auto'; tt.style.maxWidth = 'none';
+    tt.style.padding = '7px 10px'; tt.style.fontSize = '11px'; tt.style.lineHeight = '1.32';
     return;
   }
   tt.style.position = ''; tt.style.right = ''; tt.style.bottom = ''; tt.style.maxWidth = '';
+  tt.style.padding = ''; tt.style.fontSize = ''; tt.style.lineHeight = '';
   const svg = document.getElementById('chart' + IN_N), rc = svg.getBoundingClientRect(), ev = in_tipMove._e;
   if (!ev) return;
   const x = ev.clientX - rc.left, w = tt.offsetWidth || 180;
@@ -311,6 +361,7 @@ function drawInstancias() {
   in_draw(svg, W, H, bigFmt, rows);
   const sub = document.querySelector('[data-i18n="c10-subtitle"]');
   if (sub) sub.textContent = in_subtitle();
+  in_syncSources();
 }
 function in_subtitle() {
   const s = in_state(), en = in_en();
@@ -380,7 +431,7 @@ function initInstancias() {
   in_state();
   window.__atlasSupportsFormats = true;
   window.__atlasRedraw = drawInstancias;
-  window.onBeforePngExportGetSourceText = function (id) { return String(id) === String(IN_N) ? in_t('c10-sources-tpl', '') : null; };
+  window.onBeforePngExportGetSourceText = function (id) { return String(id) === String(IN_N) ? in_sourceText(false) : null; };
   window.onBeforePngExportGetSubtitle = function (id) { return String(id) === String(IN_N) ? in_subtitle() : null; };
   in_wireToggle('in-metric', 'metric', 'metric');
   in_wireToggle('in-win', 'win', 'win');
