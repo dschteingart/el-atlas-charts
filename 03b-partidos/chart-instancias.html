@@ -3,17 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El partido que nadie quiere jugar — El Atlas · Especial</title>
+<title>Los goles según la instancia del Mundial — El Atlas · Especial</title>
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/chart-instancias.html">
-<meta property="og:title" content="El partido que nadie quiere jugar — El Atlas · Especial">
+<meta property="og:title" content="Los goles según la instancia del Mundial — El Atlas · Especial">
 <meta property="og:description" content="Cómo cambian los goles según la instancia del Mundial, 1930-2026. 1.066 partidos.">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-instancias.png">
-<meta property="og:image:alt" content="El partido que nadie quiere jugar">
+<meta property="og:image:alt" content="Los goles según la instancia del Mundial">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="El partido que nadie quiere jugar — El Atlas · Especial">
+<meta name="twitter:title" content="Los goles según la instancia del Mundial — El Atlas · Especial">
 <meta name="twitter:description" content="Cómo cambian los goles según la instancia del Mundial, 1930-2026. 1.066 partidos.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03b-partidos/thumbs/chart-instancias.png">
 
@@ -118,20 +118,15 @@
   </header>
 
   <section class="chart-block" data-chart="10" data-editor-id="esp-instancias">
-    <h2 class="chart-title" data-i18n="c10-title">El partido que nadie quiere jugar</h2>
+    <h2 class="chart-title" data-i18n="c10-title">Los goles según la instancia del Mundial</h2>
     <p class="chart-subtitle" data-i18n="c10-subtitle">Goles por partido, según la instancia del Mundial, 1930-2026.</p>
 
       <div class="m-controls">
-        <div class="toggle" id="in-tabs">
-          <button data-view="cuadro" class="active" data-i18n="c10-tab-cuadro">El cuadro</button>
-          <button data-view="reloj" data-i18n="c10-tab-reloj">El reloj</button>
-        </div>
         <div class="m-ctrl-group" id="in-metric-group">
           <span class="m-ctrl-label" data-i18n="c9-metric-label">Medida</span>
           <div class="toggle" id="in-metric">
             <button data-metric="goles" class="active" data-i18n="c10-metric-goles">Goles por partido</button>
             <button data-metric="ig90" data-i18n="c10-metric-ig90">% igualado a los 90</button>
-            <button data-metric="et" data-i18n="c10-metric-et">% al alargue</button>
           </div>
         </div>
         <div class="s-range-block">
@@ -146,37 +141,32 @@
         </div>
       </div>
 
-      <div id="in-cuadro-controls">
-        <div class="m-controls">
-          <div class="m-ctrl-group" id="in-win-group">
-            <span class="m-ctrl-label" data-i18n="c10-win-label">Ventana</span>
-            <div class="toggle" id="in-win">
-              <button data-win="90" class="active" data-i18n="c10-win-90">Primeros 90 minutos</button>
-              <button data-win="full" data-i18n="c10-win-full">Partido completo</button>
-            </div>
-          </div>
-          <div class="m-ctrl-group" id="in-ref-group">
-            <span class="m-ctrl-label" data-i18n="c10-ref-label">Referencia</span>
-            <div class="toggle" id="in-ref">
-              <button data-ref="bruto" class="active" data-i18n="c10-ref-bruto">Valor bruto</button>
-              <button data-ref="cent" data-i18n="c10-ref-cent">Contra su propio Mundial</button>
-            </div>
+      <div class="m-controls">
+        <div class="m-ctrl-group" id="in-win-group">
+          <span class="m-ctrl-label" data-i18n="c10-win-label">Ventana</span>
+          <div class="toggle" id="in-win">
+            <button data-win="90" class="active" data-i18n="c10-win-90">Primeros 90 minutos</button>
+            <button data-win="full" data-i18n="c10-win-full">Partido completo</button>
           </div>
         </div>
-        <div class="m-controls" id="in-inst-controls">
-          <div class="m-ctrl-group">
-            <span class="m-ctrl-label" data-i18n="pc-add-label">Mostrar</span>
-            <div class="m-search-wrap" style="margin:0;min-width:200px;max-width:280px;">
-              <input type="text" id="in-inst-search" class="m-search-input" data-i18n-placeholder="c10-inst-ph" placeholder="Agregar instancia…" autocomplete="off">
-              <div id="in-inst-results" class="m-search-results"></div>
-            </div>
+        <div class="m-ctrl-group" id="in-ref-group">
+          <span class="m-ctrl-label" data-i18n="c10-ref-label">Referencia</span>
+          <div class="toggle" id="in-ref">
+            <button data-ref="bruto" class="active" data-i18n="c10-ref-bruto">Valor bruto</button>
+            <button data-ref="cent" data-i18n="c10-ref-cent">Contra su propio Mundial</button>
           </div>
-          <div class="m-selected-chips" id="in-selected-chips"></div>
+        </div>
+        <div class="m-ctrl-group" id="in-hist-group">
+          <span class="m-ctrl-label" data-i18n="c10-hist-label">Formatos históricos</span>
+          <div class="toggle" id="in-hist">
+            <button data-hist="false" class="active" data-i18n="c10-hist-off">Ocultar</button>
+            <button data-hist="true" data-i18n="c10-hist-on">Mostrar</button>
+          </div>
         </div>
       </div>
 
     <div class="chart-svg-wrap">
-      <svg id="chart10" viewBox="0 0 1100 470" preserveAspectRatio="xMidYMid meet"></svg>
+      <svg id="chart10" viewBox="0 0 1100 414" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="tooltip" id="tooltip10"></div>
     </div>
   </section>
@@ -198,28 +188,26 @@
 
 </div>
 
-<script src="../lib/regions.js?v=80"></script>
-<script src="../lib/i18n.js?v=80"></script>
-<script src="./regions-fifa.js?v=80"></script>
-<script src="./i18n-issue.js?v=80"></script>
+<script src="../lib/regions.js?v=81"></script>
+<script src="../lib/i18n.js?v=81"></script>
+<script src="./regions-fifa.js?v=81"></script>
+<script src="./i18n-issue.js?v=81"></script>
 <script src="../lib/utils.js?v=4"></script>
 <script src="../lib/country-names.js?v=2"></script>
-<script src="./data-instancias.js?v=80"></script>
-<script src="./data-nombres.js?v=80"></script>
+<script src="./data-instancias.js?v=81"></script>
+<script src="./data-nombres.js?v=81"></script>
 <script src="../lib/editor.js?v=1"></script>
-<script src="./ts-partidos.js?v=80"></script>
-<script src="./instancias.js?v=80"></script>
+<script src="./ts-partidos.js?v=81"></script>
+<script src="./instancias.js?v=81"></script>
 <script src="../lib/png-export.js?v=2"></script>
 <script>
-  window.__ESP_V = '80';
+  window.__ESP_V = '81';
   initInstancias();
   applyI18n();
   if (window.__atlasRedraw) window.__atlasRedraw();
-  setupLangToggle(() => {
-    if (typeof drawInstancias === 'function') { in_renderChips(); drawInstancias(); }
-  });
+  setupLangToggle(() => { if (typeof drawInstancias === 'function') drawInstancias(); });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=80"></script>
+<script src="./nav.js?v=81"></script>
 </body>
 </html>
