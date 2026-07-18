@@ -75,10 +75,10 @@ const TL_MARGIN_MOBILE  = { top: 64, right: 168, bottom: 150, left: 110 };
 
 function tl_getMargins(format) {
   switch (format) {
-    case 'public':     return { top: 40, right: 168, bottom: 92,  left: 78 };
-    case 'newsletter': return { top: 44, right: 184, bottom: 96,  left: 96 };
-    case 'square':     return { top: 44, right: 184, bottom: 74,  left: 96 };
-    case 'mobile':     return { top: 64, right: 176, bottom: 150, left: 110 };
+    case 'public':     return { top: 40, right: 168, bottom: 92,  left: 96 };
+    case 'newsletter': return { top: 44, right: 184, bottom: 96,  left: 116 };
+    case 'square':     return { top: 44, right: 184, bottom: 74,  left: 116 };
+    case 'mobile':     return { top: 64, right: 176, bottom: 150, left: 126 };
     default:           return { ...TL_MARGIN_DESKTOP };
   }
 }
@@ -391,7 +391,13 @@ function drawLines() {
   const yT = tl_el('text');
   yT.setAttribute('class', 's-axis-title');
   yT.setAttribute('text-anchor', 'middle');
-  const yTitleX = TL_MARGIN.left - (mobile || mobilePng ? 64 : bigFmt ? 56 : 44);
+  // X dinámica: a un gap fijo a la izquierda del número de eje MÁS ANCHO (en el
+  // PNG los números son grandes y el título quedaba pegado). Clamp para que el
+  // texto rotado no se salga por el borde izquierdo.
+  const _tickGap = bigFmt ? 12 : 8;
+  const _widestTick = Math.max(0, ...yTicks.map(v => tl_measureText((mode === 'rank') ? (v + '°') : ('' + v), SIZES.tick, 400)));
+  const _tickLeft = TL_MARGIN.left - _tickGap - _widestTick;
+  const yTitleX = Math.max(SIZES.axisTitle * 0.5 + 2, _tickLeft - (bigFmt ? 16 : 9) - SIZES.axisTitle * 0.5);
   yT.setAttribute('transform', `translate(${yTitleX}, ${TL_MARGIN.top + PLOT_H / 2}) rotate(-90)`);
   yT.style.fontSize = SIZES.axisTitle + 'px';
   const tt = (k, fb) => (typeof t === 'function' ? t(k) : '') || fb;
