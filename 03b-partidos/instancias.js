@@ -75,7 +75,9 @@ function in_matches() {
 function in_val(m, edm) {
   const s = in_state();
   if (s.metric === 'ig90') return m[7];
-  if (s.metric === 'et') return in_isKO(m[1]) ? m[8] : 0;
+  // el alargue viene resuelto en el dato: en 1954 los empates de la fase de grupos
+  // tambien iban a suplementario, asi que no se puede asumir 0 fuera de la eliminacion
+  if (s.metric === 'et') return m[8];
   const g = in_goles(m);
   return (s.ref === 'cent') ? g - edm[m[0]] : g;
 }
@@ -182,7 +184,21 @@ function in_drawCuadro(svg, W, H, bigFmt) {
     mk('line', { x1: X(v), x2: X(v), y1: M.top - (bigFmt ? 14 : 9), y2: H - M.bottom + 2, stroke: cero ? 'var(--ink-soft)' : 'var(--rule)', 'stroke-width': cero ? 1.3 : 1, 'stroke-dasharray': cero ? '' : '2 3' });
     txt(X(v), M.top - (bigFmt ? 24 : 16), in_isPct() ? Math.round(v * 100) + '%' : ((in_isCent() && v > 0 ? '+' : '') + v), { fs: bigFmt ? 15 : 9.5, anchor: 'middle', fill: 'var(--ink-muted)' });
   });
-  txt(M.left, H - (bigFmt ? 14 : 10), in_axisLabel(), { fs: bigFmt ? 16 : 10, fill: 'var(--ink-muted)' });
+  const _axFs = bigFmt ? 16 : 10;
+  txt(M.left, H - (bigFmt ? 14 : 10), in_axisLabel(), { fs: _axFs, fill: 'var(--ink-muted)' });
+  // Referencia del margen de error, con el mismo glifo que se dibuja en las filas:
+  // sin esto la linea horizontal no se entiende (Daniel, 18/7).
+  (() => {
+    const ky = H - (bigFmt ? 14 : 10);
+    let kx = M.left + meas(in_axisLabel(), _axFs, 400) + (bigFmt ? 34 : 22);
+    const w = bigFmt ? 34 : 22, cap = bigFmt ? 5 : 3.5;
+    const lbl = in_en() ? 'margin of error (95%)' : 'margen de error (95%)';
+    const need = w + (bigFmt ? 8 : 5) + meas(lbl, bigFmt ? 15 : 9.5, 400);
+    if (kx + need > W - (bigFmt ? 16 : 10)) kx = Math.max(M.left, W - (bigFmt ? 16 : 10) - need);
+    mk('line', { x1: kx, x2: kx + w, y1: ky, y2: ky, stroke: 'var(--ink-muted)', 'stroke-width': bigFmt ? 2 : 1.2, opacity: .75 });
+    [kx, kx + w].forEach(v => mk('line', { x1: v, x2: v, y1: ky - cap, y2: ky + cap, stroke: 'var(--ink-muted)', 'stroke-width': bigFmt ? 2 : 1.2, opacity: .75 }));
+    txt(kx + w + (bigFmt ? 8 : 5), ky, lbl, { fs: bigFmt ? 15 : 9.5, fill: 'var(--ink-muted)' });
+  })();
   txt(W - M.right + (bigFmt ? 122 : 78), M.top - (bigFmt ? 24 : 16), in_sideHeader(), { fs: bigFmt ? 14 : 9, anchor: 'end', weight: 600, fill: 'var(--ink-muted)' });
 
   const hover = !in_pngMode() && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
@@ -223,8 +239,13 @@ function in_drawCuadro(svg, W, H, bigFmt) {
       const bh = Math.min(bigFmt ? 26 : 15, LANE * .5);
       mkr('rect', { x: X(0), y: y - bh / 2, width: Math.max(1.5, X(r.mean) - X(0)), height: bh, fill: col, opacity: r.hi ? .85 : .55, rx: bigFmt ? 3 : 2 });
     }
+    // Margen de error. Con terminaciones verticales: una linea pelada se lee como
+    // "otra barra", con las patitas se lee como barra de error, que es el lenguaje
+    // visual convencional.
     if (isFinite(r.ic.lo)) {
+      const cap = bigFmt ? 7 : 4.5;
       mkr('line', { x1: X(r.ic.lo), x2: X(r.ic.hi), y1: y, y2: y, stroke: col, 'stroke-width': bigFmt ? 2 : 1.2, opacity: .55 });
+      [r.ic.lo, r.ic.hi].forEach(v => mkr('line', { x1: X(v), x2: X(v), y1: y - cap, y2: y + cap, stroke: col, 'stroke-width': bigFmt ? 2 : 1.2, opacity: .55 }));
     }
     mkr('line', { x1: X(r.mean), x2: X(r.mean), y1: y - (bigFmt ? 13 : 8), y2: y + (bigFmt ? 13 : 8), stroke: col, 'stroke-width': bigFmt ? 5 : 3.4 });
     // Con proporciones la barra arranca en el cero, asi que una etiqueta centrada
