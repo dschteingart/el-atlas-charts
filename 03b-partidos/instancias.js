@@ -132,9 +132,17 @@ function in_sourceText(largo) {
   const base = en
     ? 'Data: martj42 (matches and goal minutes) and Joshua Fjelstul (stage).'
     : 'Datos: martj42 (partidos y minuto del gol) y Joshua Fjelstul (instancia).';
-  const cierre = en
-    ? 'Goals in the first 90 minutes; scores include extra time but not penalties.'
-    : 'Goles de los primeros 90 minutos; los marcadores incluyen alargue pero no penales.';
+  // La frase de cierre sigue a lo que se esta midiendo. Con la ventana en partido
+  // completo, decir "goles de los primeros 90" era directamente falso; y con la
+  // medida en porcentaje, hablar de goles no venia al caso.
+  const cierre = in_isPct()
+    ? (en ? 'Level at 90 minutes means the match was tied at the end of regulation, before extra time or penalties.'
+          : 'Igualado a los 90 quiere decir que el partido llegó empatado al final del tiempo reglamentario, antes del alargue y de los penales.')
+    : s.win === '90'
+      ? (en ? 'Goals scored in the first 90 minutes, stoppage time included.'
+            : 'Goles hechos en los primeros 90 minutos, descuento incluido.')
+      : (en ? 'Goals over the full match; scores include extra time but not penalty shootouts.'
+            : 'Goles del partido completo; los marcadores incluyen el alargue pero no los penales.');
   if (!largo) return `${base} ${marcas} ${universo} ${cierre}`;
   // la version larga agrega la metodologia, que en el PNG no entra
   return `${base} ${marcas} ${universo} ${cierre} ${in_t('c10-metodo', '')}`.trim();
