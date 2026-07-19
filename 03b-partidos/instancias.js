@@ -109,6 +109,21 @@ function in_fmt(v) {
   return (in_isCent() && v > 0) ? '+' + s : s;
 }
 function in_pngMode() { return (typeof getActivePngFormat === 'function') && !!getActivePngFormat(); }
+
+// Cortes del eje calculados, no clavados: con la lista fija [0,2,4,6,8] el eje se
+// quedaba en 8 cuando el 3er puesto de 2026 llego a 10 goles, y el dato mas extremo
+// caia pasando la ultima referencia.
+function in_pasoEje(span) {
+  if (in_isPct()) return (span > 0.3 ? 0.1 : 0.05);
+  return span > 8 ? 2 : span > 3.5 ? 1 : 0.5;
+}
+function in_ticks(lo, hi, paso) {
+  const out = [];
+  for (let v = Math.ceil(lo / paso - 1e-9) * paso; v <= hi + 1e-9; v += paso) {
+    out.push(+v.toFixed(4));
+  }
+  return out;
+}
 function in_narrow() {
   return (typeof isMobileViewport === 'function')
     ? isMobileViewport() : window.matchMedia('(max-width: 768px)').matches;
@@ -125,10 +140,14 @@ function in_sourceText(largo) {
   const universo = en
     ? `${num(nPart)} matches across ${eds} editions, ${s.from}-${s.to}.`
     : `${num(nPart)} partidos de ${eds} ediciones, ${s.from}-${s.to}.`;
+  // Las pelotitas codifican dos cosas y ninguna es obvia: el TAMANO son los partidos
+  // que tuvo esa instancia en esa edicion (la final siempre es uno, la fase de grupos
+  // entre 15 y 72), y lo OSCURO sale de que varias ediciones caen en el mismo valor y
+  // se superponen. Sin decirlo, el lector le inventa un significado.
   const marcas = in_isPct()
     ? (en ? 'The bar is the share for that stage.' : 'La barra es el porcentaje de esa instancia.')
-    : (en ? 'Each dot is one World Cup and the thick black mark is the average for that stage.'
-          : 'Cada pelotita es un Mundial y la marca negra gruesa es el promedio de esa instancia.');
+    : (en ? 'Each dot is one World Cup: the bigger it is, the more matches that stage had that year, and the darker it looks, the more editions land on the same value. The thick black mark is the average for that stage.'
+          : 'Cada pelotita es un Mundial: cuanto más grande, más partidos tuvo esa instancia en esa edición, y cuanto más oscura, más ediciones caen en el mismo valor. La marca negra gruesa es el promedio de esa instancia.');
   const base = en
     ? 'Data: martj42 (matches and goal minutes) and Joshua Fjelstul (stage).'
     : 'Datos: martj42 (partidos y minuto del gol) y Joshua Fjelstul (instancia).';
@@ -159,8 +178,10 @@ function in_draw(svg, W, H, bigFmt, rows) {
   const meas = (s, sz, w) => (typeof ts_measure === 'function') ? ts_measure(s, sz, w || 500) : s.length * sz * 0.56;
   const labW = Math.max(0, ...rows.map(r => meas(r.label, FS, 600)));
   const subW = Math.max(0, ...rows.map(r => meas(in_subLabel(r), FSN, 400)));
+  // Los numeros del eje van ABAJO, pegados a su titulo: tenerlos arriba y el titulo
+  // abajo partia la escala en dos puntas opuestas del grafico.
   const M = {
-    top: bigFmt ? 46 : 32, bottom: bigFmt ? 50 : 34,
+    top: bigFmt ? 26 : 18, bottom: bigFmt ? 80 : 52,
     left: Math.ceil(Math.max(labW, subW) + (bigFmt ? 46 : 30)),
     right: bigFmt ? 60 : 38,
   };
@@ -176,12 +197,21 @@ function in_draw(svg, W, H, bigFmt, rows) {
     acc += 1;
   });
 
+  // En modo porcentaje los puntos por edicion NO entran en el dominio: con n=1 una
+  // proporcion vale 0 o 1, asi que el eje se estiraba a 100% aunque esas pelotitas
+  // ni siquiera se dibujen y el maximo real sea 38%.
   const vals = [];
-  rows.forEach(r => { r.pts.forEach(p => vals.push(p.v)); vals.push(r.mean); });
+  rows.forEach(r => { if (!in_isPct()) r.pts.forEach(p => vals.push(p.v)); vals.push(r.mean); });
   let lo = Math.min(...vals), hi = Math.max(...vals);
-  if (in_isPct()) { lo = 0; hi = Math.max(hi * 1.08, 0.45); }
-  else if (in_isCent()) { const a = Math.max(Math.abs(lo), Math.abs(hi)) * 1.06; lo = -a; hi = a; }
-  else { lo = 0; hi = hi * 1.05; }
+  if (in_isPct()) { lo = 0; hi = Math.max(hi, 0.15); }
+  else if (in_isCent()) { const a = Math.max(Math.abs(lo), Math.abs(hi)); lo = -a; hi = a; }
+  else { lo = 0; }
+  // El dominio se estira hasta el corte siguiente en vez de un margen porcentual:
+  // asi el ultimo numero del eje SIEMPRE cubre el dato mas extremo, que es lo que
+  // fallaba cuando el maximo paso de 9 a 10 goles.
+  const paso = in_pasoEje(hi - lo);
+  hi = Math.ceil(hi / paso - 1e-9) * paso;
+  if (lo < 0) lo = -hi;                       // centrado: simetrico alrededor del cero
   const X = v => M.left + ((v - lo) / ((hi - lo) || 1)) * PW;
 
   const g = document.createElementNS(NS, 'g'); svg.appendChild(g);
@@ -195,13 +225,23 @@ function in_draw(svg, W, H, bigFmt, rows) {
     e.setAttribute('fill', (o && o.fill) || 'var(--ink)');
     e.textContent = s; return e;
   };
-  const ticks = in_isPct() ? [0, .1, .2, .3, .4] : in_isCent() ? [-2, -1, 0, 1, 2, 3] : [0, 2, 4, 6, 8];
-  ticks.filter(v => v >= lo && v <= hi).forEach(v => {
-    const cero = in_isCent() && v === 0;
-    mk('line', { x1: X(v), x2: X(v), y1: M.top - (bigFmt ? 14 : 9), y2: H - M.bottom + 2, stroke: cero ? 'var(--ink-soft)' : 'var(--rule)', 'stroke-width': cero ? 1.3 : 1, 'stroke-dasharray': cero ? '' : '2 3' });
-    txt(X(v), M.top - (bigFmt ? 24 : 16), in_isPct() ? Math.round(v * 100) + '%' : ((in_isCent() && v > 0 ? '+' : '') + v), { fs: bigFmt ? 15 : 9.5, anchor: 'middle', fill: 'var(--ink-muted)' });
+  const yTicks = H - M.bottom + (bigFmt ? 26 : 16);   // renglon de los numeros
+  in_ticks(lo, hi, paso).forEach(v => {
+    const cero = in_isCent() && Math.abs(v) < 1e-9;
+    mk('line', { x1: X(v), x2: X(v), y1: M.top - (bigFmt ? 8 : 5), y2: H - M.bottom + (bigFmt ? 8 : 5), stroke: cero ? 'var(--ink-soft)' : 'var(--rule)', 'stroke-width': cero ? 1.3 : 1, 'stroke-dasharray': cero ? '' : '2 3' });
+    const et = in_isPct() ? Math.round(v * 100) + '%' : ((in_isCent() && v > 0 ? '+' : '') + (+v.toFixed(2)));
+    txt(X(v), yTicks, et, { fs: bigFmt ? 15 : 9.5, anchor: 'middle', fill: 'var(--ink-muted)' });
   });
-  txt(M.left, H - (bigFmt ? 16 : 11), in_axisLabel(), { fs: bigFmt ? 16 : 10, fill: 'var(--ink-muted)' });
+  // El titulo del eje puede ser largo ("goles respecto del promedio de su propio
+  // Mundial..."): se achica y se corre hasta entrar. Arranca alineado al plot, pero
+  // si no entra usa tambien la canaleta de la izquierda antes que salirse del marco.
+  (() => {
+    const et = in_axisLabel(), tope = W - (bigFmt ? 10 : 6), piso = bigFmt ? 11 : 8;
+    let fs = bigFmt ? 16 : 10, w = meas(et, fs, 400);
+    while (w > tope - 4 && fs > piso) { fs -= 0.5; w = meas(et, fs, 400); }
+    const x = Math.max(4, Math.min(M.left, tope - w));
+    txt(x, yTicks + (bigFmt ? 28 : 18), et, { fs, fill: 'var(--ink-muted)' });
+  })();
 
   // REGLA DE LA CASA: el tooltip NO se gatea tras HAS_HOVER. En touch HAS_HOVER es
   // false y el listener no se anclaba nunca, o sea que en el celu no habia tooltip.
@@ -242,9 +282,17 @@ function in_draw(svg, W, H, bigFmt, rows) {
             y - (bigFmt ? 24 : 14.5), in_fmt(r.mean), { fs: FSV, anchor: 'middle', weight: 700 });
     gr.appendChild(vl);
     if (r.nueva) {
+      // La nota va despues del valor; si no entra a lo ancho (pasa con la barra de
+      // porcentaje en el celu) baja un renglon en vez de salirse del marco.
       const gapV = bigFmt ? 14 : 9;
+      const et = in_t('c10-nueva', in_en() ? 'debut 2026' : 'estreno 2026');
+      const fsN = bigFmt ? 15.5 : 8.5;
       const nx = in_isPct() ? X(r.mean) + gapV + meas(in_fmt(r.mean), FSV, 700) + gapV : X(r.mean) + (bigFmt ? 26 : 16);
-      gr.appendChild(txt(nx, y + (bigFmt ? 6 : 4), in_t('c10-nueva', in_en() ? 'debut 2026' : 'estreno 2026'), { fs: bigFmt ? 15.5 : 8.5, fill: 'var(--ink-muted)', italic: true }));
+      const entra = nx + meas(et, fsN, 400) <= W - 4;
+      gr.appendChild(entra
+        ? txt(nx, y + (bigFmt ? 6 : 4), et, { fs: fsN, fill: 'var(--ink-muted)', italic: true })
+        : txt(X(r.mean), y + Math.min(LANE * 0.42, FSV * 0.7 + fsN * 0.7 + (bigFmt ? 8 : 5)), et,
+              { fs: fsN, anchor: 'middle', fill: 'var(--ink-muted)', italic: true }));
     }
     if (hover) {
       const hit = mk('rect', { x: 0, y: y - LANE / 2, width: W, height: LANE, fill: 'transparent' });
