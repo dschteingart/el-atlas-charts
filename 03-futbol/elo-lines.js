@@ -299,6 +299,17 @@ function drawLines() {
   const sel = tl_selMap();
   const selected = Array.from(sel.keys()).filter(iso => tl_byIso[iso]);
 
+  // Small multiples: un panel por país, MISMA escala en todos. Se ramifica acá,
+  // antes de todo el layout del overlay (márgenes de etiquetas de fin de línea,
+  // hover). Con menos de 2 seleccionados no tiene sentido: cae al overlay.
+  if ((s5.layout || 'overlay') === 'multiples' && selected.length >= 2) {
+    // "narrow" = pantalla/formato angosto o portrait: menos columnas para que cada
+    // panel no quede minusculo. El PNG 'mobile' y el viewport mobile son portrait.
+    tl_drawMultiples(svg, { selected, y0, y1, mode, bigFmt, SIZES, TL_W, TL_H, narrow: mobile || mobilePng, mobileView: mobile });
+    tl_applyHeadings(mode, aeCfg);
+    return;
+  }
+
   // Margen derecho DINÁMICO: las etiquetas de fin de línea (nombres de país)
   // viven en el margen derecho. Un nombre largo (ej. "Bosnia and Herzegovina")
   // se sale del viewBox y el PNG lo recorta. Medimos la etiqueta más ancha de
@@ -568,6 +579,144 @@ function drawLines() {
 }
 
 //==================================================================
+//  Small multiples: un panel por país, MISMA escala en todos
+//==================================================================
+// Path de un país con escalas (x,y) dadas por el panel.
+function tl_buildPathScaled(iso3, y0, y1, mode, xS, yS) {
+  const pts = [];
+  for (let y = y0; y <= y1; y++) {
+    const v = tl_value(iso3, y, mode);
+    if (v != null) pts.push([xS(y), yS(v)]);
+  }
+  if (!pts.length) return '';
+  return pts.map((p, i) => (i === 0 ? 'M' : 'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+}
+
+function tl_drawMultiples(svg, ctx) {
+  const { selected, y0, y1, mode, bigFmt, SIZES, narrow, mobileView } = ctx;
+  const n = selected.length;
+  let TL_W = ctx.TL_W, TL_H = ctx.TL_H;
+
+  // Dominio COMPARTIDO (misma escala en todos los paneles): min/max de TODOS los
+  // seleccionados en el período. Es lo que hace comparables los paneles entre sí.
+  let lo = Infinity, hi = -Infinity, worst = 1;
+  selected.forEach(iso => {
+    for (let y = y0; y <= y1; y++) {
+      const v = tl_value(iso, y, mode);
+      if (v == null) continue;
+      if (mode === 'rank') { if (v > worst) worst = v; }
+      else { if (v < lo) lo = v; if (v > hi) hi = v; }
+    }
+  });
+  let dLo, dHi, rankMax, yTicks;
+  if (mode === 'rank') {
+    rankMax = Math.max(10, Math.ceil((worst + 1) / 5) * 5);
+    dLo = 1; dHi = rankMax;
+    const step = rankMax <= 20 ? 5 : (rankMax <= 60 ? 10 : 20);
+    yTicks = [1];
+    for (let v = step; v <= rankMax; v += step) yTicks.push(v);
+  } else {
+    if (!isFinite(lo)) { lo = 1300; hi = 2100; }
+    const pad = Math.max(20, (hi - lo) * 0.08);
+    dLo = lo - pad; dHi = hi + pad;
+    yTicks = tl_niceTicks(dLo, dHi, 4);
+  }
+
+  // Grilla de paneles. Desktop/PNG: grilla cuadrada. Angostos (portrait): 2 cols.
+  // Viewport mobile REAL: UNA columna a todo el ancho.
+  const cols = mobileView ? 1 : (narrow ? Math.min(2, n) : (n <= 3 ? n : Math.min(4, Math.ceil(Math.sqrt(n)))));
+  const rows = Math.ceil(n / cols);
+
+  // En el viewport mobile REAL el SVG escala al ancho del telefono (~360px). Con el
+  // viewBox de 1100 la reducción es ÷3 y los nombres quedan en ~8px (ver skill
+  // graficos-atlas). Angostamos el viewBox (una columna) y hacemos crecer el alto con
+  // los paneles (scroll vertical), asi cada trayectoria es grande y el texto ~15px
+  // efectivos. Mismo criterio que el chart de instancias. No aplica al PNG (compartir).
+  if (mobileView) {
+    TL_W = 440;
+    TL_H = Math.ceil(SIZES.label + 20) + rows * 200 + (rows - 1) * Math.ceil(SIZES.label + 22) + Math.ceil(40 + SIZES.tick);
+    svg.setAttribute('viewBox', `0 0 ${TL_W} ${TL_H}`);
+  }
+
+  const tickTxt = v => (mode === 'rank') ? (v + '°') : ('' + v);
+  const tickW = Math.max(0, ...yTicks.map(v => tl_measureText(tickTxt(v), SIZES.tick, 400)));
+
+  const M = {
+    top: Math.ceil(SIZES.label + (bigFmt ? 16 : 9)),                 // aire para el título del panel de la fila 0
+    right: bigFmt ? 16 : 10,
+    left: Math.ceil((bigFmt ? 30 : 16) + SIZES.axisTitle * 1.5 + tickW + (bigFmt ? 10 : 6)),
+    bottom: Math.ceil((bigFmt ? 34 : 18) + SIZES.tick),              // aire para los años de la fila de abajo
+  };
+  const gridW = TL_W - M.left - M.right;
+  const gridH = TL_H - M.top - M.bottom;
+  const gapX = bigFmt ? 34 : 20;
+  const gapY = Math.ceil(SIZES.label + (bigFmt ? 20 : 12));          // título del panel de abajo + aire
+  const panelW = (gridW - (cols - 1) * gapX) / cols;
+  const panelH = (gridH - (rows - 1) * gapY) / rows;
+
+  const mk = (tag, attrs) => { const e = tl_el(tag); for (const k in attrs) e.setAttribute(k, attrs[k]); svg.appendChild(e); return e; };
+  const label = (x, y, s, o) => {
+    const e = tl_el('text');
+    e.setAttribute('x', x); e.setAttribute('y', y);
+    e.style.fontFamily = 'var(--sans)'; e.style.fontSize = ((o && o.fs) || SIZES.tick) + 'px';
+    if (o && o.anchor) e.setAttribute('text-anchor', o.anchor);
+    if (o && o.weight) e.setAttribute('font-weight', o.weight);
+    if (o && o.halo) { e.setAttribute('paint-order', 'stroke'); e.setAttribute('stroke', '#FAF8F3'); e.setAttribute('stroke-width', bigFmt ? 5 : 3); e.setAttribute('stroke-linejoin', 'round'); }
+    e.setAttribute('fill', (o && o.fill) || 'var(--ink-muted)');
+    e.textContent = s; svg.appendChild(e); return e;
+  };
+  const yScaleP = (py, v) => (mode === 'rank')
+    ? py + ((v - 1) / (rankMax - 1)) * panelH                         // rank: 1° arriba
+    : py + panelH - ((v - dLo) / (dHi - dLo || 1)) * panelH;
+
+  selected.forEach((iso, i) => {
+    const col = i % cols, row = Math.floor(i / cols);
+    const px = M.left + col * (panelW + gapX);
+    const py = M.top + row * (panelH + gapY);
+    const xS = (yr) => px + ((yr - y0) / (y1 - y0 || 1)) * panelW;
+    const yS = (v) => yScaleP(py, v);
+    const isLeftCol = col === 0;
+    const isBottomOfCol = (i + cols >= n);   // no hay panel debajo de este
+
+    mk('rect', { x: px, y: py, width: panelW, height: panelH, fill: 'none', stroke: 'var(--rule)', 'stroke-width': 1, opacity: 0.55 });
+    yTicks.forEach(v => {
+      const yy = yS(v);
+      if (yy < py - 0.5 || yy > py + panelH + 0.5) return;
+      mk('line', { x1: px, x2: px + panelW, y1: yy, y2: yy, class: 's-grid-line' });
+      if (isLeftCol) label(px - (bigFmt ? 8 : 5), yy + (bigFmt ? 7 : 3.5), tickTxt(v), { anchor: 'end' });
+    });
+
+    // Contexto: TODOS los demás seleccionados en gris muy tenue (el "pack"), para
+    // leer a cada país contra el resto. Encima, su propia línea a todo color.
+    selected.forEach(other => {
+      if (other === iso) return;
+      const dg = tl_buildPathScaled(other, y0, y1, mode, xS, yS);
+      if (dg) mk('path', { d: dg, fill: 'none', stroke: 'var(--ink)', 'stroke-width': bigFmt ? 1.4 : 0.8, opacity: 0.10, 'stroke-linejoin': 'round' });
+    });
+    const d = tl_buildPathScaled(iso, y0, y1, mode, xS, yS);
+    if (d) mk('path', { d, fill: 'none', stroke: tl_getColor(iso), 'stroke-width': bigFmt ? 3 : 1.8, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' });
+
+    // Nombre del país (título del panel) arriba a la izquierda, en su color.
+    label(px, py - (bigFmt ? 8 : 5), tl_displayName(tl_byIso[iso]), { fs: SIZES.label, weight: bigFmt ? 700 : 600, fill: tl_getColor(iso), anchor: 'start', halo: true });
+
+    // Años (extremos del período) en la fila de abajo de cada columna.
+    if (isBottomOfCol) {
+      label(xS(y0), py + panelH + (bigFmt ? 26 : 15), '' + y0, { anchor: 'start' });
+      label(xS(y1), py + panelH + (bigFmt ? 26 : 15), '' + y1, { anchor: 'end' });
+    }
+  });
+
+  // Título del eje Y compartido (rotado, a la izquierda de toda la grilla). La X
+  // deja aire para la MITAD del alto renderizado del texto (con ascendentes es
+  // ~1.05x el font-size, no 0.5x): con 0.5x se cortaba 3px contra el borde en PNG.
+  const tt = (k, fb) => (typeof t === 'function' ? t(k) : '') || fb;
+  const _yTitleX = Math.ceil((bigFmt ? 18 : 10) + SIZES.axisTitle * 0.75);
+  const yT = mk('text', { class: 's-axis-title', 'text-anchor': 'middle', transform: `translate(${_yTitleX}, ${M.top + gridH / 2}) rotate(-90)` });
+  yT.style.fontSize = SIZES.axisTitle + 'px';
+  yT.textContent = (mode === 'rank') ? tt('c5-axis-y-rank', 'Posición en el ranking') : tt('c5-axis-y-elo', 'Puntaje Elo');
+}
+
+//==================================================================
 //  Énfasis al hover sobre una línea (atenúa el resto)
 //==================================================================
 // iso = país a resaltar; null = restaurar todo. Atenúa líneas, halos y
@@ -787,6 +936,16 @@ function setupLinesToggle() {
       grp.querySelectorAll('button').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state[5].mode = btn.dataset.mode;
+      drawLines();
+    });
+  });
+  // Toggle de vista: todas las lineas juntas (overlay) o una por panel (small multiples).
+  document.querySelectorAll('.toggle[data-target="tl-layout"] button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const grp = btn.closest('.toggle');
+      grp.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state[5].layout = btn.dataset.layout;
       drawLines();
     });
   });
