@@ -115,7 +115,11 @@ function tl_value(iso3, year, mode) {
   const d = tl_byIso[iso3];
   if (!d) return null;
   const v = (mode === 'rank' ? d.rank : d.elo)[String(year)];
-  return v == null ? null : v;
+  // OJO: el rank viene como STRING para las home nations (patch_home_nations lo
+  // guarda con str()) y como NUMERO para el resto. Sin forzar Number, `worst + 1`
+  // concatenaba ("98"+1="981") y el eje del ranking se estiraba a ~985. Forzar
+  // numero lo arregla para cualquier tipo del dato.
+  return v == null ? null : Number(v);
 }
 
 //==================================================================
