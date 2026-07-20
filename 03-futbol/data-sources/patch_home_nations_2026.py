@@ -75,18 +75,18 @@ for yr in range(1901, int(ASOF[:4]) + 1):
         continue
     for code, (iso, es, en) in HN_CODE.items():
         if code in d:
-            rk, rt = d[code]; hn[iso]["elo"][str(yr)] = rt; hn[iso]["rank"][str(yr)] = str(rk)
+            rk, rt = d[code]; hn[iso]["elo"][str(yr)] = rt; hn[iso]["rank"][str(yr)] = int(rk)
 
 # --- aplicar sobre data-elo-series.js ---
 series = json.loads(re.search(r"const ELO_SERIES\s*=\s*(\[.*\]);", OUT.read_text(encoding="utf-8"), re.S).group(1))
 by_en = {d["en"]: d for d in series}
 for name, (rk, rt) in elo2026.items():
     d = by_en.get(name)
-    if d: d["elo"]["2026"] = rt; d["rank"]["2026"] = str(rk)
+    if d: d["elo"]["2026"] = rt; d["rank"]["2026"] = int(rk)
 for iso, mod in SUCC.items():
     d = next((x for x in series if x["iso3"] == iso), None)
     if d and mod in elo2026:
-        rk, rt = elo2026[mod]; d["elo"]["2026"] = rt; d["rank"]["2026"] = str(rk)
+        rk, rt = elo2026[mod]; d["elo"]["2026"] = rt; d["rank"]["2026"] = int(rk)
 
 # Sacar el "Reino Unido" (= Inglaterra) Y cualquier home nation ya presente, para que
 # el patch sea idempotente al re-correrse sobre su propio output (si no, las duplica).
@@ -95,7 +95,7 @@ series = [x for x in series if x["iso3"] != "GBR" and x["iso3"] not in _hn_iso]
 for code, (iso, es, en) in HN_CODE.items():
     series.append({"iso3": iso, "name": es, "en": en, "confed": "UEFA",
                    "elo": {y: int(v) for y, v in hn[iso]["elo"].items()},
-                   "rank": {y: str(v) for y, v in hn[iso]["rank"].items()}})
+                   "rank": {y: int(v) for y, v in hn[iso]["rank"].items()}})
 series.sort(key=lambda d: d["name"])
 
 js = ("// AUTO-GENERADO (build_elo_series.py + patch_home_nations_2026.py) — no editar a mano.\n"
