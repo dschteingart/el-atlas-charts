@@ -224,6 +224,14 @@ function drawLines() {
   const svg = document.getElementById('chart5');
   if (!svg) return;
   svg.innerHTML = '';
+  // Token de render: los listeners de hover se pegan al <svg> (no a sus hijos), asi
+  // que innerHTML='' NO los borra y sobreviven entre renders. En vez de removerlos
+  // uno por uno (mouse + touch), cada render bumpea el token y los handlers viejos
+  // se auto-anulan si no coincide. Arregla el leak y el tooltip del overlay que
+  // seguia apareciendo en small multiples (Daniel, 20/7).
+  svg.__tlRenderId = (svg.__tlRenderId || 0) + 1;
+  const _tt0 = document.getElementById('tooltip5');
+  if (_tt0) { _tt0.style.opacity = '0'; _tt0.style.display = 'none'; }
   tl_initData();
 
   const s5 = state[5];
@@ -305,7 +313,7 @@ function drawLines() {
   if ((s5.layout || 'overlay') === 'multiples' && selected.length >= 2) {
     // "narrow" = pantalla/formato angosto o portrait: menos columnas para que cada
     // panel no quede minusculo. El PNG 'mobile' y el viewport mobile son portrait.
-    tl_drawMultiples(svg, { selected, y0, y1, mode, bigFmt, SIZES, TL_W, TL_H, narrow: mobile || mobilePng, mobileView: mobile });
+    tl_drawMultiples(svg, { selected, y0, y1, mode, bigFmt, SIZES, TL_W, TL_H, narrow: mobile || mobilePng, mobileView: mobile, interactive: !(newsletter || square || mobilePng) });
     tl_applyHeadings(mode, aeCfg);
     return;
   }
@@ -593,9 +601,12 @@ function tl_buildPathScaled(iso3, y0, y1, mode, xS, yS) {
 }
 
 function tl_drawMultiples(svg, ctx) {
-  const { selected, y0, y1, mode, bigFmt, SIZES, narrow, mobileView } = ctx;
+  const { selected, y0, y1, mode, bigFmt, SIZES, narrow, mobileView, interactive } = ctx;
   const n = selected.length;
   let TL_W = ctx.TL_W, TL_H = ctx.TL_H;
+  const renderId = svg.__tlRenderId;
+  const tooltip = document.getElementById('tooltip5');
+  const hover = !!interactive;   // tooltip por panel; NO se gatea tras HAS_HOVER (touch usa wireTouchScrub)
 
   // Dominio COMPARTIDO (misma escala en todos los paneles): min/max de TODOS los
   // seleccionados en el período. Es lo que hace comparables los paneles entre sí.
@@ -704,6 +715,41 @@ function tl_drawMultiples(svg, ctx) {
       label(xS(y0), py + panelH + (bigFmt ? 26 : 15), '' + y0, { anchor: 'start' });
       label(xS(y1), py + panelH + (bigFmt ? 26 : 15), '' + y1, { anchor: 'end' });
     }
+
+    // Hover POR PANEL: crosshair + valor de ESTE país (no el tooltip del overlay).
+    if (hover) {
+      const cross = mk('g', { display: 'none' });
+      const vl = tl_el('line'); vl.setAttribute('stroke', '#9a9488'); vl.setAttribute('stroke-width', 1); vl.setAttribute('stroke-dasharray', '3 3'); vl.setAttribute('y1', py); vl.setAttribute('y2', py + panelH); cross.appendChild(vl);
+      const dot = tl_el('circle'); dot.setAttribute('r', bigFmt ? 5 : 4); dot.setAttribute('fill', tl_getColor(iso)); dot.setAttribute('stroke', '#FAF8F3'); dot.setAttribute('stroke-width', 1.5); cross.appendChild(dot);
+      const cap = mk('rect', { x: px, y: py, width: panelW, height: panelH, fill: 'transparent' });
+      cap.style.cursor = 'crosshair';
+      const move = (ev) => {
+        if (svg.__tlRenderId !== renderId) return;   // render viejo
+        const rect = svg.getBoundingClientRect(), scale = rect.width / TL_W;
+        const cx = (typeof evClientX === 'function' ? evClientX(ev) : ev.clientX);
+        const cy = (typeof evClientY === 'function' ? evClientY(ev) : ev.clientY);
+        const lx = (cx - rect.left) / scale;
+        let yr = Math.round(y0 + (lx - px) / (panelW || 1) * (y1 - y0));
+        yr = Math.max(y0, Math.min(y1, yr));
+        const v = tl_value(iso, yr, mode);
+        if (v == null) { cross.setAttribute('display', 'none'); if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; } return; }
+        cross.setAttribute('display', '');
+        vl.setAttribute('x1', xS(yr)); vl.setAttribute('x2', xS(yr));
+        dot.setAttribute('cx', xS(yr)); dot.setAttribute('cy', yS(v));
+        if (tooltip) {
+          const fmt = (mode === 'rank') ? (v + '°') : Math.round(v);
+          tooltip.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">${tl_displayName(tl_byIso[iso])}</div>`
+            + `<div style="display:flex;gap:10px;"><span style="opacity:.75;">${yr}</span><strong style="font-variant-numeric:tabular-nums;">${fmt}</strong></div>`;
+          tooltip.style.display = 'block'; tooltip.style.opacity = '1';
+          const _x = cx - rect.left, _w = tooltip.offsetWidth || 120;
+          tooltip.style.left = ((_x + 14 + _w > rect.width || _x > rect.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px';
+          tooltip.style.top = (cy - rect.top + 14) + 'px';
+        }
+      };
+      cap.addEventListener('mousemove', move);
+      cap.addEventListener('mouseleave', () => { cross.setAttribute('display', 'none'); if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; } });
+      if (typeof wireTouchScrub === 'function') wireTouchScrub(cap, move);   // tap/arrastre en el panel
+    }
   });
 
   // Título del eje Y compartido (rotado, a la izquierda de toda la grilla). La X
@@ -745,6 +791,7 @@ function tl_setLineEmphasis(iso) {
 function tl_setupHover(svg, ctx) {
   const { y0, y1, mode, xScale, yScale, selected } = ctx;
   const tooltip = document.getElementById('tooltip5');
+  const myRenderId = svg.__tlRenderId;   // si el chart se re-dibujó, este hover queda obsoleto
 
   const hoverG = tl_el('g');
   hoverG.setAttribute('display', 'none');
@@ -813,6 +860,7 @@ function tl_setupHover(svg, ctx) {
     return Math.round(y0 + (localX - TL_MARGIN.left) / (TL_W - TL_MARGIN.left - TL_MARGIN.right) * (y1 - y0));
   }
   const moveH = (ev) => {
+    if (svg.__tlRenderId !== myRenderId) { update(-1); return; }   // render viejo: no dibujar
     const yr = yearAt(ev);
     update(yr);
     if (tooltip) {
