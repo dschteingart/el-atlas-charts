@@ -131,6 +131,28 @@ function tl_displayName(d) {
   return (lang === 'en' && d.en) ? d.en : d.name;
 }
 
+// Estados que se DESINTEGRARON: la serie de eloratings es continua bajo el iso3 del
+// sucesor, pero antes del año de transición esos partidos eran de otra selección. La
+// etiqueta refleja el período mostrado: solo predecesor si termina antes, solo
+// sucesor si empieza después, y "Predecesor/Sucesor" si abarca ambos (Daniel, 20/7).
+// `year` = primer año del sucesor. (Alemania NO va: se reunificó, no se desintegró.)
+const TL_SUCCESSION = {
+  RUS: { es: 'URSS',          en: 'USSR',          year: 1992 },
+  SRB: { es: 'Yugoslavia',    en: 'Yugoslavia',    year: 2006 },
+  CZE: { es: 'Checoslovaquia', en: 'Czechoslovakia', year: 1994 },
+};
+function tl_periodName(iso3) {
+  const base = tl_displayName(tl_byIso[iso3]);
+  const s = TL_SUCCESSION[iso3];
+  if (!s) return base;
+  const per = (state[5] && state[5].period) || [1901, 2026];
+  const y0 = per[0], y1 = per[1];
+  const pred = ((typeof LANG !== 'undefined' && LANG === 'en') ? s.en : s.es);
+  if (y1 < s.year) return pred;        // el período termina antes: solo el predecesor
+  if (y0 >= s.year) return base;       // el período arranca después: solo el sucesor
+  return pred + '/' + base;            // abarca la transición: los dos
+}
+
 function tl_isMobile() {
   return (typeof isMobileViewport === 'function') ? isMobileViewport() : false;
 }
@@ -326,7 +348,7 @@ function drawLines() {
   const labelOffset = bigFmt ? 12 : 6;
   let maxLabelW = 0;
   selected.forEach(iso => {
-    const w = tl_measureText(tl_displayName(tl_byIso[iso]), SIZES.label, bigFmt ? 700 : 600);
+    const w = tl_measureText(tl_periodName(iso), SIZES.label, bigFmt ? 700 : 600);
     if (w > maxLabelW) maxLabelW = w;
   });
   if (maxLabelW > 0) {
@@ -524,7 +546,7 @@ function drawLines() {
     if (!lp) return;
     endLabels.push({
       iso, color: tl_getColor(iso),
-      text: tl_displayName(tl_byIso[iso]),
+      text: tl_periodName(iso),
       lineEndX: lp.x, idealY: lp.y
     });
   });
@@ -708,7 +730,7 @@ function tl_drawMultiples(svg, ctx) {
     if (d) mk('path', { d, fill: 'none', stroke: tl_getColor(iso), 'stroke-width': bigFmt ? 3 : 1.8, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' });
 
     // Nombre del país (título del panel) arriba a la izquierda, en su color.
-    label(px, py - (bigFmt ? 8 : 5), tl_displayName(tl_byIso[iso]), { fs: SIZES.label, weight: bigFmt ? 700 : 600, fill: tl_getColor(iso), anchor: 'start', halo: true });
+    label(px, py - (bigFmt ? 8 : 5), tl_periodName(iso), { fs: SIZES.label, weight: bigFmt ? 700 : 600, fill: tl_getColor(iso), anchor: 'start', halo: true });
 
     // Años (extremos del período) en la fila de abajo de cada columna.
     if (isBottomOfCol) {
@@ -725,6 +747,7 @@ function tl_drawMultiples(svg, ctx) {
       cap.style.cursor = 'crosshair';
       const move = (ev) => {
         if (svg.__tlRenderId !== renderId) return;   // render viejo
+        if (ev.stopPropagation) ev.stopPropagation();   // que no llegue al listener del svg (overlay)
         const rect = svg.getBoundingClientRect(), scale = rect.width / TL_W;
         const cx = (typeof evClientX === 'function' ? evClientX(ev) : ev.clientX);
         const cy = (typeof evClientY === 'function' ? evClientY(ev) : ev.clientY);
@@ -738,7 +761,7 @@ function tl_drawMultiples(svg, ctx) {
         dot.setAttribute('cx', xS(yr)); dot.setAttribute('cy', yS(v));
         if (tooltip) {
           const fmt = (mode === 'rank') ? (v + '°') : Math.round(v);
-          tooltip.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">${tl_displayName(tl_byIso[iso])}</div>`
+          tooltip.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">${tl_periodName(iso)}</div>`
             + `<div style="display:flex;gap:10px;"><span style="opacity:.75;">${yr}</span><strong style="font-variant-numeric:tabular-nums;">${fmt}</strong></div>`;
           tooltip.style.display = 'block'; tooltip.style.opacity = '1';
           const _x = cx - rect.left, _w = tooltip.offsetWidth || 120;
@@ -834,7 +857,7 @@ function tl_setupHover(svg, ctx) {
       c.setAttribute('fill', tl_getColor(iso));
       c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', 1.5);
       hoverG.appendChild(c);
-      rows.push({ name: tl_displayName(tl_byIso[iso]), color: tl_getColor(iso), v });
+      rows.push({ name: tl_periodName(iso), color: tl_getColor(iso), v });
     });
 
     if (tooltip && rows.length) {
@@ -860,7 +883,9 @@ function tl_setupHover(svg, ctx) {
     return Math.round(y0 + (localX - TL_MARGIN.left) / (TL_W - TL_MARGIN.left - TL_MARGIN.right) * (y1 - y0));
   }
   const moveH = (ev) => {
-    if (svg.__tlRenderId !== myRenderId) { update(-1); return; }   // render viejo: no dibujar
+    // Render viejo: NO tocar el tooltip (si lo ocultara, taparia el tooltip por
+    // panel del small multiples, al que le llega el mismo evento por burbujeo).
+    if (svg.__tlRenderId !== myRenderId) return;
     const yr = yearAt(ev);
     update(yr);
     if (tooltip) {
