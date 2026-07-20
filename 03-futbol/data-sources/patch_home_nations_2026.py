@@ -23,7 +23,7 @@ import json, re, ssl, time, urllib.request
 from pathlib import Path
 
 OUT = Path(__file__).resolve().parents[1] / "data-elo-series.js"
-ASOF = "2026-07-17"
+ASOF = "2026-07-20"
 HN_CODE = {"EN": ("ENG", "Inglaterra", "England"),
            "SQ": ("SCO", "Escocia", "Scotland"),
            "WA": ("WAL", "Gales", "Wales"),
@@ -88,7 +88,10 @@ for iso, mod in SUCC.items():
     if d and mod in elo2026:
         rk, rt = elo2026[mod]; d["elo"]["2026"] = rt; d["rank"]["2026"] = str(rk)
 
-series = [x for x in series if x["iso3"] != "GBR"]                  # sacar el "Reino Unido" (= Inglaterra)
+# Sacar el "Reino Unido" (= Inglaterra) Y cualquier home nation ya presente, para que
+# el patch sea idempotente al re-correrse sobre su propio output (si no, las duplica).
+_hn_iso = {iso for _c, (iso, _es, _en) in HN_CODE.items()}
+series = [x for x in series if x["iso3"] != "GBR" and x["iso3"] not in _hn_iso]
 for code, (iso, es, en) in HN_CODE.items():
     series.append({"iso3": iso, "name": es, "en": en, "confed": "UEFA",
                    "elo": {y: int(v) for y, v in hn[iso]["elo"].items()},

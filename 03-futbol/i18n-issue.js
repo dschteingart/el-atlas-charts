@@ -71,11 +71,11 @@ const ISSUE_I18N = {
     'footer-download':       'Descargar datos (CSV)',
     'footer-download-png':   'Descargar PNG',
     'footer-download-svg':   'Descargar SVG',
-    'c1-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo de selecciones nacionales, valor al cierre de cada año) y FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Los datos muestran el promedio del período seleccionado para ambas variables.',
+    'c1-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo de selecciones nacionales, valor al cierre de cada año; el de 2026 es a junio, antes del Mundial) y FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Los datos muestran el promedio del período seleccionado para ambas variables.',
     // Plantilla PLANA (sin <a>) para la nota del PNG: el hook
     // onBeforePngExportGetSourceText reemplaza {period} por los años reales
     // del slider, para que la nota diga explícitamente a qué promedio refiere.
-    'c1-sources-tpl':        'Datos: eloratings.net (Elo de selecciones nacionales, valor al cierre de cada año) y FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Los datos muestran el promedio {period} para ambas variables.',
+    'c1-sources-tpl':        'Datos: eloratings.net (Elo de selecciones nacionales, valor al cierre de cada año; el de 2026 es a junio, antes del Mundial) y FMI — World Economic Outlook (PIB total PPA, USD internacionales constantes). Los datos muestran el promedio {period} para ambas variables.',
 
     // Chart 2 — Talento futbolístico por millón de habitantes
     'c2-title':              'Uruguay produce más futbolistas célebres per cápita que cualquier país del mundo',
@@ -155,8 +155,8 @@ const ISSUE_I18N = {
     'c5-search-placeholder': 'Buscar selección…',
     'c5-axis-y-rank':        'Posición en el ranking',
     'c5-axis-y-elo':         'Puntaje Elo',
-    'c5-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (rating Elo de selecciones nacionales, valor al cierre de cada año —al 31 de diciembre; 2026, al 17 de julio—; serie 1901-2026). La "posición en el ranking" es el ranking mundial de eloratings.net. Inglaterra, Escocia, Gales e Irlanda del Norte van por separado (son miembros FIFA). Confederaciones según afiliación FIFA actual.',
-    'c5-sources-tpl':        'Datos: eloratings.net (rating Elo de selecciones nacionales, valor al cierre de cada año; 2026, al 17 de julio).',
+    'c5-sources':            'Datos: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (rating Elo de selecciones nacionales, valor al cierre de cada año —al 31 de diciembre; 2026, al 20 de julio—; serie 1901-2026). La "posición en el ranking" es el ranking mundial de eloratings.net. Inglaterra, Escocia, Gales e Irlanda del Norte van por separado (son miembros FIFA). Confederaciones según afiliación FIFA actual.',
+    'c5-sources-tpl':        'Datos: eloratings.net (rating Elo de selecciones nacionales, valor al cierre de cada año; 2026, al 20 de julio).',
 
     // Index del número (landing)
     'index-see':             'Ver gráfico →',
@@ -408,8 +408,8 @@ const ISSUE_I18N = {
     'footer-download':       'Download data (CSV)',
     'footer-download-png':   'Download PNG',
     'footer-download-svg':   'Download SVG',
-    'c1-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo of national teams, year-end value) and IMF — World Economic Outlook (total GDP PPP, constant international USD). Values show the average over the selected period for both variables.',
-    'c1-sources-tpl':        'Data: eloratings.net (Elo of national teams, year-end value) and IMF — World Economic Outlook (total GDP PPP, constant international USD). Values show the {period} average for both variables.',
+    'c1-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo of national teams, year-end value; the 2026 figure is as of June, before the World Cup) and IMF — World Economic Outlook (total GDP PPP, constant international USD). Values show the average over the selected period for both variables.',
+    'c1-sources-tpl':        'Data: eloratings.net (Elo of national teams, year-end value; the 2026 figure is as of June, before the World Cup) and IMF — World Economic Outlook (total GDP PPP, constant international USD). Values show the {period} average for both variables.',
 
     // Chart 2 — Footballing talent per million inhabitants
     'c2-title':              'Uruguay produces more famous footballers per capita than any country in the world',
@@ -478,8 +478,8 @@ const ISSUE_I18N = {
     'c5-search-placeholder': 'Search team…',
     'c5-axis-y-rank':        'World ranking position',
     'c5-axis-y-elo':         'Elo rating',
-    'c5-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo ratings of national teams, year-end value —December 31; 2026 as of July 17—; 1901-2026). "Ranking position" is the eloratings.net world ranking. England, Scotland, Wales and Northern Ireland are shown separately (all FIFA members). Confederations per current FIFA affiliation.',
-    'c5-sources-tpl':        'Data: eloratings.net (Elo ratings of national teams, year-end value; 2026 as of July 17).',
+    'c5-sources':            'Data: <a href="https://www.eloratings.net" target="_blank" rel="noopener">eloratings.net</a> (Elo ratings of national teams, year-end value —December 31; 2026 as of July 20—; 1901-2026). "Ranking position" is the eloratings.net world ranking. England, Scotland, Wales and Northern Ireland are shown separately (all FIFA members). Confederations per current FIFA affiliation.',
+    'c5-sources-tpl':        'Data: eloratings.net (Elo ratings of national teams, year-end value; 2026 as of July 20).',
 
     // Issue index (landing)
     'index-see':             'View chart →',
