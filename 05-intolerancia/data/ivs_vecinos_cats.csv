@@ -1,0 +1,39 @@
+cat,ivs_var,label_es,label_en,core
+antecedentes,A124_01,Personas con antecedentes penales,People with a criminal record,1
+otra_raza,A124_02,Personas de otra raza,People of a different race,1
+bebedores,A124_03,Bebedores empedernidos,Heavy drinkers,1
+inestables,A124_04,Personas emocionalmente inestables,Emotionally unstable people,1
+musulmanes,A124_05,Musulmanes,Muslims,1
+inmigrantes,A124_06,Inmigrantes o trabajadores extranjeros,Immigrants / foreign workers,1
+sida,A124_07,Personas con sida,People who have AIDS,1
+drogadictos,A124_08,Drogadictos,Drug addicts,1
+homosexuales,A124_09,Homosexuales,Homosexuals,1
+judios,A124_10,Judíos,Jews,1
+evangelistas,A124_11,Evangelistas,Evangelists,0
+otra_religion,A124_12,Personas de otra religión,People of a different religion,1
+minorias_militantes,A124_14,Minorías militantes,Militant minority,0
+otro_origen,A124_16,Personas nacidas en otro país,People not from country of origin,0
+gitanos,A124_17,Gitanos,Gypsies,1
+extremistas,A124_18,Extremistas políticos,Political extremists,0
+traficantes,A124_19,Traficantes,Traffickers,0
+cristianos,A124_24,Cristianos,Christians,0
+extrema_izquierda,A124_26,Extremistas de izquierda,Left-wing extremists,0
+extrema_derecha,A124_27,Extremistas de derecha,Right-wing extremists,0
+familias_numerosas,A124_28,Familias numerosas,People with large families,0
+hindues,A124_29,Hindúes,Hindus,0
+norteamericanos,A124_30,Norteamericanos,North Americans,0
+negros,A124_34,Personas negras,Black people,0
+blancos,A124_35,Personas blancas,White people,0
+personas_color,A124_36,Personas de color,Coloured people,0
+indios,A124_37,Indios,Indians,0
+kurdos,A124_38,Kurdos y yazidíes,Kurds and Yazidis,0
+parejas_no_casadas,A124_42,Parejas que conviven sin casarse,Unmarried couples living together,1
+otro_idioma,A124_43,Personas que hablan otro idioma,People who speak a different language,1
+sunies,A124_45,Suníes,Sunnis,0
+chiies,A124_46,Chiíes,Shia,0
+franceses,A124_47,Franceses,French people,0
+britanicos,A124_48,Británicos,British people,0
+iranies,A124_49,Iraníes,Iranians,0
+kuwaities,A124_50,Kuwaitíes,Kuwaitis,0
+turcos,A124_51,Turcos,Turkish people,0
+jordanos,A124_52,Jordanos,Jordanians,0

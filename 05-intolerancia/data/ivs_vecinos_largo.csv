@@ -1,0 +1,2773 @@
+iso3,region,study,wave,year,cat,pct,n
+ALB,Eastern Europe & Central Asia,WVS,3,1998,antecedentes,93.8,999
+ALB,Eastern Europe & Central Asia,WVS,4,2002,antecedentes,97.1,1000
+ALB,Eastern Europe & Central Asia,WVS,3,1998,bebedores,83.0,999
+ALB,Eastern Europe & Central Asia,WVS,4,2002,bebedores,80.5,1000
+ALB,Eastern Europe & Central Asia,WVS,3,1998,drogadictos,83.1,999
+ALB,Eastern Europe & Central Asia,WVS,4,2002,drogadictos,84.6,1000
+ALB,Eastern Europe & Central Asia,WVS,3,1998,extremistas,66.7,999
+ALB,Eastern Europe & Central Asia,WVS,3,1998,homosexuales,70.0,999
+ALB,Eastern Europe & Central Asia,WVS,4,2002,homosexuales,82.6,1000
+ALB,Eastern Europe & Central Asia,WVS,3,1998,inestables,57.7,999
+ALB,Eastern Europe & Central Asia,WVS,4,2002,inestables,60.5,1000
+ALB,Eastern Europe & Central Asia,WVS,3,1998,inmigrantes,10.2,999
+ALB,Eastern Europe & Central Asia,WVS,4,2002,inmigrantes,16.5,1000
+ALB,Eastern Europe & Central Asia,WVS,4,2002,judios,17.0,1000
+ALB,Eastern Europe & Central Asia,WVS,4,2002,musulmanes,30.4,1000
+ALB,Eastern Europe & Central Asia,WVS,3,1998,otra_raza,7.8,999
+ALB,Eastern Europe & Central Asia,WVS,4,2002,otra_raza,30.4,1000
+ALB,Eastern Europe & Central Asia,WVS,3,1998,otra_religion,25.0,999
+ALB,Eastern Europe & Central Asia,WVS,3,1998,sida,63.5,999
+ALB,Eastern Europe & Central Asia,WVS,4,2002,sida,69.9,1000
+AND,Western Europe,WVS,5,2005,bebedores,53.4,1003
+AND,Western Europe,WVS,7,2018,bebedores,62.1,1004
+AND,Western Europe,WVS,5,2005,drogadictos,56.9,1003
+AND,Western Europe,WVS,7,2018,drogadictos,74.9,1004
+AND,Western Europe,WVS,5,2005,homosexuales,5.5,1003
+AND,Western Europe,WVS,7,2018,homosexuales,5.2,1004
+AND,Western Europe,WVS,5,2005,inmigrantes,2.4,1003
+AND,Western Europe,WVS,7,2018,inmigrantes,2.7,1004
+AND,Western Europe,WVS,5,2005,minorias_militantes,0.4,1003
+AND,Western Europe,WVS,5,2005,otra_raza,2.6,1003
+AND,Western Europe,WVS,7,2018,otra_raza,3.9,1004
+AND,Western Europe,WVS,5,2005,otra_religion,2.3,1003
+AND,Western Europe,WVS,7,2018,otra_religion,3.9,1004
+AND,Western Europe,WVS,5,2005,otro_idioma,1.7,999
+AND,Western Europe,WVS,7,2018,otro_idioma,1.8,1004
+AND,Western Europe,WVS,5,2005,parejas_no_casadas,1.7,999
+AND,Western Europe,WVS,7,2018,parejas_no_casadas,1.6,1004
+AND,Western Europe,WVS,5,2005,sida,6.8,1003
+AND,Western Europe,WVS,7,2018,sida,11.4,1004
+ARG,Latin America,WVS,1,1984,antecedentes,35.0,1005
+ARG,Latin America,WVS,2,1991,antecedentes,41.4,1002
+ARG,Latin America,WVS,3,1995,antecedentes,45.5,1079
+ARG,Latin America,WVS,4,1999,antecedentes,43.3,1280
+ARG,Latin America,WVS,1,1984,bebedores,37.7,1005
+ARG,Latin America,WVS,2,1991,bebedores,45.3,1002
+ARG,Latin America,WVS,3,1995,bebedores,43.6,1079
+ARG,Latin America,WVS,4,1999,bebedores,36.6,1280
+ARG,Latin America,WVS,5,2006,bebedores,36.5,1002
+ARG,Latin America,WVS,6,2013,bebedores,37.0,1030
+ARG,Latin America,WVS,7,2017,bebedores,37.5,1003
+ARG,Latin America,WVS,2,1991,drogadictos,50.0,1002
+ARG,Latin America,WVS,3,1995,drogadictos,39.2,1079
+ARG,Latin America,WVS,4,1999,drogadictos,31.7,1280
+ARG,Latin America,WVS,5,2006,drogadictos,55.1,1002
+ARG,Latin America,WVS,6,2013,drogadictos,66.0,1030
+ARG,Latin America,WVS,7,2017,drogadictos,72.3,1003
+ARG,Latin America,WVS,2,1991,extrema_derecha,46.0,1002
+ARG,Latin America,WVS,1,1984,extremistas,47.5,1005
+ARG,Latin America,WVS,3,1995,extremistas,52.8,1079
+ARG,Latin America,WVS,2,1991,familias_numerosas,4.6,1002
+ARG,Latin America,WVS,2,1991,hindues,3.2,1002
+ARG,Latin America,WVS,2,1991,homosexuales,38.9,1002
+ARG,Latin America,WVS,3,1995,homosexuales,27.3,1079
+ARG,Latin America,WVS,4,1999,homosexuales,22.1,1280
+ARG,Latin America,WVS,5,2006,homosexuales,16.4,1002
+ARG,Latin America,WVS,6,2013,homosexuales,11.0,1030
+ARG,Latin America,WVS,7,2017,homosexuales,8.6,1003
+ARG,Latin America,WVS,1,1984,inestables,25.9,1005
+ARG,Latin America,WVS,2,1991,inestables,21.5,1002
+ARG,Latin America,WVS,3,1995,inestables,28.2,1079
+ARG,Latin America,WVS,4,1999,inestables,22.3,1280
+ARG,Latin America,WVS,1,1984,inmigrantes,0.6,1005
+ARG,Latin America,WVS,2,1991,inmigrantes,2.1,1002
+ARG,Latin America,WVS,3,1995,inmigrantes,5.7,1079
+ARG,Latin America,WVS,4,1999,inmigrantes,5.9,1280
+ARG,Latin America,WVS,5,2006,inmigrantes,2.8,1002
+ARG,Latin America,WVS,6,2013,inmigrantes,2.8,1030
+ARG,Latin America,WVS,7,2017,inmigrantes,4.1,1003
+ARG,Latin America,WVS,2,1991,judios,5.5,1002
+ARG,Latin America,WVS,3,1995,judios,7.1,1079
+ARG,Latin America,WVS,4,1999,judios,6.4,1280
+ARG,Latin America,WVS,2,1991,musulmanes,5.9,1002
+ARG,Latin America,WVS,4,1999,musulmanes,6.2,1280
+ARG,Latin America,WVS,1,1984,otra_raza,2.5,1005
+ARG,Latin America,WVS,2,1991,otra_raza,2.7,1002
+ARG,Latin America,WVS,3,1995,otra_raza,4.6,1079
+ARG,Latin America,WVS,4,1999,otra_raza,4.5,1280
+ARG,Latin America,WVS,5,2006,otra_raza,2.3,1002
+ARG,Latin America,WVS,6,2013,otra_raza,1.0,1030
+ARG,Latin America,WVS,7,2017,otra_raza,2.7,1003
+ARG,Latin America,WVS,5,2006,otra_religion,1.4,1002
+ARG,Latin America,WVS,6,2013,otra_religion,3.2,1030
+ARG,Latin America,WVS,7,2017,otra_religion,2.2,1003
+ARG,Latin America,WVS,5,2006,otro_idioma,2.6,1002
+ARG,Latin America,WVS,6,2013,otro_idioma,3.9,1030
+ARG,Latin America,WVS,7,2017,otro_idioma,4.0,1003
+ARG,Latin America,WVS,5,2006,parejas_no_casadas,0.8,1002
+ARG,Latin America,WVS,6,2013,parejas_no_casadas,0.4,1030
+ARG,Latin America,WVS,7,2017,parejas_no_casadas,1.1,1003
+ARG,Latin America,WVS,2,1991,sida,31.5,1002
+ARG,Latin America,WVS,3,1995,sida,15.0,1079
+ARG,Latin America,WVS,4,1999,sida,11.6,1280
+ARG,Latin America,WVS,5,2006,sida,7.2,1002
+ARG,Latin America,WVS,6,2013,sida,5.7,1030
+ARG,Latin America,WVS,7,2017,sida,4.0,1003
+ARM,Eastern Europe & Central Asia,WVS,3,1997,antecedentes,78.0,2000
+ARM,Eastern Europe & Central Asia,WVS,3,1997,bebedores,86.4,2000
+ARM,Eastern Europe & Central Asia,WVS,6,2011,bebedores,92.1,1100
+ARM,Eastern Europe & Central Asia,WVS,7,2021,bebedores,82.5,1207
+ARM,Eastern Europe & Central Asia,WVS,3,1997,drogadictos,92.6,2000
+ARM,Eastern Europe & Central Asia,WVS,6,2011,drogadictos,96.2,1100
+ARM,Eastern Europe & Central Asia,WVS,7,2021,drogadictos,95.6,1207
+ARM,Eastern Europe & Central Asia,WVS,3,1997,extremistas,55.0,2000
+ARM,Eastern Europe & Central Asia,WVS,3,1997,homosexuales,83.3,2000
+ARM,Eastern Europe & Central Asia,WVS,6,2011,homosexuales,92.7,1100
+ARM,Eastern Europe & Central Asia,WVS,7,2021,homosexuales,83.1,1207
+ARM,Eastern Europe & Central Asia,WVS,3,1997,inestables,75.2,2000
+ARM,Eastern Europe & Central Asia,WVS,3,1997,inmigrantes,21.6,2000
+ARM,Eastern Europe & Central Asia,WVS,6,2011,inmigrantes,18.4,1100
+ARM,Eastern Europe & Central Asia,WVS,7,2021,inmigrantes,16.6,1207
+ARM,Eastern Europe & Central Asia,WVS,3,1997,kurdos,42.2,2000
+ARM,Eastern Europe & Central Asia,WVS,3,1997,otra_raza,19.2,2000
+ARM,Eastern Europe & Central Asia,WVS,6,2011,otra_raza,31.8,1100
+ARM,Eastern Europe & Central Asia,WVS,7,2021,otra_raza,27.9,1207
+ARM,Eastern Europe & Central Asia,WVS,6,2011,otra_religion,56.6,1100
+ARM,Eastern Europe & Central Asia,WVS,7,2021,otra_religion,36.0,1207
+ARM,Eastern Europe & Central Asia,WVS,6,2011,otro_idioma,16.2,1100
+ARM,Eastern Europe & Central Asia,WVS,7,2021,otro_idioma,14.9,1207
+ARM,Eastern Europe & Central Asia,WVS,6,2011,parejas_no_casadas,33.1,1100
+ARM,Eastern Europe & Central Asia,WVS,7,2021,parejas_no_casadas,22.8,1207
+ARM,Eastern Europe & Central Asia,WVS,3,1997,sida,85.4,2000
+ARM,Eastern Europe & Central Asia,WVS,6,2011,sida,76.9,1100
+ARM,Eastern Europe & Central Asia,WVS,7,2021,sida,54.0,1207
+AUS,"North America, Australia & New Zealand",WVS,1,1981,antecedentes,42.3,1228
+AUS,"North America, Australia & New Zealand",WVS,3,1995,antecedentes,45.3,2048
+AUS,"North America, Australia & New Zealand",WVS,1,1981,bebedores,56.2,1228
+AUS,"North America, Australia & New Zealand",WVS,3,1995,bebedores,59.7,2048
+AUS,"North America, Australia & New Zealand",WVS,5,2005,bebedores,74.3,1421
+AUS,"North America, Australia & New Zealand",WVS,6,2012,bebedores,69.9,1477
+AUS,"North America, Australia & New Zealand",WVS,7,2018,bebedores,74.1,1813
+AUS,"North America, Australia & New Zealand",WVS,3,1995,drogadictos,73.6,2048
+AUS,"North America, Australia & New Zealand",WVS,5,2005,drogadictos,92.4,1421
+AUS,"North America, Australia & New Zealand",WVS,6,2012,drogadictos,93.8,1477
+AUS,"North America, Australia & New Zealand",WVS,7,2018,drogadictos,93.5,1813
+AUS,"North America, Australia & New Zealand",WVS,1,1981,extremistas,35.7,1228
+AUS,"North America, Australia & New Zealand",WVS,3,1995,extremistas,45.2,2048
+AUS,"North America, Australia & New Zealand",WVS,3,1995,homosexuales,24.7,2048
+AUS,"North America, Australia & New Zealand",WVS,5,2005,homosexuales,21.2,1421
+AUS,"North America, Australia & New Zealand",WVS,6,2012,homosexuales,13.4,1477
+AUS,"North America, Australia & New Zealand",WVS,7,2018,homosexuales,11.8,1813
+AUS,"North America, Australia & New Zealand",WVS,1,1981,inestables,38.8,1228
+AUS,"North America, Australia & New Zealand",WVS,3,1995,inestables,39.0,2048
+AUS,"North America, Australia & New Zealand",WVS,1,1981,inmigrantes,6.0,1228
+AUS,"North America, Australia & New Zealand",WVS,3,1995,inmigrantes,4.6,2048
+AUS,"North America, Australia & New Zealand",WVS,5,2005,inmigrantes,5.6,1421
+AUS,"North America, Australia & New Zealand",WVS,6,2012,inmigrantes,10.5,1477
+AUS,"North America, Australia & New Zealand",WVS,7,2018,inmigrantes,8.9,1813
+AUS,"North America, Australia & New Zealand",WVS,1,1981,otra_raza,5.6,1228
+AUS,"North America, Australia & New Zealand",WVS,3,1995,otra_raza,4.8,2048
+AUS,"North America, Australia & New Zealand",WVS,5,2005,otra_raza,4.5,1421
+AUS,"North America, Australia & New Zealand",WVS,6,2012,otra_raza,5.0,1477
+AUS,"North America, Australia & New Zealand",WVS,7,2018,otra_raza,3.9,1813
+AUS,"North America, Australia & New Zealand",WVS,5,2005,otra_religion,2.8,1421
+AUS,"North America, Australia & New Zealand",WVS,6,2012,otra_religion,4.0,1477
+AUS,"North America, Australia & New Zealand",WVS,7,2018,otra_religion,3.4,1813
+AUS,"North America, Australia & New Zealand",WVS,5,2005,otro_idioma,9.2,1341
+AUS,"North America, Australia & New Zealand",WVS,6,2012,otro_idioma,9.9,1477
+AUS,"North America, Australia & New Zealand",WVS,7,2018,otro_idioma,10.1,1813
+AUS,"North America, Australia & New Zealand",WVS,5,2005,parejas_no_casadas,2.4,1341
+AUS,"North America, Australia & New Zealand",WVS,6,2012,parejas_no_casadas,1.8,1477
+AUS,"North America, Australia & New Zealand",WVS,7,2018,parejas_no_casadas,2.5,1813
+AUS,"North America, Australia & New Zealand",WVS,3,1995,sida,15.0,2048
+AUS,"North America, Australia & New Zealand",WVS,5,2005,sida,16.2,1421
+AUS,"North America, Australia & New Zealand",WVS,6,2012,sida,15.3,1477
+AUS,"North America, Australia & New Zealand",WVS,7,2018,sida,14.8,1813
+AZE,Eastern Europe & Central Asia,WVS,3,1997,antecedentes,68.5,2002
+AZE,Eastern Europe & Central Asia,WVS,3,1997,bebedores,85.4,2002
+AZE,Eastern Europe & Central Asia,WVS,6,2011,bebedores,85.3,1002
+AZE,Eastern Europe & Central Asia,WVS,3,1997,cristianos,18.4,2002
+AZE,Eastern Europe & Central Asia,WVS,3,1997,drogadictos,97.1,2002
+AZE,Eastern Europe & Central Asia,WVS,6,2011,drogadictos,95.6,1002
+AZE,Eastern Europe & Central Asia,WVS,3,1997,extremistas,62.6,2002
+AZE,Eastern Europe & Central Asia,WVS,3,1997,homosexuales,90.7,2002
+AZE,Eastern Europe & Central Asia,WVS,6,2011,homosexuales,94.4,1002
+AZE,Eastern Europe & Central Asia,WVS,3,1997,inestables,75.0,2002
+AZE,Eastern Europe & Central Asia,WVS,3,1997,inmigrantes,19.9,2002
+AZE,Eastern Europe & Central Asia,WVS,6,2011,inmigrantes,40.6,1002
+AZE,Eastern Europe & Central Asia,WVS,3,1997,otra_raza,12.2,2002
+AZE,Eastern Europe & Central Asia,WVS,6,2011,otra_raza,58.1,1002
+AZE,Eastern Europe & Central Asia,WVS,6,2011,otra_religion,34.8,1002
+AZE,Eastern Europe & Central Asia,WVS,6,2011,otro_idioma,26.3,1002
+AZE,Eastern Europe & Central Asia,WVS,6,2011,parejas_no_casadas,58.2,1002
+AZE,Eastern Europe & Central Asia,WVS,3,1997,sida,89.2,2002
+AZE,Eastern Europe & Central Asia,WVS,6,2011,sida,94.4,1002
+BFA,Sub-Saharan Africa,WVS,5,2007,bebedores,66.4,1534
+BFA,Sub-Saharan Africa,WVS,5,2007,drogadictos,88.7,1534
+BFA,Sub-Saharan Africa,WVS,5,2007,homosexuales,80.5,1534
+BFA,Sub-Saharan Africa,WVS,5,2007,inmigrantes,11.5,1534
+BFA,Sub-Saharan Africa,WVS,5,2007,otra_raza,10.0,1534
+BFA,Sub-Saharan Africa,WVS,5,2007,otra_religion,12.0,1534
+BFA,Sub-Saharan Africa,WVS,5,2007,otro_idioma,10.2,1534
+BFA,Sub-Saharan Africa,WVS,5,2007,parejas_no_casadas,17.3,1534
+BFA,Sub-Saharan Africa,WVS,5,2007,sida,29.4,1534
+BGD,South Asia,WVS,3,1996,antecedentes,87.1,1525
+BGD,South Asia,WVS,4,2002,antecedentes,3.7,1500
+BGD,South Asia,WVS,3,1996,bebedores,89.5,1525
+BGD,South Asia,WVS,4,2002,bebedores,4.3,1500
+BGD,South Asia,WVS,7,2018,bebedores,79.9,1183
+BGD,South Asia,WVS,3,1996,drogadictos,90.4,1525
+BGD,South Asia,WVS,4,2002,drogadictos,1.9,1500
+BGD,South Asia,WVS,7,2018,drogadictos,81.5,1199
+BGD,South Asia,WVS,3,1996,extremistas,81.6,1525
+BGD,South Asia,WVS,3,1996,homosexuales,83.7,1525
+BGD,South Asia,WVS,4,2002,homosexuales,4.9,1500
+BGD,South Asia,WVS,7,2018,homosexuales,79.9,1162
+BGD,South Asia,WVS,3,1996,inestables,65.6,1525
+BGD,South Asia,WVS,4,2002,inestables,28.1,1500
+BGD,South Asia,WVS,3,1996,inmigrantes,29.5,1525
+BGD,South Asia,WVS,4,2002,inmigrantes,67.1,1500
+BGD,South Asia,WVS,7,2018,inmigrantes,40.8,1163
+BGD,South Asia,WVS,4,2002,judios,20.4,1500
+BGD,South Asia,WVS,3,1996,otra_raza,17.3,1525
+BGD,South Asia,WVS,4,2002,otra_raza,71.7,1500
+BGD,South Asia,WVS,7,2018,otra_raza,32.3,1182
+BGD,South Asia,WVS,3,1996,otra_religion,12.7,1525
+BGD,South Asia,WVS,4,2002,otra_religion,65.9,1500
+BGD,South Asia,WVS,7,2018,otra_religion,34.2,1184
+BGD,South Asia,WVS,7,2018,otro_idioma,46.9,1159
+BGD,South Asia,WVS,7,2018,parejas_no_casadas,77.7,1175
+BGD,South Asia,WVS,3,1996,sida,82.0,1525
+BGD,South Asia,WVS,4,2002,sida,5.7,1500
+BGD,South Asia,WVS,7,2018,sida,66.8,1187
+BGR,Eastern Europe & Central Asia,WVS,3,1997,antecedentes,69.8,1072
+BGR,Eastern Europe & Central Asia,WVS,3,1997,bebedores,42.3,1072
+BGR,Eastern Europe & Central Asia,WVS,5,2006,bebedores,65.0,1001
+BGR,Eastern Europe & Central Asia,WVS,3,1997,drogadictos,66.0,1072
+BGR,Eastern Europe & Central Asia,WVS,5,2006,drogadictos,79.8,1001
+BGR,Eastern Europe & Central Asia,WVS,3,1997,extremistas,39.0,1072
+BGR,Eastern Europe & Central Asia,WVS,3,1997,homosexuales,40.8,1072
+BGR,Eastern Europe & Central Asia,WVS,5,2006,homosexuales,49.7,1001
+BGR,Eastern Europe & Central Asia,WVS,3,1997,inestables,41.2,1072
+BGR,Eastern Europe & Central Asia,WVS,3,1997,inmigrantes,15.6,1072
+BGR,Eastern Europe & Central Asia,WVS,5,2006,inmigrantes,17.6,1001
+BGR,Eastern Europe & Central Asia,WVS,5,2006,musulmanes,19.9,1001
+BGR,Eastern Europe & Central Asia,WVS,3,1997,otra_raza,17.3,1072
+BGR,Eastern Europe & Central Asia,WVS,5,2006,otra_raza,20.1,1001
+BGR,Eastern Europe & Central Asia,WVS,3,1997,otra_religion,16.7,1072
+BGR,Eastern Europe & Central Asia,WVS,5,2006,otra_religion,15.0,1001
+BGR,Eastern Europe & Central Asia,WVS,5,2006,otro_idioma,12.5,1001
+BGR,Eastern Europe & Central Asia,WVS,5,2006,parejas_no_casadas,10.8,1001
+BGR,Eastern Europe & Central Asia,WVS,3,1997,sida,42.6,1072
+BGR,Eastern Europe & Central Asia,WVS,5,2006,sida,51.0,1001
+BIH,Eastern Europe & Central Asia,WVS,3,1998,antecedentes,78.4,1200
+BIH,Eastern Europe & Central Asia,WVS,4,2001,antecedentes,87.8,1200
+BIH,Eastern Europe & Central Asia,WVS,3,1998,bebedores,64.9,1200
+BIH,Eastern Europe & Central Asia,WVS,4,2001,bebedores,77.4,1200
+BIH,Eastern Europe & Central Asia,WVS,3,1998,drogadictos,66.8,1200
+BIH,Eastern Europe & Central Asia,WVS,4,2001,drogadictos,81.5,1200
+BIH,Eastern Europe & Central Asia,WVS,3,1998,extremistas,57.2,1200
+BIH,Eastern Europe & Central Asia,WVS,3,1998,homosexuales,56.4,1200
+BIH,Eastern Europe & Central Asia,WVS,4,2001,homosexuales,64.2,1200
+BIH,Eastern Europe & Central Asia,WVS,3,1998,inestables,47.1,1200
+BIH,Eastern Europe & Central Asia,WVS,4,2001,inestables,58.0,1200
+BIH,Eastern Europe & Central Asia,WVS,3,1998,inmigrantes,20.0,1200
+BIH,Eastern Europe & Central Asia,WVS,4,2001,inmigrantes,24.8,1200
+BIH,Eastern Europe & Central Asia,WVS,4,2001,judios,28.0,1200
+BIH,Eastern Europe & Central Asia,WVS,4,2001,musulmanes,12.8,1200
+BIH,Eastern Europe & Central Asia,WVS,3,1998,otra_raza,24.5,1200
+BIH,Eastern Europe & Central Asia,WVS,4,2001,otra_raza,13.2,1200
+BIH,Eastern Europe & Central Asia,WVS,3,1998,otra_religion,27.6,1200
+BIH,Eastern Europe & Central Asia,WVS,3,1998,sida,52.6,1200
+BIH,Eastern Europe & Central Asia,WVS,4,2001,sida,59.8,1200
+BLR,Eastern Europe & Central Asia,WVS,2,1990,antecedentes,71.8,1015
+BLR,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,66.8,2092
+BLR,Eastern Europe & Central Asia,WVS,2,1990,bebedores,81.7,1015
+BLR,Eastern Europe & Central Asia,WVS,3,1996,bebedores,74.0,2092
+BLR,Eastern Europe & Central Asia,WVS,6,2011,bebedores,87.7,1535
+BLR,Eastern Europe & Central Asia,WVS,2,1990,drogadictos,82.3,1015
+BLR,Eastern Europe & Central Asia,WVS,3,1996,drogadictos,82.4,2092
+BLR,Eastern Europe & Central Asia,WVS,6,2011,drogadictos,95.3,1535
+BLR,Eastern Europe & Central Asia,WVS,2,1990,extremistas,52.3,1015
+BLR,Eastern Europe & Central Asia,WVS,3,1996,extremistas,38.9,2092
+BLR,Eastern Europe & Central Asia,WVS,2,1990,homosexuales,79.0,1015
+BLR,Eastern Europe & Central Asia,WVS,3,1996,homosexuales,63.4,2092
+BLR,Eastern Europe & Central Asia,WVS,6,2011,homosexuales,72.1,1535
+BLR,Eastern Europe & Central Asia,WVS,2,1990,inestables,62.8,1015
+BLR,Eastern Europe & Central Asia,WVS,3,1996,inestables,53.2,2092
+BLR,Eastern Europe & Central Asia,WVS,2,1990,inmigrantes,17.0,1015
+BLR,Eastern Europe & Central Asia,WVS,3,1996,inmigrantes,6.3,2092
+BLR,Eastern Europe & Central Asia,WVS,6,2011,inmigrantes,33.4,1535
+BLR,Eastern Europe & Central Asia,WVS,3,1996,judios,6.9,2092
+BLR,Eastern Europe & Central Asia,WVS,2,1990,musulmanes,24.0,1015
+BLR,Eastern Europe & Central Asia,WVS,2,1990,otra_raza,16.7,1015
+BLR,Eastern Europe & Central Asia,WVS,3,1996,otra_raza,5.0,2092
+BLR,Eastern Europe & Central Asia,WVS,6,2011,otra_raza,23.1,1535
+BLR,Eastern Europe & Central Asia,WVS,6,2011,otra_religion,18.0,1535
+BLR,Eastern Europe & Central Asia,WVS,6,2011,otro_idioma,17.6,1535
+BLR,Eastern Europe & Central Asia,WVS,6,2011,parejas_no_casadas,6.9,1535
+BLR,Eastern Europe & Central Asia,WVS,2,1990,sida,72.6,1015
+BLR,Eastern Europe & Central Asia,WVS,3,1996,sida,58.0,2092
+BLR,Eastern Europe & Central Asia,WVS,6,2011,sida,60.9,1535
+BOL,Latin America,WVS,7,2017,bebedores,55.0,1800
+BOL,Latin America,WVS,7,2017,drogadictos,83.3,1800
+BOL,Latin America,WVS,7,2017,homosexuales,29.0,1800
+BOL,Latin America,WVS,7,2017,inmigrantes,10.2,1800
+BOL,Latin America,WVS,7,2017,otra_raza,5.3,1800
+BOL,Latin America,WVS,7,2017,otra_religion,7.3,1800
+BOL,Latin America,WVS,7,2017,otro_idioma,6.8,1800
+BOL,Latin America,WVS,7,2017,parejas_no_casadas,4.6,1800
+BOL,Latin America,WVS,7,2017,sida,22.4,1727
+BRA,Latin America,WVS,2,1991,antecedentes,51.5,1782
+BRA,Latin America,WVS,3,1997,antecedentes,44.8,1143
+BRA,Latin America,WVS,2,1991,bebedores,41.3,1782
+BRA,Latin America,WVS,3,1997,bebedores,46.2,1143
+BRA,Latin America,WVS,5,2006,bebedores,50.0,1500
+BRA,Latin America,WVS,6,2014,bebedores,38.9,1486
+BRA,Latin America,WVS,7,2018,bebedores,30.0,1762
+BRA,Latin America,WVS,2,1991,drogadictos,58.4,1782
+BRA,Latin America,WVS,3,1997,drogadictos,56.4,1143
+BRA,Latin America,WVS,5,2006,drogadictos,68.0,1500
+BRA,Latin America,WVS,6,2014,drogadictos,80.2,1486
+BRA,Latin America,WVS,7,2018,drogadictos,67.0,1762
+BRA,Latin America,WVS,2,1991,extrema_derecha,8.2,1782
+BRA,Latin America,WVS,3,1997,extremistas,15.6,1143
+BRA,Latin America,WVS,2,1991,familias_numerosas,6.0,1782
+BRA,Latin America,WVS,2,1991,homosexuales,30.2,1782
+BRA,Latin America,WVS,3,1997,homosexuales,26.1,1143
+BRA,Latin America,WVS,5,2006,homosexuales,21.6,1500
+BRA,Latin America,WVS,6,2014,homosexuales,11.1,1486
+BRA,Latin America,WVS,7,2018,homosexuales,6.8,1762
+BRA,Latin America,WVS,2,1991,inestables,16.3,1782
+BRA,Latin America,WVS,3,1997,inestables,17.7,1143
+BRA,Latin America,WVS,2,1991,inmigrantes,3.8,1782
+BRA,Latin America,WVS,3,1997,inmigrantes,3.6,1143
+BRA,Latin America,WVS,5,2006,inmigrantes,6.7,1500
+BRA,Latin America,WVS,6,2014,inmigrantes,2.6,1486
+BRA,Latin America,WVS,7,2018,inmigrantes,2.6,1762
+BRA,Latin America,WVS,2,1991,musulmanes,0.0,1782
+BRA,Latin America,WVS,5,2006,negros,4.8,1485
+BRA,Latin America,WVS,2,1991,otra_raza,4.6,1782
+BRA,Latin America,WVS,3,1997,otra_raza,2.8,1143
+BRA,Latin America,WVS,5,2006,otra_raza,4.4,1500
+BRA,Latin America,WVS,6,2014,otra_raza,1.9,1486
+BRA,Latin America,WVS,7,2018,otra_raza,1.4,1762
+BRA,Latin America,WVS,3,1997,otra_religion,13.2,1143
+BRA,Latin America,WVS,5,2006,otra_religion,5.8,1500
+BRA,Latin America,WVS,6,2014,otra_religion,3.4,1486
+BRA,Latin America,WVS,7,2018,otra_religion,2.5,1762
+BRA,Latin America,WVS,5,2006,otro_idioma,7.6,1485
+BRA,Latin America,WVS,6,2014,otro_idioma,4.6,1486
+BRA,Latin America,WVS,7,2018,otro_idioma,6.5,1762
+BRA,Latin America,WVS,5,2006,parejas_no_casadas,5.9,1485
+BRA,Latin America,WVS,6,2014,parejas_no_casadas,1.1,1486
+BRA,Latin America,WVS,7,2018,parejas_no_casadas,1.3,1762
+BRA,Latin America,WVS,2,1991,sida,23.5,1782
+BRA,Latin America,WVS,3,1997,sida,14.1,1143
+BRA,Latin America,WVS,5,2006,sida,14.7,1500
+BRA,Latin America,WVS,6,2014,sida,6.9,1486
+BRA,Latin America,WVS,7,2018,sida,6.4,1762
+CAN,"North America, Australia & New Zealand",WVS,4,2000,antecedentes,45.3,1931
+CAN,"North America, Australia & New Zealand",WVS,4,2000,bebedores,51.0,1931
+CAN,"North America, Australia & New Zealand",WVS,5,2006,bebedores,62.4,2164
+CAN,"North America, Australia & New Zealand",WVS,7,2020,bebedores,79.5,4018
+CAN,"North America, Australia & New Zealand",WVS,4,2000,drogadictos,64.2,1931
+CAN,"North America, Australia & New Zealand",WVS,5,2006,drogadictos,80.9,2164
+CAN,"North America, Australia & New Zealand",WVS,7,2020,drogadictos,89.7,4018
+CAN,"North America, Australia & New Zealand",WVS,4,2000,homosexuales,16.9,1931
+CAN,"North America, Australia & New Zealand",WVS,5,2006,homosexuales,14.3,2105
+CAN,"North America, Australia & New Zealand",WVS,7,2020,homosexuales,10.2,4018
+CAN,"North America, Australia & New Zealand",WVS,4,2000,inestables,32.9,1931
+CAN,"North America, Australia & New Zealand",WVS,4,2000,inmigrantes,4.2,1931
+CAN,"North America, Australia & New Zealand",WVS,5,2006,inmigrantes,4.2,2090
+CAN,"North America, Australia & New Zealand",WVS,7,2020,inmigrantes,8.8,4018
+CAN,"North America, Australia & New Zealand",WVS,4,2000,judios,3.8,1931
+CAN,"North America, Australia & New Zealand",WVS,4,2000,musulmanes,6.5,1931
+CAN,"North America, Australia & New Zealand",WVS,5,2006,musulmanes,11.4,2106
+CAN,"North America, Australia & New Zealand",WVS,4,2000,otra_raza,3.4,1931
+CAN,"North America, Australia & New Zealand",WVS,5,2006,otra_raza,2.2,2164
+CAN,"North America, Australia & New Zealand",WVS,7,2020,otra_raza,4.5,4018
+CAN,"North America, Australia & New Zealand",WVS,5,2006,otra_religion,2.1,2164
+CAN,"North America, Australia & New Zealand",WVS,7,2020,otra_religion,5.9,4018
+CAN,"North America, Australia & New Zealand",WVS,5,2006,otro_idioma,3.4,2083
+CAN,"North America, Australia & New Zealand",WVS,7,2020,otro_idioma,7.8,4018
+CAN,"North America, Australia & New Zealand",WVS,5,2006,parejas_no_casadas,2.8,2082
+CAN,"North America, Australia & New Zealand",WVS,7,2020,parejas_no_casadas,3.8,4018
+CAN,"North America, Australia & New Zealand",WVS,4,2000,sida,12.4,1931
+CAN,"North America, Australia & New Zealand",WVS,5,2006,sida,12.0,2164
+CAN,"North America, Australia & New Zealand",WVS,7,2020,sida,19.9,4018
+CHE,Western Europe,WVS,2,1989,antecedentes,6.5,1400
+CHE,Western Europe,WVS,3,1996,antecedentes,20.3,1212
+CHE,Western Europe,WVS,2,1989,bebedores,22.9,1400
+CHE,Western Europe,WVS,3,1996,bebedores,47.4,1212
+CHE,Western Europe,WVS,5,2007,bebedores,73.7,1241
+CHE,Western Europe,WVS,2,1989,drogadictos,31.6,1400
+CHE,Western Europe,WVS,3,1996,drogadictos,49.0,1212
+CHE,Western Europe,WVS,5,2007,drogadictos,64.8,1241
+CHE,Western Europe,WVS,2,1989,extrema_derecha,18.1,1400
+CHE,Western Europe,WVS,3,1996,extremistas,61.4,1212
+CHE,Western Europe,WVS,2,1989,familias_numerosas,0.7,1400
+CHE,Western Europe,WVS,3,1996,homosexuales,18.5,1212
+CHE,Western Europe,WVS,5,2007,homosexuales,10.8,1241
+CHE,Western Europe,WVS,2,1989,inestables,4.4,1400
+CHE,Western Europe,WVS,3,1996,inestables,17.2,1212
+CHE,Western Europe,WVS,2,1989,inmigrantes,1.6,1400
+CHE,Western Europe,WVS,3,1996,inmigrantes,10.0,1212
+CHE,Western Europe,WVS,5,2007,inmigrantes,6.9,1241
+CHE,Western Europe,WVS,5,2007,minorias_militantes,20.9,1185
+CHE,Western Europe,WVS,2,1989,musulmanes,0.0,1400
+CHE,Western Europe,WVS,3,1996,musulmanes,18.5,1212
+CHE,Western Europe,WVS,2,1989,otra_raza,2.3,1400
+CHE,Western Europe,WVS,3,1996,otra_raza,8.7,1212
+CHE,Western Europe,WVS,5,2007,otra_raza,5.4,1241
+CHE,Western Europe,WVS,5,2007,otra_religion,4.4,1241
+CHE,Western Europe,WVS,5,2007,otro_idioma,4.1,1198
+CHE,Western Europe,WVS,5,2007,parejas_no_casadas,3.1,1201
+CHE,Western Europe,WVS,2,1989,sida,0.0,1400
+CHE,Western Europe,WVS,3,1996,sida,12.2,1212
+CHE,Western Europe,WVS,5,2007,sida,8.8,1241
+CHL,Latin America,WVS,2,1990,antecedentes,45.8,1500
+CHL,Latin America,WVS,3,1996,antecedentes,49.6,1000
+CHL,Latin America,WVS,4,2000,antecedentes,62.5,1200
+CHL,Latin America,WVS,2,1990,bebedores,51.8,1500
+CHL,Latin America,WVS,3,1996,bebedores,53.7,1000
+CHL,Latin America,WVS,4,2000,bebedores,50.6,1200
+CHL,Latin America,WVS,5,2006,bebedores,58.6,1000
+CHL,Latin America,WVS,6,2012,bebedores,61.8,1000
+CHL,Latin America,WVS,7,2018,bebedores,59.1,1000
+CHL,Latin America,WVS,2,1990,drogadictos,54.9,1500
+CHL,Latin America,WVS,3,1996,drogadictos,58.5,1000
+CHL,Latin America,WVS,4,2000,drogadictos,52.6,1200
+CHL,Latin America,WVS,5,2006,drogadictos,76.2,1000
+CHL,Latin America,WVS,6,2012,drogadictos,74.1,1000
+CHL,Latin America,WVS,7,2018,drogadictos,86.8,1000
+CHL,Latin America,WVS,2,1990,extrema_derecha,45.9,1500
+CHL,Latin America,WVS,3,1996,extremistas,51.3,1000
+CHL,Latin America,WVS,2,1990,familias_numerosas,13.5,1500
+CHL,Latin America,WVS,2,1990,hindues,12.9,1500
+CHL,Latin America,WVS,2,1990,homosexuales,57.5,1500
+CHL,Latin America,WVS,3,1996,homosexuales,41.4,1000
+CHL,Latin America,WVS,4,2000,homosexuales,32.8,1200
+CHL,Latin America,WVS,5,2006,homosexuales,34.1,1000
+CHL,Latin America,WVS,6,2012,homosexuales,25.7,1000
+CHL,Latin America,WVS,7,2018,homosexuales,27.7,1000
+CHL,Latin America,WVS,2,1990,inestables,28.2,1500
+CHL,Latin America,WVS,3,1996,inestables,30.6,1000
+CHL,Latin America,WVS,4,2000,inestables,25.1,1200
+CHL,Latin America,WVS,2,1990,inmigrantes,11.9,1500
+CHL,Latin America,WVS,3,1996,inmigrantes,11.7,1000
+CHL,Latin America,WVS,4,2000,inmigrantes,10.7,1200
+CHL,Latin America,WVS,5,2006,inmigrantes,9.5,1000
+CHL,Latin America,WVS,6,2012,inmigrantes,7.6,1000
+CHL,Latin America,WVS,7,2018,inmigrantes,13.2,1000
+CHL,Latin America,WVS,2,1990,judios,15.5,1500
+CHL,Latin America,WVS,3,1996,judios,13.5,1000
+CHL,Latin America,WVS,4,2000,judios,8.8,1200
+CHL,Latin America,WVS,2,1990,musulmanes,11.6,1500
+CHL,Latin America,WVS,4,2000,musulmanes,7.4,1200
+CHL,Latin America,WVS,2,1990,otra_raza,10.7,1500
+CHL,Latin America,WVS,3,1996,otra_raza,12.0,1000
+CHL,Latin America,WVS,4,2000,otra_raza,8.9,1200
+CHL,Latin America,WVS,5,2006,otra_raza,8.5,1000
+CHL,Latin America,WVS,6,2012,otra_raza,5.6,1000
+CHL,Latin America,WVS,7,2018,otra_raza,6.9,1000
+CHL,Latin America,WVS,5,2006,otra_religion,5.9,1000
+CHL,Latin America,WVS,6,2012,otra_religion,5.8,1000
+CHL,Latin America,WVS,7,2018,otra_religion,5.9,1000
+CHL,Latin America,WVS,5,2006,otro_idioma,6.4,975
+CHL,Latin America,WVS,6,2012,otro_idioma,5.4,1000
+CHL,Latin America,WVS,7,2018,otro_idioma,5.7,1000
+CHL,Latin America,WVS,5,2006,parejas_no_casadas,6.9,976
+CHL,Latin America,WVS,6,2012,parejas_no_casadas,3.9,1000
+CHL,Latin America,WVS,7,2018,parejas_no_casadas,3.3,1000
+CHL,Latin America,WVS,2,1990,sida,40.7,1500
+CHL,Latin America,WVS,3,1996,sida,21.3,1000
+CHL,Latin America,WVS,4,2000,sida,23.9,1200
+CHL,Latin America,WVS,5,2006,sida,22.3,1000
+CHL,Latin America,WVS,6,2012,sida,17.9,1000
+CHL,Latin America,WVS,7,2018,sida,15.3,1000
+CHN,East Asia,WVS,2,1990,antecedentes,41.4,1000
+CHN,East Asia,WVS,3,1995,antecedentes,61.7,1500
+CHN,East Asia,WVS,4,2001,antecedentes,70.9,1000
+CHN,East Asia,WVS,2,1990,bebedores,57.5,1000
+CHN,East Asia,WVS,3,1995,bebedores,64.7,1500
+CHN,East Asia,WVS,4,2001,bebedores,74.0,1000
+CHN,East Asia,WVS,5,2007,bebedores,72.2,1991
+CHN,East Asia,WVS,6,2013,bebedores,71.1,2300
+CHN,East Asia,WVS,7,2018,bebedores,83.6,3019
+CHN,East Asia,WVS,2,1990,drogadictos,76.0,1000
+CHN,East Asia,WVS,3,1995,drogadictos,70.8,1500
+CHN,East Asia,WVS,4,2001,drogadictos,90.1,1000
+CHN,East Asia,WVS,5,2007,drogadictos,92.9,1991
+CHN,East Asia,WVS,6,2013,drogadictos,96.5,2300
+CHN,East Asia,WVS,7,2018,drogadictos,96.5,3029
+CHN,East Asia,WVS,3,1995,extremistas,42.1,1500
+CHN,East Asia,WVS,2,1990,familias_numerosas,18.7,1000
+CHN,East Asia,WVS,2,1990,homosexuales,71.9,1000
+CHN,East Asia,WVS,3,1995,homosexuales,60.7,1500
+CHN,East Asia,WVS,4,2001,homosexuales,73.2,1000
+CHN,East Asia,WVS,5,2007,homosexuales,69.6,1991
+CHN,East Asia,WVS,6,2013,homosexuales,52.7,2300
+CHN,East Asia,WVS,7,2018,homosexuales,71.9,2993
+CHN,East Asia,WVS,2,1990,inestables,45.6,1000
+CHN,East Asia,WVS,3,1995,inestables,55.6,1500
+CHN,East Asia,WVS,4,2001,inestables,63.9,1000
+CHN,East Asia,WVS,2,1990,inmigrantes,12.7,1000
+CHN,East Asia,WVS,3,1995,inmigrantes,20.3,1500
+CHN,East Asia,WVS,4,2001,inmigrantes,16.0,1000
+CHN,East Asia,WVS,5,2007,inmigrantes,17.2,1991
+CHN,East Asia,WVS,6,2013,inmigrantes,12.2,2300
+CHN,East Asia,WVS,7,2018,inmigrantes,26.2,2970
+CHN,East Asia,WVS,5,2007,minorias_militantes,2.4,1950
+CHN,East Asia,WVS,2,1990,musulmanes,12.1,1000
+CHN,East Asia,WVS,2,1990,otra_raza,11.9,1000
+CHN,East Asia,WVS,3,1995,otra_raza,22.9,1500
+CHN,East Asia,WVS,4,2001,otra_raza,14.6,1000
+CHN,East Asia,WVS,5,2007,otra_raza,12.6,1991
+CHN,East Asia,WVS,6,2013,otra_raza,10.5,2300
+CHN,East Asia,WVS,7,2018,otra_raza,18.4,2970
+CHN,East Asia,WVS,5,2007,otra_religion,15.7,1991
+CHN,East Asia,WVS,6,2013,otra_religion,9.2,2300
+CHN,East Asia,WVS,7,2018,otra_religion,31.3,2970
+CHN,East Asia,WVS,5,2007,otro_idioma,13.0,1950
+CHN,East Asia,WVS,6,2013,otro_idioma,6.6,2300
+CHN,East Asia,WVS,7,2018,otro_idioma,19.2,2971
+CHN,East Asia,WVS,5,2007,parejas_no_casadas,35.6,1950
+CHN,East Asia,WVS,6,2013,parejas_no_casadas,17.0,2300
+CHN,East Asia,WVS,7,2018,parejas_no_casadas,40.0,2973
+CHN,East Asia,WVS,2,1990,sida,76.2,1000
+CHN,East Asia,WVS,3,1995,sida,62.3,1500
+CHN,East Asia,WVS,4,2001,sida,79.4,1000
+CHN,East Asia,WVS,5,2007,sida,74.5,1991
+CHN,East Asia,WVS,6,2013,sida,73.2,2300
+CHN,East Asia,WVS,7,2018,sida,77.7,3004
+COL,Latin America,WVS,3,1997,antecedentes,63.5,2996
+COL,Latin America,WVS,3,1997,bebedores,33.4,2996
+COL,Latin America,WVS,5,2005,bebedores,51.2,3025
+COL,Latin America,WVS,6,2012,bebedores,53.4,1512
+COL,Latin America,WVS,7,2018,bebedores,39.7,1520
+COL,Latin America,WVS,3,1997,drogadictos,30.3,2996
+COL,Latin America,WVS,5,2005,drogadictos,78.8,3025
+COL,Latin America,WVS,6,2012,drogadictos,75.9,1512
+COL,Latin America,WVS,7,2018,drogadictos,70.3,1520
+COL,Latin America,WVS,3,1997,extremistas,22.3,2996
+COL,Latin America,WVS,3,1997,homosexuales,14.9,2996
+COL,Latin America,WVS,5,2005,homosexuales,45.9,3025
+COL,Latin America,WVS,6,2012,homosexuales,34.6,1512
+COL,Latin America,WVS,7,2018,homosexuales,28.1,1520
+COL,Latin America,WVS,3,1997,inestables,17.3,2996
+COL,Latin America,WVS,6,2012,inmigrantes,4.7,1512
+COL,Latin America,WVS,7,2018,inmigrantes,14.1,1520
+COL,Latin America,WVS,3,1997,otra_raza,2.0,2996
+COL,Latin America,WVS,5,2005,otra_raza,4.3,3025
+COL,Latin America,WVS,6,2012,otra_raza,3.2,1512
+COL,Latin America,WVS,7,2018,otra_raza,10.2,1520
+COL,Latin America,WVS,5,2005,otra_religion,8.1,3025
+COL,Latin America,WVS,6,2012,otra_religion,6.5,1512
+COL,Latin America,WVS,7,2018,otra_religion,13.1,1520
+COL,Latin America,WVS,6,2012,otro_idioma,7.5,1512
+COL,Latin America,WVS,7,2018,otro_idioma,9.0,1520
+COL,Latin America,WVS,5,2005,parejas_no_casadas,2.1,3021
+COL,Latin America,WVS,6,2012,parejas_no_casadas,4.1,1512
+COL,Latin America,WVS,7,2018,parejas_no_casadas,10.1,1520
+COL,Latin America,WVS,3,1997,sida,8.4,2996
+COL,Latin America,WVS,5,2005,sida,32.4,3025
+COL,Latin America,WVS,6,2012,sida,23.1,1512
+COL,Latin America,WVS,7,2018,sida,22.5,1520
+COL,Latin America,WVS,3,1997,traficantes,47.9,2996
+CYP,Western Europe,WVS,5,2006,bebedores,55.8,1050
+CYP,Western Europe,WVS,6,2011,bebedores,64.1,1000
+CYP,Western Europe,WVS,7,2019,bebedores,65.5,970
+CYP,Western Europe,WVS,5,2006,drogadictos,73.4,1050
+CYP,Western Europe,WVS,6,2011,drogadictos,64.6,1000
+CYP,Western Europe,WVS,7,2019,drogadictos,75.9,979
+CYP,Western Europe,WVS,5,2006,homosexuales,46.1,1033
+CYP,Western Europe,WVS,6,2011,homosexuales,34.9,1000
+CYP,Western Europe,WVS,7,2019,homosexuales,40.1,963
+CYP,Western Europe,WVS,5,2006,inmigrantes,21.2,1033
+CYP,Western Europe,WVS,6,2011,inmigrantes,35.5,1000
+CYP,Western Europe,WVS,7,2019,inmigrantes,20.6,971
+CYP,Western Europe,WVS,5,2006,minorias_militantes,31.1,1033
+CYP,Western Europe,WVS,5,2006,otra_raza,15.6,1050
+CYP,Western Europe,WVS,6,2011,otra_raza,24.8,1000
+CYP,Western Europe,WVS,7,2019,otra_raza,15.6,976
+CYP,Western Europe,WVS,5,2006,otra_religion,15.8,1032
+CYP,Western Europe,WVS,6,2011,otra_religion,20.1,1000
+CYP,Western Europe,WVS,7,2019,otra_religion,16.1,976
+CYP,Western Europe,WVS,5,2006,otro_idioma,10.0,1033
+CYP,Western Europe,WVS,6,2011,otro_idioma,14.4,1000
+CYP,Western Europe,WVS,7,2019,otro_idioma,9.4,981
+CYP,Western Europe,WVS,5,2006,parejas_no_casadas,15.5,1032
+CYP,Western Europe,WVS,6,2011,parejas_no_casadas,14.5,1000
+CYP,Western Europe,WVS,7,2019,parejas_no_casadas,14.0,975
+CYP,Western Europe,WVS,5,2006,sida,42.5,1050
+CYP,Western Europe,WVS,6,2011,sida,31.7,1000
+CYP,Western Europe,WVS,7,2019,sida,39.7,951
+CZE,Eastern Europe & Central Asia,WVS,2,1991,antecedentes,69.7,924
+CZE,Eastern Europe & Central Asia,WVS,3,1998,antecedentes,70.6,1147
+CZE,Eastern Europe & Central Asia,WVS,2,1991,bebedores,73.7,924
+CZE,Eastern Europe & Central Asia,WVS,3,1998,bebedores,66.7,1147
+CZE,Eastern Europe & Central Asia,WVS,7,2022,bebedores,77.8,1163
+CZE,Eastern Europe & Central Asia,WVS,2,1991,drogadictos,79.9,924
+CZE,Eastern Europe & Central Asia,WVS,3,1998,drogadictos,74.4,1147
+CZE,Eastern Europe & Central Asia,WVS,7,2022,drogadictos,90.7,1163
+CZE,Eastern Europe & Central Asia,WVS,2,1991,extrema_derecha,36.5,924
+CZE,Eastern Europe & Central Asia,WVS,3,1998,extremistas,43.1,1147
+CZE,Eastern Europe & Central Asia,WVS,2,1991,familias_numerosas,12.8,924
+CZE,Eastern Europe & Central Asia,WVS,2,1991,hindues,74.4,924
+CZE,Eastern Europe & Central Asia,WVS,2,1991,homosexuales,53.2,924
+CZE,Eastern Europe & Central Asia,WVS,3,1998,homosexuales,24.0,1147
+CZE,Eastern Europe & Central Asia,WVS,7,2022,homosexuales,18.1,1163
+CZE,Eastern Europe & Central Asia,WVS,2,1991,inestables,31.9,924
+CZE,Eastern Europe & Central Asia,WVS,3,1998,inestables,22.5,1147
+CZE,Eastern Europe & Central Asia,WVS,2,1991,inmigrantes,32.7,924
+CZE,Eastern Europe & Central Asia,WVS,3,1998,inmigrantes,28.1,1147
+CZE,Eastern Europe & Central Asia,WVS,7,2022,inmigrantes,34.0,1163
+CZE,Eastern Europe & Central Asia,WVS,2,1991,judios,17.5,924
+CZE,Eastern Europe & Central Asia,WVS,2,1991,musulmanes,47.2,924
+CZE,Eastern Europe & Central Asia,WVS,2,1991,otra_raza,29.5,924
+CZE,Eastern Europe & Central Asia,WVS,3,1998,otra_raza,10.5,1147
+CZE,Eastern Europe & Central Asia,WVS,7,2022,otra_raza,20.7,1163
+CZE,Eastern Europe & Central Asia,WVS,7,2022,otra_religion,9.8,1163
+CZE,Eastern Europe & Central Asia,WVS,7,2022,otro_idioma,11.9,1163
+CZE,Eastern Europe & Central Asia,WVS,7,2022,parejas_no_casadas,2.7,1163
+CZE,Eastern Europe & Central Asia,WVS,2,1991,sida,60.3,924
+CZE,Eastern Europe & Central Asia,WVS,3,1998,sida,23.1,1147
+CZE,Eastern Europe & Central Asia,WVS,7,2022,sida,41.8,1163
+DEU,Western Europe,WVS,3,1997,antecedentes,24.0,2026
+DEU,Western Europe,WVS,3,1997,bebedores,40.4,2026
+DEU,Western Europe,WVS,5,2006,bebedores,66.2,2064
+DEU,Western Europe,WVS,6,2013,bebedores,70.3,2045
+DEU,Western Europe,WVS,7,2018,bebedores,73.2,1523
+DEU,Western Europe,WVS,3,1997,drogadictos,51.8,2026
+DEU,Western Europe,WVS,5,2006,drogadictos,62.6,2064
+DEU,Western Europe,WVS,6,2013,drogadictos,66.4,2041
+DEU,Western Europe,WVS,7,2018,drogadictos,69.8,1523
+DEU,Western Europe,WVS,3,1997,extremistas,70.5,2026
+DEU,Western Europe,WVS,3,1997,homosexuales,13.3,2026
+DEU,Western Europe,WVS,5,2006,homosexuales,14.6,2064
+DEU,Western Europe,WVS,6,2013,homosexuales,22.4,2046
+DEU,Western Europe,WVS,7,2018,homosexuales,6.4,1523
+DEU,Western Europe,WVS,3,1997,inestables,24.2,2026
+DEU,Western Europe,WVS,3,1997,inmigrantes,7.2,2026
+DEU,Western Europe,WVS,5,2006,inmigrantes,13.3,2064
+DEU,Western Europe,WVS,6,2013,inmigrantes,21.5,2040
+DEU,Western Europe,WVS,7,2018,inmigrantes,3.9,1523
+DEU,Western Europe,WVS,5,2006,musulmanes,24.8,2064
+DEU,Western Europe,WVS,3,1997,otra_raza,2.8,2026
+DEU,Western Europe,WVS,5,2006,otra_raza,7.2,2064
+DEU,Western Europe,WVS,6,2013,otra_raza,14.9,2042
+DEU,Western Europe,WVS,7,2018,otra_raza,2.8,1523
+DEU,Western Europe,WVS,3,1997,otra_religion,12.5,2026
+DEU,Western Europe,WVS,5,2006,otra_religion,4.3,2064
+DEU,Western Europe,WVS,6,2013,otra_religion,14.1,2045
+DEU,Western Europe,WVS,7,2018,otra_religion,2.8,1523
+DEU,Western Europe,WVS,5,2006,otro_idioma,9.2,1960
+DEU,Western Europe,WVS,6,2013,otro_idioma,13.4,2042
+DEU,Western Europe,WVS,7,2018,otro_idioma,4.9,1523
+DEU,Western Europe,WVS,5,2006,parejas_no_casadas,2.4,1955
+DEU,Western Europe,WVS,6,2013,parejas_no_casadas,9.3,2045
+DEU,Western Europe,WVS,7,2018,parejas_no_casadas,0.7,1523
+DEU,Western Europe,WVS,3,1997,sida,6.5,2026
+DEU,Western Europe,WVS,5,2006,sida,15.4,2064
+DEU,Western Europe,WVS,6,2013,sida,24.0,2041
+DEU,Western Europe,WVS,7,2018,sida,6.2,1523
+DOM,Latin America,WVS,3,1996,antecedentes,62.4,417
+DOM,Latin America,WVS,3,1996,bebedores,54.7,417
+DOM,Latin America,WVS,3,1996,drogadictos,70.5,417
+DOM,Latin America,WVS,3,1996,extremistas,44.4,417
+DOM,Latin America,WVS,3,1996,homosexuales,48.7,417
+DOM,Latin America,WVS,3,1996,inestables,52.3,417
+DOM,Latin America,WVS,3,1996,inmigrantes,17.5,417
+DOM,Latin America,WVS,3,1996,otra_raza,18.5,417
+DOM,Latin America,WVS,3,1996,sida,29.5,417
+DZA,Middle East & North Africa,WVS,4,2002,antecedentes,70.2,1282
+DZA,Middle East & North Africa,WVS,4,2002,bebedores,69.3,1282
+DZA,Middle East & North Africa,WVS,6,2014,bebedores,78.8,1200
+DZA,Middle East & North Africa,WVS,4,2002,drogadictos,76.8,1282
+DZA,Middle East & North Africa,WVS,6,2014,drogadictos,84.2,1200
+DZA,Middle East & North Africa,WVS,4,2002,homosexuales,80.7,1282
+DZA,Middle East & North Africa,WVS,6,2014,homosexuales,58.1,1200
+DZA,Middle East & North Africa,WVS,4,2002,inestables,44.3,1282
+DZA,Middle East & North Africa,WVS,4,2002,inmigrantes,23.5,1282
+DZA,Middle East & North Africa,WVS,6,2014,inmigrantes,28.0,1200
+DZA,Middle East & North Africa,WVS,4,2002,otra_raza,28.0,1282
+DZA,Middle East & North Africa,WVS,6,2014,otra_raza,19.8,1200
+DZA,Middle East & North Africa,WVS,4,2002,otra_religion,32.1,1282
+DZA,Middle East & North Africa,WVS,6,2014,otra_religion,42.7,1200
+DZA,Middle East & North Africa,WVS,6,2014,otro_idioma,18.1,1200
+DZA,Middle East & North Africa,WVS,6,2014,parejas_no_casadas,65.8,1200
+DZA,Middle East & North Africa,WVS,4,2002,sida,68.3,1282
+DZA,Middle East & North Africa,WVS,6,2014,sida,46.2,1200
+ECU,Latin America,WVS,6,2013,bebedores,48.8,1202
+ECU,Latin America,WVS,7,2018,bebedores,50.9,1200
+ECU,Latin America,WVS,6,2013,drogadictos,54.1,1202
+ECU,Latin America,WVS,7,2018,drogadictos,76.0,1200
+ECU,Latin America,WVS,6,2013,homosexuales,38.8,1202
+ECU,Latin America,WVS,7,2018,homosexuales,31.5,1200
+ECU,Latin America,WVS,6,2013,inmigrantes,34.6,1202
+ECU,Latin America,WVS,7,2018,inmigrantes,10.4,1200
+ECU,Latin America,WVS,6,2013,otra_raza,34.5,1202
+ECU,Latin America,WVS,7,2018,otra_raza,6.0,1200
+ECU,Latin America,WVS,6,2013,otra_religion,32.1,1202
+ECU,Latin America,WVS,7,2018,otra_religion,14.2,1200
+ECU,Latin America,WVS,6,2013,otro_idioma,34.2,1202
+ECU,Latin America,WVS,7,2018,otro_idioma,14.2,1200
+ECU,Latin America,WVS,6,2013,parejas_no_casadas,32.0,1202
+ECU,Latin America,WVS,7,2018,parejas_no_casadas,8.4,1200
+ECU,Latin America,WVS,6,2013,sida,34.6,1202
+ECU,Latin America,WVS,7,2018,sida,18.0,1200
+EGY,Middle East & North Africa,WVS,4,2001,antecedentes,96.9,3000
+EGY,Middle East & North Africa,WVS,4,2001,bebedores,98.9,3000
+EGY,Middle East & North Africa,WVS,7,2018,bebedores,87.7,1200
+EGY,Middle East & North Africa,WVS,4,2001,drogadictos,99.2,3000
+EGY,Middle East & North Africa,WVS,7,2018,drogadictos,92.3,1200
+EGY,Middle East & North Africa,WVS,4,2001,homosexuales,99.6,3000
+EGY,Middle East & North Africa,WVS,7,2018,homosexuales,84.0,1200
+EGY,Middle East & North Africa,WVS,4,2001,inestables,72.1,3000
+EGY,Middle East & North Africa,WVS,4,2001,inmigrantes,57.7,3000
+EGY,Middle East & North Africa,WVS,7,2018,inmigrantes,20.0,1200
+EGY,Middle East & North Africa,WVS,4,2001,judios,62.0,3000
+EGY,Middle East & North Africa,WVS,4,2001,otra_raza,34.2,3000
+EGY,Middle East & North Africa,WVS,7,2018,otra_raza,16.5,1200
+EGY,Middle East & North Africa,WVS,7,2018,otra_religion,13.4,1200
+EGY,Middle East & North Africa,WVS,6,2013,otro_idioma,19.5,1523
+EGY,Middle East & North Africa,WVS,7,2018,otro_idioma,25.7,1200
+EGY,Middle East & North Africa,WVS,4,2001,sida,98.3,3000
+EGY,Middle East & North Africa,WVS,7,2018,sida,56.8,1200
+ESP,Western Europe,WVS,2,1990,antecedentes,36.2,1510
+ESP,Western Europe,WVS,3,1995,antecedentes,37.0,1211
+ESP,Western Europe,WVS,4,2000,antecedentes,32.8,1209
+ESP,Western Europe,WVS,2,1990,bebedores,39.9,1510
+ESP,Western Europe,WVS,3,1995,bebedores,40.3,1211
+ESP,Western Europe,WVS,4,2000,bebedores,43.0,1209
+ESP,Western Europe,WVS,5,2007,bebedores,38.3,1200
+ESP,Western Europe,WVS,6,2011,bebedores,43.1,1189
+ESP,Western Europe,WVS,2,1990,drogadictos,52.9,1510
+ESP,Western Europe,WVS,3,1995,drogadictos,53.4,1211
+ESP,Western Europe,WVS,4,2000,drogadictos,52.8,1209
+ESP,Western Europe,WVS,5,2007,drogadictos,64.3,1200
+ESP,Western Europe,WVS,6,2011,drogadictos,73.2,1189
+ESP,Western Europe,WVS,2,1990,extrema_derecha,29.7,1510
+ESP,Western Europe,WVS,3,1995,extremistas,39.3,1211
+ESP,Western Europe,WVS,2,1990,familias_numerosas,10.3,1510
+ESP,Western Europe,WVS,5,2007,gitanos,35.9,1200
+ESP,Western Europe,WVS,6,2011,gitanos,38.6,1189
+ESP,Western Europe,WVS,2,1990,hindues,11.8,1510
+ESP,Western Europe,WVS,2,1990,homosexuales,26.3,1510
+ESP,Western Europe,WVS,3,1995,homosexuales,20.3,1211
+ESP,Western Europe,WVS,4,2000,homosexuales,14.8,1209
+ESP,Western Europe,WVS,5,2007,homosexuales,7.4,1200
+ESP,Western Europe,WVS,6,2011,homosexuales,5.1,1189
+ESP,Western Europe,WVS,2,1990,inestables,25.1,1510
+ESP,Western Europe,WVS,3,1995,inestables,24.8,1211
+ESP,Western Europe,WVS,4,2000,inestables,29.9,1209
+ESP,Western Europe,WVS,2,1990,inmigrantes,10.9,1510
+ESP,Western Europe,WVS,3,1995,inmigrantes,7.3,1211
+ESP,Western Europe,WVS,4,2000,inmigrantes,10.8,1209
+ESP,Western Europe,WVS,5,2007,inmigrantes,6.5,1200
+ESP,Western Europe,WVS,6,2011,inmigrantes,7.5,1189
+ESP,Western Europe,WVS,2,1990,judios,12.7,1510
+ESP,Western Europe,WVS,4,2000,judios,34.2,1209
+ESP,Western Europe,WVS,2,1990,musulmanes,13.9,1510
+ESP,Western Europe,WVS,3,1995,musulmanes,11.5,1211
+ESP,Western Europe,WVS,4,2000,musulmanes,15.4,1209
+ESP,Western Europe,WVS,2,1990,otra_raza,11.7,1510
+ESP,Western Europe,WVS,3,1995,otra_raza,8.3,1211
+ESP,Western Europe,WVS,4,2000,otra_raza,11.5,1209
+ESP,Western Europe,WVS,5,2007,otra_raza,6.8,1200
+ESP,Western Europe,WVS,6,2011,otra_raza,4.8,1189
+ESP,Western Europe,WVS,5,2007,otra_religion,5.7,1200
+ESP,Western Europe,WVS,6,2011,otra_religion,3.1,1189
+ESP,Western Europe,WVS,5,2007,otro_idioma,3.2,1200
+ESP,Western Europe,WVS,6,2011,otro_idioma,3.1,1189
+ESP,Western Europe,WVS,5,2007,parejas_no_casadas,3.5,1200
+ESP,Western Europe,WVS,6,2011,parejas_no_casadas,1.3,1189
+ESP,Western Europe,WVS,2,1990,sida,32.9,1510
+ESP,Western Europe,WVS,3,1995,sida,23.4,1211
+ESP,Western Europe,WVS,4,2000,sida,20.4,1209
+ESP,Western Europe,WVS,5,2007,sida,16.2,1200
+ESP,Western Europe,WVS,6,2011,sida,12.3,1189
+EST,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,74.2,1021
+EST,Eastern Europe & Central Asia,WVS,3,1996,bebedores,86.5,1021
+EST,Eastern Europe & Central Asia,WVS,6,2011,bebedores,79.0,1533
+EST,Eastern Europe & Central Asia,WVS,3,1996,drogadictos,86.6,1021
+EST,Eastern Europe & Central Asia,WVS,6,2011,drogadictos,86.9,1533
+EST,Eastern Europe & Central Asia,WVS,3,1996,extremistas,39.7,1021
+EST,Eastern Europe & Central Asia,WVS,3,1996,homosexuales,63.9,1021
+EST,Eastern Europe & Central Asia,WVS,6,2011,homosexuales,47.3,1533
+EST,Eastern Europe & Central Asia,WVS,3,1996,inestables,59.1,1021
+EST,Eastern Europe & Central Asia,WVS,3,1996,inmigrantes,19.0,1021
+EST,Eastern Europe & Central Asia,WVS,6,2011,inmigrantes,37.5,1533
+EST,Eastern Europe & Central Asia,WVS,3,1996,otra_raza,7.5,1021
+EST,Eastern Europe & Central Asia,WVS,6,2011,otra_raza,25.4,1533
+EST,Eastern Europe & Central Asia,WVS,3,1996,otra_religion,23.0,1021
+EST,Eastern Europe & Central Asia,WVS,6,2011,otra_religion,20.7,1533
+EST,Eastern Europe & Central Asia,WVS,6,2011,otro_idioma,16.5,1533
+EST,Eastern Europe & Central Asia,WVS,6,2011,parejas_no_casadas,13.5,1533
+EST,Eastern Europe & Central Asia,WVS,3,1996,sida,43.8,1021
+EST,Eastern Europe & Central Asia,WVS,6,2011,sida,48.6,1533
+ETH,Sub-Saharan Africa,WVS,5,2007,bebedores,57.6,1500
+ETH,Sub-Saharan Africa,WVS,7,2020,bebedores,77.3,1220
+ETH,Sub-Saharan Africa,WVS,5,2007,drogadictos,84.9,1500
+ETH,Sub-Saharan Africa,WVS,7,2020,drogadictos,92.0,1220
+ETH,Sub-Saharan Africa,WVS,5,2007,homosexuales,82.2,1500
+ETH,Sub-Saharan Africa,WVS,7,2020,homosexuales,69.7,1220
+ETH,Sub-Saharan Africa,WVS,5,2007,inmigrantes,14.7,1500
+ETH,Sub-Saharan Africa,WVS,7,2020,inmigrantes,16.2,1220
+ETH,Sub-Saharan Africa,WVS,5,2007,otra_raza,16.6,1500
+ETH,Sub-Saharan Africa,WVS,7,2020,otra_raza,16.6,1220
+ETH,Sub-Saharan Africa,WVS,5,2007,otra_religion,15.4,1500
+ETH,Sub-Saharan Africa,WVS,7,2020,otra_religion,11.4,1220
+ETH,Sub-Saharan Africa,WVS,5,2007,otro_idioma,13.2,1500
+ETH,Sub-Saharan Africa,WVS,7,2020,otro_idioma,7.1,1228
+ETH,Sub-Saharan Africa,WVS,5,2007,parejas_no_casadas,17.4,1500
+ETH,Sub-Saharan Africa,WVS,7,2020,parejas_no_casadas,23.2,1220
+ETH,Sub-Saharan Africa,WVS,5,2007,sida,13.9,1500
+ETH,Sub-Saharan Africa,WVS,7,2020,sida,31.7,1220
+FIN,Western Europe,WVS,1,1981,antecedentes,3.6,1003
+FIN,Western Europe,WVS,3,1996,antecedentes,41.9,987
+FIN,Western Europe,WVS,1,1981,bebedores,18.7,1003
+FIN,Western Europe,WVS,3,1996,bebedores,54.5,987
+FIN,Western Europe,WVS,5,2005,bebedores,68.7,1014
+FIN,Western Europe,WVS,3,1996,drogadictos,79.0,987
+FIN,Western Europe,WVS,5,2005,drogadictos,82.9,1014
+FIN,Western Europe,WVS,1,1981,extremistas,0.7,1003
+FIN,Western Europe,WVS,3,1996,extremistas,27.4,987
+FIN,Western Europe,WVS,3,1996,homosexuales,29.9,987
+FIN,Western Europe,WVS,5,2005,homosexuales,21.9,1014
+FIN,Western Europe,WVS,1,1981,inestables,2.2,1003
+FIN,Western Europe,WVS,3,1996,inestables,32.5,987
+FIN,Western Europe,WVS,1,1981,inmigrantes,0.2,1003
+FIN,Western Europe,WVS,3,1996,inmigrantes,13.3,987
+FIN,Western Europe,WVS,5,2005,inmigrantes,15.9,1014
+FIN,Western Europe,WVS,3,1996,musulmanes,39.6,987
+FIN,Western Europe,WVS,1,1981,otra_raza,5.8,1003
+FIN,Western Europe,WVS,3,1996,otra_raza,12.2,987
+FIN,Western Europe,WVS,5,2005,otra_raza,11.4,1014
+FIN,Western Europe,WVS,5,2005,otra_religion,9.7,1014
+FIN,Western Europe,WVS,5,2005,otro_idioma,8.7,1008
+FIN,Western Europe,WVS,5,2005,parejas_no_casadas,8.8,1006
+FIN,Western Europe,WVS,3,1996,sida,23.2,987
+FIN,Western Europe,WVS,5,2005,sida,19.0,1014
+FRA,Western Europe,WVS,5,2006,bebedores,72.0,1001
+FRA,Western Europe,WVS,5,2006,drogadictos,75.3,1001
+FRA,Western Europe,WVS,5,2006,homosexuales,28.8,1001
+FRA,Western Europe,WVS,5,2006,inmigrantes,36.5,1001
+FRA,Western Europe,WVS,5,2006,otra_raza,22.6,1001
+FRA,Western Europe,WVS,5,2006,otra_religion,25.6,1001
+FRA,Western Europe,WVS,5,2006,otro_idioma,23.4,1001
+FRA,Western Europe,WVS,5,2006,parejas_no_casadas,11.3,1001
+FRA,Western Europe,WVS,5,2006,sida,31.6,1001
+GBR,Western Europe,WVS,3,1998,bebedores,67.4,1093
+GBR,Western Europe,WVS,5,2005,bebedores,60.5,1041
+GBR,Western Europe,WVS,7,2022,bebedores,56.8,2586
+GBR,Western Europe,WVS,5,2005,drogadictos,84.3,1041
+GBR,Western Europe,WVS,7,2022,drogadictos,82.9,2586
+GBR,Western Europe,WVS,3,1998,homosexuales,21.7,1093
+GBR,Western Europe,WVS,5,2005,homosexuales,16.8,1041
+GBR,Western Europe,WVS,7,2022,homosexuales,3.6,2586
+GBR,Western Europe,WVS,3,1998,inmigrantes,11.5,1093
+GBR,Western Europe,WVS,5,2005,inmigrantes,14.2,1041
+GBR,Western Europe,WVS,7,2022,inmigrantes,4.7,2586
+GBR,Western Europe,WVS,5,2005,otra_raza,4.8,1041
+GBR,Western Europe,WVS,7,2022,otra_raza,1.5,2586
+GBR,Western Europe,WVS,5,2005,otra_religion,1.8,1041
+GBR,Western Europe,WVS,7,2022,otra_religion,1.3,2586
+GBR,Western Europe,WVS,5,2005,otro_idioma,5.6,1041
+GBR,Western Europe,WVS,7,2022,otro_idioma,3.5,2586
+GBR,Western Europe,WVS,5,2005,parejas_no_casadas,2.1,1041
+GBR,Western Europe,WVS,7,2022,parejas_no_casadas,0.8,2586
+GBR,Western Europe,WVS,3,1998,sida,13.7,1093
+GBR,Western Europe,WVS,5,2005,sida,12.1,1041
+GBR,Western Europe,WVS,7,2022,sida,4.3,2586
+GEO,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,49.6,2008
+GEO,Eastern Europe & Central Asia,WVS,3,1996,bebedores,69.5,2008
+GEO,Eastern Europe & Central Asia,WVS,5,2009,bebedores,83.3,1500
+GEO,Eastern Europe & Central Asia,WVS,6,2014,bebedores,77.9,1202
+GEO,Eastern Europe & Central Asia,WVS,3,1996,drogadictos,80.8,2008
+GEO,Eastern Europe & Central Asia,WVS,5,2009,drogadictos,95.9,1500
+GEO,Eastern Europe & Central Asia,WVS,6,2014,drogadictos,90.2,1202
+GEO,Eastern Europe & Central Asia,WVS,3,1996,extremistas,44.8,2008
+GEO,Eastern Europe & Central Asia,WVS,3,1996,homosexuales,77.0,2008
+GEO,Eastern Europe & Central Asia,WVS,5,2009,homosexuales,92.0,1500
+GEO,Eastern Europe & Central Asia,WVS,6,2014,homosexuales,86.6,1202
+GEO,Eastern Europe & Central Asia,WVS,3,1996,inestables,54.6,2008
+GEO,Eastern Europe & Central Asia,WVS,3,1996,inmigrantes,10.9,2008
+GEO,Eastern Europe & Central Asia,WVS,5,2009,inmigrantes,23.9,1500
+GEO,Eastern Europe & Central Asia,WVS,6,2014,inmigrantes,32.8,1202
+GEO,Eastern Europe & Central Asia,WVS,5,2009,minorias_militantes,1.5,1365
+GEO,Eastern Europe & Central Asia,WVS,3,1996,otra_raza,9.5,2008
+GEO,Eastern Europe & Central Asia,WVS,5,2009,otra_raza,24.3,1500
+GEO,Eastern Europe & Central Asia,WVS,6,2014,otra_raza,32.1,1202
+GEO,Eastern Europe & Central Asia,WVS,3,1996,otra_religion,26.5,2008
+GEO,Eastern Europe & Central Asia,WVS,5,2009,otra_religion,36.0,1500
+GEO,Eastern Europe & Central Asia,WVS,6,2014,otra_religion,36.4,1202
+GEO,Eastern Europe & Central Asia,WVS,5,2009,otro_idioma,14.1,1470
+GEO,Eastern Europe & Central Asia,WVS,6,2014,otro_idioma,20.2,1202
+GEO,Eastern Europe & Central Asia,WVS,5,2009,parejas_no_casadas,23.7,1462
+GEO,Eastern Europe & Central Asia,WVS,6,2014,parejas_no_casadas,26.5,1202
+GEO,Eastern Europe & Central Asia,WVS,3,1996,sida,71.1,2008
+GEO,Eastern Europe & Central Asia,WVS,5,2009,sida,84.1,1500
+GEO,Eastern Europe & Central Asia,WVS,6,2014,sida,68.4,1202
+GHA,Sub-Saharan Africa,WVS,5,2007,bebedores,70.5,1534
+GHA,Sub-Saharan Africa,WVS,6,2012,bebedores,67.2,1552
+GHA,Sub-Saharan Africa,WVS,5,2007,drogadictos,80.1,1534
+GHA,Sub-Saharan Africa,WVS,6,2012,drogadictos,78.4,1552
+GHA,Sub-Saharan Africa,WVS,5,2007,homosexuales,79.0,1534
+GHA,Sub-Saharan Africa,WVS,6,2012,homosexuales,79.7,1552
+GHA,Sub-Saharan Africa,WVS,5,2007,inmigrantes,25.8,1534
+GHA,Sub-Saharan Africa,WVS,6,2012,inmigrantes,20.2,1552
+GHA,Sub-Saharan Africa,WVS,5,2007,otra_raza,22.4,1534
+GHA,Sub-Saharan Africa,WVS,6,2012,otra_raza,19.9,1552
+GHA,Sub-Saharan Africa,WVS,5,2007,otra_religion,24.2,1534
+GHA,Sub-Saharan Africa,WVS,6,2012,otra_religion,22.5,1552
+GHA,Sub-Saharan Africa,WVS,5,2007,otro_idioma,24.8,1534
+GHA,Sub-Saharan Africa,WVS,6,2012,otro_idioma,21.9,1552
+GHA,Sub-Saharan Africa,WVS,5,2007,parejas_no_casadas,39.2,1534
+GHA,Sub-Saharan Africa,WVS,6,2012,parejas_no_casadas,27.7,1552
+GHA,Sub-Saharan Africa,WVS,5,2007,sida,47.1,1534
+GHA,Sub-Saharan Africa,WVS,6,2012,sida,40.2,1552
+GRC,Western Europe,WVS,7,2017,bebedores,57.6,1196
+GRC,Western Europe,WVS,7,2017,drogadictos,70.3,1196
+GRC,Western Europe,WVS,7,2017,homosexuales,33.4,1196
+GRC,Western Europe,WVS,7,2017,inmigrantes,25.8,1196
+GRC,Western Europe,WVS,7,2017,otra_raza,24.4,1196
+GRC,Western Europe,WVS,7,2017,otra_religion,21.6,1196
+GRC,Western Europe,WVS,7,2017,otro_idioma,13.5,1196
+GRC,Western Europe,WVS,7,2017,parejas_no_casadas,8.0,1196
+GRC,Western Europe,WVS,7,2017,sida,35.2,1196
+GTM,Latin America,WVS,5,2004,antecedentes,83.1,1000
+GTM,Latin America,WVS,5,2004,bebedores,43.9,1000
+GTM,Latin America,WVS,7,2020,bebedores,57.4,1229
+GTM,Latin America,WVS,5,2004,drogadictos,54.6,1000
+GTM,Latin America,WVS,7,2020,drogadictos,62.7,1229
+GTM,Latin America,WVS,5,2004,evangelistas,3.1,1000
+GTM,Latin America,WVS,5,2004,homosexuales,15.5,1000
+GTM,Latin America,WVS,7,2020,homosexuales,40.6,1229
+GTM,Latin America,WVS,5,2004,inestables,22.9,1000
+GTM,Latin America,WVS,5,2004,inmigrantes,4.0,1000
+GTM,Latin America,WVS,7,2020,inmigrantes,29.5,1229
+GTM,Latin America,WVS,5,2004,musulmanes,5.7,1000
+GTM,Latin America,WVS,5,2004,otra_raza,4.6,1000
+GTM,Latin America,WVS,7,2020,otra_raza,30.2,1229
+GTM,Latin America,WVS,7,2020,otra_religion,32.7,1229
+GTM,Latin America,WVS,7,2020,otro_idioma,32.1,1229
+GTM,Latin America,WVS,7,2020,parejas_no_casadas,30.8,1229
+GTM,Latin America,WVS,5,2004,sida,26.2,1000
+GTM,Latin America,WVS,7,2020,sida,29.9,1229
+HKG,East Asia,WVS,5,2005,antecedentes,56.6,1224
+HKG,East Asia,WVS,5,2005,bebedores,82.8,1252
+HKG,East Asia,WVS,6,2014,bebedores,69.3,1000
+HKG,East Asia,WVS,7,2018,bebedores,75.8,2075
+HKG,East Asia,WVS,5,2005,drogadictos,88.7,1252
+HKG,East Asia,WVS,6,2014,drogadictos,75.9,1000
+HKG,East Asia,WVS,7,2018,drogadictos,89.2,2075
+HKG,East Asia,WVS,5,2005,homosexuales,50.0,1252
+HKG,East Asia,WVS,6,2014,homosexuales,33.5,1000
+HKG,East Asia,WVS,7,2018,homosexuales,23.9,2075
+HKG,East Asia,WVS,5,2005,inestables,80.8,1252
+HKG,East Asia,WVS,5,2005,inmigrantes,20.5,1252
+HKG,East Asia,WVS,6,2014,inmigrantes,21.1,1000
+HKG,East Asia,WVS,7,2018,inmigrantes,9.0,2075
+HKG,East Asia,WVS,5,2005,otra_raza,26.8,1252
+HKG,East Asia,WVS,6,2014,otra_raza,18.8,1000
+HKG,East Asia,WVS,7,2018,otra_raza,10.9,2075
+HKG,East Asia,WVS,6,2014,otra_religion,17.2,1000
+HKG,East Asia,WVS,7,2018,otra_religion,5.6,2075
+HKG,East Asia,WVS,6,2014,otro_idioma,16.2,1000
+HKG,East Asia,WVS,7,2018,otro_idioma,7.3,2075
+HKG,East Asia,WVS,6,2014,parejas_no_casadas,17.5,1000
+HKG,East Asia,WVS,7,2018,parejas_no_casadas,6.6,2075
+HKG,East Asia,WVS,5,2005,sida,55.4,1252
+HKG,East Asia,WVS,6,2014,sida,44.8,1000
+HKG,East Asia,WVS,7,2018,sida,41.8,2075
+HRV,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,41.6,1196
+HRV,Eastern Europe & Central Asia,WVS,3,1996,bebedores,63.6,1196
+HRV,Eastern Europe & Central Asia,WVS,3,1996,drogadictos,69.9,1196
+HRV,Eastern Europe & Central Asia,WVS,3,1996,extremistas,54.6,1196
+HRV,Eastern Europe & Central Asia,WVS,3,1996,homosexuales,45.5,1196
+HRV,Eastern Europe & Central Asia,WVS,3,1996,inestables,37.3,1196
+HRV,Eastern Europe & Central Asia,WVS,3,1996,inmigrantes,6.8,1196
+HRV,Eastern Europe & Central Asia,WVS,3,1996,otra_raza,8.4,1196
+HRV,Eastern Europe & Central Asia,WVS,3,1996,otra_religion,14.3,1196
+HRV,Eastern Europe & Central Asia,WVS,3,1996,sida,43.4,1196
+HTI,Latin America,WVS,6,2016,bebedores,30.5,1992
+HTI,Latin America,WVS,6,2016,drogadictos,63.1,1991
+HTI,Latin America,WVS,6,2016,homosexuales,74.2,1992
+HTI,Latin America,WVS,6,2016,inmigrantes,1.5,1988
+HTI,Latin America,WVS,6,2016,otra_raza,6.3,1993
+HTI,Latin America,WVS,6,2016,otra_religion,1.8,1992
+HTI,Latin America,WVS,6,2016,otro_idioma,1.5,1988
+HTI,Latin America,WVS,6,2016,parejas_no_casadas,0.8,1989
+HTI,Latin America,WVS,6,2016,sida,1.9,1993
+HUN,Eastern Europe & Central Asia,WVS,1,1982,antecedentes,73.8,1464
+HUN,Eastern Europe & Central Asia,WVS,3,1998,antecedentes,63.4,650
+HUN,Eastern Europe & Central Asia,WVS,1,1982,bebedores,78.8,1464
+HUN,Eastern Europe & Central Asia,WVS,3,1998,bebedores,70.2,650
+HUN,Eastern Europe & Central Asia,WVS,5,2009,bebedores,74.5,1006
+HUN,Eastern Europe & Central Asia,WVS,3,1998,drogadictos,74.0,650
+HUN,Eastern Europe & Central Asia,WVS,5,2009,drogadictos,79.3,1003
+HUN,Eastern Europe & Central Asia,WVS,3,1998,extremistas,39.4,650
+HUN,Eastern Europe & Central Asia,WVS,3,1998,gitanos,42.5,650
+HUN,Eastern Europe & Central Asia,WVS,5,2009,gitanos,48.7,1007
+HUN,Eastern Europe & Central Asia,WVS,3,1998,homosexuales,53.4,650
+HUN,Eastern Europe & Central Asia,WVS,5,2009,homosexuales,39.8,1004
+HUN,Eastern Europe & Central Asia,WVS,1,1982,inestables,65.8,1464
+HUN,Eastern Europe & Central Asia,WVS,3,1998,inestables,55.4,650
+HUN,Eastern Europe & Central Asia,WVS,1,1982,inmigrantes,0.0,1464
+HUN,Eastern Europe & Central Asia,WVS,3,1998,inmigrantes,24.9,650
+HUN,Eastern Europe & Central Asia,WVS,5,2009,inmigrantes,23.8,1005
+HUN,Eastern Europe & Central Asia,WVS,3,1998,otra_raza,18.6,650
+HUN,Eastern Europe & Central Asia,WVS,5,2009,otra_raza,15.7,1003
+HUN,Eastern Europe & Central Asia,WVS,5,2009,otra_religion,5.5,1000
+HUN,Eastern Europe & Central Asia,WVS,5,2009,otro_idioma,9.5,1007
+HUN,Eastern Europe & Central Asia,WVS,5,2009,parejas_no_casadas,5.0,1007
+HUN,Eastern Europe & Central Asia,WVS,3,1998,sida,39.4,650
+HUN,Eastern Europe & Central Asia,WVS,5,2009,sida,40.8,1007
+IDN,Southeast Asia,WVS,4,2001,antecedentes,55.7,1000
+IDN,Southeast Asia,WVS,4,2001,bebedores,58.1,1000
+IDN,Southeast Asia,WVS,5,2006,bebedores,67.8,2012
+IDN,Southeast Asia,WVS,7,2018,bebedores,62.5,3200
+IDN,Southeast Asia,WVS,4,2001,drogadictos,59.7,1000
+IDN,Southeast Asia,WVS,5,2006,drogadictos,69.7,2011
+IDN,Southeast Asia,WVS,7,2018,drogadictos,94.4,3200
+IDN,Southeast Asia,WVS,4,2001,homosexuales,54.8,1000
+IDN,Southeast Asia,WVS,5,2006,homosexuales,66.1,2009
+IDN,Southeast Asia,WVS,7,2018,homosexuales,74.3,3200
+IDN,Southeast Asia,WVS,4,2001,inestables,49.4,1000
+IDN,Southeast Asia,WVS,4,2001,inmigrantes,40.4,1000
+IDN,Southeast Asia,WVS,5,2006,inmigrantes,34.4,2005
+IDN,Southeast Asia,WVS,7,2018,inmigrantes,16.6,3200
+IDN,Southeast Asia,WVS,4,2001,minorias_militantes,48.1,1000
+IDN,Southeast Asia,WVS,5,2006,minorias_militantes,38.8,1627
+IDN,Southeast Asia,WVS,4,2001,otra_raza,34.8,1000
+IDN,Southeast Asia,WVS,5,2006,otra_raza,30.8,2008
+IDN,Southeast Asia,WVS,7,2018,otra_raza,9.1,3200
+IDN,Southeast Asia,WVS,4,2001,otra_religion,37.8,1000
+IDN,Southeast Asia,WVS,5,2006,otra_religion,33.1,2012
+IDN,Southeast Asia,WVS,7,2018,otra_religion,16.1,3200
+IDN,Southeast Asia,WVS,5,2006,otro_idioma,33.1,1944
+IDN,Southeast Asia,WVS,7,2018,otro_idioma,10.4,3200
+IDN,Southeast Asia,WVS,5,2006,parejas_no_casadas,68.7,1983
+IDN,Southeast Asia,WVS,7,2018,parejas_no_casadas,70.1,3200
+IDN,Southeast Asia,WVS,4,2001,sida,52.2,1000
+IDN,Southeast Asia,WVS,5,2006,sida,55.3,1984
+IDN,Southeast Asia,WVS,7,2018,sida,58.6,3200
+IND,South Asia,WVS,2,1990,antecedentes,92.8,2500
+IND,South Asia,WVS,3,1995,antecedentes,67.4,2040
+IND,South Asia,WVS,4,2001,antecedentes,48.2,2002
+IND,South Asia,WVS,2,1990,bebedores,90.7,2500
+IND,South Asia,WVS,3,1995,bebedores,57.6,2040
+IND,South Asia,WVS,4,2001,bebedores,45.5,2002
+IND,South Asia,WVS,5,2006,bebedores,48.4,2001
+IND,South Asia,WVS,6,2012,bebedores,90.0,4078
+IND,South Asia,WVS,7,2023,bebedores,85.1,1660
+IND,South Asia,WVS,2,1990,drogadictos,92.6,2500
+IND,South Asia,WVS,3,1995,drogadictos,65.9,2040
+IND,South Asia,WVS,4,2001,drogadictos,44.1,2002
+IND,South Asia,WVS,5,2006,drogadictos,53.8,2001
+IND,South Asia,WVS,6,2012,drogadictos,93.6,4078
+IND,South Asia,WVS,7,2023,drogadictos,89.8,1681
+IND,South Asia,WVS,2,1990,extrema_derecha,65.0,2500
+IND,South Asia,WVS,3,1995,extremistas,55.4,2040
+IND,South Asia,WVS,2,1990,familias_numerosas,35.4,2500
+IND,South Asia,WVS,2,1990,hindues,2.2,2500
+IND,South Asia,WVS,2,1990,homosexuales,91.4,2500
+IND,South Asia,WVS,3,1995,homosexuales,61.4,2040
+IND,South Asia,WVS,4,2001,homosexuales,28.8,2002
+IND,South Asia,WVS,5,2006,homosexuales,40.3,2001
+IND,South Asia,WVS,6,2012,homosexuales,65.0,4078
+IND,South Asia,WVS,7,2023,homosexuales,72.7,1452
+IND,South Asia,WVS,2,1990,inestables,69.3,2500
+IND,South Asia,WVS,3,1995,inestables,44.8,2040
+IND,South Asia,WVS,4,2001,inestables,38.7,2002
+IND,South Asia,WVS,2,1990,inmigrantes,36.6,2500
+IND,South Asia,WVS,3,1995,inmigrantes,33.1,2040
+IND,South Asia,WVS,4,2001,inmigrantes,38.2,2002
+IND,South Asia,WVS,5,2006,inmigrantes,35.0,2001
+IND,South Asia,WVS,6,2012,inmigrantes,47.1,4078
+IND,South Asia,WVS,7,2023,inmigrantes,47.5,1577
+IND,South Asia,WVS,2,1990,judios,52.5,2500
+IND,South Asia,WVS,5,2006,minorias_militantes,39.6,1970
+IND,South Asia,WVS,2,1990,musulmanes,28.5,2500
+IND,South Asia,WVS,3,1995,musulmanes,32.8,2040
+IND,South Asia,WVS,2,1990,otra_raza,34.9,2500
+IND,South Asia,WVS,3,1995,otra_raza,36.0,2040
+IND,South Asia,WVS,4,2001,otra_raza,41.8,2002
+IND,South Asia,WVS,5,2006,otra_raza,43.5,2001
+IND,South Asia,WVS,6,2012,otra_raza,25.6,4078
+IND,South Asia,WVS,7,2023,otra_raza,26.1,1653
+IND,South Asia,WVS,4,2001,otra_religion,40.4,2002
+IND,South Asia,WVS,5,2006,otra_religion,44.0,2000
+IND,South Asia,WVS,6,2012,otra_religion,28.4,4078
+IND,South Asia,WVS,7,2023,otra_religion,28.3,1650
+IND,South Asia,WVS,5,2006,otro_idioma,40.1,1987
+IND,South Asia,WVS,6,2012,otro_idioma,32.7,4078
+IND,South Asia,WVS,7,2023,otro_idioma,25.5,1652
+IND,South Asia,WVS,5,2006,parejas_no_casadas,43.4,1968
+IND,South Asia,WVS,6,2012,parejas_no_casadas,72.7,4078
+IND,South Asia,WVS,7,2023,parejas_no_casadas,68.2,1601
+IND,South Asia,WVS,2,1990,sida,92.5,2500
+IND,South Asia,WVS,3,1995,sida,60.3,2040
+IND,South Asia,WVS,4,2001,sida,39.4,2002
+IND,South Asia,WVS,5,2006,sida,43.7,2001
+IND,South Asia,WVS,6,2012,sida,61.5,4078
+IND,South Asia,WVS,7,2023,sida,68.7,1556
+IRN,Middle East & North Africa,WVS,4,2000,antecedentes,98.7,2532
+IRN,Middle East & North Africa,WVS,4,2000,bebedores,98.5,2532
+IRN,Middle East & North Africa,WVS,5,2007,bebedores,90.9,2667
+IRN,Middle East & North Africa,WVS,7,2020,bebedores,90.4,1499
+IRN,Middle East & North Africa,WVS,5,2007,cristianos,35.2,2659
+IRN,Middle East & North Africa,WVS,4,2000,drogadictos,98.8,2532
+IRN,Middle East & North Africa,WVS,5,2007,drogadictos,93.8,2667
+IRN,Middle East & North Africa,WVS,7,2020,drogadictos,87.2,1499
+IRN,Middle East & North Africa,WVS,4,2000,homosexuales,99.1,2532
+IRN,Middle East & North Africa,WVS,5,2007,homosexuales,92.4,2665
+IRN,Middle East & North Africa,WVS,4,2000,inestables,98.5,2532
+IRN,Middle East & North Africa,WVS,4,2000,inmigrantes,90.4,2532
+IRN,Middle East & North Africa,WVS,5,2007,inmigrantes,58.9,2665
+IRN,Middle East & North Africa,WVS,7,2020,inmigrantes,41.8,1499
+IRN,Middle East & North Africa,WVS,5,2007,judios,74.7,2657
+IRN,Middle East & North Africa,WVS,4,2000,otra_raza,75.8,2532
+IRN,Middle East & North Africa,WVS,5,2007,otra_raza,31.2,2666
+IRN,Middle East & North Africa,WVS,7,2020,otra_raza,27.6,1499
+IRN,Middle East & North Africa,WVS,4,2000,otra_religion,79.9,2532
+IRN,Middle East & North Africa,WVS,5,2007,otra_religion,38.0,2666
+IRN,Middle East & North Africa,WVS,7,2020,otra_religion,33.8,1499
+IRN,Middle East & North Africa,WVS,7,2020,otro_idioma,31.4,1499
+IRN,Middle East & North Africa,WVS,5,2007,parejas_no_casadas,80.8,2661
+IRN,Middle East & North Africa,WVS,7,2020,parejas_no_casadas,76.1,1499
+IRN,Middle East & North Africa,WVS,4,2000,sida,99.5,2532
+IRN,Middle East & North Africa,WVS,5,2007,sida,86.0,2666
+IRN,Middle East & North Africa,WVS,7,2020,sida,81.5,1499
+IRQ,Middle East & North Africa,WVS,4,2004,antecedentes,84.3,2325
+IRQ,Middle East & North Africa,WVS,5,2006,antecedentes,98.3,2659
+IRQ,Middle East & North Africa,WVS,6,2013,bebedores,86.4,1200
+IRQ,Middle East & North Africa,WVS,7,2018,bebedores,57.7,1200
+IRQ,Middle East & North Africa,WVS,4,2004,britanicos,83.9,2325
+IRQ,Middle East & North Africa,WVS,5,2006,britanicos,90.2,2560
+IRQ,Middle East & North Africa,WVS,4,2004,chiies,11.2,2325
+IRQ,Middle East & North Africa,WVS,5,2006,chiies,9.4,2651
+IRQ,Middle East & North Africa,WVS,4,2004,cristianos,36.1,2325
+IRQ,Middle East & North Africa,WVS,5,2006,cristianos,30.7,2609
+IRQ,Middle East & North Africa,WVS,6,2013,drogadictos,91.9,1200
+IRQ,Middle East & North Africa,WVS,7,2018,drogadictos,66.1,1200
+IRQ,Middle East & North Africa,WVS,4,2004,franceses,81.3,2325
+IRQ,Middle East & North Africa,WVS,5,2006,franceses,89.5,2558
+IRQ,Middle East & North Africa,WVS,6,2013,homosexuales,80.3,1200
+IRQ,Middle East & North Africa,WVS,7,2018,homosexuales,55.1,1200
+IRQ,Middle East & North Africa,WVS,6,2013,inmigrantes,39.0,1200
+IRQ,Middle East & North Africa,WVS,7,2018,inmigrantes,38.5,1200
+IRQ,Middle East & North Africa,WVS,4,2004,iranies,52.9,2325
+IRQ,Middle East & North Africa,WVS,5,2006,iranies,61.2,2559
+IRQ,Middle East & North Africa,WVS,4,2004,jordanos,41.1,2325
+IRQ,Middle East & North Africa,WVS,5,2006,jordanos,60.5,2522
+IRQ,Middle East & North Africa,WVS,4,2004,judios,83.4,2325
+IRQ,Middle East & North Africa,WVS,5,2006,judios,95.7,2599
+IRQ,Middle East & North Africa,WVS,4,2004,kurdos,25.5,2325
+IRQ,Middle East & North Africa,WVS,5,2006,kurdos,14.9,2649
+IRQ,Middle East & North Africa,WVS,4,2004,kuwaities,48.1,2325
+IRQ,Middle East & North Africa,WVS,5,2006,kuwaities,58.5,2536
+IRQ,Middle East & North Africa,WVS,4,2004,norteamericanos,84.1,2325
+IRQ,Middle East & North Africa,WVS,6,2013,otra_raza,27.7,1200
+IRQ,Middle East & North Africa,WVS,7,2018,otra_raza,31.8,1200
+IRQ,Middle East & North Africa,WVS,4,2004,otra_religion,34.8,2325
+IRQ,Middle East & North Africa,WVS,5,2006,otra_religion,35.7,2325
+IRQ,Middle East & North Africa,WVS,6,2013,otra_religion,28.2,1200
+IRQ,Middle East & North Africa,WVS,7,2018,otra_religion,34.8,1200
+IRQ,Middle East & North Africa,WVS,6,2013,otro_idioma,27.8,1200
+IRQ,Middle East & North Africa,WVS,7,2018,otro_idioma,40.2,1200
+IRQ,Middle East & North Africa,WVS,6,2013,parejas_no_casadas,72.8,1200
+IRQ,Middle East & North Africa,WVS,7,2018,parejas_no_casadas,51.3,1200
+IRQ,Middle East & North Africa,WVS,6,2013,sida,80.2,1200
+IRQ,Middle East & North Africa,WVS,7,2018,sida,53.9,1200
+IRQ,Middle East & North Africa,WVS,4,2004,sunies,17.5,2325
+IRQ,Middle East & North Africa,WVS,5,2006,sunies,12.9,2648
+IRQ,Middle East & North Africa,WVS,4,2004,turcos,56.6,2325
+IRQ,Middle East & North Africa,WVS,5,2006,turcos,70.8,2496
+ITA,Western Europe,WVS,5,2005,bebedores,50.6,1012
+ITA,Western Europe,WVS,5,2005,drogadictos,61.4,1012
+ITA,Western Europe,WVS,5,2005,gitanos,73.8,1012
+ITA,Western Europe,WVS,5,2005,homosexuales,21.7,1012
+ITA,Western Europe,WVS,5,2005,inmigrantes,13.9,1012
+ITA,Western Europe,WVS,5,2005,otra_raza,11.1,1012
+ITA,Western Europe,WVS,5,2005,otra_religion,10.0,1012
+ITA,Western Europe,WVS,5,2005,otro_idioma,7.0,929
+ITA,Western Europe,WVS,5,2005,parejas_no_casadas,4.2,938
+ITA,Western Europe,WVS,5,2005,sida,30.8,1012
+JOR,Middle East & North Africa,WVS,4,2001,antecedentes,96.2,1223
+JOR,Middle East & North Africa,WVS,4,2001,bebedores,93.8,1223
+JOR,Middle East & North Africa,WVS,5,2007,bebedores,94.8,1200
+JOR,Middle East & North Africa,WVS,6,2014,bebedores,72.3,1200
+JOR,Middle East & North Africa,WVS,7,2018,bebedores,92.1,1203
+JOR,Middle East & North Africa,WVS,4,2001,drogadictos,98.8,1223
+JOR,Middle East & North Africa,WVS,5,2007,drogadictos,96.5,1200
+JOR,Middle East & North Africa,WVS,6,2014,drogadictos,80.3,1200
+JOR,Middle East & North Africa,WVS,7,2018,drogadictos,96.4,1203
+JOR,Middle East & North Africa,WVS,4,2001,homosexuales,98.4,1223
+JOR,Middle East & North Africa,WVS,5,2007,homosexuales,95.1,1200
+JOR,Middle East & North Africa,WVS,6,2014,homosexuales,62.0,1200
+JOR,Middle East & North Africa,WVS,7,2018,homosexuales,93.8,1203
+JOR,Middle East & North Africa,WVS,4,2001,inestables,65.7,1223
+JOR,Middle East & North Africa,WVS,4,2001,inmigrantes,39.9,1223
+JOR,Middle East & North Africa,WVS,5,2007,inmigrantes,66.3,1200
+JOR,Middle East & North Africa,WVS,6,2014,inmigrantes,37.2,1200
+JOR,Middle East & North Africa,WVS,7,2018,inmigrantes,27.6,1203
+JOR,Middle East & North Africa,WVS,5,2007,minorias_militantes,33.6,1200
+JOR,Middle East & North Africa,WVS,4,2001,otra_raza,20.0,1223
+JOR,Middle East & North Africa,WVS,5,2007,otra_raza,51.5,1200
+JOR,Middle East & North Africa,WVS,6,2014,otra_raza,27.2,1200
+JOR,Middle East & North Africa,WVS,7,2018,otra_raza,24.4,1203
+JOR,Middle East & North Africa,WVS,4,2001,otra_religion,32.5,1223
+JOR,Middle East & North Africa,WVS,5,2007,otra_religion,50.2,1200
+JOR,Middle East & North Africa,WVS,6,2014,otra_religion,28.7,1200
+JOR,Middle East & North Africa,WVS,7,2018,otra_religion,23.6,1203
+JOR,Middle East & North Africa,WVS,5,2007,otro_idioma,47.9,1200
+JOR,Middle East & North Africa,WVS,6,2014,otro_idioma,27.4,1200
+JOR,Middle East & North Africa,WVS,7,2018,otro_idioma,22.9,1203
+JOR,Middle East & North Africa,WVS,4,2001,otro_origen,15.0,1223
+JOR,Middle East & North Africa,WVS,5,2007,parejas_no_casadas,84.9,1200
+JOR,Middle East & North Africa,WVS,6,2014,parejas_no_casadas,59.9,1200
+JOR,Middle East & North Africa,WVS,7,2018,parejas_no_casadas,81.3,1203
+JOR,Middle East & North Africa,WVS,4,2001,sida,95.5,1223
+JOR,Middle East & North Africa,WVS,5,2007,sida,94.9,1200
+JOR,Middle East & North Africa,WVS,6,2014,sida,68.0,1200
+JOR,Middle East & North Africa,WVS,7,2018,sida,87.6,1203
+JPN,East Asia,WVS,1,1981,antecedentes,41.4,1204
+JPN,East Asia,WVS,2,1990,antecedentes,49.7,1011
+JPN,East Asia,WVS,1,1981,bebedores,52.9,1204
+JPN,East Asia,WVS,2,1990,bebedores,58.3,1011
+JPN,East Asia,WVS,7,2019,bebedores,78.2,1317
+JPN,East Asia,WVS,2,1990,drogadictos,90.8,1011
+JPN,East Asia,WVS,7,2019,drogadictos,99.4,1345
+JPN,East Asia,WVS,2,1990,extrema_derecha,79.0,1011
+JPN,East Asia,WVS,1,1981,extremistas,64.7,1204
+JPN,East Asia,WVS,2,1990,familias_numerosas,5.7,1011
+JPN,East Asia,WVS,2,1990,hindues,27.7,1011
+JPN,East Asia,WVS,2,1990,homosexuales,68.5,1011
+JPN,East Asia,WVS,7,2019,homosexuales,27.1,1315
+JPN,East Asia,WVS,1,1981,inestables,54.0,1204
+JPN,East Asia,WVS,2,1990,inestables,61.8,1011
+JPN,East Asia,WVS,1,1981,inmigrantes,6.9,1204
+JPN,East Asia,WVS,2,1990,inmigrantes,16.6,1011
+JPN,East Asia,WVS,6,2010,inmigrantes,36.3,2443
+JPN,East Asia,WVS,7,2019,inmigrantes,30.1,1311
+JPN,East Asia,WVS,2,1990,judios,28.1,1011
+JPN,East Asia,WVS,2,1990,musulmanes,28.8,1011
+JPN,East Asia,WVS,1,1981,otra_raza,9.1,1204
+JPN,East Asia,WVS,2,1990,otra_raza,10.6,1011
+JPN,East Asia,WVS,6,2010,otra_raza,22.3,2443
+JPN,East Asia,WVS,7,2019,otra_raza,14.7,1316
+JPN,East Asia,WVS,6,2010,otra_religion,32.6,2443
+JPN,East Asia,WVS,7,2019,otra_religion,19.3,1311
+JPN,East Asia,WVS,6,2010,otro_idioma,19.9,2443
+JPN,East Asia,WVS,7,2019,otro_idioma,8.5,1325
+JPN,East Asia,WVS,6,2010,parejas_no_casadas,21.4,2443
+JPN,East Asia,WVS,7,2019,parejas_no_casadas,20.5,1314
+JPN,East Asia,WVS,2,1990,sida,76.6,1011
+JPN,East Asia,WVS,7,2019,sida,53.0,1316
+KAZ,Eastern Europe & Central Asia,WVS,6,2011,bebedores,86.0,1500
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,bebedores,80.0,1276
+KAZ,Eastern Europe & Central Asia,WVS,6,2011,drogadictos,93.1,1500
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,drogadictos,91.8,1276
+KAZ,Eastern Europe & Central Asia,WVS,6,2011,homosexuales,73.6,1500
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,homosexuales,73.4,1276
+KAZ,Eastern Europe & Central Asia,WVS,6,2011,inmigrantes,27.8,1500
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,inmigrantes,21.4,1276
+KAZ,Eastern Europe & Central Asia,WVS,6,2011,otra_raza,11.2,1500
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,otra_raza,10.3,1276
+KAZ,Eastern Europe & Central Asia,WVS,6,2011,otra_religion,12.1,1500
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,otra_religion,9.6,1276
+KAZ,Eastern Europe & Central Asia,WVS,6,2011,otro_idioma,11.3,1500
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,otro_idioma,4.1,1276
+KAZ,Eastern Europe & Central Asia,WVS,6,2011,parejas_no_casadas,11.9,1500
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,parejas_no_casadas,7.5,1276
+KAZ,Eastern Europe & Central Asia,WVS,6,2011,sida,60.0,1500
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,sida,58.3,1276
+KEN,Sub-Saharan Africa,WVS,7,2021,bebedores,64.4,1231
+KEN,Sub-Saharan Africa,WVS,7,2021,drogadictos,85.6,1231
+KEN,Sub-Saharan Africa,WVS,7,2021,homosexuales,75.1,1231
+KEN,Sub-Saharan Africa,WVS,7,2021,inmigrantes,7.0,1231
+KEN,Sub-Saharan Africa,WVS,7,2021,otra_raza,7.0,1231
+KEN,Sub-Saharan Africa,WVS,7,2021,otra_religion,3.8,1231
+KEN,Sub-Saharan Africa,WVS,7,2021,otro_idioma,2.7,1231
+KEN,Sub-Saharan Africa,WVS,7,2021,parejas_no_casadas,6.6,1231
+KEN,Sub-Saharan Africa,WVS,7,2021,sida,7.6,1231
+KGZ,Eastern Europe & Central Asia,WVS,4,2003,antecedentes,68.1,1043
+KGZ,Eastern Europe & Central Asia,WVS,4,2003,bebedores,70.9,1043
+KGZ,Eastern Europe & Central Asia,WVS,6,2011,bebedores,79.7,1500
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,bebedores,73.2,1200
+KGZ,Eastern Europe & Central Asia,WVS,4,2003,drogadictos,81.0,1043
+KGZ,Eastern Europe & Central Asia,WVS,6,2011,drogadictos,89.8,1500
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,drogadictos,89.2,1200
+KGZ,Eastern Europe & Central Asia,WVS,4,2003,homosexuales,66.0,1043
+KGZ,Eastern Europe & Central Asia,WVS,6,2011,homosexuales,77.0,1500
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,homosexuales,73.3,1200
+KGZ,Eastern Europe & Central Asia,WVS,4,2003,inestables,50.0,1043
+KGZ,Eastern Europe & Central Asia,WVS,4,2003,inmigrantes,19.8,1043
+KGZ,Eastern Europe & Central Asia,WVS,6,2011,inmigrantes,30.7,1500
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,inmigrantes,20.9,1200
+KGZ,Eastern Europe & Central Asia,WVS,4,2003,judios,20.4,1043
+KGZ,Eastern Europe & Central Asia,WVS,4,2003,musulmanes,14.6,1043
+KGZ,Eastern Europe & Central Asia,WVS,4,2003,otra_raza,18.4,1043
+KGZ,Eastern Europe & Central Asia,WVS,6,2011,otra_raza,28.1,1500
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,otra_raza,25.7,1200
+KGZ,Eastern Europe & Central Asia,WVS,6,2011,otra_religion,34.1,1500
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,otra_religion,32.4,1200
+KGZ,Eastern Europe & Central Asia,WVS,6,2011,otro_idioma,25.9,1500
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,otro_idioma,12.2,1200
+KGZ,Eastern Europe & Central Asia,WVS,6,2011,parejas_no_casadas,47.7,1500
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,parejas_no_casadas,17.9,1200
+KGZ,Eastern Europe & Central Asia,WVS,4,2003,sida,64.4,1043
+KGZ,Eastern Europe & Central Asia,WVS,6,2011,sida,72.9,1500
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,sida,66.2,1200
+KOR,East Asia,WVS,1,1982,antecedentes,50.2,970
+KOR,East Asia,WVS,2,1990,antecedentes,69.1,1251
+KOR,East Asia,WVS,3,1996,antecedentes,80.6,1249
+KOR,East Asia,WVS,4,2001,antecedentes,81.4,1200
+KOR,East Asia,WVS,1,1982,bebedores,55.9,970
+KOR,East Asia,WVS,2,1990,bebedores,83.4,1251
+KOR,East Asia,WVS,3,1996,bebedores,82.4,1249
+KOR,East Asia,WVS,4,2001,bebedores,75.6,1200
+KOR,East Asia,WVS,5,2005,bebedores,75.7,1200
+KOR,East Asia,WVS,6,2010,bebedores,69.6,1200
+KOR,East Asia,WVS,7,2018,bebedores,62.3,1245
+KOR,East Asia,WVS,2,1990,drogadictos,95.8,1251
+KOR,East Asia,WVS,3,1996,drogadictos,97.8,1249
+KOR,East Asia,WVS,4,2001,drogadictos,93.4,1200
+KOR,East Asia,WVS,5,2005,drogadictos,98.3,1200
+KOR,East Asia,WVS,6,2010,drogadictos,97.0,1200
+KOR,East Asia,WVS,7,2018,drogadictos,98.1,1245
+KOR,East Asia,WVS,2,1990,extrema_derecha,72.7,1251
+KOR,East Asia,WVS,1,1982,extremistas,52.7,970
+KOR,East Asia,WVS,3,1996,extremistas,90.2,1249
+KOR,East Asia,WVS,2,1990,familias_numerosas,20.6,1251
+KOR,East Asia,WVS,2,1990,homosexuales,95.8,1251
+KOR,East Asia,WVS,4,2001,homosexuales,82.4,1200
+KOR,East Asia,WVS,5,2005,homosexuales,86.9,1200
+KOR,East Asia,WVS,6,2010,homosexuales,79.8,1200
+KOR,East Asia,WVS,7,2018,homosexuales,79.6,1245
+KOR,East Asia,WVS,1,1982,inestables,35.8,970
+KOR,East Asia,WVS,2,1990,inestables,82.7,1251
+KOR,East Asia,WVS,3,1996,inestables,89.8,1249
+KOR,East Asia,WVS,4,2001,inestables,88.6,1200
+KOR,East Asia,WVS,1,1982,inmigrantes,3.7,970
+KOR,East Asia,WVS,2,1990,inmigrantes,46.6,1251
+KOR,East Asia,WVS,3,1996,inmigrantes,59.6,1249
+KOR,East Asia,WVS,4,2001,inmigrantes,46.8,1200
+KOR,East Asia,WVS,5,2005,inmigrantes,38.4,1200
+KOR,East Asia,WVS,6,2010,inmigrantes,44.2,1200
+KOR,East Asia,WVS,7,2018,inmigrantes,22.0,1245
+KOR,East Asia,WVS,4,2001,judios,40.9,1200
+KOR,East Asia,WVS,1,1982,musulmanes,25.9,970
+KOR,East Asia,WVS,2,1990,musulmanes,79.1,1251
+KOR,East Asia,WVS,4,2001,musulmanes,57.3,1200
+KOR,East Asia,WVS,1,1982,otra_raza,14.3,970
+KOR,East Asia,WVS,2,1990,otra_raza,42.1,1251
+KOR,East Asia,WVS,4,2001,otra_raza,34.7,1200
+KOR,East Asia,WVS,5,2005,otra_raza,36.3,1200
+KOR,East Asia,WVS,6,2010,otra_raza,34.1,1200
+KOR,East Asia,WVS,7,2018,otra_raza,15.2,1245
+KOR,East Asia,WVS,5,2005,otra_religion,26.1,1200
+KOR,East Asia,WVS,6,2010,otra_religion,31.1,1200
+KOR,East Asia,WVS,7,2018,otra_religion,5.5,1245
+KOR,East Asia,WVS,5,2005,otro_idioma,31.8,1200
+KOR,East Asia,WVS,6,2010,otro_idioma,33.3,1200
+KOR,East Asia,WVS,7,2018,otro_idioma,12.9,1245
+KOR,East Asia,WVS,5,2005,parejas_no_casadas,47.7,1200
+KOR,East Asia,WVS,6,2010,parejas_no_casadas,50.6,1200
+KOR,East Asia,WVS,7,2018,parejas_no_casadas,8.0,1245
+KOR,East Asia,WVS,2,1990,sida,95.8,1251
+KOR,East Asia,WVS,3,1996,sida,94.2,1249
+KOR,East Asia,WVS,4,2001,sida,89.4,1200
+KOR,East Asia,WVS,5,2005,sida,93.3,1200
+KOR,East Asia,WVS,6,2010,sida,88.5,1200
+KOR,East Asia,WVS,7,2018,sida,92.9,1245
+KWT,Middle East & North Africa,WVS,6,2014,bebedores,69.4,1303
+KWT,Middle East & North Africa,WVS,6,2014,drogadictos,84.4,1303
+KWT,Middle East & North Africa,WVS,6,2014,inmigrantes,37.2,1303
+KWT,Middle East & North Africa,WVS,6,2014,otra_raza,28.1,1303
+KWT,Middle East & North Africa,WVS,6,2014,otro_idioma,28.9,1303
+KWT,Middle East & North Africa,WVS,6,2014,sida,66.4,1303
+LBN,Middle East & North Africa,WVS,6,2013,bebedores,54.6,1200
+LBN,Middle East & North Africa,WVS,7,2018,bebedores,50.0,1200
+LBN,Middle East & North Africa,WVS,6,2013,drogadictos,72.8,1200
+LBN,Middle East & North Africa,WVS,7,2018,drogadictos,58.4,1200
+LBN,Middle East & North Africa,WVS,6,2013,homosexuales,58.5,1200
+LBN,Middle East & North Africa,WVS,7,2018,homosexuales,47.7,1200
+LBN,Middle East & North Africa,WVS,6,2013,inmigrantes,40.4,1200
+LBN,Middle East & North Africa,WVS,7,2018,inmigrantes,40.2,1200
+LBN,Middle East & North Africa,WVS,6,2013,otra_raza,36.3,1200
+LBN,Middle East & North Africa,WVS,7,2018,otra_raza,35.9,1200
+LBN,Middle East & North Africa,WVS,6,2013,otra_religion,33.8,1200
+LBN,Middle East & North Africa,WVS,7,2018,otra_religion,31.2,1200
+LBN,Middle East & North Africa,WVS,6,2013,otro_idioma,32.4,1200
+LBN,Middle East & North Africa,WVS,7,2018,otro_idioma,30.3,1200
+LBN,Middle East & North Africa,WVS,6,2013,parejas_no_casadas,43.7,1200
+LBN,Middle East & North Africa,WVS,7,2018,parejas_no_casadas,41.3,1200
+LBN,Middle East & North Africa,WVS,6,2013,sida,54.9,1200
+LBN,Middle East & North Africa,WVS,7,2018,sida,45.8,1200
+LBY,Middle East & North Africa,WVS,6,2014,bebedores,82.7,2131
+LBY,Middle East & North Africa,WVS,7,2022,bebedores,56.7,1196
+LBY,Middle East & North Africa,WVS,6,2014,drogadictos,85.7,2131
+LBY,Middle East & North Africa,WVS,7,2022,drogadictos,84.9,1196
+LBY,Middle East & North Africa,WVS,6,2014,homosexuales,76.5,2131
+LBY,Middle East & North Africa,WVS,7,2022,homosexuales,62.6,1196
+LBY,Middle East & North Africa,WVS,6,2014,inmigrantes,59.0,2131
+LBY,Middle East & North Africa,WVS,7,2022,inmigrantes,23.2,1196
+LBY,Middle East & North Africa,WVS,6,2014,otra_raza,55.1,2131
+LBY,Middle East & North Africa,WVS,7,2022,otra_raza,8.4,1196
+LBY,Middle East & North Africa,WVS,6,2014,otra_religion,54.1,2131
+LBY,Middle East & North Africa,WVS,7,2022,otra_religion,20.0,1196
+LBY,Middle East & North Africa,WVS,6,2014,otro_idioma,39.3,2131
+LBY,Middle East & North Africa,WVS,7,2022,otro_idioma,8.7,1196
+LBY,Middle East & North Africa,WVS,6,2014,parejas_no_casadas,82.0,2131
+LBY,Middle East & North Africa,WVS,7,2022,parejas_no_casadas,38.7,1196
+LBY,Middle East & North Africa,WVS,6,2014,sida,69.9,2131
+LBY,Middle East & North Africa,WVS,7,2022,sida,26.8,1196
+LTU,Eastern Europe & Central Asia,WVS,3,1997,antecedentes,78.1,1009
+LTU,Eastern Europe & Central Asia,WVS,3,1997,bebedores,86.2,1009
+LTU,Eastern Europe & Central Asia,WVS,3,1997,drogadictos,89.9,1009
+LTU,Eastern Europe & Central Asia,WVS,3,1997,extremistas,53.3,1009
+LTU,Eastern Europe & Central Asia,WVS,3,1997,homosexuales,76.5,1009
+LTU,Eastern Europe & Central Asia,WVS,3,1997,inestables,57.2,1009
+LTU,Eastern Europe & Central Asia,WVS,3,1997,inmigrantes,29.3,1009
+LTU,Eastern Europe & Central Asia,WVS,3,1997,otra_raza,14.0,1009
+LTU,Eastern Europe & Central Asia,WVS,3,1997,sida,66.2,1009
+LVA,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,70.3,1200
+LVA,Eastern Europe & Central Asia,WVS,3,1996,bebedores,85.5,1200
+LVA,Eastern Europe & Central Asia,WVS,3,1996,drogadictos,88.2,1200
+LVA,Eastern Europe & Central Asia,WVS,3,1996,extremistas,50.3,1200
+LVA,Eastern Europe & Central Asia,WVS,3,1996,homosexuales,59.2,1200
+LVA,Eastern Europe & Central Asia,WVS,3,1996,inestables,62.3,1200
+LVA,Eastern Europe & Central Asia,WVS,3,1996,inmigrantes,18.2,1200
+LVA,Eastern Europe & Central Asia,WVS,3,1996,otra_raza,4.5,1200
+LVA,Eastern Europe & Central Asia,WVS,3,1996,otra_religion,24.8,1200
+LVA,Eastern Europe & Central Asia,WVS,3,1996,sida,49.2,1200
+MAC,East Asia,WVS,7,2019,bebedores,46.8,1015
+MAC,East Asia,WVS,7,2019,drogadictos,47.2,1018
+MAC,East Asia,WVS,7,2019,homosexuales,43.6,995
+MAC,East Asia,WVS,7,2019,inmigrantes,46.1,987
+MAC,East Asia,WVS,7,2019,otra_raza,44.9,987
+MAC,East Asia,WVS,7,2019,otra_religion,44.7,985
+MAC,East Asia,WVS,7,2019,otro_idioma,42.4,984
+MAC,East Asia,WVS,7,2019,parejas_no_casadas,43.7,985
+MAC,East Asia,WVS,7,2019,sida,43.5,1003
+MAR,Middle East & North Africa,WVS,4,2001,antecedentes,68.3,1251
+MAR,Middle East & North Africa,WVS,4,2001,bebedores,87.1,1251
+MAR,Middle East & North Africa,WVS,5,2007,bebedores,81.4,1200
+MAR,Middle East & North Africa,WVS,6,2011,bebedores,77.2,1200
+MAR,Middle East & North Africa,WVS,7,2021,bebedores,77.8,1200
+MAR,Middle East & North Africa,WVS,4,2001,drogadictos,92.9,1251
+MAR,Middle East & North Africa,WVS,5,2007,drogadictos,86.8,1200
+MAR,Middle East & North Africa,WVS,6,2011,drogadictos,82.9,1200
+MAR,Middle East & North Africa,WVS,7,2021,drogadictos,83.2,1200
+MAR,Middle East & North Africa,WVS,4,2001,extremistas,78.8,1251
+MAR,Middle East & North Africa,WVS,4,2001,homosexuales,93.0,1251
+MAR,Middle East & North Africa,WVS,6,2011,homosexuales,85.5,1200
+MAR,Middle East & North Africa,WVS,7,2021,homosexuales,79.9,1200
+MAR,Middle East & North Africa,WVS,4,2001,inestables,71.5,1251
+MAR,Middle East & North Africa,WVS,4,2001,inmigrantes,19.1,1251
+MAR,Middle East & North Africa,WVS,5,2007,inmigrantes,24.3,1196
+MAR,Middle East & North Africa,WVS,6,2011,inmigrantes,10.8,1200
+MAR,Middle East & North Africa,WVS,7,2021,inmigrantes,23.2,1200
+MAR,Middle East & North Africa,WVS,5,2007,minorias_militantes,34.6,269
+MAR,Middle East & North Africa,WVS,4,2001,otra_raza,13.7,1251
+MAR,Middle East & North Africa,WVS,5,2007,otra_raza,23.1,1198
+MAR,Middle East & North Africa,WVS,6,2011,otra_raza,13.8,1200
+MAR,Middle East & North Africa,WVS,7,2021,otra_raza,13.5,1200
+MAR,Middle East & North Africa,WVS,5,2007,otra_religion,36.8,1170
+MAR,Middle East & North Africa,WVS,6,2011,otra_religion,18.9,1200
+MAR,Middle East & North Africa,WVS,7,2021,otra_religion,23.7,1200
+MAR,Middle East & North Africa,WVS,5,2007,otro_idioma,26.0,1194
+MAR,Middle East & North Africa,WVS,6,2011,otro_idioma,11.3,1200
+MAR,Middle East & North Africa,WVS,7,2021,otro_idioma,16.9,1200
+MAR,Middle East & North Africa,WVS,5,2007,parejas_no_casadas,78.4,1195
+MAR,Middle East & North Africa,WVS,6,2011,parejas_no_casadas,65.8,1200
+MAR,Middle East & North Africa,WVS,7,2021,parejas_no_casadas,59.0,1200
+MAR,Middle East & North Africa,WVS,4,2001,sida,81.0,1251
+MAR,Middle East & North Africa,WVS,5,2007,sida,66.8,1196
+MAR,Middle East & North Africa,WVS,6,2011,sida,47.1,1200
+MAR,Middle East & North Africa,WVS,7,2021,sida,42.6,1200
+MAR,Middle East & North Africa,WVS,4,2001,traficantes,92.7,1251
+MDA,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,80.6,984
+MDA,Eastern Europe & Central Asia,WVS,4,2002,antecedentes,83.4,1008
+MDA,Eastern Europe & Central Asia,WVS,3,1996,bebedores,78.4,984
+MDA,Eastern Europe & Central Asia,WVS,4,2002,bebedores,84.7,1008
+MDA,Eastern Europe & Central Asia,WVS,5,2006,bebedores,81.0,1046
+MDA,Eastern Europe & Central Asia,WVS,3,1996,drogadictos,86.1,984
+MDA,Eastern Europe & Central Asia,WVS,4,2002,drogadictos,90.6,1008
+MDA,Eastern Europe & Central Asia,WVS,5,2006,drogadictos,87.4,1046
+MDA,Eastern Europe & Central Asia,WVS,3,1996,extremistas,48.1,984
+MDA,Eastern Europe & Central Asia,WVS,3,1996,homosexuales,77.4,984
+MDA,Eastern Europe & Central Asia,WVS,4,2002,homosexuales,77.4,1008
+MDA,Eastern Europe & Central Asia,WVS,5,2006,homosexuales,70.4,1046
+MDA,Eastern Europe & Central Asia,WVS,3,1996,inestables,57.4,984
+MDA,Eastern Europe & Central Asia,WVS,4,2002,inestables,68.4,1008
+MDA,Eastern Europe & Central Asia,WVS,3,1996,inmigrantes,13.2,984
+MDA,Eastern Europe & Central Asia,WVS,4,2002,inmigrantes,18.8,1008
+MDA,Eastern Europe & Central Asia,WVS,5,2006,inmigrantes,18.8,1046
+MDA,Eastern Europe & Central Asia,WVS,4,2002,judios,25.0,1008
+MDA,Eastern Europe & Central Asia,WVS,5,2006,minorias_militantes,59.0,1045
+MDA,Eastern Europe & Central Asia,WVS,4,2002,musulmanes,44.4,1008
+MDA,Eastern Europe & Central Asia,WVS,3,1996,otra_raza,7.7,984
+MDA,Eastern Europe & Central Asia,WVS,4,2002,otra_raza,11.0,1008
+MDA,Eastern Europe & Central Asia,WVS,5,2006,otra_raza,23.7,1046
+MDA,Eastern Europe & Central Asia,WVS,3,1996,otra_religion,16.2,984
+MDA,Eastern Europe & Central Asia,WVS,5,2006,otra_religion,25.4,1046
+MDA,Eastern Europe & Central Asia,WVS,5,2006,otro_idioma,16.0,1042
+MDA,Eastern Europe & Central Asia,WVS,5,2006,parejas_no_casadas,16.6,1041
+MDA,Eastern Europe & Central Asia,WVS,3,1996,sida,72.8,984
+MDA,Eastern Europe & Central Asia,WVS,4,2002,sida,66.1,1008
+MDA,Eastern Europe & Central Asia,WVS,5,2006,sida,69.1,1046
+MDV,South Asia,WVS,7,2021,bebedores,87.4,1039
+MDV,South Asia,WVS,7,2021,drogadictos,90.9,1039
+MDV,South Asia,WVS,7,2021,homosexuales,85.5,1039
+MDV,South Asia,WVS,7,2021,inmigrantes,23.6,1036
+MDV,South Asia,WVS,7,2021,otra_raza,26.0,1039
+MDV,South Asia,WVS,7,2021,otra_religion,51.2,1038
+MDV,South Asia,WVS,7,2021,otro_idioma,17.7,1038
+MDV,South Asia,WVS,7,2021,parejas_no_casadas,69.8,1038
+MDV,South Asia,WVS,7,2021,sida,35.7,1039
+MEX,Latin America,WVS,1,1981,antecedentes,50.2,1837
+MEX,Latin America,WVS,2,1990,antecedentes,68.6,1531
+MEX,Latin America,WVS,3,1996,antecedentes,57.9,1510
+MEX,Latin America,WVS,4,2000,antecedentes,69.6,1535
+MEX,Latin America,WVS,1,1981,bebedores,42.3,1837
+MEX,Latin America,WVS,2,1990,bebedores,55.7,1531
+MEX,Latin America,WVS,3,1996,bebedores,43.3,1510
+MEX,Latin America,WVS,4,2000,bebedores,55.9,1535
+MEX,Latin America,WVS,5,2005,bebedores,49.7,1560
+MEX,Latin America,WVS,6,2012,bebedores,50.1,2000
+MEX,Latin America,WVS,7,2018,bebedores,55.3,1740
+MEX,Latin America,WVS,2,1990,drogadictos,69.2,1531
+MEX,Latin America,WVS,3,1996,drogadictos,53.9,1510
+MEX,Latin America,WVS,4,2000,drogadictos,67.9,1535
+MEX,Latin America,WVS,5,2005,drogadictos,77.4,1560
+MEX,Latin America,WVS,6,2012,drogadictos,69.5,2000
+MEX,Latin America,WVS,7,2018,drogadictos,77.3,1739
+MEX,Latin America,WVS,4,2000,evangelistas,24.7,1535
+MEX,Latin America,WVS,2,1990,extrema_derecha,27.2,1531
+MEX,Latin America,WVS,1,1981,extremistas,24.1,1837
+MEX,Latin America,WVS,3,1996,extremistas,34.2,1510
+MEX,Latin America,WVS,2,1990,familias_numerosas,22.7,1531
+MEX,Latin America,WVS,2,1990,hindues,13.8,1531
+MEX,Latin America,WVS,2,1990,homosexuales,60.2,1531
+MEX,Latin America,WVS,3,1996,homosexuales,39.9,1510
+MEX,Latin America,WVS,4,2000,homosexuales,44.6,1535
+MEX,Latin America,WVS,5,2005,homosexuales,29.8,1560
+MEX,Latin America,WVS,6,2012,homosexuales,23.2,2000
+MEX,Latin America,WVS,7,2018,homosexuales,22.8,1736
+MEX,Latin America,WVS,1,1981,inestables,27.8,1837
+MEX,Latin America,WVS,2,1990,inestables,37.7,1531
+MEX,Latin America,WVS,3,1996,inestables,38.7,1510
+MEX,Latin America,WVS,4,2000,inestables,33.5,1535
+MEX,Latin America,WVS,1,1981,inmigrantes,0.0,1837
+MEX,Latin America,WVS,2,1990,inmigrantes,17.6,1531
+MEX,Latin America,WVS,3,1996,inmigrantes,27.1,1510
+MEX,Latin America,WVS,4,2000,inmigrantes,14.3,1535
+MEX,Latin America,WVS,5,2005,inmigrantes,9.7,1560
+MEX,Latin America,WVS,6,2012,inmigrantes,11.6,2000
+MEX,Latin America,WVS,7,2018,inmigrantes,13.6,1736
+MEX,Latin America,WVS,2,1990,judios,18.6,1531
+MEX,Latin America,WVS,3,1996,judios,30.9,1510
+MEX,Latin America,WVS,5,2005,minorias_militantes,17.1,1560
+MEX,Latin America,WVS,2,1990,musulmanes,18.7,1531
+MEX,Latin America,WVS,4,2000,musulmanes,17.0,1535
+MEX,Latin America,WVS,1,1981,otra_raza,6.8,1837
+MEX,Latin America,WVS,2,1990,otra_raza,16.5,1531
+MEX,Latin America,WVS,3,1996,otra_raza,26.7,1510
+MEX,Latin America,WVS,4,2000,otra_raza,15.2,1535
+MEX,Latin America,WVS,5,2005,otra_raza,8.3,1560
+MEX,Latin America,WVS,6,2012,otra_raza,10.2,2000
+MEX,Latin America,WVS,7,2018,otra_raza,11.4,1737
+MEX,Latin America,WVS,5,2005,otra_religion,13.5,1560
+MEX,Latin America,WVS,6,2012,otra_religion,15.6,2000
+MEX,Latin America,WVS,7,2018,otra_religion,14.0,1737
+MEX,Latin America,WVS,5,2005,otro_idioma,11.2,1560
+MEX,Latin America,WVS,6,2012,otro_idioma,14.1,2000
+MEX,Latin America,WVS,7,2018,otro_idioma,12.5,1738
+MEX,Latin America,WVS,5,2005,parejas_no_casadas,9.2,1560
+MEX,Latin America,WVS,6,2012,parejas_no_casadas,10.5,2000
+MEX,Latin America,WVS,7,2018,parejas_no_casadas,11.1,1738
+MEX,Latin America,WVS,2,1990,sida,57.2,1531
+MEX,Latin America,WVS,3,1996,sida,33.1,1510
+MEX,Latin America,WVS,4,2000,sida,33.6,1535
+MEX,Latin America,WVS,5,2005,sida,20.6,1560
+MEX,Latin America,WVS,6,2012,sida,16.2,2000
+MEX,Latin America,WVS,7,2018,sida,19.9,1734
+MKD,Eastern Europe & Central Asia,WVS,3,1998,antecedentes,77.8,995
+MKD,Eastern Europe & Central Asia,WVS,4,2001,antecedentes,76.3,1055
+MKD,Eastern Europe & Central Asia,WVS,3,1998,bebedores,69.5,995
+MKD,Eastern Europe & Central Asia,WVS,4,2001,bebedores,63.8,1055
+MKD,Eastern Europe & Central Asia,WVS,3,1998,drogadictos,78.7,995
+MKD,Eastern Europe & Central Asia,WVS,4,2001,drogadictos,73.1,1055
+MKD,Eastern Europe & Central Asia,WVS,3,1998,extremistas,51.9,995
+MKD,Eastern Europe & Central Asia,WVS,3,1998,homosexuales,65.9,995
+MKD,Eastern Europe & Central Asia,WVS,4,2001,homosexuales,53.5,1055
+MKD,Eastern Europe & Central Asia,WVS,3,1998,inestables,58.3,995
+MKD,Eastern Europe & Central Asia,WVS,4,2001,inestables,47.4,1055
+MKD,Eastern Europe & Central Asia,WVS,3,1998,inmigrantes,23.7,995
+MKD,Eastern Europe & Central Asia,WVS,4,2001,inmigrantes,18.6,1055
+MKD,Eastern Europe & Central Asia,WVS,4,2001,judios,20.0,1055
+MKD,Eastern Europe & Central Asia,WVS,4,2001,musulmanes,26.2,1055
+MKD,Eastern Europe & Central Asia,WVS,3,1998,otra_raza,26.4,995
+MKD,Eastern Europe & Central Asia,WVS,4,2001,otra_raza,19.0,1055
+MKD,Eastern Europe & Central Asia,WVS,3,1998,sida,62.7,995
+MKD,Eastern Europe & Central Asia,WVS,4,2001,sida,52.1,1055
+MLI,Sub-Saharan Africa,WVS,5,2007,bebedores,65.2,1534
+MLI,Sub-Saharan Africa,WVS,5,2007,drogadictos,76.3,1534
+MLI,Sub-Saharan Africa,WVS,5,2007,homosexuales,66.2,1534
+MLI,Sub-Saharan Africa,WVS,5,2007,inmigrantes,24.5,1534
+MLI,Sub-Saharan Africa,WVS,5,2007,otra_raza,22.0,1534
+MLI,Sub-Saharan Africa,WVS,5,2007,otra_religion,24.1,1534
+MLI,Sub-Saharan Africa,WVS,5,2007,otro_idioma,19.7,1534
+MLI,Sub-Saharan Africa,WVS,5,2007,parejas_no_casadas,48.0,1534
+MLI,Sub-Saharan Africa,WVS,5,2007,sida,41.6,1534
+MMR,Southeast Asia,WVS,7,2020,bebedores,93.8,1200
+MMR,Southeast Asia,WVS,7,2020,drogadictos,97.9,1200
+MMR,Southeast Asia,WVS,7,2020,homosexuales,91.3,1200
+MMR,Southeast Asia,WVS,7,2020,inmigrantes,72.8,1200
+MMR,Southeast Asia,WVS,7,2020,otra_raza,70.4,1200
+MMR,Southeast Asia,WVS,7,2020,otra_religion,71.2,1200
+MMR,Southeast Asia,WVS,7,2020,otro_idioma,70.8,1200
+MMR,Southeast Asia,WVS,7,2020,parejas_no_casadas,90.5,1200
+MMR,Southeast Asia,WVS,7,2020,sida,85.1,1200
+MNE,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,47.1,240
+MNE,Eastern Europe & Central Asia,WVS,4,2001,antecedentes,29.3,1060
+MNE,Eastern Europe & Central Asia,WVS,3,1996,bebedores,72.5,240
+MNE,Eastern Europe & Central Asia,WVS,4,2001,bebedores,63.1,1060
+MNE,Eastern Europe & Central Asia,WVS,3,1996,drogadictos,86.7,240
+MNE,Eastern Europe & Central Asia,WVS,4,2001,drogadictos,86.1,1060
+MNE,Eastern Europe & Central Asia,WVS,3,1996,extremistas,68.3,240
+MNE,Eastern Europe & Central Asia,WVS,3,1996,gitanos,28.7,240
+MNE,Eastern Europe & Central Asia,WVS,4,2001,gitanos,23.6,1060
+MNE,Eastern Europe & Central Asia,WVS,3,1996,homosexuales,82.1,240
+MNE,Eastern Europe & Central Asia,WVS,4,2001,homosexuales,73.7,1060
+MNE,Eastern Europe & Central Asia,WVS,3,1996,inestables,78.8,240
+MNE,Eastern Europe & Central Asia,WVS,4,2001,inestables,77.2,1060
+MNE,Eastern Europe & Central Asia,WVS,3,1996,inmigrantes,31.2,240
+MNE,Eastern Europe & Central Asia,WVS,4,2001,inmigrantes,20.1,1060
+MNE,Eastern Europe & Central Asia,WVS,4,2001,musulmanes,20.2,1060
+MNE,Eastern Europe & Central Asia,WVS,3,1996,otra_raza,16.7,240
+MNE,Eastern Europe & Central Asia,WVS,4,2001,otra_raza,19.1,1060
+MNE,Eastern Europe & Central Asia,WVS,3,1996,sida,83.3,240
+MNE,Eastern Europe & Central Asia,WVS,4,2001,sida,76.1,1060
+MNG,East Asia,WVS,7,2020,bebedores,76.4,1638
+MNG,East Asia,WVS,7,2020,drogadictos,74.2,1638
+MNG,East Asia,WVS,7,2020,homosexuales,45.8,1638
+MNG,East Asia,WVS,7,2020,inmigrantes,29.3,1638
+MNG,East Asia,WVS,7,2020,otra_raza,20.6,1638
+MNG,East Asia,WVS,7,2020,otra_religion,25.4,1638
+MNG,East Asia,WVS,7,2020,otro_idioma,15.6,1638
+MNG,East Asia,WVS,7,2020,parejas_no_casadas,15.3,1638
+MNG,East Asia,WVS,7,2020,sida,47.6,1638
+MYS,Southeast Asia,WVS,5,2006,bebedores,72.7,1200
+MYS,Southeast Asia,WVS,6,2012,bebedores,68.5,1300
+MYS,Southeast Asia,WVS,7,2018,bebedores,82.9,1313
+MYS,Southeast Asia,WVS,5,2006,drogadictos,87.3,1200
+MYS,Southeast Asia,WVS,6,2012,drogadictos,73.8,1300
+MYS,Southeast Asia,WVS,7,2018,drogadictos,93.9,1313
+MYS,Southeast Asia,WVS,5,2006,homosexuales,70.6,1200
+MYS,Southeast Asia,WVS,6,2012,homosexuales,58.7,1300
+MYS,Southeast Asia,WVS,7,2018,homosexuales,60.4,1313
+MYS,Southeast Asia,WVS,5,2006,inmigrantes,56.7,1200
+MYS,Southeast Asia,WVS,6,2012,inmigrantes,59.7,1300
+MYS,Southeast Asia,WVS,7,2018,inmigrantes,50.6,1313
+MYS,Southeast Asia,WVS,5,2006,otra_raza,20.6,1200
+MYS,Southeast Asia,WVS,6,2012,otra_raza,31.3,1300
+MYS,Southeast Asia,WVS,7,2018,otra_raza,5.5,1313
+MYS,Southeast Asia,WVS,5,2006,otra_religion,22.4,1200
+MYS,Southeast Asia,WVS,6,2012,otra_religion,30.3,1300
+MYS,Southeast Asia,WVS,7,2018,otra_religion,6.8,1313
+MYS,Southeast Asia,WVS,5,2006,otro_idioma,19.5,1199
+MYS,Southeast Asia,WVS,6,2012,otro_idioma,29.2,1300
+MYS,Southeast Asia,WVS,7,2018,otro_idioma,4.1,1313
+MYS,Southeast Asia,WVS,5,2006,parejas_no_casadas,49.9,1200
+MYS,Southeast Asia,WVS,6,2012,parejas_no_casadas,52.3,1300
+MYS,Southeast Asia,WVS,7,2018,parejas_no_casadas,40.6,1313
+MYS,Southeast Asia,WVS,5,2006,sida,69.8,1200
+MYS,Southeast Asia,WVS,6,2012,sida,59.5,1300
+MYS,Southeast Asia,WVS,7,2018,sida,45.2,1313
+NGA,Sub-Saharan Africa,WVS,2,1990,antecedentes,80.3,1001
+NGA,Sub-Saharan Africa,WVS,3,1995,antecedentes,93.4,1996
+NGA,Sub-Saharan Africa,WVS,4,2000,antecedentes,78.7,2022
+NGA,Sub-Saharan Africa,WVS,2,1990,bebedores,72.2,1001
+NGA,Sub-Saharan Africa,WVS,3,1995,bebedores,78.7,1996
+NGA,Sub-Saharan Africa,WVS,4,2000,bebedores,65.3,2022
+NGA,Sub-Saharan Africa,WVS,6,2012,bebedores,63.7,1759
+NGA,Sub-Saharan Africa,WVS,7,2018,bebedores,77.2,1237
+NGA,Sub-Saharan Africa,WVS,3,1995,cristianos,6.7,1996
+NGA,Sub-Saharan Africa,WVS,2,1990,drogadictos,76.5,1001
+NGA,Sub-Saharan Africa,WVS,3,1995,drogadictos,90.1,1996
+NGA,Sub-Saharan Africa,WVS,4,2000,drogadictos,74.3,2022
+NGA,Sub-Saharan Africa,WVS,6,2012,drogadictos,76.3,1759
+NGA,Sub-Saharan Africa,WVS,7,2018,drogadictos,90.7,1237
+NGA,Sub-Saharan Africa,WVS,2,1990,extrema_derecha,35.7,1001
+NGA,Sub-Saharan Africa,WVS,3,1995,extremistas,48.9,1996
+NGA,Sub-Saharan Africa,WVS,2,1990,familias_numerosas,33.3,1001
+NGA,Sub-Saharan Africa,WVS,2,1990,hindues,22.4,1001
+NGA,Sub-Saharan Africa,WVS,2,1990,homosexuales,76.4,1001
+NGA,Sub-Saharan Africa,WVS,3,1995,homosexuales,89.5,1996
+NGA,Sub-Saharan Africa,WVS,4,2000,homosexuales,73.6,2022
+NGA,Sub-Saharan Africa,WVS,6,2012,homosexuales,70.5,1759
+NGA,Sub-Saharan Africa,WVS,7,2018,homosexuales,89.0,1237
+NGA,Sub-Saharan Africa,WVS,2,1990,inestables,57.3,1001
+NGA,Sub-Saharan Africa,WVS,3,1995,inestables,60.3,1996
+NGA,Sub-Saharan Africa,WVS,4,2000,inestables,52.4,2022
+NGA,Sub-Saharan Africa,WVS,2,1990,inmigrantes,26.3,1001
+NGA,Sub-Saharan Africa,WVS,3,1995,inmigrantes,19.7,1996
+NGA,Sub-Saharan Africa,WVS,4,2000,inmigrantes,28.0,2022
+NGA,Sub-Saharan Africa,WVS,6,2012,inmigrantes,20.1,1759
+NGA,Sub-Saharan Africa,WVS,7,2018,inmigrantes,13.4,1237
+NGA,Sub-Saharan Africa,WVS,2,1990,judios,35.3,1001
+NGA,Sub-Saharan Africa,WVS,2,1990,musulmanes,24.3,1001
+NGA,Sub-Saharan Africa,WVS,3,1995,musulmanes,16.8,1996
+NGA,Sub-Saharan Africa,WVS,2,1990,otra_raza,31.2,1001
+NGA,Sub-Saharan Africa,WVS,3,1995,otra_raza,20.4,1996
+NGA,Sub-Saharan Africa,WVS,4,2000,otra_raza,30.4,2022
+NGA,Sub-Saharan Africa,WVS,6,2012,otra_raza,20.9,1759
+NGA,Sub-Saharan Africa,WVS,7,2018,otra_raza,15.8,1237
+NGA,Sub-Saharan Africa,WVS,4,2000,otra_religion,29.3,2022
+NGA,Sub-Saharan Africa,WVS,6,2012,otra_religion,26.5,1759
+NGA,Sub-Saharan Africa,WVS,7,2018,otra_religion,13.4,1237
+NGA,Sub-Saharan Africa,WVS,6,2012,otro_idioma,23.7,1759
+NGA,Sub-Saharan Africa,WVS,7,2018,otro_idioma,9.6,1237
+NGA,Sub-Saharan Africa,WVS,6,2012,parejas_no_casadas,31.2,1759
+NGA,Sub-Saharan Africa,WVS,7,2018,parejas_no_casadas,29.7,1237
+NGA,Sub-Saharan Africa,WVS,2,1990,sida,79.0,1001
+NGA,Sub-Saharan Africa,WVS,3,1995,sida,88.8,1996
+NGA,Sub-Saharan Africa,WVS,4,2000,sida,67.5,2022
+NGA,Sub-Saharan Africa,WVS,6,2012,sida,46.5,1759
+NGA,Sub-Saharan Africa,WVS,7,2018,sida,54.0,1237
+NIC,Latin America,WVS,7,2020,bebedores,44.0,1200
+NIC,Latin America,WVS,7,2020,drogadictos,61.2,1200
+NIC,Latin America,WVS,7,2020,homosexuales,33.2,1200
+NIC,Latin America,WVS,7,2020,inmigrantes,20.5,1200
+NIC,Latin America,WVS,7,2020,otra_raza,19.8,1200
+NIC,Latin America,WVS,7,2020,otra_religion,21.6,1200
+NIC,Latin America,WVS,7,2020,otro_idioma,21.3,1200
+NIC,Latin America,WVS,7,2020,parejas_no_casadas,18.2,1200
+NIC,Latin America,WVS,7,2020,sida,26.4,1200
+NIR,Western Europe,WVS,7,2022,bebedores,58.7,446
+NIR,Western Europe,WVS,7,2022,drogadictos,79.2,446
+NIR,Western Europe,WVS,7,2022,homosexuales,7.0,446
+NIR,Western Europe,WVS,7,2022,inmigrantes,9.5,446
+NIR,Western Europe,WVS,7,2022,otra_raza,3.8,446
+NIR,Western Europe,WVS,7,2022,otra_religion,3.3,446
+NIR,Western Europe,WVS,7,2022,otro_idioma,8.3,446
+NIR,Western Europe,WVS,7,2022,parejas_no_casadas,0.6,446
+NIR,Western Europe,WVS,7,2022,sida,7.0,446
+NLD,Western Europe,WVS,5,2006,bebedores,74.7,1050
+NLD,Western Europe,WVS,6,2012,bebedores,84.6,1902
+NLD,Western Europe,WVS,7,2022,bebedores,76.0,2057
+NLD,Western Europe,WVS,5,2006,drogadictos,86.7,1050
+NLD,Western Europe,WVS,6,2012,drogadictos,92.3,1902
+NLD,Western Europe,WVS,7,2022,drogadictos,89.5,2057
+NLD,Western Europe,WVS,5,2006,homosexuales,4.5,1050
+NLD,Western Europe,WVS,6,2012,homosexuales,6.9,1902
+NLD,Western Europe,WVS,7,2022,homosexuales,2.3,2057
+NLD,Western Europe,WVS,5,2006,inmigrantes,8.9,1050
+NLD,Western Europe,WVS,6,2012,inmigrantes,19.6,1902
+NLD,Western Europe,WVS,7,2022,inmigrantes,20.9,2057
+NLD,Western Europe,WVS,5,2006,otra_raza,7.7,1050
+NLD,Western Europe,WVS,6,2012,otra_raza,8.2,1902
+NLD,Western Europe,WVS,7,2022,otra_raza,4.7,2057
+NLD,Western Europe,WVS,5,2006,otra_religion,2.8,1050
+NLD,Western Europe,WVS,6,2012,otra_religion,2.7,1902
+NLD,Western Europe,WVS,7,2022,otra_religion,2.5,2057
+NLD,Western Europe,WVS,5,2006,otro_idioma,9.7,1050
+NLD,Western Europe,WVS,6,2012,otro_idioma,14.5,1902
+NLD,Western Europe,WVS,7,2022,otro_idioma,10.8,2057
+NLD,Western Europe,WVS,5,2006,parejas_no_casadas,0.5,1050
+NLD,Western Europe,WVS,6,2012,parejas_no_casadas,0.6,1902
+NLD,Western Europe,WVS,7,2022,parejas_no_casadas,0.3,2057
+NLD,Western Europe,WVS,5,2006,sida,10.0,1050
+NLD,Western Europe,WVS,6,2012,sida,9.7,1902
+NLD,Western Europe,WVS,7,2022,sida,6.4,2057
+NOR,Western Europe,WVS,3,1996,antecedentes,44.0,1127
+NOR,Western Europe,WVS,3,1996,bebedores,31.8,1127
+NOR,Western Europe,WVS,5,2007,bebedores,34.4,1025
+NOR,Western Europe,WVS,3,1996,drogadictos,65.8,1127
+NOR,Western Europe,WVS,5,2007,drogadictos,62.2,1025
+NOR,Western Europe,WVS,3,1996,extremistas,53.7,1127
+NOR,Western Europe,WVS,3,1996,homosexuales,14.3,1127
+NOR,Western Europe,WVS,5,2007,homosexuales,5.7,1025
+NOR,Western Europe,WVS,3,1996,inestables,36.9,1127
+NOR,Western Europe,WVS,3,1996,inmigrantes,9.8,1127
+NOR,Western Europe,WVS,5,2007,inmigrantes,5.4,1025
+NOR,Western Europe,WVS,5,2007,minorias_militantes,14.4,1019
+NOR,Western Europe,WVS,3,1996,musulmanes,19.3,1127
+NOR,Western Europe,WVS,3,1996,otra_raza,8.2,1127
+NOR,Western Europe,WVS,5,2007,otra_raza,2.8,1025
+NOR,Western Europe,WVS,5,2007,otra_religion,2.6,1025
+NOR,Western Europe,WVS,5,2007,otro_idioma,1.9,1019
+NOR,Western Europe,WVS,5,2007,parejas_no_casadas,0.7,1019
+NOR,Western Europe,WVS,3,1996,sida,14.1,1127
+NOR,Western Europe,WVS,5,2007,sida,6.4,1025
+NZL,"North America, Australia & New Zealand",WVS,3,1998,antecedentes,57.5,1201
+NZL,"North America, Australia & New Zealand",WVS,5,2004,antecedentes,53.2,954
+NZL,"North America, Australia & New Zealand",WVS,3,1998,bebedores,65.9,1201
+NZL,"North America, Australia & New Zealand",WVS,5,2004,bebedores,63.8,954
+NZL,"North America, Australia & New Zealand",WVS,6,2011,bebedores,72.9,841
+NZL,"North America, Australia & New Zealand",WVS,7,2020,bebedores,63.1,1057
+NZL,"North America, Australia & New Zealand",WVS,3,1998,drogadictos,78.8,1201
+NZL,"North America, Australia & New Zealand",WVS,5,2004,drogadictos,81.0,954
+NZL,"North America, Australia & New Zealand",WVS,6,2011,drogadictos,85.4,841
+NZL,"North America, Australia & New Zealand",WVS,7,2020,drogadictos,80.2,1057
+NZL,"North America, Australia & New Zealand",WVS,3,1998,extremistas,47.2,1201
+NZL,"North America, Australia & New Zealand",WVS,5,2004,extremistas,48.4,954
+NZL,"North America, Australia & New Zealand",WVS,3,1998,homosexuales,22.3,1201
+NZL,"North America, Australia & New Zealand",WVS,5,2004,homosexuales,17.3,954
+NZL,"North America, Australia & New Zealand",WVS,6,2011,homosexuales,14.7,841
+NZL,"North America, Australia & New Zealand",WVS,7,2020,homosexuales,7.6,1057
+NZL,"North America, Australia & New Zealand",WVS,3,1998,inestables,60.2,1201
+NZL,"North America, Australia & New Zealand",WVS,5,2004,inestables,51.0,954
+NZL,"North America, Australia & New Zealand",WVS,3,1998,inmigrantes,5.4,1201
+NZL,"North America, Australia & New Zealand",WVS,5,2004,inmigrantes,7.3,954
+NZL,"North America, Australia & New Zealand",WVS,6,2011,inmigrantes,5.9,841
+NZL,"North America, Australia & New Zealand",WVS,7,2020,inmigrantes,4.7,1057
+NZL,"North America, Australia & New Zealand",WVS,3,1998,otra_raza,3.0,1201
+NZL,"North America, Australia & New Zealand",WVS,5,2004,otra_raza,4.1,954
+NZL,"North America, Australia & New Zealand",WVS,6,2011,otra_raza,2.9,841
+NZL,"North America, Australia & New Zealand",WVS,7,2020,otra_raza,2.7,1057
+NZL,"North America, Australia & New Zealand",WVS,6,2011,otra_religion,1.4,841
+NZL,"North America, Australia & New Zealand",WVS,7,2020,otra_religion,1.6,1057
+NZL,"North America, Australia & New Zealand",WVS,6,2011,otro_idioma,5.5,841
+NZL,"North America, Australia & New Zealand",WVS,7,2020,otro_idioma,4.4,1057
+NZL,"North America, Australia & New Zealand",WVS,6,2011,parejas_no_casadas,1.9,841
+NZL,"North America, Australia & New Zealand",WVS,7,2020,parejas_no_casadas,1.5,1057
+NZL,"North America, Australia & New Zealand",WVS,3,1998,sida,16.7,1201
+NZL,"North America, Australia & New Zealand",WVS,5,2004,sida,20.1,954
+NZL,"North America, Australia & New Zealand",WVS,6,2011,sida,16.8,841
+NZL,"North America, Australia & New Zealand",WVS,7,2020,sida,9.3,1057
+PAK,South Asia,WVS,4,2001,antecedentes,57.9,2000
+PAK,South Asia,WVS,4,2001,bebedores,1.1,2000
+PAK,South Asia,WVS,6,2012,bebedores,67.2,1200
+PAK,South Asia,WVS,7,2018,bebedores,56.5,1995
+PAK,South Asia,WVS,4,2001,drogadictos,58.8,2000
+PAK,South Asia,WVS,6,2012,drogadictos,77.2,1200
+PAK,South Asia,WVS,7,2018,drogadictos,52.5,1995
+PAK,South Asia,WVS,6,2012,homosexuales,59.0,1200
+PAK,South Asia,WVS,7,2018,homosexuales,41.2,1995
+PAK,South Asia,WVS,4,2001,inestables,39.6,2000
+PAK,South Asia,WVS,4,2001,inmigrantes,29.1,2000
+PAK,South Asia,WVS,6,2012,inmigrantes,20.9,1200
+PAK,South Asia,WVS,7,2018,inmigrantes,30.2,1995
+PAK,South Asia,WVS,4,2001,otra_raza,6.5,2000
+PAK,South Asia,WVS,6,2012,otra_raza,15.7,1200
+PAK,South Asia,WVS,7,2018,otra_raza,25.3,1995
+PAK,South Asia,WVS,4,2001,otra_religion,8.4,2000
+PAK,South Asia,WVS,6,2012,otra_religion,23.8,1200
+PAK,South Asia,WVS,7,2018,otra_religion,31.9,1995
+PAK,South Asia,WVS,6,2012,otro_idioma,12.0,1200
+PAK,South Asia,WVS,7,2018,otro_idioma,25.5,1995
+PAK,South Asia,WVS,6,2012,parejas_no_casadas,48.2,1200
+PAK,South Asia,WVS,7,2018,parejas_no_casadas,36.3,1995
+PAK,South Asia,WVS,4,2001,sida,7.0,2000
+PAK,South Asia,WVS,6,2012,sida,30.0,1200
+PAK,South Asia,WVS,7,2018,sida,34.7,1995
+PER,Latin America,WVS,3,1996,antecedentes,63.8,1211
+PER,Latin America,WVS,4,2001,antecedentes,53.1,1501
+PER,Latin America,WVS,5,2006,antecedentes,47.2,1500
+PER,Latin America,WVS,3,1996,bebedores,52.9,1211
+PER,Latin America,WVS,4,2001,bebedores,51.5,1501
+PER,Latin America,WVS,5,2006,bebedores,50.9,1500
+PER,Latin America,WVS,6,2012,bebedores,68.3,1210
+PER,Latin America,WVS,7,2018,bebedores,70.3,1393
+PER,Latin America,WVS,3,1996,drogadictos,73.3,1211
+PER,Latin America,WVS,4,2001,drogadictos,66.4,1501
+PER,Latin America,WVS,5,2006,drogadictos,80.3,1500
+PER,Latin America,WVS,6,2012,drogadictos,86.8,1210
+PER,Latin America,WVS,7,2018,drogadictos,85.4,1393
+PER,Latin America,WVS,3,1996,extremistas,36.7,1211
+PER,Latin America,WVS,4,2001,extremistas,39.7,1501
+PER,Latin America,WVS,3,1996,homosexuales,53.8,1211
+PER,Latin America,WVS,4,2001,homosexuales,49.2,1501
+PER,Latin America,WVS,5,2006,homosexuales,41.9,1500
+PER,Latin America,WVS,6,2012,homosexuales,44.3,1210
+PER,Latin America,WVS,7,2018,homosexuales,35.5,1381
+PER,Latin America,WVS,3,1996,inestables,32.1,1211
+PER,Latin America,WVS,4,2001,inestables,38.2,1501
+PER,Latin America,WVS,3,1996,inmigrantes,10.2,1211
+PER,Latin America,WVS,4,2001,inmigrantes,10.9,1501
+PER,Latin America,WVS,5,2006,inmigrantes,6.0,1500
+PER,Latin America,WVS,6,2012,inmigrantes,10.7,1210
+PER,Latin America,WVS,7,2018,inmigrantes,18.3,1386
+PER,Latin America,WVS,4,2001,musulmanes,13.5,1501
+PER,Latin America,WVS,3,1996,otra_raza,11.6,1211
+PER,Latin America,WVS,4,2001,otra_raza,11.2,1501
+PER,Latin America,WVS,5,2006,otra_raza,6.0,1500
+PER,Latin America,WVS,6,2012,otra_raza,9.3,1210
+PER,Latin America,WVS,7,2018,otra_raza,7.0,1384
+PER,Latin America,WVS,5,2006,otra_religion,7.3,1500
+PER,Latin America,WVS,6,2012,otra_religion,12.3,1210
+PER,Latin America,WVS,7,2018,otra_religion,7.1,1387
+PER,Latin America,WVS,5,2006,otro_idioma,4.6,1500
+PER,Latin America,WVS,6,2012,otro_idioma,10.9,1210
+PER,Latin America,WVS,7,2018,otro_idioma,5.3,1390
+PER,Latin America,WVS,5,2006,parejas_no_casadas,5.2,1500
+PER,Latin America,WVS,6,2012,parejas_no_casadas,10.4,1210
+PER,Latin America,WVS,7,2018,parejas_no_casadas,5.9,1388
+PER,Latin America,WVS,3,1996,sida,39.2,1211
+PER,Latin America,WVS,4,2001,sida,28.5,1501
+PER,Latin America,WVS,5,2006,sida,25.1,1500
+PER,Latin America,WVS,6,2012,sida,31.7,1210
+PER,Latin America,WVS,7,2018,sida,28.9,1372
+PHL,Southeast Asia,WVS,3,1996,antecedentes,82.3,1200
+PHL,Southeast Asia,WVS,4,2001,antecedentes,71.7,1200
+PHL,Southeast Asia,WVS,3,1996,bebedores,67.9,1200
+PHL,Southeast Asia,WVS,4,2001,bebedores,55.8,1200
+PHL,Southeast Asia,WVS,6,2012,bebedores,69.4,1200
+PHL,Southeast Asia,WVS,7,2019,bebedores,67.0,1200
+PHL,Southeast Asia,WVS,3,1996,drogadictos,86.0,1200
+PHL,Southeast Asia,WVS,4,2001,drogadictos,81.8,1200
+PHL,Southeast Asia,WVS,6,2012,drogadictos,95.5,1200
+PHL,Southeast Asia,WVS,7,2019,drogadictos,95.4,1200
+PHL,Southeast Asia,WVS,3,1996,extremistas,43.7,1200
+PHL,Southeast Asia,WVS,3,1996,homosexuales,32.5,1200
+PHL,Southeast Asia,WVS,4,2001,homosexuales,23.6,1200
+PHL,Southeast Asia,WVS,6,2012,homosexuales,27.9,1200
+PHL,Southeast Asia,WVS,7,2019,homosexuales,17.8,1200
+PHL,Southeast Asia,WVS,3,1996,inestables,28.3,1200
+PHL,Southeast Asia,WVS,4,2001,inestables,25.5,1200
+PHL,Southeast Asia,WVS,3,1996,inmigrantes,19.8,1200
+PHL,Southeast Asia,WVS,4,2001,inmigrantes,15.3,1200
+PHL,Southeast Asia,WVS,6,2012,inmigrantes,14.1,1200
+PHL,Southeast Asia,WVS,7,2019,inmigrantes,16.7,1200
+PHL,Southeast Asia,WVS,3,1996,musulmanes,29.1,1200
+PHL,Southeast Asia,WVS,4,2001,musulmanes,26.4,1200
+PHL,Southeast Asia,WVS,3,1996,otra_raza,24.2,1200
+PHL,Southeast Asia,WVS,4,2001,otra_raza,21.3,1200
+PHL,Southeast Asia,WVS,6,2012,otra_raza,21.6,1200
+PHL,Southeast Asia,WVS,7,2019,otra_raza,20.5,1199
+PHL,Southeast Asia,WVS,6,2012,otra_religion,16.3,1200
+PHL,Southeast Asia,WVS,7,2019,otra_religion,12.6,1200
+PHL,Southeast Asia,WVS,6,2012,otro_idioma,30.7,1200
+PHL,Southeast Asia,WVS,7,2019,otro_idioma,32.2,1200
+PHL,Southeast Asia,WVS,6,2012,parejas_no_casadas,21.6,1200
+PHL,Southeast Asia,WVS,7,2019,parejas_no_casadas,16.0,1200
+PHL,Southeast Asia,WVS,3,1996,sida,73.5,1200
+PHL,Southeast Asia,WVS,4,2001,sida,62.2,1200
+PHL,Southeast Asia,WVS,6,2012,sida,74.8,1200
+PHL,Southeast Asia,WVS,7,2019,sida,57.8,1200
+POL,Eastern Europe & Central Asia,WVS,3,1997,antecedentes,77.8,1153
+POL,Eastern Europe & Central Asia,WVS,3,1997,bebedores,79.1,1153
+POL,Eastern Europe & Central Asia,WVS,5,2005,bebedores,72.4,1000
+POL,Eastern Europe & Central Asia,WVS,6,2012,bebedores,65.4,966
+POL,Eastern Europe & Central Asia,WVS,3,1997,drogadictos,77.8,1153
+POL,Eastern Europe & Central Asia,WVS,5,2005,drogadictos,77.3,1000
+POL,Eastern Europe & Central Asia,WVS,6,2012,drogadictos,73.9,966
+POL,Eastern Europe & Central Asia,WVS,3,1997,extremistas,20.7,1153
+POL,Eastern Europe & Central Asia,WVS,3,1997,homosexuales,66.0,1153
+POL,Eastern Europe & Central Asia,WVS,5,2005,homosexuales,51.3,1000
+POL,Eastern Europe & Central Asia,WVS,6,2012,homosexuales,39.6,966
+POL,Eastern Europe & Central Asia,WVS,3,1997,inestables,55.4,1153
+POL,Eastern Europe & Central Asia,WVS,3,1997,inmigrantes,21.0,1153
+POL,Eastern Europe & Central Asia,WVS,5,2005,inmigrantes,13.7,1000
+POL,Eastern Europe & Central Asia,WVS,6,2012,inmigrantes,7.2,966
+POL,Eastern Europe & Central Asia,WVS,3,1997,otra_raza,19.9,1153
+POL,Eastern Europe & Central Asia,WVS,5,2005,otra_raza,12.4,1000
+POL,Eastern Europe & Central Asia,WVS,6,2012,otra_raza,5.5,966
+POL,Eastern Europe & Central Asia,WVS,5,2005,otra_religion,10.5,1000
+POL,Eastern Europe & Central Asia,WVS,6,2012,otra_religion,4.6,966
+POL,Eastern Europe & Central Asia,WVS,5,2005,otro_idioma,8.4,997
+POL,Eastern Europe & Central Asia,WVS,6,2012,otro_idioma,3.2,966
+POL,Eastern Europe & Central Asia,WVS,5,2005,parejas_no_casadas,9.0,997
+POL,Eastern Europe & Central Asia,WVS,6,2012,parejas_no_casadas,3.5,966
+POL,Eastern Europe & Central Asia,WVS,3,1997,sida,51.2,1153
+POL,Eastern Europe & Central Asia,WVS,5,2005,sida,38.0,1000
+POL,Eastern Europe & Central Asia,WVS,6,2012,sida,25.6,966
+PRI,Caribbean,WVS,3,1995,antecedentes,62.5,1164
+PRI,Caribbean,WVS,4,2001,antecedentes,36.2,720
+PRI,Caribbean,WVS,3,1995,bebedores,58.1,1164
+PRI,Caribbean,WVS,4,2001,bebedores,40.8,720
+PRI,Caribbean,WVS,7,2018,bebedores,32.2,1127
+PRI,Caribbean,WVS,3,1995,drogadictos,66.0,1164
+PRI,Caribbean,WVS,4,2001,drogadictos,46.8,720
+PRI,Caribbean,WVS,7,2018,drogadictos,44.3,1127
+PRI,Caribbean,WVS,3,1995,extremistas,43.5,1164
+PRI,Caribbean,WVS,3,1995,homosexuales,32.3,1164
+PRI,Caribbean,WVS,4,2001,homosexuales,21.9,720
+PRI,Caribbean,WVS,7,2018,homosexuales,12.5,1127
+PRI,Caribbean,WVS,3,1995,inestables,42.0,1164
+PRI,Caribbean,WVS,4,2001,inestables,33.5,720
+PRI,Caribbean,WVS,3,1995,inmigrantes,12.7,1164
+PRI,Caribbean,WVS,4,2001,inmigrantes,5.6,720
+PRI,Caribbean,WVS,7,2018,inmigrantes,9.4,1127
+PRI,Caribbean,WVS,3,1995,norteamericanos,5.3,1164
+PRI,Caribbean,WVS,3,1995,otra_raza,6.6,1164
+PRI,Caribbean,WVS,4,2001,otra_raza,4.4,720
+PRI,Caribbean,WVS,7,2018,otra_raza,9.2,1127
+PRI,Caribbean,WVS,7,2018,otra_religion,11.1,1127
+PRI,Caribbean,WVS,7,2018,otro_idioma,12.2,1127
+PRI,Caribbean,WVS,7,2018,parejas_no_casadas,10.1,1127
+PRI,Caribbean,WVS,3,1995,sida,16.7,1164
+PRI,Caribbean,WVS,4,2001,sida,12.4,720
+PRI,Caribbean,WVS,7,2018,sida,12.1,1127
+PSE,Middle East & North Africa,WVS,6,2013,bebedores,79.7,1000
+PSE,Middle East & North Africa,WVS,6,2013,drogadictos,85.4,1000
+PSE,Middle East & North Africa,WVS,6,2013,homosexuales,65.3,1000
+PSE,Middle East & North Africa,WVS,6,2013,inmigrantes,39.9,1000
+PSE,Middle East & North Africa,WVS,6,2013,otra_raza,44.0,1000
+PSE,Middle East & North Africa,WVS,6,2013,otra_religion,50.3,1000
+PSE,Middle East & North Africa,WVS,6,2013,otro_idioma,39.2,1000
+PSE,Middle East & North Africa,WVS,6,2013,parejas_no_casadas,69.6,1000
+PSE,Middle East & North Africa,WVS,6,2013,sida,71.1,1000
+QAT,Middle East & North Africa,WVS,6,2010,bebedores,73.6,1060
+QAT,Middle East & North Africa,WVS,6,2010,drogadictos,94.9,1060
+QAT,Middle East & North Africa,WVS,6,2010,homosexuales,83.4,1060
+QAT,Middle East & North Africa,WVS,6,2010,inmigrantes,46.0,1060
+QAT,Middle East & North Africa,WVS,6,2010,otra_raza,8.8,1060
+QAT,Middle East & North Africa,WVS,6,2010,otra_religion,11.6,1060
+QAT,Middle East & North Africa,WVS,6,2010,otro_idioma,9.8,1060
+QAT,Middle East & North Africa,WVS,6,2010,parejas_no_casadas,62.4,1060
+QAT,Middle East & North Africa,WVS,6,2010,sida,67.1,1060
+ROU,Eastern Europe & Central Asia,WVS,3,1998,antecedentes,65.7,1239
+ROU,Eastern Europe & Central Asia,WVS,3,1998,bebedores,58.1,1239
+ROU,Eastern Europe & Central Asia,WVS,5,2005,bebedores,66.5,1776
+ROU,Eastern Europe & Central Asia,WVS,6,2012,bebedores,76.1,1503
+ROU,Eastern Europe & Central Asia,WVS,7,2018,bebedores,75.6,1226
+ROU,Eastern Europe & Central Asia,WVS,3,1998,drogadictos,60.6,1239
+ROU,Eastern Europe & Central Asia,WVS,5,2005,drogadictos,73.9,1776
+ROU,Eastern Europe & Central Asia,WVS,6,2012,drogadictos,81.6,1503
+ROU,Eastern Europe & Central Asia,WVS,7,2018,drogadictos,83.7,1226
+ROU,Eastern Europe & Central Asia,WVS,3,1998,extremistas,41.8,1239
+ROU,Eastern Europe & Central Asia,WVS,5,2005,gitanos,47.6,1776
+ROU,Eastern Europe & Central Asia,WVS,3,1998,homosexuales,55.8,1239
+ROU,Eastern Europe & Central Asia,WVS,5,2005,homosexuales,59.1,1776
+ROU,Eastern Europe & Central Asia,WVS,6,2012,homosexuales,54.2,1503
+ROU,Eastern Europe & Central Asia,WVS,7,2018,homosexuales,57.4,1226
+ROU,Eastern Europe & Central Asia,WVS,3,1998,inestables,43.3,1239
+ROU,Eastern Europe & Central Asia,WVS,3,1998,inmigrantes,32.8,1239
+ROU,Eastern Europe & Central Asia,WVS,5,2005,inmigrantes,16.3,1776
+ROU,Eastern Europe & Central Asia,WVS,6,2012,inmigrantes,21.3,1503
+ROU,Eastern Europe & Central Asia,WVS,7,2018,inmigrantes,23.1,1226
+ROU,Eastern Europe & Central Asia,WVS,3,1998,otra_raza,29.7,1239
+ROU,Eastern Europe & Central Asia,WVS,5,2005,otra_raza,17.8,1776
+ROU,Eastern Europe & Central Asia,WVS,6,2012,otra_raza,23.5,1503
+ROU,Eastern Europe & Central Asia,WVS,7,2018,otra_raza,14.4,1226
+ROU,Eastern Europe & Central Asia,WVS,3,1998,otra_religion,30.4,1239
+ROU,Eastern Europe & Central Asia,WVS,5,2005,otra_religion,14.9,1776
+ROU,Eastern Europe & Central Asia,WVS,6,2012,otra_religion,19.1,1503
+ROU,Eastern Europe & Central Asia,WVS,7,2018,otra_religion,6.6,1226
+ROU,Eastern Europe & Central Asia,WVS,5,2005,otro_idioma,11.9,1717
+ROU,Eastern Europe & Central Asia,WVS,6,2012,otro_idioma,16.7,1503
+ROU,Eastern Europe & Central Asia,WVS,7,2018,otro_idioma,6.0,1226
+ROU,Eastern Europe & Central Asia,WVS,5,2005,parejas_no_casadas,15.6,1717
+ROU,Eastern Europe & Central Asia,WVS,6,2012,parejas_no_casadas,17.8,1503
+ROU,Eastern Europe & Central Asia,WVS,7,2018,parejas_no_casadas,5.4,1226
+ROU,Eastern Europe & Central Asia,WVS,3,1998,sida,42.7,1239
+ROU,Eastern Europe & Central Asia,WVS,5,2005,sida,37.3,1776
+ROU,Eastern Europe & Central Asia,WVS,6,2012,sida,42.4,1503
+ROU,Eastern Europe & Central Asia,WVS,7,2018,sida,34.8,1226
+RUS,Eastern Europe & Central Asia,WVS,2,1990,antecedentes,62.9,1961
+RUS,Eastern Europe & Central Asia,WVS,3,1995,antecedentes,64.4,2040
+RUS,Eastern Europe & Central Asia,WVS,2,1990,bebedores,81.6,1961
+RUS,Eastern Europe & Central Asia,WVS,3,1995,bebedores,79.9,2040
+RUS,Eastern Europe & Central Asia,WVS,5,2006,bebedores,88.6,2033
+RUS,Eastern Europe & Central Asia,WVS,6,2011,bebedores,84.4,2498
+RUS,Eastern Europe & Central Asia,WVS,7,2017,bebedores,78.3,1810
+RUS,Eastern Europe & Central Asia,WVS,2,1990,drogadictos,86.0,1961
+RUS,Eastern Europe & Central Asia,WVS,3,1995,drogadictos,87.6,2040
+RUS,Eastern Europe & Central Asia,WVS,5,2006,drogadictos,94.0,2033
+RUS,Eastern Europe & Central Asia,WVS,6,2011,drogadictos,93.2,2498
+RUS,Eastern Europe & Central Asia,WVS,7,2017,drogadictos,88.4,1810
+RUS,Eastern Europe & Central Asia,WVS,2,1990,extrema_derecha,40.5,1961
+RUS,Eastern Europe & Central Asia,WVS,3,1995,extremistas,43.8,2040
+RUS,Eastern Europe & Central Asia,WVS,2,1990,familias_numerosas,12.3,1961
+RUS,Eastern Europe & Central Asia,WVS,2,1990,hindues,6.0,1961
+RUS,Eastern Europe & Central Asia,WVS,2,1990,homosexuales,80.5,1961
+RUS,Eastern Europe & Central Asia,WVS,3,1995,homosexuales,70.9,2040
+RUS,Eastern Europe & Central Asia,WVS,5,2006,homosexuales,66.0,2033
+RUS,Eastern Europe & Central Asia,WVS,6,2011,homosexuales,66.3,2494
+RUS,Eastern Europe & Central Asia,WVS,7,2017,homosexuales,66.2,1810
+RUS,Eastern Europe & Central Asia,WVS,2,1990,inestables,51.4,1961
+RUS,Eastern Europe & Central Asia,WVS,3,1995,inestables,55.7,2040
+RUS,Eastern Europe & Central Asia,WVS,2,1990,inmigrantes,11.8,1961
+RUS,Eastern Europe & Central Asia,WVS,3,1995,inmigrantes,11.9,2040
+RUS,Eastern Europe & Central Asia,WVS,5,2006,inmigrantes,31.9,2033
+RUS,Eastern Europe & Central Asia,WVS,6,2011,inmigrantes,32.3,2493
+RUS,Eastern Europe & Central Asia,WVS,7,2017,inmigrantes,32.3,1810
+RUS,Eastern Europe & Central Asia,WVS,2,1990,judios,12.5,1961
+RUS,Eastern Europe & Central Asia,WVS,3,1995,judios,9.6,2040
+RUS,Eastern Europe & Central Asia,WVS,2,1990,musulmanes,15.5,1961
+RUS,Eastern Europe & Central Asia,WVS,2,1990,otra_raza,10.7,1961
+RUS,Eastern Europe & Central Asia,WVS,3,1995,otra_raza,8.3,2040
+RUS,Eastern Europe & Central Asia,WVS,5,2006,otra_raza,16.7,2033
+RUS,Eastern Europe & Central Asia,WVS,6,2011,otra_raza,17.3,2491
+RUS,Eastern Europe & Central Asia,WVS,7,2017,otra_raza,15.7,1810
+RUS,Eastern Europe & Central Asia,WVS,5,2006,otra_religion,15.6,2033
+RUS,Eastern Europe & Central Asia,WVS,6,2011,otra_religion,14.4,2492
+RUS,Eastern Europe & Central Asia,WVS,7,2017,otra_religion,11.3,1810
+RUS,Eastern Europe & Central Asia,WVS,5,2006,otro_idioma,13.7,2033
+RUS,Eastern Europe & Central Asia,WVS,6,2011,otro_idioma,19.0,2494
+RUS,Eastern Europe & Central Asia,WVS,7,2017,otro_idioma,12.6,1810
+RUS,Eastern Europe & Central Asia,WVS,5,2006,parejas_no_casadas,4.3,2033
+RUS,Eastern Europe & Central Asia,WVS,6,2011,parejas_no_casadas,7.8,2495
+RUS,Eastern Europe & Central Asia,WVS,7,2017,parejas_no_casadas,4.1,1810
+RUS,Eastern Europe & Central Asia,WVS,2,1990,sida,68.0,1961
+RUS,Eastern Europe & Central Asia,WVS,3,1995,sida,55.6,2040
+RUS,Eastern Europe & Central Asia,WVS,5,2006,sida,58.5,2033
+RUS,Eastern Europe & Central Asia,WVS,6,2011,sida,54.3,2495
+RUS,Eastern Europe & Central Asia,WVS,7,2017,sida,54.0,1810
+RWA,Sub-Saharan Africa,WVS,5,2007,bebedores,55.1,1507
+RWA,Sub-Saharan Africa,WVS,6,2012,bebedores,51.9,1527
+RWA,Sub-Saharan Africa,WVS,5,2007,drogadictos,62.2,1507
+RWA,Sub-Saharan Africa,WVS,6,2012,drogadictos,91.2,1527
+RWA,Sub-Saharan Africa,WVS,5,2007,homosexuales,62.6,1507
+RWA,Sub-Saharan Africa,WVS,6,2012,homosexuales,88.4,1527
+RWA,Sub-Saharan Africa,WVS,5,2007,inmigrantes,36.0,1507
+RWA,Sub-Saharan Africa,WVS,6,2012,inmigrantes,5.4,1527
+RWA,Sub-Saharan Africa,WVS,5,2007,otra_raza,36.8,1507
+RWA,Sub-Saharan Africa,WVS,6,2012,otra_raza,3.5,1527
+RWA,Sub-Saharan Africa,WVS,5,2007,otra_religion,36.1,1507
+RWA,Sub-Saharan Africa,WVS,6,2012,otra_religion,4.8,1527
+RWA,Sub-Saharan Africa,WVS,5,2007,otro_idioma,39.8,1507
+RWA,Sub-Saharan Africa,WVS,6,2012,otro_idioma,7.7,1527
+RWA,Sub-Saharan Africa,WVS,5,2007,parejas_no_casadas,35.8,1507
+RWA,Sub-Saharan Africa,WVS,6,2012,parejas_no_casadas,4.5,1527
+RWA,Sub-Saharan Africa,WVS,5,2007,sida,38.4,1507
+RWA,Sub-Saharan Africa,WVS,6,2012,sida,8.7,1527
+SAU,Middle East & North Africa,WVS,4,2003,antecedentes,87.8,1502
+SAU,Middle East & North Africa,WVS,4,2003,drogadictos,87.2,1502
+SAU,Middle East & North Africa,WVS,4,2003,inestables,62.7,1502
+SAU,Middle East & North Africa,WVS,4,2003,inmigrantes,33.1,1502
+SAU,Middle East & North Africa,WVS,4,2003,otra_raza,37.7,1502
+SAU,Middle East & North Africa,WVS,4,2003,otra_religion,40.4,1502
+SAU,Middle East & North Africa,WVS,4,2003,sida,83.7,1502
+SGP,Southeast Asia,WVS,4,2002,antecedentes,30.4,1512
+SGP,Southeast Asia,WVS,4,2002,bebedores,63.9,1512
+SGP,Southeast Asia,WVS,6,2012,bebedores,61.9,1971
+SGP,Southeast Asia,WVS,7,2020,bebedores,70.5,2012
+SGP,Southeast Asia,WVS,4,2002,drogadictos,72.5,1512
+SGP,Southeast Asia,WVS,6,2012,drogadictos,79.5,1971
+SGP,Southeast Asia,WVS,7,2020,drogadictos,83.6,2012
+SGP,Southeast Asia,WVS,4,2002,homosexuales,45.7,1512
+SGP,Southeast Asia,WVS,6,2012,homosexuales,31.7,1970
+SGP,Southeast Asia,WVS,7,2020,homosexuales,25.7,2012
+SGP,Southeast Asia,WVS,4,2002,inestables,57.7,1512
+SGP,Southeast Asia,WVS,4,2002,inmigrantes,25.9,1512
+SGP,Southeast Asia,WVS,6,2012,inmigrantes,35.8,1970
+SGP,Southeast Asia,WVS,7,2020,inmigrantes,11.3,2012
+SGP,Southeast Asia,WVS,4,2002,otra_raza,4.7,1512
+SGP,Southeast Asia,WVS,6,2012,otra_raza,12.6,1970
+SGP,Southeast Asia,WVS,7,2020,otra_raza,2.1,2012
+SGP,Southeast Asia,WVS,6,2012,otra_religion,10.8,1970
+SGP,Southeast Asia,WVS,7,2020,otra_religion,2.0,2012
+SGP,Southeast Asia,WVS,6,2012,otro_idioma,10.2,1970
+SGP,Southeast Asia,WVS,7,2020,otro_idioma,2.0,2012
+SGP,Southeast Asia,WVS,6,2012,parejas_no_casadas,15.1,1970
+SGP,Southeast Asia,WVS,7,2020,parejas_no_casadas,5.7,2012
+SGP,Southeast Asia,WVS,4,2002,sida,35.2,1512
+SGP,Southeast Asia,WVS,6,2012,sida,43.0,1969
+SGP,Southeast Asia,WVS,7,2020,sida,25.7,2012
+SLV,Latin America,WVS,3,1999,antecedentes,78.2,1254
+SLV,Latin America,WVS,3,1999,bebedores,90.2,1254
+SLV,Latin America,WVS,3,1999,drogadictos,88.9,1254
+SLV,Latin America,WVS,3,1999,extremistas,70.6,1254
+SLV,Latin America,WVS,3,1999,homosexuales,78.3,1254
+SLV,Latin America,WVS,3,1999,inestables,81.5,1254
+SLV,Latin America,WVS,3,1999,otra_religion,10.8,1254
+SLV,Latin America,WVS,3,1999,sida,67.1,1254
+SRB,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,49.7,1280
+SRB,Eastern Europe & Central Asia,WVS,4,2001,antecedentes,29.3,1200
+SRB,Eastern Europe & Central Asia,WVS,3,1996,bebedores,72.3,1280
+SRB,Eastern Europe & Central Asia,WVS,4,2001,bebedores,56.1,1200
+SRB,Eastern Europe & Central Asia,WVS,5,2006,bebedores,70.7,1220
+SRB,Eastern Europe & Central Asia,WVS,7,2017,bebedores,87.8,1041
+SRB,Eastern Europe & Central Asia,WVS,3,1996,drogadictos,84.5,1280
+SRB,Eastern Europe & Central Asia,WVS,4,2001,drogadictos,70.2,1200
+SRB,Eastern Europe & Central Asia,WVS,5,2006,drogadictos,89.8,1220
+SRB,Eastern Europe & Central Asia,WVS,7,2017,drogadictos,96.1,1041
+SRB,Eastern Europe & Central Asia,WVS,3,1996,extremistas,56.8,1280
+SRB,Eastern Europe & Central Asia,WVS,3,1996,gitanos,27.5,1280
+SRB,Eastern Europe & Central Asia,WVS,4,2001,gitanos,12.4,1200
+SRB,Eastern Europe & Central Asia,WVS,3,1996,homosexuales,74.2,1280
+SRB,Eastern Europe & Central Asia,WVS,4,2001,homosexuales,49.1,1200
+SRB,Eastern Europe & Central Asia,WVS,5,2006,homosexuales,68.7,1220
+SRB,Eastern Europe & Central Asia,WVS,7,2017,homosexuales,62.6,1041
+SRB,Eastern Europe & Central Asia,WVS,3,1996,inestables,71.4,1280
+SRB,Eastern Europe & Central Asia,WVS,4,2001,inestables,57.2,1200
+SRB,Eastern Europe & Central Asia,WVS,3,1996,inmigrantes,23.9,1280
+SRB,Eastern Europe & Central Asia,WVS,4,2001,inmigrantes,7.8,1200
+SRB,Eastern Europe & Central Asia,WVS,5,2006,inmigrantes,24.4,1220
+SRB,Eastern Europe & Central Asia,WVS,7,2017,inmigrantes,54.3,1041
+SRB,Eastern Europe & Central Asia,WVS,4,2001,musulmanes,13.6,1200
+SRB,Eastern Europe & Central Asia,WVS,3,1996,otra_raza,15.0,1280
+SRB,Eastern Europe & Central Asia,WVS,4,2001,otra_raza,6.1,1200
+SRB,Eastern Europe & Central Asia,WVS,5,2006,otra_raza,18.0,1220
+SRB,Eastern Europe & Central Asia,WVS,7,2017,otra_raza,29.6,1041
+SRB,Eastern Europe & Central Asia,WVS,5,2006,otra_religion,13.9,1220
+SRB,Eastern Europe & Central Asia,WVS,7,2017,otra_religion,25.2,1041
+SRB,Eastern Europe & Central Asia,WVS,5,2006,otro_idioma,10.1,1149
+SRB,Eastern Europe & Central Asia,WVS,7,2017,otro_idioma,15.6,1041
+SRB,Eastern Europe & Central Asia,WVS,5,2006,parejas_no_casadas,8.3,1161
+SRB,Eastern Europe & Central Asia,WVS,7,2017,parejas_no_casadas,9.1,1041
+SRB,Eastern Europe & Central Asia,WVS,3,1996,sida,69.5,1280
+SRB,Eastern Europe & Central Asia,WVS,4,2001,sida,51.1,1200
+SRB,Eastern Europe & Central Asia,WVS,5,2006,sida,57.9,1220
+SRB,Eastern Europe & Central Asia,WVS,7,2017,sida,62.7,970
+SVK,Eastern Europe & Central Asia,WVS,2,1990,antecedentes,75.5,466
+SVK,Eastern Europe & Central Asia,WVS,3,1998,antecedentes,77.5,1095
+SVK,Eastern Europe & Central Asia,WVS,2,1990,bebedores,73.2,466
+SVK,Eastern Europe & Central Asia,WVS,3,1998,bebedores,68.0,1095
+SVK,Eastern Europe & Central Asia,WVS,7,2022,bebedores,78.7,1173
+SVK,Eastern Europe & Central Asia,WVS,2,1990,drogadictos,82.2,466
+SVK,Eastern Europe & Central Asia,WVS,3,1998,drogadictos,76.8,1095
+SVK,Eastern Europe & Central Asia,WVS,7,2022,drogadictos,92.9,1173
+SVK,Eastern Europe & Central Asia,WVS,2,1990,extrema_derecha,36.5,466
+SVK,Eastern Europe & Central Asia,WVS,3,1998,extremistas,34.6,1095
+SVK,Eastern Europe & Central Asia,WVS,2,1990,familias_numerosas,18.7,466
+SVK,Eastern Europe & Central Asia,WVS,3,1998,gitanos,68.4,1095
+SVK,Eastern Europe & Central Asia,WVS,2,1990,hindues,79.2,466
+SVK,Eastern Europe & Central Asia,WVS,2,1990,homosexuales,69.3,466
+SVK,Eastern Europe & Central Asia,WVS,3,1998,homosexuales,46.1,1095
+SVK,Eastern Europe & Central Asia,WVS,7,2022,homosexuales,40.0,1173
+SVK,Eastern Europe & Central Asia,WVS,2,1990,inestables,35.2,466
+SVK,Eastern Europe & Central Asia,WVS,3,1998,inestables,26.9,1095
+SVK,Eastern Europe & Central Asia,WVS,2,1990,inmigrantes,36.7,466
+SVK,Eastern Europe & Central Asia,WVS,3,1998,inmigrantes,18.4,1095
+SVK,Eastern Europe & Central Asia,WVS,7,2022,inmigrantes,28.8,1173
+SVK,Eastern Europe & Central Asia,WVS,2,1990,judios,33.7,466
+SVK,Eastern Europe & Central Asia,WVS,2,1990,musulmanes,51.5,466
+SVK,Eastern Europe & Central Asia,WVS,2,1990,otra_raza,35.6,466
+SVK,Eastern Europe & Central Asia,WVS,3,1998,otra_raza,13.5,1095
+SVK,Eastern Europe & Central Asia,WVS,7,2022,otra_raza,22.7,1173
+SVK,Eastern Europe & Central Asia,WVS,7,2022,otra_religion,11.4,1173
+SVK,Eastern Europe & Central Asia,WVS,7,2022,otro_idioma,10.1,1173
+SVK,Eastern Europe & Central Asia,WVS,7,2022,parejas_no_casadas,3.4,1173
+SVK,Eastern Europe & Central Asia,WVS,2,1990,sida,71.9,466
+SVK,Eastern Europe & Central Asia,WVS,3,1998,sida,43.7,1095
+SVK,Eastern Europe & Central Asia,WVS,7,2022,sida,38.5,1173
+SVN,Eastern Europe & Central Asia,WVS,3,1995,antecedentes,54.8,1007
+SVN,Eastern Europe & Central Asia,WVS,3,1995,bebedores,78.8,1007
+SVN,Eastern Europe & Central Asia,WVS,5,2005,bebedores,63.5,1037
+SVN,Eastern Europe & Central Asia,WVS,6,2011,bebedores,62.5,1069
+SVN,Eastern Europe & Central Asia,WVS,3,1995,drogadictos,75.4,1007
+SVN,Eastern Europe & Central Asia,WVS,5,2005,drogadictos,68.1,1037
+SVN,Eastern Europe & Central Asia,WVS,6,2011,drogadictos,71.7,1069
+SVN,Eastern Europe & Central Asia,WVS,3,1995,extremistas,68.9,1007
+SVN,Eastern Europe & Central Asia,WVS,5,2005,gitanos,38.8,1037
+SVN,Eastern Europe & Central Asia,WVS,3,1995,homosexuales,60.7,1007
+SVN,Eastern Europe & Central Asia,WVS,5,2005,homosexuales,35.1,1037
+SVN,Eastern Europe & Central Asia,WVS,6,2011,homosexuales,35.5,1069
+SVN,Eastern Europe & Central Asia,WVS,3,1995,inestables,49.4,1007
+SVN,Eastern Europe & Central Asia,WVS,3,1995,inmigrantes,18.0,1007
+SVN,Eastern Europe & Central Asia,WVS,5,2005,inmigrantes,17.6,1037
+SVN,Eastern Europe & Central Asia,WVS,6,2011,inmigrantes,13.6,1069
+SVN,Eastern Europe & Central Asia,WVS,3,1995,otra_raza,17.1,1007
+SVN,Eastern Europe & Central Asia,WVS,5,2005,otra_raza,14.5,1037
+SVN,Eastern Europe & Central Asia,WVS,6,2011,otra_raza,10.9,1069
+SVN,Eastern Europe & Central Asia,WVS,3,1995,otra_religion,22.8,1007
+SVN,Eastern Europe & Central Asia,WVS,5,2005,otra_religion,13.0,1037
+SVN,Eastern Europe & Central Asia,WVS,6,2011,otra_religion,8.5,1069
+SVN,Eastern Europe & Central Asia,WVS,5,2005,otro_idioma,9.1,1037
+SVN,Eastern Europe & Central Asia,WVS,6,2011,otro_idioma,5.0,1069
+SVN,Eastern Europe & Central Asia,WVS,5,2005,parejas_no_casadas,8.4,1037
+SVN,Eastern Europe & Central Asia,WVS,6,2011,parejas_no_casadas,4.7,1069
+SVN,Eastern Europe & Central Asia,WVS,3,1995,sida,50.1,1007
+SVN,Eastern Europe & Central Asia,WVS,5,2005,sida,31.0,1037
+SVN,Eastern Europe & Central Asia,WVS,6,2011,sida,26.5,1069
+SWE,Western Europe,WVS,3,1996,antecedentes,34.9,1009
+SWE,Western Europe,WVS,3,1996,bebedores,37.2,1009
+SWE,Western Europe,WVS,5,2006,bebedores,53.7,1003
+SWE,Western Europe,WVS,6,2011,bebedores,51.4,1206
+SWE,Western Europe,WVS,3,1996,drogadictos,72.0,1009
+SWE,Western Europe,WVS,5,2006,drogadictos,77.2,1003
+SWE,Western Europe,WVS,6,2011,drogadictos,74.7,1206
+SWE,Western Europe,WVS,3,1996,extremistas,55.1,1009
+SWE,Western Europe,WVS,3,1996,homosexuales,11.2,1009
+SWE,Western Europe,WVS,5,2006,homosexuales,3.6,1003
+SWE,Western Europe,WVS,6,2011,homosexuales,4.2,1206
+SWE,Western Europe,WVS,3,1996,inestables,24.5,1009
+SWE,Western Europe,WVS,3,1996,inmigrantes,4.7,1009
+SWE,Western Europe,WVS,5,2006,inmigrantes,1.8,1003
+SWE,Western Europe,WVS,6,2011,inmigrantes,3.5,1206
+SWE,Western Europe,WVS,3,1996,musulmanes,13.0,1009
+SWE,Western Europe,WVS,5,2006,musulmanes,8.1,1003
+SWE,Western Europe,WVS,3,1996,otra_raza,3.0,1009
+SWE,Western Europe,WVS,5,2006,otra_raza,1.4,1003
+SWE,Western Europe,WVS,6,2011,otra_raza,2.8,1206
+SWE,Western Europe,WVS,5,2006,otra_religion,1.2,1003
+SWE,Western Europe,WVS,6,2011,otra_religion,3.7,1206
+SWE,Western Europe,WVS,5,2006,otro_idioma,1.2,1003
+SWE,Western Europe,WVS,6,2011,otro_idioma,3.2,1206
+SWE,Western Europe,WVS,5,2006,parejas_no_casadas,0.4,1003
+SWE,Western Europe,WVS,6,2011,parejas_no_casadas,0.3,1206
+SWE,Western Europe,WVS,3,1996,sida,7.9,1009
+SWE,Western Europe,WVS,5,2006,sida,5.0,1003
+SWE,Western Europe,WVS,6,2011,sida,6.4,1206
+THA,Southeast Asia,WVS,5,2007,bebedores,66.4,1534
+THA,Southeast Asia,WVS,6,2013,bebedores,62.8,1200
+THA,Southeast Asia,WVS,7,2018,bebedores,64.6,1500
+THA,Southeast Asia,WVS,5,2007,drogadictos,89.8,1534
+THA,Southeast Asia,WVS,6,2013,drogadictos,78.8,1200
+THA,Southeast Asia,WVS,7,2018,drogadictos,88.8,1500
+THA,Southeast Asia,WVS,5,2007,homosexuales,33.7,1521
+THA,Southeast Asia,WVS,6,2013,homosexuales,39.8,1200
+THA,Southeast Asia,WVS,7,2018,homosexuales,35.7,1500
+THA,Southeast Asia,WVS,5,2007,inmigrantes,43.5,1521
+THA,Southeast Asia,WVS,6,2013,inmigrantes,58.2,1200
+THA,Southeast Asia,WVS,7,2018,inmigrantes,38.9,1500
+THA,Southeast Asia,WVS,5,2007,otra_raza,27.5,1519
+THA,Southeast Asia,WVS,6,2013,otra_raza,39.7,1200
+THA,Southeast Asia,WVS,7,2018,otra_raza,32.1,1500
+THA,Southeast Asia,WVS,5,2007,otra_religion,27.2,1521
+THA,Southeast Asia,WVS,6,2013,otra_religion,32.5,1200
+THA,Southeast Asia,WVS,7,2018,otra_religion,25.1,1500
+THA,Southeast Asia,WVS,5,2007,otro_idioma,20.3,1517
+THA,Southeast Asia,WVS,6,2013,otro_idioma,28.4,1200
+THA,Southeast Asia,WVS,7,2018,otro_idioma,25.7,1500
+THA,Southeast Asia,WVS,5,2007,otro_origen,9.3,1299
+THA,Southeast Asia,WVS,5,2007,parejas_no_casadas,25.6,1521
+THA,Southeast Asia,WVS,6,2013,parejas_no_casadas,18.3,1200
+THA,Southeast Asia,WVS,7,2018,parejas_no_casadas,27.1,1500
+THA,Southeast Asia,WVS,5,2007,sida,57.6,1525
+THA,Southeast Asia,WVS,6,2013,sida,45.9,1200
+THA,Southeast Asia,WVS,7,2018,sida,48.9,1500
+TJK,Eastern Europe & Central Asia,WVS,7,2020,bebedores,84.8,1200
+TJK,Eastern Europe & Central Asia,WVS,7,2020,drogadictos,95.2,1200
+TJK,Eastern Europe & Central Asia,WVS,7,2020,inmigrantes,19.8,1200
+TJK,Eastern Europe & Central Asia,WVS,7,2020,otra_raza,24.2,1200
+TJK,Eastern Europe & Central Asia,WVS,7,2020,otra_religion,26.4,1200
+TJK,Eastern Europe & Central Asia,WVS,7,2020,otro_idioma,12.2,1200
+TJK,Eastern Europe & Central Asia,WVS,7,2020,parejas_no_casadas,53.2,1200
+TJK,Eastern Europe & Central Asia,WVS,7,2020,sida,77.1,1200
+TTO,Caribbean,WVS,5,2006,bebedores,62.7,1002
+TTO,Caribbean,WVS,6,2010,bebedores,55.5,999
+TTO,Caribbean,WVS,5,2006,drogadictos,92.0,1002
+TTO,Caribbean,WVS,6,2010,drogadictos,83.9,999
+TTO,Caribbean,WVS,5,2006,homosexuales,65.7,1002
+TTO,Caribbean,WVS,6,2010,homosexuales,47.3,999
+TTO,Caribbean,WVS,5,2006,inmigrantes,4.8,1002
+TTO,Caribbean,WVS,6,2010,inmigrantes,6.8,999
+TTO,Caribbean,WVS,5,2006,minorias_militantes,2.3,1002
+TTO,Caribbean,WVS,5,2006,otra_raza,2.5,1002
+TTO,Caribbean,WVS,6,2010,otra_raza,1.5,999
+TTO,Caribbean,WVS,5,2006,otra_religion,2.1,1002
+TTO,Caribbean,WVS,6,2010,otra_religion,2.9,999
+TTO,Caribbean,WVS,5,2006,otro_idioma,5.6,1002
+TTO,Caribbean,WVS,6,2010,otro_idioma,6.7,999
+TTO,Caribbean,WVS,5,2006,parejas_no_casadas,6.1,1002
+TTO,Caribbean,WVS,6,2010,parejas_no_casadas,3.5,999
+TTO,Caribbean,WVS,5,2006,sida,20.4,1002
+TTO,Caribbean,WVS,6,2010,sida,11.9,999
+TUN,Middle East & North Africa,WVS,6,2013,bebedores,71.9,1205
+TUN,Middle East & North Africa,WVS,7,2019,bebedores,69.1,1159
+TUN,Middle East & North Africa,WVS,6,2013,drogadictos,81.4,1205
+TUN,Middle East & North Africa,WVS,7,2019,drogadictos,67.3,1114
+TUN,Middle East & North Africa,WVS,6,2013,homosexuales,68.9,1205
+TUN,Middle East & North Africa,WVS,7,2019,homosexuales,57.9,1146
+TUN,Middle East & North Africa,WVS,6,2013,inmigrantes,18.8,1205
+TUN,Middle East & North Africa,WVS,7,2019,inmigrantes,25.0,1152
+TUN,Middle East & North Africa,WVS,6,2013,otra_raza,16.9,1205
+TUN,Middle East & North Africa,WVS,7,2019,otra_raza,21.9,1137
+TUN,Middle East & North Africa,WVS,6,2013,otra_religion,29.7,1205
+TUN,Middle East & North Africa,WVS,7,2019,otra_religion,34.1,1151
+TUN,Middle East & North Africa,WVS,6,2013,otro_idioma,12.9,1205
+TUN,Middle East & North Africa,WVS,7,2019,otro_idioma,24.2,1154
+TUN,Middle East & North Africa,WVS,6,2013,parejas_no_casadas,68.1,1205
+TUN,Middle East & North Africa,WVS,7,2019,parejas_no_casadas,59.6,1157
+TUN,Middle East & North Africa,WVS,6,2013,sida,35.1,1205
+TUN,Middle East & North Africa,WVS,7,2019,sida,28.2,1146
+TUR,Eastern Europe & Central Asia,WVS,2,1990,antecedentes,80.9,1030
+TUR,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,74.2,1907
+TUR,Eastern Europe & Central Asia,WVS,4,2001,antecedentes,79.9,3401
+TUR,Eastern Europe & Central Asia,WVS,2,1990,bebedores,87.1,1030
+TUR,Eastern Europe & Central Asia,WVS,3,1996,bebedores,89.0,1907
+TUR,Eastern Europe & Central Asia,WVS,4,2001,bebedores,86.8,3401
+TUR,Eastern Europe & Central Asia,WVS,5,2007,bebedores,85.2,1346
+TUR,Eastern Europe & Central Asia,WVS,6,2011,bebedores,83.3,1605
+TUR,Eastern Europe & Central Asia,WVS,7,2018,bebedores,74.1,2365
+TUR,Eastern Europe & Central Asia,WVS,3,1996,cristianos,58.5,1907
+TUR,Eastern Europe & Central Asia,WVS,4,2001,cristianos,44.5,3401
+TUR,Eastern Europe & Central Asia,WVS,2,1990,drogadictos,92.0,1030
+TUR,Eastern Europe & Central Asia,WVS,3,1996,drogadictos,92.3,1907
+TUR,Eastern Europe & Central Asia,WVS,4,2001,drogadictos,94.5,3401
+TUR,Eastern Europe & Central Asia,WVS,5,2007,drogadictos,95.8,1346
+TUR,Eastern Europe & Central Asia,WVS,6,2011,drogadictos,93.3,1605
+TUR,Eastern Europe & Central Asia,WVS,7,2018,drogadictos,89.5,2398
+TUR,Eastern Europe & Central Asia,WVS,2,1990,extremistas,79.7,1030
+TUR,Eastern Europe & Central Asia,WVS,3,1996,extremistas,72.3,1907
+TUR,Eastern Europe & Central Asia,WVS,2,1990,homosexuales,91.7,1030
+TUR,Eastern Europe & Central Asia,WVS,3,1996,homosexuales,89.7,1907
+TUR,Eastern Europe & Central Asia,WVS,4,2001,homosexuales,90.3,3401
+TUR,Eastern Europe & Central Asia,WVS,5,2007,homosexuales,88.0,1346
+TUR,Eastern Europe & Central Asia,WVS,6,2011,homosexuales,85.4,1605
+TUR,Eastern Europe & Central Asia,WVS,7,2018,homosexuales,78.5,2330
+TUR,Eastern Europe & Central Asia,WVS,2,1990,inestables,71.7,1030
+TUR,Eastern Europe & Central Asia,WVS,3,1996,inestables,75.8,1907
+TUR,Eastern Europe & Central Asia,WVS,4,2001,inestables,75.2,3401
+TUR,Eastern Europe & Central Asia,WVS,2,1990,inmigrantes,28.3,1030
+TUR,Eastern Europe & Central Asia,WVS,3,1996,inmigrantes,43.7,1907
+TUR,Eastern Europe & Central Asia,WVS,4,2001,inmigrantes,37.0,3401
+TUR,Eastern Europe & Central Asia,WVS,5,2007,inmigrantes,30.6,1346
+TUR,Eastern Europe & Central Asia,WVS,6,2011,inmigrantes,30.5,1605
+TUR,Eastern Europe & Central Asia,WVS,7,2018,inmigrantes,49.4,2350
+TUR,Eastern Europe & Central Asia,WVS,2,1990,musulmanes,54.7,1030
+TUR,Eastern Europe & Central Asia,WVS,2,1990,otra_raza,34.0,1030
+TUR,Eastern Europe & Central Asia,WVS,3,1996,otra_raza,40.7,1907
+TUR,Eastern Europe & Central Asia,WVS,4,2001,otra_raza,31.0,3401
+TUR,Eastern Europe & Central Asia,WVS,5,2007,otra_raza,29.9,1346
+TUR,Eastern Europe & Central Asia,WVS,6,2011,otra_raza,35.8,1605
+TUR,Eastern Europe & Central Asia,WVS,7,2018,otra_raza,41.9,2376
+TUR,Eastern Europe & Central Asia,WVS,4,2001,otra_religion,35.1,3401
+TUR,Eastern Europe & Central Asia,WVS,5,2007,otra_religion,33.4,1346
+TUR,Eastern Europe & Central Asia,WVS,6,2011,otra_religion,36.8,1605
+TUR,Eastern Europe & Central Asia,WVS,7,2018,otra_religion,42.4,2363
+TUR,Eastern Europe & Central Asia,WVS,5,2007,otro_idioma,25.3,1345
+TUR,Eastern Europe & Central Asia,WVS,6,2011,otro_idioma,30.0,1605
+TUR,Eastern Europe & Central Asia,WVS,7,2018,otro_idioma,36.9,2347
+TUR,Eastern Europe & Central Asia,WVS,5,2007,parejas_no_casadas,65.1,1346
+TUR,Eastern Europe & Central Asia,WVS,6,2011,parejas_no_casadas,65.4,1605
+TUR,Eastern Europe & Central Asia,WVS,7,2018,parejas_no_casadas,57.8,2314
+TUR,Eastern Europe & Central Asia,WVS,2,1990,sida,88.5,1030
+TUR,Eastern Europe & Central Asia,WVS,3,1996,sida,81.1,1907
+TUR,Eastern Europe & Central Asia,WVS,4,2001,sida,83.6,3401
+TUR,Eastern Europe & Central Asia,WVS,5,2007,sida,78.2,1346
+TUR,Eastern Europe & Central Asia,WVS,6,2011,sida,74.9,1605
+TUR,Eastern Europe & Central Asia,WVS,7,2018,sida,73.8,2314
+TWN,East Asia,WVS,3,1998,antecedentes,51.4,780
+TWN,East Asia,WVS,3,1998,bebedores,80.8,780
+TWN,East Asia,WVS,5,2006,bebedores,86.5,1227
+TWN,East Asia,WVS,6,2012,bebedores,85.5,1238
+TWN,East Asia,WVS,7,2019,bebedores,88.8,1223
+TWN,East Asia,WVS,3,1998,drogadictos,88.6,780
+TWN,East Asia,WVS,5,2006,drogadictos,96.6,1227
+TWN,East Asia,WVS,6,2012,drogadictos,95.4,1238
+TWN,East Asia,WVS,7,2019,drogadictos,97.2,1223
+TWN,East Asia,WVS,3,1998,extremistas,62.9,780
+TWN,East Asia,WVS,3,1998,homosexuales,72.7,780
+TWN,East Asia,WVS,5,2006,homosexuales,55.4,1227
+TWN,East Asia,WVS,6,2012,homosexuales,40.8,1238
+TWN,East Asia,WVS,7,2019,homosexuales,41.6,1223
+TWN,East Asia,WVS,3,1998,inestables,72.8,780
+TWN,East Asia,WVS,3,1998,inmigrantes,27.3,780
+TWN,East Asia,WVS,5,2006,inmigrantes,24.1,1227
+TWN,East Asia,WVS,6,2012,inmigrantes,20.2,1238
+TWN,East Asia,WVS,7,2019,inmigrantes,21.7,1223
+TWN,East Asia,WVS,3,1998,otra_raza,17.1,780
+TWN,East Asia,WVS,5,2006,otra_raza,8.1,1227
+TWN,East Asia,WVS,6,2012,otra_raza,8.4,1238
+TWN,East Asia,WVS,7,2019,otra_raza,7.6,1223
+TWN,East Asia,WVS,5,2006,otra_religion,4.9,1227
+TWN,East Asia,WVS,6,2012,otra_religion,4.5,1238
+TWN,East Asia,WVS,7,2019,otra_religion,4.6,1223
+TWN,East Asia,WVS,5,2006,otro_idioma,7.3,1226
+TWN,East Asia,WVS,6,2012,otro_idioma,7.0,1238
+TWN,East Asia,WVS,7,2019,otro_idioma,7.0,1223
+TWN,East Asia,WVS,5,2006,parejas_no_casadas,16.9,1226
+TWN,East Asia,WVS,6,2012,parejas_no_casadas,12.3,1238
+TWN,East Asia,WVS,7,2019,parejas_no_casadas,13.1,1223
+TWN,East Asia,WVS,3,1998,sida,72.1,780
+TWN,East Asia,WVS,5,2006,sida,72.9,1227
+TWN,East Asia,WVS,6,2012,sida,62.7,1238
+TWN,East Asia,WVS,7,2019,sida,60.5,1223
+TZA,Sub-Saharan Africa,WVS,4,2001,antecedentes,88.8,1171
+TZA,Sub-Saharan Africa,WVS,4,2001,bebedores,78.8,1171
+TZA,Sub-Saharan Africa,WVS,4,2001,cristianos,0.9,1171
+TZA,Sub-Saharan Africa,WVS,4,2001,drogadictos,81.2,1171
+TZA,Sub-Saharan Africa,WVS,4,2001,homosexuales,74.1,1171
+TZA,Sub-Saharan Africa,WVS,4,2001,inestables,5.1,1171
+TZA,Sub-Saharan Africa,WVS,4,2001,inmigrantes,17.5,1171
+TZA,Sub-Saharan Africa,WVS,4,2001,musulmanes,12.6,1171
+TZA,Sub-Saharan Africa,WVS,4,2001,otra_raza,16.7,1171
+TZA,Sub-Saharan Africa,WVS,4,2001,sida,32.5,1171
+UGA,Sub-Saharan Africa,WVS,4,2001,antecedentes,88.1,1002
+UGA,Sub-Saharan Africa,WVS,4,2001,bebedores,69.9,1002
+UGA,Sub-Saharan Africa,WVS,4,2001,drogadictos,86.7,1002
+UGA,Sub-Saharan Africa,WVS,4,2001,homosexuales,76.1,1002
+UGA,Sub-Saharan Africa,WVS,4,2001,inestables,46.0,1002
+UGA,Sub-Saharan Africa,WVS,4,2001,inmigrantes,13.0,1002
+UGA,Sub-Saharan Africa,WVS,4,2001,judios,22.2,1002
+UGA,Sub-Saharan Africa,WVS,4,2001,musulmanes,14.2,1002
+UGA,Sub-Saharan Africa,WVS,4,2001,otra_raza,18.2,1002
+UGA,Sub-Saharan Africa,WVS,4,2001,sida,17.0,1002
+UKR,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,71.9,2811
+UKR,Eastern Europe & Central Asia,WVS,3,1996,bebedores,77.1,2811
+UKR,Eastern Europe & Central Asia,WVS,5,2006,bebedores,81.4,1000
+UKR,Eastern Europe & Central Asia,WVS,6,2011,bebedores,83.6,1500
+UKR,Eastern Europe & Central Asia,WVS,7,2020,bebedores,69.1,1252
+UKR,Eastern Europe & Central Asia,WVS,3,1996,drogadictos,87.7,2811
+UKR,Eastern Europe & Central Asia,WVS,5,2006,drogadictos,89.7,1000
+UKR,Eastern Europe & Central Asia,WVS,6,2011,drogadictos,91.5,1500
+UKR,Eastern Europe & Central Asia,WVS,7,2020,drogadictos,67.9,1256
+UKR,Eastern Europe & Central Asia,WVS,3,1996,extremistas,47.6,2811
+UKR,Eastern Europe & Central Asia,WVS,3,1996,homosexuales,65.2,2811
+UKR,Eastern Europe & Central Asia,WVS,5,2006,homosexuales,57.9,1000
+UKR,Eastern Europe & Central Asia,WVS,6,2011,homosexuales,61.7,1500
+UKR,Eastern Europe & Central Asia,WVS,7,2020,homosexuales,49.5,1169
+UKR,Eastern Europe & Central Asia,WVS,3,1996,inestables,58.9,2811
+UKR,Eastern Europe & Central Asia,WVS,3,1996,inmigrantes,12.5,2811
+UKR,Eastern Europe & Central Asia,WVS,5,2006,inmigrantes,18.6,1000
+UKR,Eastern Europe & Central Asia,WVS,6,2011,inmigrantes,19.3,1500
+UKR,Eastern Europe & Central Asia,WVS,7,2020,inmigrantes,29.8,1174
+UKR,Eastern Europe & Central Asia,WVS,3,1996,otra_raza,8.6,2811
+UKR,Eastern Europe & Central Asia,WVS,5,2006,otra_raza,11.8,1000
+UKR,Eastern Europe & Central Asia,WVS,6,2011,otra_raza,16.9,1500
+UKR,Eastern Europe & Central Asia,WVS,7,2020,otra_raza,26.6,1207
+UKR,Eastern Europe & Central Asia,WVS,3,1996,otra_religion,17.5,2811
+UKR,Eastern Europe & Central Asia,WVS,5,2006,otra_religion,12.8,1000
+UKR,Eastern Europe & Central Asia,WVS,6,2011,otra_religion,15.0,1500
+UKR,Eastern Europe & Central Asia,WVS,7,2020,otra_religion,24.7,1174
+UKR,Eastern Europe & Central Asia,WVS,5,2006,otro_idioma,12.6,976
+UKR,Eastern Europe & Central Asia,WVS,6,2011,otro_idioma,11.6,1500
+UKR,Eastern Europe & Central Asia,WVS,7,2020,otro_idioma,28.2,1184
+UKR,Eastern Europe & Central Asia,WVS,5,2006,parejas_no_casadas,9.2,975
+UKR,Eastern Europe & Central Asia,WVS,6,2011,parejas_no_casadas,8.4,1500
+UKR,Eastern Europe & Central Asia,WVS,7,2020,parejas_no_casadas,25.8,1218
+UKR,Eastern Europe & Central Asia,WVS,3,1996,sida,59.2,2811
+UKR,Eastern Europe & Central Asia,WVS,5,2006,sida,50.5,1000
+UKR,Eastern Europe & Central Asia,WVS,6,2011,sida,52.3,1500
+UKR,Eastern Europe & Central Asia,WVS,7,2020,sida,39.8,1180
+URY,Latin America,WVS,3,1996,antecedentes,69.6,1000
+URY,Latin America,WVS,3,1996,bebedores,58.7,1000
+URY,Latin America,WVS,5,2006,bebedores,49.7,1000
+URY,Latin America,WVS,6,2011,bebedores,51.3,1000
+URY,Latin America,WVS,7,2022,bebedores,31.0,1000
+URY,Latin America,WVS,3,1996,drogadictos,44.3,1000
+URY,Latin America,WVS,5,2006,drogadictos,50.1,1000
+URY,Latin America,WVS,6,2011,drogadictos,60.0,1000
+URY,Latin America,WVS,7,2022,drogadictos,57.2,1000
+URY,Latin America,WVS,3,1996,extremistas,42.2,1000
+URY,Latin America,WVS,3,1996,homosexuales,31.9,1000
+URY,Latin America,WVS,5,2006,homosexuales,16.2,1000
+URY,Latin America,WVS,6,2011,homosexuales,9.6,1000
+URY,Latin America,WVS,7,2022,homosexuales,4.7,1000
+URY,Latin America,WVS,3,1996,inestables,33.0,1000
+URY,Latin America,WVS,3,1996,inmigrantes,7.1,1000
+URY,Latin America,WVS,5,2006,inmigrantes,5.2,1000
+URY,Latin America,WVS,6,2011,inmigrantes,1.7,1000
+URY,Latin America,WVS,7,2022,inmigrantes,3.3,1000
+URY,Latin America,WVS,3,1996,judios,10.4,1000
+URY,Latin America,WVS,5,2006,judios,5.2,1000
+URY,Latin America,WVS,3,1996,otra_raza,6.8,1000
+URY,Latin America,WVS,5,2006,otra_raza,3.9,1000
+URY,Latin America,WVS,6,2011,otra_raza,1.6,1000
+URY,Latin America,WVS,7,2022,otra_raza,0.6,1000
+URY,Latin America,WVS,5,2006,otra_religion,6.0,1000
+URY,Latin America,WVS,6,2011,otra_religion,2.9,1000
+URY,Latin America,WVS,7,2022,otra_religion,2.7,1000
+URY,Latin America,WVS,5,2006,otro_idioma,5.7,995
+URY,Latin America,WVS,6,2011,otro_idioma,2.5,1000
+URY,Latin America,WVS,7,2022,otro_idioma,4.2,1000
+URY,Latin America,WVS,5,2006,parejas_no_casadas,3.5,995
+URY,Latin America,WVS,6,2011,parejas_no_casadas,0.9,1000
+URY,Latin America,WVS,7,2022,parejas_no_casadas,1.8,1000
+URY,Latin America,WVS,3,1996,sida,19.2,1000
+URY,Latin America,WVS,5,2006,sida,11.3,1000
+URY,Latin America,WVS,6,2011,sida,5.5,1000
+URY,Latin America,WVS,7,2022,sida,3.9,1000
+USA,"North America, Australia & New Zealand",WVS,3,1995,antecedentes,60.9,1542
+USA,"North America, Australia & New Zealand",WVS,4,1999,antecedentes,53.8,1200
+USA,"North America, Australia & New Zealand",WVS,3,1995,bebedores,63.0,1542
+USA,"North America, Australia & New Zealand",WVS,4,1999,bebedores,55.7,1200
+USA,"North America, Australia & New Zealand",WVS,5,2006,bebedores,70.5,1240
+USA,"North America, Australia & New Zealand",WVS,6,2011,bebedores,68.9,2232
+USA,"North America, Australia & New Zealand",WVS,7,2017,bebedores,74.6,2435
+USA,"North America, Australia & New Zealand",WVS,3,1995,drogadictos,82.8,1542
+USA,"North America, Australia & New Zealand",WVS,4,1999,drogadictos,73.7,1200
+USA,"North America, Australia & New Zealand",WVS,5,2006,drogadictos,90.7,1240
+USA,"North America, Australia & New Zealand",WVS,6,2011,drogadictos,88.3,2232
+USA,"North America, Australia & New Zealand",WVS,7,2017,drogadictos,95.4,2435
+USA,"North America, Australia & New Zealand",WVS,3,1995,extremistas,33.2,1542
+USA,"North America, Australia & New Zealand",WVS,3,1995,homosexuales,29.5,1542
+USA,"North America, Australia & New Zealand",WVS,4,1999,homosexuales,23.3,1200
+USA,"North America, Australia & New Zealand",WVS,5,2006,homosexuales,25.1,1240
+USA,"North America, Australia & New Zealand",WVS,6,2011,homosexuales,20.4,2232
+USA,"North America, Australia & New Zealand",WVS,7,2017,homosexuales,13.5,2435
+USA,"North America, Australia & New Zealand",WVS,3,1995,inestables,51.4,1542
+USA,"North America, Australia & New Zealand",WVS,4,1999,inestables,51.5,1200
+USA,"North America, Australia & New Zealand",WVS,3,1995,inmigrantes,9.7,1542
+USA,"North America, Australia & New Zealand",WVS,4,1999,inmigrantes,10.1,1200
+USA,"North America, Australia & New Zealand",WVS,5,2006,inmigrantes,12.7,1240
+USA,"North America, Australia & New Zealand",WVS,6,2011,inmigrantes,13.6,2232
+USA,"North America, Australia & New Zealand",WVS,7,2017,inmigrantes,8.5,2435
+USA,"North America, Australia & New Zealand",WVS,4,1999,judios,9.1,1200
+USA,"North America, Australia & New Zealand",WVS,5,2006,minorias_militantes,14.3,1240
+USA,"North America, Australia & New Zealand",WVS,3,1995,musulmanes,12.3,1542
+USA,"North America, Australia & New Zealand",WVS,4,1999,musulmanes,10.7,1200
+USA,"North America, Australia & New Zealand",WVS,3,1995,otra_raza,6.6,1542
+USA,"North America, Australia & New Zealand",WVS,4,1999,otra_raza,8.0,1200
+USA,"North America, Australia & New Zealand",WVS,5,2006,otra_raza,4.0,1240
+USA,"North America, Australia & New Zealand",WVS,6,2011,otra_raza,5.6,2232
+USA,"North America, Australia & New Zealand",WVS,7,2017,otra_raza,3.2,2435
+USA,"North America, Australia & New Zealand",WVS,5,2006,otra_religion,2.5,1240
+USA,"North America, Australia & New Zealand",WVS,6,2011,otra_religion,3.4,2232
+USA,"North America, Australia & New Zealand",WVS,7,2017,otra_religion,2.8,2435
+USA,"North America, Australia & New Zealand",WVS,5,2006,otro_idioma,10.7,1240
+USA,"North America, Australia & New Zealand",WVS,6,2011,otro_idioma,12.9,2232
+USA,"North America, Australia & New Zealand",WVS,7,2017,otro_idioma,9.3,2435
+USA,"North America, Australia & New Zealand",WVS,5,2006,parejas_no_casadas,8.1,1240
+USA,"North America, Australia & New Zealand",WVS,6,2011,parejas_no_casadas,6.6,2232
+USA,"North America, Australia & New Zealand",WVS,7,2017,parejas_no_casadas,5.4,2435
+USA,"North America, Australia & New Zealand",WVS,3,1995,sida,18.6,1542
+USA,"North America, Australia & New Zealand",WVS,4,1999,sida,16.8,1200
+USA,"North America, Australia & New Zealand",WVS,5,2006,sida,15.4,1240
+USA,"North America, Australia & New Zealand",WVS,6,2011,sida,13.4,2232
+USA,"North America, Australia & New Zealand",WVS,7,2017,sida,13.1,2435
+UZB,Eastern Europe & Central Asia,WVS,6,2011,bebedores,84.1,1500
+UZB,Eastern Europe & Central Asia,WVS,7,2022,bebedores,25.7,1250
+UZB,Eastern Europe & Central Asia,WVS,6,2011,drogadictos,97.9,1500
+UZB,Eastern Europe & Central Asia,WVS,7,2022,drogadictos,87.6,1250
+UZB,Eastern Europe & Central Asia,WVS,6,2011,homosexuales,65.0,1500
+UZB,Eastern Europe & Central Asia,WVS,7,2022,homosexuales,24.2,1250
+UZB,Eastern Europe & Central Asia,WVS,6,2011,inmigrantes,12.3,1500
+UZB,Eastern Europe & Central Asia,WVS,7,2022,inmigrantes,9.2,1250
+UZB,Eastern Europe & Central Asia,WVS,6,2011,otra_raza,14.0,1500
+UZB,Eastern Europe & Central Asia,WVS,7,2022,otra_raza,14.2,1250
+UZB,Eastern Europe & Central Asia,WVS,6,2011,otra_religion,15.1,1500
+UZB,Eastern Europe & Central Asia,WVS,7,2022,otra_religion,70.4,1250
+UZB,Eastern Europe & Central Asia,WVS,6,2011,otro_idioma,7.1,1500
+UZB,Eastern Europe & Central Asia,WVS,7,2022,otro_idioma,6.9,1248
+UZB,Eastern Europe & Central Asia,WVS,6,2011,parejas_no_casadas,50.9,1500
+UZB,Eastern Europe & Central Asia,WVS,7,2022,parejas_no_casadas,7.6,1250
+UZB,Eastern Europe & Central Asia,WVS,6,2011,sida,84.4,1500
+UZB,Eastern Europe & Central Asia,WVS,7,2022,sida,63.5,1250
+VEN,Latin America,WVS,3,1996,antecedentes,67.6,1200
+VEN,Latin America,WVS,4,2000,antecedentes,77.2,1200
+VEN,Latin America,WVS,3,1996,bebedores,54.5,1200
+VEN,Latin America,WVS,4,2000,bebedores,57.2,1200
+VEN,Latin America,WVS,7,2021,bebedores,49.7,1190
+VEN,Latin America,WVS,3,1996,drogadictos,75.1,1200
+VEN,Latin America,WVS,4,2000,drogadictos,72.8,1200
+VEN,Latin America,WVS,7,2021,drogadictos,86.1,1190
+VEN,Latin America,WVS,3,1996,extremistas,39.4,1200
+VEN,Latin America,WVS,3,1996,homosexuales,67.5,1200
+VEN,Latin America,WVS,4,2000,homosexuales,57.4,1200
+VEN,Latin America,WVS,7,2021,homosexuales,31.6,1190
+VEN,Latin America,WVS,3,1996,inestables,46.4,1200
+VEN,Latin America,WVS,4,2000,inestables,46.0,1200
+VEN,Latin America,WVS,3,1996,inmigrantes,21.8,1200
+VEN,Latin America,WVS,4,2000,inmigrantes,17.9,1200
+VEN,Latin America,WVS,7,2021,inmigrantes,10.3,1190
+VEN,Latin America,WVS,3,1996,judios,26.0,1200
+VEN,Latin America,WVS,3,1996,otra_raza,20.0,1200
+VEN,Latin America,WVS,4,2000,otra_raza,15.5,1200
+VEN,Latin America,WVS,7,2021,otra_raza,7.9,1190
+VEN,Latin America,WVS,4,2000,otra_religion,17.2,1200
+VEN,Latin America,WVS,7,2021,otra_religion,9.3,1190
+VEN,Latin America,WVS,7,2021,otro_idioma,12.3,1190
+VEN,Latin America,WVS,7,2021,parejas_no_casadas,5.7,1190
+VEN,Latin America,WVS,3,1996,sida,57.6,1200
+VEN,Latin America,WVS,4,2000,sida,43.5,1200
+VEN,Latin America,WVS,7,2021,sida,31.1,1190
+VNM,Southeast Asia,WVS,4,2001,antecedentes,48.3,1000
+VNM,Southeast Asia,WVS,4,2001,bebedores,43.6,1000
+VNM,Southeast Asia,WVS,5,2006,bebedores,33.2,1495
+VNM,Southeast Asia,WVS,7,2020,bebedores,95.2,1200
+VNM,Southeast Asia,WVS,4,2001,cristianos,25.2,1000
+VNM,Southeast Asia,WVS,4,2001,drogadictos,53.6,1000
+VNM,Southeast Asia,WVS,5,2006,drogadictos,42.7,1495
+VNM,Southeast Asia,WVS,7,2020,drogadictos,98.8,1200
+VNM,Southeast Asia,WVS,4,2001,homosexuales,38.6,1000
+VNM,Southeast Asia,WVS,5,2006,homosexuales,29.1,1495
+VNM,Southeast Asia,WVS,7,2020,homosexuales,76.1,1200
+VNM,Southeast Asia,WVS,4,2001,inestables,38.4,1000
+VNM,Southeast Asia,WVS,4,2001,inmigrantes,32.9,1000
+VNM,Southeast Asia,WVS,5,2006,inmigrantes,37.0,1495
+VNM,Southeast Asia,WVS,7,2020,inmigrantes,52.8,1200
+VNM,Southeast Asia,WVS,5,2006,minorias_militantes,40.3,1495
+VNM,Southeast Asia,WVS,4,2001,musulmanes,27.0,1000
+VNM,Southeast Asia,WVS,4,2001,otra_raza,32.2,1000
+VNM,Southeast Asia,WVS,5,2006,otra_raza,35.1,1495
+VNM,Southeast Asia,WVS,7,2020,otra_raza,62.4,1200
+VNM,Southeast Asia,WVS,5,2006,otra_religion,34.3,1495
+VNM,Southeast Asia,WVS,7,2020,otra_religion,50.0,1200
+VNM,Southeast Asia,WVS,5,2006,otro_idioma,34.7,1495
+VNM,Southeast Asia,WVS,7,2020,otro_idioma,49.8,1200
+VNM,Southeast Asia,WVS,5,2006,parejas_no_casadas,29.8,1495
+VNM,Southeast Asia,WVS,7,2020,parejas_no_casadas,65.3,1200
+VNM,Southeast Asia,WVS,4,2001,sida,33.1,1000
+VNM,Southeast Asia,WVS,5,2006,sida,45.5,1495
+VNM,Southeast Asia,WVS,7,2020,sida,94.7,1200
+YEM,Middle East & North Africa,WVS,6,2014,bebedores,86.3,1000
+YEM,Middle East & North Africa,WVS,6,2014,drogadictos,92.5,1000
+YEM,Middle East & North Africa,WVS,6,2014,homosexuales,68.7,1000
+YEM,Middle East & North Africa,WVS,6,2014,inmigrantes,24.2,1000
+YEM,Middle East & North Africa,WVS,6,2014,otra_raza,34.0,1000
+YEM,Middle East & North Africa,WVS,6,2014,otra_religion,53.3,1000
+YEM,Middle East & North Africa,WVS,6,2014,otro_idioma,31.3,1000
+YEM,Middle East & North Africa,WVS,6,2014,parejas_no_casadas,76.3,1000
+YEM,Middle East & North Africa,WVS,6,2014,sida,81.9,1000
+ZAF,Sub-Saharan Africa,WVS,1,1982,antecedentes,58.4,1596
+ZAF,Sub-Saharan Africa,WVS,3,1996,antecedentes,67.9,2935
+ZAF,Sub-Saharan Africa,WVS,4,2001,antecedentes,53.9,3000
+ZAF,Sub-Saharan Africa,WVS,1,1982,bebedores,60.2,1596
+ZAF,Sub-Saharan Africa,WVS,3,1996,bebedores,60.8,2935
+ZAF,Sub-Saharan Africa,WVS,4,2001,bebedores,49.6,3000
+ZAF,Sub-Saharan Africa,WVS,5,2006,bebedores,67.5,2988
+ZAF,Sub-Saharan Africa,WVS,6,2013,bebedores,60.0,3531
+ZAF,Sub-Saharan Africa,WVS,3,1996,blancos,7.8,2935
+ZAF,Sub-Saharan Africa,WVS,5,2006,blancos,9.2,2988
+ZAF,Sub-Saharan Africa,WVS,3,1996,drogadictos,74.8,2935
+ZAF,Sub-Saharan Africa,WVS,4,2001,drogadictos,62.4,3000
+ZAF,Sub-Saharan Africa,WVS,5,2006,drogadictos,89.5,2988
+ZAF,Sub-Saharan Africa,WVS,6,2013,drogadictos,85.7,3531
+ZAF,Sub-Saharan Africa,WVS,1,1982,extremistas,32.8,1596
+ZAF,Sub-Saharan Africa,WVS,3,1996,extremistas,31.7,2935
+ZAF,Sub-Saharan Africa,WVS,3,1996,homosexuales,50.5,2935
+ZAF,Sub-Saharan Africa,WVS,4,2001,homosexuales,46.2,3000
+ZAF,Sub-Saharan Africa,WVS,5,2006,homosexuales,45.9,2906
+ZAF,Sub-Saharan Africa,WVS,6,2013,homosexuales,37.9,3531
+ZAF,Sub-Saharan Africa,WVS,3,1996,indios,10.4,2935
+ZAF,Sub-Saharan Africa,WVS,5,2006,indios,13.5,2906
+ZAF,Sub-Saharan Africa,WVS,1,1982,inestables,44.5,1596
+ZAF,Sub-Saharan Africa,WVS,3,1996,inestables,37.0,2935
+ZAF,Sub-Saharan Africa,WVS,4,2001,inestables,38.8,3000
+ZAF,Sub-Saharan Africa,WVS,1,1982,inmigrantes,7.0,1596
+ZAF,Sub-Saharan Africa,WVS,3,1996,inmigrantes,21.3,2935
+ZAF,Sub-Saharan Africa,WVS,4,2001,inmigrantes,30.6,3000
+ZAF,Sub-Saharan Africa,WVS,5,2006,inmigrantes,24.9,2906
+ZAF,Sub-Saharan Africa,WVS,6,2013,inmigrantes,40.9,3531
+ZAF,Sub-Saharan Africa,WVS,4,2001,judios,24.4,3000
+ZAF,Sub-Saharan Africa,WVS,4,2001,musulmanes,23.9,3000
+ZAF,Sub-Saharan Africa,WVS,3,1996,negros,9.0,2935
+ZAF,Sub-Saharan Africa,WVS,5,2006,negros,0.9,2906
+ZAF,Sub-Saharan Africa,WVS,1,1982,otra_raza,24.7,1596
+ZAF,Sub-Saharan Africa,WVS,3,1996,otra_raza,11.2,2935
+ZAF,Sub-Saharan Africa,WVS,4,2001,otra_raza,23.6,3000
+ZAF,Sub-Saharan Africa,WVS,5,2006,otra_raza,8.1,2906
+ZAF,Sub-Saharan Africa,WVS,6,2013,otra_raza,19.2,3531
+ZAF,Sub-Saharan Africa,WVS,5,2006,otra_religion,4.5,2906
+ZAF,Sub-Saharan Africa,WVS,6,2013,otra_religion,16.0,3531
+ZAF,Sub-Saharan Africa,WVS,5,2006,otro_idioma,7.9,2906
+ZAF,Sub-Saharan Africa,WVS,6,2013,otro_idioma,15.1,3531
+ZAF,Sub-Saharan Africa,WVS,5,2006,parejas_no_casadas,9.9,2906
+ZAF,Sub-Saharan Africa,WVS,6,2013,parejas_no_casadas,15.3,3531
+ZAF,Sub-Saharan Africa,WVS,3,1996,personas_color,9.8,2935
+ZAF,Sub-Saharan Africa,WVS,5,2006,personas_color,9.0,2988
+ZAF,Sub-Saharan Africa,WVS,3,1996,sida,44.0,2935
+ZAF,Sub-Saharan Africa,WVS,4,2001,sida,26.6,3000
+ZAF,Sub-Saharan Africa,WVS,5,2006,sida,7.3,2906
+ZAF,Sub-Saharan Africa,WVS,6,2013,sida,17.7,3531
+ZMB,Sub-Saharan Africa,WVS,5,2007,bebedores,64.7,1500
+ZMB,Sub-Saharan Africa,WVS,5,2007,drogadictos,82.9,1500
+ZMB,Sub-Saharan Africa,WVS,5,2007,homosexuales,73.3,1500
+ZMB,Sub-Saharan Africa,WVS,5,2007,inmigrantes,27.5,1500
+ZMB,Sub-Saharan Africa,WVS,5,2007,otra_raza,29.5,1500
+ZMB,Sub-Saharan Africa,WVS,5,2007,otra_religion,26.1,1500
+ZMB,Sub-Saharan Africa,WVS,5,2007,otro_idioma,23.7,1500
+ZMB,Sub-Saharan Africa,WVS,5,2007,parejas_no_casadas,41.5,1500
+ZMB,Sub-Saharan Africa,WVS,5,2007,sida,17.7,1500
+ZWE,Sub-Saharan Africa,WVS,4,2001,antecedentes,74.7,1002
+ZWE,Sub-Saharan Africa,WVS,4,2001,bebedores,56.3,1002
+ZWE,Sub-Saharan Africa,WVS,6,2012,bebedores,54.8,1500
+ZWE,Sub-Saharan Africa,WVS,7,2020,bebedores,65.1,1202
+ZWE,Sub-Saharan Africa,WVS,4,2001,drogadictos,63.9,1002
+ZWE,Sub-Saharan Africa,WVS,6,2012,drogadictos,75.6,1500
+ZWE,Sub-Saharan Africa,WVS,7,2020,drogadictos,86.8,1202
+ZWE,Sub-Saharan Africa,WVS,4,2001,homosexuales,66.5,1002
+ZWE,Sub-Saharan Africa,WVS,6,2012,homosexuales,90.2,1500
+ZWE,Sub-Saharan Africa,WVS,7,2020,homosexuales,90.1,1202
+ZWE,Sub-Saharan Africa,WVS,4,2001,inestables,42.3,1002
+ZWE,Sub-Saharan Africa,WVS,4,2001,inmigrantes,20.5,1002
+ZWE,Sub-Saharan Africa,WVS,6,2012,inmigrantes,13.7,1500
+ZWE,Sub-Saharan Africa,WVS,7,2020,inmigrantes,5.0,1202
+ZWE,Sub-Saharan Africa,WVS,4,2001,judios,19.3,1002
+ZWE,Sub-Saharan Africa,WVS,4,2001,musulmanes,17.7,1002
+ZWE,Sub-Saharan Africa,WVS,4,2001,otra_raza,19.8,1002
+ZWE,Sub-Saharan Africa,WVS,6,2012,otra_raza,8.1,1500
+ZWE,Sub-Saharan Africa,WVS,7,2020,otra_raza,5.2,1202
+ZWE,Sub-Saharan Africa,WVS,6,2012,otra_religion,7.1,1500
+ZWE,Sub-Saharan Africa,WVS,7,2020,otra_religion,5.4,1202
+ZWE,Sub-Saharan Africa,WVS,6,2012,otro_idioma,6.9,1500
+ZWE,Sub-Saharan Africa,WVS,7,2020,otro_idioma,5.7,1202
+ZWE,Sub-Saharan Africa,WVS,6,2012,parejas_no_casadas,26.0,1500
+ZWE,Sub-Saharan Africa,WVS,7,2020,parejas_no_casadas,24.4,1202
+ZWE,Sub-Saharan Africa,WVS,4,2001,sida,30.3,1002
+ZWE,Sub-Saharan Africa,WVS,6,2012,sida,4.9,1500
+ZWE,Sub-Saharan Africa,WVS,7,2020,sida,7.5,1202

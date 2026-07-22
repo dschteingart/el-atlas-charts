@@ -1,0 +1,1276 @@
+iso3,region,study,wave,year,cat,pct,n
+BGD,South Asia,WVS,4,2002,antecedentes,3.7,1500
+CHE,Western Europe,WVS,3,1996,antecedentes,20.3,1212
+DEU,Western Europe,WVS,3,1997,antecedentes,24.0,2026
+MNE,Eastern Europe & Central Asia,WVS,4,2001,antecedentes,29.3,1060
+SRB,Eastern Europe & Central Asia,WVS,4,2001,antecedentes,29.3,1200
+SGP,Southeast Asia,WVS,4,2002,antecedentes,30.4,1512
+ESP,Western Europe,WVS,4,2000,antecedentes,32.8,1209
+SWE,Western Europe,WVS,3,1996,antecedentes,34.9,1009
+PRI,Caribbean,WVS,4,2001,antecedentes,36.2,720
+HRV,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,41.6,1196
+FIN,Western Europe,WVS,3,1996,antecedentes,41.9,987
+ARG,Latin America,WVS,4,1999,antecedentes,43.3,1280
+NOR,Western Europe,WVS,3,1996,antecedentes,44.0,1127
+BRA,Latin America,WVS,3,1997,antecedentes,44.8,1143
+AUS,"North America, Australia & New Zealand",WVS,3,1995,antecedentes,45.3,2048
+CAN,"North America, Australia & New Zealand",WVS,4,2000,antecedentes,45.3,1931
+PER,Latin America,WVS,5,2006,antecedentes,47.2,1500
+IND,South Asia,WVS,4,2001,antecedentes,48.2,2002
+VNM,Southeast Asia,WVS,4,2001,antecedentes,48.3,1000
+GEO,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,49.6,2008
+JPN,East Asia,WVS,2,1990,antecedentes,49.7,1011
+TWN,East Asia,WVS,3,1998,antecedentes,51.4,780
+NZL,"North America, Australia & New Zealand",WVS,5,2004,antecedentes,53.2,954
+USA,"North America, Australia & New Zealand",WVS,4,1999,antecedentes,53.8,1200
+ZAF,Sub-Saharan Africa,WVS,4,2001,antecedentes,53.9,3000
+SVN,Eastern Europe & Central Asia,WVS,3,1995,antecedentes,54.8,1007
+IDN,Southeast Asia,WVS,4,2001,antecedentes,55.7,1000
+HKG,East Asia,WVS,5,2005,antecedentes,56.6,1224
+PAK,South Asia,WVS,4,2001,antecedentes,57.9,2000
+DOM,Latin America,WVS,3,1996,antecedentes,62.4,417
+CHL,Latin America,WVS,4,2000,antecedentes,62.5,1200
+HUN,Eastern Europe & Central Asia,WVS,3,1998,antecedentes,63.4,650
+COL,Latin America,WVS,3,1997,antecedentes,63.5,2996
+RUS,Eastern Europe & Central Asia,WVS,3,1995,antecedentes,64.4,2040
+ROU,Eastern Europe & Central Asia,WVS,3,1998,antecedentes,65.7,1239
+BLR,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,66.8,2092
+KGZ,Eastern Europe & Central Asia,WVS,4,2003,antecedentes,68.1,1043
+MAR,Middle East & North Africa,WVS,4,2001,antecedentes,68.3,1251
+AZE,Eastern Europe & Central Asia,WVS,3,1997,antecedentes,68.5,2002
+URY,Latin America,WVS,3,1996,antecedentes,69.6,1000
+MEX,Latin America,WVS,4,2000,antecedentes,69.6,1535
+BGR,Eastern Europe & Central Asia,WVS,3,1997,antecedentes,69.8,1072
+DZA,Middle East & North Africa,WVS,4,2002,antecedentes,70.2,1282
+LVA,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,70.3,1200
+CZE,Eastern Europe & Central Asia,WVS,3,1998,antecedentes,70.6,1147
+CHN,East Asia,WVS,4,2001,antecedentes,70.9,1000
+PHL,Southeast Asia,WVS,4,2001,antecedentes,71.7,1200
+UKR,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,71.9,2811
+EST,Eastern Europe & Central Asia,WVS,3,1996,antecedentes,74.2,1021
+ZWE,Sub-Saharan Africa,WVS,4,2001,antecedentes,74.7,1002
+MKD,Eastern Europe & Central Asia,WVS,4,2001,antecedentes,76.3,1055
+VEN,Latin America,WVS,4,2000,antecedentes,77.2,1200
+SVK,Eastern Europe & Central Asia,WVS,3,1998,antecedentes,77.5,1095
+POL,Eastern Europe & Central Asia,WVS,3,1997,antecedentes,77.8,1153
+ARM,Eastern Europe & Central Asia,WVS,3,1997,antecedentes,78.0,2000
+LTU,Eastern Europe & Central Asia,WVS,3,1997,antecedentes,78.1,1009
+SLV,Latin America,WVS,3,1999,antecedentes,78.2,1254
+NGA,Sub-Saharan Africa,WVS,4,2000,antecedentes,78.7,2022
+TUR,Eastern Europe & Central Asia,WVS,4,2001,antecedentes,79.9,3401
+KOR,East Asia,WVS,4,2001,antecedentes,81.4,1200
+GTM,Latin America,WVS,5,2004,antecedentes,83.1,1000
+MDA,Eastern Europe & Central Asia,WVS,4,2002,antecedentes,83.4,1008
+BIH,Eastern Europe & Central Asia,WVS,4,2001,antecedentes,87.8,1200
+SAU,Middle East & North Africa,WVS,4,2003,antecedentes,87.8,1502
+UGA,Sub-Saharan Africa,WVS,4,2001,antecedentes,88.1,1002
+TZA,Sub-Saharan Africa,WVS,4,2001,antecedentes,88.8,1171
+JOR,Middle East & North Africa,WVS,4,2001,antecedentes,96.2,1223
+EGY,Middle East & North Africa,WVS,4,2001,antecedentes,96.9,3000
+ALB,Eastern Europe & Central Asia,WVS,4,2002,antecedentes,97.1,1000
+IRQ,Middle East & North Africa,WVS,5,2006,antecedentes,98.3,2659
+IRN,Middle East & North Africa,WVS,4,2000,antecedentes,98.7,2532
+UZB,Eastern Europe & Central Asia,WVS,7,2022,bebedores,25.7,1250
+BRA,Latin America,WVS,7,2018,bebedores,30.0,1762
+HTI,Latin America,WVS,6,2016,bebedores,30.5,1992
+URY,Latin America,WVS,7,2022,bebedores,31.0,1000
+PRI,Caribbean,WVS,7,2018,bebedores,32.2,1127
+NOR,Western Europe,WVS,5,2007,bebedores,34.4,1025
+ARG,Latin America,WVS,7,2017,bebedores,37.5,1003
+COL,Latin America,WVS,7,2018,bebedores,39.7,1520
+ESP,Western Europe,WVS,6,2011,bebedores,43.1,1189
+NIC,Latin America,WVS,7,2020,bebedores,44.0,1200
+MAC,East Asia,WVS,7,2019,bebedores,46.8,1015
+VEN,Latin America,WVS,7,2021,bebedores,49.7,1190
+LBN,Middle East & North Africa,WVS,7,2018,bebedores,50.0,1200
+ITA,Western Europe,WVS,5,2005,bebedores,50.6,1012
+ECU,Latin America,WVS,7,2018,bebedores,50.9,1200
+SWE,Western Europe,WVS,6,2011,bebedores,51.4,1206
+RWA,Sub-Saharan Africa,WVS,6,2012,bebedores,51.9,1527
+DOM,Latin America,WVS,3,1996,bebedores,54.7,417
+BOL,Latin America,WVS,7,2017,bebedores,55.0,1800
+MEX,Latin America,WVS,7,2018,bebedores,55.3,1740
+TTO,Caribbean,WVS,6,2010,bebedores,55.5,999
+PAK,South Asia,WVS,7,2018,bebedores,56.5,1995
+LBY,Middle East & North Africa,WVS,7,2022,bebedores,56.7,1196
+GBR,Western Europe,WVS,7,2022,bebedores,56.8,2586
+GTM,Latin America,WVS,7,2020,bebedores,57.4,1229
+GRC,Western Europe,WVS,7,2017,bebedores,57.6,1196
+IRQ,Middle East & North Africa,WVS,7,2018,bebedores,57.7,1200
+NIR,Western Europe,WVS,7,2022,bebedores,58.7,446
+CHL,Latin America,WVS,7,2018,bebedores,59.1,1000
+ZAF,Sub-Saharan Africa,WVS,6,2013,bebedores,60.0,3531
+AND,Western Europe,WVS,7,2018,bebedores,62.1,1004
+KOR,East Asia,WVS,7,2018,bebedores,62.3,1245
+SVN,Eastern Europe & Central Asia,WVS,6,2011,bebedores,62.5,1069
+IDN,Southeast Asia,WVS,7,2018,bebedores,62.5,3200
+MNE,Eastern Europe & Central Asia,WVS,4,2001,bebedores,63.1,1060
+NZL,"North America, Australia & New Zealand",WVS,7,2020,bebedores,63.1,1057
+HRV,Eastern Europe & Central Asia,WVS,3,1996,bebedores,63.6,1196
+MKD,Eastern Europe & Central Asia,WVS,4,2001,bebedores,63.8,1055
+KEN,Sub-Saharan Africa,WVS,7,2021,bebedores,64.4,1231
+THA,Southeast Asia,WVS,7,2018,bebedores,64.6,1500
+ZMB,Sub-Saharan Africa,WVS,5,2007,bebedores,64.7,1500
+BGR,Eastern Europe & Central Asia,WVS,5,2006,bebedores,65.0,1001
+ZWE,Sub-Saharan Africa,WVS,7,2020,bebedores,65.1,1202
+MLI,Sub-Saharan Africa,WVS,5,2007,bebedores,65.2,1534
+POL,Eastern Europe & Central Asia,WVS,6,2012,bebedores,65.4,966
+CYP,Western Europe,WVS,7,2019,bebedores,65.5,970
+BFA,Sub-Saharan Africa,WVS,5,2007,bebedores,66.4,1534
+PHL,Southeast Asia,WVS,7,2019,bebedores,67.0,1200
+GHA,Sub-Saharan Africa,WVS,6,2012,bebedores,67.2,1552
+FIN,Western Europe,WVS,5,2005,bebedores,68.7,1014
+TUN,Middle East & North Africa,WVS,7,2019,bebedores,69.1,1159
+UKR,Eastern Europe & Central Asia,WVS,7,2020,bebedores,69.1,1252
+KWT,Middle East & North Africa,WVS,6,2014,bebedores,69.4,1303
+UGA,Sub-Saharan Africa,WVS,4,2001,bebedores,69.9,1002
+PER,Latin America,WVS,7,2018,bebedores,70.3,1393
+SGP,Southeast Asia,WVS,7,2020,bebedores,70.5,2012
+FRA,Western Europe,WVS,5,2006,bebedores,72.0,1001
+DEU,Western Europe,WVS,7,2018,bebedores,73.2,1523
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,bebedores,73.2,1200
+QAT,Middle East & North Africa,WVS,6,2010,bebedores,73.6,1060
+CHE,Western Europe,WVS,5,2007,bebedores,73.7,1241
+AUS,"North America, Australia & New Zealand",WVS,7,2018,bebedores,74.1,1813
+TUR,Eastern Europe & Central Asia,WVS,7,2018,bebedores,74.1,2365
+HUN,Eastern Europe & Central Asia,WVS,5,2009,bebedores,74.5,1006
+USA,"North America, Australia & New Zealand",WVS,7,2017,bebedores,74.6,2435
+ROU,Eastern Europe & Central Asia,WVS,7,2018,bebedores,75.6,1226
+HKG,East Asia,WVS,7,2018,bebedores,75.8,2075
+NLD,Western Europe,WVS,7,2022,bebedores,76.0,2057
+MNG,East Asia,WVS,7,2020,bebedores,76.4,1638
+NGA,Sub-Saharan Africa,WVS,7,2018,bebedores,77.2,1237
+ETH,Sub-Saharan Africa,WVS,7,2020,bebedores,77.3,1220
+BIH,Eastern Europe & Central Asia,WVS,4,2001,bebedores,77.4,1200
+MAR,Middle East & North Africa,WVS,7,2021,bebedores,77.8,1200
+CZE,Eastern Europe & Central Asia,WVS,7,2022,bebedores,77.8,1163
+GEO,Eastern Europe & Central Asia,WVS,6,2014,bebedores,77.9,1202
+JPN,East Asia,WVS,7,2019,bebedores,78.2,1317
+RUS,Eastern Europe & Central Asia,WVS,7,2017,bebedores,78.3,1810
+SVK,Eastern Europe & Central Asia,WVS,7,2022,bebedores,78.7,1173
+TZA,Sub-Saharan Africa,WVS,4,2001,bebedores,78.8,1171
+DZA,Middle East & North Africa,WVS,6,2014,bebedores,78.8,1200
+EST,Eastern Europe & Central Asia,WVS,6,2011,bebedores,79.0,1533
+CAN,"North America, Australia & New Zealand",WVS,7,2020,bebedores,79.5,4018
+PSE,Middle East & North Africa,WVS,6,2013,bebedores,79.7,1000
+BGD,South Asia,WVS,7,2018,bebedores,79.9,1183
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,bebedores,80.0,1276
+ALB,Eastern Europe & Central Asia,WVS,4,2002,bebedores,80.5,1000
+MDA,Eastern Europe & Central Asia,WVS,5,2006,bebedores,81.0,1046
+ARM,Eastern Europe & Central Asia,WVS,7,2021,bebedores,82.5,1207
+MYS,Southeast Asia,WVS,7,2018,bebedores,82.9,1313
+CHN,East Asia,WVS,7,2018,bebedores,83.6,3019
+TJK,Eastern Europe & Central Asia,WVS,7,2020,bebedores,84.8,1200
+IND,South Asia,WVS,7,2023,bebedores,85.1,1660
+AZE,Eastern Europe & Central Asia,WVS,6,2011,bebedores,85.3,1002
+LVA,Eastern Europe & Central Asia,WVS,3,1996,bebedores,85.5,1200
+LTU,Eastern Europe & Central Asia,WVS,3,1997,bebedores,86.2,1009
+YEM,Middle East & North Africa,WVS,6,2014,bebedores,86.3,1000
+MDV,South Asia,WVS,7,2021,bebedores,87.4,1039
+BLR,Eastern Europe & Central Asia,WVS,6,2011,bebedores,87.7,1535
+EGY,Middle East & North Africa,WVS,7,2018,bebedores,87.7,1200
+SRB,Eastern Europe & Central Asia,WVS,7,2017,bebedores,87.8,1041
+TWN,East Asia,WVS,7,2019,bebedores,88.8,1223
+SLV,Latin America,WVS,3,1999,bebedores,90.2,1254
+IRN,Middle East & North Africa,WVS,7,2020,bebedores,90.4,1499
+JOR,Middle East & North Africa,WVS,7,2018,bebedores,92.1,1203
+MMR,Southeast Asia,WVS,7,2020,bebedores,93.8,1200
+VNM,Southeast Asia,WVS,7,2020,bebedores,95.2,1200
+ZAF,Sub-Saharan Africa,WVS,5,2006,blancos,9.2,2988
+IRQ,Middle East & North Africa,WVS,5,2006,britanicos,90.2,2560
+IRQ,Middle East & North Africa,WVS,5,2006,chiies,9.4,2651
+TZA,Sub-Saharan Africa,WVS,4,2001,cristianos,0.9,1171
+NGA,Sub-Saharan Africa,WVS,3,1995,cristianos,6.7,1996
+AZE,Eastern Europe & Central Asia,WVS,3,1997,cristianos,18.4,2002
+VNM,Southeast Asia,WVS,4,2001,cristianos,25.2,1000
+IRQ,Middle East & North Africa,WVS,5,2006,cristianos,30.7,2609
+IRN,Middle East & North Africa,WVS,5,2007,cristianos,35.2,2659
+TUR,Eastern Europe & Central Asia,WVS,4,2001,cristianos,44.5,3401
+PRI,Caribbean,WVS,7,2018,drogadictos,44.3,1127
+MAC,East Asia,WVS,7,2019,drogadictos,47.2,1018
+PAK,South Asia,WVS,7,2018,drogadictos,52.5,1995
+URY,Latin America,WVS,7,2022,drogadictos,57.2,1000
+LBN,Middle East & North Africa,WVS,7,2018,drogadictos,58.4,1200
+NIC,Latin America,WVS,7,2020,drogadictos,61.2,1200
+ITA,Western Europe,WVS,5,2005,drogadictos,61.4,1012
+NOR,Western Europe,WVS,5,2007,drogadictos,62.2,1025
+GTM,Latin America,WVS,7,2020,drogadictos,62.7,1229
+HTI,Latin America,WVS,6,2016,drogadictos,63.1,1991
+CHE,Western Europe,WVS,5,2007,drogadictos,64.8,1241
+IRQ,Middle East & North Africa,WVS,7,2018,drogadictos,66.1,1200
+BRA,Latin America,WVS,7,2018,drogadictos,67.0,1762
+TUN,Middle East & North Africa,WVS,7,2019,drogadictos,67.3,1114
+UKR,Eastern Europe & Central Asia,WVS,7,2020,drogadictos,67.9,1256
+DEU,Western Europe,WVS,7,2018,drogadictos,69.8,1523
+HRV,Eastern Europe & Central Asia,WVS,3,1996,drogadictos,69.9,1196
+GRC,Western Europe,WVS,7,2017,drogadictos,70.3,1196
+COL,Latin America,WVS,7,2018,drogadictos,70.3,1520
+DOM,Latin America,WVS,3,1996,drogadictos,70.5,417
+SVN,Eastern Europe & Central Asia,WVS,6,2011,drogadictos,71.7,1069
+ARG,Latin America,WVS,7,2017,drogadictos,72.3,1003
+MKD,Eastern Europe & Central Asia,WVS,4,2001,drogadictos,73.1,1055
+ESP,Western Europe,WVS,6,2011,drogadictos,73.2,1189
+POL,Eastern Europe & Central Asia,WVS,6,2012,drogadictos,73.9,966
+MNG,East Asia,WVS,7,2020,drogadictos,74.2,1638
+SWE,Western Europe,WVS,6,2011,drogadictos,74.7,1206
+AND,Western Europe,WVS,7,2018,drogadictos,74.9,1004
+FRA,Western Europe,WVS,5,2006,drogadictos,75.3,1001
+CYP,Western Europe,WVS,7,2019,drogadictos,75.9,979
+ECU,Latin America,WVS,7,2018,drogadictos,76.0,1200
+MLI,Sub-Saharan Africa,WVS,5,2007,drogadictos,76.3,1534
+MEX,Latin America,WVS,7,2018,drogadictos,77.3,1739
+GHA,Sub-Saharan Africa,WVS,6,2012,drogadictos,78.4,1552
+NIR,Western Europe,WVS,7,2022,drogadictos,79.2,446
+HUN,Eastern Europe & Central Asia,WVS,5,2009,drogadictos,79.3,1003
+BGR,Eastern Europe & Central Asia,WVS,5,2006,drogadictos,79.8,1001
+NZL,"North America, Australia & New Zealand",WVS,7,2020,drogadictos,80.2,1057
+TZA,Sub-Saharan Africa,WVS,4,2001,drogadictos,81.2,1171
+BIH,Eastern Europe & Central Asia,WVS,4,2001,drogadictos,81.5,1200
+BGD,South Asia,WVS,7,2018,drogadictos,81.5,1199
+FIN,Western Europe,WVS,5,2005,drogadictos,82.9,1014
+ZMB,Sub-Saharan Africa,WVS,5,2007,drogadictos,82.9,1500
+GBR,Western Europe,WVS,7,2022,drogadictos,82.9,2586
+MAR,Middle East & North Africa,WVS,7,2021,drogadictos,83.2,1200
+BOL,Latin America,WVS,7,2017,drogadictos,83.3,1800
+SGP,Southeast Asia,WVS,7,2020,drogadictos,83.6,2012
+ROU,Eastern Europe & Central Asia,WVS,7,2018,drogadictos,83.7,1226
+TTO,Caribbean,WVS,6,2010,drogadictos,83.9,999
+DZA,Middle East & North Africa,WVS,6,2014,drogadictos,84.2,1200
+KWT,Middle East & North Africa,WVS,6,2014,drogadictos,84.4,1303
+ALB,Eastern Europe & Central Asia,WVS,4,2002,drogadictos,84.6,1000
+LBY,Middle East & North Africa,WVS,7,2022,drogadictos,84.9,1196
+PSE,Middle East & North Africa,WVS,6,2013,drogadictos,85.4,1000
+PER,Latin America,WVS,7,2018,drogadictos,85.4,1393
+KEN,Sub-Saharan Africa,WVS,7,2021,drogadictos,85.6,1231
+ZAF,Sub-Saharan Africa,WVS,6,2013,drogadictos,85.7,3531
+MNE,Eastern Europe & Central Asia,WVS,4,2001,drogadictos,86.1,1060
+VEN,Latin America,WVS,7,2021,drogadictos,86.1,1190
+UGA,Sub-Saharan Africa,WVS,4,2001,drogadictos,86.7,1002
+CHL,Latin America,WVS,7,2018,drogadictos,86.8,1000
+ZWE,Sub-Saharan Africa,WVS,7,2020,drogadictos,86.8,1202
+EST,Eastern Europe & Central Asia,WVS,6,2011,drogadictos,86.9,1533
+SAU,Middle East & North Africa,WVS,4,2003,drogadictos,87.2,1502
+IRN,Middle East & North Africa,WVS,7,2020,drogadictos,87.2,1499
+MDA,Eastern Europe & Central Asia,WVS,5,2006,drogadictos,87.4,1046
+UZB,Eastern Europe & Central Asia,WVS,7,2022,drogadictos,87.6,1250
+LVA,Eastern Europe & Central Asia,WVS,3,1996,drogadictos,88.2,1200
+RUS,Eastern Europe & Central Asia,WVS,7,2017,drogadictos,88.4,1810
+BFA,Sub-Saharan Africa,WVS,5,2007,drogadictos,88.7,1534
+THA,Southeast Asia,WVS,7,2018,drogadictos,88.8,1500
+SLV,Latin America,WVS,3,1999,drogadictos,88.9,1254
+HKG,East Asia,WVS,7,2018,drogadictos,89.2,2075
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,drogadictos,89.2,1200
+TUR,Eastern Europe & Central Asia,WVS,7,2018,drogadictos,89.5,2398
+NLD,Western Europe,WVS,7,2022,drogadictos,89.5,2057
+CAN,"North America, Australia & New Zealand",WVS,7,2020,drogadictos,89.7,4018
+IND,South Asia,WVS,7,2023,drogadictos,89.8,1681
+LTU,Eastern Europe & Central Asia,WVS,3,1997,drogadictos,89.9,1009
+GEO,Eastern Europe & Central Asia,WVS,6,2014,drogadictos,90.2,1202
+NGA,Sub-Saharan Africa,WVS,7,2018,drogadictos,90.7,1237
+CZE,Eastern Europe & Central Asia,WVS,7,2022,drogadictos,90.7,1163
+MDV,South Asia,WVS,7,2021,drogadictos,90.9,1039
+RWA,Sub-Saharan Africa,WVS,6,2012,drogadictos,91.2,1527
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,drogadictos,91.8,1276
+ETH,Sub-Saharan Africa,WVS,7,2020,drogadictos,92.0,1220
+EGY,Middle East & North Africa,WVS,7,2018,drogadictos,92.3,1200
+YEM,Middle East & North Africa,WVS,6,2014,drogadictos,92.5,1000
+SVK,Eastern Europe & Central Asia,WVS,7,2022,drogadictos,92.9,1173
+AUS,"North America, Australia & New Zealand",WVS,7,2018,drogadictos,93.5,1813
+MYS,Southeast Asia,WVS,7,2018,drogadictos,93.9,1313
+IDN,Southeast Asia,WVS,7,2018,drogadictos,94.4,3200
+QAT,Middle East & North Africa,WVS,6,2010,drogadictos,94.9,1060
+TJK,Eastern Europe & Central Asia,WVS,7,2020,drogadictos,95.2,1200
+BLR,Eastern Europe & Central Asia,WVS,6,2011,drogadictos,95.3,1535
+USA,"North America, Australia & New Zealand",WVS,7,2017,drogadictos,95.4,2435
+PHL,Southeast Asia,WVS,7,2019,drogadictos,95.4,1200
+AZE,Eastern Europe & Central Asia,WVS,6,2011,drogadictos,95.6,1002
+ARM,Eastern Europe & Central Asia,WVS,7,2021,drogadictos,95.6,1207
+SRB,Eastern Europe & Central Asia,WVS,7,2017,drogadictos,96.1,1041
+JOR,Middle East & North Africa,WVS,7,2018,drogadictos,96.4,1203
+CHN,East Asia,WVS,7,2018,drogadictos,96.5,3029
+TWN,East Asia,WVS,7,2019,drogadictos,97.2,1223
+MMR,Southeast Asia,WVS,7,2020,drogadictos,97.9,1200
+KOR,East Asia,WVS,7,2018,drogadictos,98.1,1245
+VNM,Southeast Asia,WVS,7,2020,drogadictos,98.8,1200
+JPN,East Asia,WVS,7,2019,drogadictos,99.4,1345
+GTM,Latin America,WVS,5,2004,evangelistas,3.1,1000
+MEX,Latin America,WVS,4,2000,evangelistas,24.7,1535
+BRA,Latin America,WVS,2,1991,extrema_derecha,8.2,1782
+CHE,Western Europe,WVS,2,1989,extrema_derecha,18.1,1400
+MEX,Latin America,WVS,2,1990,extrema_derecha,27.2,1531
+ESP,Western Europe,WVS,2,1990,extrema_derecha,29.7,1510
+NGA,Sub-Saharan Africa,WVS,2,1990,extrema_derecha,35.7,1001
+SVK,Eastern Europe & Central Asia,WVS,2,1990,extrema_derecha,36.5,466
+CZE,Eastern Europe & Central Asia,WVS,2,1991,extrema_derecha,36.5,924
+RUS,Eastern Europe & Central Asia,WVS,2,1990,extrema_derecha,40.5,1961
+CHL,Latin America,WVS,2,1990,extrema_derecha,45.9,1500
+ARG,Latin America,WVS,2,1991,extrema_derecha,46.0,1002
+IND,South Asia,WVS,2,1990,extrema_derecha,65.0,2500
+KOR,East Asia,WVS,2,1990,extrema_derecha,72.7,1251
+JPN,East Asia,WVS,2,1990,extrema_derecha,79.0,1011
+BRA,Latin America,WVS,3,1997,extremistas,15.6,1143
+POL,Eastern Europe & Central Asia,WVS,3,1997,extremistas,20.7,1153
+COL,Latin America,WVS,3,1997,extremistas,22.3,2996
+FIN,Western Europe,WVS,3,1996,extremistas,27.4,987
+ZAF,Sub-Saharan Africa,WVS,3,1996,extremistas,31.7,2935
+USA,"North America, Australia & New Zealand",WVS,3,1995,extremistas,33.2,1542
+MEX,Latin America,WVS,3,1996,extremistas,34.2,1510
+SVK,Eastern Europe & Central Asia,WVS,3,1998,extremistas,34.6,1095
+BLR,Eastern Europe & Central Asia,WVS,3,1996,extremistas,38.9,2092
+BGR,Eastern Europe & Central Asia,WVS,3,1997,extremistas,39.0,1072
+ESP,Western Europe,WVS,3,1995,extremistas,39.3,1211
+VEN,Latin America,WVS,3,1996,extremistas,39.4,1200
+HUN,Eastern Europe & Central Asia,WVS,3,1998,extremistas,39.4,650
+EST,Eastern Europe & Central Asia,WVS,3,1996,extremistas,39.7,1021
+PER,Latin America,WVS,4,2001,extremistas,39.7,1501
+ROU,Eastern Europe & Central Asia,WVS,3,1998,extremistas,41.8,1239
+CHN,East Asia,WVS,3,1995,extremistas,42.1,1500
+URY,Latin America,WVS,3,1996,extremistas,42.2,1000
+CZE,Eastern Europe & Central Asia,WVS,3,1998,extremistas,43.1,1147
+PRI,Caribbean,WVS,3,1995,extremistas,43.5,1164
+PHL,Southeast Asia,WVS,3,1996,extremistas,43.7,1200
+RUS,Eastern Europe & Central Asia,WVS,3,1995,extremistas,43.8,2040
+DOM,Latin America,WVS,3,1996,extremistas,44.4,417
+GEO,Eastern Europe & Central Asia,WVS,3,1996,extremistas,44.8,2008
+AUS,"North America, Australia & New Zealand",WVS,3,1995,extremistas,45.2,2048
+UKR,Eastern Europe & Central Asia,WVS,3,1996,extremistas,47.6,2811
+MDA,Eastern Europe & Central Asia,WVS,3,1996,extremistas,48.1,984
+NZL,"North America, Australia & New Zealand",WVS,5,2004,extremistas,48.4,954
+NGA,Sub-Saharan Africa,WVS,3,1995,extremistas,48.9,1996
+LVA,Eastern Europe & Central Asia,WVS,3,1996,extremistas,50.3,1200
+CHL,Latin America,WVS,3,1996,extremistas,51.3,1000
+MKD,Eastern Europe & Central Asia,WVS,3,1998,extremistas,51.9,995
+ARG,Latin America,WVS,3,1995,extremistas,52.8,1079
+LTU,Eastern Europe & Central Asia,WVS,3,1997,extremistas,53.3,1009
+NOR,Western Europe,WVS,3,1996,extremistas,53.7,1127
+HRV,Eastern Europe & Central Asia,WVS,3,1996,extremistas,54.6,1196
+ARM,Eastern Europe & Central Asia,WVS,3,1997,extremistas,55.0,2000
+SWE,Western Europe,WVS,3,1996,extremistas,55.1,1009
+IND,South Asia,WVS,3,1995,extremistas,55.4,2040
+SRB,Eastern Europe & Central Asia,WVS,3,1996,extremistas,56.8,1280
+BIH,Eastern Europe & Central Asia,WVS,3,1998,extremistas,57.2,1200
+CHE,Western Europe,WVS,3,1996,extremistas,61.4,1212
+AZE,Eastern Europe & Central Asia,WVS,3,1997,extremistas,62.6,2002
+TWN,East Asia,WVS,3,1998,extremistas,62.9,780
+JPN,East Asia,WVS,1,1981,extremistas,64.7,1204
+ALB,Eastern Europe & Central Asia,WVS,3,1998,extremistas,66.7,999
+MNE,Eastern Europe & Central Asia,WVS,3,1996,extremistas,68.3,240
+SVN,Eastern Europe & Central Asia,WVS,3,1995,extremistas,68.9,1007
+DEU,Western Europe,WVS,3,1997,extremistas,70.5,2026
+SLV,Latin America,WVS,3,1999,extremistas,70.6,1254
+TUR,Eastern Europe & Central Asia,WVS,3,1996,extremistas,72.3,1907
+MAR,Middle East & North Africa,WVS,4,2001,extremistas,78.8,1251
+BGD,South Asia,WVS,3,1996,extremistas,81.6,1525
+KOR,East Asia,WVS,3,1996,extremistas,90.2,1249
+CHE,Western Europe,WVS,2,1989,familias_numerosas,0.7,1400
+ARG,Latin America,WVS,2,1991,familias_numerosas,4.6,1002
+JPN,East Asia,WVS,2,1990,familias_numerosas,5.7,1011
+BRA,Latin America,WVS,2,1991,familias_numerosas,6.0,1782
+ESP,Western Europe,WVS,2,1990,familias_numerosas,10.3,1510
+RUS,Eastern Europe & Central Asia,WVS,2,1990,familias_numerosas,12.3,1961
+CZE,Eastern Europe & Central Asia,WVS,2,1991,familias_numerosas,12.8,924
+CHL,Latin America,WVS,2,1990,familias_numerosas,13.5,1500
+SVK,Eastern Europe & Central Asia,WVS,2,1990,familias_numerosas,18.7,466
+CHN,East Asia,WVS,2,1990,familias_numerosas,18.7,1000
+KOR,East Asia,WVS,2,1990,familias_numerosas,20.6,1251
+MEX,Latin America,WVS,2,1990,familias_numerosas,22.7,1531
+NGA,Sub-Saharan Africa,WVS,2,1990,familias_numerosas,33.3,1001
+IND,South Asia,WVS,2,1990,familias_numerosas,35.4,2500
+IRQ,Middle East & North Africa,WVS,5,2006,franceses,89.5,2558
+SRB,Eastern Europe & Central Asia,WVS,4,2001,gitanos,12.4,1200
+MNE,Eastern Europe & Central Asia,WVS,4,2001,gitanos,23.6,1060
+ESP,Western Europe,WVS,6,2011,gitanos,38.6,1189
+SVN,Eastern Europe & Central Asia,WVS,5,2005,gitanos,38.8,1037
+ROU,Eastern Europe & Central Asia,WVS,5,2005,gitanos,47.6,1776
+HUN,Eastern Europe & Central Asia,WVS,5,2009,gitanos,48.7,1007
+SVK,Eastern Europe & Central Asia,WVS,3,1998,gitanos,68.4,1095
+ITA,Western Europe,WVS,5,2005,gitanos,73.8,1012
+IND,South Asia,WVS,2,1990,hindues,2.2,2500
+ARG,Latin America,WVS,2,1991,hindues,3.2,1002
+RUS,Eastern Europe & Central Asia,WVS,2,1990,hindues,6.0,1961
+ESP,Western Europe,WVS,2,1990,hindues,11.8,1510
+CHL,Latin America,WVS,2,1990,hindues,12.9,1500
+MEX,Latin America,WVS,2,1990,hindues,13.8,1531
+NGA,Sub-Saharan Africa,WVS,2,1990,hindues,22.4,1001
+JPN,East Asia,WVS,2,1990,hindues,27.7,1011
+CZE,Eastern Europe & Central Asia,WVS,2,1991,hindues,74.4,924
+SVK,Eastern Europe & Central Asia,WVS,2,1990,hindues,79.2,466
+NLD,Western Europe,WVS,7,2022,homosexuales,2.3,2057
+GBR,Western Europe,WVS,7,2022,homosexuales,3.6,2586
+SWE,Western Europe,WVS,6,2011,homosexuales,4.2,1206
+URY,Latin America,WVS,7,2022,homosexuales,4.7,1000
+ESP,Western Europe,WVS,6,2011,homosexuales,5.1,1189
+AND,Western Europe,WVS,7,2018,homosexuales,5.2,1004
+NOR,Western Europe,WVS,5,2007,homosexuales,5.7,1025
+DEU,Western Europe,WVS,7,2018,homosexuales,6.4,1523
+BRA,Latin America,WVS,7,2018,homosexuales,6.8,1762
+NIR,Western Europe,WVS,7,2022,homosexuales,7.0,446
+NZL,"North America, Australia & New Zealand",WVS,7,2020,homosexuales,7.6,1057
+ARG,Latin America,WVS,7,2017,homosexuales,8.6,1003
+CAN,"North America, Australia & New Zealand",WVS,7,2020,homosexuales,10.2,4018
+CHE,Western Europe,WVS,5,2007,homosexuales,10.8,1241
+AUS,"North America, Australia & New Zealand",WVS,7,2018,homosexuales,11.8,1813
+PRI,Caribbean,WVS,7,2018,homosexuales,12.5,1127
+USA,"North America, Australia & New Zealand",WVS,7,2017,homosexuales,13.5,2435
+PHL,Southeast Asia,WVS,7,2019,homosexuales,17.8,1200
+CZE,Eastern Europe & Central Asia,WVS,7,2022,homosexuales,18.1,1163
+ITA,Western Europe,WVS,5,2005,homosexuales,21.7,1012
+FIN,Western Europe,WVS,5,2005,homosexuales,21.9,1014
+MEX,Latin America,WVS,7,2018,homosexuales,22.8,1736
+HKG,East Asia,WVS,7,2018,homosexuales,23.9,2075
+UZB,Eastern Europe & Central Asia,WVS,7,2022,homosexuales,24.2,1250
+SGP,Southeast Asia,WVS,7,2020,homosexuales,25.7,2012
+JPN,East Asia,WVS,7,2019,homosexuales,27.1,1315
+CHL,Latin America,WVS,7,2018,homosexuales,27.7,1000
+COL,Latin America,WVS,7,2018,homosexuales,28.1,1520
+FRA,Western Europe,WVS,5,2006,homosexuales,28.8,1001
+BOL,Latin America,WVS,7,2017,homosexuales,29.0,1800
+ECU,Latin America,WVS,7,2018,homosexuales,31.5,1200
+VEN,Latin America,WVS,7,2021,homosexuales,31.6,1190
+NIC,Latin America,WVS,7,2020,homosexuales,33.2,1200
+GRC,Western Europe,WVS,7,2017,homosexuales,33.4,1196
+SVN,Eastern Europe & Central Asia,WVS,6,2011,homosexuales,35.5,1069
+PER,Latin America,WVS,7,2018,homosexuales,35.5,1381
+THA,Southeast Asia,WVS,7,2018,homosexuales,35.7,1500
+ZAF,Sub-Saharan Africa,WVS,6,2013,homosexuales,37.9,3531
+POL,Eastern Europe & Central Asia,WVS,6,2012,homosexuales,39.6,966
+HUN,Eastern Europe & Central Asia,WVS,5,2009,homosexuales,39.8,1004
+SVK,Eastern Europe & Central Asia,WVS,7,2022,homosexuales,40.0,1173
+CYP,Western Europe,WVS,7,2019,homosexuales,40.1,963
+GTM,Latin America,WVS,7,2020,homosexuales,40.6,1229
+PAK,South Asia,WVS,7,2018,homosexuales,41.2,1995
+TWN,East Asia,WVS,7,2019,homosexuales,41.6,1223
+MAC,East Asia,WVS,7,2019,homosexuales,43.6,995
+HRV,Eastern Europe & Central Asia,WVS,3,1996,homosexuales,45.5,1196
+MNG,East Asia,WVS,7,2020,homosexuales,45.8,1638
+TTO,Caribbean,WVS,6,2010,homosexuales,47.3,999
+EST,Eastern Europe & Central Asia,WVS,6,2011,homosexuales,47.3,1533
+LBN,Middle East & North Africa,WVS,7,2018,homosexuales,47.7,1200
+DOM,Latin America,WVS,3,1996,homosexuales,48.7,417
+UKR,Eastern Europe & Central Asia,WVS,7,2020,homosexuales,49.5,1169
+BGR,Eastern Europe & Central Asia,WVS,5,2006,homosexuales,49.7,1001
+MKD,Eastern Europe & Central Asia,WVS,4,2001,homosexuales,53.5,1055
+IRQ,Middle East & North Africa,WVS,7,2018,homosexuales,55.1,1200
+ROU,Eastern Europe & Central Asia,WVS,7,2018,homosexuales,57.4,1226
+TUN,Middle East & North Africa,WVS,7,2019,homosexuales,57.9,1146
+DZA,Middle East & North Africa,WVS,6,2014,homosexuales,58.1,1200
+LVA,Eastern Europe & Central Asia,WVS,3,1996,homosexuales,59.2,1200
+MYS,Southeast Asia,WVS,7,2018,homosexuales,60.4,1313
+SRB,Eastern Europe & Central Asia,WVS,7,2017,homosexuales,62.6,1041
+LBY,Middle East & North Africa,WVS,7,2022,homosexuales,62.6,1196
+BIH,Eastern Europe & Central Asia,WVS,4,2001,homosexuales,64.2,1200
+PSE,Middle East & North Africa,WVS,6,2013,homosexuales,65.3,1000
+MLI,Sub-Saharan Africa,WVS,5,2007,homosexuales,66.2,1534
+RUS,Eastern Europe & Central Asia,WVS,7,2017,homosexuales,66.2,1810
+YEM,Middle East & North Africa,WVS,6,2014,homosexuales,68.7,1000
+ETH,Sub-Saharan Africa,WVS,7,2020,homosexuales,69.7,1220
+MDA,Eastern Europe & Central Asia,WVS,5,2006,homosexuales,70.4,1046
+CHN,East Asia,WVS,7,2018,homosexuales,71.9,2993
+BLR,Eastern Europe & Central Asia,WVS,6,2011,homosexuales,72.1,1535
+IND,South Asia,WVS,7,2023,homosexuales,72.7,1452
+ZMB,Sub-Saharan Africa,WVS,5,2007,homosexuales,73.3,1500
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,homosexuales,73.3,1200
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,homosexuales,73.4,1276
+MNE,Eastern Europe & Central Asia,WVS,4,2001,homosexuales,73.7,1060
+TZA,Sub-Saharan Africa,WVS,4,2001,homosexuales,74.1,1171
+HTI,Latin America,WVS,6,2016,homosexuales,74.2,1992
+IDN,Southeast Asia,WVS,7,2018,homosexuales,74.3,3200
+KEN,Sub-Saharan Africa,WVS,7,2021,homosexuales,75.1,1231
+UGA,Sub-Saharan Africa,WVS,4,2001,homosexuales,76.1,1002
+VNM,Southeast Asia,WVS,7,2020,homosexuales,76.1,1200
+LTU,Eastern Europe & Central Asia,WVS,3,1997,homosexuales,76.5,1009
+SLV,Latin America,WVS,3,1999,homosexuales,78.3,1254
+TUR,Eastern Europe & Central Asia,WVS,7,2018,homosexuales,78.5,2330
+KOR,East Asia,WVS,7,2018,homosexuales,79.6,1245
+GHA,Sub-Saharan Africa,WVS,6,2012,homosexuales,79.7,1552
+BGD,South Asia,WVS,7,2018,homosexuales,79.9,1162
+MAR,Middle East & North Africa,WVS,7,2021,homosexuales,79.9,1200
+BFA,Sub-Saharan Africa,WVS,5,2007,homosexuales,80.5,1534
+ALB,Eastern Europe & Central Asia,WVS,4,2002,homosexuales,82.6,1000
+ARM,Eastern Europe & Central Asia,WVS,7,2021,homosexuales,83.1,1207
+QAT,Middle East & North Africa,WVS,6,2010,homosexuales,83.4,1060
+EGY,Middle East & North Africa,WVS,7,2018,homosexuales,84.0,1200
+MDV,South Asia,WVS,7,2021,homosexuales,85.5,1039
+GEO,Eastern Europe & Central Asia,WVS,6,2014,homosexuales,86.6,1202
+RWA,Sub-Saharan Africa,WVS,6,2012,homosexuales,88.4,1527
+NGA,Sub-Saharan Africa,WVS,7,2018,homosexuales,89.0,1237
+ZWE,Sub-Saharan Africa,WVS,7,2020,homosexuales,90.1,1202
+MMR,Southeast Asia,WVS,7,2020,homosexuales,91.3,1200
+IRN,Middle East & North Africa,WVS,5,2007,homosexuales,92.4,2665
+JOR,Middle East & North Africa,WVS,7,2018,homosexuales,93.8,1203
+AZE,Eastern Europe & Central Asia,WVS,6,2011,homosexuales,94.4,1002
+ZAF,Sub-Saharan Africa,WVS,5,2006,indios,13.5,2906
+TZA,Sub-Saharan Africa,WVS,4,2001,inestables,5.1,1171
+CHE,Western Europe,WVS,3,1996,inestables,17.2,1212
+COL,Latin America,WVS,3,1997,inestables,17.3,2996
+BRA,Latin America,WVS,3,1997,inestables,17.7,1143
+ARG,Latin America,WVS,4,1999,inestables,22.3,1280
+CZE,Eastern Europe & Central Asia,WVS,3,1998,inestables,22.5,1147
+GTM,Latin America,WVS,5,2004,inestables,22.9,1000
+DEU,Western Europe,WVS,3,1997,inestables,24.2,2026
+SWE,Western Europe,WVS,3,1996,inestables,24.5,1009
+CHL,Latin America,WVS,4,2000,inestables,25.1,1200
+PHL,Southeast Asia,WVS,4,2001,inestables,25.5,1200
+SVK,Eastern Europe & Central Asia,WVS,3,1998,inestables,26.9,1095
+BGD,South Asia,WVS,4,2002,inestables,28.1,1500
+ESP,Western Europe,WVS,4,2000,inestables,29.9,1209
+FIN,Western Europe,WVS,3,1996,inestables,32.5,987
+CAN,"North America, Australia & New Zealand",WVS,4,2000,inestables,32.9,1931
+URY,Latin America,WVS,3,1996,inestables,33.0,1000
+MEX,Latin America,WVS,4,2000,inestables,33.5,1535
+PRI,Caribbean,WVS,4,2001,inestables,33.5,720
+NOR,Western Europe,WVS,3,1996,inestables,36.9,1127
+HRV,Eastern Europe & Central Asia,WVS,3,1996,inestables,37.3,1196
+PER,Latin America,WVS,4,2001,inestables,38.2,1501
+VNM,Southeast Asia,WVS,4,2001,inestables,38.4,1000
+IND,South Asia,WVS,4,2001,inestables,38.7,2002
+ZAF,Sub-Saharan Africa,WVS,4,2001,inestables,38.8,3000
+AUS,"North America, Australia & New Zealand",WVS,3,1995,inestables,39.0,2048
+PAK,South Asia,WVS,4,2001,inestables,39.6,2000
+BGR,Eastern Europe & Central Asia,WVS,3,1997,inestables,41.2,1072
+ZWE,Sub-Saharan Africa,WVS,4,2001,inestables,42.3,1002
+ROU,Eastern Europe & Central Asia,WVS,3,1998,inestables,43.3,1239
+DZA,Middle East & North Africa,WVS,4,2002,inestables,44.3,1282
+VEN,Latin America,WVS,4,2000,inestables,46.0,1200
+UGA,Sub-Saharan Africa,WVS,4,2001,inestables,46.0,1002
+MKD,Eastern Europe & Central Asia,WVS,4,2001,inestables,47.4,1055
+SVN,Eastern Europe & Central Asia,WVS,3,1995,inestables,49.4,1007
+IDN,Southeast Asia,WVS,4,2001,inestables,49.4,1000
+KGZ,Eastern Europe & Central Asia,WVS,4,2003,inestables,50.0,1043
+NZL,"North America, Australia & New Zealand",WVS,5,2004,inestables,51.0,954
+USA,"North America, Australia & New Zealand",WVS,4,1999,inestables,51.5,1200
+DOM,Latin America,WVS,3,1996,inestables,52.3,417
+NGA,Sub-Saharan Africa,WVS,4,2000,inestables,52.4,2022
+BLR,Eastern Europe & Central Asia,WVS,3,1996,inestables,53.2,2092
+GEO,Eastern Europe & Central Asia,WVS,3,1996,inestables,54.6,2008
+POL,Eastern Europe & Central Asia,WVS,3,1997,inestables,55.4,1153
+HUN,Eastern Europe & Central Asia,WVS,3,1998,inestables,55.4,650
+RUS,Eastern Europe & Central Asia,WVS,3,1995,inestables,55.7,2040
+LTU,Eastern Europe & Central Asia,WVS,3,1997,inestables,57.2,1009
+SRB,Eastern Europe & Central Asia,WVS,4,2001,inestables,57.2,1200
+SGP,Southeast Asia,WVS,4,2002,inestables,57.7,1512
+BIH,Eastern Europe & Central Asia,WVS,4,2001,inestables,58.0,1200
+UKR,Eastern Europe & Central Asia,WVS,3,1996,inestables,58.9,2811
+EST,Eastern Europe & Central Asia,WVS,3,1996,inestables,59.1,1021
+ALB,Eastern Europe & Central Asia,WVS,4,2002,inestables,60.5,1000
+JPN,East Asia,WVS,2,1990,inestables,61.8,1011
+LVA,Eastern Europe & Central Asia,WVS,3,1996,inestables,62.3,1200
+SAU,Middle East & North Africa,WVS,4,2003,inestables,62.7,1502
+CHN,East Asia,WVS,4,2001,inestables,63.9,1000
+JOR,Middle East & North Africa,WVS,4,2001,inestables,65.7,1223
+MDA,Eastern Europe & Central Asia,WVS,4,2002,inestables,68.4,1008
+MAR,Middle East & North Africa,WVS,4,2001,inestables,71.5,1251
+EGY,Middle East & North Africa,WVS,4,2001,inestables,72.1,3000
+TWN,East Asia,WVS,3,1998,inestables,72.8,780
+AZE,Eastern Europe & Central Asia,WVS,3,1997,inestables,75.0,2002
+ARM,Eastern Europe & Central Asia,WVS,3,1997,inestables,75.2,2000
+TUR,Eastern Europe & Central Asia,WVS,4,2001,inestables,75.2,3401
+MNE,Eastern Europe & Central Asia,WVS,4,2001,inestables,77.2,1060
+HKG,East Asia,WVS,5,2005,inestables,80.8,1252
+SLV,Latin America,WVS,3,1999,inestables,81.5,1254
+KOR,East Asia,WVS,4,2001,inestables,88.6,1200
+IRN,Middle East & North Africa,WVS,4,2000,inestables,98.5,2532
+HTI,Latin America,WVS,6,2016,inmigrantes,1.5,1988
+BRA,Latin America,WVS,7,2018,inmigrantes,2.6,1762
+AND,Western Europe,WVS,7,2018,inmigrantes,2.7,1004
+URY,Latin America,WVS,7,2022,inmigrantes,3.3,1000
+SWE,Western Europe,WVS,6,2011,inmigrantes,3.5,1206
+DEU,Western Europe,WVS,7,2018,inmigrantes,3.9,1523
+ARG,Latin America,WVS,7,2017,inmigrantes,4.1,1003
+NZL,"North America, Australia & New Zealand",WVS,7,2020,inmigrantes,4.7,1057
+GBR,Western Europe,WVS,7,2022,inmigrantes,4.7,2586
+ZWE,Sub-Saharan Africa,WVS,7,2020,inmigrantes,5.0,1202
+NOR,Western Europe,WVS,5,2007,inmigrantes,5.4,1025
+RWA,Sub-Saharan Africa,WVS,6,2012,inmigrantes,5.4,1527
+HRV,Eastern Europe & Central Asia,WVS,3,1996,inmigrantes,6.8,1196
+TTO,Caribbean,WVS,6,2010,inmigrantes,6.8,999
+CHE,Western Europe,WVS,5,2007,inmigrantes,6.9,1241
+KEN,Sub-Saharan Africa,WVS,7,2021,inmigrantes,7.0,1231
+POL,Eastern Europe & Central Asia,WVS,6,2012,inmigrantes,7.2,966
+ESP,Western Europe,WVS,6,2011,inmigrantes,7.5,1189
+USA,"North America, Australia & New Zealand",WVS,7,2017,inmigrantes,8.5,2435
+CAN,"North America, Australia & New Zealand",WVS,7,2020,inmigrantes,8.8,4018
+AUS,"North America, Australia & New Zealand",WVS,7,2018,inmigrantes,8.9,1813
+HKG,East Asia,WVS,7,2018,inmigrantes,9.0,2075
+UZB,Eastern Europe & Central Asia,WVS,7,2022,inmigrantes,9.2,1250
+PRI,Caribbean,WVS,7,2018,inmigrantes,9.4,1127
+NIR,Western Europe,WVS,7,2022,inmigrantes,9.5,446
+BOL,Latin America,WVS,7,2017,inmigrantes,10.2,1800
+VEN,Latin America,WVS,7,2021,inmigrantes,10.3,1190
+ECU,Latin America,WVS,7,2018,inmigrantes,10.4,1200
+SGP,Southeast Asia,WVS,7,2020,inmigrantes,11.3,2012
+BFA,Sub-Saharan Africa,WVS,5,2007,inmigrantes,11.5,1534
+UGA,Sub-Saharan Africa,WVS,4,2001,inmigrantes,13.0,1002
+CHL,Latin America,WVS,7,2018,inmigrantes,13.2,1000
+NGA,Sub-Saharan Africa,WVS,7,2018,inmigrantes,13.4,1237
+SVN,Eastern Europe & Central Asia,WVS,6,2011,inmigrantes,13.6,1069
+MEX,Latin America,WVS,7,2018,inmigrantes,13.6,1736
+ITA,Western Europe,WVS,5,2005,inmigrantes,13.9,1012
+COL,Latin America,WVS,7,2018,inmigrantes,14.1,1520
+FIN,Western Europe,WVS,5,2005,inmigrantes,15.9,1014
+ETH,Sub-Saharan Africa,WVS,7,2020,inmigrantes,16.2,1220
+ALB,Eastern Europe & Central Asia,WVS,4,2002,inmigrantes,16.5,1000
+IDN,Southeast Asia,WVS,7,2018,inmigrantes,16.6,3200
+ARM,Eastern Europe & Central Asia,WVS,7,2021,inmigrantes,16.6,1207
+PHL,Southeast Asia,WVS,7,2019,inmigrantes,16.7,1200
+DOM,Latin America,WVS,3,1996,inmigrantes,17.5,417
+TZA,Sub-Saharan Africa,WVS,4,2001,inmigrantes,17.5,1171
+BGR,Eastern Europe & Central Asia,WVS,5,2006,inmigrantes,17.6,1001
+LVA,Eastern Europe & Central Asia,WVS,3,1996,inmigrantes,18.2,1200
+PER,Latin America,WVS,7,2018,inmigrantes,18.3,1386
+MKD,Eastern Europe & Central Asia,WVS,4,2001,inmigrantes,18.6,1055
+MDA,Eastern Europe & Central Asia,WVS,5,2006,inmigrantes,18.8,1046
+TJK,Eastern Europe & Central Asia,WVS,7,2020,inmigrantes,19.8,1200
+EGY,Middle East & North Africa,WVS,7,2018,inmigrantes,20.0,1200
+MNE,Eastern Europe & Central Asia,WVS,4,2001,inmigrantes,20.1,1060
+GHA,Sub-Saharan Africa,WVS,6,2012,inmigrantes,20.2,1552
+NIC,Latin America,WVS,7,2020,inmigrantes,20.5,1200
+CYP,Western Europe,WVS,7,2019,inmigrantes,20.6,971
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,inmigrantes,20.9,1200
+NLD,Western Europe,WVS,7,2022,inmigrantes,20.9,2057
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,inmigrantes,21.4,1276
+TWN,East Asia,WVS,7,2019,inmigrantes,21.7,1223
+KOR,East Asia,WVS,7,2018,inmigrantes,22.0,1245
+ROU,Eastern Europe & Central Asia,WVS,7,2018,inmigrantes,23.1,1226
+MAR,Middle East & North Africa,WVS,7,2021,inmigrantes,23.2,1200
+LBY,Middle East & North Africa,WVS,7,2022,inmigrantes,23.2,1196
+MDV,South Asia,WVS,7,2021,inmigrantes,23.6,1036
+HUN,Eastern Europe & Central Asia,WVS,5,2009,inmigrantes,23.8,1005
+YEM,Middle East & North Africa,WVS,6,2014,inmigrantes,24.2,1000
+MLI,Sub-Saharan Africa,WVS,5,2007,inmigrantes,24.5,1534
+BIH,Eastern Europe & Central Asia,WVS,4,2001,inmigrantes,24.8,1200
+TUN,Middle East & North Africa,WVS,7,2019,inmigrantes,25.0,1152
+GRC,Western Europe,WVS,7,2017,inmigrantes,25.8,1196
+CHN,East Asia,WVS,7,2018,inmigrantes,26.2,2970
+ZMB,Sub-Saharan Africa,WVS,5,2007,inmigrantes,27.5,1500
+JOR,Middle East & North Africa,WVS,7,2018,inmigrantes,27.6,1203
+DZA,Middle East & North Africa,WVS,6,2014,inmigrantes,28.0,1200
+SVK,Eastern Europe & Central Asia,WVS,7,2022,inmigrantes,28.8,1173
+LTU,Eastern Europe & Central Asia,WVS,3,1997,inmigrantes,29.3,1009
+MNG,East Asia,WVS,7,2020,inmigrantes,29.3,1638
+GTM,Latin America,WVS,7,2020,inmigrantes,29.5,1229
+UKR,Eastern Europe & Central Asia,WVS,7,2020,inmigrantes,29.8,1174
+JPN,East Asia,WVS,7,2019,inmigrantes,30.1,1311
+PAK,South Asia,WVS,7,2018,inmigrantes,30.2,1995
+RUS,Eastern Europe & Central Asia,WVS,7,2017,inmigrantes,32.3,1810
+GEO,Eastern Europe & Central Asia,WVS,6,2014,inmigrantes,32.8,1202
+SAU,Middle East & North Africa,WVS,4,2003,inmigrantes,33.1,1502
+BLR,Eastern Europe & Central Asia,WVS,6,2011,inmigrantes,33.4,1535
+CZE,Eastern Europe & Central Asia,WVS,7,2022,inmigrantes,34.0,1163
+FRA,Western Europe,WVS,5,2006,inmigrantes,36.5,1001
+KWT,Middle East & North Africa,WVS,6,2014,inmigrantes,37.2,1303
+EST,Eastern Europe & Central Asia,WVS,6,2011,inmigrantes,37.5,1533
+IRQ,Middle East & North Africa,WVS,7,2018,inmigrantes,38.5,1200
+THA,Southeast Asia,WVS,7,2018,inmigrantes,38.9,1500
+PSE,Middle East & North Africa,WVS,6,2013,inmigrantes,39.9,1000
+LBN,Middle East & North Africa,WVS,7,2018,inmigrantes,40.2,1200
+AZE,Eastern Europe & Central Asia,WVS,6,2011,inmigrantes,40.6,1002
+BGD,South Asia,WVS,7,2018,inmigrantes,40.8,1163
+ZAF,Sub-Saharan Africa,WVS,6,2013,inmigrantes,40.9,3531
+IRN,Middle East & North Africa,WVS,7,2020,inmigrantes,41.8,1499
+QAT,Middle East & North Africa,WVS,6,2010,inmigrantes,46.0,1060
+MAC,East Asia,WVS,7,2019,inmigrantes,46.1,987
+IND,South Asia,WVS,7,2023,inmigrantes,47.5,1577
+TUR,Eastern Europe & Central Asia,WVS,7,2018,inmigrantes,49.4,2350
+MYS,Southeast Asia,WVS,7,2018,inmigrantes,50.6,1313
+VNM,Southeast Asia,WVS,7,2020,inmigrantes,52.8,1200
+SRB,Eastern Europe & Central Asia,WVS,7,2017,inmigrantes,54.3,1041
+MMR,Southeast Asia,WVS,7,2020,inmigrantes,72.8,1200
+IRQ,Middle East & North Africa,WVS,5,2006,iranies,61.2,2559
+IRQ,Middle East & North Africa,WVS,5,2006,jordanos,60.5,2522
+CAN,"North America, Australia & New Zealand",WVS,4,2000,judios,3.8,1931
+URY,Latin America,WVS,5,2006,judios,5.2,1000
+ARG,Latin America,WVS,4,1999,judios,6.4,1280
+BLR,Eastern Europe & Central Asia,WVS,3,1996,judios,6.9,2092
+CHL,Latin America,WVS,4,2000,judios,8.8,1200
+USA,"North America, Australia & New Zealand",WVS,4,1999,judios,9.1,1200
+RUS,Eastern Europe & Central Asia,WVS,3,1995,judios,9.6,2040
+ALB,Eastern Europe & Central Asia,WVS,4,2002,judios,17.0,1000
+CZE,Eastern Europe & Central Asia,WVS,2,1991,judios,17.5,924
+ZWE,Sub-Saharan Africa,WVS,4,2001,judios,19.3,1002
+MKD,Eastern Europe & Central Asia,WVS,4,2001,judios,20.0,1055
+BGD,South Asia,WVS,4,2002,judios,20.4,1500
+KGZ,Eastern Europe & Central Asia,WVS,4,2003,judios,20.4,1043
+UGA,Sub-Saharan Africa,WVS,4,2001,judios,22.2,1002
+ZAF,Sub-Saharan Africa,WVS,4,2001,judios,24.4,3000
+MDA,Eastern Europe & Central Asia,WVS,4,2002,judios,25.0,1008
+VEN,Latin America,WVS,3,1996,judios,26.0,1200
+BIH,Eastern Europe & Central Asia,WVS,4,2001,judios,28.0,1200
+JPN,East Asia,WVS,2,1990,judios,28.1,1011
+MEX,Latin America,WVS,3,1996,judios,30.9,1510
+SVK,Eastern Europe & Central Asia,WVS,2,1990,judios,33.7,466
+ESP,Western Europe,WVS,4,2000,judios,34.2,1209
+NGA,Sub-Saharan Africa,WVS,2,1990,judios,35.3,1001
+KOR,East Asia,WVS,4,2001,judios,40.9,1200
+IND,South Asia,WVS,2,1990,judios,52.5,2500
+EGY,Middle East & North Africa,WVS,4,2001,judios,62.0,3000
+IRN,Middle East & North Africa,WVS,5,2007,judios,74.7,2657
+IRQ,Middle East & North Africa,WVS,5,2006,judios,95.7,2599
+IRQ,Middle East & North Africa,WVS,5,2006,kurdos,14.9,2649
+ARM,Eastern Europe & Central Asia,WVS,3,1997,kurdos,42.2,2000
+IRQ,Middle East & North Africa,WVS,5,2006,kuwaities,58.5,2536
+AND,Western Europe,WVS,5,2005,minorias_militantes,0.4,1003
+GEO,Eastern Europe & Central Asia,WVS,5,2009,minorias_militantes,1.5,1365
+TTO,Caribbean,WVS,5,2006,minorias_militantes,2.3,1002
+CHN,East Asia,WVS,5,2007,minorias_militantes,2.4,1950
+USA,"North America, Australia & New Zealand",WVS,5,2006,minorias_militantes,14.3,1240
+NOR,Western Europe,WVS,5,2007,minorias_militantes,14.4,1019
+MEX,Latin America,WVS,5,2005,minorias_militantes,17.1,1560
+CHE,Western Europe,WVS,5,2007,minorias_militantes,20.9,1185
+CYP,Western Europe,WVS,5,2006,minorias_militantes,31.1,1033
+JOR,Middle East & North Africa,WVS,5,2007,minorias_militantes,33.6,1200
+MAR,Middle East & North Africa,WVS,5,2007,minorias_militantes,34.6,269
+IDN,Southeast Asia,WVS,5,2006,minorias_militantes,38.8,1627
+IND,South Asia,WVS,5,2006,minorias_militantes,39.6,1970
+VNM,Southeast Asia,WVS,5,2006,minorias_militantes,40.3,1495
+MDA,Eastern Europe & Central Asia,WVS,5,2006,minorias_militantes,59.0,1045
+BRA,Latin America,WVS,2,1991,musulmanes,0.0,1782
+GTM,Latin America,WVS,5,2004,musulmanes,5.7,1000
+ARG,Latin America,WVS,4,1999,musulmanes,6.2,1280
+CHL,Latin America,WVS,4,2000,musulmanes,7.4,1200
+SWE,Western Europe,WVS,5,2006,musulmanes,8.1,1003
+USA,"North America, Australia & New Zealand",WVS,4,1999,musulmanes,10.7,1200
+CAN,"North America, Australia & New Zealand",WVS,5,2006,musulmanes,11.4,2106
+CHN,East Asia,WVS,2,1990,musulmanes,12.1,1000
+TZA,Sub-Saharan Africa,WVS,4,2001,musulmanes,12.6,1171
+BIH,Eastern Europe & Central Asia,WVS,4,2001,musulmanes,12.8,1200
+PER,Latin America,WVS,4,2001,musulmanes,13.5,1501
+SRB,Eastern Europe & Central Asia,WVS,4,2001,musulmanes,13.6,1200
+UGA,Sub-Saharan Africa,WVS,4,2001,musulmanes,14.2,1002
+KGZ,Eastern Europe & Central Asia,WVS,4,2003,musulmanes,14.6,1043
+ESP,Western Europe,WVS,4,2000,musulmanes,15.4,1209
+RUS,Eastern Europe & Central Asia,WVS,2,1990,musulmanes,15.5,1961
+NGA,Sub-Saharan Africa,WVS,3,1995,musulmanes,16.8,1996
+MEX,Latin America,WVS,4,2000,musulmanes,17.0,1535
+ZWE,Sub-Saharan Africa,WVS,4,2001,musulmanes,17.7,1002
+CHE,Western Europe,WVS,3,1996,musulmanes,18.5,1212
+NOR,Western Europe,WVS,3,1996,musulmanes,19.3,1127
+BGR,Eastern Europe & Central Asia,WVS,5,2006,musulmanes,19.9,1001
+MNE,Eastern Europe & Central Asia,WVS,4,2001,musulmanes,20.2,1060
+ZAF,Sub-Saharan Africa,WVS,4,2001,musulmanes,23.9,3000
+BLR,Eastern Europe & Central Asia,WVS,2,1990,musulmanes,24.0,1015
+DEU,Western Europe,WVS,5,2006,musulmanes,24.8,2064
+MKD,Eastern Europe & Central Asia,WVS,4,2001,musulmanes,26.2,1055
+PHL,Southeast Asia,WVS,4,2001,musulmanes,26.4,1200
+VNM,Southeast Asia,WVS,4,2001,musulmanes,27.0,1000
+JPN,East Asia,WVS,2,1990,musulmanes,28.8,1011
+ALB,Eastern Europe & Central Asia,WVS,4,2002,musulmanes,30.4,1000
+IND,South Asia,WVS,3,1995,musulmanes,32.8,2040
+FIN,Western Europe,WVS,3,1996,musulmanes,39.6,987
+MDA,Eastern Europe & Central Asia,WVS,4,2002,musulmanes,44.4,1008
+CZE,Eastern Europe & Central Asia,WVS,2,1991,musulmanes,47.2,924
+SVK,Eastern Europe & Central Asia,WVS,2,1990,musulmanes,51.5,466
+TUR,Eastern Europe & Central Asia,WVS,2,1990,musulmanes,54.7,1030
+KOR,East Asia,WVS,4,2001,musulmanes,57.3,1200
+ZAF,Sub-Saharan Africa,WVS,5,2006,negros,0.9,2906
+BRA,Latin America,WVS,5,2006,negros,4.8,1485
+PRI,Caribbean,WVS,3,1995,norteamericanos,5.3,1164
+IRQ,Middle East & North Africa,WVS,4,2004,norteamericanos,84.1,2325
+URY,Latin America,WVS,7,2022,otra_raza,0.6,1000
+BRA,Latin America,WVS,7,2018,otra_raza,1.4,1762
+TTO,Caribbean,WVS,6,2010,otra_raza,1.5,999
+GBR,Western Europe,WVS,7,2022,otra_raza,1.5,2586
+SGP,Southeast Asia,WVS,7,2020,otra_raza,2.1,2012
+ARG,Latin America,WVS,7,2017,otra_raza,2.7,1003
+NZL,"North America, Australia & New Zealand",WVS,7,2020,otra_raza,2.7,1057
+NOR,Western Europe,WVS,5,2007,otra_raza,2.8,1025
+SWE,Western Europe,WVS,6,2011,otra_raza,2.8,1206
+DEU,Western Europe,WVS,7,2018,otra_raza,2.8,1523
+USA,"North America, Australia & New Zealand",WVS,7,2017,otra_raza,3.2,2435
+RWA,Sub-Saharan Africa,WVS,6,2012,otra_raza,3.5,1527
+NIR,Western Europe,WVS,7,2022,otra_raza,3.8,446
+AND,Western Europe,WVS,7,2018,otra_raza,3.9,1004
+AUS,"North America, Australia & New Zealand",WVS,7,2018,otra_raza,3.9,1813
+LVA,Eastern Europe & Central Asia,WVS,3,1996,otra_raza,4.5,1200
+CAN,"North America, Australia & New Zealand",WVS,7,2020,otra_raza,4.5,4018
+NLD,Western Europe,WVS,7,2022,otra_raza,4.7,2057
+ESP,Western Europe,WVS,6,2011,otra_raza,4.8,1189
+ZWE,Sub-Saharan Africa,WVS,7,2020,otra_raza,5.2,1202
+BOL,Latin America,WVS,7,2017,otra_raza,5.3,1800
+CHE,Western Europe,WVS,5,2007,otra_raza,5.4,1241
+POL,Eastern Europe & Central Asia,WVS,6,2012,otra_raza,5.5,966
+MYS,Southeast Asia,WVS,7,2018,otra_raza,5.5,1313
+ECU,Latin America,WVS,7,2018,otra_raza,6.0,1200
+HTI,Latin America,WVS,6,2016,otra_raza,6.3,1993
+CHL,Latin America,WVS,7,2018,otra_raza,6.9,1000
+PER,Latin America,WVS,7,2018,otra_raza,7.0,1384
+KEN,Sub-Saharan Africa,WVS,7,2021,otra_raza,7.0,1231
+TWN,East Asia,WVS,7,2019,otra_raza,7.6,1223
+VEN,Latin America,WVS,7,2021,otra_raza,7.9,1190
+HRV,Eastern Europe & Central Asia,WVS,3,1996,otra_raza,8.4,1196
+LBY,Middle East & North Africa,WVS,7,2022,otra_raza,8.4,1196
+QAT,Middle East & North Africa,WVS,6,2010,otra_raza,8.8,1060
+IDN,Southeast Asia,WVS,7,2018,otra_raza,9.1,3200
+PRI,Caribbean,WVS,7,2018,otra_raza,9.2,1127
+BFA,Sub-Saharan Africa,WVS,5,2007,otra_raza,10.0,1534
+COL,Latin America,WVS,7,2018,otra_raza,10.2,1520
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,otra_raza,10.3,1276
+SVN,Eastern Europe & Central Asia,WVS,6,2011,otra_raza,10.9,1069
+HKG,East Asia,WVS,7,2018,otra_raza,10.9,2075
+ITA,Western Europe,WVS,5,2005,otra_raza,11.1,1012
+FIN,Western Europe,WVS,5,2005,otra_raza,11.4,1014
+MEX,Latin America,WVS,7,2018,otra_raza,11.4,1737
+BIH,Eastern Europe & Central Asia,WVS,4,2001,otra_raza,13.2,1200
+MAR,Middle East & North Africa,WVS,7,2021,otra_raza,13.5,1200
+LTU,Eastern Europe & Central Asia,WVS,3,1997,otra_raza,14.0,1009
+UZB,Eastern Europe & Central Asia,WVS,7,2022,otra_raza,14.2,1250
+ROU,Eastern Europe & Central Asia,WVS,7,2018,otra_raza,14.4,1226
+JPN,East Asia,WVS,7,2019,otra_raza,14.7,1316
+KOR,East Asia,WVS,7,2018,otra_raza,15.2,1245
+CYP,Western Europe,WVS,7,2019,otra_raza,15.6,976
+HUN,Eastern Europe & Central Asia,WVS,5,2009,otra_raza,15.7,1003
+RUS,Eastern Europe & Central Asia,WVS,7,2017,otra_raza,15.7,1810
+NGA,Sub-Saharan Africa,WVS,7,2018,otra_raza,15.8,1237
+EGY,Middle East & North Africa,WVS,7,2018,otra_raza,16.5,1200
+ETH,Sub-Saharan Africa,WVS,7,2020,otra_raza,16.6,1220
+TZA,Sub-Saharan Africa,WVS,4,2001,otra_raza,16.7,1171
+UGA,Sub-Saharan Africa,WVS,4,2001,otra_raza,18.2,1002
+CHN,East Asia,WVS,7,2018,otra_raza,18.4,2970
+DOM,Latin America,WVS,3,1996,otra_raza,18.5,417
+MKD,Eastern Europe & Central Asia,WVS,4,2001,otra_raza,19.0,1055
+MNE,Eastern Europe & Central Asia,WVS,4,2001,otra_raza,19.1,1060
+ZAF,Sub-Saharan Africa,WVS,6,2013,otra_raza,19.2,3531
+DZA,Middle East & North Africa,WVS,6,2014,otra_raza,19.8,1200
+NIC,Latin America,WVS,7,2020,otra_raza,19.8,1200
+GHA,Sub-Saharan Africa,WVS,6,2012,otra_raza,19.9,1552
+BGR,Eastern Europe & Central Asia,WVS,5,2006,otra_raza,20.1,1001
+PHL,Southeast Asia,WVS,7,2019,otra_raza,20.5,1199
+MNG,East Asia,WVS,7,2020,otra_raza,20.6,1638
+CZE,Eastern Europe & Central Asia,WVS,7,2022,otra_raza,20.7,1163
+TUN,Middle East & North Africa,WVS,7,2019,otra_raza,21.9,1137
+MLI,Sub-Saharan Africa,WVS,5,2007,otra_raza,22.0,1534
+FRA,Western Europe,WVS,5,2006,otra_raza,22.6,1001
+SVK,Eastern Europe & Central Asia,WVS,7,2022,otra_raza,22.7,1173
+BLR,Eastern Europe & Central Asia,WVS,6,2011,otra_raza,23.1,1535
+MDA,Eastern Europe & Central Asia,WVS,5,2006,otra_raza,23.7,1046
+TJK,Eastern Europe & Central Asia,WVS,7,2020,otra_raza,24.2,1200
+GRC,Western Europe,WVS,7,2017,otra_raza,24.4,1196
+JOR,Middle East & North Africa,WVS,7,2018,otra_raza,24.4,1203
+PAK,South Asia,WVS,7,2018,otra_raza,25.3,1995
+EST,Eastern Europe & Central Asia,WVS,6,2011,otra_raza,25.4,1533
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,otra_raza,25.7,1200
+MDV,South Asia,WVS,7,2021,otra_raza,26.0,1039
+IND,South Asia,WVS,7,2023,otra_raza,26.1,1653
+UKR,Eastern Europe & Central Asia,WVS,7,2020,otra_raza,26.6,1207
+IRN,Middle East & North Africa,WVS,7,2020,otra_raza,27.6,1499
+ARM,Eastern Europe & Central Asia,WVS,7,2021,otra_raza,27.9,1207
+KWT,Middle East & North Africa,WVS,6,2014,otra_raza,28.1,1303
+ZMB,Sub-Saharan Africa,WVS,5,2007,otra_raza,29.5,1500
+SRB,Eastern Europe & Central Asia,WVS,7,2017,otra_raza,29.6,1041
+GTM,Latin America,WVS,7,2020,otra_raza,30.2,1229
+ALB,Eastern Europe & Central Asia,WVS,4,2002,otra_raza,30.4,1000
+IRQ,Middle East & North Africa,WVS,7,2018,otra_raza,31.8,1200
+GEO,Eastern Europe & Central Asia,WVS,6,2014,otra_raza,32.1,1202
+THA,Southeast Asia,WVS,7,2018,otra_raza,32.1,1500
+BGD,South Asia,WVS,7,2018,otra_raza,32.3,1182
+YEM,Middle East & North Africa,WVS,6,2014,otra_raza,34.0,1000
+LBN,Middle East & North Africa,WVS,7,2018,otra_raza,35.9,1200
+SAU,Middle East & North Africa,WVS,4,2003,otra_raza,37.7,1502
+TUR,Eastern Europe & Central Asia,WVS,7,2018,otra_raza,41.9,2376
+PSE,Middle East & North Africa,WVS,6,2013,otra_raza,44.0,1000
+MAC,East Asia,WVS,7,2019,otra_raza,44.9,987
+AZE,Eastern Europe & Central Asia,WVS,6,2011,otra_raza,58.1,1002
+VNM,Southeast Asia,WVS,7,2020,otra_raza,62.4,1200
+MMR,Southeast Asia,WVS,7,2020,otra_raza,70.4,1200
+GBR,Western Europe,WVS,7,2022,otra_religion,1.3,2586
+NZL,"North America, Australia & New Zealand",WVS,7,2020,otra_religion,1.6,1057
+HTI,Latin America,WVS,6,2016,otra_religion,1.8,1992
+SGP,Southeast Asia,WVS,7,2020,otra_religion,2.0,2012
+ARG,Latin America,WVS,7,2017,otra_religion,2.2,1003
+BRA,Latin America,WVS,7,2018,otra_religion,2.5,1762
+NLD,Western Europe,WVS,7,2022,otra_religion,2.5,2057
+NOR,Western Europe,WVS,5,2007,otra_religion,2.6,1025
+URY,Latin America,WVS,7,2022,otra_religion,2.7,1000
+USA,"North America, Australia & New Zealand",WVS,7,2017,otra_religion,2.8,2435
+DEU,Western Europe,WVS,7,2018,otra_religion,2.8,1523
+TTO,Caribbean,WVS,6,2010,otra_religion,2.9,999
+ESP,Western Europe,WVS,6,2011,otra_religion,3.1,1189
+NIR,Western Europe,WVS,7,2022,otra_religion,3.3,446
+AUS,"North America, Australia & New Zealand",WVS,7,2018,otra_religion,3.4,1813
+SWE,Western Europe,WVS,6,2011,otra_religion,3.7,1206
+KEN,Sub-Saharan Africa,WVS,7,2021,otra_religion,3.8,1231
+AND,Western Europe,WVS,7,2018,otra_religion,3.9,1004
+CHE,Western Europe,WVS,5,2007,otra_religion,4.4,1241
+POL,Eastern Europe & Central Asia,WVS,6,2012,otra_religion,4.6,966
+TWN,East Asia,WVS,7,2019,otra_religion,4.6,1223
+RWA,Sub-Saharan Africa,WVS,6,2012,otra_religion,4.8,1527
+ZWE,Sub-Saharan Africa,WVS,7,2020,otra_religion,5.4,1202
+HUN,Eastern Europe & Central Asia,WVS,5,2009,otra_religion,5.5,1000
+KOR,East Asia,WVS,7,2018,otra_religion,5.5,1245
+HKG,East Asia,WVS,7,2018,otra_religion,5.6,2075
+CHL,Latin America,WVS,7,2018,otra_religion,5.9,1000
+CAN,"North America, Australia & New Zealand",WVS,7,2020,otra_religion,5.9,4018
+ROU,Eastern Europe & Central Asia,WVS,7,2018,otra_religion,6.6,1226
+MYS,Southeast Asia,WVS,7,2018,otra_religion,6.8,1313
+PER,Latin America,WVS,7,2018,otra_religion,7.1,1387
+BOL,Latin America,WVS,7,2017,otra_religion,7.3,1800
+SVN,Eastern Europe & Central Asia,WVS,6,2011,otra_religion,8.5,1069
+VEN,Latin America,WVS,7,2021,otra_religion,9.3,1190
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,otra_religion,9.6,1276
+FIN,Western Europe,WVS,5,2005,otra_religion,9.7,1014
+CZE,Eastern Europe & Central Asia,WVS,7,2022,otra_religion,9.8,1163
+ITA,Western Europe,WVS,5,2005,otra_religion,10.0,1012
+SLV,Latin America,WVS,3,1999,otra_religion,10.8,1254
+PRI,Caribbean,WVS,7,2018,otra_religion,11.1,1127
+RUS,Eastern Europe & Central Asia,WVS,7,2017,otra_religion,11.3,1810
+ETH,Sub-Saharan Africa,WVS,7,2020,otra_religion,11.4,1220
+SVK,Eastern Europe & Central Asia,WVS,7,2022,otra_religion,11.4,1173
+QAT,Middle East & North Africa,WVS,6,2010,otra_religion,11.6,1060
+BFA,Sub-Saharan Africa,WVS,5,2007,otra_religion,12.0,1534
+PHL,Southeast Asia,WVS,7,2019,otra_religion,12.6,1200
+COL,Latin America,WVS,7,2018,otra_religion,13.1,1520
+EGY,Middle East & North Africa,WVS,7,2018,otra_religion,13.4,1200
+NGA,Sub-Saharan Africa,WVS,7,2018,otra_religion,13.4,1237
+MEX,Latin America,WVS,7,2018,otra_religion,14.0,1737
+ECU,Latin America,WVS,7,2018,otra_religion,14.2,1200
+HRV,Eastern Europe & Central Asia,WVS,3,1996,otra_religion,14.3,1196
+BGR,Eastern Europe & Central Asia,WVS,5,2006,otra_religion,15.0,1001
+ZAF,Sub-Saharan Africa,WVS,6,2013,otra_religion,16.0,3531
+IDN,Southeast Asia,WVS,7,2018,otra_religion,16.1,3200
+CYP,Western Europe,WVS,7,2019,otra_religion,16.1,976
+BLR,Eastern Europe & Central Asia,WVS,6,2011,otra_religion,18.0,1535
+JPN,East Asia,WVS,7,2019,otra_religion,19.3,1311
+LBY,Middle East & North Africa,WVS,7,2022,otra_religion,20.0,1196
+EST,Eastern Europe & Central Asia,WVS,6,2011,otra_religion,20.7,1533
+GRC,Western Europe,WVS,7,2017,otra_religion,21.6,1196
+NIC,Latin America,WVS,7,2020,otra_religion,21.6,1200
+GHA,Sub-Saharan Africa,WVS,6,2012,otra_religion,22.5,1552
+JOR,Middle East & North Africa,WVS,7,2018,otra_religion,23.6,1203
+MAR,Middle East & North Africa,WVS,7,2021,otra_religion,23.7,1200
+MLI,Sub-Saharan Africa,WVS,5,2007,otra_religion,24.1,1534
+UKR,Eastern Europe & Central Asia,WVS,7,2020,otra_religion,24.7,1174
+LVA,Eastern Europe & Central Asia,WVS,3,1996,otra_religion,24.8,1200
+ALB,Eastern Europe & Central Asia,WVS,3,1998,otra_religion,25.0,999
+THA,Southeast Asia,WVS,7,2018,otra_religion,25.1,1500
+SRB,Eastern Europe & Central Asia,WVS,7,2017,otra_religion,25.2,1041
+MDA,Eastern Europe & Central Asia,WVS,5,2006,otra_religion,25.4,1046
+MNG,East Asia,WVS,7,2020,otra_religion,25.4,1638
+FRA,Western Europe,WVS,5,2006,otra_religion,25.6,1001
+ZMB,Sub-Saharan Africa,WVS,5,2007,otra_religion,26.1,1500
+TJK,Eastern Europe & Central Asia,WVS,7,2020,otra_religion,26.4,1200
+BIH,Eastern Europe & Central Asia,WVS,3,1998,otra_religion,27.6,1200
+IND,South Asia,WVS,7,2023,otra_religion,28.3,1650
+LBN,Middle East & North Africa,WVS,7,2018,otra_religion,31.2,1200
+CHN,East Asia,WVS,7,2018,otra_religion,31.3,2970
+PAK,South Asia,WVS,7,2018,otra_religion,31.9,1995
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,otra_religion,32.4,1200
+GTM,Latin America,WVS,7,2020,otra_religion,32.7,1229
+IRN,Middle East & North Africa,WVS,7,2020,otra_religion,33.8,1499
+TUN,Middle East & North Africa,WVS,7,2019,otra_religion,34.1,1151
+BGD,South Asia,WVS,7,2018,otra_religion,34.2,1184
+AZE,Eastern Europe & Central Asia,WVS,6,2011,otra_religion,34.8,1002
+IRQ,Middle East & North Africa,WVS,7,2018,otra_religion,34.8,1200
+ARM,Eastern Europe & Central Asia,WVS,7,2021,otra_religion,36.0,1207
+GEO,Eastern Europe & Central Asia,WVS,6,2014,otra_religion,36.4,1202
+SAU,Middle East & North Africa,WVS,4,2003,otra_religion,40.4,1502
+TUR,Eastern Europe & Central Asia,WVS,7,2018,otra_religion,42.4,2363
+DZA,Middle East & North Africa,WVS,6,2014,otra_religion,42.7,1200
+MAC,East Asia,WVS,7,2019,otra_religion,44.7,985
+VNM,Southeast Asia,WVS,7,2020,otra_religion,50.0,1200
+PSE,Middle East & North Africa,WVS,6,2013,otra_religion,50.3,1000
+MDV,South Asia,WVS,7,2021,otra_religion,51.2,1038
+YEM,Middle East & North Africa,WVS,6,2014,otra_religion,53.3,1000
+UZB,Eastern Europe & Central Asia,WVS,7,2022,otra_religion,70.4,1250
+MMR,Southeast Asia,WVS,7,2020,otra_religion,71.2,1200
+HTI,Latin America,WVS,6,2016,otro_idioma,1.5,1988
+AND,Western Europe,WVS,7,2018,otro_idioma,1.8,1004
+NOR,Western Europe,WVS,5,2007,otro_idioma,1.9,1019
+SGP,Southeast Asia,WVS,7,2020,otro_idioma,2.0,2012
+KEN,Sub-Saharan Africa,WVS,7,2021,otro_idioma,2.7,1231
+ESP,Western Europe,WVS,6,2011,otro_idioma,3.1,1189
+SWE,Western Europe,WVS,6,2011,otro_idioma,3.2,1206
+POL,Eastern Europe & Central Asia,WVS,6,2012,otro_idioma,3.2,966
+GBR,Western Europe,WVS,7,2022,otro_idioma,3.5,2586
+ARG,Latin America,WVS,7,2017,otro_idioma,4.0,1003
+CHE,Western Europe,WVS,5,2007,otro_idioma,4.1,1198
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,otro_idioma,4.1,1276
+MYS,Southeast Asia,WVS,7,2018,otro_idioma,4.1,1313
+URY,Latin America,WVS,7,2022,otro_idioma,4.2,1000
+NZL,"North America, Australia & New Zealand",WVS,7,2020,otro_idioma,4.4,1057
+DEU,Western Europe,WVS,7,2018,otro_idioma,4.9,1523
+SVN,Eastern Europe & Central Asia,WVS,6,2011,otro_idioma,5.0,1069
+PER,Latin America,WVS,7,2018,otro_idioma,5.3,1390
+CHL,Latin America,WVS,7,2018,otro_idioma,5.7,1000
+ZWE,Sub-Saharan Africa,WVS,7,2020,otro_idioma,5.7,1202
+ROU,Eastern Europe & Central Asia,WVS,7,2018,otro_idioma,6.0,1226
+BRA,Latin America,WVS,7,2018,otro_idioma,6.5,1762
+TTO,Caribbean,WVS,6,2010,otro_idioma,6.7,999
+BOL,Latin America,WVS,7,2017,otro_idioma,6.8,1800
+UZB,Eastern Europe & Central Asia,WVS,7,2022,otro_idioma,6.9,1248
+ITA,Western Europe,WVS,5,2005,otro_idioma,7.0,929
+TWN,East Asia,WVS,7,2019,otro_idioma,7.0,1223
+ETH,Sub-Saharan Africa,WVS,7,2020,otro_idioma,7.1,1228
+HKG,East Asia,WVS,7,2018,otro_idioma,7.3,2075
+RWA,Sub-Saharan Africa,WVS,6,2012,otro_idioma,7.7,1527
+CAN,"North America, Australia & New Zealand",WVS,7,2020,otro_idioma,7.8,4018
+NIR,Western Europe,WVS,7,2022,otro_idioma,8.3,446
+JPN,East Asia,WVS,7,2019,otro_idioma,8.5,1325
+FIN,Western Europe,WVS,5,2005,otro_idioma,8.7,1008
+LBY,Middle East & North Africa,WVS,7,2022,otro_idioma,8.7,1196
+COL,Latin America,WVS,7,2018,otro_idioma,9.0,1520
+USA,"North America, Australia & New Zealand",WVS,7,2017,otro_idioma,9.3,2435
+CYP,Western Europe,WVS,7,2019,otro_idioma,9.4,981
+HUN,Eastern Europe & Central Asia,WVS,5,2009,otro_idioma,9.5,1007
+NGA,Sub-Saharan Africa,WVS,7,2018,otro_idioma,9.6,1237
+QAT,Middle East & North Africa,WVS,6,2010,otro_idioma,9.8,1060
+AUS,"North America, Australia & New Zealand",WVS,7,2018,otro_idioma,10.1,1813
+SVK,Eastern Europe & Central Asia,WVS,7,2022,otro_idioma,10.1,1173
+BFA,Sub-Saharan Africa,WVS,5,2007,otro_idioma,10.2,1534
+IDN,Southeast Asia,WVS,7,2018,otro_idioma,10.4,3200
+NLD,Western Europe,WVS,7,2022,otro_idioma,10.8,2057
+CZE,Eastern Europe & Central Asia,WVS,7,2022,otro_idioma,11.9,1163
+PRI,Caribbean,WVS,7,2018,otro_idioma,12.2,1127
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,otro_idioma,12.2,1200
+TJK,Eastern Europe & Central Asia,WVS,7,2020,otro_idioma,12.2,1200
+VEN,Latin America,WVS,7,2021,otro_idioma,12.3,1190
+BGR,Eastern Europe & Central Asia,WVS,5,2006,otro_idioma,12.5,1001
+MEX,Latin America,WVS,7,2018,otro_idioma,12.5,1738
+RUS,Eastern Europe & Central Asia,WVS,7,2017,otro_idioma,12.6,1810
+KOR,East Asia,WVS,7,2018,otro_idioma,12.9,1245
+GRC,Western Europe,WVS,7,2017,otro_idioma,13.5,1196
+ECU,Latin America,WVS,7,2018,otro_idioma,14.2,1200
+ARM,Eastern Europe & Central Asia,WVS,7,2021,otro_idioma,14.9,1207
+ZAF,Sub-Saharan Africa,WVS,6,2013,otro_idioma,15.1,3531
+SRB,Eastern Europe & Central Asia,WVS,7,2017,otro_idioma,15.6,1041
+MNG,East Asia,WVS,7,2020,otro_idioma,15.6,1638
+MDA,Eastern Europe & Central Asia,WVS,5,2006,otro_idioma,16.0,1042
+EST,Eastern Europe & Central Asia,WVS,6,2011,otro_idioma,16.5,1533
+MAR,Middle East & North Africa,WVS,7,2021,otro_idioma,16.9,1200
+BLR,Eastern Europe & Central Asia,WVS,6,2011,otro_idioma,17.6,1535
+MDV,South Asia,WVS,7,2021,otro_idioma,17.7,1038
+DZA,Middle East & North Africa,WVS,6,2014,otro_idioma,18.1,1200
+CHN,East Asia,WVS,7,2018,otro_idioma,19.2,2971
+MLI,Sub-Saharan Africa,WVS,5,2007,otro_idioma,19.7,1534
+GEO,Eastern Europe & Central Asia,WVS,6,2014,otro_idioma,20.2,1202
+NIC,Latin America,WVS,7,2020,otro_idioma,21.3,1200
+GHA,Sub-Saharan Africa,WVS,6,2012,otro_idioma,21.9,1552
+JOR,Middle East & North Africa,WVS,7,2018,otro_idioma,22.9,1203
+FRA,Western Europe,WVS,5,2006,otro_idioma,23.4,1001
+ZMB,Sub-Saharan Africa,WVS,5,2007,otro_idioma,23.7,1500
+TUN,Middle East & North Africa,WVS,7,2019,otro_idioma,24.2,1154
+PAK,South Asia,WVS,7,2018,otro_idioma,25.5,1995
+IND,South Asia,WVS,7,2023,otro_idioma,25.5,1652
+EGY,Middle East & North Africa,WVS,7,2018,otro_idioma,25.7,1200
+THA,Southeast Asia,WVS,7,2018,otro_idioma,25.7,1500
+AZE,Eastern Europe & Central Asia,WVS,6,2011,otro_idioma,26.3,1002
+UKR,Eastern Europe & Central Asia,WVS,7,2020,otro_idioma,28.2,1184
+KWT,Middle East & North Africa,WVS,6,2014,otro_idioma,28.9,1303
+LBN,Middle East & North Africa,WVS,7,2018,otro_idioma,30.3,1200
+YEM,Middle East & North Africa,WVS,6,2014,otro_idioma,31.3,1000
+IRN,Middle East & North Africa,WVS,7,2020,otro_idioma,31.4,1499
+GTM,Latin America,WVS,7,2020,otro_idioma,32.1,1229
+PHL,Southeast Asia,WVS,7,2019,otro_idioma,32.2,1200
+TUR,Eastern Europe & Central Asia,WVS,7,2018,otro_idioma,36.9,2347
+PSE,Middle East & North Africa,WVS,6,2013,otro_idioma,39.2,1000
+IRQ,Middle East & North Africa,WVS,7,2018,otro_idioma,40.2,1200
+MAC,East Asia,WVS,7,2019,otro_idioma,42.4,984
+BGD,South Asia,WVS,7,2018,otro_idioma,46.9,1159
+VNM,Southeast Asia,WVS,7,2020,otro_idioma,49.8,1200
+MMR,Southeast Asia,WVS,7,2020,otro_idioma,70.8,1200
+THA,Southeast Asia,WVS,5,2007,otro_origen,9.3,1299
+JOR,Middle East & North Africa,WVS,4,2001,otro_origen,15.0,1223
+SWE,Western Europe,WVS,6,2011,parejas_no_casadas,0.3,1206
+NLD,Western Europe,WVS,7,2022,parejas_no_casadas,0.3,2057
+NIR,Western Europe,WVS,7,2022,parejas_no_casadas,0.6,446
+NOR,Western Europe,WVS,5,2007,parejas_no_casadas,0.7,1019
+DEU,Western Europe,WVS,7,2018,parejas_no_casadas,0.7,1523
+HTI,Latin America,WVS,6,2016,parejas_no_casadas,0.8,1989
+GBR,Western Europe,WVS,7,2022,parejas_no_casadas,0.8,2586
+ARG,Latin America,WVS,7,2017,parejas_no_casadas,1.1,1003
+ESP,Western Europe,WVS,6,2011,parejas_no_casadas,1.3,1189
+BRA,Latin America,WVS,7,2018,parejas_no_casadas,1.3,1762
+NZL,"North America, Australia & New Zealand",WVS,7,2020,parejas_no_casadas,1.5,1057
+AND,Western Europe,WVS,7,2018,parejas_no_casadas,1.6,1004
+URY,Latin America,WVS,7,2022,parejas_no_casadas,1.8,1000
+AUS,"North America, Australia & New Zealand",WVS,7,2018,parejas_no_casadas,2.5,1813
+CZE,Eastern Europe & Central Asia,WVS,7,2022,parejas_no_casadas,2.7,1163
+CHE,Western Europe,WVS,5,2007,parejas_no_casadas,3.1,1201
+CHL,Latin America,WVS,7,2018,parejas_no_casadas,3.3,1000
+SVK,Eastern Europe & Central Asia,WVS,7,2022,parejas_no_casadas,3.4,1173
+TTO,Caribbean,WVS,6,2010,parejas_no_casadas,3.5,999
+POL,Eastern Europe & Central Asia,WVS,6,2012,parejas_no_casadas,3.5,966
+CAN,"North America, Australia & New Zealand",WVS,7,2020,parejas_no_casadas,3.8,4018
+RUS,Eastern Europe & Central Asia,WVS,7,2017,parejas_no_casadas,4.1,1810
+ITA,Western Europe,WVS,5,2005,parejas_no_casadas,4.2,938
+RWA,Sub-Saharan Africa,WVS,6,2012,parejas_no_casadas,4.5,1527
+BOL,Latin America,WVS,7,2017,parejas_no_casadas,4.6,1800
+SVN,Eastern Europe & Central Asia,WVS,6,2011,parejas_no_casadas,4.7,1069
+HUN,Eastern Europe & Central Asia,WVS,5,2009,parejas_no_casadas,5.0,1007
+USA,"North America, Australia & New Zealand",WVS,7,2017,parejas_no_casadas,5.4,2435
+ROU,Eastern Europe & Central Asia,WVS,7,2018,parejas_no_casadas,5.4,1226
+SGP,Southeast Asia,WVS,7,2020,parejas_no_casadas,5.7,2012
+VEN,Latin America,WVS,7,2021,parejas_no_casadas,5.7,1190
+PER,Latin America,WVS,7,2018,parejas_no_casadas,5.9,1388
+HKG,East Asia,WVS,7,2018,parejas_no_casadas,6.6,2075
+KEN,Sub-Saharan Africa,WVS,7,2021,parejas_no_casadas,6.6,1231
+BLR,Eastern Europe & Central Asia,WVS,6,2011,parejas_no_casadas,6.9,1535
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,parejas_no_casadas,7.5,1276
+UZB,Eastern Europe & Central Asia,WVS,7,2022,parejas_no_casadas,7.6,1250
+GRC,Western Europe,WVS,7,2017,parejas_no_casadas,8.0,1196
+KOR,East Asia,WVS,7,2018,parejas_no_casadas,8.0,1245
+ECU,Latin America,WVS,7,2018,parejas_no_casadas,8.4,1200
+FIN,Western Europe,WVS,5,2005,parejas_no_casadas,8.8,1006
+SRB,Eastern Europe & Central Asia,WVS,7,2017,parejas_no_casadas,9.1,1041
+PRI,Caribbean,WVS,7,2018,parejas_no_casadas,10.1,1127
+COL,Latin America,WVS,7,2018,parejas_no_casadas,10.1,1520
+BGR,Eastern Europe & Central Asia,WVS,5,2006,parejas_no_casadas,10.8,1001
+MEX,Latin America,WVS,7,2018,parejas_no_casadas,11.1,1738
+FRA,Western Europe,WVS,5,2006,parejas_no_casadas,11.3,1001
+TWN,East Asia,WVS,7,2019,parejas_no_casadas,13.1,1223
+EST,Eastern Europe & Central Asia,WVS,6,2011,parejas_no_casadas,13.5,1533
+CYP,Western Europe,WVS,7,2019,parejas_no_casadas,14.0,975
+ZAF,Sub-Saharan Africa,WVS,6,2013,parejas_no_casadas,15.3,3531
+MNG,East Asia,WVS,7,2020,parejas_no_casadas,15.3,1638
+PHL,Southeast Asia,WVS,7,2019,parejas_no_casadas,16.0,1200
+MDA,Eastern Europe & Central Asia,WVS,5,2006,parejas_no_casadas,16.6,1041
+BFA,Sub-Saharan Africa,WVS,5,2007,parejas_no_casadas,17.3,1534
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,parejas_no_casadas,17.9,1200
+NIC,Latin America,WVS,7,2020,parejas_no_casadas,18.2,1200
+JPN,East Asia,WVS,7,2019,parejas_no_casadas,20.5,1314
+ARM,Eastern Europe & Central Asia,WVS,7,2021,parejas_no_casadas,22.8,1207
+ETH,Sub-Saharan Africa,WVS,7,2020,parejas_no_casadas,23.2,1220
+ZWE,Sub-Saharan Africa,WVS,7,2020,parejas_no_casadas,24.4,1202
+UKR,Eastern Europe & Central Asia,WVS,7,2020,parejas_no_casadas,25.8,1218
+GEO,Eastern Europe & Central Asia,WVS,6,2014,parejas_no_casadas,26.5,1202
+THA,Southeast Asia,WVS,7,2018,parejas_no_casadas,27.1,1500
+GHA,Sub-Saharan Africa,WVS,6,2012,parejas_no_casadas,27.7,1552
+NGA,Sub-Saharan Africa,WVS,7,2018,parejas_no_casadas,29.7,1237
+GTM,Latin America,WVS,7,2020,parejas_no_casadas,30.8,1229
+PAK,South Asia,WVS,7,2018,parejas_no_casadas,36.3,1995
+LBY,Middle East & North Africa,WVS,7,2022,parejas_no_casadas,38.7,1196
+CHN,East Asia,WVS,7,2018,parejas_no_casadas,40.0,2973
+MYS,Southeast Asia,WVS,7,2018,parejas_no_casadas,40.6,1313
+LBN,Middle East & North Africa,WVS,7,2018,parejas_no_casadas,41.3,1200
+ZMB,Sub-Saharan Africa,WVS,5,2007,parejas_no_casadas,41.5,1500
+MAC,East Asia,WVS,7,2019,parejas_no_casadas,43.7,985
+MLI,Sub-Saharan Africa,WVS,5,2007,parejas_no_casadas,48.0,1534
+IRQ,Middle East & North Africa,WVS,7,2018,parejas_no_casadas,51.3,1200
+TJK,Eastern Europe & Central Asia,WVS,7,2020,parejas_no_casadas,53.2,1200
+TUR,Eastern Europe & Central Asia,WVS,7,2018,parejas_no_casadas,57.8,2314
+AZE,Eastern Europe & Central Asia,WVS,6,2011,parejas_no_casadas,58.2,1002
+MAR,Middle East & North Africa,WVS,7,2021,parejas_no_casadas,59.0,1200
+TUN,Middle East & North Africa,WVS,7,2019,parejas_no_casadas,59.6,1157
+QAT,Middle East & North Africa,WVS,6,2010,parejas_no_casadas,62.4,1060
+VNM,Southeast Asia,WVS,7,2020,parejas_no_casadas,65.3,1200
+DZA,Middle East & North Africa,WVS,6,2014,parejas_no_casadas,65.8,1200
+IND,South Asia,WVS,7,2023,parejas_no_casadas,68.2,1601
+PSE,Middle East & North Africa,WVS,6,2013,parejas_no_casadas,69.6,1000
+MDV,South Asia,WVS,7,2021,parejas_no_casadas,69.8,1038
+IDN,Southeast Asia,WVS,7,2018,parejas_no_casadas,70.1,3200
+IRN,Middle East & North Africa,WVS,7,2020,parejas_no_casadas,76.1,1499
+YEM,Middle East & North Africa,WVS,6,2014,parejas_no_casadas,76.3,1000
+BGD,South Asia,WVS,7,2018,parejas_no_casadas,77.7,1175
+JOR,Middle East & North Africa,WVS,7,2018,parejas_no_casadas,81.3,1203
+MMR,Southeast Asia,WVS,7,2020,parejas_no_casadas,90.5,1200
+ZAF,Sub-Saharan Africa,WVS,5,2006,personas_color,9.0,2988
+HTI,Latin America,WVS,6,2016,sida,1.9,1993
+URY,Latin America,WVS,7,2022,sida,3.9,1000
+ARG,Latin America,WVS,7,2017,sida,4.0,1003
+GBR,Western Europe,WVS,7,2022,sida,4.3,2586
+DEU,Western Europe,WVS,7,2018,sida,6.2,1523
+NOR,Western Europe,WVS,5,2007,sida,6.4,1025
+SWE,Western Europe,WVS,6,2011,sida,6.4,1206
+BRA,Latin America,WVS,7,2018,sida,6.4,1762
+NLD,Western Europe,WVS,7,2022,sida,6.4,2057
+NIR,Western Europe,WVS,7,2022,sida,7.0,446
+ZWE,Sub-Saharan Africa,WVS,7,2020,sida,7.5,1202
+KEN,Sub-Saharan Africa,WVS,7,2021,sida,7.6,1231
+RWA,Sub-Saharan Africa,WVS,6,2012,sida,8.7,1527
+CHE,Western Europe,WVS,5,2007,sida,8.8,1241
+NZL,"North America, Australia & New Zealand",WVS,7,2020,sida,9.3,1057
+AND,Western Europe,WVS,7,2018,sida,11.4,1004
+TTO,Caribbean,WVS,6,2010,sida,11.9,999
+PRI,Caribbean,WVS,7,2018,sida,12.1,1127
+ESP,Western Europe,WVS,6,2011,sida,12.3,1189
+USA,"North America, Australia & New Zealand",WVS,7,2017,sida,13.1,2435
+AUS,"North America, Australia & New Zealand",WVS,7,2018,sida,14.8,1813
+CHL,Latin America,WVS,7,2018,sida,15.3,1000
+UGA,Sub-Saharan Africa,WVS,4,2001,sida,17.0,1002
+ZMB,Sub-Saharan Africa,WVS,5,2007,sida,17.7,1500
+ZAF,Sub-Saharan Africa,WVS,6,2013,sida,17.7,3531
+ECU,Latin America,WVS,7,2018,sida,18.0,1200
+FIN,Western Europe,WVS,5,2005,sida,19.0,1014
+MEX,Latin America,WVS,7,2018,sida,19.9,1734
+CAN,"North America, Australia & New Zealand",WVS,7,2020,sida,19.9,4018
+BOL,Latin America,WVS,7,2017,sida,22.4,1727
+COL,Latin America,WVS,7,2018,sida,22.5,1520
+POL,Eastern Europe & Central Asia,WVS,6,2012,sida,25.6,966
+SGP,Southeast Asia,WVS,7,2020,sida,25.7,2012
+NIC,Latin America,WVS,7,2020,sida,26.4,1200
+SVN,Eastern Europe & Central Asia,WVS,6,2011,sida,26.5,1069
+LBY,Middle East & North Africa,WVS,7,2022,sida,26.8,1196
+TUN,Middle East & North Africa,WVS,7,2019,sida,28.2,1146
+PER,Latin America,WVS,7,2018,sida,28.9,1372
+BFA,Sub-Saharan Africa,WVS,5,2007,sida,29.4,1534
+DOM,Latin America,WVS,3,1996,sida,29.5,417
+GTM,Latin America,WVS,7,2020,sida,29.9,1229
+ITA,Western Europe,WVS,5,2005,sida,30.8,1012
+VEN,Latin America,WVS,7,2021,sida,31.1,1190
+FRA,Western Europe,WVS,5,2006,sida,31.6,1001
+ETH,Sub-Saharan Africa,WVS,7,2020,sida,31.7,1220
+TZA,Sub-Saharan Africa,WVS,4,2001,sida,32.5,1171
+PAK,South Asia,WVS,7,2018,sida,34.7,1995
+ROU,Eastern Europe & Central Asia,WVS,7,2018,sida,34.8,1226
+GRC,Western Europe,WVS,7,2017,sida,35.2,1196
+MDV,South Asia,WVS,7,2021,sida,35.7,1039
+SVK,Eastern Europe & Central Asia,WVS,7,2022,sida,38.5,1173
+CYP,Western Europe,WVS,7,2019,sida,39.7,951
+UKR,Eastern Europe & Central Asia,WVS,7,2020,sida,39.8,1180
+GHA,Sub-Saharan Africa,WVS,6,2012,sida,40.2,1552
+HUN,Eastern Europe & Central Asia,WVS,5,2009,sida,40.8,1007
+MLI,Sub-Saharan Africa,WVS,5,2007,sida,41.6,1534
+HKG,East Asia,WVS,7,2018,sida,41.8,2075
+CZE,Eastern Europe & Central Asia,WVS,7,2022,sida,41.8,1163
+MAR,Middle East & North Africa,WVS,7,2021,sida,42.6,1200
+HRV,Eastern Europe & Central Asia,WVS,3,1996,sida,43.4,1196
+MAC,East Asia,WVS,7,2019,sida,43.5,1003
+MYS,Southeast Asia,WVS,7,2018,sida,45.2,1313
+LBN,Middle East & North Africa,WVS,7,2018,sida,45.8,1200
+DZA,Middle East & North Africa,WVS,6,2014,sida,46.2,1200
+MNG,East Asia,WVS,7,2020,sida,47.6,1638
+EST,Eastern Europe & Central Asia,WVS,6,2011,sida,48.6,1533
+THA,Southeast Asia,WVS,7,2018,sida,48.9,1500
+LVA,Eastern Europe & Central Asia,WVS,3,1996,sida,49.2,1200
+BGR,Eastern Europe & Central Asia,WVS,5,2006,sida,51.0,1001
+MKD,Eastern Europe & Central Asia,WVS,4,2001,sida,52.1,1055
+JPN,East Asia,WVS,7,2019,sida,53.0,1316
+IRQ,Middle East & North Africa,WVS,7,2018,sida,53.9,1200
+RUS,Eastern Europe & Central Asia,WVS,7,2017,sida,54.0,1810
+NGA,Sub-Saharan Africa,WVS,7,2018,sida,54.0,1237
+ARM,Eastern Europe & Central Asia,WVS,7,2021,sida,54.0,1207
+EGY,Middle East & North Africa,WVS,7,2018,sida,56.8,1200
+PHL,Southeast Asia,WVS,7,2019,sida,57.8,1200
+KAZ,Eastern Europe & Central Asia,WVS,7,2018,sida,58.3,1276
+IDN,Southeast Asia,WVS,7,2018,sida,58.6,3200
+BIH,Eastern Europe & Central Asia,WVS,4,2001,sida,59.8,1200
+TWN,East Asia,WVS,7,2019,sida,60.5,1223
+BLR,Eastern Europe & Central Asia,WVS,6,2011,sida,60.9,1535
+SRB,Eastern Europe & Central Asia,WVS,7,2017,sida,62.7,970
+UZB,Eastern Europe & Central Asia,WVS,7,2022,sida,63.5,1250
+LTU,Eastern Europe & Central Asia,WVS,3,1997,sida,66.2,1009
+KGZ,Eastern Europe & Central Asia,WVS,7,2020,sida,66.2,1200
+KWT,Middle East & North Africa,WVS,6,2014,sida,66.4,1303
+BGD,South Asia,WVS,7,2018,sida,66.8,1187
+SLV,Latin America,WVS,3,1999,sida,67.1,1254
+QAT,Middle East & North Africa,WVS,6,2010,sida,67.1,1060
+GEO,Eastern Europe & Central Asia,WVS,6,2014,sida,68.4,1202
+IND,South Asia,WVS,7,2023,sida,68.7,1556
+MDA,Eastern Europe & Central Asia,WVS,5,2006,sida,69.1,1046
+ALB,Eastern Europe & Central Asia,WVS,4,2002,sida,69.9,1000
+PSE,Middle East & North Africa,WVS,6,2013,sida,71.1,1000
+TUR,Eastern Europe & Central Asia,WVS,7,2018,sida,73.8,2314
+MNE,Eastern Europe & Central Asia,WVS,4,2001,sida,76.1,1060
+TJK,Eastern Europe & Central Asia,WVS,7,2020,sida,77.1,1200
+CHN,East Asia,WVS,7,2018,sida,77.7,3004
+IRN,Middle East & North Africa,WVS,7,2020,sida,81.5,1499
+YEM,Middle East & North Africa,WVS,6,2014,sida,81.9,1000
+SAU,Middle East & North Africa,WVS,4,2003,sida,83.7,1502
+MMR,Southeast Asia,WVS,7,2020,sida,85.1,1200
+JOR,Middle East & North Africa,WVS,7,2018,sida,87.6,1203
+KOR,East Asia,WVS,7,2018,sida,92.9,1245
+AZE,Eastern Europe & Central Asia,WVS,6,2011,sida,94.4,1002
+VNM,Southeast Asia,WVS,7,2020,sida,94.7,1200
+IRQ,Middle East & North Africa,WVS,5,2006,sunies,12.9,2648
+COL,Latin America,WVS,3,1997,traficantes,47.9,2996
+MAR,Middle East & North Africa,WVS,4,2001,traficantes,92.7,1251
+IRQ,Middle East & North Africa,WVS,5,2006,turcos,70.8,2496
