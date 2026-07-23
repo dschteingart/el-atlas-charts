@@ -94,8 +94,9 @@ const ISSUE_I18N = {
     // ---- Chart 4: perfil de intolerancia de un país
     'c4-title':          'La Argentina le teme al vicio, no al distinto',
     'c4-title-neutral':  '¿A quién le teme cada sociedad?',
-    'c4-subtitle-tpl':   'A qué tipo de vecino rechaza {PAIS}, categoría por categoría, contra la mediana mundial. Último dato 2017-2022.',
+    'c4-subtitle-tpl':   'A qué tipo de vecino rechaza {PAIS}, categoría por categoría, contra la mediana mundial. Encuesta de {PERIODO}.',
     'c4-country-label':  'País',
+    'c4-nodata':         '{PAIS} no tiene datos en {PERIODO}.',
     'c4-median-legend':  'Mediana mundial',
     'c4-tt-above':       'Por encima de la mediana mundial.',
     'c4-tt-below':       'Por debajo de la mediana mundial.',
@@ -210,8 +211,9 @@ const ISSUE_I18N = {
     // ---- Chart 4: country intolerance profile
     'c4-title':          'Argentina fears vice, not the different',
     'c4-title-neutral':  'Whom does each society fear?',
-    'c4-subtitle-tpl':   'Which kind of neighbour {PAIS} rejects, category by category, against the world median. Latest data 2017-2022.',
+    'c4-subtitle-tpl':   'Which kind of neighbour {PAIS} rejects, category by category, against the world median. Survey wave {PERIODO}.',
     'c4-country-label':  'Country',
+    'c4-nodata':         '{PAIS} has no data for {PERIODO}.',
     'c4-median-legend':  'World median',
     'c4-tt-above':       'Above the world median.',
     'c4-tt-below':       'Below the world median.',

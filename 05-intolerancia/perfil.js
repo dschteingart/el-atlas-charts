@@ -38,11 +38,23 @@ function pf_getMargins(format) {
   }
 }
 
-// Universo de países: los que tienen dato en la categoría ancla (otra_raza).
+// Universo de países: los que tienen dato en cualquier categoría (último dato).
 function pf_countries() {
   const set = new Set();
   (typeof VE_CATS !== 'undefined' ? VE_CATS : []).forEach(c => (VE_FOTO[c] || []).forEach(r => set.add(r[0])));
   return Array.from(set).sort((a, b) => pf_name(a).localeCompare(pf_name(b), 'es'));
+}
+
+// Filas de una categoría en la ola activa. WV_FOTO[cat][wave]=[[iso,pct,year,n,evs,wvs]].
+// Fallback a VE_FOTO (último dato) si data-waves.js no está.
+function pf_waveRows(cat) {
+  const w = state[4].wave;
+  if (typeof WV_FOTO !== 'undefined' && WV_FOTO[cat] && WV_FOTO[cat][w]) return WV_FOTO[cat][w];
+  return (typeof VE_FOTO !== 'undefined' ? (VE_FOTO[cat] || []) : []).map(r => [r[0], r[1], r[2], r[4]]);
+}
+function pf_waveLabel() {
+  if (typeof WV_META === 'undefined') return '2017-2022';
+  const m = WV_META.find(x => x.w === state[4].wave); return m ? m.label : '2017-2022';
 }
 
 // Mediana de un array de números.
@@ -58,7 +70,7 @@ function pf_computeData(iso) {
   const cats = (typeof VE_CATS !== 'undefined') ? VE_CATS : [];
   const out = [];
   cats.forEach(cat => {
-    const rows = VE_FOTO[cat] || [];
+    const rows = pf_waveRows(cat);
     const mine = rows.find(r => r[0] === iso);
     if (!mine) return;
     const med = pf_median(rows.map(r => r[1]));
@@ -72,7 +84,7 @@ function pf_updateSubtitle(iso) {
   const el = document.querySelector('.chart-subtitle[data-i18n="c4-subtitle-tpl"]');
   if (!el) return;
   const tpl = (typeof t === 'function') ? t('c4-subtitle-tpl') : '';
-  if (tpl) el.textContent = tpl.replace('{PAIS}', pf_name(iso));
+  if (tpl) el.textContent = tpl.replace('{PAIS}', pf_name(iso)).replace('{PERIODO}', pf_waveLabel());
 }
 
 function drawPerfil() {
@@ -87,6 +99,20 @@ function drawPerfil() {
   const mobile = !editorFormat && pf_isMobile();
   const data = pf_computeData(iso);
   const n = data.length;
+
+  // Sin datos para ese país en esa ola (al retroceder en el slider).
+  if (n === 0) {
+    svg.setAttribute('viewBox', '0 0 1100 180');
+    const msg = pf_ns('text');
+    msg.setAttribute('x', 550); msg.setAttribute('y', 90); msg.setAttribute('text-anchor', 'middle');
+    msg.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+    msg.style.fontSize = '18px'; msg.setAttribute('fill', '#8A8579');
+    const tpl = (typeof t === 'function') ? t('c4-nodata') : '{PAIS} no tiene datos en {PERIODO}.';
+    msg.textContent = tpl.replace('{PAIS}', pf_name(iso)).replace('{PERIODO}', pf_waveLabel());
+    svg.appendChild(msg);
+    if (typeof atlasSetHeading === 'function') atlasSetHeading('4', false, { title: 'c4-title', titleNeutral: 'c4-title-neutral' });
+    return;
+  }
 
   const SIZES = editorFormat
     ? { tick: 22, axisTitle: 25, name: 26, value: 26, med: 21 }
@@ -283,9 +309,32 @@ function setupPerfilCSV() {
   });
 }
 
+// Slider de ola (un thumb sobre WV_META, default la más reciente).
+function setupPerfilWave() {
+  const input = document.getElementById('pf-wave-slider');
+  const disp = document.getElementById('pf-wave-display');
+  if (!input || typeof WV_META === 'undefined' || !WV_META.length) {
+    const grp = document.getElementById('pf-wave-group'); if (grp) grp.style.display = 'none';
+    return;
+  }
+  const waves = WV_META;
+  input.min = 0; input.max = waves.length - 1; input.step = 1;
+  const idxOf = (w) => Math.max(0, waves.findIndex(x => x.w === w));
+  input.value = idxOf(state[4].wave);
+  if (disp) disp.textContent = pf_waveLabel();
+  input.addEventListener('input', () => {
+    state[4].wave = waves[+input.value].w;
+    if (disp) disp.textContent = pf_waveLabel();
+    drawPerfil();
+  });
+}
+
 function initPerfil() {
-  if (!state[4]) state[4] = { iso: PF_DEFAULT_ISO };
+  const lastWave = (typeof WV_META !== 'undefined' && WV_META.length) ? WV_META[WV_META.length - 1].w : 7;
+  if (!state[4]) state[4] = { iso: PF_DEFAULT_ISO, wave: lastWave };
+  if (state[4].wave == null) state[4].wave = lastWave;
   setupPerfilCountry();
+  setupPerfilWave();
   setupPerfilCSV();
   drawPerfil();
   window.__atlasSupportsFormats = true;
