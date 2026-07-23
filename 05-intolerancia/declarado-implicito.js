@@ -218,7 +218,7 @@ function drawScatter() {
 
   // título insight→neutral (insight solo en la dimensión default = raza)
   if (typeof atlasSetHeading === 'function') {
-    atlasSetHeading('5', dim === SC_DEFAULT_DIM, { title: 'c5-title', titleNeutral: 'c5-title-neutral' });
+    atlasSetHeading('5', false, { title: 'c5-title', titleNeutral: 'c5-title-neutral' });
   }
 }
 

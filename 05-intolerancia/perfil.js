@@ -199,9 +199,13 @@ function drawPerfil() {
   zero.setAttribute('stroke', PF_AXIS); zero.setAttribute('stroke-width', 1);
   svg.appendChild(zero);
 
-  // leyenda de la mediana (una linea gris + label), arriba a la derecha del plot
+  // Leyenda de la mediana (línea gris + label), ABAJO a la derecha del plot:
+  // arriba-derecha la tapaba la primera barra (la más larga); abajo las barras
+  // son cortas y queda despejado (pedido de Daniel 2026-07-23). Con halo crema.
   const legG = pf_ns('g'); svg.appendChild(legG);
-  const lx = MARGIN.left + plotW - (bigFmt ? 220 : 150), ly = MARGIN.top + (bigFmt ? 10 : 6);
+  const legTxt = (typeof t === 'function') ? t('c4-median-legend') : 'Mediana mundial';
+  const legW = pf_measure(legTxt, SIZES.med, 500) + 16;
+  const lx = MARGIN.left + plotW - legW, ly = MARGIN.top + plotH - (bigFmt ? 18 : 12);
   const ll = pf_ns('line');
   ll.setAttribute('x1', lx); ll.setAttribute('x2', lx); ll.setAttribute('y1', ly - 6); ll.setAttribute('y2', ly + 6);
   ll.setAttribute('stroke', PF_MED); ll.setAttribute('stroke-width', bigFmt ? 2.4 : 1.6);
@@ -210,12 +214,13 @@ function drawPerfil() {
   lt.setAttribute('x', lx + 8); lt.setAttribute('y', ly); lt.setAttribute('dominant-baseline', 'central');
   lt.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
   lt.style.fontSize = SIZES.med + 'px'; lt.setAttribute('fill', PF_MED); lt.setAttribute('font-weight', 500);
-  lt.textContent = (typeof t === 'function') ? t('c4-median-legend') : 'Mediana mundial';
+  lt.setAttribute('paint-order', 'stroke'); lt.setAttribute('stroke', '#FAF8F3'); lt.setAttribute('stroke-width', bigFmt ? 4 : 3); lt.setAttribute('stroke-linejoin', 'round');
+  lt.textContent = legTxt;
   legG.appendChild(lt);
 
   // título insight→neutral (insight solo para Argentina)
   if (typeof atlasSetHeading === 'function') {
-    atlasSetHeading('4', iso === PF_DEFAULT_ISO, { title: 'c4-title', titleNeutral: 'c4-title-neutral' });
+    atlasSetHeading('4', false, { title: 'c4-title', titleNeutral: 'c4-title-neutral' });
   }
 }
 

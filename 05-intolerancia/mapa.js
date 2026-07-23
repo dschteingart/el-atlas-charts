@@ -153,7 +153,7 @@ function drawMapa() {
 
   // título insight→neutral (insight solo en la categoría default)
   if (typeof atlasSetHeading === 'function') {
-    atlasSetHeading('3', cat === MP_DEFAULT_CAT, { title: 'c3-title', titleNeutral: 'c3-title-neutral' });
+    atlasSetHeading('3', false, { title: 'c3-title', titleNeutral: 'c3-title-neutral' });
   }
 }
 

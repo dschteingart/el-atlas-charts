@@ -62,6 +62,13 @@
   .s-range-slider input[type="range"]::-moz-range-thumb { pointer-events: auto; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
   .s-range-slider input[type="range"]::-moz-range-track { background: transparent; border: none; }
   .s-range-display { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--ink); min-width: 96px; font-variant-numeric: tabular-nums; text-align: right; }
+  .m-mobile-collapse { display: none; }
+  .m-mobile-collapse > summary { font-family: var(--sans); font-size: 11px; color: var(--accent); cursor: pointer; padding: 6px 0; list-style: none; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
+  .m-mobile-collapse > summary::before { content: '+ '; }
+  .m-mobile-collapse[open] > summary::before { content: '− '; }
+  .m-mobile-collapse > p { margin: 4px 0 8px; font-family: var(--sans); font-size: 11px; color: var(--ink-soft); line-height: 1.45; }
+  @media (max-width: 768px) { .m-mobile-collapse { display: block; } .m-desktop-only { display: none; } }
 </style>
 </head>
 <body>
@@ -148,7 +155,7 @@
 <script src="../lib/country-names.js?v=2"></script>
 <script src="./data-pelicula.js?v=1"></script>
 <script src="../lib/editor.js?v=1"></script>
-<script src="./pelicula.js?v=2"></script>
+<script src="./pelicula.js?v=3"></script>
 <script src="../lib/png-export.js?v=3"></script>
 <script>
   window.__N5_V = '5';

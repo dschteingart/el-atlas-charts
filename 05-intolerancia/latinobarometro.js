@@ -169,7 +169,7 @@ function drawLatino() {
   // título insight→neutral (insight solo en la categoría default)
   if (typeof atlasSetHeading === 'function') {
     const isDefault = cat === LB_DEFAULT_CAT;
-    atlasSetHeading('6', isDefault, { title: 'c6-title', titleNeutral: 'c6-title-neutral' });
+    atlasSetHeading('6', false, { title: 'c6-title', titleNeutral: 'c6-title-neutral' });
   }
 }
 

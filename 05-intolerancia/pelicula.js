@@ -258,7 +258,7 @@ function drawPelicula() {
     const periodDefault = (s2.period || [PL_YEAR_MIN, PL_YEAR_MAX])[0] === PL_YEAR_MIN && (s2.period || [PL_YEAR_MIN, PL_YEAR_MAX])[1] === PL_YEAR_MAX;
     const selDefault = s2.cat === PL_DEFAULT_CAT && s2.selected.length === PL_DEFAULT_SEL.length
       && PL_DEFAULT_SEL.every(i => s2.selected.includes(i)) && periodDefault;
-    atlasSetHeading('2', selDefault, { title: 'c2-title', titleNeutral: 'c2-title-neutral' });
+    atlasSetHeading('2', false, { title: 'c2-title', titleNeutral: 'c2-title-neutral' });
   }
 }
 
@@ -393,9 +393,19 @@ function setupPeliculaCSV() {
   });
 }
 
+// Primer año con datos dado el estado (cat + selección). Para que el default
+// arranque donde realmente empiezan las series y no deje 1981-1990 vacío; el
+// slider igual permite abrir hasta 1981 (pedido de Daniel 2026-07-23).
+function pl_firstDataYear(cat, selected) {
+  const src = (typeof PELI_SERIES !== 'undefined') ? (PELI_SERIES[cat] || {}) : {};
+  let min = PL_YEAR_MAX;
+  (selected || []).forEach(iso => { const s = src[iso]; if (s && s.length) min = Math.min(min, s[0][0]); });
+  return Math.max(PL_YEAR_MIN, Math.min(min, PL_YEAR_MAX));
+}
+
 function initPelicula() {
   if (!state[2]) state[2] = { cat: PL_DEFAULT_CAT, selected: [...PL_DEFAULT_SEL] };
-  if (!state[2].period) state[2].period = [PL_YEAR_MIN, PL_YEAR_MAX];
+  if (!state[2].period) state[2].period = [pl_firstDataYear(state[2].cat, state[2].selected), PL_YEAR_MAX];
   const sel = document.getElementById('pl-cat-select'); if (sel) sel.value = state[2].cat;
   setupPeliculaCat(); setupPeliculaSearch(); setupPeliculaSlider(); setupPeliculaCSV();
   renderPeliculaChips(); drawPelicula();
