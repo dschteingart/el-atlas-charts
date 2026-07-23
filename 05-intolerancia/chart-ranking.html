@@ -64,6 +64,11 @@
   .rk-picker-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); font-style: italic; }
   @media (max-width: 768px) { .rk-picker-hint { display: none; } }
 
+  .rk-wave-slider { -webkit-appearance: none; appearance: none; width: 120px; height: 4px; border-radius: 2px; background: var(--grid); outline: none; cursor: pointer; }
+  .rk-wave-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .rk-wave-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .rk-wave-display { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--ink); min-width: 82px; font-variant-numeric: tabular-nums; }
+
   #rk-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 2px 0 2px; }
   .rk-leg-item { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 11.5px; color: var(--ink-soft); cursor: pointer; user-select: none; padding: 2px 4px; border-radius: 6px; transition: background 0.12s ease, opacity 0.15s ease; }
   .rk-leg-item:hover { background: var(--bg-soft); }
@@ -159,6 +164,11 @@
           <button data-median="off" data-i18n="c1-median-off">Ocultar</button>
         </div>
       </div>
+      <div class="m-ctrl-group" id="rk-wave-group">
+        <span class="m-ctrl-label" data-i18n="c1-wave-label">Ola de la encuesta</span>
+        <input type="range" id="rk-wave-slider" class="rk-wave-slider" aria-label="Ola de la encuesta">
+        <span class="rk-wave-display" id="rk-wave-display">2017-2022</span>
+      </div>
     </div>
     <div class="m-controls" id="rk-country-picker">
       <div class="m-ctrl-group">
@@ -204,12 +214,13 @@
 
 <script src="../lib/regions.js?v=2"></script>
 <script src="../lib/i18n.js?v=2"></script>
-<script src="./i18n-issue.js?v=5"></script>
+<script src="./i18n-issue.js?v=6"></script>
 <script src="../lib/utils.js?v=4"></script>
 <script src="../lib/country-names.js?v=2"></script>
 <script src="./data-vecinos.js?v=3"></script>
+<script src="./data-waves.js?v=1"></script>
 <script src="../lib/editor.js?v=1"></script>
-<script src="./ranking.js?v=13"></script>
+<script src="./ranking.js?v=14"></script>
 <script src="../lib/png-export.js?v=3"></script>
 <script>
   window.__N5_V = '5';

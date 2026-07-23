@@ -17,8 +17,10 @@ const ISSUE_I18N = {
     // ---- Chart 1: ranking por categoría (barras)
     'c1-title':          'El Río de la Plata, campeón mundial de la tolerancia (declarada)',
     'c1-title-neutral':  'Los vecinos que cada sociedad rechaza',
-    'c1-subtitle-tpl':   'Porcentaje que no querría tener de vecinos a {CAT}. Último dato disponible por país, 2017-2022.',
+    'c1-subtitle-tpl':   'Porcentaje que no querría tener de vecinos a {CAT}, país por país. Encuesta de {PERIODO}.',
     'c1-cat-label':      'No querría de vecinos a…',
+    'c1-wave-label':     'Ola de la encuesta',
+    'c1-tt-both':        '* promedio de EVS y WVS',
     'c1-view-label':     'Mostrar',
     'c1-view-sel':       'Mi selección',
     'c1-view-all':       'Todos los países',
@@ -128,8 +130,10 @@ const ISSUE_I18N = {
 
     'c1-title':          'The River Plate, world champion of (declared) tolerance',
     'c1-title-neutral':  'The neighbours each society rejects',
-    'c1-subtitle-tpl':   'Share who would not like to have {CAT} as neighbours. Latest available data per country, 2017-2022.',
+    'c1-subtitle-tpl':   'Share who would not like to have {CAT} as neighbours, country by country. Survey wave {PERIODO}.',
     'c1-cat-label':      'Would not want as neighbours…',
+    'c1-wave-label':     'Survey wave',
+    'c1-tt-both':        '* average of EVS and WVS',
     'c1-view-label':     'Show',
     'c1-view-sel':       'My selection',
     'c1-view-all':       'All countries',

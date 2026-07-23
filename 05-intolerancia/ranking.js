@@ -86,14 +86,23 @@ function rk_isLatam(iso) { return RK_LATAM_REGIONS.has(VE_REGION[iso]); }
 
 function rk_hidden() { return new Set(state[1].hiddenRegions || []); }
 
-// Filas de la categoría activa (sin regiones apagadas). VE_FOTO viene asc.
+// Filas de la ola activa (WV_FOTO[cat][wave]). Cada fila:
+//   [iso3, pct, year, n, evs, wvs]  (pct = combinado EVS+WVS ponderado por n)
+// Fallback a VE_FOTO (último dato) si data-waves.js no está cargado.
+function rk_waveRows() {
+  const cat = state[1].cat, w = state[1].wave;
+  if (typeof WV_FOTO !== 'undefined' && WV_FOTO[cat] && WV_FOTO[cat][w]) return WV_FOTO[cat][w];
+  return (typeof VE_FOTO !== 'undefined' ? (VE_FOTO[cat] || []) : []).map(r => [r[0], r[1], r[2], r[4], null, null]);
+}
+
+// Filas de la categoría/ola activa (sin regiones apagadas), orden asc.
 // Vista 'sel': solo la selección. Vista 'all': todos.
 function rk_computeData() {
   const s = state[1];
   const hid = rk_hidden();
-  let rows = (VE_FOTO[s.cat] || []).map(r => ({
-    iso: r[0], pct: r[1], year: r[2], study: r[3], n: r[4], region: VE_REGION[r[0]]
-  })).filter(r => !hid.has(r.region));
+  let rows = rk_waveRows().map(r => ({
+    iso: r[0], pct: r[1], year: r[2], n: r[3], evs: r[4], wvs: r[5], region: VE_REGION[r[0]]
+  })).filter(r => r.region && !hid.has(r.region));
   if (s.view !== 'all') {
     const sel = new Set(s.selected);
     rows = rows.filter(r => sel.has(r.iso));
@@ -101,15 +110,22 @@ function rk_computeData() {
   return rows;
 }
 
-// Mediana MUNDIAL de la categoría: sobre TODOS los países con dato (ignora
+// Mediana MUNDIAL de la categoría/ola: sobre TODOS los países con dato (ignora
 // selección y regiones apagadas — es la referencia global).
 function rk_median() {
-  const rows = VE_FOTO[state[1].cat] || [];
+  const rows = rk_waveRows();
   if (!rows.length) return null;
   const v = rows.map(r => r[1]);           // ya ordenado asc
   const mid = Math.floor(v.length / 2);
   const med = v.length % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2;
   return { value: med, n: v.length };
+}
+
+// Label del período de la ola activa (ej. "2017-2022").
+function rk_waveLabel() {
+  if (typeof WV_META === 'undefined') return '2017-2022';
+  const m = WV_META.find(x => x.w === state[1].wave);
+  return m ? m.label : '2017-2022';
 }
 
 //==================================================================
@@ -124,7 +140,7 @@ function rk_updateSubtitle() {
   if ((tx.subtitle || '').trim()) return;
   const tpl = (typeof t === 'function') ? t('c1-subtitle-tpl') : '';
   const cat = (typeof t === 'function') ? t('catA-' + state[1].cat) : state[1].cat;
-  el.textContent = tpl.replace('{CAT}', cat);
+  el.textContent = tpl.replace('{CAT}', cat).replace('{PERIODO}', rk_waveLabel());
 }
 
 //==================================================================
@@ -778,13 +794,21 @@ function rk_drawMarimekko() {
     mline.setAttribute('stroke-dasharray', (mobile || mobilePng) ? '8 7' : '5 4');
     mline.setAttribute('pointer-events', 'none');
     svg.appendChild(mline);
+    // Etiqueta a la DERECHA: en el marimekko las barras más altas están a la
+    // izquierda (más intolerantes) y taparían el texto; a la derecha las barras
+    // son bajas y queda despejado (pedido de Daniel 2026-07-23).
     const mlbl = rk_ns('text');
-    mlbl.setAttribute('x', MARGIN.left + 6);
+    mlbl.setAttribute('x', MARGIN.left + PLOT_W - 6);
     mlbl.setAttribute('y', my - 6);
+    mlbl.setAttribute('text-anchor', 'end');
     mlbl.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
     mlbl.style.fontSize = ((mobile || mobilePng) ? 26 : SIZES.tick) + 'px';
     mlbl.setAttribute('font-weight', 600);
     mlbl.setAttribute('fill', '#5A5346');
+    mlbl.setAttribute('paint-order', 'stroke');
+    mlbl.setAttribute('stroke', '#FAF8F3');
+    mlbl.setAttribute('stroke-width', (mobile || mobilePng) ? 4 : 3);
+    mlbl.setAttribute('stroke-linejoin', 'round');
     mlbl.setAttribute('pointer-events', 'none');
     mlbl.textContent = ((typeof t === 'function') ? t('c1-median-lbl') : 'Mediana mundial')
       + ': ' + ((typeof fmt === 'function') ? fmt(med.value, 1) : med.value) + '%';
@@ -962,10 +986,10 @@ function rk_buildLegend() {
   const order = (typeof REGION_ORDER !== 'undefined') ? REGION_ORDER : [];
   const cat = state[1].cat;
   const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
-  const key = cat + '|' + lang;
+  const key = cat + '|' + lang + '|' + state[1].wave;
   if (cont.dataset.built === key) { rk_syncLegend(); return; }
   cont.dataset.built = key;
-  const present = new Set((VE_FOTO[cat] || []).map(r => VE_REGION[r[0]]).filter(Boolean));
+  const present = new Set(rk_waveRows().map(r => VE_REGION[r[0]]).filter(Boolean));
   cont.innerHTML = '';
   order.filter(r => present.has(r)).forEach(region => {
     const chip = document.createElement('span');
@@ -1016,12 +1040,21 @@ function rk_showTooltip(event, d) {
   if (!tooltip) return;
   const tt = (k, fb) => (typeof t === 'function' ? t(k) : fb);
   const reg = d.region ? tt('reg.' + d.region, d.region) : '';
+  const F = (v) => (typeof fmt === 'function') ? fmt(v, 1) : v;
+  // Cuando el país tiene EVS y WVS en la misma ola, mostramos ambos para que se
+  // vea la consistencia (o su ausencia) entre encuestas (pedido de Daniel).
+  const both = d.evs != null && d.wvs != null;
+  const consistency = both
+    ? `<div class="tt-row"><span>EVS</span><span>${F(d.evs)}%</span></div>`
+      + `<div class="tt-row"><span>WVS</span><span>${F(d.wvs)}%</span></div>`
+    : `<div class="tt-row"><span>${tt('c1-tt-survey', 'Encuesta')}</span><span>${d.evs != null ? 'EVS' : 'WVS'} ${d.year}</span></div>`;
   tooltip.innerHTML = `
     <strong>${rk_displayName(d.iso)}</strong>
-    <div class="tt-sub">${reg}</div>
-    <div class="tt-row tt-row-strong"><span>${tt('c1-tt-pct', 'Rechazo declarado')}</span><span>${(typeof fmt === 'function') ? fmt(d.pct, 1) : d.pct}%</span></div>
-    <div class="tt-row"><span>${tt('c1-tt-survey', 'Encuesta')}</span><span>${d.study} ${d.year}</span></div>
+    <div class="tt-sub">${reg} · ${rk_waveLabel()}</div>
+    <div class="tt-row tt-row-strong"><span>${tt('c1-tt-pct', 'Rechazo declarado')}</span><span>${F(d.pct)}%${both ? ' *' : ''}</span></div>
+    ${consistency}
     <div class="tt-row"><span>${tt('c1-tt-n', 'Muestra')}</span><span>${(typeof fmt === 'function') ? fmt(d.n, 0) : d.n}</span></div>
+    ${both ? `<div class="tt-sub" style="margin-top:3px;">${tt('c1-tt-both', '* promedio de ambas encuestas')}</div>` : ''}
   `;
   tooltip.style.display = 'block';
   tooltip.style.opacity = '1';
@@ -1078,6 +1111,33 @@ function setupRankingView() {
       drawRanking();
     });
   });
+}
+
+// Slider de OLA: un solo thumb sobre las olas presentes (WV_META). Al moverlo
+// se ve la misma categoría en distintas ondas EVS/WVS. Default: la más reciente.
+function setupRankingWave() {
+  const input = document.getElementById('rk-wave-slider');
+  const disp = document.getElementById('rk-wave-display');
+  if (!input || typeof WV_META === 'undefined' || !WV_META.length) {
+    const grp = document.getElementById('rk-wave-group'); if (grp) grp.style.display = 'none';
+    return;
+  }
+  const waves = WV_META;   // asc por ola
+  input.min = 0; input.max = waves.length - 1; input.step = 1;
+  const idxOf = (w) => Math.max(0, waves.findIndex(x => x.w === w));
+  const sync = () => {
+    input.value = idxOf(state[1].wave);
+    if (disp) disp.textContent = rk_waveLabel();
+  };
+  input.addEventListener('input', () => {
+    const w = waves[+input.value].w;
+    if (w === state[1].wave) return;
+    state[1].wave = w;
+    if (disp) disp.textContent = rk_waveLabel();
+    rk_buildLegend();   // las regiones presentes cambian según la ola
+    drawRanking();
+  });
+  sync();
 }
 
 function setupRankingMedian() {
@@ -1217,15 +1277,20 @@ function setupRankingDownloadCSV() {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
       let csv = '';
       csv += '# El Atlas N°5 — Rechazo declarado a distintos tipos de vecinos (IVS: EVS+WVS)\n';
-      csv += '# Ultimo dato disponible por pais (2017-2022). pct = % ponderado que menciona\n';
-      csv += '# al grupo como vecino no deseado, sobre respuestas validas.\n';
-      csv += 'iso3,name,region,category,pct,year,survey,n\n';
+      csv += '# Todas las olas por pais. pct = % ponderado combinado (EVS+WVS) que menciona al\n';
+      csv += '# grupo como vecino no deseado; evs/wvs = valor de cada estudio en esa ola.\n';
+      csv += 'iso3,name,region,category,wave,period,pct,year,n,evs,wvs\n';
+      const waves = (typeof WV_META !== 'undefined') ? WV_META : [{ w: 7, label: '2017-2022' }];
+      const src = (typeof WV_FOTO !== 'undefined') ? WV_FOTO : null;
       VE_CATS.forEach(cat => {
-        (VE_FOTO[cat] || []).forEach(r => {
-          const name = (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[r[0]])
-            ? (COUNTRY_NAMES[r[0]].en || r[0]) : r[0];
-          const nameQ = (name.includes(',')) ? '"' + name + '"' : name;
-          csv += [r[0], nameQ, VE_REGION[r[0]] || '', cat, r[1], r[2], r[3], r[4]].join(',') + '\n';
+        waves.forEach(m => {
+          const rows = src ? (src[cat] && src[cat][m.w]) : (m.w === 7 ? (VE_FOTO[cat] || []).map(r => [r[0], r[1], r[2], r[4], null, null]) : null);
+          (rows || []).forEach(r => {
+            const name = (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[r[0]])
+              ? (COUNTRY_NAMES[r[0]].en || r[0]) : r[0];
+            const nameQ = (name.includes(',')) ? '"' + name + '"' : name;
+            csv += [r[0], nameQ, VE_REGION[r[0]] || '', cat, m.w, m.label, r[1], r[2], r[3], r[4] == null ? '' : r[4], r[5] == null ? '' : r[5]].join(',') + '\n';
+          });
         });
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -1247,20 +1312,24 @@ function setupRankingDownloadCSV() {
 //  Init
 //==================================================================
 function initRanking() {
+  const lastWave = (typeof WV_META !== 'undefined' && WV_META.length) ? WV_META[WV_META.length - 1].w : 7;
   if (!state[1]) {
     state[1] = {
       cat: 'otra_raza',
       view: 'sel',
+      wave: lastWave,            // default = ola más reciente (== "último dato >=2017")
       selected: [...RK_DEFAULT_SELECTED],
       showMedian: true,
       hiddenRegions: [],
       activeRegion: null
     };
   }
+  if (state[1].wave == null) state[1].wave = lastWave;
 
   setupRankingCat();
   setupRankingView();
   setupRankingMedian();
+  setupRankingWave();
   setupRankingSearch();
   setupRankingDownloadCSV();
   renderRankingChips();
