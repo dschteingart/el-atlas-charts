@@ -62,10 +62,35 @@
   .m-search-result.m-already { color: var(--ink-muted); }
 
   #rk-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 2px 0 2px; }
-  .rk-leg-item { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 11.5px; color: var(--ink-soft); }
+  .rk-leg-item { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 11.5px; color: var(--ink-soft); cursor: pointer; user-select: none; padding: 2px 4px; border-radius: 6px; transition: background 0.12s ease, opacity 0.15s ease; }
+  .rk-leg-item:hover { background: var(--bg-soft); }
+  .rk-leg-item.rk-leg-off { opacity: 0.38; }
+  .rk-leg-item.rk-leg-off .rk-leg-dot { background: var(--grid) !important; }
+  .rk-leg-item.rk-leg-off { text-decoration: line-through; text-decoration-thickness: 1px; }
   .rk-leg-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
 
   #tooltip1 .tt-sub { font-size: 10.5px; opacity: 0.75; margin: -1px 0 4px; }
+
+  /* ===== Vista "todos": pared marimekko (clases del motor N°2) ===== */
+  .m-bar { transition: opacity 0.2s; cursor: pointer; }
+  .m-bar.m-dim { opacity: 0.15; }
+  .m-country-label { font-family: var(--sans); font-size: 9.5px; pointer-events: none; transition: opacity 0.2s; }
+  .m-country-label.m-spotlight-label { font-weight: 700; }
+  .m-table-title { font-family: var(--sans); font-size: 10px; font-weight: 600; fill: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; pointer-events: none; }
+  .m-table-rule { stroke: var(--rule); stroke-width: 1; }
+  .m-table-swatch { pointer-events: none; }
+  .m-table-label, .m-table-value { font-family: var(--sans); font-size: 11px; font-weight: 500; fill: var(--ink); pointer-events: none; }
+  .m-table-value { font-variant-numeric: tabular-nums; }
+  .m-table-row-active.m-table-label, .m-table-row-active.m-table-value { font-weight: 700; }
+  .m-table-row-dimmed.m-table-label, .m-table-row-dimmed.m-table-value, .m-table-row-dimmed.m-table-swatch { opacity: 0.25; }
+
+  /* Tabla regional colapsable (solo mobile, vista "todos") */
+  #mk-avg-table-mobile-wrap { display: none; }
+  .m-mt-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-family: var(--sans); font-size: 12.5px; color: var(--ink); }
+  .m-mt-swatch { width: 10px; height: 10px; border-radius: 2px; flex: 0 0 auto; }
+  .m-mt-label { flex: 1; }
+  .m-mt-value { font-variant-numeric: tabular-nums; font-weight: 600; }
+  @media (max-width: 768px) { #mk-avg-table-mobile-wrap { display: block; } }
 
   @media (max-width: 768px) {
     .m-search-wrap { max-width: 100%; }
@@ -96,7 +121,7 @@
   </header>
 
   <section class="chart-block" data-chart="1" data-editor-id="n5-ranking">
-    <h2 class="chart-title" data-i18n="c1-title">El Río de la Plata, campeón mundial de la tolerancia (declarada)</h2>
+    <h2 class="chart-title" data-i18n="c1-title-neutral">Los vecinos que cada sociedad rechaza</h2>
     <p class="chart-subtitle" data-i18n="c1-subtitle">Porcentaje que no querría tener de vecinos a personas de otra raza. Último dato disponible por país, 2017-2022.</p>
 
     <div class="m-controls">
@@ -121,6 +146,13 @@
           <button data-view="all" data-i18n="c1-view-all">Todos los países</button>
         </div>
       </div>
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c1-median-lbl">Mediana mundial</span>
+        <div class="toggle" id="rk-median">
+          <button data-median="on" class="active" data-i18n="c1-median-on">Mostrar</button>
+          <button data-median="off" data-i18n="c1-median-off">Ocultar</button>
+        </div>
+      </div>
     </div>
     <div class="m-controls" id="rk-country-picker">
       <div class="m-ctrl-group">
@@ -137,6 +169,12 @@
     <div class="chart-svg-wrap">
       <svg id="chart1" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="tooltip" id="tooltip1"></div>
+    </div>
+    <div id="mk-avg-table-mobile-wrap">
+      <details class="m-mobile-collapse" style="display:block;">
+        <summary data-i18n="c1-avg-table-title">Promedio por región</summary>
+        <div id="mk-avg-table-mobile"></div>
+      </details>
     </div>
   </section>
 
@@ -159,15 +197,15 @@
 
 <script src="../lib/regions.js?v=2"></script>
 <script src="../lib/i18n.js?v=2"></script>
-<script src="./i18n-issue.js?v=1"></script>
+<script src="./i18n-issue.js?v=2"></script>
 <script src="../lib/utils.js?v=4"></script>
 <script src="../lib/country-names.js?v=2"></script>
-<script src="./data-vecinos.js?v=1"></script>
+<script src="./data-vecinos.js?v=2"></script>
 <script src="../lib/editor.js?v=1"></script>
-<script src="./ranking.js?v=1"></script>
+<script src="./ranking.js?v=2"></script>
 <script src="../lib/png-export.js?v=3"></script>
 <script>
-  window.__N5_V = '1';
+  window.__N5_V = '2';
   initRanking();
   applyI18n();
   if (window.__atlasRedraw) window.__atlasRedraw();
@@ -177,6 +215,6 @@
   });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=1"></script>
+<script src="./nav.js?v=2"></script>
 </body>
 </html>

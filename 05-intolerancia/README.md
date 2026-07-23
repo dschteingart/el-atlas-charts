@@ -153,7 +153,7 @@ Gancho editorial: el Mundial 2026 y las acusaciones de racismo sobre Argentina.
 - [x] Project Implicit descargado y procesado (sesgo implícito, 34 países).
 - [x] **Chart 1 (ranking barras)**: `chart-ranking.html` + `ranking.js` (motor
   clonado del talento N°3, stack lib/). Selector de 9 categorías, vista
-  selección/todos, buscador+chips, mediana mundial, leyenda por región Atlas,
+  selección (barras) / todos (pared marimekko del N°2 con labels rotadas y tabla regional), buscador+chips, mediana mundial con toggle, leyenda interactiva (hover atenúa, click apaga región),
   tooltip con encuesta/año/n, CSV, títulos insight→neutral, ES/EN.
   `lib/png-export.js` ganó la rama N°5 (sentinel `ES_N5_INTOLERANCIA` +
   FILENAMES propios). Andamiaje del número: `index.html`, `nav.js`,
