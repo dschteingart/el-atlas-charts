@@ -135,9 +135,8 @@ function drawRanking() {
   rk_syncLegend();
   if (state[1].view === 'all') rk_drawMarimekko();
   else rk_drawBars();
-  // Tabla regional HTML (colapsable, solo mobile + vista 'all').
-  const mtWrap = document.getElementById('mk-avg-table-mobile-wrap');
-  if (mtWrap) mtWrap.style.display = state[1].view === 'all' ? '' : 'none';
+  // (La tabla regional HTML de abajo la gobierna cada vista: rk_drawMarimekko
+  // la muestra en mobile o cuando la flotante no entra; rk_drawBars la oculta.)
   // WYSIWYG: el buscador + chips van SIEMPRE visibles (los chips son las
   // barras en 'sel' y las etiquetas en 'all' — una sola fuente de verdad).
   const picker = document.getElementById('rk-country-picker');
@@ -161,6 +160,9 @@ function rk_drawBars() {
   const svg = document.getElementById('chart1');
   if (!svg) return;
   svg.innerHTML = '';
+  // La tabla regional de abajo es exclusiva del marimekko.
+  const _below = document.getElementById('mk-avg-table-mobile-wrap');
+  if (_below) _below.style.display = 'none';
 
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const square = editorFormat === 'square';
@@ -480,8 +482,13 @@ function mk_layoutCountryLabels(sortedData, barWidth, plotArea, labelCodes) {
   const placedCalloutSegments = [];
   const toDraw = [];
 
+  // Tope duro: el borde del viewBox. La fase forzada (allowOverflow) empujaba
+  // hasta rightBound+80, que se pasaba del SVG → la etiqueta se cortaba en el
+  // PNG (ej. España en el borde derecho, reporte de Daniel 2026-07-23). Ahora
+  // ninguna etiqueta puede exceder el viewBox: si no entra, se descarta.
+  const hardRight = (plotArea.vbRight || (plotArea.right + 40)) - 6;
   function findFreeTx(idealTx, projW, allowOverflow) {
-    const maxX = allowOverflow ? rightBound + 80 : rightBound;
+    const maxX = Math.min(allowOverflow ? rightBound + 80 : rightBound, hardRight);
     const minX = leftBound + projW;
     let tx = Math.max(minX, idealTx);
     let guard = 0;
@@ -786,7 +793,7 @@ function rk_drawMarimekko() {
 
   // === Etiquetas de país rotadas con callouts ===
   const labelsG = rk_ns('g'); svg.appendChild(labelsG);
-  const plotArea = { left: MARGIN.left, right: MARGIN.left + PLOT_W, top: MARGIN.top, bottom: MARGIN.top + PLOT_H };
+  const plotArea = { left: MARGIN.left, right: MARGIN.left + PLOT_W, top: MARGIN.top, bottom: MARGIN.top + PLOT_H, vbRight: W };
   const placed = mk_layoutCountryLabels(data, barWidth, plotArea, labelCodes);
   placed.forEach(l => {
     const path = rk_ns('path');
@@ -827,10 +834,29 @@ function rk_drawMarimekko() {
       };
     })
     .sort((a, b) => b.value - a.value);
-  if (tableVisible) {
+  // ¿Entra la tabla flotante en el hueco arriba-derecha? Ocupa la franja-x
+  // derecha (~60%→100% del ancho) y necesita libre el ~64% superior de esa
+  // franja. Si las barras bajo la tabla son altas (ej. drogadictos: todas
+  // >37%), no entra → la tabla se muestra como bloque debajo del gráfico en
+  // vez de taparlas (opción elegida por Daniel, 2026-07-23).
+  const tableXFrac = (MK_TABLE_X - MK_MARGIN_DESKTOP.left) / (MK_W_DESKTOP - MK_MARGIN_DESKTOP.left - MK_MARGIN_DESKTOP.right);
+  const rankUnder = n > 0 ? Math.min(n - 1, Math.floor(tableXFrac * n)) : 0;
+  const maxUnderTable = n > 0 ? data[rankUnder].pct : 0;   // data ya está desc
+  const tableFits = maxUnderTable < 0.36 * yMax;
+  const showSvgTable = tableVisible && tableFits;
+  if (showSvgTable) {
     mk_drawRegionalAvgTable(svg, tableRows, s1.activeRegion, SIZES, mobilePng);
   }
   mk_drawRegionalAvgTableHTML(tableRows, s1.activeRegion);
+  // Tabla HTML debajo del gráfico: en mobile SIEMPRE; en desktop solo cuando la
+  // flotante no entra (ahí se muestra expandida, sin el colapsable).
+  const belowWrap = document.getElementById('mk-avg-table-mobile-wrap');
+  if (belowWrap) {
+    const showBelow = !showSvgTable;
+    belowWrap.style.display = showBelow ? 'block' : 'none';
+    const det = belowWrap.querySelector('details');
+    if (det && !mobile) det.open = showBelow;
+  }
 }
 
 function mk_drawRegionalAvgTable(svg, rows, activeRegion, SIZES, mobilePng) {
@@ -841,33 +867,17 @@ function mk_drawRegionalAvgTable(svg, rows, activeRegion, SIZES, mobilePng) {
   const rowH = base * rowFactor;
   const swatchSize = base * swatchFactor;
   const swatchGap = base * gapFactor;
-  const yFirst = mobilePng ? 110 : MK_TABLE_Y_FIRST;
+  // Más aire entre el título "PROMEDIO POR REGIÓN" y la primera fila (pedido de
+  // Daniel 2026-07-23): ~2.4 alturas de fila bajo el título (antes ~20px, ahora ~26).
+  const titleGap = base * 2.4;
+  const yFirst = (mobilePng ? 84 : MK_TABLE_Y_TITLE) + titleGap;
   const tableX = mobilePng ? 520 : MK_TABLE_X;
   const tableW = mobilePng ? 540 : MK_TABLE_W;
   const tableYTitle = mobilePng ? 80 : MK_TABLE_Y_TITLE;
-  const ruleY = mobilePng ? tableYTitle + 12 : MK_TABLE_Y_TITLE + 6;
+  const ruleY = tableYTitle + base * 0.7;
   const g = rk_ns('g');
   g.setAttribute('id', 'mk-avg-table');
   svg.appendChild(g);
-
-  // Panel de fondo: en categorías donde TODAS las barras son altas (ej.
-  // drogadictos ~70-97%) la tabla queda sobre barras y se vuelve ilegible.
-  // Un panel crema opaco detrás la despega del fondo en cualquier categoría
-  // (reporte de Daniel, 2026-07-22). Hex explícito (el PNG no resuelve var()).
-  const padX = base * 0.7, padTop = titleSize + base * 0.5;
-  const panelY = tableYTitle - padTop;
-  const panelBottom = yFirst + (rows.length - 1) * rowH + base * 0.6;
-  const panel = rk_ns('rect');
-  panel.setAttribute('x', tableX - padX);
-  panel.setAttribute('y', panelY);
-  panel.setAttribute('width', tableW + padX * 2);
-  panel.setAttribute('height', panelBottom - panelY);
-  panel.setAttribute('rx', 6);
-  panel.setAttribute('fill', '#FAF8F3');
-  panel.setAttribute('fill-opacity', '0.94');
-  panel.setAttribute('stroke', '#E0DCC8');
-  panel.setAttribute('stroke-width', '1');
-  g.appendChild(panel);
 
   const title = rk_ns('text');
   title.setAttribute('class', 'm-table-title');

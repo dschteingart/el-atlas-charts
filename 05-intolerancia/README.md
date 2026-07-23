@@ -160,16 +160,20 @@ Gancho editorial: el Mundial 2026 y las acusaciones de racismo sobre Argentina.
   NO atenúa ni pone en negrita (eso es solo el hover de la leyenda). Picker +
   buscador visibles en ambas vistas. Mediana mundial con toggle (default on).
   Leyenda de regiones interactiva: hover atenúa las demás, click apaga/prende la
-  región. Tabla de promedios regionales con panel de fondo (legible sobre barras
-  altas, ej. drogadictos). Tooltip con encuesta/año/n. Título neutral. CSV. ES/EN.
+  región. **Tabla de promedios regionales adaptativa**: flota arriba-derecha
+  cuando el hueco está libre (otra_raza, inmigrantes, homosexuales, sida…); cuando
+  todas las barras son altas y la taparía (drogadictos, bebedores) baja como
+  bloque debajo del gráfico. Tooltip con encuesta/año/n. Título neutral. CSV. ES/EN.
   `lib/png-export.js` ganó la rama N°5 (sentinel `ES_N5_INTOLERANCIA` + FILENAMES).
   - **Placement de etiquetas del marimekko:** port del algoritmo OWID del N°2
     con un fix propio — el chequeo de colisión valida el callout COMPLETO (V
     inicial + H + V final + palitos rectos), no solo la H+Vfinal como el N°2
     (que dejaba cruzar palitos posteriores). Default curado a 15 países que
     entran sin cruces en las 9 categorías (0 cruces verificados; ~2 etiquetas se
-    descartan en 2 categorías densas antes que forzar un cruce). **Este fix
-    conviene portarlo al marimekko del N°2.**
+    descartan en 2 categorías densas antes que forzar un cruce). El placement
+    capea al borde del viewBox (la fase forzada del N°2 empujaba etiquetas fuera
+    del SVG → se cortaban en el PNG, ej. España al agregar muchos europeos).
+    **Estos fixes conviene portarlos al marimekko del N°2.**
   - Andamiaje del número: `index.html`, `nav.js`, `i18n-issue.js`,
     `data-vecinos.js` (generado por `tools/make_datajs.py`).
 - [ ] Charts 2-6: evolución (líneas, motor elo-trayectoria), mapa (motor
