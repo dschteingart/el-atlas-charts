@@ -39,8 +39,16 @@
   .m-select { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 28px 6px 13px; border: 1px solid var(--rule); border-radius: 15px; background-color: var(--bg); color: var(--ink-soft); cursor: pointer; -webkit-appearance: none; appearance: none; outline: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%238a8378' stroke-width='1.5'/></svg>"); background-repeat: no-repeat; background-position: right 11px center; }
   .m-select:focus { border-color: var(--accent); }
   #chart3 path { cursor: pointer; }
+  #tooltip3 { min-width: 150px; }
   #tooltip3 .tt-row-sub { font-size: 10.5px; opacity: 0.72; }
   #tooltip3 .tt-muted { opacity: 0.7; font-style: italic; }
+  .mp-play { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--rule); background: var(--bg); color: var(--accent); font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+  .mp-play:hover { border-color: var(--accent); }
+  .mp-play.playing { background: var(--accent); color: #fff; }
+  .mp-wave-slider { -webkit-appearance: none; appearance: none; width: 130px; height: 4px; border-radius: 2px; background: var(--grid); outline: none; cursor: pointer; }
+  .mp-wave-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .mp-wave-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .mp-wave-display { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--ink); min-width: 82px; font-variant-numeric: tabular-nums; }
   .m-mobile-collapse { display: none; }
   .m-mobile-collapse > summary { font-family: var(--sans); font-size: 11px; color: var(--accent); cursor: pointer; padding: 6px 0; list-style: none; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
   .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
@@ -82,6 +90,12 @@
           <option value="drogadictos" data-i18n="cat-drogadictos">Drogadictos</option>
         </select>
       </div>
+      <div class="m-ctrl-group" id="mp-wave-group">
+        <span class="m-ctrl-label" data-i18n="c1-wave-label">Ola de la encuesta</span>
+        <button id="mp-play" class="mp-play" aria-label="Reproducir">▶</button>
+        <input type="range" id="mp-wave-slider" class="mp-wave-slider" aria-label="Ola de la encuesta">
+        <span class="mp-wave-display" id="mp-wave-display">2017-2022</span>
+      </div>
     </div>
 
     <div class="chart-svg-wrap">
@@ -113,9 +127,10 @@
 <script src="../lib/utils.js?v=4"></script>
 <script src="../lib/country-names.js?v=2"></script>
 <script src="./data-vecinos.js?v=3"></script>
+<script src="./data-waves.js?v=1"></script>
 <script src="../03-futbol/data-country-geo.js?v=1"></script>
 <script src="../lib/editor.js?v=1"></script>
-<script src="./mapa.js?v=4"></script>
+<script src="./mapa.js?v=5"></script>
 <script src="../lib/png-export.js?v=3"></script>
 <script>
   window.__N5_V = '5';

@@ -57,11 +57,12 @@ const ISSUE_I18N = {
     // ---- Chart 3: mapa mundial
     'c3-title':          'El sur de Sudamérica, entre los más tolerantes del planeta',
     'c3-title-neutral':  'El mapa mundial de la intolerancia declarada',
-    'c3-subtitle-tpl':   'Porcentaje que no querría tener de vecinos a {CAT}. Último dato disponible por país, 2017-2022.',
+    'c3-subtitle-tpl':   'Porcentaje que no querría tener de vecinos a {CAT}, país por país. Encuesta de {PERIODO}.',
     'c3-subtitle-png':   'Porcentaje que no querría de vecino a este grupo. Último dato por país, 2017-2022.',
     'c3-legend-title':   '% que lo rechaza',
     'c3-legend-nodata':  'Sin dato',
     'c3-tt-year':        'Medición',
+    'c3-tt-trend':       'Evolución en el tiempo',
     'c3-tt-nodata':      'Sin dato en la encuesta',
     'c3-sources':        'Datos: Integrated Values Survey (EVS/WVS), pregunta de vecinos, mención espontánea, % ponderado, último dato 2017-2022. Los cortes de color son fijos (en puntos de %) para que el mapa sea comparable entre categorías. A diferencia del mapa viral de 2013, la ventana temporal es única y el año de cada país está en el tooltip. Mide intolerancia declarada.',
 
@@ -169,11 +170,12 @@ const ISSUE_I18N = {
     // ---- Chart 3: world map
     'c3-title':          'Southern South America, among the world’s most tolerant',
     'c3-title-neutral':  'The world map of declared intolerance',
-    'c3-subtitle-tpl':   'Share who would not want {CAT} as neighbours. Latest available data per country, 2017-2022.',
+    'c3-subtitle-tpl':   'Share who would not want {CAT} as neighbours, country by country. Survey wave {PERIODO}.',
     'c3-subtitle-png':   'Share who would not want this group as neighbours. Latest data per country, 2017-2022.',
     'c3-legend-title':   '% who reject them',
     'c3-legend-nodata':  'No data',
     'c3-tt-year':        'Measured',
+    'c3-tt-trend':       'Trend over time',
     'c3-tt-nodata':      'No survey data',
     'c3-sources':        'Data: Integrated Values Survey (EVS/WVS), neighbours question, spontaneous mention, weighted %, latest data 2017-2022. Colour breaks are fixed (in percentage points) so the map is comparable across categories. Unlike the viral 2013 map, the time window is single and each country’s year is in the tooltip. Measures declared intolerance.',
 
