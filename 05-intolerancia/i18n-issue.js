@@ -52,6 +52,16 @@ const ISSUE_I18N = {
     'catA-bebedores_drogadictos': 'bebedores, drogadictos o alcohólicos',
     'catA-jovenes':           'jóvenes',
 
+    // ---- Chart 4: perfil de intolerancia de un país
+    'c4-title':          'La Argentina le teme al vicio, no al distinto',
+    'c4-title-neutral':  '¿A quién le teme cada sociedad?',
+    'c4-subtitle-tpl':   'A qué tipo de vecino rechaza {PAIS}, categoría por categoría, contra la mediana mundial. Último dato 2017-2022.',
+    'c4-country-label':  'País',
+    'c4-median-legend':  'Mediana mundial',
+    'c4-tt-above':       'Por encima de la mediana mundial.',
+    'c4-tt-below':       'Por debajo de la mediana mundial.',
+    'c4-sources':        'Datos: Integrated Values Survey (EVS/WVS), pregunta de vecinos, mención espontánea. Último dato disponible por país (2017-2022); % ponderado. La mediana mundial es la de todos los países con dato en cada categoría. Mide intolerancia declarada.',
+
     // ---- Chart 6: Latinobarómetro 2024 (barras LatAm)
     'c6-title':          'Chile y Perú, los más recelosos del inmigrante en la región',
     'c6-title-neutral':  'La intolerancia declarada en América Latina',
@@ -118,6 +128,16 @@ const ISSUE_I18N = {
     'cat-jovenes':            'Young people',
     'catA-bebedores_drogadictos': 'heavy drinkers, drug addicts or alcoholics',
     'catA-jovenes':           'young people',
+
+    // ---- Chart 4: country intolerance profile
+    'c4-title':          'Argentina fears vice, not the different',
+    'c4-title-neutral':  'Whom does each society fear?',
+    'c4-subtitle-tpl':   'Which kind of neighbour {PAIS} rejects, category by category, against the world median. Latest data 2017-2022.',
+    'c4-country-label':  'Country',
+    'c4-median-legend':  'World median',
+    'c4-tt-above':       'Above the world median.',
+    'c4-tt-below':       'Below the world median.',
+    'c4-sources':        'Data: Integrated Values Survey (EVS/WVS), neighbours question, spontaneous mention. Latest available data per country (2017-2022); weighted %. The world median covers all countries with data in each category. Measures declared intolerance.',
 
     // ---- Chart 6: Latinobarómetro 2024 (LatAm bars)
     'c6-title':          'Chile and Peru, the region’s wariest of immigrants',
