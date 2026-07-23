@@ -2,9 +2,10 @@
 //  El Atlas N°5 — Chart 2: la película (líneas temporales)
 // =============================================================
 // Evolución del rechazo declarado a cada tipo de vecino, 1981-2022, por país.
-// Multi-línea con chips=selección (WYSIWYG). Default: homosexuales, con el
-// derrumbe de la homofobia latinoamericana (ARG 39%→9%). Selector de categoría,
-// hover que atenúa las demás líneas, etiqueta al final de cada línea.
+// Chips=selección (WYSIWYG). Default: homosexuales (derrumbe de la homofobia).
+// Patrón de líneas históricas del Atlas (natividad N°3): slider de período,
+// hover por opacidad (sin redibujar → no se tilda), crosshair con interpolación,
+// etiquetas al FINAL de cada línea (no apiladas en el margen).
 //
 // Datos: PELI_SERIES[cat][iso3] = [[year,pct],...] (data-pelicula.js), PELI_CATS.
 
@@ -16,6 +17,8 @@ const PL_PALETTE = ['#234B85', '#2D6A3D', '#C9A227', '#6B3D8B', '#2C8484', '#7A2
 const PL_AXIS = '#9C928A';
 const PL_DEFAULT_CAT = 'homosexuales';
 const PL_DEFAULT_SEL = ['ARG', 'BRA', 'CHL', 'MEX', 'URY'];
+const PL_YEAR_MIN = 1981, PL_YEAR_MAX = 2022;
+const PL_YEARS = (() => { const a = []; for (let y = PL_YEAR_MIN; y <= PL_YEAR_MAX; y++) a.push(y); return a; })();
 
 function pl_isMobile() {
   return (typeof isMobileViewport === 'function') ? isMobileViewport() : (window.innerWidth || 1024) < 768;
@@ -32,8 +35,8 @@ function pl_measure(text, fs, w) {
 }
 function pl_getMargins(format) {
   switch (format) {
-    case 'newsletter': case 'square': return { top: 40, right: 200, bottom: 78, left: 78 };
-    case 'mobile': return { top: 30, right: 150, bottom: 62, left: 70 };
+    case 'newsletter': case 'square': return { top: 40, right: 190, bottom: 92, left: 78 };
+    case 'mobile': return { top: 30, right: 150, bottom: 74, left: 70 };
     default: return null;
   }
 }
@@ -48,6 +51,21 @@ function pl_color(iso) {
     s._colors[iso] = idx % PL_PALETTE.length;
   }
   return PL_PALETTE[s._colors[iso]];
+}
+
+// valor interpolado de una serie en un año (null si el año cae fuera del rango
+// con datos de esa serie). Para el crosshair.
+function pl_valueAt(pts, year) {
+  if (!pts.length) return null;
+  if (year <= pts[0][0]) return year === pts[0][0] ? pts[0][1] : null;
+  if (year >= pts[pts.length - 1][0]) return year === pts[pts.length - 1][0] ? pts[pts.length - 1][1] : null;
+  for (let i = 1; i < pts.length; i++) {
+    if (year <= pts[i][0]) {
+      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
+      return y0 + (y1 - y0) * (year - x0) / (x1 - x0);
+    }
+  }
+  return null;
 }
 
 function pl_updateSubtitle() {
@@ -75,18 +93,26 @@ function drawPelicula() {
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const bigFmt = !!editorFormat || pl_isMobile();
   const mobile = !editorFormat && pl_isMobile();
+  const isPngFormat = editorFormat === 'newsletter' || editorFormat === 'square' || editorFormat === 'mobile';
   const cat = state[2].cat;
   const src = (typeof PELI_SERIES !== 'undefined') ? (PELI_SERIES[cat] || {}) : {};
+  const period = state[2].period || [PL_YEAR_MIN, PL_YEAR_MAX];
+  const [y0, y1] = period;
 
-  // series seleccionadas con dato en esta categoría
-  const sel = (state[2].selected || []).filter(iso => src[iso] && src[iso].length >= 2);
-  const series = sel.map(iso => ({ iso, pts: src[iso], color: pl_color(iso) }));
+  // series seleccionadas con dato en esta categoría, recortadas al período
+  const sel = (state[2].selected || []).filter(iso => src[iso] && src[iso].length >= 1);
+  const series = sel.map(iso => ({
+    iso, color: pl_color(iso),
+    pts: src[iso].filter(p => p[0] >= y0 && p[0] <= y1)
+  })).filter(s => s.pts.length >= 1);
 
   const SIZES = editorFormat
     ? { tick: 22, axisTitle: 25, label: 24 }
     : mobile
     ? { tick: 20, axisTitle: 22, label: 22 }
     : { tick: 11, axisTitle: 11.5, label: 12.5 };
+  const lineW = bigFmt ? 3.4 : 2.2, haloW = lineW + (bigFmt ? 5 : 3), dotR = bigFmt ? 4 : 2.6;
+  const labelHalo = bigFmt ? 5 : 3;
 
   let W, H, MARGIN;
   if (editorFormat) {
@@ -96,21 +122,24 @@ function drawPelicula() {
   } else {
     W = 1100; H = 560; MARGIN = { top: 20, right: 168, bottom: 48, left: 60 };
   }
+
+  // margen derecho dinámico por las etiquetas de fin de línea
+  let maxLabelW = 0;
+  series.forEach(s => { const w = pl_measure(pl_name(s.iso) + (isPngFormat ? '  100%' : ''), SIZES.label, 700); if (w > maxLabelW) maxLabelW = w; });
+  const neededRight = (bigFmt ? 16 : 10) + maxLabelW + (bigFmt ? 12 : 8);
+  MARGIN.right = Math.min(Math.round(W * 0.40), Math.max(MARGIN.right, neededRight));
+
   const plotW = W - MARGIN.left - MARGIN.right;
   const plotH = H - MARGIN.top - MARGIN.bottom;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
 
-  // dominios
-  let years = []; series.forEach(s => s.pts.forEach(p => years.push(p[0])));
-  const allYears = years.length ? years : [1990, 2020];
-  const xMin = Math.min(...allYears), xMax = Math.max(...allYears);
   const yMaxData = series.length ? Math.max(...series.flatMap(s => s.pts.map(p => p[1]))) : 10;
   const yMax = Math.max(10, Math.ceil((yMaxData * 1.08) / 5) * 5);
-  const xScale = (yr) => MARGIN.left + ((yr - xMin) / Math.max(1, xMax - xMin)) * plotW;
+  const xScale = (yr) => MARGIN.left + ((yr - y0) / Math.max(1, y1 - y0)) * plotW;
   const yScale = (v) => MARGIN.top + plotH - (v / yMax) * plotH;
 
-  // grid + ticks
+  // grid + ejes
   const gridG = pl_ns('g'); svg.appendChild(gridG);
   const yticks = (typeof niceLinearTicks === 'function') ? niceLinearTicks(0, yMax, (mobile ? 4 : 6)) : [0, 20, 40];
   yticks.forEach(v => {
@@ -123,8 +152,7 @@ function drawPelicula() {
     tx.setAttribute('fill', '#7A6E62'); tx.setAttribute('font-variant-numeric', 'tabular-nums'); tx.textContent = Math.round(v) + '%';
     gridG.appendChild(tx);
   });
-  // ticks X (años redondos)
-  const xt = (typeof niceLinearTicks === 'function') ? niceLinearTicks(xMin, xMax, mobile ? 4 : 7).filter(v => v >= xMin && v <= xMax) : [];
+  const xt = (typeof niceLinearTicks === 'function') ? niceLinearTicks(y0, y1, mobile ? 4 : 7).filter(v => v >= y0 && v <= y1) : [];
   xt.forEach(v => {
     const x = xScale(v);
     const tx = pl_ns('text'); tx.setAttribute('x', x); tx.setAttribute('y', MARGIN.top + plotH + (bigFmt ? 30 : 16));
@@ -132,7 +160,6 @@ function drawPelicula() {
     tx.style.fontSize = SIZES.tick + 'px'; tx.setAttribute('fill', '#7A6E62'); tx.setAttribute('font-variant-numeric', 'tabular-nums');
     tx.textContent = Math.round(v); gridG.appendChild(tx);
   });
-
   // eje Y título
   const yTitle = pl_ns('text');
   const ytx = bigFmt ? 20 : 14;
@@ -143,48 +170,76 @@ function drawPelicula() {
   yTitle.textContent = (typeof t === 'function') ? t('c6-axis-x') : '% que no lo querría de vecino';
   svg.appendChild(yTitle);
 
-  // líneas
-  const active = state[2].hover;   // iso resaltado por hover
+  // capas
+  const halosG = pl_ns('g'); svg.appendChild(halosG);
   const linesG = pl_ns('g'); svg.appendChild(linesG);
-  const labelSlots = [];   // para etiquetas al final de línea
+  const dotsG = pl_ns('g'); svg.appendChild(dotsG);
+  const hitG = pl_ns('g'); svg.appendChild(hitG);
+
+  const endLabels = [];
   series.forEach(s => {
-    const dim = active && active !== s.iso;
-    const d = s.pts.map((p, i) => `${i ? 'L' : 'M'} ${xScale(p[0]).toFixed(1)},${yScale(p[1]).toFixed(1)}`).join(' ');
+    if (!s.pts.length) return;
+    const d = s.pts.map((p, i) => (i ? 'L' : 'M') + xScale(p[0]).toFixed(1) + ',' + yScale(p[1]).toFixed(1)).join(' ');
+    // halo crema
+    const halo = pl_ns('path'); halo.setAttribute('d', d); halo.setAttribute('fill', 'none');
+    halo.setAttribute('stroke', '#FAF8F3'); halo.setAttribute('stroke-width', haloW);
+    halo.setAttribute('stroke-linejoin', 'round'); halo.setAttribute('stroke-linecap', 'round'); halo.setAttribute('data-pl', s.iso);
+    halosG.appendChild(halo);
+    // línea
     const path = pl_ns('path'); path.setAttribute('d', d); path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', s.color); path.setAttribute('stroke-width', bigFmt ? (active === s.iso ? 4.5 : 3) : (active === s.iso ? 3 : 2));
-    path.setAttribute('stroke-opacity', dim ? 0.18 : 1); path.setAttribute('stroke-linejoin', 'round'); path.setAttribute('stroke-linecap', 'round');
-    path.style.cursor = 'pointer'; path.dataset.iso = s.iso;
+    path.setAttribute('stroke', s.color); path.setAttribute('stroke-width', lineW);
+    path.setAttribute('stroke-linejoin', 'round'); path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('data-pl', s.iso); path.setAttribute('data-base-w', lineW); path.classList.add('pl-colored');
     linesG.appendChild(path);
     // puntos
     s.pts.forEach(p => {
       const c = pl_ns('circle'); c.setAttribute('cx', xScale(p[0])); c.setAttribute('cy', yScale(p[1]));
-      c.setAttribute('r', bigFmt ? 4 : 2.6); c.setAttribute('fill', s.color); c.setAttribute('fill-opacity', dim ? 0.18 : 1);
-      linesG.appendChild(c);
+      c.setAttribute('r', dotR); c.setAttribute('fill', s.color); c.setAttribute('stroke', '#FAF8F3');
+      c.setAttribute('stroke-width', bigFmt ? 2 : 1.2); c.setAttribute('data-pl', s.iso); dotsG.appendChild(c);
     });
-    // slot de etiqueta al final
+    // hit-area para el énfasis al hover (no redibuja)
+    if (!isPngFormat) {
+      const hit = pl_ns('path'); hit.setAttribute('d', d); hit.setAttribute('fill', 'none');
+      hit.setAttribute('stroke', 'transparent'); hit.setAttribute('stroke-width', Math.max(lineW + 8, 10)); hit.style.cursor = 'pointer';
+      hit.addEventListener('mouseenter', () => pl_emph(s.iso));
+      hit.addEventListener('mouseleave', () => pl_emph(null));
+      hitG.appendChild(hit);
+    }
     const last = s.pts[s.pts.length - 1];
-    labelSlots.push({ iso: s.iso, color: s.color, y: yScale(last[1]), x: xScale(last[0]), dim });
-    // hover en la línea
-    path.addEventListener('mouseenter', () => { if (HAS_HOVER) { state[2].hover = s.iso; drawPelicula(); } });
-    path.addEventListener('mouseleave', () => { if (HAS_HOVER && state[2].hover === s.iso) { state[2].hover = null; drawPelicula(); } });
+    endLabels.push({ iso: s.iso, color: s.color, text: pl_name(s.iso), x: xScale(last[0]), idealY: yScale(last[1]), valLast: last[1] });
   });
 
-  // etiquetas al final (anti-colisión simple en Y)
-  labelSlots.sort((a, b) => a.y - b.y);
-  const labelH = (bigFmt ? SIZES.label : SIZES.label) * 1.05;
-  for (let i = 1; i < labelSlots.length; i++) {
-    if (labelSlots[i].y - labelSlots[i - 1].y < labelH) labelSlots[i].y = labelSlots[i - 1].y + labelH;
+  // etiquetas al final de cada línea, con anti-colisión vertical entre las que
+  // terminan cerca en X (línea guía si se corren). Estilo OWID.
+  const GAP = (bigFmt ? SIZES.label : SIZES.label) + (bigFmt ? 5 : 3);
+  endLabels.sort((a, b) => a.idealY - b.idealY);
+  endLabels.forEach(l => { l.y = l.idealY; });
+  for (let pass = 0; pass < 6; pass++) {
+    for (let i = 0; i < endLabels.length; i++) for (let j = i + 1; j < endLabels.length; j++) {
+      const a = endLabels[i], b = endLabels[j];
+      const xClose = Math.abs(a.x - b.x) < maxLabelW + 10;   // solo colisionan si terminan cerca en X
+      if (xClose && Math.abs(a.y - b.y) < GAP) {
+        const push = (GAP - Math.abs(a.y - b.y)) / 2 + 0.5;
+        if (a.y <= b.y) { a.y -= push; b.y += push; } else { a.y += push; b.y -= push; }
+      }
+    }
   }
-  const maxY = MARGIN.top + plotH;
-  const overflow = labelSlots.length ? Math.max(0, labelSlots[labelSlots.length - 1].y - maxY) : 0;
-  if (overflow > 0) labelSlots.forEach(s => s.y -= overflow);
+  endLabels.forEach(l => { l.y = Math.max(MARGIN.top + (bigFmt ? 8 : 5), Math.min(MARGIN.top + plotH, l.y)); l.shifted = Math.abs(l.y - l.idealY) > 2; });
   const labG = pl_ns('g'); svg.appendChild(labG);
-  labelSlots.forEach(s => {
-    const tx = pl_ns('text'); tx.setAttribute('x', MARGIN.left + plotW + 8); tx.setAttribute('y', s.y);
+  endLabels.forEach(l => {
+    if (l.shifted) {
+      const gl = pl_ns('line'); gl.setAttribute('x1', l.x); gl.setAttribute('y1', l.idealY);
+      gl.setAttribute('x2', l.x + (bigFmt ? 8 : 5)); gl.setAttribute('y2', l.y);
+      gl.setAttribute('stroke', l.color); gl.setAttribute('stroke-width', bigFmt ? 1.3 : 0.8); gl.setAttribute('stroke-opacity', 0.5);
+      gl.setAttribute('data-pl', l.iso); labG.appendChild(gl);
+    }
+    const tx = pl_ns('text'); tx.setAttribute('x', l.x + (bigFmt ? 12 : 7)); tx.setAttribute('y', l.y);
     tx.setAttribute('dominant-baseline', 'central'); tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-    tx.style.fontSize = SIZES.label + 'px'; tx.setAttribute('font-weight', 600);
-    tx.setAttribute('fill', s.color); tx.setAttribute('fill-opacity', s.dim ? 0.3 : 1);
-    tx.textContent = pl_name(s.iso); labG.appendChild(tx);
+    tx.style.fontSize = SIZES.label + 'px'; tx.setAttribute('font-weight', bigFmt ? 700 : 600); tx.setAttribute('fill', l.color);
+    tx.setAttribute('paint-order', 'stroke'); tx.setAttribute('stroke', '#FAF8F3'); tx.setAttribute('stroke-width', labelHalo); tx.setAttribute('stroke-linejoin', 'round');
+    tx.setAttribute('data-pl', l.iso);
+    tx.textContent = l.text + (isPngFormat && l.valLast != null ? '  ' + Math.round(l.valLast) + '%' : '');
+    labG.appendChild(tx);
   });
 
   // eje 0
@@ -192,17 +247,72 @@ function drawPelicula() {
   zero.setAttribute('y1', MARGIN.top); zero.setAttribute('y2', MARGIN.top + plotH);
   zero.setAttribute('stroke', PL_AXIS); zero.setAttribute('stroke-width', 1); svg.appendChild(zero);
 
-  // crosshair táctil
-  if (typeof wireTouchScrub === 'function') wireTouchScrub(svg, () => {});
+  // crosshair + tooltip (no en PNG)
+  if (!isPngFormat && series.length) {
+    pl_setupHover(svg, { W, H, MARGIN, plotW, plotH, y0, y1, xScale, yScale, series });
+  }
 
-  // título insight→neutral: insight solo en el estado default (homosexuales +
-  // selección default)
+  // título insight→neutral: insight solo en el estado default
   if (typeof atlasSetHeading === 'function') {
     const s2 = state[2];
+    const periodDefault = (s2.period || [PL_YEAR_MIN, PL_YEAR_MAX])[0] === PL_YEAR_MIN && (s2.period || [PL_YEAR_MIN, PL_YEAR_MAX])[1] === PL_YEAR_MAX;
     const selDefault = s2.cat === PL_DEFAULT_CAT && s2.selected.length === PL_DEFAULT_SEL.length
-      && PL_DEFAULT_SEL.every(i => s2.selected.includes(i));
+      && PL_DEFAULT_SEL.every(i => s2.selected.includes(i)) && periodDefault;
     atlasSetHeading('2', selDefault, { title: 'c2-title', titleNeutral: 'c2-title-neutral' });
   }
+}
+
+// Énfasis al hover sobre una línea: atenúa el resto (NO redibuja → no se tilda).
+function pl_emph(iso) {
+  const svg = document.getElementById('chart2'); if (!svg) return;
+  svg.querySelectorAll('[data-pl]').forEach(el => {
+    const me = el.getAttribute('data-pl');
+    if (iso == null) { el.style.opacity = ''; if (el.classList.contains('pl-colored')) el.setAttribute('stroke-width', el.getAttribute('data-base-w')); }
+    else if (me === iso) { el.style.opacity = '1'; if (el.classList.contains('pl-colored')) el.setAttribute('stroke-width', (parseFloat(el.getAttribute('data-base-w')) * 1.5).toFixed(1)); }
+    else el.style.opacity = '0.14';
+  });
+}
+
+// Crosshair vertical + tooltip con valores interpolados al año bajo el cursor.
+function pl_setupHover(svg, ctx) {
+  const { W, MARGIN, plotH, y0, y1, xScale, yScale, series } = ctx;
+  const tooltip = document.getElementById('tooltip2');
+  const hoverG = pl_ns('g'); hoverG.setAttribute('display', 'none'); svg.appendChild(hoverG);
+  const vline = pl_ns('line'); vline.setAttribute('stroke', '#9a9488'); vline.setAttribute('stroke-width', 1);
+  vline.setAttribute('stroke-dasharray', '3 3'); vline.setAttribute('y1', MARGIN.top); vline.setAttribute('y2', MARGIN.top + plotH);
+  hoverG.appendChild(vline);
+  const cap = pl_ns('rect'); cap.setAttribute('x', MARGIN.left); cap.setAttribute('y', MARGIN.top);
+  cap.setAttribute('width', W - MARGIN.left - MARGIN.right); cap.setAttribute('height', plotH);
+  cap.setAttribute('fill', 'transparent'); svg.insertBefore(cap, svg.firstChild);
+  function update(year) {
+    if (year == null) { hoverG.setAttribute('display', 'none'); if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; } return; }
+    hoverG.setAttribute('display', ''); while (hoverG.children.length > 1) hoverG.removeChild(hoverG.lastChild);
+    const xAt = xScale(year); vline.setAttribute('x1', xAt); vline.setAttribute('x2', xAt);
+    const rows = [];
+    series.forEach(s => {
+      const v = pl_valueAt(s.pts, year); if (v == null) return;
+      const c = pl_ns('circle'); c.setAttribute('cx', xAt); c.setAttribute('cy', yScale(v)); c.setAttribute('r', 4);
+      c.setAttribute('fill', s.color); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', 1.5); hoverG.appendChild(c);
+      rows.push({ label: pl_name(s.iso), color: s.color, v });
+    });
+    if (tooltip && rows.length) {
+      rows.sort((a, b) => b.v - a.v);
+      let html = `<div style="font-weight:600;margin-bottom:4px;">${year}</div>`;
+      rows.forEach(r => { html += `<div style="display:flex;align-items:center;gap:6px;line-height:1.5;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${r.color};"></span><span style="flex:1;">${r.label}</span><strong style="font-variant-numeric:tabular-nums;">${(typeof fmt === 'function') ? fmt(r.v, 1) : r.v.toFixed(1)}%</strong></div>`; });
+      tooltip.innerHTML = html; tooltip.style.display = 'block'; tooltip.style.opacity = '1';
+    } else if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }
+  }
+  const moveH = (ev) => {
+    const rc = svg.getBoundingClientRect(); const sc = rc.width / W; const lx = ((typeof evClientX === 'function' ? evClientX(ev) : ev.clientX) - rc.left) / sc;
+    if (lx < MARGIN.left || lx > W - MARGIN.right) { update(null); return; }
+    const yr = Math.round(y0 + (lx - MARGIN.left) / (W - MARGIN.left - MARGIN.right) * (y1 - y0));
+    update(Math.max(y0, Math.min(y1, yr)));
+    if (tooltip) { const _x = (typeof evClientX === 'function' ? evClientX(ev) : ev.clientX) - rc.left, _w = tooltip.offsetWidth || 170;
+      tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px';
+      tooltip.style.top = ((typeof evClientY === 'function' ? evClientY(ev) : ev.clientY) - rc.top + 14) + 'px'; }
+  };
+  svg.addEventListener('mousemove', moveH); svg.addEventListener('mouseleave', () => update(null));
+  if (typeof wireTouchScrub === 'function') wireTouchScrub(svg, moveH);
 }
 
 // ---- chips + buscador (WYSIWYG) ----
@@ -252,6 +362,15 @@ function setupPeliculaCat() {
     state[2].cat = sel.value; drawPelicula();
   });
 }
+function setupPeliculaSlider() {
+  if (typeof setupWcRangeSlider !== 'function') return;
+  setupWcRangeSlider({
+    fromId: 'pl-slider-from', toId: 'pl-slider-to', dispId: 'pl-range-display', trackId: 'pl-range-track-active',
+    years: PL_YEARS,
+    get: () => state[2].period, set: (p) => { state[2].period = p; },
+    onChange: () => drawPelicula()
+  });
+}
 function setupPeliculaCSV() {
   document.querySelectorAll('button.download[data-chart="2-csv"]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -275,9 +394,10 @@ function setupPeliculaCSV() {
 }
 
 function initPelicula() {
-  if (!state[2]) state[2] = { cat: PL_DEFAULT_CAT, selected: [...PL_DEFAULT_SEL], hover: null };
+  if (!state[2]) state[2] = { cat: PL_DEFAULT_CAT, selected: [...PL_DEFAULT_SEL] };
+  if (!state[2].period) state[2].period = [PL_YEAR_MIN, PL_YEAR_MAX];
   const sel = document.getElementById('pl-cat-select'); if (sel) sel.value = state[2].cat;
-  setupPeliculaCat(); setupPeliculaSearch(); setupPeliculaCSV();
+  setupPeliculaCat(); setupPeliculaSearch(); setupPeliculaSlider(); setupPeliculaCSV();
   renderPeliculaChips(); drawPelicula();
   window.__atlasSupportsFormats = true;
   window.__atlasRedraw = drawPelicula;

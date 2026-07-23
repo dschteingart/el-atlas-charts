@@ -52,6 +52,16 @@
   .m-search-result:last-child { border-bottom: none; }
   .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
   .m-search-result.m-already { color: var(--ink-muted); }
+
+  .s-range-block { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 260px; }
+  .s-range-slider { position: relative; flex: 1; height: 20px; min-width: 180px; max-width: 320px; }
+  .s-range-track { position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: var(--grid); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+  .s-range-track-active { position: absolute; top: 50%; height: 4px; background: var(--accent); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+  .s-range-slider input[type="range"] { position: absolute; top: 0; left: 0; width: 100%; height: 20px; margin: 0; -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; outline: none; }
+  .s-range-slider input[type="range"]::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .s-range-slider input[type="range"]::-moz-range-thumb { pointer-events: auto; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .s-range-slider input[type="range"]::-moz-range-track { background: transparent; border: none; }
+  .s-range-display { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--ink); min-width: 96px; font-variant-numeric: tabular-nums; text-align: right; }
 </style>
 </head>
 <body>
@@ -94,6 +104,18 @@
         </div>
       </div>
     </div>
+    <div class="m-controls">
+      <div class="s-range-block">
+        <span class="m-ctrl-label" data-i18n="c2-period-label">Período</span>
+        <div class="s-range-slider" id="pl-range-slider">
+          <div class="s-range-track"></div>
+          <div class="s-range-track-active" id="pl-range-track-active"></div>
+          <input type="range" id="pl-slider-from" aria-label="Desde">
+          <input type="range" id="pl-slider-to" aria-label="Hasta">
+        </div>
+        <span class="s-range-display" id="pl-range-display">1981–2022</span>
+      </div>
+    </div>
     <div class="m-selected-chips" id="pl-chips"></div>
 
     <div class="chart-svg-wrap">
@@ -121,12 +143,12 @@
 
 <script src="../lib/regions.js?v=2"></script>
 <script src="../lib/i18n.js?v=2"></script>
-<script src="./i18n-issue.js?v=5"></script>
+<script src="./i18n-issue.js?v=6"></script>
 <script src="../lib/utils.js?v=4"></script>
 <script src="../lib/country-names.js?v=2"></script>
 <script src="./data-pelicula.js?v=1"></script>
 <script src="../lib/editor.js?v=1"></script>
-<script src="./pelicula.js?v=1"></script>
+<script src="./pelicula.js?v=2"></script>
 <script src="../lib/png-export.js?v=3"></script>
 <script>
   window.__N5_V = '5';

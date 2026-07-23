@@ -66,6 +66,7 @@ const ISSUE_I18N = {
     // ---- Chart 2: la película (líneas temporales)
     'c2-title':          'El derrumbe de la homofobia latinoamericana',
     'c2-title-neutral':  'La evolución de la intolerancia declarada',
+    'c2-period-label':   'Período',
     'c2-subtitle-tpl':   'Porcentaje que no querría tener de vecinos a {CAT}, a lo largo del tiempo (Integrated Values Survey, 1981-2022).',
     'c2-sources':        'Datos: Integrated Values Survey (EVS 1981-2021 + WVS 1981-2022), pregunta de vecinos, mención espontánea, % ponderado. Para cada país se muestra una serie coherente (el estudio con más olas) para evitar saltos por diferencias de instrumento entre EVS y WVS. Mide intolerancia declarada.',
 
@@ -175,6 +176,7 @@ const ISSUE_I18N = {
     // ---- Chart 2: the trend (time series)
     'c2-title':          'The collapse of Latin American homophobia',
     'c2-title-neutral':  'The trend in declared intolerance',
+    'c2-period-label':   'Period',
     'c2-subtitle-tpl':   'Share who would not want {CAT} as neighbours, over time (Integrated Values Survey, 1981-2022).',
     'c2-sources':        'Data: Integrated Values Survey (EVS 1981-2021 + WVS 1981-2022), neighbours question, spontaneous mention, weighted %. For each country a single consistent series is shown (the study with more waves) to avoid jumps from EVS/WVS instrument differences. Measures declared intolerance.',
 
