@@ -34,6 +34,17 @@ function lb_measure(text, fs, w) {
   return lb_measure._c.measureText(text).width;
 }
 function lb_histCats() { return (typeof LBH_META !== 'undefined') ? LBH_META.cats : ['homosexuales', 'inmigrantes']; }
+function lb_histYears() { return (typeof LBH_META !== 'undefined') ? LBH_META.years : [1998, 2009, 2024]; }
+// Primer año CON DATOS de la categoría (mismo criterio que la película del
+// chart 2: el default no deja vacío el tramo sin serie; ej. inmigrantes arranca
+// en 2009, no en 1998). El slider igual permite abrir todo el rango.
+function lb_firstDataYear(cat) {
+  const src = (typeof LBH !== 'undefined') ? (LBH[cat] || {}) : {};
+  let min = Infinity;
+  Object.values(src).forEach(pts => { if (pts && pts.length) min = Math.min(min, pts[0][0]); });
+  const ys = lb_histYears();
+  return isFinite(min) ? min : ys[0];
+}
 function lb_color(iso) {
   const s = state[6]; if (!s._colors) s._colors = {};
   if (s._colors[iso] == null) { const u = new Set(Object.values(s._colors)); let i = 0; while (u.has(i) && i < LB_PALETTE.length) i++; s._colors[iso] = i % LB_PALETTE.length; }
@@ -116,8 +127,11 @@ function lb_drawLines() {
   const mobile = !editorFormat && lb_isMobile();
   const cat = state[6].cat;
   const src = (typeof LBH !== 'undefined') ? (LBH[cat] || {}) : {};
-  const sel = (state[6].selected || []).filter(iso => src[iso] && src[iso].length >= 2);
-  const series = sel.map(iso => ({ iso, color: lb_color(iso), pts: src[iso] }));
+  const period = state[6].period || [lb_firstDataYear(cat), lb_histYears()[lb_histYears().length - 1]];
+  const [py0, py1] = period;
+  const sel = (state[6].selected || []).filter(iso => src[iso] && src[iso].length >= 1);
+  const series = sel.map(iso => ({ iso, color: lb_color(iso), pts: src[iso].filter(p => p[0] >= py0 && p[0] <= py1) }))
+    .filter(s => s.pts.length >= 1);
 
   const SIZES = editorFormat ? { tick: 22, axisTitle: 25, label: 24 } : mobile ? { tick: 20, axisTitle: 22, label: 22 } : { tick: 11, axisTitle: 11.5, label: 12.5 };
   const lineW = bigFmt ? 3.4 : 2.4, haloW = lineW + (bigFmt ? 5 : 3), dotR = bigFmt ? 5 : 3.4, labelHalo = bigFmt ? 5 : 3;
@@ -131,8 +145,8 @@ function lb_drawLines() {
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
 
-  const years = (typeof LBH_META !== 'undefined') ? LBH_META.years : [1998, 2009, 2024];
-  const xMin = Math.min(...years), xMax = Math.max(...years);
+  const years = lb_histYears().filter(y => y >= py0 && y <= py1);
+  const xMin = py0, xMax = py1;
   const yMaxData = series.length ? Math.max(...series.flatMap(s => s.pts.map(p => p[1]))) : 10;
   const yMax = Math.max(10, Math.ceil((yMaxData * 1.1) / 5) * 5);
   const xScale = (yr) => MARGIN.left + ((yr - xMin) / Math.max(1, xMax - xMin)) * plotW;
@@ -234,14 +248,45 @@ function setupLatinoView() {
     const v = btn.dataset.view; if (v !== 'bars' && v !== 'lines' || state[6].view === v) return;
     state[6].view = v;
     document.querySelectorAll('#lb-view button').forEach(b => b.classList.toggle('active', b.dataset.view === v));
-    lb_syncCatOptions(); drawLatino();
+    lb_syncCatOptions();                       // puede cambiar la categoría
+    if (v === 'lines') lb_resetPeriod();       // y el rango arranca donde hay datos
+    drawLatino();
   }));
 }
 function setupLatinoCat() {
   const sel = document.getElementById('lb-cat-select'); if (!sel) return;
   sel.addEventListener('change', () => {
     if (state[6].view === 'lines' ? (typeof LBH === 'undefined' || !LBH[sel.value]) : (typeof LB_FOTO === 'undefined' || !LB_FOTO[sel.value])) return;
-    state[6].cat = sel.value; drawLatino();
+    state[6].cat = sel.value;
+    lb_resetPeriod();   // el rango arranca donde arranca la serie de esta categoría
+    drawLatino();
+  });
+}
+// Rango por default = [primer año con datos de la categoría, último año].
+function lb_resetPeriod() {
+  const ys = lb_histYears();
+  state[6].period = [lb_firstDataYear(state[6].cat), ys[ys.length - 1]];
+  lb_syncSlider();
+}
+function lb_syncSlider() {
+  const from = document.getElementById('lb-slider-from'), to = document.getElementById('lb-slider-to');
+  const disp = document.getElementById('lb-range-display'), track = document.getElementById('lb-range-track-active');
+  if (!from || !to) return;
+  const ys = lb_histYears(), N = ys.length;
+  const idxOf = (y) => { let bi = 0, bd = Infinity; ys.forEach((v, i) => { const d = Math.abs(v - y); if (d < bd) { bd = d; bi = i; } }); return bi; };
+  const [a, b] = state[6].period;
+  from.value = idxOf(a); to.value = idxOf(b);
+  if (disp) disp.textContent = `${a}–${b}`;
+  if (track && N > 1) { track.style.left = (idxOf(a) / (N - 1) * 100) + '%'; track.style.right = ((N - 1 - idxOf(b)) / (N - 1) * 100) + '%'; }
+}
+// Slider de período sobre los años disponibles de LB (1998/2009/2024).
+function setupLatinoSlider() {
+  if (typeof setupWcRangeSlider !== 'function') return;
+  setupWcRangeSlider({
+    fromId: 'lb-slider-from', toId: 'lb-slider-to', dispId: 'lb-range-display', trackId: 'lb-range-track-active',
+    years: lb_histYears(),
+    get: () => state[6].period, set: (p) => { state[6].period = p; },
+    onChange: () => drawLatino()
   });
 }
 function lb_toggle(iso) { const a = state[6].selected; const i = a.indexOf(iso); if (i >= 0) a.splice(i, 1); else a.push(iso); renderLatinoChips(); drawLatino(); }
@@ -294,8 +339,9 @@ function setupLatinoCSV() {
 function initLatino() {
   if (!state[6]) state[6] = { cat: LB_DEFAULT_CAT, view: 'bars', selected: [...LB_LINES_SEL] };
   if (!state[6].selected) state[6].selected = [...LB_LINES_SEL];
+  if (!state[6].period) { const ys = lb_histYears(); state[6].period = [lb_firstDataYear(state[6].cat), ys[ys.length - 1]]; }
   const sel = document.getElementById('lb-cat-select'); if (sel) sel.value = state[6].cat;
-  setupLatinoView(); setupLatinoCat(); setupLatinoSearch(); setupLatinoCSV();
+  setupLatinoView(); setupLatinoCat(); setupLatinoSearch(); setupLatinoSlider(); setupLatinoCSV();
   renderLatinoChips(); lb_syncCatOptions(); drawLatino();
   window.__atlasSupportsFormats = true; window.__atlasRedraw = drawLatino;
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();

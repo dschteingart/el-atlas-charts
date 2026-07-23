@@ -56,6 +56,14 @@
   .m-search-result:last-child { border-bottom: none; }
   .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
   .m-search-result.m-already { color: var(--ink-muted); }
+  .s-range-block { display: flex; align-items: center; gap: 10px; min-width: 240px; }
+  .s-range-slider { position: relative; flex: 1; height: 20px; min-width: 140px; max-width: 260px; }
+  .s-range-track { position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: var(--grid); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+  .s-range-track-active { position: absolute; top: 50%; height: 4px; background: var(--accent); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+  .s-range-slider input[type="range"] { position: absolute; top: 0; left: 0; width: 100%; height: 20px; margin: 0; -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; outline: none; }
+  .s-range-slider input[type="range"]::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .s-range-slider input[type="range"]::-moz-range-thumb { pointer-events: auto; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .s-range-display { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--ink); min-width: 92px; font-variant-numeric: tabular-nums; text-align: right; }
   .m-mobile-collapse { display: none; }
   .m-mobile-collapse > summary { font-family: var(--sans); font-size: 11px; color: var(--accent); cursor: pointer; padding: 6px 0; list-style: none; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
   .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
@@ -112,6 +120,16 @@
           <div id="lb-search-results" class="m-search-results"></div>
         </div>
       </div>
+      <div class="s-range-block">
+        <span class="m-ctrl-label" data-i18n="c2-period-label">Período</span>
+        <div class="s-range-slider" id="lb-range-slider">
+          <div class="s-range-track"></div>
+          <div class="s-range-track-active" id="lb-range-track-active"></div>
+          <input type="range" id="lb-slider-from" aria-label="Desde">
+          <input type="range" id="lb-slider-to" aria-label="Hasta">
+        </div>
+        <span class="s-range-display" id="lb-range-display">2009–2024</span>
+      </div>
       <div class="m-selected-chips" id="lb-chips"></div>
     </div>
 
@@ -146,7 +164,7 @@
 <script src="./data-lb.js?v=1"></script>
 <script src="./data-lb-hist.js?v=1"></script>
 <script src="../lib/editor.js?v=1"></script>
-<script src="./latinobarometro.js?v=4"></script>
+<script src="./latinobarometro.js?v=5"></script>
 <script src="../lib/png-export.js?v=3"></script>
 <script>
   window.__N5_V = '5';

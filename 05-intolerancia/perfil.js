@@ -11,7 +11,10 @@
 
 const PF_SVG_NS = 'http://www.w3.org/2000/svg';
 const pf_ns = (t) => document.createElementNS(PF_SVG_NS, t);
-const PF_BAR = '#BE5D32';      // terracota (el país)
+// Color de las barras = color de la REGIÓN del país elegido. En la paleta del
+// Atlas la terracota significa "América Latina": dejarla fija pintaría a Japón o
+// Alemania de terracota y rompería la convención de los otros charts. Así
+// Argentina (default) sigue terracota y cada país trae el color de su región.
 const PF_MED = '#5A5346';      // gris para la mediana mundial
 const PF_AXIS = '#9C928A';
 const PF_DEFAULT_ISO = 'ARG';
@@ -25,6 +28,10 @@ function pf_name(iso) {
   return iso;
 }
 function pf_catLabel(cat) { return (typeof t === 'function') ? t('cat-' + cat) : cat; }
+function pf_barColor(iso) {
+  const reg = (typeof VE_REGION !== 'undefined') ? VE_REGION[iso] : null;
+  return (typeof REGION_COLORS !== 'undefined' && REGION_COLORS[reg]) || '#BE5D32';
+}
 function pf_measure(text, fs, w) {
   if (!pf_measure._c) { const c = document.createElement('canvas'); pf_measure._c = c.getContext('2d'); }
   pf_measure._c.font = `${w || 400} ${fs}px "Source Sans 3", system-ui, sans-serif`;
@@ -192,7 +199,7 @@ function drawPerfil() {
     const rect = pf_ns('rect');
     rect.setAttribute('x', MARGIN.left); rect.setAttribute('y', y);
     rect.setAttribute('width', Math.max(0, barW)); rect.setAttribute('height', BAR_H);
-    rect.setAttribute('fill', PF_BAR); rect.setAttribute('rx', 2); rect.style.cursor = 'pointer';
+    rect.setAttribute('fill', pf_barColor(iso)); rect.setAttribute('rx', 2); rect.style.cursor = 'pointer';
     rect.addEventListener('mouseenter', (e) => { rect.setAttribute('fill-opacity', 0.82); pf_showTooltip(e, d); });
     rect.addEventListener('mousemove', (e) => pf_posTooltip(e));
     rect.addEventListener('mouseleave', () => { rect.setAttribute('fill-opacity', 1); pf_hideTooltip(); });
@@ -228,19 +235,31 @@ function drawPerfil() {
   // Leyenda de la mediana (línea gris + label), ABAJO a la derecha del plot:
   // arriba-derecha la tapaba la primera barra (la más larga); abajo las barras
   // son cortas y queda despejado (pedido de Daniel 2026-07-23). Con halo crema.
+  // En RECUADRO con fondo: suelta, la etiqueta caía junto a un tick del eje y
+  // parecía rotularlo (reporte de Daniel 2026-07-23). El panel la separa.
   const legG = pf_ns('g'); svg.appendChild(legG);
   const legTxt = (typeof t === 'function') ? t('c4-median-legend') : 'Mediana mundial';
-  const legW = pf_measure(legTxt, SIZES.med, 500) + 16;
-  const lx = MARGIN.left + plotW - legW, ly = MARGIN.top + plotH - (bigFmt ? 18 : 12);
+  const fs = SIZES.med;
+  const padX = bigFmt ? 12 : 8, padY = bigFmt ? 8 : 5, tickW = bigFmt ? 3 : 2, gap = bigFmt ? 10 : 7;
+  const txtW = pf_measure(legTxt, fs, 500);
+  const boxW = padX * 2 + tickW + gap + txtW, boxH = padY * 2 + fs * 1.15;
+  const boxX = MARGIN.left + plotW - boxW, boxY = MARGIN.top + plotH - boxH - (bigFmt ? 8 : 5);
+  const box = pf_ns('rect');
+  box.setAttribute('x', boxX); box.setAttribute('y', boxY);
+  box.setAttribute('width', boxW); box.setAttribute('height', boxH); box.setAttribute('rx', 5);
+  box.setAttribute('fill', '#F2EEE3'); box.setAttribute('stroke', '#E0DCC8'); box.setAttribute('stroke-width', 1);
+  legG.appendChild(box);
+  const cy = boxY + boxH / 2;
   const ll = pf_ns('line');
-  ll.setAttribute('x1', lx); ll.setAttribute('x2', lx); ll.setAttribute('y1', ly - 6); ll.setAttribute('y2', ly + 6);
+  const lx = boxX + padX;
+  ll.setAttribute('x1', lx); ll.setAttribute('x2', lx);
+  ll.setAttribute('y1', cy - fs * 0.5); ll.setAttribute('y2', cy + fs * 0.5);
   ll.setAttribute('stroke', PF_MED); ll.setAttribute('stroke-width', bigFmt ? 2.4 : 1.6);
   legG.appendChild(ll);
   const lt = pf_ns('text');
-  lt.setAttribute('x', lx + 8); lt.setAttribute('y', ly); lt.setAttribute('dominant-baseline', 'central');
+  lt.setAttribute('x', lx + tickW + gap); lt.setAttribute('y', cy); lt.setAttribute('dominant-baseline', 'central');
   lt.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-  lt.style.fontSize = SIZES.med + 'px'; lt.setAttribute('fill', PF_MED); lt.setAttribute('font-weight', 500);
-  lt.setAttribute('paint-order', 'stroke'); lt.setAttribute('stroke', '#FAF8F3'); lt.setAttribute('stroke-width', bigFmt ? 4 : 3); lt.setAttribute('stroke-linejoin', 'round');
+  lt.style.fontSize = fs + 'px'; lt.setAttribute('fill', PF_MED); lt.setAttribute('font-weight', 600);
   lt.textContent = legTxt;
   legG.appendChild(lt);
 

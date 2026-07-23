@@ -112,6 +112,19 @@ function mp_breaks(values) {
   for (let i = 1; i < MP_NBINS; i++) breaks.push(round(v[Math.floor(v.length * i / MP_NBINS)]));
   return [...new Set(breaks)];
 }
+// Devuelve una geometría sin los polígonos antárticos (todo su extremo norte
+// por debajo de -55°). Se usa para el landmask, que viene como un único
+// MultiPolygon de toda la tierra.
+function mp_dropAntarctic(geom) {
+  const keep = (poly) => {
+    let maxLat = -90;
+    poly.forEach(ring => ring.forEach(pt => { if (pt[1] > maxLat) maxLat = pt[1]; }));
+    return maxLat > -55;
+  };
+  if (geom.type === 'Polygon') return keep(geom.coordinates) ? geom : { type: 'Polygon', coordinates: [] };
+  return { type: 'MultiPolygon', coordinates: geom.coordinates.filter(keep) };
+}
+
 function mp_colorFor(pct, breaks) {
   if (pct == null) return MP_NODATA;
   let i = 0; for (const b of breaks) { if (pct < b) return MP_COLORS[i]; i++; }
@@ -139,10 +152,13 @@ function drawMapa() {
   const data = mp_dataFor(cat, wave);
   const breaks = mp_breaks(Object.values(data).map(d => d.pct));
 
-  // landmask gris "sin dato"
+  // landmask gris "sin dato". OJO: el landmask es UN MultiPolygon de toda la
+  // tierra e incluye la Antártida — filtrar solo el feature ATA no alcanzaba y
+  // seguía dibujándose (reporte de Daniel). Se descartan los polígonos cuyo
+  // extremo norte cae por debajo de -55° (la Antártida, entera bajo -60°).
   const lmGeom = mp_geo.landmask && (mp_geo.landmask.geometry || (mp_geo.landmask.type !== 'Feature' ? mp_geo.landmask : null));
   if (lmGeom) {
-    const lm = mp_ns('path'); lm.setAttribute('d', mp_pathD(lmGeom));
+    const lm = mp_ns('path'); lm.setAttribute('d', mp_pathD(mp_dropAntarctic(lmGeom)));
     lm.setAttribute('fill', MP_NODATA); lm.setAttribute('stroke', 'none'); lm.setAttribute('pointer-events', 'none');
     svg.appendChild(lm);
   }
