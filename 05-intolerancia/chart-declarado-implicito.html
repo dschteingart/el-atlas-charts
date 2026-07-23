@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lo que se dice y lo que se asocia — El Atlas · N°5</title>
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/chart-declarado-implicito.html">
+<meta property="og:title" content="Lo que se dice y lo que se asocia — El Atlas · N°5">
+<meta property="og:description" content="Prejuicio declarado (encuestas) vs. sesgo implícito (test de asociación): cada país en dos dimensiones.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/thumbs/chart-declarado-implicito.png">
+<meta property="og:image:alt" content="Lo que se dice y lo que se asocia">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Lo que se dice y lo que se asocia — El Atlas · N°5">
+<meta name="twitter:description" content="Prejuicio declarado (encuestas) vs. sesgo implícito (test de asociación).">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/thumbs/chart-declarado-implicito.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=4">
+<link rel="stylesheet" href="../lib/editor.css?v=1">
+<style>
+  .wrap-wide { max-width: 1100px; padding: 6px 20px 10px; }
+  .wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
+  .wrap-wide .chart-block { margin: 4px 0 2px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+  .wrap-wide .chart-subtitle { margin: 0 0 4px; font-size: 13.5px; line-height: 1.35; }
+  .chart-svg-wrap { margin-top: 2px; position: relative; }
+  .footer { margin-top: 6px; }
+  .footer p { margin: 2px 0; }
+  .footer .download { margin-right: 8px; margin-bottom: 8px; }
+
+  .m-controls { display: flex; align-items: center; gap: 14px; margin: 4px 0 6px; flex-wrap: wrap; }
+  .m-ctrl-group { display: inline-flex; align-items: center; gap: 8px; }
+  .m-ctrl-label { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+  .toggle { display: inline-flex; border: 1px solid var(--rule); border-radius: 15px; overflow: hidden; background: var(--bg); }
+  .toggle button { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 13px; background: var(--bg); color: var(--ink-soft); border: none; cursor: pointer; white-space: nowrap; transition: background 0.12s ease, color 0.12s ease; }
+  .toggle button + button { border-left: 1px solid var(--rule); }
+  .toggle button.active { background: var(--accent); color: #fff; }
+  #tooltip5 .tt-sub { font-size: 10.5px; opacity: 0.8; margin-top: 3px; }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N°5</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="5" data-editor-id="n5-implicito">
+    <h2 class="chart-title" data-i18n="c5-title-neutral">Lo que se dice y lo que se asocia</h2>
+    <p class="chart-subtitle" data-i18n="c5-subtitle">Prejuicio declarado en encuestas vs. sesgo implícito medido con un test de asociación.</p>
+
+    <div class="m-controls">
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c5-dim-label">Dimensión</span>
+        <div class="toggle" id="sc-dim">
+          <button data-dim="race" class="active" data-i18n="c5-dim-race">Raza</button>
+          <button data-dim="gay" data-i18n="c5-dim-gay">Orientación sexual</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-svg-wrap">
+      <svg id="chart5" viewBox="0 0 1100 620" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip5"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" data-chart="5-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="5" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources m-desktop-only" data-i18n="c5-sources"></p>
+      <details class="m-mobile-collapse">
+        <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+        <p data-i18n="c5-sources"></p>
+      </details>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="../lib/regions.js?v=2"></script>
+<script src="../lib/i18n.js?v=2"></script>
+<script src="./i18n-issue.js?v=5"></script>
+<script src="../lib/utils.js?v=4"></script>
+<script src="../lib/country-names.js?v=2"></script>
+<script src="../lib/scatter-render.js?v=2"></script>
+<script src="./data-implicito.js?v=1"></script>
+<script src="../lib/editor.js?v=1"></script>
+<script src="./declarado-implicito.js?v=1"></script>
+<script src="../lib/png-export.js?v=3"></script>
+<script>
+  window.__N5_V = '5';
+  initScatter();
+  applyI18n();
+  if (window.__atlasRedraw) window.__atlasRedraw();
+  setupLangToggle(() => drawScatter());
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=5"></script>
+</body>
+</html>

@@ -52,6 +52,21 @@ const ISSUE_I18N = {
     'catA-bebedores_drogadictos': 'bebedores, drogadictos o alcohólicos',
     'catA-jovenes':           'jóvenes',
 
+    // ---- Chart 5: declarado vs implícito (scatter)
+    'c5-title':          'Argentina declara poco racismo, pero lo asocia como cualquiera',
+    'c5-title-neutral':  'Lo que se dice y lo que se asocia',
+    'c5-subtitle':       'Prejuicio declarado en encuestas vs. sesgo implícito medido con un test de asociación.',
+    'c5-subtitle-race':  'Rechazo racial declarado (encuesta) vs. sesgo racial implícito (test de asociación IAT). Cada punto, un país.',
+    'c5-subtitle-gay':   'Rechazo a homosexuales declarado (encuesta) vs. sesgo anti-gay implícito (test de asociación IAT). Cada punto, un país.',
+    'c5-dim-label':      'Dimensión',
+    'c5-dim-race':       'Raza',
+    'c5-dim-gay':        'Orientación sexual',
+    'c5-axis-x':         'Rechazo declarado en la encuesta (%)',
+    'c5-axis-y':         'Sesgo implícito (D-score del IAT)',
+    'c5-tt-declared':    'Declarado (encuesta)',
+    'c5-tt-implicit':    'Implícito (IAT)',
+    'c5-sources':        'Datos: rechazo declarado, Integrated Values Survey (EVS/WVS, último dato). Sesgo implícito, Project Implicit International (Charlesworth et al. 2023): D-score del Test de Asociación Implícita (IAT), 2009-2019; &gt;0 = asociación más veloz del grupo dominante (blancos/heterosexuales) con lo positivo. La muestra del IAT es autoseleccionada (visitantes del sitio): sirve para comparar niveles relativos entre países, no prevalencias.',
+
     // ---- Chart 4: perfil de intolerancia de un país
     'c4-title':          'La Argentina le teme al vicio, no al distinto',
     'c4-title-neutral':  '¿A quién le teme cada sociedad?',
@@ -128,6 +143,21 @@ const ISSUE_I18N = {
     'cat-jovenes':            'Young people',
     'catA-bebedores_drogadictos': 'heavy drinkers, drug addicts or alcoholics',
     'catA-jovenes':           'young people',
+
+    // ---- Chart 5: declared vs implicit (scatter)
+    'c5-title':          'Argentina declares little racism, but associates like everyone else',
+    'c5-title-neutral':  'What people say vs. what they associate',
+    'c5-subtitle':       'Prejudice declared in surveys vs. implicit bias measured with an association test.',
+    'c5-subtitle-race':  'Declared racial rejection (survey) vs. implicit racial bias (IAT association test). Each dot is a country.',
+    'c5-subtitle-gay':   'Declared rejection of homosexuals (survey) vs. implicit anti-gay bias (IAT association test). Each dot is a country.',
+    'c5-dim-label':      'Dimension',
+    'c5-dim-race':       'Race',
+    'c5-dim-gay':        'Sexual orientation',
+    'c5-axis-x':         'Declared rejection in survey (%)',
+    'c5-axis-y':         'Implicit bias (IAT D-score)',
+    'c5-tt-declared':    'Declared (survey)',
+    'c5-tt-implicit':    'Implicit (IAT)',
+    'c5-sources':        'Data: declared rejection, Integrated Values Survey (EVS/WVS, latest). Implicit bias, Project Implicit International (Charlesworth et al. 2023): Implicit Association Test (IAT) D-score, 2009-2019; &gt;0 = faster association of the dominant group (white/heterosexual) with positive. The IAT sample is self-selected (site visitors): it compares relative levels across countries, not prevalences.',
 
     // ---- Chart 4: country intolerance profile
     'c4-title':          'Argentina fears vice, not the different',
