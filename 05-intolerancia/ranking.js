@@ -867,16 +867,19 @@ function rk_drawMarimekko() {
   const rankUnder = n > 0 ? Math.min(n - 1, Math.floor(tableXFrac * n)) : 0;
   const maxUnderTable = n > 0 ? data[rankUnder].pct : 0;   // data ya está desc
   const tableFits = maxUnderTable < 0.36 * yMax;
-  const showSvgTable = tableVisible && tableFits;
+  // El toggle "Tabla regional" (state.showTable) gobierna si se muestra; el
+  // heurístico solo decide flotante-vs-abajo cuando sí se muestra.
+  const wantTable = s1.showTable !== false;
+  const showSvgTable = wantTable && tableVisible && tableFits;
   if (showSvgTable) {
     mk_drawRegionalAvgTable(svg, tableRows, s1.activeRegion, SIZES, mobilePng);
   }
   mk_drawRegionalAvgTableHTML(tableRows, s1.activeRegion);
-  // Tabla HTML debajo del gráfico: en mobile SIEMPRE; en desktop solo cuando la
-  // flotante no entra (ahí se muestra expandida, sin el colapsable).
+  // Tabla HTML debajo del gráfico: en mobile SIEMPRE (si wantTable); en desktop
+  // solo cuando la flotante no entra. Con el toggle apagado, no aparece.
   const belowWrap = document.getElementById('mk-avg-table-mobile-wrap');
   if (belowWrap) {
-    const showBelow = !showSvgTable;
+    const showBelow = wantTable && !showSvgTable;
     belowWrap.style.display = showBelow ? 'block' : 'none';
     const det = belowWrap.querySelector('details');
     if (det && !mobile) det.open = showBelow;
@@ -1140,14 +1143,16 @@ function setupRankingWave() {
   sync();
 }
 
-function setupRankingMedian() {
-  document.querySelectorAll('#rk-median button').forEach(btn => {
+// Toggle unificado "Referencias": Mediana y Tabla regional, cada uno on/off
+// independiente (ambos, uno o ninguno). Reemplaza los dos toggles mostrar/ocultar
+// (pedido de Daniel 2026-07-23). El botón activo = referencia visible.
+function setupRankingRefs() {
+  document.querySelectorAll('#rk-refs button[data-ref]').forEach(btn => {
+    const key = btn.dataset.ref === 'table' ? 'showTable' : 'showMedian';
+    btn.classList.toggle('active', state[1][key] !== false);
     btn.addEventListener('click', () => {
-      const on = btn.dataset.median === 'on';
-      if (state[1].showMedian === on) return;
-      state[1].showMedian = on;
-      document.querySelectorAll('#rk-median button')
-        .forEach(b => b.classList.toggle('active', (b.dataset.median === 'on') === on));
+      state[1][key] = !(state[1][key] !== false);   // toggle
+      btn.classList.toggle('active', state[1][key]);
       drawRanking();
     });
   });
@@ -1320,6 +1325,7 @@ function initRanking() {
       wave: lastWave,            // default = ola más reciente (== "último dato >=2017")
       selected: [...RK_DEFAULT_SELECTED],
       showMedian: true,
+      showTable: true,
       hiddenRegions: [],
       activeRegion: null
     };
@@ -1328,7 +1334,7 @@ function initRanking() {
 
   setupRankingCat();
   setupRankingView();
-  setupRankingMedian();
+  setupRankingRefs();
   setupRankingWave();
   setupRankingSearch();
   setupRankingDownloadCSV();
