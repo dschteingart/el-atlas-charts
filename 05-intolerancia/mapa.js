@@ -19,13 +19,18 @@ const MP_NODATA = '#DAD5C8';
 const MP_EXCLUDE = new Set(['ATA']);   // Antártida fuera
 const MP_NBINS = 6;
 const MP_COLORS = ['#F4E4CE', '#E8B98C', '#D98E5B', '#C0632F', '#8F3F1E', '#5A2412'];
-const MP_STROKE = 'rgba(255,255,255,0.55)';
+// Bordes al estilo OWID: un stroke por país, no un contorno de costa aparte.
+// El primer intento dibujaba el borde del landmask encima de los países, pero el
+// landmask está simplificado distinto que los polígonos nacionales y las dos
+// líneas no coincidían → doble contorno corrido (reporte de Daniel). Con stroke
+// en cada país la costa sale sola y calza perfecto.
+// Gris cálido MEDIO a propósito: más oscuro que los rellenos claros y más claro
+// que los oscuros, así el borde se ve en toda la escala (un gris oscuro
+// desaparecería en el bin #5A2412, donde Irán/Irak/Turquía se pegan).
+const MP_STROKE = '#8C8376';
+const MP_STROKE_W = 0.5;
 const MP_STROKE_HOVER = '#1A1A1A';
-// Contorno de COSTA (tierra vs mar). Los bordes entre países son blancos y
-// contra el fondo crema la costa quedaba sin definir (los mapas del N°2 y N°3
-// tienen el mismo hueco). Se dibuja el contorno del landmask, que es la unión
-// de toda la tierra → su borde es exactamente la línea de costa.
-const MP_COAST = '#A89E8B';
+const MP_HALO_HOVER = '#FFFFFF';   // halo debajo del hover: lo hace legible sobre rellenos oscuros
 
 let mp_geo = null, mp_proj = null, mp_featCache = null, mp_playTimer = null;
 
@@ -172,33 +177,35 @@ function drawMapa() {
   const g = mp_ns('g'); svg.appendChild(g);
   // overlay de hover: un solo path encima, sin mutar los países (así NO quedan
   // contornos marcados al pasar el mouse — bug reportado por Daniel 2026-07-23).
+  // Dos trazos: halo blanco abajo + línea negra arriba, así el país resaltado se
+  // lee igual sobre un relleno claro que sobre el terracota más oscuro.
+  const hoverHalo = mp_ns('path');
+  hoverHalo.setAttribute('class', 'mp-hover-halo'); hoverHalo.setAttribute('fill', 'none');
+  hoverHalo.setAttribute('stroke', MP_HALO_HOVER); hoverHalo.setAttribute('stroke-width', 3.4);
+  hoverHalo.setAttribute('stroke-linejoin', 'round'); hoverHalo.setAttribute('pointer-events', 'none');
+  hoverHalo.setAttribute('d', '');
   const hoverPath = mp_ns('path');
   hoverPath.setAttribute('class', 'mp-hover'); hoverPath.setAttribute('fill', 'none');
-  hoverPath.setAttribute('stroke', MP_STROKE_HOVER); hoverPath.setAttribute('stroke-width', 1.5);
+  hoverPath.setAttribute('stroke', MP_STROKE_HOVER); hoverPath.setAttribute('stroke-width', 1.7);
+  hoverPath.setAttribute('stroke-linejoin', 'round');
   hoverPath.setAttribute('pointer-events', 'none'); hoverPath.setAttribute('d', '');
+  const mp_setHover = (d) => { hoverHalo.setAttribute('d', d); hoverPath.setAttribute('d', d); };
 
   mp_features().forEach(f => {
     const iso = mp_isoOf(f), v = data[iso], d = mp_pathD(f.geometry);
     const path = mp_ns('path');
     path.setAttribute('d', d);
     path.setAttribute('fill', mp_colorFor(v ? v.pct : null, breaks));
-    path.setAttribute('stroke', MP_STROKE); path.setAttribute('stroke-width', 0.5);
+    path.setAttribute('stroke', MP_STROKE); path.setAttribute('stroke-width', MP_STROKE_W);
+    path.setAttribute('stroke-linejoin', 'round');
     path.style.cursor = 'pointer';
-    path.addEventListener('mouseenter', (e) => { hoverPath.setAttribute('d', d); mp_showTooltip(e, iso, v, cat); });
+    path.addEventListener('mouseenter', (e) => { mp_setHover(d); mp_showTooltip(e, iso, v, cat); });
     path.addEventListener('mousemove', (e) => mp_posTooltip(e));
-    path.addEventListener('mouseleave', () => { hoverPath.setAttribute('d', ''); mp_hideTooltip(); });
-    path.addEventListener('click', (e) => { hoverPath.setAttribute('d', d); mp_showTooltip(e, iso, v, cat); });
+    path.addEventListener('mouseleave', () => { mp_setHover(''); mp_hideTooltip(); });
+    path.addEventListener('click', (e) => { mp_setHover(d); mp_showTooltip(e, iso, v, cat); });
     g.appendChild(path);
   });
-  // línea de costa, encima de los países (fill none → solo el borde tierra/mar)
-  if (lmGeom) {
-    const coast = mp_ns('path');
-    coast.setAttribute('d', mp_pathD(mp_dropAntarctic(lmGeom)));
-    coast.setAttribute('fill', 'none'); coast.setAttribute('stroke', MP_COAST);
-    coast.setAttribute('stroke-width', 0.7); coast.setAttribute('stroke-linejoin', 'round');
-    coast.setAttribute('pointer-events', 'none');
-    svg.appendChild(coast);
-  }
+  svg.appendChild(hoverHalo);
   svg.appendChild(hoverPath);
 
   mp_drawLegend(svg, breaks);
