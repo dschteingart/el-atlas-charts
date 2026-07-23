@@ -185,16 +185,15 @@ function drawRanking() {
   // visibilidad de controles por vista
   const view = rk_view();
   const isMap = view === 'map';
-  // PNG: el formato del lienzo se elige según el aspecto del continente. El mapa
-  // ancho (mundo/Asia/Oceanía) baja apaisado (worldmap 1200×920, como el mapa de
-  // clubes del N°3) — con 'square' quedaba flotando con medio lienzo vacío abajo.
-  // Los continentes altos o cuadrados (Europa/África/América) SIGUEN en 'square':
-  // el lienzo cuadrado ya encuadra bien un mapa vertical, y un apaisado los
-  // achicaría dejando huecos a los lados. Barras y líneas: siempre 'square'.
-  // Los dos formatos ya están calibrados (chrome mobile-first). png-export lee
-  // este global al tocar "Descargar PNG" (default cuando no hay editor abierto).
-  const RK_APAISADO = { all: 1, asia: 1, oceania: 1 };
-  window.__atlasDefaultPngFormat = (isMap && RK_APAISADO[state[4].continent]) ? 'worldmap' : 'square';
+  // PNG del mapa: ancho de 'worldmap' + chrome mobile-first, pero con ALTO
+  // DINÁMICO (el lienzo se ajusta al contenido). Así cada continente sale a su
+  // aspecto real y snug: mundo/Asia/Oceanía apaisados y cortos; América/África
+  // verticales y altos; sin lienzo vacío ni arriba/abajo ni a los lados. Antes,
+  // con alto fijo, el mapa quedaba flotando y la nota se centraba en el hueco
+  // ("mucho espacio entre el sur del mapa y las notas"). Barras/líneas: 'square'
+  // con alto fijo (sin cambios). png-export lee estos globals al exportar.
+  window.__atlasDefaultPngFormat = isMap ? 'worldmap' : 'square';
+  window.__atlasPngDynamicHeight = isMap;
   const sng = (id, show) => { const el = document.getElementById(id); if (el) el.style.display = show ? '' : 'none'; };
   sng('rk-year-block', view !== 'lines');                  // año: barras y mapa
   sng('rk-search-wrap', true);                             // buscador: siempre (barras/líneas: agregar países; mapa: elegir país a comparar)
