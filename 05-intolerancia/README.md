@@ -78,6 +78,49 @@ Gancho editorial: el Mundial 2026 y las acusaciones de racismo sobre Argentina.
 - Correlaciones (foto ≥2017): raza vs inmigrantes r=0,84 (misma dimensión: xenofobia);
   raza vs homosexuales r=0,53 (dimensiones parcialmente distintas → scatter informativo).
 
+## Fuentes complementarias (descargadas 2026-07-22)
+
+### Latinobarómetro 2024 — `data/lb_vecinos_2024.csv`
+
+- **Base:** `Bases\Latinobarometro\Latinobarometro_2024_Stata_esp_v20250817.dta`
+  (descarga directa del sitio nuevo, sin registro; cuestionarios y fichas técnicas
+  en la misma carpeta). 17 países, n≈19.200, campo 2024 (post-Qatar 2022).
+- **Batería P3NOIJ** ("¿cuáles no querría tener como vecinos?"): réplica de la del
+  WVS. % ponderado (`WT`) con base = quienes respondieron la batería (se excluye
+  P3NOIJ.9 = NS/NR, que va del 7% PRY al 28% MEX — reportado por el script).
+- **Suma 4 países que la IVS no tiene:** CRI, HND, PAN, PRY (y no tiene NIC/HTI/PRI/TTO).
+- **Valida el podio rioplatense con dato fresco:** otra raza ARG 1,2% (mínimo
+  regional), URY 2,1%, BRA 3,1%; homosexuales URY 6,9 / ARG 7,6 / BRA 7,8.
+- **Historia nueva:** rechazo a inmigrantes en Chile 13,2% (IVS 2018) → 27,2%
+  (LB 2024) y Perú 18,3→27,0 — el efecto del éxodo venezolano (consistente con
+  la caída del Migrant Acceptance Index de Gallup 2016→2019).
+- **Ojo:** la opción 5 fusiona "bebedores, drogadictos y alcohólicos" (en IVS son
+  ítems separados) → slug propio `bebedores_drogadictos`, no comparable 1:1.
+  Agrega categoría `jovenes` (LB-only). Guatemala da 11,9% vs 30,2% IVS 2020 —
+  otra muestra de efectos-casa.
+- También descargado: `latinobarometro-serie-de-tiempo-1995-2024.xlsx` (agregados
+  longitudinales oficiales, en scratchpad/Bases) — por explorar.
+
+### Project Implicit International — `data/pi_implicito_paises.csv`
+
+- **Base:** resumen país×test del paper Charlesworth et al. (BRM 2023), OSF
+  [26pkd](https://osf.io/26pkd/) (`Bases\Project Implicit\internationaldata_summary.csv`
+  + `.Rmd`). Subset residentes/ciudadanos, 2009-2019, 34 países × 7 tests
+  (Race, Skin-tone, Sexuality, Nationality, Age, Body weight, Gender-Science).
+  ARG/BRA/COL/MEX incluidos (ARG n≈1.400-2.000 por test).
+- `d_implicito` (MD2) >0 = sesgo implícito hacia el grupo dominante del test
+  (blancos sobre negros, heterosexuales sobre gays, piel clara sobre oscura).
+  CHE y CAN venían partidas por idioma → pooled con promedio ponderado por n.
+- **El contrapunto del número:** Argentina, bajísima en intolerancia declarada,
+  es **medio-alta en sesgo implícito racial (24/34)** y **la más alta de los 34
+  en sesgo anti-gay implícito (34/34; D=0,45)**; Nationality 32/34. Asia del
+  Este muestra el patrón inverso (alta homofobia declarada, bajo IAT). El
+  contraste declarado-vs-implícito responde directamente a la crítica de
+  deseabilidad social — candidato a scatter propio.
+- **Caveats PI:** muestra autoseleccionada (visitantes del sitio, jóvenes y
+  educados) — sirve para comparar niveles relativos entre países, no prevalencias;
+  citar como triangulación, no como ranking definitivo.
+
 ## Caveats metodológicos (para el texto)
 
 1. **Intolerancia declarada ≠ comportamiento**: mide lo que la gente admite ante un
@@ -100,6 +143,8 @@ Gancho editorial: el Mundial 2026 y las acusaciones de racismo sobre Argentina.
 ## Estado
 
 - [x] CSVs foto + película generados y validados.
+- [x] Latinobarómetro 2024 descargado y procesado (validación regional 2024).
+- [x] Project Implicit descargado y procesado (sesgo implícito, 34 países).
 - [ ] Definición del lineup de charts (propuesta en curso).
 - [ ] Charts interactivos + PNG export.
 - [ ] index.html del número + entrada en `charts.json` + galería.
