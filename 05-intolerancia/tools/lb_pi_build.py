@@ -14,7 +14,7 @@ BASES = r"C:\Users\FUNDAR\Documents\MEGAsync\FUNDAR\Argentina en datos\Bases"
 
 REPO1 = os.path.join(HERE, "..", "..", "01-bienestar-violencia", "data-scatter.js")
 REGION = dict(re.findall(r'"iso3":"([A-Z]{3})","region":"([^"]+)"', open(REPO1, encoding="utf-8").read()))
-REGION.update({"TWN":"East Asia","VEN":"Latin America","YEM":"Middle East & North Africa"})
+REGION.update({"TWN":"East Asia","VEN":"Latin America","YEM":"Middle East & North Africa","PRI":"Latin America"})
 
 # ---------------- Latinobarometro 2024 ----------------
 NUM2ISO3 = {32:"ARG",68:"BOL",76:"BRA",152:"CHL",170:"COL",188:"CRI",214:"DOM",218:"ECU",

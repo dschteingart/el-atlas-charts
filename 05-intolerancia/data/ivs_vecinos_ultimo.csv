@@ -12,7 +12,7 @@ ESP,Western Europe,EVS,5,2008,antecedentes,33.4,1458
 DNK,Western Europe,EVS,5,2008,antecedentes,35.5,1264
 SVN,Eastern Europe & Central Asia,EVS,5,2008,antecedentes,35.5,1309
 NOR,Western Europe,EVS,5,2008,antecedentes,35.6,1078
-PRI,Caribbean,WVS,4,2001,antecedentes,36.2,720
+PRI,Latin America,WVS,4,2001,antecedentes,36.2,720
 PRT,Western Europe,EVS,5,2008,antecedentes,39.4,1516
 FIN,Western Europe,EVS,5,2009,antecedentes,40.7,1088
 GBR,Western Europe,EVS,5,2009,antecedentes,40.9,1500
@@ -93,7 +93,7 @@ NOR,Western Europe,EVS,7,2018,bebedores,29.4,1115
 BRA,Latin America,WVS,7,2018,bebedores,30.0,1762
 HTI,Latin America,WVS,6,2016,bebedores,30.5,1992
 URY,Latin America,WVS,7,2022,bebedores,31.0,1000
-PRI,Caribbean,WVS,7,2018,bebedores,32.2,1127
+PRI,Latin America,WVS,7,2018,bebedores,32.2,1127
 DNK,Western Europe,EVS,7,2017,bebedores,34.4,3340
 PRT,Western Europe,EVS,7,2020,bebedores,35.2,1186
 ARG,Latin America,WVS,7,2017,bebedores,37.5,1003
@@ -257,7 +257,7 @@ XNC,Western Europe,EVS,5,2008,cristianos,54.6,489
 TUR,Eastern Europe & Central Asia,EVS,5,2009,cristianos,62.3,2281
 XNC,Western Europe,EVS,5,2008,drogadictos,25.3,487
 PRT,Western Europe,EVS,7,2020,drogadictos,36.3,1186
-PRI,Caribbean,WVS,7,2018,drogadictos,44.3,1127
+PRI,Latin America,WVS,7,2018,drogadictos,44.3,1127
 MAC,East Asia,WVS,7,2019,drogadictos,47.2,1018
 PAK,South Asia,WVS,7,2018,drogadictos,52.5,1995
 BEL,Western Europe,EVS,5,2009,drogadictos,55.0,1501
@@ -497,7 +497,7 @@ ROU,Eastern Europe & Central Asia,WVS,3,1998,extremistas,41.8,1239
 CHN,East Asia,WVS,3,1995,extremistas,42.1,1500
 URY,Latin America,WVS,3,1996,extremistas,42.2,1000
 CZE,Eastern Europe & Central Asia,WVS,3,1998,extremistas,43.1,1147
-PRI,Caribbean,WVS,3,1995,extremistas,43.5,1164
+PRI,Latin America,WVS,3,1995,extremistas,43.5,1164
 PHL,Southeast Asia,WVS,3,1996,extremistas,43.7,1200
 RUS,Eastern Europe & Central Asia,WVS,3,1995,extremistas,43.8,2040
 DOM,Latin America,WVS,3,1996,extremistas,44.4,417
@@ -692,7 +692,7 @@ AUT,Western Europe,EVS,7,2018,homosexuales,11.0,1588
 AUS,"North America, Australia & New Zealand",WVS,7,2018,homosexuales,11.8,1813
 FIN,Western Europe,EVS,7,2017,homosexuales,12.3,1199
 PRT,Western Europe,EVS,7,2020,homosexuales,12.4,1186
-PRI,Caribbean,WVS,7,2018,homosexuales,12.5,1127
+PRI,Latin America,WVS,7,2018,homosexuales,12.5,1127
 ITA,Western Europe,EVS,7,2018,homosexuales,12.7,2130
 ESP,Western Europe,EVS,7,2017,homosexuales,12.9,1191
 USA,"North America, Australia & New Zealand",WVS,7,2017,homosexuales,13.5,2435
@@ -816,7 +816,7 @@ CAN,"North America, Australia & New Zealand",WVS,4,2000,inestables,32.9,1931
 URY,Latin America,WVS,3,1996,inestables,33.0,1000
 IRL,Western Europe,EVS,5,2008,inestables,33.3,826
 MEX,Latin America,WVS,4,2000,inestables,33.5,1535
-PRI,Caribbean,WVS,4,2001,inestables,33.5,720
+PRI,Latin America,WVS,4,2001,inestables,33.5,720
 XNC,Western Europe,EVS,5,2008,inestables,33.9,479
 PRT,Western Europe,EVS,5,2008,inestables,34.7,1519
 BIH,Eastern Europe & Central Asia,EVS,5,2008,inestables,36.1,1452
@@ -897,7 +897,7 @@ CAN,"North America, Australia & New Zealand",WVS,7,2020,inmigrantes,8.8,4018
 AUS,"North America, Australia & New Zealand",WVS,7,2018,inmigrantes,8.9,1813
 HKG,East Asia,WVS,7,2018,inmigrantes,9.0,2075
 UZB,Eastern Europe & Central Asia,WVS,7,2022,inmigrantes,9.2,1250
-PRI,Caribbean,WVS,7,2018,inmigrantes,9.4,1127
+PRI,Latin America,WVS,7,2018,inmigrantes,9.4,1127
 DNK,Western Europe,EVS,7,2017,inmigrantes,9.5,3340
 NIR,Western Europe,WVS,7,2022,inmigrantes,9.5,446
 FRA,Western Europe,EVS,7,2018,inmigrantes,9.9,1851
@@ -1143,7 +1143,7 @@ ARM,Eastern Europe & Central Asia,EVS,7,2018,musulmanes,67.8,1484
 XNC,Western Europe,EVS,5,2008,musulmanes,75.9,492
 ZAF,Sub-Saharan Africa,WVS,5,2006,negros,0.9,2906
 BRA,Latin America,WVS,5,2006,negros,4.8,1485
-PRI,Caribbean,WVS,3,1995,norteamericanos,5.3,1164
+PRI,Latin America,WVS,3,1995,norteamericanos,5.3,1164
 IRQ,Middle East & North Africa,WVS,4,2004,norteamericanos,84.1,2325
 URY,Latin America,WVS,7,2022,otra_raza,0.6,1000
 SWE,Western Europe,EVS,7,2017,otra_raza,1.0,1178
@@ -1185,7 +1185,7 @@ AUT,Western Europe,EVS,7,2018,otra_raza,8.2,1588
 LBY,Middle East & North Africa,WVS,7,2022,otra_raza,8.4,1196
 QAT,Middle East & North Africa,WVS,6,2010,otra_raza,8.8,1060
 IDN,Southeast Asia,WVS,7,2018,otra_raza,9.1,3200
-PRI,Caribbean,WVS,7,2018,otra_raza,9.2,1127
+PRI,Latin America,WVS,7,2018,otra_raza,9.2,1127
 BFA,Sub-Saharan Africa,WVS,5,2007,otra_raza,10.0,1534
 COL,Latin America,WVS,7,2018,otra_raza,10.2,1520
 KAZ,Eastern Europe & Central Asia,WVS,7,2018,otra_raza,10.3,1276
@@ -1300,7 +1300,7 @@ FIN,Western Europe,WVS,5,2005,otra_religion,9.7,1014
 CZE,Eastern Europe & Central Asia,WVS,7,2022,otra_religion,9.8,1163
 ITA,Western Europe,WVS,5,2005,otra_religion,10.0,1012
 SLV,Latin America,WVS,3,1999,otra_religion,10.8,1254
-PRI,Caribbean,WVS,7,2018,otra_religion,11.1,1127
+PRI,Latin America,WVS,7,2018,otra_religion,11.1,1127
 RUS,Eastern Europe & Central Asia,WVS,7,2017,otra_religion,11.3,1810
 ETH,Sub-Saharan Africa,WVS,7,2020,otra_religion,11.4,1220
 SVK,Eastern Europe & Central Asia,WVS,7,2022,otra_religion,11.4,1173
@@ -1408,7 +1408,7 @@ BFA,Sub-Saharan Africa,WVS,5,2007,otro_idioma,10.2,1534
 IDN,Southeast Asia,WVS,7,2018,otro_idioma,10.4,3200
 NLD,Western Europe,WVS,7,2022,otro_idioma,10.8,2057
 CZE,Eastern Europe & Central Asia,WVS,7,2022,otro_idioma,11.9,1163
-PRI,Caribbean,WVS,7,2018,otro_idioma,12.2,1127
+PRI,Latin America,WVS,7,2018,otro_idioma,12.2,1127
 KGZ,Eastern Europe & Central Asia,WVS,7,2020,otro_idioma,12.2,1200
 TJK,Eastern Europe & Central Asia,WVS,7,2020,otro_idioma,12.2,1200
 VEN,Latin America,WVS,7,2021,otro_idioma,12.3,1190
@@ -1500,7 +1500,7 @@ KOR,East Asia,WVS,7,2018,parejas_no_casadas,8.0,1245
 ECU,Latin America,WVS,7,2018,parejas_no_casadas,8.4,1200
 FIN,Western Europe,WVS,5,2005,parejas_no_casadas,8.8,1006
 SRB,Eastern Europe & Central Asia,WVS,7,2017,parejas_no_casadas,9.1,1041
-PRI,Caribbean,WVS,7,2018,parejas_no_casadas,10.1,1127
+PRI,Latin America,WVS,7,2018,parejas_no_casadas,10.1,1127
 COL,Latin America,WVS,7,2018,parejas_no_casadas,10.1,1520
 BGR,Eastern Europe & Central Asia,WVS,5,2006,parejas_no_casadas,10.8,1001
 MEX,Latin America,WVS,7,2018,parejas_no_casadas,11.1,1738
@@ -1573,7 +1573,7 @@ RWA,Sub-Saharan Africa,WVS,6,2012,sida,8.7,1527
 NZL,"North America, Australia & New Zealand",WVS,7,2020,sida,9.3,1057
 AND,Western Europe,WVS,7,2018,sida,11.4,1004
 TTO,Caribbean,WVS,6,2010,sida,11.9,999
-PRI,Caribbean,WVS,7,2018,sida,12.1,1127
+PRI,Latin America,WVS,7,2018,sida,12.1,1127
 ESP,Western Europe,WVS,6,2011,sida,12.3,1189
 USA,"North America, Australia & New Zealand",WVS,7,2017,sida,13.1,2435
 AUS,"North America, Australia & New Zealand",WVS,7,2018,sida,14.8,1813

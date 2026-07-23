@@ -131,7 +131,7 @@ function rk_updateSubtitle() {
 //==================================================================
 function drawRanking() {
   rk_updateSubtitle();
-  rk_renderLegend();
+  rk_syncLegend();
   if (state[1].view === 'all') rk_drawMarimekko();
   else rk_drawBars();
   // Tabla regional HTML (colapsable, solo mobile + vista 'all').
@@ -405,13 +405,17 @@ function mk_getMargins(format) {
 const MK_LABEL_ANGLE_RAD = 45 * Math.PI / 180;
 const MK_LABEL_FONT_SIZE = 10;
 const MK_LABEL_FONT_SIZE_MOBILE = 28;
-const MK_LABEL_ANCHOR_Y_OFFSET = 50;
-const MK_LABEL_ANCHOR_Y_OFFSET_MOBILE = 90;
-const MK_BEND_ROW_COUNT = 5;
+// Más profundidad de filas de quiebre que el N°2 (50/5 filas): acá el default
+// etiqueta ~24 países (22 seleccionados + extremos) contra ~17 de aquel, y con
+// 5 filas el placement caía seguido al fallback SIN chequeo de colisión — las
+// líneas guía se tocaban (reporte de Daniel, 2026-07-22).
+const MK_LABEL_ANCHOR_Y_OFFSET = 76;
+const MK_LABEL_ANCHOR_Y_OFFSET_MOBILE = 116;
+const MK_BEND_ROW_COUNT = 9;
 const MK_BEND_ROW_GAP = 8;
 const MK_BEND_ROW_OFFSET = 6;
 const MK_LABEL_MIN_GAP_X = 5;
-const MK_CALLOUT_PAD = 2;
+const MK_CALLOUT_PAD = 3;
 // Tabla de promedios regionales (arriba-derecha, sobre las barras bajas).
 const MK_TABLE_X = 660, MK_TABLE_W = 408, MK_TABLE_Y_TITLE = 64, MK_TABLE_Y_FIRST = 84, MK_TABLE_ROW_H = 16;
 
@@ -508,36 +512,70 @@ function mk_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, e
     return null;
   }
 
+  // Valida el callout COMPLETO contra los ya colocados. bendY === null =
+  // palito recto (una sola V de la barra al texto). A diferencia del motor
+  // original del N°2, acá también se chequean la V inicial y los palitos
+  // rectos — sin eso, un palito posterior podía cruzar la H de una etiqueta
+  // anterior sin que el algoritmo lo viera (cruce real detectado 2026-07-22).
   function calloutIsClear(barX, tx, bendY) {
     const pad = MK_CALLOUT_PAD;
-    const hSeg = { y: bendY, x1: Math.min(barX, tx), x2: Math.max(barX, tx) };
-    const vFinal = { x: tx, y1: bendY, y2: yLine };
-    for (const s of placedCalloutSegments) {
-      if (s.kind === 'H') {
-        if (Math.abs(s.y - hSeg.y) < pad && !(hSeg.x2 + pad < s.x1 || hSeg.x1 > s.x2 + pad)) return false;
-        if (vFinal.x >= s.x1 - pad && vFinal.x <= s.x2 + pad && s.y >= vFinal.y1 - pad && s.y <= vFinal.y2 + pad) return false;
-      } else {
-        if (s.x >= hSeg.x1 - pad && s.x <= hSeg.x2 + pad && hSeg.y >= s.y1 - pad && hSeg.y <= s.y2 + pad) return false;
-        if (Math.abs(s.x - vFinal.x) < pad && !(vFinal.y2 + pad < s.y1 || vFinal.y1 > s.y2 + pad)) return false;
+    const cand = [];
+    if (bendY === null) {
+      cand.push({ kind: 'V', x: barX, y1: plotArea.bottom, y2: yLine });
+    } else {
+      cand.push({ kind: 'V', x: barX, y1: plotArea.bottom, y2: bendY });
+      cand.push({ kind: 'H', y: bendY, x1: Math.min(barX, tx), x2: Math.max(barX, tx) });
+      cand.push({ kind: 'V', x: tx, y1: bendY, y2: yLine });
+    }
+    for (const c of cand) {
+      for (const s of placedCalloutSegments) {
+        if (c.kind === 'H' && s.kind === 'H') {
+          if (Math.abs(s.y - c.y) < pad && !(c.x2 + pad < s.x1 || c.x1 > s.x2 + pad)) return false;
+        } else if (c.kind === 'V' && s.kind === 'V') {
+          if (Math.abs(s.x - c.x) < pad && !(c.y2 + pad < s.y1 || c.y1 > s.y2 + pad)) return false;
+        } else {
+          const v = c.kind === 'V' ? c : s;
+          const h = c.kind === 'H' ? c : s;
+          if (v.x >= h.x1 - pad && v.x <= h.x2 + pad && h.y >= v.y1 - pad && h.y <= v.y2 + pad) return false;
+        }
       }
     }
     return true;
   }
 
   function tryPlace(a, allowOverflow) {
-    const tx = findFreeTx(a.barX, a.projW, allowOverflow);
-    if (tx === null) return null;
-    const displaced = Math.abs(tx - a.barX) > 0.5;
-    let bendY = null;
-    if (displaced) {
-      for (let r = MK_BEND_ROW_COUNT - 1; r >= 0; r--) {
-        const cand = plotArea.bottom + MK_BEND_ROW_OFFSET + r * MK_BEND_ROW_GAP;
-        if (cand >= yLine - 4) continue;
-        if (calloutIsClear(a.barX, tx, cand)) { bendY = cand; break; }
+    let tx = findFreeTx(a.barX, a.projW, allowOverflow);
+    let guard = 0;
+    while (tx !== null && guard++ < 24) {
+      const displaced = Math.abs(tx - a.barX) > 0.5;
+      // Palito recto si el texto quedó sobre su barra y el camino está libre.
+      if (!displaced && calloutIsClear(a.barX, tx, null)) {
+        return { ...a, tx, ty: yAnchor, yLine, bendY: null, displaced: false, fontSize };
       }
-      if (bendY === null) bendY = plotArea.bottom + MK_BEND_ROW_OFFSET;
+      // Con desplazamiento (o palito bloqueado): probar filas de quiebre desde
+      // la más cercana al label hacia la más cercana al eje (regla OWID).
+      for (let r = MK_BEND_ROW_COUNT - 1; r >= 0; r--) {
+        const candY = plotArea.bottom + MK_BEND_ROW_OFFSET + r * MK_BEND_ROW_GAP;
+        if (candY >= yLine - 4) continue;
+        if (calloutIsClear(a.barX, tx, candY)) {
+          return { ...a, tx, ty: yAnchor, yLine, bendY: candY, displaced: true, fontSize };
+        }
+      }
+      // Ninguna fila limpia con este tx → correr el texto a la derecha y
+      // reintentar (la única escapatoria real cuando una H previa bloquea).
+      const nextTx = findFreeTx(tx + MK_LABEL_MIN_GAP_X + 2, a.projW, allowOverflow);
+      if (nextTx === null || nextTx <= tx + 0.5) break;
+      tx = nextTx;
     }
-    return { ...a, tx, ty: yAnchor, yLine, bendY, displaced, fontSize };
+    // Último recurso (fase forzada): colocar aunque roce, para garantizar
+    // seleccionados y extremos.
+    if (!allowOverflow) return null;
+    const tx2 = findFreeTx(a.barX, a.projW, true);
+    if (tx2 === null) return null;
+    const displaced2 = Math.abs(tx2 - a.barX) > 0.5;
+    return { ...a, tx: tx2, ty: yAnchor, yLine,
+             bendY: displaced2 ? plotArea.bottom + MK_BEND_ROW_OFFSET : null,
+             displaced: displaced2, fontSize };
   }
 
   function commit(p) {
@@ -596,6 +634,14 @@ function rk_drawMarimekko() {
   }
 
   const s1 = state[1];
+  // Selección "efectiva" del marimekko: solo si difiere del default. El
+  // default intacto actúa como lista de prioridad (descartable si no entra),
+  // no como selección forzada — si no, la fase forzada del layout coloca
+  // sin chequeo de colisión y las líneas guía se cruzan. Comparación por
+  // contenido (auto-sanadora: agregar y quitar un país vuelve al default).
+  const selIsDefault = (s1.selected || []).length === RK_DEFAULT_SELECTED.length
+    && RK_DEFAULT_SELECTED.every(i => s1.selected.includes(i));
+  const mkSelected = selIsDefault ? [] : (s1.selected || []);
   // Mayor rechazo a la izquierda; las barras bajas (tolerantes) quedan a la
   // derecha, dejando el hueco arriba-derecha para la tabla regional.
   const data = rk_computeData().slice().sort((a, b) => b.pct - a.pct);
@@ -617,7 +663,7 @@ function rk_drawMarimekko() {
     const priority0 = Array.isArray(aeCountries) && aeCfg
       ? new Set(aeCountries.filter(c => present0.has(c)))
       : mk_defaultLabelCodes(data);
-    const codesToShow0 = new Set([...priority0, ...(s1.selected || [])]);
+    const codesToShow0 = new Set([...priority0, ...mkSelected]);
     mk_extremeCodes(data).forEach(c => codesToShow0.add(c));
     let maxTextW = 0;
     data.forEach(d => {
@@ -711,7 +757,6 @@ function rk_drawMarimekko() {
   // === Barras ===
   const tooltip = document.getElementById('tooltip1');
   const barsG = rk_ns('g'); svg.appendChild(barsG);
-  const hasSelection = s1.selected && s1.selected.length > 0;
   data.forEach((d, i) => {
     const x = MARGIN.left + i * barWidth;
     const y = yScale(d.pct);
@@ -721,10 +766,11 @@ function rk_drawMarimekko() {
     rect.setAttribute('width', barInner);
     rect.setAttribute('height', Math.max(0.5, MARGIN.top + PLOT_H - y));
     rect.setAttribute('fill', (typeof REGION_COLORS !== 'undefined' && REGION_COLORS[d.region]) || '#888');
-    const isSelected = hasSelection && s1.selected.includes(d.iso);
-    const dimByRegion = s1.activeRegion && s1.activeRegion !== d.region;
-    const dimBySelection = hasSelection && !isSelected;
-    const isDimmed = dimByRegion || dimBySelection;
+    // Como en el N°2: el default muestra TODAS las barras a color pleno. La
+    // selección solo gobierna qué países llevan etiqueta (spotlight en el
+    // label); NO atenúa al resto. El único dim es el hover de la leyenda.
+    const isSelected = mkSelected.includes(d.iso);
+    const isDimmed = s1.activeRegion && s1.activeRegion !== d.region;
     rect.setAttribute('class', 'm-bar' + (isDimmed ? ' m-dim' : '') + (isSelected ? ' m-spotlight' : ''));
     rect.dataset.iso = d.iso;
     rect.dataset.region = d.region;
@@ -766,7 +812,7 @@ function rk_drawMarimekko() {
   // === Etiquetas de país rotadas con callouts ===
   const labelsG = rk_ns('g'); svg.appendChild(labelsG);
   const plotArea = { left: MARGIN.left, right: MARGIN.left + PLOT_W, top: MARGIN.top, bottom: MARGIN.top + PLOT_H };
-  const placed = mk_layoutCountryLabels(data, barWidth, plotArea, s1.selected || [], aeCfg ? aeCountries : null);
+  const placed = mk_layoutCountryLabels(data, barWidth, plotArea, mkSelected, aeCfg ? aeCountries : null);
   placed.forEach(l => {
     const path = rk_ns('path');
     path.setAttribute('class', 'm-callout');
@@ -897,19 +943,28 @@ function mk_drawRegionalAvgTableHTML(rows, activeRegion) {
 //==================================================================
 //  Leyenda interactiva de regiones (ambas vistas)
 //  hover: atenúa las demás · click: apaga/prende la región
+//
+//  OJO: la leyenda se CONSTRUYE una vez por categoría/idioma
+//  (rk_buildLegend) y los redraws solo sincronizan clases
+//  (rk_syncLegend). Si el redraw reconstruyera los chips, el chip bajo
+//  el cursor se destruiría a mitad del hover: el mouseleave nunca
+//  llegaría (dim colgado) y el click caería en un nodo muerto — bug
+//  real reportado por Daniel (2026-07-22).
 //==================================================================
-function rk_renderLegend() {
+function rk_buildLegend() {
   const cont = document.getElementById('rk-legend');
   if (!cont) return;
   const order = (typeof REGION_ORDER !== 'undefined') ? REGION_ORDER : [];
   const cat = state[1].cat;
+  const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
+  const key = cat + '|' + lang;
+  if (cont.dataset.built === key) { rk_syncLegend(); return; }
+  cont.dataset.built = key;
   const present = new Set((VE_FOTO[cat] || []).map(r => VE_REGION[r[0]]).filter(Boolean));
-  const hid = rk_hidden();
   cont.innerHTML = '';
   order.filter(r => present.has(r)).forEach(region => {
-    const off = hid.has(region);
     const chip = document.createElement('span');
-    chip.className = 'rk-leg-item' + (off ? ' rk-leg-off' : '');
+    chip.className = 'rk-leg-item';
     chip.dataset.region = region;
     const col = (typeof REGION_COLORS !== 'undefined' && REGION_COLORS[region]) || '#888';
     chip.innerHTML = `<span class="rk-leg-dot" style="background:${col}"></span>${(typeof t === 'function') ? t('reg.' + region) : region}`;
@@ -934,6 +989,17 @@ function rk_renderLegend() {
       drawRanking();
     });
     cont.appendChild(chip);
+  });
+  rk_syncLegend();
+}
+
+// Sincroniza el estado on/off de los chips sin reconstruir el DOM.
+function rk_syncLegend() {
+  const cont = document.getElementById('rk-legend');
+  if (!cont) return;
+  const hid = rk_hidden();
+  cont.querySelectorAll('.rk-leg-item').forEach(chip => {
+    chip.classList.toggle('rk-leg-off', hid.has(chip.dataset.region));
   });
 }
 
@@ -990,6 +1056,7 @@ function setupRankingCat() {
   sel.addEventListener('change', () => {
     if (!VE_FOTO[sel.value]) return;
     state[1].cat = sel.value;
+    rk_buildLegend();   // las regiones presentes pueden cambiar con la categoría
     drawRanking();
   });
 }
@@ -1042,6 +1109,10 @@ function rk_toggleSelect(iso) {
   const idx = arr.indexOf(iso);
   if (idx >= 0) arr.splice(idx, 1);
   else arr.push(iso);
+  // A partir de acá la selección es del usuario: en el marimekko pasa a
+  // forzarse (label garantizado + spotlight). El default intacto es solo
+  // una lista de prioridad descartable (semántica del N°2).
+  state[1].selTouched = true;
   renderRankingChips();
   drawRanking();
 }
@@ -1180,6 +1251,7 @@ function initRanking() {
       cat: 'otra_raza',
       view: 'sel',
       selected: [...RK_DEFAULT_SELECTED],
+      selTouched: false,
       showMedian: true,
       hiddenRegions: [],
       activeRegion: null
@@ -1192,6 +1264,7 @@ function initRanking() {
   setupRankingSearch();
   setupRankingDownloadCSV();
   renderRankingChips();
+  rk_buildLegend();
   drawRanking();
 
   if (!initRanking._editorWired) {

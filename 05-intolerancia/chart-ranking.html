@@ -197,24 +197,25 @@
 
 <script src="../lib/regions.js?v=2"></script>
 <script src="../lib/i18n.js?v=2"></script>
-<script src="./i18n-issue.js?v=2"></script>
+<script src="./i18n-issue.js?v=3"></script>
 <script src="../lib/utils.js?v=4"></script>
 <script src="../lib/country-names.js?v=2"></script>
-<script src="./data-vecinos.js?v=2"></script>
+<script src="./data-vecinos.js?v=3"></script>
 <script src="../lib/editor.js?v=1"></script>
-<script src="./ranking.js?v=2"></script>
+<script src="./ranking.js?v=7"></script>
 <script src="../lib/png-export.js?v=3"></script>
 <script>
-  window.__N5_V = '2';
+  window.__N5_V = '3';
   initRanking();
   applyI18n();
   if (window.__atlasRedraw) window.__atlasRedraw();
   setupLangToggle(() => {
     renderRankingChips();
+    rk_buildLegend();
     drawRanking();
   });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=2"></script>
+<script src="./nav.js?v=3"></script>
 </body>
 </html>

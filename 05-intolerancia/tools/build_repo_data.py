@@ -16,12 +16,13 @@ PATCH = {
     "XKS": "Eastern Europe & Central Asia",
     "XNC": "Western Europe",            # Chipre del Norte (alineado con CYP en N.1)
     "MAC": "East Asia",                 # Macao (como HKG)
+    "PRI": "Latin America",             # Puerto Rico: LatAm para El Atlas (pedido de Daniel, jul 2026)
     "TWN": "East Asia",
     "VEN": "Latin America",
     "YEM": "Middle East & North Africa",
 }
 def region_of(iso):
-    r = REGION.get(iso) or PATCH.get(iso)
+    r = PATCH.get(iso) or REGION.get(iso)   # el PATCH pisa al N.1 (ej. PRI)
     return r
 
 for name in ["ivs_vecinos_largo", "ivs_vecinos_ultimo"]:

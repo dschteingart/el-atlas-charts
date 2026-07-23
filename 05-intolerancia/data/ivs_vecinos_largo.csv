@@ -3502,33 +3502,33 @@ POL,Eastern Europe & Central Asia,EVS,4,1999,sida,43.7,1095
 POL,Eastern Europe & Central Asia,WVS,5,2005,sida,38.0,1000
 POL,Eastern Europe & Central Asia,EVS,5,2008,sida,52.2,1425
 POL,Eastern Europe & Central Asia,WVS,6,2012,sida,25.6,966
-PRI,Caribbean,WVS,3,1995,antecedentes,62.5,1164
-PRI,Caribbean,WVS,4,2001,antecedentes,36.2,720
-PRI,Caribbean,WVS,3,1995,bebedores,58.1,1164
-PRI,Caribbean,WVS,4,2001,bebedores,40.8,720
-PRI,Caribbean,WVS,7,2018,bebedores,32.2,1127
-PRI,Caribbean,WVS,3,1995,drogadictos,66.0,1164
-PRI,Caribbean,WVS,4,2001,drogadictos,46.8,720
-PRI,Caribbean,WVS,7,2018,drogadictos,44.3,1127
-PRI,Caribbean,WVS,3,1995,extremistas,43.5,1164
-PRI,Caribbean,WVS,3,1995,homosexuales,32.3,1164
-PRI,Caribbean,WVS,4,2001,homosexuales,21.9,720
-PRI,Caribbean,WVS,7,2018,homosexuales,12.5,1127
-PRI,Caribbean,WVS,3,1995,inestables,42.0,1164
-PRI,Caribbean,WVS,4,2001,inestables,33.5,720
-PRI,Caribbean,WVS,3,1995,inmigrantes,12.7,1164
-PRI,Caribbean,WVS,4,2001,inmigrantes,5.6,720
-PRI,Caribbean,WVS,7,2018,inmigrantes,9.4,1127
-PRI,Caribbean,WVS,3,1995,norteamericanos,5.3,1164
-PRI,Caribbean,WVS,3,1995,otra_raza,6.6,1164
-PRI,Caribbean,WVS,4,2001,otra_raza,4.4,720
-PRI,Caribbean,WVS,7,2018,otra_raza,9.2,1127
-PRI,Caribbean,WVS,7,2018,otra_religion,11.1,1127
-PRI,Caribbean,WVS,7,2018,otro_idioma,12.2,1127
-PRI,Caribbean,WVS,7,2018,parejas_no_casadas,10.1,1127
-PRI,Caribbean,WVS,3,1995,sida,16.7,1164
-PRI,Caribbean,WVS,4,2001,sida,12.4,720
-PRI,Caribbean,WVS,7,2018,sida,12.1,1127
+PRI,Latin America,WVS,3,1995,antecedentes,62.5,1164
+PRI,Latin America,WVS,4,2001,antecedentes,36.2,720
+PRI,Latin America,WVS,3,1995,bebedores,58.1,1164
+PRI,Latin America,WVS,4,2001,bebedores,40.8,720
+PRI,Latin America,WVS,7,2018,bebedores,32.2,1127
+PRI,Latin America,WVS,3,1995,drogadictos,66.0,1164
+PRI,Latin America,WVS,4,2001,drogadictos,46.8,720
+PRI,Latin America,WVS,7,2018,drogadictos,44.3,1127
+PRI,Latin America,WVS,3,1995,extremistas,43.5,1164
+PRI,Latin America,WVS,3,1995,homosexuales,32.3,1164
+PRI,Latin America,WVS,4,2001,homosexuales,21.9,720
+PRI,Latin America,WVS,7,2018,homosexuales,12.5,1127
+PRI,Latin America,WVS,3,1995,inestables,42.0,1164
+PRI,Latin America,WVS,4,2001,inestables,33.5,720
+PRI,Latin America,WVS,3,1995,inmigrantes,12.7,1164
+PRI,Latin America,WVS,4,2001,inmigrantes,5.6,720
+PRI,Latin America,WVS,7,2018,inmigrantes,9.4,1127
+PRI,Latin America,WVS,3,1995,norteamericanos,5.3,1164
+PRI,Latin America,WVS,3,1995,otra_raza,6.6,1164
+PRI,Latin America,WVS,4,2001,otra_raza,4.4,720
+PRI,Latin America,WVS,7,2018,otra_raza,9.2,1127
+PRI,Latin America,WVS,7,2018,otra_religion,11.1,1127
+PRI,Latin America,WVS,7,2018,otro_idioma,12.2,1127
+PRI,Latin America,WVS,7,2018,parejas_no_casadas,10.1,1127
+PRI,Latin America,WVS,3,1995,sida,16.7,1164
+PRI,Latin America,WVS,4,2001,sida,12.4,720
+PRI,Latin America,WVS,7,2018,sida,12.1,1127
 PRT,Western Europe,EVS,2,1990,antecedentes,58.9,1185
 PRT,Western Europe,EVS,4,1999,antecedentes,43.9,1000
 PRT,Western Europe,EVS,5,2008,antecedentes,39.4,1516
