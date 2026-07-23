@@ -21,6 +21,11 @@ const MP_NBINS = 6;
 const MP_COLORS = ['#F4E4CE', '#E8B98C', '#D98E5B', '#C0632F', '#8F3F1E', '#5A2412'];
 const MP_STROKE = 'rgba(255,255,255,0.55)';
 const MP_STROKE_HOVER = '#1A1A1A';
+// Contorno de COSTA (tierra vs mar). Los bordes entre países son blancos y
+// contra el fondo crema la costa quedaba sin definir (los mapas del N°2 y N°3
+// tienen el mismo hueco). Se dibuja el contorno del landmask, que es la unión
+// de toda la tierra → su borde es exactamente la línea de costa.
+const MP_COAST = '#A89E8B';
 
 let mp_geo = null, mp_proj = null, mp_featCache = null, mp_playTimer = null;
 
@@ -185,6 +190,15 @@ function drawMapa() {
     path.addEventListener('click', (e) => { hoverPath.setAttribute('d', d); mp_showTooltip(e, iso, v, cat); });
     g.appendChild(path);
   });
+  // línea de costa, encima de los países (fill none → solo el borde tierra/mar)
+  if (lmGeom) {
+    const coast = mp_ns('path');
+    coast.setAttribute('d', mp_pathD(mp_dropAntarctic(lmGeom)));
+    coast.setAttribute('fill', 'none'); coast.setAttribute('stroke', MP_COAST);
+    coast.setAttribute('stroke-width', 0.7); coast.setAttribute('stroke-linejoin', 'round');
+    coast.setAttribute('pointer-events', 'none');
+    svg.appendChild(coast);
+  }
   svg.appendChild(hoverPath);
 
   mp_drawLegend(svg, breaks);
