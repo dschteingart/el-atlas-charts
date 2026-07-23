@@ -57,6 +57,19 @@
         { "archivo": "chart-versus.html", "tipo": "ranking/matriz/líneas/dispersión", "tema": "rendimiento entre confederaciones" },
         { "archivo": "chart-goles.html", "tipo": "líneas + barras", "tema": "goles por partido y diferencia de gol en el tiempo" }
       ]
+    },
+    {
+      "numero": "5", "slug": "intolerancia", "carpeta": "05-intolerancia",
+      "titulo": "¿El país más racista del mundo?",
+      "en": "toggle + ?lang=en (sin páginas EN propias)",
+      "charts": [
+        { "archivo": "chart-ranking.html", "tipo": "barras + marimekko", "tema": "ranking de rechazo a vecinos por categoría (IVS)" },
+        { "archivo": "chart-pelicula.html", "tipo": "líneas", "tema": "evolución del rechazo declarado, 1981-2022" },
+        { "archivo": "chart-mapa.html", "tipo": "mapa coroplético", "tema": "rechazo declarado por país", "formatoPng": "worldmap" },
+        { "archivo": "chart-perfil.html", "tipo": "barras", "tema": "perfil de intolerancia de un país vs mediana mundial" },
+        { "archivo": "chart-declarado-implicito.html", "tipo": "dispersión", "tema": "prejuicio declarado (IVS) vs sesgo implícito (Project Implicit)" },
+        { "archivo": "chart-latinobarometro.html", "tipo": "barras", "tema": "intolerancia declarada en América Latina (Latinobarómetro 2024)" }
+      ]
     }
   ]
 }

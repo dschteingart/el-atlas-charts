@@ -176,9 +176,31 @@ Gancho editorial: el Mundial 2026 y las acusaciones de racismo sobre Argentina.
     **Estos fixes conviene portarlos al marimekko del N°2.**
   - Andamiaje del número: `index.html`, `nav.js`, `i18n-issue.js`,
     `data-vecinos.js` (generado por `tools/make_datajs.py`).
-- [ ] Charts 2-6: evolución (líneas, motor elo-trayectoria), mapa (motor
-  clubage-map, formato worldmap), perfil país, scatter declarado vs implícito,
-  ranking Latinobarómetro 2024.
-- [ ] Bajar LB 1998 y 2009 (mini-película de vecinos regional).
-- [ ] Checklist de cierre: thumbs ES/EN + OG reales, entrada en `charts.json`,
-  card en el index raíz y galería, verificación del PNG en browser real.
+- [x] **Chart 2 (película)**: `chart-pelicula.html` + `pelicula.js`. Líneas
+  temporales 1981-2022, chips=selección (WYSIWYG), paleta multiserie de 12,
+  hover que atenúa las demás, selector de 9 categorías. Insight default: el
+  derrumbe de la homofobia (`data-pelicula.js`, una serie por país eligiendo el
+  estudio con más olas para evitar saltos EVS/WVS).
+- [x] **Chart 3 (mapa)**: `chart-mapa.html` + `mapa.js`. Coroplético mundial,
+  **proyección Robinson vanilla propia** (sin D3/CDN → funciona offline; corta
+  el antimeridiano para EE.UU./Rusia/Fiji/NZ/Kiribati). Bins de % FIJOS
+  (comparable entre categorías), selector de categoría, formato PNG `worldmap`.
+  Reusa `../03-futbol/data-country-geo.js` (2 MB, id=iso3, cubre 91/92 — falta NIR).
+- [x] **Chart 4 (perfil país)**: `chart-perfil.html` + `perfil.js`. Barras por
+  categoría para un país (default ARG) vs mediana mundial. Insight: "le teme al
+  vicio, no al distinto".
+- [x] **Chart 5 (declarado vs implícito)**: `chart-declarado-implicito.html` +
+  `declarado-implicito.js`. Scatter IVS (declarado) × Project Implicit (IAT),
+  toggle raza/orientación, color por región, labels con `lib/scatter-render.js`.
+  Argentina arriba-izquierda: declara poco, asocia como cualquiera.
+- [x] **Chart 6 (Latinobarómetro)**: `chart-latinobarometro.html` +
+  `latinobarometro.js`. Barras de 17 países LatAm, selector de categoría,
+  default inmigrantes (historia Chile/Perú). `tools/make_all_datajs.py` genera
+  data-pelicula/lb/implicito.
+- [x] Integración: `index.html` con 6 tarjetas, `nav.js` (6 charts), entrada en
+  `charts.json`, card en el home raíz (ES/EN). PNG FILENAMES ya en png-export.
+- [ ] Bajar LB 1998 y 2009 (mini-película de vecinos regional) — opcional.
+- [ ] **Pendiente de Daniel (necesita browser real):** thumbs ES/EN reales +
+  cards OG, y revisión visual de los 6 PNG (el preview headless no rasteriza por
+  las fuentes). Los charts están verificados funcionalmente (datos, interacción,
+  sin errores de consola) en el preview.
