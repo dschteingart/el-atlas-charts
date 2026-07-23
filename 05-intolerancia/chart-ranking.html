@@ -61,6 +61,9 @@
   .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
   .m-search-result.m-already { color: var(--ink-muted); }
 
+  .rk-picker-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); font-style: italic; }
+  @media (max-width: 768px) { .rk-picker-hint { display: none; } }
+
   #rk-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 2px 0 2px; }
   .rk-leg-item { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 11.5px; color: var(--ink-soft); cursor: pointer; user-select: none; padding: 2px 4px; border-radius: 6px; transition: background 0.12s ease, opacity 0.15s ease; }
   .rk-leg-item:hover { background: var(--bg-soft); }
@@ -161,6 +164,7 @@
           <input type="text" id="rk-search" class="m-search-input" data-i18n-placeholder="c1-search-ph" placeholder="Agregar país…" autocomplete="off">
           <div id="rk-search-results" class="m-search-results"></div>
         </div>
+        <span id="rk-picker-hint" class="rk-picker-hint"></span>
       </div>
       <div class="m-selected-chips" id="rk-selected-chips"></div>
     </div>
@@ -197,12 +201,12 @@
 
 <script src="../lib/regions.js?v=2"></script>
 <script src="../lib/i18n.js?v=2"></script>
-<script src="./i18n-issue.js?v=3"></script>
+<script src="./i18n-issue.js?v=4"></script>
 <script src="../lib/utils.js?v=4"></script>
 <script src="../lib/country-names.js?v=2"></script>
 <script src="./data-vecinos.js?v=3"></script>
 <script src="../lib/editor.js?v=1"></script>
-<script src="./ranking.js?v=7"></script>
+<script src="./ranking.js?v=11"></script>
 <script src="../lib/png-export.js?v=3"></script>
 <script>
   window.__N5_V = '3';

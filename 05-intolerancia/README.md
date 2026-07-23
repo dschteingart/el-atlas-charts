@@ -151,13 +151,27 @@ Gancho editorial: el Mundial 2026 y las acusaciones de racismo sobre Argentina.
 - [x] CSVs foto + película generados y validados.
 - [x] Latinobarómetro 2024 descargado y procesado (validación regional 2024).
 - [x] Project Implicit descargado y procesado (sesgo implícito, 34 países).
-- [x] **Chart 1 (ranking barras)**: `chart-ranking.html` + `ranking.js` (motor
-  clonado del talento N°3, stack lib/). Selector de 9 categorías, vista
-  selección (barras) / todos (pared marimekko del N°2 con labels rotadas y tabla regional), buscador+chips, mediana mundial con toggle, leyenda interactiva (hover atenúa, click apaga región),
-  tooltip con encuesta/año/n, CSV, títulos insight→neutral, ES/EN.
-  `lib/png-export.js` ganó la rama N°5 (sentinel `ES_N5_INTOLERANCIA` +
-  FILENAMES propios). Andamiaje del número: `index.html`, `nav.js`,
-  `i18n-issue.js`, `data-vecinos.js` (generado por `tools/make_datajs.py`).
+- [x] **Chart 1 (ranking)**: `chart-ranking.html` + `ranking.js`, stack lib/.
+  Selector de 9 categorías. Dos vistas sobre la misma selección: **"Mi selección"**
+  (barras horizontales, motor talento N°3) y **"Todos los países"** (pared
+  **marimekko** de 92 países, motor N°2). Modelo **WYSIWYG chips=etiquetas**
+  (memoria `wysiwyg-chips-labels`): los chips son la única fuente de verdad —
+  barras en la vista selección, etiquetas rotadas en el marimekko; seleccionar
+  NO atenúa ni pone en negrita (eso es solo el hover de la leyenda). Picker +
+  buscador visibles en ambas vistas. Mediana mundial con toggle (default on).
+  Leyenda de regiones interactiva: hover atenúa las demás, click apaga/prende la
+  región. Tabla de promedios regionales con panel de fondo (legible sobre barras
+  altas, ej. drogadictos). Tooltip con encuesta/año/n. Título neutral. CSV. ES/EN.
+  `lib/png-export.js` ganó la rama N°5 (sentinel `ES_N5_INTOLERANCIA` + FILENAMES).
+  - **Placement de etiquetas del marimekko:** port del algoritmo OWID del N°2
+    con un fix propio — el chequeo de colisión valida el callout COMPLETO (V
+    inicial + H + V final + palitos rectos), no solo la H+Vfinal como el N°2
+    (que dejaba cruzar palitos posteriores). Default curado a 15 países que
+    entran sin cruces en las 9 categorías (0 cruces verificados; ~2 etiquetas se
+    descartan en 2 categorías densas antes que forzar un cruce). **Este fix
+    conviene portarlo al marimekko del N°2.**
+  - Andamiaje del número: `index.html`, `nav.js`, `i18n-issue.js`,
+    `data-vecinos.js` (generado por `tools/make_datajs.py`).
 - [ ] Charts 2-6: evolución (líneas, motor elo-trayectoria), mapa (motor
   clubage-map, formato worldmap), perfil país, scatter declarado vs implícito,
   ranking Latinobarómetro 2024.

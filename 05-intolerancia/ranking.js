@@ -25,12 +25,13 @@ const RK_MARGIN_MOBILE  = { top: 34, right: 60, bottom: 56, left: 110 };
 
 const RK_LATAM_REGIONS = new Set(['Latin America', 'Caribbean']);
 // 13 LatAm con dato 2017+ más referencias de cada región del mundo.
+// Set curado inicial (WYSIWYG: son los chips = las etiquetas). La tesis
+// rioplatense + spread LatAm + referencias globales. ~17 entra limpio en el
+// marimekko; el usuario agrega/saca a gusto.
 const RK_DEFAULT_SELECTED = [
-  'ARG','BOL','BRA','CHL','COL','ECU','GTM','MEX','NIC','PER','PRI','URY','VEN',
-  'USA','ESP','FRA','ITA','DEU','SWE','JPN','TUR','NGA'
+  'URY','ARG','BRA','CHL','PER','COL','MEX','GTM','VEN',
+  'USA','FRA','ESP','ITA','JPN','TUR'
 ];
-// Prioridad de etiquetas del marimekko en mobile (el ancho no da para 22).
-const RK_MK_PRIORITY_MOBILE = ['URY','BRA','ARG','FRA','USA','ESP','MEX','GTM','TUR','JPN'];
 
 const RK_SVG_NS = 'http://www.w3.org/2000/svg';
 const rk_ns = (tag) => document.createElementNS(RK_SVG_NS, tag);
@@ -137,9 +138,16 @@ function drawRanking() {
   // Tabla regional HTML (colapsable, solo mobile + vista 'all').
   const mtWrap = document.getElementById('mk-avg-table-mobile-wrap');
   if (mtWrap) mtWrap.style.display = state[1].view === 'all' ? '' : 'none';
-  // El buscador + chips son de la vista 'sel'.
+  // WYSIWYG: el buscador + chips van SIEMPRE visibles (los chips son las
+  // barras en 'sel' y las etiquetas en 'all' — una sola fuente de verdad).
   const picker = document.getElementById('rk-country-picker');
-  if (picker) picker.style.display = state[1].view === 'all' ? 'none' : '';
+  if (picker) picker.style.display = '';
+  // El hint del picker cambia según la vista (qué "hacen" los chips).
+  const hint = document.getElementById('rk-picker-hint');
+  if (hint) {
+    const k = state[1].view === 'all' ? 'c1-pick-hint-all' : 'c1-pick-hint-sel';
+    hint.textContent = (typeof t === 'function') ? t(k) : '';
+  }
   // Título: neutral por ahora (el insight queda en i18n para más adelante).
   if (typeof atlasSetHeading === 'function') {
     atlasSetHeading('1', false, { title: 'c1-title', titleNeutral: 'c1-title-neutral' });
@@ -409,9 +417,9 @@ const MK_LABEL_FONT_SIZE_MOBILE = 28;
 // etiqueta ~24 países (22 seleccionados + extremos) contra ~17 de aquel, y con
 // 5 filas el placement caía seguido al fallback SIN chequeo de colisión — las
 // líneas guía se tocaban (reporte de Daniel, 2026-07-22).
-const MK_LABEL_ANCHOR_Y_OFFSET = 76;
-const MK_LABEL_ANCHOR_Y_OFFSET_MOBILE = 116;
-const MK_BEND_ROW_COUNT = 9;
+const MK_LABEL_ANCHOR_Y_OFFSET = 82;
+const MK_LABEL_ANCHOR_Y_OFFSET_MOBILE = 122;
+const MK_BEND_ROW_COUNT = 11;
 const MK_BEND_ROW_GAP = 8;
 const MK_BEND_ROW_OFFSET = 6;
 const MK_LABEL_MIN_GAP_X = 5;
@@ -419,34 +427,14 @@ const MK_CALLOUT_PAD = 3;
 // Tabla de promedios regionales (arriba-derecha, sobre las barras bajas).
 const MK_TABLE_X = 660, MK_TABLE_W = 408, MK_TABLE_Y_TITLE = 64, MK_TABLE_Y_FIRST = 84, MK_TABLE_ROW_H = 16;
 
-function mk_defaultLabelCodes(sortedData) {
-  const editorFormat = typeof getActivePngFormat === 'function' ? getActivePngFormat() : null;
-  const mobile = !editorFormat && rk_isMobile();
-  const priority = mobile ? RK_MK_PRIORITY_MOBILE : RK_DEFAULT_SELECTED;
+// Algoritmo de etiquetas estilo OWID (port de m_layoutCountryLabels del N°2).
+// WYSIWYG (norma de la auditoría del N°2): las etiquetas SON los chips
+// (labelCodes). Sin priority list oculta ni extremos automáticos — una sola
+// fuente de verdad. Todas son "must-show": se colocan con anti-colisión y solo
+// se fuerzan (con overflow) si no entran limpias, así nunca se descarta un chip.
+function mk_layoutCountryLabels(sortedData, barWidth, plotArea, labelCodes) {
   const present = new Set(sortedData.map(d => d.iso));
-  const result = new Set(priority.filter(c => present.has(c)));
-  if (sortedData.length > 0) {
-    result.add(sortedData[0].iso);
-    result.add(sortedData[sortedData.length - 1].iso);
-  }
-  return result;
-}
-
-function mk_extremeCodes(sortedData) {
-  if (sortedData.length === 0) return new Set();
-  return new Set([sortedData[0].iso, sortedData[sortedData.length - 1].iso]);
-}
-
-// Algoritmo de etiquetas estilo OWID (port fiel de m_layoutCountryLabels).
-function mk_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, editorCodes) {
-  const present = new Set(sortedData.map(d => d.iso));
-  const priorityCodes = Array.isArray(editorCodes)
-    ? new Set(editorCodes.filter(c => present.has(c)))
-    : mk_defaultLabelCodes(sortedData);
-  const extremeCodes = mk_extremeCodes(sortedData);
-  const selSet = new Set(selectedCodes || []);
-  const codesToShow = new Set([...priorityCodes, ...selSet]);
-  extremeCodes.forEach(c => codesToShow.add(c));
+  const codesToShow = new Set((labelCodes || []).filter(c => present.has(c)));
 
   const editorFormat = typeof getActivePngFormat === 'function' ? getActivePngFormat() : null;
   const newsletter = editorFormat === 'newsletter';
@@ -479,15 +467,11 @@ function mk_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, e
     const text = rk_displayName(d.iso);
     const textW = Math.max(22, rk_measureText(text, fontSize, 500));
     const projW = cos * textW + sin * fontSize + 2;
-    const isSel = selSet.has(d.iso);
     anchors.push({
       code: d.iso, text,
       color: rk_regionLabelColor(d.region),
       barX: plotArea.left + i * barWidth + barWidth / 2,
-      textW, projW,
-      source: isSel ? 'selected' : 'priority',
-      isSelected: isSel,
-      isExtreme: extremeCodes.has(d.iso)
+      textW, projW
     });
   });
 
@@ -590,13 +574,15 @@ function mk_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, e
     toDraw.push(p);
   }
 
-  const notPlacedForced = [];
+  // Fase 1: colocar sin overflow (colisión-libre). Fase 2: forzar el resto con
+  // overflow — como todas son chips del usuario, ninguna se descarta.
+  const notPlaced = [];
   orderedAnchors.forEach(a => {
     const p = tryPlace(a, false);
     if (p) commit(p);
-    else if (a.isSelected || a.isExtreme) notPlacedForced.push(a);
+    else notPlaced.push(a);
   });
-  notPlacedForced.forEach(a => {
+  notPlaced.forEach(a => {
     const p = tryPlace(a, true);
     if (p) commit(p);
   });
@@ -634,14 +620,9 @@ function rk_drawMarimekko() {
   }
 
   const s1 = state[1];
-  // Selección "efectiva" del marimekko: solo si difiere del default. El
-  // default intacto actúa como lista de prioridad (descartable si no entra),
-  // no como selección forzada — si no, la fase forzada del layout coloca
-  // sin chequeo de colisión y las líneas guía se cruzan. Comparación por
-  // contenido (auto-sanadora: agregar y quitar un país vuelve al default).
-  const selIsDefault = (s1.selected || []).length === RK_DEFAULT_SELECTED.length
-    && RK_DEFAULT_SELECTED.every(i => s1.selected.includes(i));
-  const mkSelected = selIsDefault ? [] : (s1.selected || []);
+  // WYSIWYG: las etiquetas del marimekko SON los chips (state.selected), igual
+  // que el N°2 tras la auditoría. Si el editor está activo, su lista manda.
+  const labelCodes = (aeCfg && Array.isArray(aeCountries)) ? aeCountries : (s1.selected || []);
   // Mayor rechazo a la izquierda; las barras bajas (tolerantes) quedan a la
   // derecha, dejando el hueco arriba-derecha para la tabla regional.
   const data = rk_computeData().slice().sort((a, b) => b.pct - a.pct);
@@ -660,11 +641,7 @@ function rk_drawMarimekko() {
     const labelFontSize = aeSizes?.labels ?? fmtLabelDefault;
     const aOff = (mobile || mobilePng) ? MK_LABEL_ANCHOR_Y_OFFSET_MOBILE : MK_LABEL_ANCHOR_Y_OFFSET;
     const present0 = new Set(data.map(d => d.iso));
-    const priority0 = Array.isArray(aeCountries) && aeCfg
-      ? new Set(aeCountries.filter(c => present0.has(c)))
-      : mk_defaultLabelCodes(data);
-    const codesToShow0 = new Set([...priority0, ...mkSelected]);
-    mk_extremeCodes(data).forEach(c => codesToShow0.add(c));
+    const codesToShow0 = new Set((labelCodes || []).filter(c => present0.has(c)));
     let maxTextW = 0;
     data.forEach(d => {
       if (!codesToShow0.has(d.iso)) return;
@@ -766,12 +743,10 @@ function rk_drawMarimekko() {
     rect.setAttribute('width', barInner);
     rect.setAttribute('height', Math.max(0.5, MARGIN.top + PLOT_H - y));
     rect.setAttribute('fill', (typeof REGION_COLORS !== 'undefined' && REGION_COLORS[d.region]) || '#888');
-    // Como en el N°2: el default muestra TODAS las barras a color pleno. La
-    // selección solo gobierna qué países llevan etiqueta (spotlight en el
-    // label); NO atenúa al resto. El único dim es el hover de la leyenda.
-    const isSelected = mkSelected.includes(d.iso);
+    // WYSIWYG: seleccionar NO atenúa ni destaca barras (norma de la auditoría).
+    // Todas a color pleno; el único dim es el hover de región en la leyenda.
     const isDimmed = s1.activeRegion && s1.activeRegion !== d.region;
-    rect.setAttribute('class', 'm-bar' + (isDimmed ? ' m-dim' : '') + (isSelected ? ' m-spotlight' : ''));
+    rect.setAttribute('class', 'm-bar' + (isDimmed ? ' m-dim' : ''));
     rect.dataset.iso = d.iso;
     rect.dataset.region = d.region;
     rect.addEventListener('mouseenter', (e) => rk_showTooltip(e, d));
@@ -812,7 +787,7 @@ function rk_drawMarimekko() {
   // === Etiquetas de país rotadas con callouts ===
   const labelsG = rk_ns('g'); svg.appendChild(labelsG);
   const plotArea = { left: MARGIN.left, right: MARGIN.left + PLOT_W, top: MARGIN.top, bottom: MARGIN.top + PLOT_H };
-  const placed = mk_layoutCountryLabels(data, barWidth, plotArea, mkSelected, aeCfg ? aeCountries : null);
+  const placed = mk_layoutCountryLabels(data, barWidth, plotArea, labelCodes);
   placed.forEach(l => {
     const path = rk_ns('path');
     path.setAttribute('class', 'm-callout');
@@ -821,19 +796,20 @@ function rk_drawMarimekko() {
     else dPath = `M ${l.barX},${plotArea.bottom + 1} V ${l.bendY} H ${l.tx} V ${l.yLine}`;
     path.setAttribute('d', dPath);
     path.setAttribute('stroke', l.color);
-    path.setAttribute('stroke-width', l.isSelected ? '1.1' : '0.7');
-    path.setAttribute('stroke-opacity', l.isSelected ? '0.9' : '0.6');
+    path.setAttribute('stroke-width', '0.8');
+    path.setAttribute('stroke-opacity', '0.65');
     path.setAttribute('fill', 'none');
     labelsG.appendChild(path);
     const txt = rk_ns('text');
-    txt.setAttribute('class', 'm-country-label' + (l.isSelected ? ' m-spotlight-label' : ''));
+    // Peso uniforme (WYSIWYG: todas las etiquetas son chips, ninguna en negrita).
+    txt.setAttribute('class', 'm-country-label');
     txt.setAttribute('x', l.tx);
     txt.setAttribute('y', l.ty);
     txt.setAttribute('transform', `rotate(-45 ${l.tx} ${l.ty})`);
     txt.setAttribute('text-anchor', 'end');
     txt.setAttribute('fill', l.color);
     txt.style.fontSize = l.fontSize + 'px';
-    txt.setAttribute('font-weight', l.isSelected ? '700' : '500');
+    txt.setAttribute('font-weight', '500');
     txt.textContent = l.text;
     labelsG.appendChild(txt);
   });
@@ -873,6 +849,25 @@ function mk_drawRegionalAvgTable(svg, rows, activeRegion, SIZES, mobilePng) {
   const g = rk_ns('g');
   g.setAttribute('id', 'mk-avg-table');
   svg.appendChild(g);
+
+  // Panel de fondo: en categorías donde TODAS las barras son altas (ej.
+  // drogadictos ~70-97%) la tabla queda sobre barras y se vuelve ilegible.
+  // Un panel crema opaco detrás la despega del fondo en cualquier categoría
+  // (reporte de Daniel, 2026-07-22). Hex explícito (el PNG no resuelve var()).
+  const padX = base * 0.7, padTop = titleSize + base * 0.5;
+  const panelY = tableYTitle - padTop;
+  const panelBottom = yFirst + (rows.length - 1) * rowH + base * 0.6;
+  const panel = rk_ns('rect');
+  panel.setAttribute('x', tableX - padX);
+  panel.setAttribute('y', panelY);
+  panel.setAttribute('width', tableW + padX * 2);
+  panel.setAttribute('height', panelBottom - panelY);
+  panel.setAttribute('rx', 6);
+  panel.setAttribute('fill', '#FAF8F3');
+  panel.setAttribute('fill-opacity', '0.94');
+  panel.setAttribute('stroke', '#E0DCC8');
+  panel.setAttribute('stroke-width', '1');
+  g.appendChild(panel);
 
   const title = rk_ns('text');
   title.setAttribute('class', 'm-table-title');
@@ -1109,10 +1104,6 @@ function rk_toggleSelect(iso) {
   const idx = arr.indexOf(iso);
   if (idx >= 0) arr.splice(idx, 1);
   else arr.push(iso);
-  // A partir de acá la selección es del usuario: en el marimekko pasa a
-  // forzarse (label garantizado + spotlight). El default intacto es solo
-  // una lista de prioridad descartable (semántica del N°2).
-  state[1].selTouched = true;
   renderRankingChips();
   drawRanking();
 }
@@ -1251,7 +1242,6 @@ function initRanking() {
       cat: 'otra_raza',
       view: 'sel',
       selected: [...RK_DEFAULT_SELECTED],
-      selTouched: false,
       showMedian: true,
       hiddenRegions: [],
       activeRegion: null
