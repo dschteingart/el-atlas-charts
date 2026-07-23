@@ -98,8 +98,14 @@ Gancho editorial: el Mundial 2026 y las acusaciones de racismo sobre Argentina.
   ítems separados) → slug propio `bebedores_drogadictos`, no comparable 1:1.
   Agrega categoría `jovenes` (LB-only). Guatemala da 11,9% vs 30,2% IVS 2020 —
   otra muestra de efectos-casa.
-- También descargado: `latinobarometro-serie-de-tiempo-1995-2024.xlsx` (agregados
-  longitudinales oficiales, en scratchpad/Bases) — por explorar.
+- **Serie temporal LB (catálogo `latinobarometro-serie-de-tiempo-1995-2024.xlsx`,
+  en Bases):** la batería de vecinos también se preguntó en **1998 (`np63_MD`) y
+  2009 (`p64st_MD`)** → con 2024 hay mini-película regional de 3 puntos,
+  independiente de la IVS (pendiente bajar esas dos olas). Además: "qué tan
+  justificable es la homosexualidad" 2002/2004/2008/2009; batería de inmigrantes
+  2020/2023/2024 (llegada buena/mala, economía, trabajo, crimen) — ideal para la
+  historia del deterioro Chile/Perú; discriminación percibida 2009-2020; y
+  auto-identificación étnico-racial 13 años (2007-2024).
 
 ### Project Implicit International — `data/pi_implicito_paises.csv`
 
@@ -145,7 +151,16 @@ Gancho editorial: el Mundial 2026 y las acusaciones de racismo sobre Argentina.
 - [x] CSVs foto + película generados y validados.
 - [x] Latinobarómetro 2024 descargado y procesado (validación regional 2024).
 - [x] Project Implicit descargado y procesado (sesgo implícito, 34 países).
-- [ ] Definición del lineup de charts (propuesta en curso).
-- [ ] Charts interactivos + PNG export.
-- [ ] index.html del número + entrada en `charts.json` + galería.
-- [ ] Versión EN + OG cards + thumbnails.
+- [x] **Chart 1 (ranking barras)**: `chart-ranking.html` + `ranking.js` (motor
+  clonado del talento N°3, stack lib/). Selector de 9 categorías, vista
+  selección/todos, buscador+chips, mediana mundial, leyenda por región Atlas,
+  tooltip con encuesta/año/n, CSV, títulos insight→neutral, ES/EN.
+  `lib/png-export.js` ganó la rama N°5 (sentinel `ES_N5_INTOLERANCIA` +
+  FILENAMES propios). Andamiaje del número: `index.html`, `nav.js`,
+  `i18n-issue.js`, `data-vecinos.js` (generado por `tools/make_datajs.py`).
+- [ ] Charts 2-6: evolución (líneas, motor elo-trayectoria), mapa (motor
+  clubage-map, formato worldmap), perfil país, scatter declarado vs implícito,
+  ranking Latinobarómetro 2024.
+- [ ] Bajar LB 1998 y 2009 (mini-película de vecinos regional).
+- [ ] Checklist de cierre: thumbs ES/EN + OG reales, entrada en `charts.json`,
+  card en el index raíz y galería, verificación del PNG en browser real.
