@@ -12,7 +12,12 @@
   // Orden de los gráficos del N°5 (= orden del index). Se amplía a medida
   // que se agregan charts.
   const CHARTS = [
-    'chart-ranking.html'
+    'chart-ranking.html',
+    'chart-pelicula.html',
+    'chart-mapa.html',
+    'chart-perfil.html',
+    'chart-declarado-implicito.html',
+    'chart-latinobarometro.html'
   ];
   const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
   const T = {
