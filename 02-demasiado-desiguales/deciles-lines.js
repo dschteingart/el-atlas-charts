@@ -37,12 +37,14 @@ function dl_measure(text, size, weight) {
 // es solo el piso). left grande = ticks Y escalados ("$1k","$10k","$100k");
 // bottom = eje X "D1..D10" + 2ª línea (pobre/rico) sin espacio muerto.
 function dl_margins(format, mobile) {
-  if (format === 'public')     return { top: 40, right: 180, bottom: 100, left: 84 };
+  // left generoso: los ticks Y escalados ("$500") + el título del eje rotado +
+  // un aire entre ambos (si no, el título pisa el "$" de los ticks).
+  if (format === 'public')     return { top: 40, right: 180, bottom: 100, left: 90 };
   if (format === 'newsletter') return { top: 40, right: 190, bottom: 130, left: 96 };
   if (format === 'square')     return { top: 50, right: 190, bottom: 140, left: 96 };
   if (format === 'mobile')     return { top: 80, right: 180, bottom: 220, left: 110 };
   if (mobile)                  return { top: 110, right: 200, bottom: 150, left: 120 };
-  return { top: 24, right: 180, bottom: 56, left: 70 };
+  return { top: 24, right: 180, bottom: 56, left: 82 };
 }
 
 // Anti-colisión de end-labels: forward sweep (empuja hacia abajo si choca) +
@@ -130,15 +132,15 @@ function dl_draw(cfg) {
 
   // ---- título eje Y ----
   if (cfg.axisY) {
-    const off = Math.min(bigFmt ? 80 : 50, M.left - Math.ceil(SIZES.axisTitle));
+    const off = Math.min(bigFmt ? 80 : 54, M.left - Math.ceil(SIZES.axisTitle));
     const yT = dl_el('text'); yT.setAttribute('class', 'd-axis-title'); yT.setAttribute('text-anchor', 'middle');
     yT.setAttribute('transform', `translate(${M.left - off}, ${M.top + PLOT_H / 2}) rotate(-90)`);
     yT.style.fontSize = SIZES.axisTitle + 'px'; yT.textContent = cfg.axisY; svg.appendChild(yT);
   }
 
   // ---- eje X: "D1..D10" (o "Decil N" si el tick es chico) + extremos + guías ----
-  const xLabelOffset = mobile ? 50 : mobilePng ? 42 : 22;
-  const xExtraOffset = mobile ? 88 : mobilePng ? 76 : 36;
+  const xLabelOffset = mobile ? 50 : mobilePng ? 42 : bigFmt ? 34 : 22;
+  const xExtraOffset = mobile ? 88 : mobilePng ? 84 : bigFmt ? 72 : 42;
   const usaAbrev = SIZES.tick >= 16;                    // con fuentes grandes "Decil N" no entra → "DN"
   deciles.forEach(d => {
     const x = xS(d);
