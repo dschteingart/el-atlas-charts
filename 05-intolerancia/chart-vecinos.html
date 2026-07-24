@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La batería de vecinos — El Atlas · N°5</title>
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/chart-vecinos.html">
+<meta property="og:title" content="La batería de vecinos — El Atlas · N°5">
+<meta property="og:description" content="A quién no querría de vecino cada sociedad: el mismo dato como ranking, mapa, evolución histórica y perfil por país (IVS 1981-2022).">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/thumbs/chart-vecinos.png">
+<meta property="og:image:alt" content="La batería de vecinos">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="La batería de vecinos — El Atlas · N°5">
+<meta name="twitter:description" content="El mismo dato como ranking, mapa, evolución y perfil por país (IVS 1981-2022).">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/thumbs/chart-vecinos.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=4">
+<link rel="stylesheet" href="../lib/editor.css?v=1">
+<style>
+  .wrap-wide { max-width: 1100px; padding: 6px 20px 10px; }
+  .wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
+  .wrap-wide .chart-block { margin: 4px 0 2px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+  .wrap-wide .chart-subtitle { margin: 0 0 4px; font-size: 13.5px; line-height: 1.35; }
+  .chart-svg-wrap { margin-top: 2px; position: relative; }
+  .footer { margin-top: 6px; }
+  .footer p { margin: 2px 0; }
+  .footer .download { margin-right: 8px; margin-bottom: 8px; }
+
+  /* ===== encabezado del graficador ===== */
+  .g-eyebrow { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin: 2px 0 3px; }
+  .g-lead { font-family: var(--serif); font-size: 14px; line-height: 1.4; color: var(--ink-soft); margin: 0 0 8px; max-width: 720px; }
+
+  /* ===== barra de pestañas (vista) ===== */
+  .g-tabs { display: inline-flex; gap: 2px; border: 1px solid var(--rule); border-radius: 10px; padding: 3px; background: var(--bg-soft); margin: 2px 0 10px; }
+  .g-tabs button { font-family: var(--sans); font-size: 13px; font-weight: 600; padding: 7px 16px; border: none; border-radius: 7px; background: transparent; color: var(--ink-soft); cursor: pointer; transition: background 0.14s ease, color 0.14s ease; white-space: nowrap; }
+  .g-tabs button:hover { color: var(--ink); }
+  .g-tabs button.active { background: var(--accent); color: #fff; }
+  .g-panel { display: none; }
+  @media (max-width: 768px) { .g-tabs { display: flex; width: 100%; } .g-tabs button { flex: 1; padding: 8px 4px; font-size: 12px; } }
+
+  /* ===== controles compartidos ===== */
+  .m-controls { display: flex; align-items: center; gap: 14px; margin: 4px 0 6px; flex-wrap: wrap; }
+  .m-ctrl-group { display: inline-flex; align-items: center; gap: 8px; }
+  .m-ctrl-label { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+  .m-select { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 28px 6px 13px; border: 1px solid var(--rule); border-radius: 15px; background-color: var(--bg); color: var(--ink-soft); cursor: pointer; -webkit-appearance: none; appearance: none; outline: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%238a8378' stroke-width='1.5'/></svg>"); background-repeat: no-repeat; background-position: right 11px center; }
+  .m-select:focus { border-color: var(--accent); }
+
+  .toggle { display: inline-flex; border: 1px solid var(--rule); border-radius: 15px; overflow: hidden; background: var(--bg); }
+  .toggle button { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 13px; background: var(--bg); color: var(--ink-soft); border: none; cursor: pointer; white-space: nowrap; transition: background 0.12s ease, color 0.12s ease; }
+  .toggle button + button { border-left: 1px solid var(--rule); }
+  .toggle button.active { background: var(--accent); color: #fff; }
+
+  .m-selected-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 0; margin: 2px 0 4px; }
+  .m-selected-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 9px; border-radius: 12px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); }
+  .m-chip-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+  .m-chip-x { width: 18px; height: 18px; border-radius: 50%; border: none; background: transparent; color: var(--ink-muted); font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .m-chip-x:hover { background: var(--grid); color: var(--ink); }
+
+  .m-search-wrap { position: relative; margin: 0; min-width: 200px; max-width: 280px; }
+  .m-search-input { width: 100%; padding: 7px 10px; border: 1px solid var(--rule); border-radius: 5px; background: var(--bg); font-family: var(--sans); font-size: 13px; color: var(--ink); outline: none; }
+  .m-search-input:focus { border-color: var(--accent); }
+  .m-search-results { position: absolute; top: calc(100% + 2px); left: 0; right: 0; background: var(--bg); border: 1px solid var(--rule); border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-height: 240px; overflow-y: auto; z-index: 30; display: none; }
+  .m-search-results.open { display: block; }
+  .m-search-result { padding: 7px 10px; font-family: var(--sans); font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--grid); }
+  .m-search-result:last-child { border-bottom: none; }
+  .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
+  .m-search-result.m-already { color: var(--ink-muted); }
+
+  /* ===== Ranking ===== */
+  .rk-picker-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); font-style: italic; }
+  @media (max-width: 768px) { .rk-picker-hint { display: none; } }
+  .rk-wave-slider, .pf-wave-slider { -webkit-appearance: none; appearance: none; width: 120px; height: 4px; border-radius: 2px; background: var(--grid); outline: none; cursor: pointer; }
+  .rk-wave-slider::-webkit-slider-thumb, .pf-wave-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .rk-wave-slider::-moz-range-thumb, .pf-wave-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .rk-wave-display, .pf-wave-display { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--ink); min-width: 82px; font-variant-numeric: tabular-nums; }
+
+  #rk-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 2px 0 2px; }
+  .rk-leg-item { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 11.5px; color: var(--ink-soft); cursor: pointer; user-select: none; padding: 2px 4px; border-radius: 6px; transition: background 0.12s ease, opacity 0.15s ease; }
+  .rk-leg-item:hover { background: var(--bg-soft); }
+  .rk-leg-item.rk-leg-off { opacity: 0.38; }
+  .rk-leg-item.rk-leg-off .rk-leg-dot { background: var(--grid) !important; }
+  .rk-leg-item.rk-leg-off { text-decoration: line-through; text-decoration-thickness: 1px; }
+  .rk-leg-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+
+  #tooltip1 .tt-sub { font-size: 10.5px; opacity: 0.75; margin: -1px 0 4px; }
+
+  /* Vista "todos": pared marimekko (clases del motor N°2) */
+  .m-bar { transition: opacity 0.2s; cursor: pointer; }
+  .m-bar.m-dim { opacity: 0.15; }
+  .m-country-label { font-family: var(--sans); font-size: 9.5px; pointer-events: none; transition: opacity 0.2s; }
+  .m-country-label.m-spotlight-label { font-weight: 700; }
+  .m-table-title { font-family: var(--sans); font-size: 10px; font-weight: 600; fill: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; pointer-events: none; }
+  .m-table-rule { stroke: var(--rule); stroke-width: 1; }
+  .m-table-swatch { pointer-events: none; }
+  .m-table-label, .m-table-value { font-family: var(--sans); font-size: 11px; font-weight: 500; fill: var(--ink); pointer-events: none; }
+  .m-table-value { font-variant-numeric: tabular-nums; }
+  .m-table-row-active.m-table-label, .m-table-row-active.m-table-value { font-weight: 700; }
+  .m-table-row-dimmed.m-table-label, .m-table-row-dimmed.m-table-value, .m-table-row-dimmed.m-table-swatch { opacity: 0.25; }
+  #mk-avg-table-mobile-wrap { display: none; margin-top: 6px; }
+  #mk-avg-table-mobile { max-width: 440px; }
+  .m-mt-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-family: var(--sans); font-size: 12.5px; color: var(--ink); }
+  .m-mt-swatch { width: 10px; height: 10px; border-radius: 2px; flex: 0 0 auto; }
+  .m-mt-label { flex: 1; }
+  .m-mt-value { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .m-mt-row-active .m-mt-label, .m-mt-row-active .m-mt-value { font-weight: 700; }
+  .m-mt-row-dimmed { opacity: 0.4; }
+
+  /* ===== Evolución (rango de período) ===== */
+  .s-range-block { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 260px; }
+  .s-range-slider { position: relative; flex: 1; height: 20px; min-width: 180px; max-width: 320px; }
+  .s-range-track { position: absolute; top: 50%; left: 0; right: 0; height: 4px; background: var(--grid); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+  .s-range-track-active { position: absolute; top: 50%; height: 4px; background: var(--accent); border-radius: 2px; transform: translateY(-50%); pointer-events: none; }
+  .s-range-slider input[type="range"] { position: absolute; top: 0; left: 0; width: 100%; height: 20px; margin: 0; -webkit-appearance: none; appearance: none; background: transparent; pointer-events: none; outline: none; }
+  .s-range-slider input[type="range"]::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .s-range-slider input[type="range"]::-moz-range-thumb { pointer-events: auto; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .s-range-slider input[type="range"]::-moz-range-track { background: transparent; border: none; }
+  .s-range-display { font-family: var(--serif); font-size: 15px; font-weight: 700; color: var(--ink); min-width: 96px; font-variant-numeric: tabular-nums; text-align: right; }
+
+  /* ===== Mapa ===== */
+  #chart3 path { cursor: pointer; }
+  #tooltip3 { min-width: 150px; }
+  #tooltip3 .tt-row-sub { font-size: 10.5px; opacity: 0.72; }
+  #tooltip3 .tt-muted { opacity: 0.7; font-style: italic; }
+  .mp-play { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--rule); background: var(--bg); color: var(--accent); font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+  .mp-play:hover { border-color: var(--accent); }
+  .mp-play.playing { background: var(--accent); color: #fff; }
+  .mp-wave-slider { -webkit-appearance: none; appearance: none; width: 130px; height: 4px; border-radius: 2px; background: var(--grid); outline: none; cursor: pointer; }
+  .mp-wave-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .mp-wave-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .mp-wave-display { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--ink); min-width: 82px; font-variant-numeric: tabular-nums; }
+
+  /* ===== Perfil ===== */
+  #tooltip4 .tt-sub { font-size: 10.5px; opacity: 0.8; margin-top: 3px; }
+
+  @media (max-width: 768px) {
+    .m-search-wrap { max-width: 100%; }
+    .wrap-wide .chart-title { font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 4px; }
+    .wrap-wide .chart-subtitle { font-size: 12px; font-weight: 400; color: var(--ink-muted); line-height: 1.4; margin: 0 0 8px; }
+    .m-controls .m-ctrl-group { flex-wrap: wrap; }
+  }
+  .m-mobile-collapse { display: none; }
+  .m-mobile-collapse > summary { font-family: var(--sans); font-size: 11px; color: var(--accent); cursor: pointer; padding: 6px 0; list-style: none; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
+  .m-mobile-collapse > summary::before { content: '+ '; }
+  .m-mobile-collapse[open] > summary::before { content: '\2212 '; }
+  .m-mobile-collapse > p { margin: 4px 0 8px; font-family: var(--sans); font-size: 11px; color: var(--ink-soft); line-height: 1.45; }
+  @media (max-width: 768px) { .m-mobile-collapse { display: block; } .m-desktop-only { display: none; } }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N°5</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="g-eyebrow" data-i18n="g-eyebrow">La batería de vecinos</div>
+  <p class="g-lead" data-i18n="g-lead">A quién no querría de vecino cada sociedad. Elegí una categoría, países y mirá el mismo dato de cuatro maneras.</p>
+
+  <div class="g-tabs" id="g-tabs" role="tablist" aria-label="Ver como">
+    <button data-gview="ranking" class="active" data-i18n="g-view-ranking">Ranking</button>
+    <button data-gview="mapa" data-i18n="g-view-mapa">Mapa</button>
+    <button data-gview="pelicula" data-i18n="g-view-pelicula">Evolución</button>
+    <button data-gview="perfil" data-i18n="g-view-perfil">Perfil</button>
+  </div>
+
+  <!-- ============ Panel: RANKING (motor chart 1) ============ -->
+  <div class="g-panel" id="g-panel-ranking">
+    <section class="chart-block" data-chart="1" data-editor-id="n5-ranking">
+      <h2 class="chart-title" data-i18n="c1-title-neutral">Los vecinos que cada sociedad rechaza</h2>
+      <p class="chart-subtitle" data-i18n="c1-subtitle">Porcentaje que no querría tener de vecinos a personas de otra raza. Último dato disponible por país, 2017-2022.</p>
+
+      <div class="m-controls">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c1-cat-label">No querría de vecinos a…</span>
+          <select id="rk-cat-select" class="m-select" aria-label="Categoría">
+            <option value="otra_raza" selected data-i18n="cat-otra_raza">Personas de otra raza</option>
+            <option value="inmigrantes" data-i18n="cat-inmigrantes">Inmigrantes</option>
+            <option value="homosexuales" data-i18n="cat-homosexuales">Homosexuales</option>
+            <option value="otra_religion" data-i18n="cat-otra_religion">Personas de otra religión</option>
+            <option value="otro_idioma" data-i18n="cat-otro_idioma">Personas de otro idioma</option>
+            <option value="parejas_no_casadas" data-i18n="cat-parejas_no_casadas">Parejas no casadas</option>
+            <option value="sida" data-i18n="cat-sida">Personas con sida</option>
+            <option value="bebedores" data-i18n="cat-bebedores">Bebedores empedernidos</option>
+            <option value="drogadictos" data-i18n="cat-drogadictos">Drogadictos</option>
+          </select>
+        </div>
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c1-view-label">Mostrar</span>
+          <div class="toggle" id="rk-view">
+            <button data-view="sel" class="active" data-i18n="c1-view-sel">Mi selección</button>
+            <button data-view="all" data-i18n="c1-view-all">Todos los países</button>
+          </div>
+        </div>
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c1-refs-label">Referencias</span>
+          <div class="toggle" id="rk-refs">
+            <button data-ref="median" class="active" data-i18n="c1-ref-median">Mediana</button>
+            <button data-ref="table" class="active" data-i18n="c1-ref-table">Tabla regional</button>
+          </div>
+        </div>
+        <div class="m-ctrl-group" id="rk-wave-group">
+          <span class="m-ctrl-label" data-i18n="c1-wave-label">Ola de la encuesta</span>
+          <input type="range" id="rk-wave-slider" class="rk-wave-slider" aria-label="Ola de la encuesta">
+          <span class="rk-wave-display" id="rk-wave-display">2017-2022</span>
+        </div>
+      </div>
+      <div class="m-controls" id="rk-country-picker">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="ctrl-select">Seleccionar</span>
+          <div class="m-search-wrap">
+            <input type="text" id="rk-search" class="m-search-input" data-i18n-placeholder="c1-search-ph" placeholder="Agregar país…" autocomplete="off">
+            <div id="rk-search-results" class="m-search-results"></div>
+          </div>
+          <span id="rk-picker-hint" class="rk-picker-hint"></span>
+        </div>
+        <div class="m-selected-chips" id="rk-selected-chips"></div>
+      </div>
+      <div id="rk-legend"></div>
+
+      <div class="chart-svg-wrap">
+        <svg id="chart1" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="tooltip1"></div>
+      </div>
+      <div id="mk-avg-table-mobile-wrap">
+        <details class="m-mobile-collapse" style="display:block;">
+          <summary data-i18n="c1-avg-table-title">Promedio por región</summary>
+          <div id="mk-avg-table-mobile"></div>
+        </details>
+      </div>
+    </section>
+    <div class="footer">
+      <p>
+        <button class="download" data-chart="1-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+        <button class="download" data-png="1" data-i18n="footer-download-png">Descargar PNG</button>
+      </p>
+      <div class="footer-row">
+        <p class="sources m-desktop-only" data-i18n="c1-sources"></p>
+        <details class="m-mobile-collapse">
+          <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+          <p data-i18n="c1-sources"></p>
+        </details>
+        <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Panel: MAPA (motor chart 3) ============ -->
+  <div class="g-panel" id="g-panel-mapa">
+    <section class="chart-block" data-chart="3" data-editor-id="n5-mapa">
+      <h2 class="chart-title" data-i18n="c3-title-neutral">El mapa mundial de la intolerancia declarada</h2>
+      <p class="chart-subtitle" data-i18n="c3-subtitle-tpl">Porcentaje que no querría tener de vecinos a personas de otra raza. Último dato por país, 2017-2022.</p>
+
+      <div class="m-controls">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c1-cat-label">No querría de vecinos a…</span>
+          <select id="mp-cat-select" class="m-select" aria-label="Categoría">
+            <option value="otra_raza" data-i18n="cat-otra_raza">Personas de otra raza</option>
+            <option value="inmigrantes" data-i18n="cat-inmigrantes">Inmigrantes</option>
+            <option value="homosexuales" data-i18n="cat-homosexuales">Homosexuales</option>
+            <option value="otra_religion" data-i18n="cat-otra_religion">Personas de otra religión</option>
+            <option value="otro_idioma" data-i18n="cat-otro_idioma">Personas de otro idioma</option>
+            <option value="parejas_no_casadas" data-i18n="cat-parejas_no_casadas">Parejas no casadas</option>
+            <option value="sida" data-i18n="cat-sida">Personas con sida</option>
+            <option value="bebedores" data-i18n="cat-bebedores">Bebedores empedernidos</option>
+            <option value="drogadictos" data-i18n="cat-drogadictos">Drogadictos</option>
+          </select>
+        </div>
+        <div class="m-ctrl-group" id="mp-wave-group">
+          <span class="m-ctrl-label" data-i18n="c1-wave-label">Ola de la encuesta</span>
+          <button id="mp-play" class="mp-play" aria-label="Reproducir">▶</button>
+          <input type="range" id="mp-wave-slider" class="mp-wave-slider" aria-label="Ola de la encuesta">
+          <span class="mp-wave-display" id="mp-wave-display">2017-2022</span>
+        </div>
+      </div>
+
+      <div class="chart-svg-wrap">
+        <svg id="chart3" viewBox="0 0 1100 580" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="tooltip3"></div>
+      </div>
+    </section>
+    <div class="footer">
+      <p>
+        <button class="download" data-chart="3-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+        <button class="download" data-png="3" data-i18n="footer-download-png">Descargar PNG</button>
+      </p>
+      <div class="footer-row">
+        <p class="sources m-desktop-only" data-i18n="c3-sources"></p>
+        <details class="m-mobile-collapse">
+          <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+          <p data-i18n="c3-sources"></p>
+        </details>
+        <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Panel: EVOLUCIÓN (motor chart 2) ============ -->
+  <div class="g-panel" id="g-panel-pelicula">
+    <section class="chart-block" data-chart="2" data-editor-id="n5-pelicula">
+      <h2 class="chart-title" data-i18n="c2-title-neutral">La evolución de la intolerancia</h2>
+      <p class="chart-subtitle" data-i18n="c2-subtitle-tpl">Porcentaje que no querría de vecinos a homosexuales, a lo largo del tiempo.</p>
+
+      <div class="m-controls">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c1-cat-label">No querría de vecinos a…</span>
+          <select id="pl-cat-select" class="m-select" aria-label="Categoría">
+            <option value="homosexuales" data-i18n="cat-homosexuales">Homosexuales</option>
+            <option value="otra_raza" data-i18n="cat-otra_raza">Personas de otra raza</option>
+            <option value="inmigrantes" data-i18n="cat-inmigrantes">Inmigrantes</option>
+            <option value="sida" data-i18n="cat-sida">Personas con sida</option>
+            <option value="drogadictos" data-i18n="cat-drogadictos">Drogadictos</option>
+            <option value="bebedores" data-i18n="cat-bebedores">Bebedores empedernidos</option>
+            <option value="otra_religion" data-i18n="cat-otra_religion">Personas de otra religión</option>
+            <option value="otro_idioma" data-i18n="cat-otro_idioma">Personas de otro idioma</option>
+            <option value="parejas_no_casadas" data-i18n="cat-parejas_no_casadas">Parejas no casadas</option>
+          </select>
+        </div>
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="ctrl-select">Seleccionar</span>
+          <div class="m-search-wrap">
+            <input type="text" id="pl-search" class="m-search-input" data-i18n-placeholder="c1-search-ph" placeholder="Agregar país…" autocomplete="off">
+            <div id="pl-search-results" class="m-search-results"></div>
+          </div>
+        </div>
+      </div>
+      <div class="m-controls">
+        <div class="s-range-block">
+          <span class="m-ctrl-label" data-i18n="c2-period-label">Período</span>
+          <div class="s-range-slider" id="pl-range-slider">
+            <div class="s-range-track"></div>
+            <div class="s-range-track-active" id="pl-range-track-active"></div>
+            <input type="range" id="pl-slider-from" aria-label="Desde">
+            <input type="range" id="pl-slider-to" aria-label="Hasta">
+          </div>
+          <span class="s-range-display" id="pl-range-display">1981–2022</span>
+        </div>
+      </div>
+      <div class="m-selected-chips" id="pl-chips"></div>
+
+      <div class="chart-svg-wrap">
+        <svg id="chart2" viewBox="0 0 1100 560" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="tooltip2"></div>
+      </div>
+    </section>
+    <div class="footer">
+      <p>
+        <button class="download" data-chart="2-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+        <button class="download" data-png="2" data-i18n="footer-download-png">Descargar PNG</button>
+      </p>
+      <div class="footer-row">
+        <p class="sources m-desktop-only" data-i18n="c2-sources"></p>
+        <details class="m-mobile-collapse">
+          <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+          <p data-i18n="c2-sources"></p>
+        </details>
+        <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Panel: PERFIL (motor chart 4) ============ -->
+  <div class="g-panel" id="g-panel-perfil">
+    <section class="chart-block" data-chart="4" data-editor-id="n5-perfil">
+      <h2 class="chart-title" data-i18n="c4-title-neutral">¿A quién le teme cada sociedad?</h2>
+      <p class="chart-subtitle" data-i18n="c4-subtitle-tpl">El perfil de intolerancia de Argentina, categoría por categoría.</p>
+
+      <div class="m-controls">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c4-country-label">País</span>
+          <select id="pf-country-select" class="m-select" aria-label="País"></select>
+        </div>
+        <div class="m-ctrl-group" id="pf-wave-group">
+          <span class="m-ctrl-label" data-i18n="c1-wave-label">Ola de la encuesta</span>
+          <input type="range" id="pf-wave-slider" class="pf-wave-slider" aria-label="Ola de la encuesta">
+          <span class="pf-wave-display" id="pf-wave-display">2017-2022</span>
+        </div>
+      </div>
+
+      <div class="chart-svg-wrap">
+        <svg id="chart4" viewBox="0 0 1100 460" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="tooltip4"></div>
+      </div>
+    </section>
+    <div class="footer">
+      <p>
+        <button class="download" data-chart="4-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+        <button class="download" data-png="4" data-i18n="footer-download-png">Descargar PNG</button>
+      </p>
+      <div class="footer-row">
+        <p class="sources m-desktop-only" data-i18n="c4-sources"></p>
+        <details class="m-mobile-collapse">
+          <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+          <p data-i18n="c4-sources"></p>
+        </details>
+        <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../lib/regions.js?v=2"></script>
+<script src="../lib/i18n.js?v=2"></script>
+<script src="./i18n-issue.js?v=8"></script>
+<script src="./i18n-vecinos.js?v=1"></script>
+<script src="../lib/utils.js?v=4"></script>
+<script src="../lib/country-names.js?v=2"></script>
+<script src="./data-vecinos.js?v=3"></script>
+<script src="./data-waves.js?v=1"></script>
+<script src="./data-pelicula.js?v=1"></script>
+<script src="../03-futbol/data-country-geo.js?v=1"></script>
+<script src="../lib/editor.js?v=1"></script>
+<script src="./ranking.js?v=15"></script>
+<script src="./pelicula.js?v=3"></script>
+<script src="./mapa.js?v=8"></script>
+<script src="./perfil.js?v=4"></script>
+<script src="../lib/png-export.js?v=9"></script>
+<script src="../lib/grapher.js?v=2"></script>
+<script>
+  window.__N5_V = '5';
+  initGrapher({
+    defaultView: 'ranking',
+    views: [
+      { id: 'ranking', panelId: 'g-panel-ranking', chartN: 1, catSel: 'rk-cat-select', selKind: 'multi',
+        init: initRanking, redrawFull: function () { renderRankingChips(); rk_buildLegend(); drawRanking(); } },
+      { id: 'mapa', panelId: 'g-panel-mapa', chartN: 3, catSel: 'mp-cat-select', selKind: 'none',
+        init: initMapa, redrawFull: function () { drawMapa(); } },
+      { id: 'pelicula', panelId: 'g-panel-pelicula', chartN: 2, catSel: 'pl-cat-select', selKind: 'multi',
+        init: initPelicula, redrawFull: function () { renderPeliculaChips(); drawPelicula(); } },
+      { id: 'perfil', panelId: 'g-panel-perfil', chartN: 4, catSel: null, selKind: 'single',
+        init: initPerfil, redrawFull: function () { setupPerfilCountry(); drawPerfil(); } },
+    ],
+  });
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=6"></script>
+</body>
+</html>
