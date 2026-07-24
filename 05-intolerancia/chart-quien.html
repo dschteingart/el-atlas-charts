@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Quién es el más discriminado? — El Atlas · N°5</title>
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/chart-quien.html">
+<meta property="og:title" content="¿Quién es el más discriminado? — El Atlas · N°5">
+<meta property="og:description" content="En 14 de 18 países de América Latina el grupo más discriminado no es racial: son los pobres. Latinobarómetro 2020, respuesta única.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/thumbs/chart-quien.png">
+<meta property="og:image:alt" content="¿Quién es el más discriminado en cada país de América Latina?">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="¿Quién es el más discriminado? — El Atlas · N°5">
+<meta name="twitter:description" content="En 14 de 18 países de América Latina el grupo más discriminado no es racial: son los pobres. Latinobarómetro 2020, respuesta única.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/thumbs/chart-quien.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=4">
+<link rel="stylesheet" href="../lib/editor.css?v=1">
+<style>
+  .wrap-wide { max-width: 1100px; padding: 6px 20px 10px; }
+  .wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
+  .wrap-wide .chart-block { margin: 4px 0 2px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+  .wrap-wide .chart-subtitle { margin: 0 0 4px; font-size: 13.5px; line-height: 1.35; }
+  .chart-svg-wrap { margin-top: 2px; position: relative; }
+  .footer { margin-top: 6px; }
+  .footer p { margin: 2px 0; }
+  .footer .download { margin-right: 8px; margin-bottom: 8px; }
+
+  .m-controls { display: flex; align-items: center; gap: 14px; margin: 4px 0 6px; flex-wrap: wrap; }
+  .m-ctrl-group { display: inline-flex; align-items: center; gap: 8px; }
+  .m-ctrl-label { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+
+  .toggle { display: inline-flex; border: 1px solid var(--rule); border-radius: 15px; overflow: hidden; background: var(--bg); }
+  .toggle button { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 13px; background: var(--bg); color: var(--ink-soft); border: none; cursor: pointer; white-space: nowrap; transition: background 0.12s ease, color 0.12s ease; }
+  .toggle button + button { border-left: 1px solid var(--rule); }
+  .toggle button.active { background: var(--accent); color: #fff; }
+
+  .m-select { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 28px 6px 13px; border: 1px solid var(--rule); border-radius: 15px; background-color: var(--bg); color: var(--ink-soft); cursor: pointer; -webkit-appearance: none; appearance: none; outline: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%238a8378' stroke-width='1.5'/></svg>"); background-repeat: no-repeat; background-position: right 11px center; }
+  .m-select:focus { border-color: var(--accent); }
+
+  #tooltip12 .tt-sub { font-size: 10.5px; opacity: 0.78; margin: 2px 0 4px; line-height: 1.4; }
+  #tooltip12 .tt-sub em { font-style: normal; color: #D9D2C2; }
+
+  /* ===== Panel de detalle: las 42 categorías crudas (vista perfil) ===== */
+  #qn-detail-wrap { margin-top: 8px; }
+  .qn-detail { border: 1px solid var(--rule); border-radius: 8px; background: var(--bg-soft); padding: 2px 12px; max-width: 760px; }
+  .qn-detail > summary { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--accent); cursor: pointer; padding: 8px 0; list-style: none; }
+  .qn-detail > summary::-webkit-details-marker { display: none; }
+  .qn-detail > summary::before { content: '+ '; }
+  .qn-detail[open] > summary::before { content: '\2212 '; }
+  .qn-detail-intro { font-family: var(--sans); font-size: 11.5px; color: var(--ink-soft); line-height: 1.5; margin: 0 0 10px; }
+  #qn-detail-body { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px 20px; padding-bottom: 10px; }
+  .qn-d-group { break-inside: avoid; }
+  .qn-d-head { display: flex; align-items: baseline; gap: 6px; border-bottom: 1px solid var(--rule); padding-bottom: 2px; margin-bottom: 3px; }
+  .qn-d-swatch { width: 8px; height: 8px; border-radius: 2px; flex: 0 0 auto; align-self: center; }
+  .qn-d-macro { font-family: var(--sans); font-size: 12px; font-weight: 700; color: var(--ink); flex: 1; }
+  .qn-d-total { font-family: var(--sans); font-size: 12px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .qn-d-item { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-family: var(--sans); font-size: 11px; color: var(--ink-soft); padding: 1px 0; }
+  .qn-d-item-lbl { line-height: 1.25; }
+  .qn-d-item-val { font-variant-numeric: tabular-nums; flex: 0 0 auto; }
+
+  @media (max-width: 768px) {
+    .wrap-wide .chart-title { font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 4px; }
+    .wrap-wide .chart-subtitle { font-size: 12px; font-weight: 400; color: var(--ink-muted); line-height: 1.4; margin: 0 0 8px; }
+    .m-controls .m-ctrl-group { flex-wrap: wrap; }
+    #qn-detail-body { grid-template-columns: 1fr; }
+  }
+
+  .m-mobile-collapse { display: none; }
+  .m-mobile-collapse > summary { font-family: var(--sans); font-size: 11px; color: var(--accent); cursor: pointer; padding: 6px 0; list-style: none; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
+  .m-mobile-collapse > summary::before { content: '+ '; }
+  .m-mobile-collapse[open] > summary::before { content: '\2212 '; }
+  .m-mobile-collapse > p { margin: 4px 0 8px; font-family: var(--sans); font-size: 11px; color: var(--ink-soft); line-height: 1.45; }
+  @media (max-width: 768px) { .m-mobile-collapse { display: block; } .m-desktop-only { display: none; } }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N°5</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="12" data-editor-id="n5-quien">
+    <h2 class="chart-title" data-i18n="c12-title-neutral">El grupo más discriminado en cada país de América Latina</h2>
+    <p class="chart-subtitle" data-i18n="c12-subtitle">Porcentaje que nombra a Raza o etnia como el grupo más discriminado del país. Cada persona eligió una sola respuesta. Latinobarómetro 2020, 18 países.</p>
+
+    <div class="m-controls">
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c12-view-label">Mostrar</span>
+        <div class="toggle" id="qn-view">
+          <button data-view="ranking" class="active" data-i18n="c12-view-rank">Ranking por grupo</button>
+          <button data-view="perfil" data-i18n="c12-view-perfil">Perfil por país</button>
+        </div>
+      </div>
+      <div class="m-ctrl-group" id="qn-cat-group">
+        <span class="m-ctrl-label" data-i18n="c12-cat-label">Grupo señalado</span>
+        <select id="qn-cat-select" class="m-select" aria-label="Grupo">
+          <option value="pobres" data-i18n="qcat-pobres">Pobres</option>
+          <option value="raza_etnia" selected data-i18n="qcat-raza_etnia">Raza o etnia</option>
+          <option value="migrantes" data-i18n="qcat-migrantes">Migrantes</option>
+          <option value="lgbt" data-i18n="qcat-lgbt">Personas LGBT</option>
+          <option value="edad" data-i18n="qcat-edad">Edad (viejos/jóvenes)</option>
+          <option value="mujeres" data-i18n="qcat-mujeres">Mujeres</option>
+          <option value="ideologia" data-i18n="qcat-ideologia">Ideología política</option>
+          <option value="conducta" data-i18n="qcat-conducta">Conducta o estigma</option>
+          <option value="salud_discap" data-i18n="qcat-salud_discap">Salud o discapacidad</option>
+          <option value="religion_origen" data-i18n="qcat-religion_origen">Religión u origen</option>
+          <option value="ninguna" data-i18n="qcat-ninguna">Ninguno</option>
+          <option value="otros" data-i18n="qcat-otros">Otros</option>
+        </select>
+      </div>
+      <div class="m-ctrl-group" id="qn-country-group" style="display:none;">
+        <span class="m-ctrl-label" data-i18n="c12-country-label">País</span>
+        <select id="qn-country-select" class="m-select" aria-label="País"></select>
+      </div>
+      <div class="m-ctrl-group" id="qn-refs-group">
+        <span class="m-ctrl-label" data-i18n="c12-refs-label">Referencias</span>
+        <div class="toggle" id="qn-refs">
+          <button data-ref="median" class="active" data-i18n="c12-ref-median">Mediana regional</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-svg-wrap">
+      <svg id="chart12" viewBox="0 0 1100 560" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip12"></div>
+    </div>
+
+    <div id="qn-detail-wrap" style="display:none;">
+      <details class="qn-detail">
+        <summary data-i18n="c12-detail-title">El detalle: las 42 categorías originales del Latinobarómetro</summary>
+        <p class="qn-detail-intro" id="qn-detail-intro"></p>
+        <div id="qn-detail-body"></div>
+      </details>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" data-chart="12-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="12" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources m-desktop-only" data-i18n="c12-sources"></p>
+      <details class="m-mobile-collapse">
+        <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+        <p data-i18n="c12-sources"></p>
+      </details>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="../lib/regions.js?v=2"></script>
+<script src="../lib/i18n.js?v=2"></script>
+<script src="./i18n-issue.js?v=8"></script>
+<script src="./i18n-quien.js?v=1"></script>
+<script src="../lib/utils.js?v=4"></script>
+<script src="../lib/country-names.js?v=2"></script>
+<script src="./data-quien.js?v=1"></script>
+<script src="../lib/editor.js?v=1"></script>
+<script src="./quien.js?v=1"></script>
+<script src="../lib/png-export.js?v=9"></script>
+<script>
+  window.__N5_V = '5';
+  initQuien();
+  applyI18n();
+  if (window.__atlasRedraw) window.__atlasRedraw();
+  setupLangToggle(() => {
+    setupQuienCountry();
+    drawQuien();
+  });
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=6"></script>
+</body>
+</html>
