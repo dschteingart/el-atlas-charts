@@ -867,10 +867,17 @@ function rk_drawMarimekko() {
   const rankUnder = n > 0 ? Math.min(n - 1, Math.floor(tableXFrac * n)) : 0;
   const maxUnderTable = n > 0 ? data[rankUnder].pct : 0;   // data ya está desc
   const tableFits = maxUnderTable < 0.36 * yMax;
+  // Además: la etiqueta de la mediana va a la derecha (misma franja-x que la
+  // tabla). Si la línea de la mediana cae en la banda vertical de la tabla, su
+  // etiqueta colisiona con las filas (reporte de Daniel 2026-07-24). En ese caso,
+  // mismo criterio que con las barras: la tabla se va abajo y el lado derecho
+  // queda libre para la etiqueta de la mediana.
+  const medY = med ? yScale(med.value) : null;
+  const medHitsTable = med && medY >= (tableTopY - tableRowH) && medY <= (tableBottomY + tableRowH * 0.5);
   // El toggle "Tabla regional" (state.showTable) gobierna si se muestra; el
   // heurístico solo decide flotante-vs-abajo cuando sí se muestra.
   const wantTable = s1.showTable !== false;
-  const showSvgTable = wantTable && tableVisible && tableFits;
+  const showSvgTable = wantTable && tableVisible && tableFits && !medHitsTable;
   if (showSvgTable) {
     mk_drawRegionalAvgTable(svg, tableRows, s1.activeRegion, SIZES, mobilePng);
   }

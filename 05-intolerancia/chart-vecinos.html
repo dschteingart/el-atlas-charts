@@ -201,8 +201,8 @@
         <div class="m-ctrl-group">
           <span class="m-ctrl-label" data-i18n="c1-view-label">Mostrar</span>
           <div class="toggle" id="rk-view">
-            <button data-view="sel" class="active" data-i18n="c1-view-sel">Mi selección</button>
-            <button data-view="all" data-i18n="c1-view-all">Todos los países</button>
+            <button data-view="sel" data-i18n="c1-view-sel">Mi selección</button>
+            <button data-view="all" class="active" data-i18n="c1-view-all">Todos los países</button>
           </div>
         </div>
         <div class="m-ctrl-group">
@@ -424,19 +424,30 @@
 <script src="./data-pelicula.js?v=1"></script>
 <script src="../03-futbol/data-country-geo.js?v=1"></script>
 <script src="../lib/editor.js?v=1"></script>
-<script src="./ranking.js?v=15"></script>
+<script src="./ranking.js?v=16"></script>
 <script src="./pelicula.js?v=3"></script>
 <script src="./mapa.js?v=8"></script>
 <script src="./perfil.js?v=4"></script>
 <script src="../lib/png-export.js?v=9"></script>
-<script src="../lib/grapher.js?v=2"></script>
+<script src="../lib/grapher.js?v=3"></script>
 <script>
   window.__N5_V = '5';
   initGrapher({
     defaultView: 'ranking',
+    // Selección compartida por default: 5 países (evita la maraña de líneas en
+    // Evolución). ARG primero → Perfil enfoca Argentina por default.
+    defaultSelection: ['ARG', 'BRA', 'MEX', 'USA', 'ESP'],
     views: [
       { id: 'ranking', panelId: 'g-panel-ranking', chartN: 1, catSel: 'rk-cat-select', selKind: 'multi',
-        init: initRanking, redrawFull: function () { renderRankingChips(); rk_buildLegend(); drawRanking(); } },
+        init: initRanking,
+        // Ranking arranca en marimekko ("Todos los países"), no en "Mi selección".
+        postInit: function () {
+          if (typeof state !== 'undefined' && state[1]) state[1].view = 'all';
+          document.querySelectorAll('#rk-view button').forEach(function (b) {
+            b.classList.toggle('active', b.getAttribute('data-view') === 'all');
+          });
+        },
+        redrawFull: function () { renderRankingChips(); rk_buildLegend(); drawRanking(); } },
       { id: 'mapa', panelId: 'g-panel-mapa', chartN: 3, catSel: 'mp-cat-select', selKind: 'none',
         init: initMapa, redrawFull: function () { drawMapa(); } },
       { id: 'pelicula', panelId: 'g-panel-pelicula', chartN: 2, catSel: 'pl-cat-select', selKind: 'multi',
