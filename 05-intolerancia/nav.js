@@ -17,7 +17,13 @@
     'chart-mapa.html',
     'chart-perfil.html',
     'chart-declarado-implicito.html',
-    'chart-latinobarometro.html'
+    'chart-latinobarometro.html',
+    'chart-prioridad.html',
+    'chart-barrio.html',
+    'chart-migrantes.html',
+    'chart-confianza.html',
+    'chart-discriminado.html',
+    'chart-quien.html'
   ];
   const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
   const T = {

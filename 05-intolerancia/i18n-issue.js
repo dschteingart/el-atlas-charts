@@ -130,7 +130,16 @@ const ISSUE_I18N = {
     'footer-download':     'Descargar datos (CSV)',
     'footer-download-png': 'Descargar PNG',
     'index-see':           'Ver gráfico →',
-    'index-charts-label':  'Gráficos interactivos'
+    'index-charts-label':  'Gráficos interactivos',
+
+    // Títulos neutrales de los charts 7-12 (para las tarjetas del index; cada
+    // chart además los define en su propio i18n-<slug>.js).
+    'c7-title-neutral':  'Quién tiene prioridad cuando escasea el trabajo',
+    'c8-title-neutral':  '¿Qué ve cada sociedad en su propio barrio?',
+    'c9-title-neutral':  'Qué le reprocha cada país al inmigrante',
+    'c10-title-neutral': 'Desconfianza de un extranjero frente a desconfianza de un desconocido',
+    'c11-title-neutral': 'Sentirse parte de un grupo discriminado, en América Latina',
+    'c12-title-neutral': 'El grupo más discriminado en cada país de América Latina'
   },
   en: {
     'issue-num':  'No. 5',
@@ -251,7 +260,16 @@ const ISSUE_I18N = {
     'footer-download':     'Download data (CSV)',
     'footer-download-png': 'Download PNG',
     'index-see':           'See chart →',
-    'index-charts-label':  'Interactive charts'
+    'index-charts-label':  'Interactive charts',
+
+    // Neutral titles for charts 7-12 (index cards; each chart also defines them
+    // in its own i18n-<slug>.js).
+    'c7-title-neutral':  'Who gets priority when jobs are scarce',
+    'c8-title-neutral':  'What does each society see in its own neighbourhood?',
+    'c9-title-neutral':  'What each country holds against the immigrant',
+    'c10-title-neutral': 'Distrust of a foreigner versus distrust of a stranger',
+    'c11-title-neutral': 'Feeling part of a discriminated group, in Latin America',
+    'c12-title-neutral': 'The most-discriminated group in each Latin American country'
   }
 };
 

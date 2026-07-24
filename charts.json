@@ -68,7 +68,13 @@
         { "archivo": "chart-mapa.html", "tipo": "mapa coroplético", "tema": "rechazo declarado por país", "formatoPng": "worldmap" },
         { "archivo": "chart-perfil.html", "tipo": "barras", "tema": "perfil de intolerancia de un país vs mediana mundial" },
         { "archivo": "chart-declarado-implicito.html", "tipo": "dispersión", "tema": "prejuicio declarado (IVS) vs sesgo implícito (Project Implicit)" },
-        { "archivo": "chart-latinobarometro.html", "tipo": "barras", "tema": "intolerancia declarada en América Latina (Latinobarómetro 2024)" }
+        { "archivo": "chart-latinobarometro.html", "tipo": "barras", "tema": "intolerancia declarada en América Latina (Latinobarómetro 2024)" },
+        { "archivo": "chart-prioridad.html", "tipo": "líneas", "tema": "prioridad a los nativos si escasea el trabajo, 33 años, con espejo de género (IVS C002/C001)" },
+        { "archivo": "chart-barrio.html", "tipo": "barras", "tema": "qué problemas ve cada sociedad en su barrio, incluido el racismo presenciado (IVS H002)" },
+        { "archivo": "chart-migrantes.html", "tipo": "barras", "tema": "perfil de hostilidad hacia el inmigrante, frase por frase (Latinobarómetro 2020)" },
+        { "archivo": "chart-confianza.html", "tipo": "dispersión", "tema": "desconfianza del extranjero vs desconfianza de un desconocido (IVS G007)" },
+        { "archivo": "chart-discriminado.html", "tipo": "líneas", "tema": "sentirse parte de un grupo discriminado, 2009-2020 (Latinobarómetro)" },
+        { "archivo": "chart-quien.html", "tipo": "barras", "tema": "el grupo más discriminado según cada país: pobres vs raza (Latinobarómetro 2020)" }
       ]
     }
   ]
