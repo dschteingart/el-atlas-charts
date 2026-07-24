@@ -1,0 +1,1595 @@
+
+=== H002_01 :: Frequency in your neighborhood: Robberies
+           -5 -> Missing; Unknown
+           -4 -> Not asked
+           -2 -> No answer
+           -1 -> Don't know
+            1 -> Very Frequently
+            2 -> Quite frequently
+            3 -> Not frequently
+            4 -> Not at all frequently
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== H002_02 :: Frequency in your neighborhood: Alcohol consumed in the streets
+           -5 -> Missing; Unknown
+           -4 -> Not asked
+           -2 -> No answer
+           -1 -> Don't know
+            1 -> Very Frequently
+            2 -> Quite frequently
+            3 -> Not frequently
+            4 -> Not at all frequently
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== H002_03 :: Frequency in your neighborhood: Police or military interfere with people’s pri
+           -5 -> Missing; Unknown
+           -4 -> Not asked
+           -2 -> No answer
+           -1 -> Don't know
+            1 -> Very Frequently
+            2 -> Quite frequently
+            3 -> Not frequently
+            4 -> Not at all frequently
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== H002_04 :: Frequency in your neighborhood: Racist behavior
+           -5 -> Missing; Unknown
+           -4 -> Not asked
+           -2 -> No answer
+           -1 -> Don't know
+            1 -> Very Frequently
+            2 -> Quite frequently
+            3 -> Not frequently
+            4 -> Not at all frequently
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== H002_05 :: Frequency in your neighborhood: Drug sale in streets
+           -5 -> Missing; Unknown
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don't know
+            1 -> Very Frequently
+            2 -> Quite frequently
+            3 -> Not frequently
+            4 -> Not at all frequently
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== C002 :: Jobs scarce: Employers should give priority to (nation) people than immigrants (
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Agree
+            2 -> Disagree
+            3 -> Neither
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== C002_01 :: Jobs scarce: Employers should give priority to (nation) people than immigrants (
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Strongly agree
+            2 -> Agree
+            3 -> Neither agree nor disagree
+            4 -> Disagree
+            5 -> Strongly disagree
+
+=== C001 :: Jobs scarce: Men should have more right to a job than women (3 categories)
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Agree
+            2 -> Disagree
+            3 -> Neither
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== C001_01 :: Jobs scarce: Men should have more right to a job than women (5-point scale)
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Strongly agree
+            2 -> Agree
+            3 -> Neither agree nor disagree
+            4 -> Disagree
+            5 -> Strongly disagree
+
+=== C005 :: Unfair to give work to handicapped people when able bodied people can´t find job
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Agree
+            2 -> Disagree
+            3 -> Neither
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== E143 :: Immigrant policy
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Let anyone come who wants to
+            2 -> Come as long as jobs available
+            3 -> Strict limits on the number of foreigners
+            4 -> Prohibit people coming here from other countries
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== G052 :: Evaluate the impact of immigrants on the development of [your country]
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Very bad
+            2 -> Quite bad
+            3 -> Neither good, nor bad
+            4 -> Quite good
+            5 -> Very good
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== G038 :: Immigrants take away jobs from [nationality]
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Take away
+            2 -> 2
+            3 -> 3
+            4 -> 4
+            5 -> 5
+            6 -> 6
+            7 -> 7
+            8 -> 8
+            9 -> 9
+           10 -> Do not take away
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== G040 :: Immigrants increase crime problems
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Make it worse
+            2 -> 2
+            3 -> 3
+            4 -> 4
+            5 -> 5
+            6 -> 6
+            7 -> 7
+            8 -> 8
+            9 -> 9
+           10 -> Do not make it worse
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== G041 :: Immigrants are a strain on welfare system
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Are a strain
+            2 -> 2
+            3 -> 3
+            4 -> 4
+            5 -> 5
+            6 -> 6
+            7 -> 7
+            8 -> 8
+            9 -> 9
+           10 -> Are not a strain
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== G043 :: Immigrants maintain own/take over customs
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Maintain distinct customs and traditions
+            2 -> 2
+            3 -> 3
+            4 -> 4
+            5 -> 5
+            6 -> 6
+            7 -> 7
+            8 -> 8
+            9 -> 9
+           10 -> Take over the customs of the country
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== E161 :: Feel concerned about immigrants
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Very much
+            2 -> Much
+            3 -> To a certain extent
+            4 -> Not so much
+            5 -> Not at all
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== E156 :: Feel concerned about fellow countrymen
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Very much
+            2 -> Much
+            3 -> To a certain extent
+            4 -> Not so much
+            5 -> Not at all
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== E154 :: Feel concerned about people in the neighbourhood
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Very much
+            2 -> Much
+            3 -> To a certain extent
+            4 -> Not so much
+            5 -> Not at all
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== E157 :: Feel concerned about Europeans
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Very much
+            2 -> Much
+            3 -> To a certain extent
+            4 -> Not so much
+            5 -> Not at all
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== E158 :: Feel concerned about human kind
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Very much
+            2 -> Much
+            3 -> To a certain extent
+            4 -> Not so much
+            5 -> Not at all
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== G007_36_B :: Trust: People of another nationality (B)
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Trust completely
+            2 -> Trust somewhat
+            3 -> Do not trust very much
+            4 -> Do not trust at all
+
+=== G007_35_B :: Trust: People of another religion (B)
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Trust completely
+            2 -> Trust somewhat
+            3 -> Do not trust very much
+            4 -> Do not trust at all
+
+=== G007_34_B :: Trust: People you meet for the first time (B)
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Trust completely
+            2 -> Trust somewhat
+            3 -> Do not trust very much
+            4 -> Do not trust at all
+
+=== G007_18_B :: Trust: Your neighborhood (B)
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Trust completely
+            2 -> Trust somewhat
+            3 -> Do not trust very much
+            4 -> Do not trust at all
+
+=== G007_01 :: Trust: Other people in country
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Trust them completely
+            2 -> Trust them a little
+            3 -> Neither trust nor distrust them
+            4 -> Do not trust them very much
+            5 -> Do not trust them at all
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== G033 :: Important: to have been born in [country]
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Very important
+            2 -> Quite important
+            3 -> Not important
+            4 -> Not important at all
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== G034 :: Important: to respect [country nationality] political institutions and laws
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Very important
+            2 -> Quite important
+            3 -> Not important
+            4 -> Not important at all
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== G035 :: Important: to have [country nationality] ancestry
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Very important
+            2 -> Quite important
+            3 -> Not important
+            4 -> Not important at all
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== G036 :: Important: to be able to speak [country language]
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Very important
+            2 -> Quite important
+            3 -> Not important
+            4 -> Not important at all
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== G006 :: How proud of nationality
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable; Foreigner; Has not [country] nationality
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Very proud
+            2 -> Quite proud
+            3 -> Not very proud
+            4 -> Not at all proud
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== A035 :: Important child qualities: tolerance and respect for other people
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            0 -> Not mentioned
+            1 -> Important
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== A165 :: Most people can be trusted
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Most people can be trusted
+            2 -> Can´t be too careful
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== A124_02 :: Neighbours: People of a different race
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            0 -> Not mentioned
+            1 -> Mentioned
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== A124_06 :: Neighbours: Immigrants/foreign workers
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            0 -> Not mentioned
+            1 -> Mentioned
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== X051 :: Ethnic group
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don't know
+         8011 ->  AL: Christian
+         8012 ->  AL: Albanian
+         8013 ->  AL: Greek
+         8014 ->  AL: Macedonian
+         8999 ->  AL: Other
+        12001 ->  DZ: Arabe
+        12002 ->  DZ: Kabyle
+        12003 ->  DZ: Chaoui
+        12990 ->  DZ: Other (Berber)
+        12999 ->  DZ: Other
+        20001 ->  AD: Caucasian white
+        20002 ->  AD: Negro black
+        20003 ->  AD: South Asian (Indian, Pakistani..)
+        20004 ->  AD: East Asian (Chinese, Japanese...)
+        20005 ->  AD: Arabic, Central Asian
+        20999 ->  AD: Other
+        31001 ->  AZ: Avarian
+        31002 ->  AZ: Azerbaijanian
+        31003 ->  AZ: Chekh
+        31004 ->  AZ: Iranian
+        31005 ->  AZ: Jew
+        31006 ->  AZ: Lezgin
+        31007 ->  AZ: Moldovian
+        31008 ->  AZ: Russian
+        31009 ->  AZ: Spanish
+        31010 ->  AZ: Tatarian
+        31011 ->  AZ: Turkmenian
+        31012 ->  AZ: Caucasian white
+        32001 ->  AR: White
+        32002 ->  AR: Light brown
+        32003 ->  AR: Dark brown
+        32004 ->  AR: Black
+        32005 ->  AR: Indigenous
+        32999 ->  AR: Other
+        36001 ->  AU: Australian (English speaking)
+        36002 ->  AU: European
+        36003 ->  AU: South Asian (Indian, Pakistani, etc)
+        36004 ->  AU: East Asian (Chinese, Japanese, etc)
+        36005 ->  AU: Arabic, Central Asian
+        36006 ->  AU: Southeast Asian: Thai, Vietnamese, Malaysian, etc
+        36007 ->  AU: Aboriginal or Torres Strait Islander
+        36008 ->  AU: White
+        36999 ->  AU: Other
+        44602 ->  MO: Negro Black
+        50001 ->  BD: South Asia (Bangladeshi, Pakistani, Indian)
+        50002 ->  BD: Muslim
+        50003 ->  BD: Hindu
+        50004 ->  BD: Christian
+        50006 ->  BD: Bengali
+        50007 ->  BD: Chakma
+        50008 ->  BD: Murong
+        50012 ->  BD: Pathan
+        50013 ->  BD: Punjabi
+        50014 ->  BD: Sindhi
+        50015 ->  BD: Urdu Speaking
+        50999 ->  BD: Other
+        51001 ->  AM: Armenian
+        51002 ->  AM: Greek
+        51003 ->  AM: Jew
+        51004 ->  AM: Kurd/Esid
+        51005 ->  AM: Russian
+        51006 ->  AM: Yazidis
+        51007 ->  AM: Other
+        56001 ->  BE: White / Caucasian White
+        56002 ->  BE: Asian
+        56003 ->  BE: Asian - Central (Arabic)
+        56004 ->  BE: Black-Other / Black
+        68001 ->  BO: Not pertaining to Indigenous groups
+        68002 ->  BO: Quechua
+        68003 ->  BO: Aymara
+        68004 ->  BO: Guaraní
+        68005 ->  BO: Chiquitano
+        68006 ->  BO: Mojeño
+        68007 ->  BO: Afroboliviano
+        68008 ->  BO: Indigenous with no further detail
+        68999 ->  BO: Other
+        70001 ->  BOS: Croatian
+        70002 ->  BOS: Bosnian/ Muslim
+        70003 ->  BOS: Serbian
+        70999 ->  BOS: Other
+        76001 ->  BR: Caucasian (White)
+        76002 ->  BR: Negro (Black)
+        76003 ->  BR: Brown - Moreno ou pardo
+        76004 ->  BR: Oriental: Chines, Japanese,...
+        76005 ->  BR: Indigenous
+        76006 ->  BR: South Asian
+        76007 ->  BR: Arabic
+        76008 ->  BR: Half breed of black and white
+        76009 ->  BR: Half breed of white and indian
+        76999 ->  BR: Other
+       100001 ->  BG: Bulgarian
+       100002 ->  BG: Gypsy
+       100003 ->  BG: Turkish
+       100004 ->  BG: Caucasian white
+       100005 ->  BG: South Asian Indian, Pakistani, etc
+       100006 ->  BG: Arabic, Central Asian
+       100999 ->  BG: Other
+       104001 ->  MM: Bamar
+       104002 ->  MM: Kayin
+       104003 ->  MM: Rakhine
+       104004 ->  MM: Shan
+       104005 ->  MM: Mon
+       104999 ->  MM: Other
+       112001 ->  BY: Belorussian
+       112002 ->  BY: Polish
+       112003 ->  BY: Russian
+       112004 ->  BY: Ukrainian
+       112999 ->  BY: Other
+       124001 ->  CA: Caucasian (White)
+       124002 ->  CA: Black (African, African-American, etc.)
+       124003 ->  CA: West Asian (Iranian, Afghan, etc.)
+       124004 ->  CA: Southeast Asian (Vietnamese, Cambodian, Malaysian, etc.)
+       124005 ->  CA: Arabic (Central Asia)
+       124006 ->  CA: South Asian (Indian, Bangladeshi, Pakistani, Sri Lankan, etc.)
+       124007 ->  CA: Latin American / Hispanic
+       124008 ->  CA: Aboriginal / First Nations
+       124009 ->  CA: Chinese
+       124010 ->  CA: Filipino
+       124011 ->  CA: Korean
+       124012 ->  CA: Japanese
+       124013 ->  CA: European - English
+       124014 ->  CA: French
+       124015 ->  CA: German
+       124016 ->  CA: Italian
+       124017 ->  CA: Polish
+       124018 ->  CA: East Asian Chinese,Japanese
+       124999 ->  CA: Other
+       152001 ->  CL: White, Caucasian
+       152002 ->  CL: Black
+       152003 ->  CL: South Asian (hindu, pakistani, brown)
+       152004 ->  CL: East Asian (chinese, japanese, korean,..)
+       152005 ->  CL: Arab (light brown)
+       152008 ->  CL: Indigenous
+       152009 ->  CL: Asiatic
+       152011 ->  CL: Indian
+       152012 ->  CL: Mestizo(a)
+       152013 ->  CL: Mulatto(a)
+       152999 ->  CL: Other
+       156001 ->  CN: Chinese
+       156002 ->  CN: Han nationality
+       156003 ->  CN: Zhuang nationality
+       156004 ->  CN: Hui nationality
+       156005 ->  CN: Uygur nationality
+       156006 ->  CN: Miao nationality
+       156007 ->  CN: Manchu nationality
+       156008 ->  CN: East Asian Chinese
+       156999 ->  CN: Other
+       158001 ->  TW: Hakka from Taiwan
+       158002 ->  TW: Minnanese from Taiwan
+       158003 ->  TW: Mainlander/China
+       158004 ->  TW: Aboriginal
+       158999 ->  TW: Other
+       170001 ->  CO: Among all, I am Latine
+       170002 ->  CO: Among all, I am crossbreed
+       170003 ->  CO: Among all, I am black
+       170004 ->  CO: Among all, I am indigenous
+       170005 ->  CO: Among all, I am white
+       170006 ->  CO: Among all I am mulato
+       170007 ->  CO: Among all I am Colombian
+       170008 ->  CO: Afro-colombian
+       170009 ->  CO: Gypsie
+       170010 ->  CO: Indigenous
+       170011 ->  CO: White
+       170999 ->  CO: Other
+       196001 ->  CY: Caucasian white
+       196002 ->  CY: Negro Black
+       196003 ->  CY: South Asian Indian, Pakistani, etc.
+       196004 ->  CY: East Asian Chinese, Japanese, etc.
+       196005 ->  CY: Arabic, Central Asian
+       196999 ->  CY: Other
+       203001 ->  CZ: Gypsy
+       203002 ->  CZ: White
+       203003 -> CZ: Czech Republic
+       203004 -> CZ: Slovak
+       203005 -> CZ: Poland
+       203006 -> CZ: Ukrainian
+       203010 -> CZ: Other
+       214001 ->  DO: White
+       214002 ->  DO: Black
+       214003 ->  DO: Mulatto
+       214004 ->  DO: Chinese, Japonese
+       214005 ->  DO: Arab
+       214999 ->  DO: Other
+       218001 ->  EC: Above all, I am Latino
+       218002 ->  EC: Above all, I am mestizo
+       218003 ->  EC: Mostly i'm black
+       218004 ->  EC: Above all, I am indigenous
+       218005 ->  EC: Mostly i'm white
+       218006 ->  EC: Above all, I am a mulatto
+       218007 ->  EC: I consider myself Ecuadorian above all
+       218011 ->  EC: Blanco
+       218012 ->  EC: Mestizo
+       218013 ->  EC: Negro
+       218014 ->  EC: Indígena
+       218017 ->  EC: Montubio
+       218018 ->  EC: Mulato
+       218019 ->  EC: Moreno oscuro
+       218020 ->  EC: Moreno claro
+       218999 ->  EC: Other
+       231001 ->  ET: Amhara
+       231002 ->  ET: Tigre
+       231003 ->  ET: Oromo
+       231004 ->  ET: Somali
+       231005 ->  ET: Afar
+       231006 ->  ET: Sidama
+       231007 ->  ET: Wolayta
+       231014 ->  ET: Shankella
+       231015 ->  ET: Gurage
+       231016 ->  ET: Gamo
+       231998 ->  ET: Other Africans/Negro Black
+       231999 ->  ET: Other
+       233001 ->  EE: Causasian white
+       246001 ->  FI: Caucasian white
+       246002 ->  FI: Negro Black
+       246005 ->  FI: Arabic, Central Asian
+       246999 ->  FI: Otjer
+       250001 ->  FR: Caucasian white
+       250002 ->  FR: Negro Black
+       250003 ->  FR: South Asian Indian, Pakistani, etc
+       250004 ->  FR: East Asian Chinese, Japanese, etc
+       250005 ->  FR: Arabic, Central Asian
+       250006 ->  FR: Mixed race
+       268001 ->  GE: Georgian
+       268999 ->  GE: Other
+       276001 ->  DE: German
+       276002 ->  DE: Southern European
+       276004 ->  DE: Turkish
+       276005 ->  DE: Yugoslavian
+       276006 ->  DE: Caucasian White
+       276007 ->  DE: African
+       276008 ->  DE: Asiatic
+       276999 ->  DE: Other
+       288001 ->  GH: Frafra
+       288002 ->  GH: Krobo
+       288003 ->  GH: Ningo
+       288004 ->  GH: Shai
+       288005 ->  GH: Ada
+       288006 ->  GH: Kotokoli
+       288007 ->  GH: Bono
+       288008 ->  GH: Komkomba
+       288009 ->  GH: Nzema
+       288010 ->  GH: Busanga
+       288011 ->  GH: Mamprugu
+       288012 ->  GH: Gonja
+       288013 ->  GH: Mampuli
+       288014 ->  GH: Dagari
+       288015 ->  GH: Bimba
+       288016 ->  GH: Dagomba
+       288017 ->  GH: Ijaw
+       288018 ->  GH: Esako
+       288021 ->  GH: Ga Afangbe
+       288022 ->  GH: Akan
+       288024 ->  GH: Dagbani
+       288025 ->  GH: Hausa
+       288026 ->  GH: Guan
+       288033 ->  GH: Ewe
+       288034 ->  GH: French
+       288035 ->  GH: Ga-Dangme
+       288990 ->  GH: Other africans
+       288999 ->  GH: Other
+       300001 ->  CY: Caucasian white
+       300002 ->  CY: Negro Black
+       300003 ->  CY: South Asian Indian, Pakistani, etc.
+       300004 ->  CY: East Asian Chinese, Japanese, etc.
+       300005 ->  CY: Arabic, Central Asian
+       300999 ->  CY: Other
+       320001 ->  GT: Ladino
+       320002 ->  GT: Cross breed
+       320003 ->  GT: Brown
+       320004 ->  GT: Indigenous
+       320005 ->  GT: White
+       320006 ->  GT: Hispanic
+       332001 ->  HT: White Haitian
+       332002 ->  HT: Mixed Race (Mullato) Haitian
+       332003 ->  HT: Asian/Middle Eastern
+       332004 ->  HT: Black
+       332999 ->  HT: Other
+       344001 ->  HK: Chinese
+       344002 ->  HK: Filipino
+       344003 ->  HK: Indonesian
+       344004 ->  HK: White
+       344005 ->  HK: Indian
+       344006 ->  HK: Nepalese
+       344007 ->  HK: Pakistani
+       344008 ->  HK: Thai
+       344009 ->  HK: Japanese
+       344013 ->  HK: South Asians, India, Pakistan, etc.
+       344014 ->  HK: East Asians, Chinese, Japanese, etc.
+       344998 ->  HK: Other Asian
+       344999 ->  HK: Other
+       348001 ->  HU: Hungarian
+       348002 ->  HU: Gypsy
+       356002 ->  IN: Dominant Peasant Castes
+       356003 ->  IN: Peasant Backward Castes
+       356004 ->  IN: Weavers and Craftsman Backward Castes
+       356005 ->  IN: Service Backward Castes
+       356008 ->  IN: Muslims
+       356009 ->  IN: Sikhs
+       356010 ->  IN: Christians
+       356011 ->  IN: Parsis
+       356012 ->  IN: Jews
+       356013 ->  IN: Buddhists
+       356015 ->  IN: Hindu No Caste
+       356016 ->  IN: No Religion No caste
+       356017 ->  IN: Hindu (Scheduled Castes)
+       356018 ->  IN: Hindu (Scheduled Tribes)
+       356019 ->  IN: Hindu (Other Backward Castes)
+       356020 ->  IN: Hindu (Upper Castes)
+       356021 ->  IN: Muslims (Shiya)
+       356022 ->  IN: Muslims (Sunni)
+       356023 ->  IN: Muslims (Others)
+       356998 ->  IN: Other Minorities
+       360001 ->  ID: Malay
+       360002 ->  ID: Chinese
+       360003 ->  ID: Arab
+       360004 ->  ID: Javanese
+       360005 ->  ID: Sundanese
+       360006 ->  ID: Sumatranese
+       360007 ->  ID: Aceh
+       360008 ->  ID: Batak
+       360009 ->  ID: Banjar
+       360010 ->  ID: Betawi
+       360011 ->  ID: Bengkulu
+       360012 ->  ID: Bugis
+       360013 ->  ID: Dani
+       360014 ->  ID: Dayak
+       360015 ->  ID: Flores
+       360016 ->  ID: Lani
+       360017 ->  ID: Lampung
+       360018 ->  ID: Maduranese
+       360019 ->  ID: Makassar
+       360020 ->  ID: Mandar
+       360021 ->  ID: Manggarai
+       360022 ->  ID: Melayu
+       360023 ->  ID: Minangkabau
+       360024 ->  ID: Palembang
+       360025 ->  ID: Pattae
+       360026 ->  ID: Toraja
+       360031 ->  ID: Kalimantan
+       360032 ->  ID: Sulawesi
+       360033 ->  ID: Lombok/Sumbawa
+       360102 ->  ID: Asian - East (Chinese, Japanese)
+       360103 ->  ID: Asian - Central (Arabic)
+       360999 ->  ID: Other
+       364001 ->  IR: Persian
+       364002 ->  IR: Turk/Azeri
+       364003 ->  IR: Kurd
+       364004 ->  IR: Lor
+       364005 ->  IR: Gilak/Mazani/Shomali
+       364006 ->  IR: Baluch
+       364007 ->  IR: Arab
+       364008 ->  IR: Armenian
+       364009 ->  IR: Turkman
+       364999 ->  IR: Other
+       368001 ->  IQ: Arab
+       368002 ->  IQ: Kurdish
+       368003 ->  IQ: Turk
+       368004 ->  IQ: Ashur
+       368005 ->  IQ: Keldan
+       368999 ->  IQ: Other
+       372001 ->  IE: Asian - East (Chinese, Japanese)
+       372002 ->  IE: Black-Other / Black
+       372003 ->  IE: White / Caucasian White
+       376001 ->  ISR: Jew
+       376002 ->  ISR: Arab
+       380001 ->  IT: White
+       380002 ->  IT: European
+       380999 ->  IT: Other
+       392001 ->  JP: East Asian Chinese,Japanese
+       392002 ->  JP: Caucasian (White)
+       392003 ->  JP: Negro (Black)
+       392004 ->  JP: South Asian (Indian)
+       392005 ->  JP: Arabic (Central Asia)
+       392999 ->  JP: Other
+       398001 ->  KZ: Korean
+       398002 ->  KZ: Uigur
+       398003 ->  KZ: Bashkir
+       398004 ->  KZ: Lezgin
+       398005 ->  KZ: Belorus
+       398021 ->  KZ: Azeri
+       398022 ->  KZ: Iranian and Central Asian
+       398023 ->  KZ: Georgian
+       398024 ->  KZ: German
+       398025 ->  KZ: Kazakh
+       398026 ->  KZ: Kurdish
+       398027 ->  KZ: Kyrgyz
+       398028 ->  KZ: Moldovan
+       398029 ->  KZ: Russian
+       398030 ->  KZ: Tajik
+       398031 ->  KZ: Tatar
+       398032 ->  KZ: Ukrainian
+       398033 ->  KZ: Uzbek
+       398034 ->  KZ: Udmurt
+       398035 ->  KZ: Mordvin
+       398036 ->  KZ: Polander
+       398037 ->  KZ: Bulgarian
+       398038 ->  KZ: Azerbaijanian
+       398039 ->  KZ: Chechen
+       398040 ->  KZ: Turkish
+       398041 ->  KZ: Dungan
+       398042 ->  KZ: Armenian
+       398043 ->  KZ: Chinese
+       400001 ->  JO: Jordan
+       400002 ->  JO: Palestine
+       400003 ->  JO: Syria
+       400004 ->  JO: Romania
+       400005 ->  JO: Saudi Arabia
+       400006 ->  JO: Afhanistan
+       400007 ->  JO: Egypt
+       400008 ->  JO: Arabic
+       400009 ->  JO: Circassian
+       400010 ->  JO: Chechen
+       404001 ->  KE: Kalenjin
+       404002 ->  KE: Kamba
+       404003 ->  KE: Kikuyu
+       404004 ->  KE: Kisii
+       404005 ->  KE: Luhya
+       404006 ->  KE: Luo
+       404007 ->  KE: Maasai
+       404008 ->  KE: Meru
+       404009 ->  KE: Mijikenda
+       404010 ->  KE: Somalis
+       404011 ->  KE: Turkana
+       404014 ->  KE: Arabs in Kenya (Arabic, Central Asian)
+       404016 ->  KE: Other (write in)
+       410004 ->  KR: East Asian (Chinese, Japanese, etc)
+       417001 ->  KG: Kirguís
+       417002 ->  KG: European
+       417003 ->  KG: Tayiko
+       417004 ->  KG: Ruso
+       417005 ->  KG: Kazakh
+       417006 ->  KG: Asian
+       417007 ->  KG: Kyrgyz
+       417008 ->  KG: Uzbek
+       417009 ->  KG: Tatar
+       417010 ->  KG: Turkish
+       417011 ->  KG: German
+       417012 ->  KG: Ukranian
+       417013 ->  KG: Dukan
+       417014 ->  KG: Kalmyk
+       417015 ->  KG: Uigur
+       417016 ->  KG: Azerbajanian
+       417017 ->  KG: Kurd
+       417018 ->  KG: Korenian
+       417999 ->  KG: Other
+       422001 ->  LB: Lebanese/Arabic
+       422999 ->  LB: Others
+       428001 ->  LV: Armenian
+       428002 ->  LV: Belorussian
+       428003 ->  LV: Gypsy
+       428004 ->  LV: Jew
+       428005 ->  LV: Latvian
+       428006 ->  LV: Lithuanian
+       428007 ->  LV: Moldovian
+       428008 ->  LV: Polish
+       428009 ->  LV: Russian
+       428010 ->  LV: Ukrainian
+       428999 ->  LV: Other
+       434002 ->  LY: Negro Black
+       434003 ->  LY: South Asian Indian, Pakistani, etc
+       434004 ->  LY: East Asian Chinese, Japanese, etc
+       434005 ->  LY: Arabic
+       434006 ->  LY: Amazigh
+       434007 ->  LY: Tuareg
+       434008 ->  LY: Toubou
+       434999 ->  LY: Other
+       446001 ->  MO: Caucasian white
+       446003 ->  MO: South Asian Indian, Pakistani, etc.
+       446004 ->  MO: East Asian Chinese, Japanese, etc.
+       446005 ->  MO: Arabic, Central Asian
+       446006 ->  MO: Chinese
+       446007 ->  MO: Portuguese/Macaense
+       446008 ->  MO: Southeast Asians( Indonesia、 Philippines、thailand)
+       446999 ->  MO: Other
+       458001 ->  MT: Bugis
+       458002 ->  MY: Jawa
+       458003 ->  MY: Brunei Malay
+       458004 ->  MY: Malay
+       458005 ->  MY: Kadazan
+       458006 ->  MY: Bajau
+       458007 ->  MY: Murut
+       458008 ->  MY: Iban
+       458009 ->  MY: Bidayuh
+       458010 ->  MY: Melanau
+       458011 ->  MY: Kelabit
+       458012 ->  MY: Chinese
+       458013 ->  MY: Rungus
+       458014 ->  MY: Indian
+       458998 ->  MY: Others Bumi
+       462001 ->  MV: Caucasian white
+       462003 ->  MV: South Asian India, Pakistani, etc
+       462004 ->  MV: East Asian Chinese, Japanese etc
+       466001 ->  ML: White
+       466002 ->  ML: Black
+       466003 ->  ML: Asian South
+       466005 ->  ML: Arab
+       466999 ->  ML: Other
+       484001 ->  MX: White
+       484002 ->  MX: Light brown
+       484003 ->  MX: Dark brown
+       484004 ->  MX: Black
+       484005 ->  MX: Indigenous
+       484007 ->  MX: South Asian (Indian, Pakistani)
+       484008 ->  MX: East Asian (Chinese, Japanese)
+       484009 ->  MX: Arabic (Central Asia)
+       484010 ->  MX: Undocumented 1
+       484011 ->  MX: Undocumented 2
+       484012 ->  MX: Indian (American)
+       484013 ->  MX: Coloured (medium)
+       484999 ->  MX: Other
+       496001 ->  MN: Khalkh
+       496002 ->  MN: Dorvod
+       496003 ->  MN: Bayad
+       496004 ->  MN: Buriad
+       496005 ->  MN: Zakhchin
+       496006 ->  MN: Myangad
+       496007 ->  MN: Uuld
+       496008 ->  MN: Kazakh
+       496009 ->  MN: Tuva
+       496011 ->  MN: Dariganga
+       496012 ->  MN: Uzemchin
+       496014 ->  MN: Uriankhai
+       496015 ->  MN: Khoton
+       496016 ->  MN: Darkhad
+       496017 ->  MN: Torguud
+       498001 ->  MD: Moldovian
+       498002 ->  MD: Russian
+       498003 ->  MD: Ucrainian
+       498004 ->  MD: Gagaus
+       498005 ->  MD: Bulgarian
+       498999 ->  MD: Other
+       499001 ->  ME: Caucasian
+       504004 ->  MA: Asie de l'est
+       504005 ->  MA: Arabe
+       504006 ->  MA: Bérbère
+       504101 ->  MA: White
+       504102 ->  MA: Black
+       504103 ->  MA: Yellow/Asian
+       528001 ->  NL: Caucasian white
+       528002 ->  NL: Negro Black
+       528003 ->  NL: South Asian Indian, Pakistani, etc.
+       528004 ->  NL: East Asian Chinese, Japanese, etc.
+       528005 ->  NL: Arabic, Central Asian
+       528006 ->  NL: Asian
+       528999 ->  NL: Other
+       554001 ->  NZ: Maori
+       554002 ->  NZ: Pakeha
+       554003 ->  NZ: European
+       554004 ->  NZ: Pacific Islander
+       554005 ->  NZ: Asian
+       554006 ->  NZ: New Zealander first, ethnic group second
+       558001 ->  NI: Half Blood
+       558002 ->  NI: Indigenous
+       558003 ->  NI: Afrocaribeño
+       558999 ->  NI: Other
+       566001 ->  NG: Yoruba
+       566002 ->  NG: Hausa
+       566003 ->  NG: Igbo
+       566004 ->  NG: Fulani
+       566005 ->  NG: Tiv
+       566006 ->  NG: Ibibio
+       566023 ->  NG: Frafra
+       566024 ->  NG: Krobo
+       566029 ->  NG: Loss
+       566030 ->  NG: Bono
+       566036 ->  NG: Gonja
+       566037 ->  NG: Mampuli
+       566038 ->  NG: Dagari
+       566039 ->  NG: Bimba
+       566040 ->  NG: Dagomba
+       566041 ->  NG: Yala
+       566042 ->  NG: Bassa
+       566043 ->  NG: Gbagi
+       566044 ->  NG: Ciawa
+       566045 ->  NG: Ijaw
+       566046 ->  NG: Esan
+       566047 ->  NG: Edo
+       566048 ->  NG: Esako
+       566049 ->  NG: Urhobo
+       566050 ->  NG: Nupe
+       566051 ->  NG: Chamba
+       566052 ->  NG: Kilba
+       566053 ->  NG: Higgi
+       566054 ->  NG: Bachama
+       566055 ->  NG: Yungur
+       566056 ->  NG: Tangale
+       566058 ->  NG: Bukwarra
+       566059 ->  NG: Ikom
+       566060 ->  NG: Ogoja
+       566061 ->  NG: Boki
+       566062 ->  NG: Efik
+       566064 ->  NG: Ejagam
+       566066 ->  NG: Baribari
+       566071 ->  NG: Caucasian white
+       566072 ->  NG: Negro Black
+       566073 ->  NG: South Asian Indian P
+       566074 ->  NG: East Asian Chinese J
+       566998 ->  NG: Other Africans
+       566999 ->  NG: Others
+       586001 ->  PK: Punjabi
+       586002 ->  PK: Pathan
+       586003 ->  PK: Baluchi
+       586004 ->  PK: Sindhi
+       586005 ->  PK: Urdu speaking
+       586006 ->  PK: Pashto
+       586007 ->  PK: Hindko
+       586008 ->  PK: Seraiki
+       586009 ->  PK: Hindko
+       586010 ->  PK: Pakistani
+       586999 ->  PK: Others
+       604001 ->  PE: White
+       604002 ->  PE: Half-breed Andino
+       604003 ->  PE: Half-breed Amazones
+       604004 ->  PE: Black or crossbreed
+       604005 ->  PE: Asiatic or crossbreed
+       604007 ->  PE: Indian
+       604008 ->  PE: Arab
+       604012 ->  PE: Indigenous / Native
+       604013 ->  PE: Indigenous half-breed
+       604014 ->  PE: Afro half-breed
+       604015 ->  PE: Asian half-breed
+       604016 ->  PE: European half-breed
+       604022 ->  PE: Quechua
+       604023 ->  PE: Aymara
+       604024 ->  PE: Amazonian
+       604998 ->  PE: Migrant of other origin
+       604999 ->  PE: Other
+       608001 ->  PH: Tagalog
+       608002 ->  PH: Bisaya
+       608003 ->  PH: Ilonggo
+       608004 ->  PH: Bicolano
+       608005 ->  PH: Ilocano
+       608006 ->  PH: Waray
+       608007 ->  PH: Chabacano
+       608010 ->  PH: Kapampangan
+       608011 ->  PH: Kaulo
+       608012 ->  PH: Bagobo
+       608014 ->  PH: Chinese
+       608015 ->  PH: Aklanon
+       608017 ->  PH: Sama
+       608018 ->  PH: Matanao
+       608020 ->  PH: Bilaan
+       608021 ->  PH: Spanish
+       608024 ->  PH: Cebuano
+       608025 ->  PH: Zambal
+       608026 ->  PH: Antiqueno
+       608027 ->  PH: Masbateno
+       608028 ->  PH: Pangasinense
+       608029 ->  PH: Kankana-ay
+       608030 ->  PH: Ibaloy/Ibanag
+       608031 ->  PH: Tausog
+       608032 ->  PH: Suriganon
+       608033 ->  PH: Muslim
+       608034 ->  PH: Bagubu
+       608036 ->  PH: Litinya/Leyteyo
+       608037 ->  PH: Davaoeno/Dabawenyo
+       608038 ->  PH: Maranao/Matanao
+       608039 ->  PH: Maguindanao
+       608040 ->  PH: Bungolanon
+       608041 ->  PH: Kanglo
+       608042 ->  PH: Manobo
+       608043 ->  PH: Kulanan
+       608044 ->  PH: Kalagan
+       608045 ->  PH: Minority
+       608046 ->  PH: Lubano
+       608047 ->  PH: Igorot
+       608048 ->  PH: Yakan
+       608049 ->  PH: Marinduque
+       608050 ->  PH: Ayangan (Kankanaey)
+       608051 ->  PH: Tinguian Tribe
+       608052 ->  PH: Belwang tribe
+       608053 ->  PH: Matinguian Tribe
+       608054 ->  PH: Sambal
+       608055 ->  PH: Mangyan
+       608056 ->  PH: Romblomanon
+       608057 ->  PH: Subanin
+       608058 ->  PH: Cantilangnon
+       608059 ->  PH: Kamayo
+       608060 ->  PH: Boholano
+       608061 ->  PH: Taga Kaulo
+       608062 ->  PH: Sinamah
+       608990 ->  PH: Other Southeast Asian
+       616001 ->  PL: Caucasic white
+       616003 ->  PL: Arabic, Central Asia
+       630001 ->  PR: White
+       630002 ->  PR: Black
+       630003 ->  PR: Arabic
+       630004 ->  PR: Mulatto
+       630005 ->  PR: Indian
+       630007 ->  PR: Indigenous
+       630012 ->  PR: Light brown
+       630013 ->  PR: Dark brown
+       630999 ->  PR: Other
+       642001 ->  RO: German
+       642002 ->  RO: Gypsy
+       642003 ->  RO: Hungarian
+       642004 ->  RO: Romanian
+       642005 ->  RO: Caucasian white
+       642006 ->  RO: Negro black
+       642007 ->  RO: Arabic, Central Asian
+       642999 ->  RO: Other
+       643001 ->  RU: Russian
+       643002 ->  RU: Tatar
+       643003 ->  RU: Ukrainian
+       643004 ->  RU: Belorussian
+       643005 ->  RU: Jew
+       643006 ->  RU: Komi
+       643007 ->  RU: German
+       643008 ->  RU: Kabardians
+       643009 ->  RU: Chechen
+       643010 ->  RU: Ingush
+       643011 ->  RU: Balkarets
+       643012 ->  RU: Chuvash
+       643014 ->  RU: Mordwin
+       643015 ->  RU: Georgian
+       643016 ->  RU: Armenian
+       643017 ->  RU: Mari
+       643018 ->  RU: Udmurt
+       643020 ->  RU: Moldovan
+       643021 ->  RU: Englishman
+       643022 ->  RU: Spaniard
+       643023 ->  RU: Italian
+       643024 ->  RU: Chinese
+       643026 ->  RU: French
+       643027 ->  RU: Avarets
+       643028 ->  RU: The Assyrian
+       643029 ->  RU: Greek
+       643030 ->  RU: Adygean
+       643031 ->  RU: Cherkess
+       643032 ->  RU: Turk
+       643033 ->  RU: Ossetian
+       643034 ->  RU: Hakass
+       643035 ->  RU: Kazakh
+       643036 ->  RU: Azeri
+       643037 ->  RU: North-East Asian
+       643038 ->  RU: Gypsies
+       643039 ->  RU: Pole
+       643040 ->  RU: Tajik
+       643041 ->  RU: Korean
+       643042 ->  RU: Yakut
+       643044 ->  RU: Digorets
+       643045 ->  RU: Latvian
+       643046 ->  RU: Gagauz
+       643047 ->  RU: Lezgin
+       643048 ->  RU: Karel
+       643050 ->  RU: Romanians
+       643051 ->  RU: Turkmen
+       643052 ->  RU: Tuvinec
+       643053 ->  RU: Kyrgyz
+       643054 ->  RU: Agul
+       643055 ->  RU: Tabasaranec
+       643056 ->  RU: Rutulus
+       643057 ->  RU: Afghan
+       643058 ->  RU: Nogayets
+       643059 ->  RU: Andijan
+       643060 ->  RU: Kalmyk
+       643061 ->  RU: Cuban
+       643062 ->  RU: Lithuanian
+       643067 ->  RU: Abazin
+       643069 ->  RU: Mongol
+       643070 ->  RU: Finn
+       643071 ->  RU: Hungary
+       643072 ->  RU: Buryats
+       643074 ->  RU: Lakets
+       643075 ->  RU: Dargin
+       643076 ->  RU: Kumyk
+       643078 ->  RU: Czech
+       643079 ->  RU: Vietnamese
+       643080 ->  RU: Uzbek
+       643081 ->  RU: Bashkir
+       643082 ->  RU: Karachayeva
+       643083 ->  RU: Bulgarian
+       643084 ->  RU: Syrian
+       643085 ->  RU: Abkhaz
+       643086 ->  RU: Khanty
+       643097 ->  RU: Iranian and Central Asian
+       643100 ->  RU: White
+       643901 ->  RU: Other eastern European
+       643902 ->  RU: Other Caucasian
+       643903 ->  RU: Other Asian
+       643999 ->  RU: Other
+       646002 ->  RW: African
+       646004 ->  RW: East Asian Chinese, Japanese, etc.
+       682001 ->  SA: Saudi
+       682002 ->  SA: Egyptian \ Sudanese
+       682003 ->  SA: Jordanian \ Palestinian.
+       682004 ->  SA: Lebanese \ Syrian
+       682005 ->  SA: Yemeni
+       682007 ->  SA: Indian \ Sri Lankan
+       682008 ->  SA: Pakistani \ Bangladeshi
+       682009 ->  SA: Filipino
+       682010 ->  SA: Europeans \ Americans
+       682998 ->  SA: Other Arabs
+       682999 ->  SA: Other
+       688001 ->  RS: Caucasian white
+       688011 ->  RS: Serbian
+       688012 ->  RS: Montenegrin
+       688013 ->  RS: Yugoslav
+       688014 ->  RS: Hungarian
+       688015 ->  RS: Muslim
+       688016 ->  RS: Albanian
+       688999 ->  RS: Other
+       702001 ->  SG: Caucasian white
+       702003 ->  SG: South Asian Indian, Pakistan, etc.
+       702004 ->  SG: Chinese
+       702005 ->  SG: Arabic, Central Asian
+       702006 ->  SG: Malay
+       702008 ->  SG: Eurasian
+       702999 ->  SG: Others
+       703001 ->  SK: Gypsy
+       703002 ->  SK: White
+       703004 ->  SK: Slovenian
+       703005 ->  SK: Slovak
+       703006 ->  SK: Hungarian
+       703008 ->  SK: Ruthenian
+       703009 ->  SK: Bohemia/Czech Republic
+       703999 ->  SK: Other
+       704001 ->  VN: Kinh
+       704002 ->  VN: Muong
+       704003 ->  VN: HMông
+       704004 ->  VN: Dao
+       704005 ->  VN: Ede
+       704006 ->  VN: Ray
+       704007 ->  VN: Thai
+       704008 ->  VN: Hoa
+       704009 ->  VN: China
+       704010 ->  VN: Viernamese
+       704999 ->  VN: Other
+       705001 ->  SI: Slovenian
+       710001 ->  ZA: Black
+       710002 ->  ZA: White
+       710003 ->  ZA: Coloured
+       710004 ->  ZA: Indian
+       710006 ->  ZA: South Asian
+       710007 ->  ZA: East Asian
+       710999 ->  ZA: Other
+       716001 ->  ZW: Africans/Negro Black
+       716002 ->  ZW: Caucasian White
+       716003 ->  ZW: Coloured
+       716004 ->  ZW: Indian
+       716006 ->  ZW: Shona
+       716007 ->  ZW: Ndebele
+       716008 ->  ZW: Arabic, Central Asian
+       716009 ->  ZW: Asian, Chinese
+       716999 ->  ZW: Other
+       724001 ->  ES: White
+       724002 ->  ES: Black
+       724003 ->  ES: South Asian Indian,
+       724004 ->  ES: East Asian Chinese,Japanese
+       724005 ->  ES: Arabic, Central Asia
+       724006 ->  ES: Asian
+       724999 ->  ES: Other
+       752001 ->  SE: White
+       752002 ->  SE: African \ Black
+       752003 ->  SE: South Asia (Indians, Pakistanis, etc.)
+       752004 ->  SE: East Asia (Chinese, Japanese, etc.)
+       752005 ->  SE: Arabic \ Middle East
+       752011 ->  SE: Swedish
+       752012 ->  SE: Scandinavian; From Nordic countries
+       752013 ->  SE: From Europe, except the Nordic countries
+       752014 ->  SE: From Africa
+       752015 ->  SE: From Asia
+       752016 ->  SE: From North America
+       752017 ->  SE: From South America
+       752999 ->  SE: Other
+       756001 ->  CH: Swiss German
+       756002 ->  CH: Swiss French
+       756003 ->  CH: Swiss Italian
+       762001 ->  TJ: Tajik
+       762002 ->  TJ: Uzbek
+       762004 ->  TJ: Russian
+       764001 ->  TH: Thai
+       764002 ->  TH: China
+       764003 ->  TH: Malayu
+       764004 ->  TH: Tribe
+       764011 ->  TH: Caucasian white
+       764012 ->  TH: Negro Black
+       764013 ->  TH: South Asian Indian, Pakistani, etc.
+       764014 ->  TH: East Asian Chinese, Japanese, etc.
+       764015 ->  TH: Arabic, Central Asian
+       764999 ->  TH: Other
+       780001 ->  TT: Afro-Trinidadian
+       780002 ->  TT: Indo-Trinidadian
+       780011 ->  TT: Caucasian white
+       780012 ->  TT: Negro Black
+       780013 ->  TT: South Asian Indian, Pakistani, etc.
+       780014 ->  TT: East Asian Chinese, Japanese, etc.
+       780015 ->  TT: Arabic, Central Asian
+       780999 ->  TT: Other / Mixed
+       788002 ->  TN: Negro Black
+       788003 ->  TN: Tamazight (Berber)
+       788005 ->  TN: Arabic
+       788999 ->  TN: Other
+       800001 ->  UG: Black
+       800002 ->  UG: White
+       800003 ->  UG: Coloured
+       800004 ->  UG: Indian
+       800999 ->  UG: Other
+       804001 ->  UA: Ukrainians
+       804002 ->  UA: Russians
+       804003 ->  UA: Belarusians
+       804004 ->  UA: Tatars
+       804005 ->  UA: Jews
+       804006 ->  UA: Pole
+       804007 ->  UA: Armenian
+       804008 ->  UA: Moldova
+       804009 ->  UA: Rusin
+       804010 ->  UA: Hungarian
+       804011 ->  UA: Georgian
+       804012 ->  UA: Greek
+       804013 ->  UA: Montenegrin
+       804014 ->  UA: Korean
+       804015 ->  UA: Bulgarian
+       804016 ->  UA: Chuvash
+       804017 ->  UA: Caucasian white
+       804018 ->  UA: Negro black
+       804019 ->  UA: South Asian Indian, Pakistani, etc
+       804020 ->  UA: East Asian Chinese, Japanese, etc.
+       804999 ->  UA: Other
+       807001 ->  MK: Macedonian
+       807002 ->  MK: Albanian
+       807003 ->  MK: Turkish
+       807004 ->  MK: Roma / Gypsy
+       807005 ->  MK: Serbian
+       807006 ->  MK: Vlav
+       807999 ->  MK: Other
+       818001 ->  EG: Arab
+       818002 ->  EG: From Upper Egypt
+       818003 ->  EG: From Nile Delta
+       818004 ->  EG: Noba
+       818005 ->  EG: Sudanese
+       818006 ->  EG: Coptic
+       818999 ->  EG: Other
+       826001 ->  GB: White
+       826002 ->  GB: Black-Caribbean
+       826003 ->  GB: Black-African
+       826004 ->  GB: Black-Other
+       826005 ->  GB: Indian
+       826006 ->  GB: Pakistani
+       826007 ->  GB: Bangladeshi
+       826008 ->  GB: Chinese
+       826009 ->  GB: South Asian Indian, Pakistani, etc.
+       826014 ->  GB: East Asian Chinese, Japanese, etc.
+       826015 ->  GB: Arabic, Central Asian
+       826016 ->  GB: Mixed race
+       826017 ->  GB: Asian
+       826100 ->  GB: English / Welsh / Scottish / Northern Irish / British
+       826101 ->  GB: Irish
+       826102 ->  GB: Gypsy or Irish Traveller
+       826103 ->  GB: Any other White background, please describe
+       826104 ->  GB: White and Black Caribbean
+       826105 ->  GB: White and Black African
+       826106 ->  GB: White and Asian
+       826107 ->  GB: Any other Asian background, please describe
+       826999 ->  GB: Other ethnic group
+       840001 ->  US: White, non-Hispanic
+       840002 ->  US: Black, Non-Hispanic
+       840003 ->  US: Other, Non-Hispanic
+       840004 ->  US: Hispanic
+       840005 ->  US: Two plus, non-Hispanic
+       840006 ->  US: Asian, Non-Hispanic
+       840007 ->  US: South Asian  (Indian, Pakistani, etc.)
+       840008 ->  US: East Asian (Chinese, Japanese, etc.)
+       840009 ->  US: Arabic (Central Asian)
+       854001 ->  BF: Caucasian white
+       854002 ->  BF: Negro Black
+       854003 ->  BF: South Asian Indian, Pakistani, etc
+       854004 ->  BF: East Asian Chinese, Japanese, etc
+       854005 ->  BF: Arabic, Central Asian
+       854999 ->  BF: Other
+       858001 ->  UY: Caucasian (White)
+       858002 ->  UY: Black
+       858003 ->  UY: South Asian (hindu, pakistani, brown)
+       858004 ->  UY: East Asian (chinese, japanese, korean,..)
+       858005 ->  UY: Arab (light brown)
+       858100 ->  UY: White
+       858101 ->  UY: Afro or black
+       858102 ->  UY: Indigenous
+       858103 ->  UY: Half Blood
+       858104 ->  UY: Mulatto
+       858105 ->  UY: Asian
+       858999 ->  UY: Other
+       860001 ->  UZ: Uzbek
+       860002 ->  UZ: Russian
+       860003 ->  UZ: Tatarin
+       860004 ->  UZ: Kazakhs
+       860005 ->  UZ: Karakalpak
+       860006 ->  UZ: Tajik
+       860007 ->  UZ: Kyrgyz
+       860008 ->  UZ: Turkmen
+       860999 ->  UZ: Others
+       862001 ->  VE: White
+       862002 ->  VE: Light brown
+       862003 ->  VE: Dark brown
+       862004 ->  VE: Black
+       862005 ->  VE: Indigenous
+       862007 ->  VE: Brown
+       862008 ->  VE: Asiático, Chino, Japonés (amarillo)
+       862999 ->  VE: Other
+       887001 ->  YE: Caucasian white
+       887002 ->  YE: Negro Black
+       887004 ->  YE: East Asian Chinese, Japanese, etc.
+       887005 ->  YE: Arabic, Central Asian
+       894001 ->  ZM: Caucasian white
+       894002 ->  ZM: African
+       894003 ->  ZM: South Asian, Indian, Pakistani etc.
+       909001 ->  NIRL: White Caucasian
+       909002 ->  NIR: English / Welsh / Scottish / Northern Irish / British
+       909003 ->  NIR: Irish
+       909005 ->  NIR: Any other White background, please describe
+       909007 ->  NIR: White and Black African
+       909010 ->  NIR: Indian
+       909013 ->  NIR: Chinese
+       909014 ->  NIR: Any other Asian background, please describe
+       909015 ->  NIR: African
+       909016 ->  NIR: Caribbean
+       909017 ->  NIR: Any other Black / African / Caribbean background, please describe
+       911001 ->  CS: Caucasian
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other
+
+=== X045 :: Social class (subjective)
+           -5 -> Missing: Other
+           -4 -> Not asked in survey
+           -3 -> Not applicable
+           -2 -> No answer
+           -1 -> Don´t know
+            1 -> Upper class
+            2 -> Upper middle class
+            3 -> Lower middle class
+            4 -> Working class
+            5 -> Lower class
+          'a' -> Don't know
+          'b' -> No answer
+          'c' -> Not applicable
+          'd' -> Not asked in survey
+          'e' -> Missing: other

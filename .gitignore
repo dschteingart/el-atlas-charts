@@ -11,3 +11,7 @@ _handoff-futbol/pantheon_compare/
 # en 03-futbol/ y _handoff-futbol/data/.
 _handoff-futbol/update_extract/
 _handoff-futbol/update2_extract/
+
+# Subset intermedio de la IVS para las variables de discriminacion (195 MB).
+# Se regenera con 05-intolerancia/tools/ivs_discrim_extract.py desde el .dta master.
+05-intolerancia/tools/ivs_discrim.pkl

@@ -1,0 +1,422 @@
+iso3,cod,grupo,pct,n
+ARG,10,Pobres,26.6,169
+ARG,96,Otros,15.3,115
+ARG,24,Viejos,11.5,76
+ARG,97,Ninguna (no hay personas o grupos de personas discriminadas),10.1,62
+ARG,2,Indígenas,8.8,76
+ARG,20,Homosexuales,4.8,40
+ARG,18,Discapacitados,3.9,26
+ARG,11,Inmigrantes (en general),3.6,21
+ARG,30,Pertenecen a grupos feministas,3.1,27
+ARG,23,Mujeres,2.7,25
+ARG,1,Negros o afrodescendientes,2.4,12
+ARG,15,Inmigrantes de Bolivia,2.1,16
+ARG,28,"Pertenecen a algún partido político (comunista, socialista etc)",1.4,10
+ARG,31,Personas discriminadas por ideología (grupos que tienen una ideología distinta,1.2,9
+ARG,25,Jóvenes,0.7,3
+ARG,26,Analfabetos / sin educación,0.7,4
+ARG,12,Inmigrantes de países de América Latina,0.5,5
+ARG,6,Asiáticos (Chinos/ japoneses),0.2,1
+ARG,29,Pertenecen a movimientos o grupos de interés (sindicatos),0.2,1
+ARG,3,Blancos,0.1,1
+ARG,5,Mestizos,0.1,1
+ARG,16,Inmigrantes de Perú,0.1,1
+BOL,10,Pobres,30.1,316
+BOL,34,Campesinos/ personas que trabajan el campo,15.8,166
+BOL,97,Ninguna (no hay personas o grupos de personas discriminadas),11.5,121
+BOL,2,Indígenas,9.6,101
+BOL,39,Personas discriminadas por su raza (sin especificar),8.1,85
+BOL,23,Mujeres,5.1,54
+BOL,18,Discapacitados,3.3,35
+BOL,28,"Pertenecen a algún partido político (comunista, socialista etc)",2.3,24
+BOL,24,Viejos,2.2,23
+BOL,29,Pertenecen a movimientos o grupos de interés (sindicatos),1.8,19
+BOL,20,Homosexuales,1.3,14
+BOL,35,Personas que viven en provincias o zonas rurales,1.2,13
+BOL,1,Negros o afrodescendientes,1.1,12
+BOL,11,Inmigrantes (en general),1.1,12
+BOL,25,Jóvenes,0.9,9
+BOL,31,Personas discriminadas por ideología (grupos que tienen una ideología distinta,0.8,8
+BOL,33,Personas en situación de calle/ indigentes,0.8,8
+BOL,3,Blancos,0.7,7
+BOL,26,Analfabetos / sin educación,0.7,7
+BOL,36,Personas que se dedican a la delincuencia/ pertenecen a una banda delictiva,0.7,7
+BOL,40,Médicos o trabajadores de la salud,0.3,3
+BOL,5,Mestizos,0.2,2
+BOL,21,Drogadictos,0.1,1
+BOL,38,Alcohólicos,0.1,1
+BOL,96,Otros,0.1,1
+BRA,1,Negros o afrodescendientes,52.4,568
+BRA,10,Pobres,24.7,268
+BRA,97,Ninguna (no hay personas o grupos de personas discriminadas),7.6,83
+BRA,20,Homosexuales,7.3,79
+BRA,23,Mujeres,2.4,26
+BRA,27,"Pertenecen a grupos religiosos (evangélicos, mormones, pentecoscales)",1.2,13
+BRA,96,Otros,1.2,13
+BRA,24,Viejos,1.1,12
+BRA,2,Indígenas,0.6,7
+BRA,11,Inmigrantes (en general),0.5,5
+BRA,28,"Pertenecen a algún partido político (comunista, socialista etc)",0.4,4
+BRA,33,Personas en situación de calle/ indigentes,0.3,3
+BRA,36,Personas que se dedican a la delincuencia/ pertenecen a una banda delictiva,0.2,2
+BRA,18,Discapacitados,0.1,1
+BRA,26,Analfabetos / sin educación,0.1,1
+CHL,10,Pobres,22.7,276
+CHL,2,Indígenas,15.9,208
+CHL,24,Viejos,13.8,168
+CHL,11,Inmigrantes (en general),11.6,113
+CHL,20,Homosexuales,8.5,77
+CHL,96,Otros,4.9,51
+CHL,1,Negros o afrodescendientes,4.3,57
+CHL,23,Mujeres,4.1,51
+CHL,25,Jóvenes,4.0,46
+CHL,18,Discapacitados,3.9,27
+CHL,26,Analfabetos / sin educación,1.9,15
+CHL,97,Ninguna (no hay personas o grupos de personas discriminadas),1.6,22
+CHL,21,Drogadictos,0.7,10
+CHL,30,Pertenecen a grupos feministas,0.6,7
+CHL,13,Inmigrantes de Venezuela,0.5,7
+CHL,28,"Pertenecen a algún partido político (comunista, socialista etc)",0.3,4
+CHL,19,Enfermos de SIDA,0.2,3
+CHL,27,"Pertenecen a grupos religiosos (evangélicos, mormones, pentecoscales)",0.2,3
+CHL,3,Blancos,0.1,1
+CHL,4,Mulatos,0.1,1
+CHL,14,Inmigrantes de Colombia,0.1,1
+CHL,16,Inmigrantes de Perú,0.1,2
+CHL,31,Personas discriminadas por ideología (grupos que tienen una ideología distinta,0.0,1
+COL,1,Negros o afrodescendientes,17.5,183
+COL,10,Pobres,16.9,172
+COL,2,Indígenas,15.1,166
+COL,97,Ninguna (no hay personas o grupos de personas discriminadas),13.9,117
+COL,20,Homosexuales,12.7,139
+COL,37,Personas que pertenecen a grupos armados,4.7,32
+COL,11,Inmigrantes (en general),3.4,41
+COL,13,Inmigrantes de Venezuela,2.7,30
+COL,24,Viejos,2.5,26
+COL,23,Mujeres,1.7,19
+COL,96,Otros,1.5,16
+COL,18,Discapacitados,1.3,16
+COL,33,Personas en situación de calle/ indigentes,1.3,14
+COL,21,Drogadictos,1.2,12
+COL,34,Campesinos/ personas que trabajan el campo,1.1,14
+COL,36,Personas que se dedican a la delincuencia/ pertenecen a una banda delictiva,0.6,6
+COL,28,"Pertenecen a algún partido político (comunista, socialista etc)",0.5,5
+COL,27,"Pertenecen a grupos religiosos (evangélicos, mormones, pentecoscales)",0.4,5
+COL,29,Pertenecen a movimientos o grupos de interés (sindicatos),0.3,4
+COL,25,Jóvenes,0.2,2
+COL,40,Médicos o trabajadores de la salud,0.2,1
+COL,5,Mestizos,0.1,1
+COL,22,Personas con tatuajes,0.1,1
+COL,30,Pertenecen a grupos feministas,0.1,2
+COL,35,Personas que viven en provincias o zonas rurales,0.1,1
+CRI,10,Pobres,26.8,239
+CRI,11,Inmigrantes (en general),14.9,133
+CRI,97,Ninguna (no hay personas o grupos de personas discriminadas),8.5,76
+CRI,12,Inmigrantes de países de América Latina,7.3,65
+CRI,20,Homosexuales,7.2,64
+CRI,2,Indígenas,5.9,53
+CRI,96,Otros,5.3,47
+CRI,24,Viejos,5.2,46
+CRI,1,Negros o afrodescendientes,4.8,43
+CRI,23,Mujeres,3.9,35
+CRI,18,Discapacitados,1.5,13
+CRI,21,Drogadictos,1.5,13
+CRI,33,Personas en situación de calle/ indigentes,1.3,12
+CRI,26,Analfabetos / sin educación,1.2,11
+CRI,34,Campesinos/ personas que trabajan el campo,1.2,11
+CRI,36,Personas que se dedican a la delincuencia/ pertenecen a una banda delictiva,0.9,8
+CRI,31,Personas discriminadas por ideología (grupos que tienen una ideología distinta,0.7,6
+CRI,28,"Pertenecen a algún partido político (comunista, socialista etc)",0.6,5
+CRI,27,"Pertenecen a grupos religiosos (evangélicos, mormones, pentecoscales)",0.3,3
+CRI,29,Pertenecen a movimientos o grupos de interés (sindicatos),0.3,3
+CRI,13,Inmigrantes de Venezuela,0.1,1
+CRI,19,Enfermos de SIDA,0.1,1
+CRI,25,Jóvenes,0.1,1
+CRI,30,Pertenecen a grupos feministas,0.1,1
+CRI,38,Alcohólicos,0.1,1
+DOM,10,Pobres,27.3,221
+DOM,11,Inmigrantes (en general),24.2,196
+DOM,97,Ninguna (no hay personas o grupos de personas discriminadas),11.5,93
+DOM,20,Homosexuales,8.8,71
+DOM,32,Madres solteras,7.5,61
+DOM,96,Otros,5.3,43
+DOM,33,Personas en situación de calle/ indigentes,3.2,26
+DOM,28,"Pertenecen a algún partido político (comunista, socialista etc)",2.7,22
+DOM,23,Mujeres,2.0,16
+DOM,1,Negros o afrodescendientes,1.6,13
+DOM,24,Viejos,1.4,11
+DOM,18,Discapacitados,1.1,9
+DOM,21,Drogadictos,0.7,6
+DOM,25,Jóvenes,0.7,6
+DOM,29,Pertenecen a movimientos o grupos de interés (sindicatos),0.6,5
+DOM,27,"Pertenecen a grupos religiosos (evangélicos, mormones, pentecoscales)",0.4,3
+DOM,26,Analfabetos / sin educación,0.2,2
+DOM,36,Personas que se dedican a la delincuencia/ pertenecen a una banda delictiva,0.2,2
+DOM,6,Asiáticos (Chinos/ japoneses),0.1,1
+DOM,22,Personas con tatuajes,0.1,1
+DOM,31,Personas discriminadas por ideología (grupos que tienen una ideología distinta,0.1,1
+DOM,34,Campesinos/ personas que trabajan el campo,0.1,1
+DOM,39,Personas discriminadas por su raza (sin especificar),0.1,1
+ECU,10,Pobres,26.3,256
+ECU,97,Ninguna (no hay personas o grupos de personas discriminadas),16.1,157
+ECU,2,Indígenas,13.4,130
+ECU,1,Negros o afrodescendientes,8.6,84
+ECU,96,Otros,6.2,60
+ECU,20,Homosexuales,6.1,59
+ECU,11,Inmigrantes (en general),4.8,47
+ECU,18,Discapacitados,3.4,33
+ECU,24,Viejos,3.0,29
+ECU,39,Personas discriminadas por su raza (sin especificar),2.4,23
+ECU,13,Inmigrantes de Venezuela,2.1,20
+ECU,23,Mujeres,2.0,19
+ECU,28,"Pertenecen a algún partido político (comunista, socialista etc)",2.0,19
+ECU,34,Campesinos/ personas que trabajan el campo,1.1,11
+ECU,21,Drogadictos,0.7,7
+ECU,25,Jóvenes,0.4,4
+ECU,27,"Pertenecen a grupos religiosos (evangélicos, mormones, pentecoscales)",0.4,4
+ECU,26,Analfabetos / sin educación,0.3,3
+ECU,5,Mestizos,0.2,2
+ECU,31,Personas discriminadas por ideología (grupos que tienen una ideología distinta,0.2,2
+ECU,38,Alcohólicos,0.2,2
+ECU,30,Pertenecen a grupos feministas,0.1,1
+ECU,40,Médicos o trabajadores de la salud,0.1,1
+GTM,10,Pobres,35.5,265
+GTM,2,Indígenas,26.5,198
+GTM,97,Ninguna (no hay personas o grupos de personas discriminadas),12.6,94
+GTM,23,Mujeres,5.0,37
+GTM,96,Otros,4.2,31
+GTM,24,Viejos,3.1,23
+GTM,20,Homosexuales,2.7,20
+GTM,18,Discapacitados,1.7,13
+GTM,36,Personas que se dedican a la delincuencia/ pertenecen a una banda delictiva,1.6,12
+GTM,22,Personas con tatuajes,1.5,11
+GTM,34,Campesinos/ personas que trabajan el campo,0.9,7
+GTM,1,Negros o afrodescendientes,0.8,6
+GTM,27,"Pertenecen a grupos religiosos (evangélicos, mormones, pentecoscales)",0.7,5
+GTM,11,Inmigrantes (en general),0.5,4
+GTM,5,Mestizos,0.4,3
+GTM,21,Drogadictos,0.4,3
+GTM,26,Analfabetos / sin educación,0.4,3
+GTM,39,Personas discriminadas por su raza (sin especificar),0.4,3
+GTM,28,"Pertenecen a algún partido político (comunista, socialista etc)",0.3,2
+GTM,29,Pertenecen a movimientos o grupos de interés (sindicatos),0.3,2
+GTM,6,Asiáticos (Chinos/ japoneses),0.1,1
+GTM,25,Jóvenes,0.1,1
+GTM,35,Personas que viven en provincias o zonas rurales,0.1,1
+GTM,40,Médicos o trabajadores de la salud,0.1,1
+HND,10,Pobres,26.7,202
+HND,97,Ninguna (no hay personas o grupos de personas discriminadas),15.1,117
+HND,36,Personas que se dedican a la delincuencia/ pertenecen a una banda delictiva,10.5,80
+HND,20,Homosexuales,10.0,84
+HND,96,Otros,8.0,61
+HND,2,Indígenas,6.2,49
+HND,1,Negros o afrodescendientes,5.9,46
+HND,28,"Pertenecen a algún partido político (comunista, socialista etc)",5.4,41
+HND,23,Mujeres,2.5,19
+HND,24,Viejos,1.7,17
+HND,33,Personas en situación de calle/ indigentes,1.3,10
+HND,18,Discapacitados,1.1,9
+HND,25,Jóvenes,0.9,6
+HND,34,Campesinos/ personas que trabajan el campo,0.9,6
+HND,31,Personas discriminadas por ideología (grupos que tienen una ideología distinta,0.8,7
+HND,21,Drogadictos,0.7,5
+HND,4,Mulatos,0.6,4
+HND,26,Analfabetos / sin educación,0.4,4
+HND,11,Inmigrantes (en general),0.3,3
+HND,27,"Pertenecen a grupos religiosos (evangélicos, mormones, pentecoscales)",0.3,2
+HND,37,Personas que pertenecen a grupos armados,0.3,2
+HND,29,Pertenecen a movimientos o grupos de interés (sindicatos),0.2,1
+HND,30,Pertenecen a grupos feministas,0.2,1
+HND,38,Alcohólicos,0.1,1
+MEX,10,Pobres,36.0,372
+MEX,2,Indígenas,24.8,257
+MEX,23,Mujeres,6.1,65
+MEX,24,Viejos,5.7,59
+MEX,20,Homosexuales,4.8,47
+MEX,96,Otros,4.2,44
+MEX,11,Inmigrantes (en general),3.5,37
+MEX,18,Discapacitados,3.3,32
+MEX,97,Ninguna (no hay personas o grupos de personas discriminadas),3.0,30
+MEX,33,Personas en situación de calle/ indigentes,1.7,19
+MEX,1,Negros o afrodescendientes,1.4,14
+MEX,32,Madres solteras,1.4,13
+MEX,34,Campesinos/ personas que trabajan el campo,1.3,12
+MEX,5,Mestizos,0.6,6
+MEX,21,Drogadictos,0.6,5
+MEX,25,Jóvenes,0.5,5
+MEX,27,"Pertenecen a grupos religiosos (evangélicos, mormones, pentecoscales)",0.4,3
+MEX,26,Analfabetos / sin educación,0.3,3
+MEX,30,Pertenecen a grupos feministas,0.3,3
+MEX,31,Personas discriminadas por ideología (grupos que tienen una ideología distinta,0.2,3
+MEX,28,"Pertenecen a algún partido político (comunista, socialista etc)",0.1,1
+NIC,97,Ninguna (no hay personas o grupos de personas discriminadas),26.0,189
+NIC,10,Pobres,18.3,131
+NIC,28,"Pertenecen a algún partido político (comunista, socialista etc)",13.1,97
+NIC,20,Homosexuales,10.8,80
+NIC,96,Otros,9.4,68
+NIC,36,Personas que se dedican a la delincuencia/ pertenecen a una banda delictiva,5.3,38
+NIC,23,Mujeres,3.2,23
+NIC,31,Personas discriminadas por ideología (grupos que tienen una ideología distinta,2.3,17
+NIC,1,Negros o afrodescendientes,2.2,17
+NIC,2,Indígenas,2.0,14
+NIC,24,Viejos,1.8,13
+NIC,18,Discapacitados,1.1,8
+NIC,27,"Pertenecen a grupos religiosos (evangélicos, mormones, pentecoscales)",0.8,6
+NIC,34,Campesinos/ personas que trabajan el campo,0.8,6
+NIC,33,Personas en situación de calle/ indigentes,0.7,5
+NIC,11,Inmigrantes (en general),0.6,4
+NIC,25,Jóvenes,0.5,4
+NIC,19,Enfermos de SIDA,0.3,2
+NIC,26,Analfabetos / sin educación,0.3,2
+NIC,3,Blancos,0.1,1
+NIC,21,Drogadictos,0.1,1
+NIC,32,Madres solteras,0.1,1
+NIC,38,Alcohólicos,0.1,1
+PAN,2,Indígenas,23.3,198
+PAN,97,Ninguna (no hay personas o grupos de personas discriminadas),17.4,148
+PAN,10,Pobres,16.7,142
+PAN,96,Otros,10.3,88
+PAN,1,Negros o afrodescendientes,8.3,71
+PAN,20,Homosexuales,7.8,66
+PAN,11,Inmigrantes (en general),4.5,38
+PAN,36,Personas que se dedican a la delincuencia/ pertenecen a una banda delictiva,2.2,19
+PAN,39,Personas discriminadas por su raza (sin especificar),1.6,14
+PAN,28,"Pertenecen a algún partido político (comunista, socialista etc)",1.1,9
+PAN,33,Personas en situación de calle/ indigentes,1.1,9
+PAN,24,Viejos,0.9,8
+PAN,4,Mulatos,0.8,7
+PAN,18,Discapacitados,0.7,6
+PAN,13,Inmigrantes de Venezuela,0.5,4
+PAN,27,"Pertenecen a grupos religiosos (evangélicos, mormones, pentecoscales)",0.5,4
+PAN,29,Pertenecen a movimientos o grupos de interés (sindicatos),0.4,3
+PAN,5,Mestizos,0.2,2
+PAN,6,Asiáticos (Chinos/ japoneses),0.2,2
+PAN,23,Mujeres,0.2,2
+PAN,26,Analfabetos / sin educación,0.2,2
+PAN,34,Campesinos/ personas que trabajan el campo,0.2,2
+PAN,3,Blancos,0.1,1
+PAN,12,Inmigrantes de países de América Latina,0.1,1
+PAN,14,Inmigrantes de Colombia,0.1,1
+PAN,19,Enfermos de SIDA,0.1,1
+PAN,25,Jóvenes,0.1,1
+PAN,31,Personas discriminadas por ideología (grupos que tienen una ideología distinta,0.1,1
+PAN,32,Madres solteras,0.1,1
+PER,10,Pobres,35.4,363
+PER,2,Indígenas,15.9,163
+PER,97,Ninguna (no hay personas o grupos de personas discriminadas),9.7,100
+PER,96,Otros,6.0,62
+PER,20,Homosexuales,5.9,61
+PER,1,Negros o afrodescendientes,5.5,56
+PER,34,Campesinos/ personas que trabajan el campo,2.9,30
+PER,24,Viejos,2.6,27
+PER,11,Inmigrantes (en general),2.5,26
+PER,18,Discapacitados,2.4,25
+PER,13,Inmigrantes de Venezuela,2.1,22
+PER,35,Personas que viven en provincias o zonas rurales,2.0,21
+PER,23,Mujeres,1.6,16
+PER,36,Personas que se dedican a la delincuencia/ pertenecen a una banda delictiva,1.4,14
+PER,39,Personas discriminadas por su raza (sin especificar),1.2,12
+PER,26,Analfabetos / sin educación,1.1,11
+PER,28,"Pertenecen a algún partido político (comunista, socialista etc)",0.4,4
+PER,25,Jóvenes,0.3,3
+PER,5,Mestizos,0.2,2
+PER,16,Inmigrantes de Perú,0.2,2
+PER,27,"Pertenecen a grupos religiosos (evangélicos, mormones, pentecoscales)",0.2,2
+PER,3,Blancos,0.1,1
+PER,4,Mulatos,0.1,1
+PER,29,Pertenecen a movimientos o grupos de interés (sindicatos),0.1,1
+PER,30,Pertenecen a grupos feministas,0.1,1
+PRY,10,Pobres,42.3,425
+PRY,2,Indígenas,22.5,226
+PRY,34,Campesinos/ personas que trabajan el campo,9.0,90
+PRY,20,Homosexuales,6.5,65
+PRY,24,Viejos,3.6,36
+PRY,97,Ninguna (no hay personas o grupos de personas discriminadas),3.5,35
+PRY,96,Otros,2.7,27
+PRY,33,Personas en situación de calle/ indigentes,2.5,25
+PRY,23,Mujeres,2.1,21
+PRY,18,Discapacitados,1.3,13
+PRY,28,"Pertenecen a algún partido político (comunista, socialista etc)",1.0,10
+PRY,21,Drogadictos,0.8,8
+PRY,25,Jóvenes,0.7,7
+PRY,37,Personas que pertenecen a grupos armados,0.6,6
+PRY,11,Inmigrantes (en general),0.4,4
+PRY,1,Negros o afrodescendientes,0.3,3
+PRY,36,Personas que se dedican a la delincuencia/ pertenecen a una banda delictiva,0.2,2
+PRY,30,Pertenecen a grupos feministas,0.1,1
+PRY,32,Madres solteras,0.1,1
+SLV,10,Pobres,34.1,281
+SLV,97,Ninguna (no hay personas o grupos de personas discriminadas),18.1,149
+SLV,20,Homosexuales,10.9,90
+SLV,36,Personas que se dedican a la delincuencia/ pertenecen a una banda delictiva,10.9,90
+SLV,96,Otros,6.4,53
+SLV,24,Viejos,3.3,27
+SLV,18,Discapacitados,2.7,22
+SLV,2,Indígenas,2.4,20
+SLV,33,Personas en situación de calle/ indigentes,2.1,17
+SLV,23,Mujeres,1.9,16
+SLV,31,Personas discriminadas por ideología (grupos que tienen una ideología distinta,1.3,11
+SLV,28,"Pertenecen a algún partido político (comunista, socialista etc)",1.0,8
+SLV,25,Jóvenes,0.6,5
+SLV,26,Analfabetos / sin educación,0.6,5
+SLV,1,Negros o afrodescendientes,0.5,4
+SLV,27,"Pertenecen a grupos religiosos (evangélicos, mormones, pentecoscales)",0.5,4
+SLV,21,Drogadictos,0.4,3
+SLV,22,Personas con tatuajes,0.4,3
+SLV,34,Campesinos/ personas que trabajan el campo,0.4,3
+SLV,4,Mulatos,0.2,2
+SLV,11,Inmigrantes (en general),0.2,2
+SLV,29,Pertenecen a movimientos o grupos de interés (sindicatos),0.2,2
+SLV,38,Alcohólicos,0.2,2
+SLV,19,Enfermos de SIDA,0.1,1
+SLV,30,Pertenecen a grupos feministas,0.1,1
+SLV,32,Madres solteras,0.1,1
+SLV,35,Personas que viven en provincias o zonas rurales,0.1,1
+SLV,39,Personas discriminadas por su raza (sin especificar),0.1,1
+URY,10,Pobres,19.9,216
+URY,97,Ninguna (no hay personas o grupos de personas discriminadas),17.9,195
+URY,1,Negros o afrodescendientes,15.4,168
+URY,96,Otros,13.1,143
+URY,20,Homosexuales,8.7,95
+URY,11,Inmigrantes (en general),5.1,56
+URY,18,Discapacitados,4.1,45
+URY,39,Personas discriminadas por su raza (sin especificar),2.6,28
+URY,24,Viejos,2.5,27
+URY,23,Mujeres,2.1,23
+URY,25,Jóvenes,2.1,23
+URY,33,Personas en situación de calle/ indigentes,1.6,17
+URY,36,Personas que se dedican a la delincuencia/ pertenecen a una banda delictiva,0.9,10
+URY,21,Drogadictos,0.8,9
+URY,27,"Pertenecen a grupos religiosos (evangélicos, mormones, pentecoscales)",0.7,8
+URY,26,Analfabetos / sin educación,0.6,6
+URY,31,Personas discriminadas por ideología (grupos que tienen una ideología distinta,0.4,4
+URY,12,Inmigrantes de países de América Latina,0.3,3
+URY,32,Madres solteras,0.3,3
+URY,2,Indígenas,0.2,2
+URY,34,Campesinos/ personas que trabajan el campo,0.2,2
+URY,19,Enfermos de SIDA,0.1,1
+URY,22,Personas con tatuajes,0.1,1
+URY,29,Pertenecen a movimientos o grupos de interés (sindicatos),0.1,1
+URY,35,Personas que viven en provincias o zonas rurales,0.1,1
+URY,38,Alcohólicos,0.1,1
+VEN,10,Pobres,32.4,334
+VEN,97,Ninguna (no hay personas o grupos de personas discriminadas),28.2,281
+VEN,28,"Pertenecen a algún partido político (comunista, socialista etc)",11.6,106
+VEN,24,Viejos,9.6,100
+VEN,96,Otros,3.7,37
+VEN,2,Indígenas,2.5,24
+VEN,18,Discapacitados,2.1,17
+VEN,33,Personas en situación de calle/ indigentes,1.9,16
+VEN,1,Negros o afrodescendientes,1.6,17
+VEN,20,Homosexuales,1.6,13
+VEN,36,Personas que se dedican a la delincuencia/ pertenecen a una banda delictiva,1.2,11
+VEN,11,Inmigrantes (en general),0.9,8
+VEN,27,"Pertenecen a grupos religiosos (evangélicos, mormones, pentecoscales)",0.6,5
+VEN,40,Médicos o trabajadores de la salud,0.6,6
+VEN,31,Personas discriminadas por ideología (grupos que tienen una ideología distinta,0.4,4
+VEN,23,Mujeres,0.3,4
+VEN,25,Jóvenes,0.3,3
+VEN,34,Campesinos/ personas que trabajan el campo,0.3,2
+VEN,14,Inmigrantes de Colombia,0.1,1
+VEN,26,Analfabetos / sin educación,0.1,1
+VEN,32,Madres solteras,0.1,1
