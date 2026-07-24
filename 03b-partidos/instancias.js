@@ -415,8 +415,16 @@ function drawInstancias() {
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, fmt);
   in_draw(svg, W, H, bigFmt, rows);
+  // Respetar el subtitulo custom del editor (criterio 5): solo pisar con el
+  // subtitulo dinamico si el usuario NO customizo uno. Sin este guard, cualquier
+  // toggle/slider (que llama drawInstancias) borraba el custom. Mismo patron que
+  // gl_applyHeadings de goles.
   const sub = document.querySelector('[data-i18n="c10-subtitle"]');
-  if (sub) sub.textContent = in_subtitle();
+  if (sub) {
+    const aeCfg = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+    const tx = (aeCfg && aeCfg.texts && aeCfg.texts[in_lang()]) || {};
+    if (!(tx.subtitle || '').trim()) sub.textContent = in_subtitle();
+  }
   in_syncSources();
 }
 function in_subtitle() {
