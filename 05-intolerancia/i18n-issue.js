@@ -132,6 +132,8 @@ const ISSUE_I18N = {
     'index-see':           'Ver gráfico →',
     'index-charts-label':  'Gráficos interactivos',
 
+    // Tarjeta del graficador de la batería de vecinos (index).
+    'gv-card-title':     'La batería de vecinos: ranking, mapa, evolución y perfil',
     // Títulos neutrales de los charts 7-12 (para las tarjetas del index; cada
     // chart además los define en su propio i18n-<slug>.js).
     'c7-title-neutral':  'Quién tiene prioridad cuando escasea el trabajo',
@@ -262,6 +264,8 @@ const ISSUE_I18N = {
     'index-see':           'See chart →',
     'index-charts-label':  'Interactive charts',
 
+    // Neighbours-battery grapher card (index).
+    'gv-card-title':     'The neighbours battery: ranking, map, trend and profile',
     // Neutral titles for charts 7-12 (index cards; each chart also defines them
     // in its own i18n-<slug>.js).
     'c7-title-neutral':  'Who gets priority when jobs are scarce',
