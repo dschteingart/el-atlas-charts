@@ -252,7 +252,12 @@ function gl_drawBars() {
     const zl = document.createElementNS(NS, 'line'); zl.setAttribute('x1', zeroX); zl.setAttribute('x2', zeroX);
     zl.setAttribute('y1', -2); zl.setAttribute('y2', PH); zl.setAttribute('stroke', 'var(--ink-soft)'); zl.setAttribute('stroke-width', 1); zl.setAttribute('opacity', 0.55); g.appendChild(zl);
   }
-  const hover = !editorFormat && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  // Touch universal (criterio 3): NO gatear la hit-rect tras HAS_HOVER. En el celu
+  // un tap dispara mouseenter/mousemove sinteticos, asi que el mismo handler de
+  // mouse muestra el tooltip; el cierre tap-away global vive en lib/utils.js. Solo
+  // se evita en export (editorFormat). Mismo patron que la vista Comparacion de
+  // instancias.js. Antes, con && HAS_HOVER, la vista Barras no daba globito al tocar.
+  const hover = !editorFormat;
   rows.forEach((d, i) => {
     const yy = i * step + step / 2, xv = x(d.val);
     const bx = signed ? Math.min(zeroX, xv) : 0, bw = Math.max(signed ? Math.abs(xv - zeroX) : xv, 1.5);
