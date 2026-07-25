@@ -78,9 +78,6 @@
   /* ===== Comparación (chart 16, clon del ranking) ===== */
   .dk-picker-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); font-style: italic; }
   @media (max-width: 768px) { .dk-picker-hint { display: none; } }
-  .dk-quick { display: inline-flex; gap: 4px; }
-  .dk-quick button { font-family: var(--sans); font-size: 11.5px; font-weight: 600; padding: 5px 11px; border: 1px solid var(--rule); border-radius: 13px; background: var(--bg); color: var(--ink-soft); cursor: pointer; white-space: nowrap; transition: background 0.12s ease, color 0.12s ease; }
-  .dk-quick button:hover { background: var(--bg-soft); color: var(--ink); }
   .dk-year-slider { -webkit-appearance: none; appearance: none; width: 130px; height: 4px; border-radius: 2px; background: var(--grid); outline: none; cursor: pointer; }
   .dk-year-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
   .dk-year-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
@@ -219,10 +216,14 @@
             <option value="etnia" data-i18n="c11-univ-etnia">Grupo étnico (regional)</option>
           </select>
         </div>
-        <div class="m-ctrl-group" id="dk-year-group">
-          <span class="m-ctrl-label" data-i18n="c16-round-label">Ronda</span>
-          <input type="range" id="dk-year-slider" class="dk-year-slider" data-i18n-aria="c16-round-label" aria-label="Ronda">
-          <span class="dk-year-display" id="dk-year-display">2020</span>
+        <!-- Orden de los grupos igual que chart-vecinos / chart-barrio:
+             selector → Mostrar → Referencia(s) → slider al final. -->
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c16-view-label">Mostrar</span>
+          <div class="toggle" id="dk-view">
+            <button data-view="sel" data-i18n="c16-view-sel">Mi selección</button>
+            <button data-view="all" class="active" data-i18n="c16-view-all">Todos</button>
+          </div>
         </div>
         <div class="m-ctrl-group">
           <span class="m-ctrl-label" data-i18n="c16-refs-label">Referencia</span>
@@ -230,12 +231,10 @@
             <button id="dk-ref-avg" class="active" data-i18n="c16-ref-avg">Promedio regional</button>
           </div>
         </div>
-        <div class="m-ctrl-group">
-          <span class="m-ctrl-label" data-i18n="c16-view-label">Mostrar</span>
-          <div class="toggle" id="dk-view">
-            <button data-view="sel" data-i18n="c16-view-sel">Mi selección</button>
-            <button data-view="all" class="active" data-i18n="c16-view-all">Todos</button>
-          </div>
+        <div class="m-ctrl-group" id="dk-year-group">
+          <span class="m-ctrl-label" data-i18n="c16-round-label">Ronda</span>
+          <input type="range" id="dk-year-slider" class="dk-year-slider" data-i18n-aria="c16-round-label" aria-label="Ronda">
+          <span class="dk-year-display" id="dk-year-display">2020</span>
         </div>
       </div>
       <div class="m-controls" id="dk-country-picker">
@@ -245,10 +244,6 @@
             <input type="text" id="dk-search" class="m-search-input" data-i18n-placeholder="c16-search-ph" placeholder="Agregar…" autocomplete="off">
             <div id="dk-search-results" class="m-search-results"></div>
           </div>
-          <span class="dk-quick">
-            <button id="dk-quick-all" data-i18n="c16-quick-all">Todos</button>
-            <button id="dk-quick-none" data-i18n="c16-quick-none">Ninguno</button>
-          </span>
           <span id="dk-picker-hint" class="dk-picker-hint"></span>
         </div>
         <div class="m-selected-chips" id="dk-selected-chips"></div>
@@ -281,12 +276,12 @@
 <script src="../lib/i18n.js?v=9"></script>
 <script src="./i18n-issue.js?v=10"></script>
 <script src="./i18n-discriminado.js?v=1"></script>
-<script src="./i18n-discriminado-comp.js?v=2"></script>
+<script src="./i18n-discriminado-comp.js?v=3"></script>
 <script src="../lib/utils.js?v=9"></script>
 <script src="../lib/country-names.js?v=8"></script>
 <script src="./data-discriminado.js?v=1"></script>
 <script src="../lib/editor.js?v=8"></script>
-<script src="./discriminado-comp.js?v=2"></script>
+<script src="./discriminado-comp.js?v=3"></script>
 <script src="./discriminado.js?v=3"></script>
 <script src="../lib/png-export.js?v=10"></script>
 <script src="../lib/grapher.js?v=3"></script>

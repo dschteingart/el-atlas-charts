@@ -15,19 +15,24 @@
 // click = apaga/prende la región (saca los países del chart).
 // Mediana mundial con toggle (default visible).
 //
-// HONESTIDAD DEL DATO: PRIO_SERIES son SERIES temporales, no una foto de un año
-// común. La comparación toma de cada país su ÚLTIMA observación, así que los
-// años DIFIEREN entre países (Argentina 2017, Uruguay 2022, Suecia 2017…). Por
-// eso: (a) el tooltip muestra el año de ese país, (b) el subtítulo dice "último
-// dato disponible por país" con el rango de años realmente mostrado, calculado,
-// y (c) la nota de fuentes lo explicita. NO se arma una foto de un año común ni
-// se interpola nada.
+// OLA DE LA ENCUESTA: igual que vecinos (ranking.js) y barrio (barrio-comp.js),
+// la comparación se mira POR OLA, con slider (state[14].wave). Mismo tipo de
+// dato ⇒ mismas features. Default: la ola más reciente (7 = 2017-2022). Un país
+// sin dato en la ola activa simplemente no aparece: no se completa ni se
+// interpola nada.
 //
-// Inputs (data-prioridad.js): PRIO_META, PRIO_SERIES[ind][iso3]=[[year,pct,n]…],
-// PRIO_REGION.
-// State (state[14]): cat ('origen'|'genero' = el INDICADOR), view ('sel'|'all'),
-//                   selected[], showMedian, showTable, hiddenRegions[],
-//                   activeRegion.
+// HONESTIDAD DEL DATO: dentro de una MISMA ola los países salieron a campo en
+// años distintos (Argentina 2017, Uruguay 2022). Por eso: (a) el tooltip muestra
+// el año de ese país, además del período de la ola, y (b) la nota de fuentes lo
+// explicita.
+//
+// Inputs (data-prioridad.js): PRIO_META, PRIO_WAVES=[{w,label}…],
+// PRIO_FOTO[ind][wave]=[[iso3,pct,year,n]…] (asc por pct),
+// PRIO_SERIES[ind][iso3]=[[year,pct,n]…] (lo usa la vista de líneas y el
+// buscador), PRIO_REGION.
+// State (state[14]): cat ('origen'|'genero' = el INDICADOR), wave (2…7),
+//                   view ('sel'|'all'), selected[], showMedian, showTable,
+//                   hiddenRegions[], activeRegion.
 //
 // Costura con la vista de líneas (chart 7): el indicador vive en state[7].ind
 // allá y en state[14].cat acá. Ver pc_reconcileInd() al final del archivo.
@@ -40,13 +45,17 @@ const PC_MARGIN_MOBILE  = { top: 34, right: 60, bottom: 56, left: 110 };
 
 const PC_LATAM_REGIONS = new Set(['Latin America', 'Caribbean']);
 // Selección por default (WYSIWYG: son los chips = las etiquetas). Verificado
-// contra data-prioridad.js: los seis tienen última observación en AMBOS
-// indicadores (origen y género).
+// contra data-prioridad.js: los seis tienen dato en la ola 7 (la de arranque)
+// en AMBOS indicadores (origen y género).
 const PC_DEFAULT_SELECTED = ['ARG', 'BRA', 'CHL', 'MEX', 'PER', 'URY'];
 
 // Indicadores disponibles (PRIO_META.inds = ['origen','genero']).
 const PC_INDS = (typeof PRIO_META !== 'undefined' && PRIO_META.inds) ? PRIO_META.inds : ['origen', 'genero'];
 const PC_DEFAULT_CAT = PC_INDS[0] || 'origen';
+
+// Olas disponibles (PRIO_WAVES = [{w,label},…], asc por ola). Las etiquetas de
+// período son las mismas que las del resto del número (WV_META, data-waves.js).
+const PC_WAVES = (typeof PRIO_WAVES !== 'undefined' && PRIO_WAVES.length) ? PRIO_WAVES : [];
 
 const PC_SVG_NS = 'http://www.w3.org/2000/svg';
 const pc_ns = (tag) => document.createElementNS(PC_SVG_NS, tag);
@@ -101,46 +110,29 @@ function pc_isLatam(iso) { return PC_LATAM_REGIONS.has(PRIO_REGION[iso]); }
 
 function pc_hidden() { return new Set(state[14].hiddenRegions || []); }
 
-// ---- LA FOTO: última observación de cada país -------------------
-// PRIO_SERIES[ind][iso3] = [[year, pct, n], ...] ordenado ASC por año.
-// pc_foto(ind) -> [[iso, pct, year, n], ...] ordenado ASC por pct.
-// No se elige un año común ni se interpola: se toma el ÚLTIMO dato medido de
-// cada país, con su año real a la vista en tooltip, subtítulo y fuentes.
-const PC_FOTO_CACHE = {};
-function pc_foto(ind) {
-  if (PC_FOTO_CACHE[ind]) return PC_FOTO_CACHE[ind];
-  const src = (typeof PRIO_SERIES !== 'undefined') ? (PRIO_SERIES[ind] || {}) : {};
-  const rows = [];
-  Object.keys(src).forEach(iso => {
-    const s = src[iso];
-    if (!s || !s.length) return;
-    const last = s[s.length - 1];        // la serie ya viene ASC por año
-    rows.push([iso, last[1], last[0], last[2]]);
-  });
-  rows.sort((a, b) => a[1] - b[1]);      // ASC por pct
-  PC_FOTO_CACHE[ind] = rows;
-  return rows;
+// ---- LA FOTO: el indicador activo en la OLA activa ---------------
+// PRIO_FOTO[ind][wave] = [[iso3, pct, year, n], ...] ya ordenado ASC por pct
+// (las claves de ola son strings "2"…"7"). Un país que no midió en esa ola no
+// está en el array: no aparece en el gráfico. No se interpola nada.
+function pc_waveRows() {
+  const ind = state[14].cat, w = state[14].wave;
+  const byWave = (typeof PRIO_FOTO !== 'undefined' && PRIO_FOTO[ind]) ? PRIO_FOTO[ind] : {};
+  return byWave[String(w)] || byWave[w] || [];
 }
 
-// Filas del indicador activo, con el puesto mundial (1 = el pct más alto).
-// El universo del puesto son los países con dato en ese indicador.
-function pc_indRows() {
-  const ind = state[14].cat;
-  const foto = pc_foto(ind);
-  const n = foto.length;
-  return foto.map((r, i) => ({
-    iso: r[0], pct: r[1], year: r[2], n: r[3],
-    rank: n - i,                          // foto va ASC por pct → rank 1 = último
-    region: PRIO_REGION[r[0]]
-  }));
-}
-
-// Filas del indicador activo (sin regiones apagadas), orden asc por pct.
+// Filas del indicador/ola activos (sin regiones apagadas), orden asc por pct,
+// con el puesto mundial (1 = el pct más alto de la ola).
 // Vista 'sel': solo la selección. Vista 'all': todos.
 function pc_computeData() {
   const s = state[14];
   const hid = pc_hidden();
-  let rows = pc_indRows().filter(r => r.region && !hid.has(r.region));
+  const rows0 = pc_waveRows();
+  const total = rows0.length;
+  let rows = rows0.map((r, i) => ({
+    iso: r[0], pct: r[1], year: r[2], n: r[3],
+    rank: total - i,                      // la foto va ASC por pct → rank 1 = el último
+    region: PRIO_REGION[r[0]]
+  })).filter(r => r.region && !hid.has(r.region));
   if (s.view !== 'all') {
     const sel = new Set(s.selected);
     rows = rows.filter(r => sel.has(r.iso));
@@ -148,10 +140,10 @@ function pc_computeData() {
   return rows;
 }
 
-// Mediana MUNDIAL del indicador: sobre TODOS los países con dato (ignora
-// selección y regiones apagadas — es la referencia global).
+// Mediana MUNDIAL del indicador en la ola activa: sobre TODOS los países con
+// dato (ignora selección y regiones apagadas — es la referencia global).
 function pc_median() {
-  const rows = pc_foto(state[14].cat);
+  const rows = pc_waveRows();
   if (!rows.length) return null;
   const v = rows.map(r => r[1]);           // ya ordenado asc
   const mid = Math.floor(v.length / 2);
@@ -159,23 +151,15 @@ function pc_median() {
   return { value: med, n: v.length };
 }
 
-// Rango de años REALMENTE mostrado (ej. "1996-2023"). Calculado sobre las filas
-// visibles: cambia si el lector filtra regiones o mira solo su selección.
-function pc_yearRange(rows) {
-  const data = rows || pc_computeData();
-  let years = data.map(d => d.year).filter(y => y != null);
-  // Si el lector apagó todas las regiones (o vació la selección) no queda nada
-  // visible: en vez de dejar un paréntesis vacío, se cae al universo completo
-  // del indicador activo.
-  if (!years.length) years = pc_foto(state[14].cat).map(r => r[2]);
-  if (!years.length) return '';
-  const a = Math.min.apply(null, years), b = Math.max.apply(null, years);
-  return (a === b) ? String(a) : (a + '-' + b);
+// Label del período de la ola activa (ej. "2017-2022").
+function pc_waveLabel() {
+  const m = PC_WAVES.find(x => x.w === state[14].wave);
+  return m ? m.label : '2017-2022';
 }
 
-// Universo del puesto mundial: países con dato en el indicador activo.
+// Universo del puesto mundial: países con dato en el indicador/ola activos.
 function pc_universe() {
-  return pc_foto(state[14].cat).length;
+  return pc_waveRows().length;
 }
 
 // Rótulo del puesto mundial ("5° de 115" / "#5 of 115").
@@ -185,7 +169,7 @@ function pc_rankLabel(rank, n) {
 }
 
 //==================================================================
-//  Subtítulo dinámico (indicador activo + rango de años mostrado)
+//  Subtítulo dinámico (indicador activo + período de la ola activa)
 //==================================================================
 function pc_updateSubtitle() {
   const block = document.querySelector('.chart-block[data-chart="14"]');
@@ -197,7 +181,7 @@ function pc_updateSubtitle() {
   if ((tx.subtitle || '').trim()) return;
   const key = state[14].cat === 'genero' ? 'c14-subtitle-genero' : 'c14-subtitle-origen';
   const tpl = (typeof t === 'function') ? t(key) : '';
-  el.textContent = tpl.replace('{RANGO}', pc_yearRange());
+  el.textContent = tpl.replace('{PERIODO}', pc_waveLabel());
 }
 
 //==================================================================
@@ -709,7 +693,8 @@ function pc_drawMarimekko() {
   const n = data.length;
   const med = s1.showMedian ? pc_median() : null;
 
-  // Y máximo dinámico según la categoría (drogadictos llega a ~97).
+  // Y máximo dinámico según el indicador y la ola (en 'origen' hay países que
+  // pasan el 95%; en 'genero' el techo es mucho más bajo).
   const dataMax = n ? Math.max(...data.map(d => d.pct), med ? med.value : 0) : 10;
   const yMax = Math.max(10, Math.ceil((dataMax * 1.04) / 5) * 5);
 
@@ -1054,10 +1039,10 @@ function pc_buildLegend() {
   const order = (typeof REGION_ORDER !== 'undefined') ? REGION_ORDER : [];
   const cat = state[14].cat;
   const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
-  const key = cat + '|' + lang;
+  const key = cat + '|' + lang + '|' + state[14].wave;
   if (cont.dataset.built === key) { pc_syncLegend(); return; }
   cont.dataset.built = key;
-  const present = new Set(pc_foto(cat).map(r => PRIO_REGION[r[0]]).filter(Boolean));
+  const present = new Set(pc_waveRows().map(r => PRIO_REGION[r[0]]).filter(Boolean));
   cont.innerHTML = '';
   order.filter(r => present.has(r)).forEach(region => {
     const chip = document.createElement('span');
@@ -1109,16 +1094,16 @@ function pc_showTooltip(event, d) {
   const tt = (k, fb) => (typeof t === 'function' ? t(k) : fb);
   const reg = d.region ? tt('reg.' + d.region, d.region) : '';
   const F = (v) => (typeof fmt === 'function') ? fmt(v, 1) : v;
-  // El AÑO va como fila propia y siempre: en esta vista cada país aporta su
-  // ÚLTIMA medición, así que los años DIFIEREN entre países (ARG 2017, URY
-  // 2022…). Esconderlo sería deshonesto. Además, el puesto mundial "N° de M"
-  // sobre el universo de países con dato en el indicador activo.
+  // El AÑO va como fila propia y siempre: dentro de una MISMA ola los países
+  // salieron a campo en años distintos (ARG 2017, URY 2022…). Esconderlo sería
+  // deshonesto. Además, el puesto mundial "N° de M" sobre el universo de países
+  // con dato en el indicador y la ola activos.
   const uni = pc_universe();
   const rankLine = (d.rank != null)
     ? `<div class="tt-row"><span>${tt('c14-tt-rank', 'Puesto mundial')}</span><span>${pc_rankLabel(d.rank, uni)}</span></div>` : '';
   tooltip.innerHTML = `
     <strong>${pc_displayName(d.iso)}</strong>
-    <div class="tt-sub">${reg}</div>
+    <div class="tt-sub">${reg} · ${pc_waveLabel()}</div>
     <div class="tt-row tt-row-strong"><span>${tt('c14-tt-pct', 'De acuerdo')}</span><span>${F(d.pct)}%</span></div>
     <div class="tt-row"><span>${tt('c14-tt-year', 'Año del dato')}</span><span>${d.year}</span></div>
     <div class="tt-row"><span>${tt('c14-tt-n', 'Muestra')}</span><span>${(typeof fmt === 'function') ? fmt(d.n, 0) : d.n}</span></div>
@@ -1185,9 +1170,33 @@ function setupPrioridadCompView() {
   });
 }
 
-// (El original —barrio-comp.js— traía acá un slider de OLA de la encuesta. Acá
-// no aplica: no hay olas comunes, cada país aporta su ÚLTIMA medición y el
-// recorrido temporal es justamente la otra vista, [Evolución].)
+// Slider de OLA: un solo thumb sobre las olas presentes (PC_WAVES). Al moverlo
+// se ve el mismo indicador en distintas ondas EVS/WVS. Default: la más reciente.
+// Calcado de setupBarrioCompWave() / setupRankingWave().
+function setupPrioridadCompWave() {
+  const input = document.getElementById('pc-wave-slider');
+  const disp = document.getElementById('pc-wave-display');
+  if (!input || !PC_WAVES.length) {
+    const grp = document.getElementById('pc-wave-group'); if (grp) grp.style.display = 'none';
+    return;
+  }
+  const waves = PC_WAVES;   // asc por ola
+  input.min = 0; input.max = waves.length - 1; input.step = 1;
+  const idxOf = (w) => Math.max(0, waves.findIndex(x => x.w === w));
+  const sync = () => {
+    input.value = idxOf(state[14].wave);
+    if (disp) disp.textContent = pc_waveLabel();
+  };
+  input.addEventListener('input', () => {
+    const w = waves[+input.value].w;
+    if (w === state[14].wave) return;
+    state[14].wave = w;
+    if (disp) disp.textContent = pc_waveLabel();
+    pc_buildLegend();   // las regiones presentes cambian según la ola
+    drawPrioridadComp();
+  });
+  sync();
+}
 
 // Toggle unificado "Referencias": Mediana y Tabla regional, cada uno on/off
 // independiente (ambos, uno o ninguno). Reemplaza los dos toggles mostrar/ocultar
@@ -1212,9 +1221,16 @@ function pc_normalize(s) {
   return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 }
 
+// Universo del buscador: TODOS los países con dato en cualquier indicador y
+// cualquier ola (el chip queda elegido aunque en la ola activa ese país no
+// tenga medición — entonces simplemente no se dibuja).
 function pc_searchableCountries() {
   const isos = new Set();
-  PC_INDS.forEach(ind => pc_foto(ind).forEach(r => isos.add(r[0])));
+  PC_INDS.forEach(ind => {
+    const byWave = (typeof PRIO_FOTO !== 'undefined') ? PRIO_FOTO[ind] : null;
+    if (!byWave) return;
+    Object.keys(byWave).forEach(w => byWave[w].forEach(r => isos.add(r[0])));
+  });
   return Array.from(isos)
     .sort((a, b) => pc_displayName(a).localeCompare(pc_displayName(b), 'es'))
     .map(iso => ({ iso, name: pc_displayName(iso) }));
@@ -1320,8 +1336,8 @@ function setupPrioridadCompSearch() {
 }
 
 //==================================================================
-//  Download CSV — la foto (última observación de cada país) en los dos
-//  indicadores. Cada fila lleva SU año: no hay año común.
+//  Download CSV — los dos indicadores, todas las olas. Cada fila lleva
+//  SU año: dentro de una ola el año difiere entre países.
 //==================================================================
 function setupPrioridadCompDownloadCSV() {
   document.querySelectorAll('button.download[data-chart="14-csv"]').forEach(btn => {
@@ -1330,19 +1346,22 @@ function setupPrioridadCompDownloadCSV() {
       const vars = (typeof PRIO_META !== 'undefined' && PRIO_META.vars) ? PRIO_META.vars : {};
       let csv = '';
       csv += '# El Atlas N°5 — prioridad en el empleo cuando escasea el trabajo (IVS, EVS+WVS)\n';
-      csv += '# FOTO: ultima observacion disponible de cada pais. El ano DIFIERE entre paises.\n';
+      csv += '# Una fila por pais x ola. Dentro de una misma ola el ano DIFIERE entre paises.\n';
       csv += '# indicador origen = C002 (prioridad a nativos sobre inmigrantes); genero = C001 (prioridad a varones sobre mujeres)\n';
       csv += '# pct = % de acuerdo sobre {de acuerdo, ni/ni, en desacuerdo}, ponderado S017, celdas n>=200.\n';
-      csv += '# rank: 1 = pct mas alto, sobre los paises con dato en ese indicador.\n';
-      csv += 'iso3,pais,indicador,var_ivs,anio,pct,rank,n\n';
+      csv += '# rank: 1 = pct mas alto, sobre los paises con dato en ese indicador y esa ola.\n';
+      csv += 'iso3,pais,indicador,var_ivs,ola,periodo,anio,pct,rank,n\n';
       PC_INDS.forEach(ind => {
-        const foto = pc_foto(ind);
-        const total = foto.length;
-        foto.forEach((r, i) => {
-          const name = (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[r[0]])
-            ? (COUNTRY_NAMES[r[0]].en || r[0]) : r[0];
-          const nameQ = (name.includes(',')) ? '"' + name + '"' : name;
-          csv += [r[0], nameQ, ind, vars[ind] || '', r[2], r[1], total - i, r[3]].join(',') + '\n';
+        PC_WAVES.forEach(m => {
+          const byWave = (typeof PRIO_FOTO !== 'undefined' && PRIO_FOTO[ind]) ? PRIO_FOTO[ind] : {};
+          const rows = byWave[String(m.w)] || byWave[m.w] || [];
+          const total = rows.length;
+          rows.forEach((r, i) => {
+            const name = (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[r[0]])
+              ? (COUNTRY_NAMES[r[0]].en || r[0]) : r[0];
+            const nameQ = (name.includes(',')) ? '"' + name + '"' : name;
+            csv += [r[0], nameQ, ind, vars[ind] || '', m.w, m.label, r[2], r[1], total - i, r[3]].join(',') + '\n';
+          });
         });
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
@@ -1364,10 +1383,12 @@ function setupPrioridadCompDownloadCSV() {
 //  Init
 //==================================================================
 function initPrioridadComp() {
+  const lastWave = PC_WAVES.length ? PC_WAVES[PC_WAVES.length - 1].w : 7;
   if (!state[14]) {
     state[14] = {
       cat: PC_DEFAULT_CAT,        // el INDICADOR (origen | genero)
       view: 'sel',
+      wave: lastWave,             // default = ola más reciente (7 = 2017-2022)
       selected: [...PC_DEFAULT_SELECTED],
       showMedian: true,
       showTable: true,
@@ -1375,6 +1396,7 @@ function initPrioridadComp() {
       activeRegion: null
     };
   }
+  if (state[14].wave == null) state[14].wave = lastWave;
   if (!state[14].cat || (typeof PRIO_SERIES !== 'undefined' && !PRIO_SERIES[state[14].cat])) {
     state[14].cat = PC_DEFAULT_CAT;
   }
@@ -1384,6 +1406,7 @@ function initPrioridadComp() {
   setupPrioridadCompCat();
   setupPrioridadCompView();
   setupPrioridadCompRefs();
+  setupPrioridadCompWave();
   setupPrioridadCompSearch();
   setupPrioridadCompDownloadCSV();
   renderPrioridadCompChips();
@@ -1399,12 +1422,12 @@ function initPrioridadComp() {
   window.__atlasSupportsFormats = true;
   window.__atlasRedraw = drawPrioridadComp;
 
-  // Nota "Datos" corta del PNG, con el rango de años realmente mostrado.
+  // Nota "Datos" corta del PNG, con el período de la ola mostrada.
   window.onBeforePngExportGetSourceText = function(chartId) {
     if (chartId !== '14') return null;
     const tpl = (typeof t === 'function') ? t('c14-sources-tpl') : '';
     if (!tpl) return null;
-    return tpl.replace('{RANGO}', pc_yearRange());
+    return tpl.replace('{PERIODO}', pc_waveLabel());
   };
 
   // Marimekko: los textos de la tabla regional van al canvas (las webfonts

@@ -87,6 +87,12 @@
 
   #tooltip14 .tt-sub { font-size: 10.5px; opacity: 0.75; margin: -1px 0 4px; }
 
+  /* Slider de OLA de la comparación (mismo control que vecinos y barrio) */
+  .pc-wave-slider { -webkit-appearance: none; appearance: none; width: 120px; height: 4px; border-radius: 2px; background: var(--grid); outline: none; cursor: pointer; }
+  .pc-wave-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .pc-wave-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .pc-wave-display { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--ink); min-width: 82px; font-variant-numeric: tabular-nums; }
+
   /* Vista "todos": pared marimekko (clases del motor N°2) */
   .m-bar { transition: opacity 0.2s; cursor: pointer; }
   .m-bar.m-dim { opacity: 0.15; }
@@ -148,7 +154,7 @@
   </header>
 
   <div class="g-eyebrow" data-i18n="g7-eyebrow">Prioridad en el empleo</div>
-  <p class="g-lead" data-i18n="g7-lead">Cuando escasea el trabajo, ¿quién debería tener prioridad? Compará países en el último dato disponible de cada uno, o seguí la evolución desde 1990.</p>
+  <p class="g-lead" data-i18n="g7-lead">Cuando escasea el trabajo, ¿quién debería tener prioridad? Compará países en cada ola de la encuesta, o seguí la evolución desde 1990.</p>
 
   <div class="g-tabs" id="g-tabs" role="tablist" aria-label="Ver como">
     <button data-gview="comp" class="active" data-i18n="g7-view-comp">Comparación</button>
@@ -159,7 +165,7 @@
   <div class="g-panel" id="g-panel-comp">
     <section class="chart-block" data-chart="14" data-editor-id="n5-prioridad-comp">
       <h2 class="chart-title" data-i18n="c14-title-neutral">Quién tiene prioridad cuando escasea el trabajo, país por país</h2>
-      <p class="chart-subtitle" data-i18n="c14-subtitle-origen">Porcentaje de acuerdo con que, cuando escasea el trabajo, los nativos deberían tener prioridad sobre los inmigrantes. Último dato disponible de cada país: el año difiere entre países.</p>
+      <p class="chart-subtitle" data-i18n="c14-subtitle-origen">Porcentaje de acuerdo con que, cuando escasea el trabajo, los nativos deberían tener prioridad sobre los inmigrantes. Ola 2017-2022 de la encuesta: dentro de la ola, cada país salió a campo en un año distinto.</p>
 
       <div class="m-controls">
         <div class="m-ctrl-group">
@@ -182,6 +188,11 @@
             <button data-ref="median" class="active" data-i18n="c14-ref-median">Mediana</button>
             <button data-ref="table" class="active" data-i18n="c14-ref-table">Tabla regional</button>
           </div>
+        </div>
+        <div class="m-ctrl-group" id="pc-wave-group">
+          <span class="m-ctrl-label" data-i18n="c14-wave-label">Ola de la encuesta</span>
+          <input type="range" id="pc-wave-slider" class="pc-wave-slider" aria-label="Ola de la encuesta">
+          <span class="pc-wave-display" id="pc-wave-display">2017-2022</span>
         </div>
       </div>
       <div class="m-controls" id="pc-country-picker">
@@ -287,12 +298,12 @@
 <script src="../lib/i18n.js?v=9"></script>
 <script src="./i18n-issue.js?v=10"></script>
 <script src="./i18n-prioridad.js?v=1"></script>
-<script src="./i18n-prioridad-comp.js?v=1"></script>
+<script src="./i18n-prioridad-comp.js?v=2"></script>
 <script src="../lib/utils.js?v=9"></script>
 <script src="../lib/country-names.js?v=8"></script>
-<script src="./data-prioridad.js?v=1"></script>
+<script src="./data-prioridad.js?v=2"></script>
 <script src="../lib/editor.js?v=8"></script>
-<script src="./prioridad-comp.js?v=1"></script>
+<script src="./prioridad-comp.js?v=2"></script>
 <script src="./prioridad.js?v=3"></script>
 <script src="../lib/png-export.js?v=10"></script>
 <script src="../lib/grapher.js?v=3"></script>

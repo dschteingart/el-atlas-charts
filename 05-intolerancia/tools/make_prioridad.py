@@ -19,7 +19,15 @@ Se usan siempre C002/C001.
 Estructura de salida (arrays compactos, constantes en MAYÚSCULAS):
   PRIO_META    = {inds, vars, years, yearRange}  (metadatos + años)
   PRIO_SERIES[ind][iso3] = [[year, pct, n], ...]  serie ordenada por año
+  PRIO_FOTO[ind][wave]   = [[iso3, pct, year, n], ...] ordenado ASC por pct
+  PRIO_WAVES   = [{w, label}, ...] olas presentes, de la más vieja a la más nueva
   PRIO_REGION[iso3] = "region"                    (unión de ambos indicadores)
+
+PRIO_FOTO es la FOTO POR OLA que consume la vista de comparación (chart 14): el
+mismo criterio que el resto del número (vecinos/barrio), no "el último dato de
+cada país". OJO: dentro de una misma ola los países salieron a campo en años
+distintos (ARG 2017, URY 2022), por eso cada fila lleva SU año — el chart lo
+muestra en el tooltip y lo aclara en las fuentes.
 """
 import pandas as pd, json, os
 
@@ -30,6 +38,11 @@ OUT = os.path.join(HERE, "..", "data-prioridad.js")
 VAR2IND = {"C002": "origen", "C001": "genero"}   # slug del toggle
 INDS = ["origen", "genero"]
 MIN_N = 200
+# Etiquetas de período por ola: MISMO criterio que tools/make_waves.py (WV_META
+# en data-waves.js). Una sola verdad para todo el número.
+WAVE_LABEL = {1: "1981-1984", 2: "1989-1993", 3: "1994-1998", 4: "1999-2004",
+              5: "2005-2010", 6: "2010-2014", 7: "2017-2022"}
+MIN_COUNTRIES = 8   # olas con muy pocos países no valen para un ranking
 
 largo = pd.read_csv(SRC)
 sub = largo[largo["var"].isin(VAR2IND)].copy()
@@ -42,6 +55,23 @@ for (ind, iso3), g in sub.groupby(["ind", "iso3"]):
     g = g.sort_values("year")
     pts = [[int(r.year), round(float(r.pct), 1), int(r.n)] for r in g.itertuples()]
     series[ind][iso3] = pts
+
+# --- FOTO por ola: PRIO_FOTO[ind][wave] = [[iso3, pct, year, n], ...] asc pct ---
+# En la fuente hay a lo sumo UNA fila por (var, iso3, ola): el pipeline de
+# ivs_discrim_largo.csv ya combinó EVS+WVS (columna 'studies'). No se promedia
+# nada acá ni se completa ningún país que no midió en esa ola.
+foto = {ind: {} for ind in INDS}
+waves_present = set()
+for (ind, wave), g in sub.groupby(["ind", "wave"]):
+    rows = [[r.iso3, round(float(r.pct), 1), int(r.year), int(r.n)] for r in g.itertuples()]
+    if len(rows) < MIN_COUNTRIES:
+        continue
+    rows.sort(key=lambda r: r[1])          # ASC por pct
+    foto[ind][int(wave)] = rows
+    waves_present.add(int(wave))
+
+waves_meta = [{"w": w, "label": WAVE_LABEL[w]} for w in sorted(waves_present)]
+foto = {ind: {str(w): foto[ind][w] for w in sorted(foto[ind])} for ind in INDS}
 
 # --- región por país (unión de ambos indicadores) ---
 region_map = dict(sub.drop_duplicates("iso3")[["iso3", "region"]].values.tolist())
@@ -60,12 +90,17 @@ meta = {
 series = {ind: {iso: series[ind][iso] for iso in sorted(series[ind])} for ind in INDS}
 
 out = [
-    "// El Atlas N°5 — Chart 7: \"Primero los de acá\" (prioridad a los nativos, 1990-2023).",
+    "// El Atlas N°5 — \"Primero los de acá\" (prioridad en el empleo, olas 2-7 del IVS).",
     "// GENERADO por tools/make_prioridad.py — no editar a mano.",
-    "// PRIO_SERIES[ind][iso3] = [[year, pct, n], ...]. ind: 'origen' (C002, nativos>inmigrantes)",
-    "// | 'genero' (C001, varones>mujeres). pct = %{1=Agree} sobre {1,2,3} (IVS EVS+WVS, pond. S017, n>=200).",
+    "// PRIO_SERIES[ind][iso3] = [[year, pct, n], ...]  (vista Evolución, chart 7)",
+    "// PRIO_FOTO[ind][wave]   = [[iso3, pct, year, n], ...] asc por pct (vista Comparación, chart 14)",
+    "// ind: 'origen' (C002, nativos>inmigrantes) | 'genero' (C001, varones>mujeres).",
+    "// pct = %{1=Agree} sobre {1,2,3} (IVS EVS+WVS, pond. S017, n>=200). Dentro de una",
+    "// misma ola el año difiere por país: cada fila lleva el suyo.",
     "const PRIO_META = " + json.dumps(meta, ensure_ascii=False) + ";",
+    "const PRIO_WAVES = " + json.dumps(waves_meta, ensure_ascii=False) + ";",
     "const PRIO_SERIES = " + json.dumps(series, ensure_ascii=False, separators=(",", ":")) + ";",
+    "const PRIO_FOTO = " + json.dumps(foto, ensure_ascii=False, separators=(",", ":")) + ";",
     "const PRIO_REGION = " + json.dumps(region_map, ensure_ascii=False, separators=(",", ":"), sort_keys=True) + ";",
 ]
 with open(OUT, "w", encoding="utf-8") as f:
@@ -77,6 +112,9 @@ cells_g = sum(len(v) for v in series["genero"].values())
 print(f"data-prioridad.js -> {os.path.getsize(OUT)/1024:.0f}KB")
 print(f"  origen(C002): {n_o} paises, {cells_o} celdas | genero(C001): {n_g} paises, {cells_g} celdas")
 print(f"  años: {years[0]}-{years[-1]}")
+print(f"  olas: {[m['w'] for m in waves_meta]} -> {[m['label'] for m in waves_meta]}")
+for ind in INDS:
+    print(f"  PRIO_FOTO[{ind}]: " + ", ".join(f"ola {w}={len(foto[ind][w])}" for w in foto[ind]))
 
 # ================== VERIFICACIÓN contra el brief ==================
 print("\n== VERIFICACIÓN ==")
@@ -125,5 +163,51 @@ ok &= (abs((bcm - arg2) - 22.0) < 0.6)
 print(f"conteos: origen paises={n_o} (esp 115), celdas={cells_o} (esp 390); "
       f"genero paises={n_g} (esp 117)")
 ok &= (n_o == 115 and cells_o == 390 and n_g == 117)
+
+# 6) PRIO_FOTO: consistencia con PRIO_SERIES (mismo universo de celdas) y con
+#    los valores esperados de la comparación (chart 14).
+cells_foto_o = sum(len(v) for v in foto["origen"].values())
+cells_foto_g = sum(len(v) for v in foto["genero"].values())
+print(f"PRIO_FOTO celdas: origen={cells_foto_o} (== {cells_o}), genero={cells_foto_g} (== {cells_g})")
+ok &= (cells_foto_o == cells_o and cells_foto_g == cells_g)
+
+def foto_get(ind, w, iso):
+    for r in foto[ind][str(w)]:
+        if r[0] == iso:
+            return r
+    return None
+
+for ind, w, iso, exp in [("origen", 7, "ARG", 63.5), ("origen", 7, "SWE", 11.5),
+                         ("origen", 2, "ARG", 60.3)]:
+    r = foto_get(ind, w, iso)
+    got = r[1] if r else None
+    print(f"PRIO_FOTO[{ind}][{w}] {iso} = {got} (esp {exp}), año={r[2] if r else None}"
+          f" -> {'OK' if got == exp else 'FALLA'}")
+    ok &= (got == exp)
+
+# SWE ola 7 tiene que estar entre los más bajos del mundo.
+w7 = foto["origen"]["7"]
+pos_swe = [i for i, r in enumerate(w7) if r[0] == "SWE"]
+print(f"SWE en 'origen' ola 7: puesto {pos_swe[0] + 1} de {len(w7)} de abajo hacia arriba "
+      f"(1 = el más bajo)")
+ok &= bool(pos_swe) and pos_swe[0] < 8
+
+# orden ASC por pct en TODAS las olas de ambos indicadores
+mono = all(all(rows[i][1] <= rows[i + 1][1] for i in range(len(rows) - 1))
+           for ind in INDS for rows in foto[ind].values())
+print(f"PRIO_FOTO ordenado ASC por pct en todas las olas: {mono}")
+ok &= mono
+
+# etiquetas de ola == las de data-waves.js (WV_META)
+waves_js = os.path.join(HERE, "..", "data-waves.js")
+if os.path.exists(waves_js):
+    import re
+    txt = open(waves_js, encoding="utf-8").read()
+    m = re.search(r"const WV_META = (\[.*?\]);", txt, re.S)
+    wv = {d["w"]: d["label"] for d in json.loads(m.group(1))}
+    same = all(wv.get(d["w"]) == d["label"] for d in waves_meta)
+    print(f"etiquetas de ola == WV_META de data-waves.js: {same} "
+          f"({ {d['w']: d['label'] for d in waves_meta} })")
+    ok &= same
 
 print("\nRESULTADO:", "TODO OK" if ok else "HAY DISCREPANCIAS")

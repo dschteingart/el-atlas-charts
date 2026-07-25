@@ -29,9 +29,11 @@
     'c16-ref-avg':        'Promedio regional',
     'c16-avg-lbl':        'Promedio regional',
     'c16-search-ph':      'Agregar…',
-    'c16-pick-hint':      'Los elegidos son las barras del gráfico.',
-    'c16-quick-all':      'Todos',
-    'c16-quick-none':     'Ninguno',
+    // Dos hints según la vista (mismo criterio que c1/c13/c14/c15): en «Mi
+    // selección» los chips SON las barras; en «Todos» se dibujan todas y la
+    // selección sólo viaja a la vista de Evolución.
+    'c16-pick-hint-sel':  'Los elegidos se muestran como barras.',
+    'c16-pick-hint-all':  'Se muestran todos; la selección viaja a la vista de Evolución.',
     'c16-axis-x':         '% que se describe como parte de un grupo discriminado',
 
     'c16-tt-pct':         'Se siente discriminado',
@@ -68,9 +70,8 @@
     'c16-ref-avg':        'Regional average',
     'c16-avg-lbl':        'Regional average',
     'c16-search-ph':      'Add…',
-    'c16-pick-hint':      'The ones you pick are the bars on the chart.',
-    'c16-quick-all':      'All',
-    'c16-quick-none':     'None',
+    'c16-pick-hint-sel':  'The ones you pick show as bars.',
+    'c16-pick-hint-all':  'All are shown; your selection carries over to the Trend view.',
     'c16-axis-x':         '% who describe themselves as part of a discriminated group',
 
     'c16-tt-pct':         'Feels discriminated against',

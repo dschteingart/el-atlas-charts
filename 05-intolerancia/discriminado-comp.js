@@ -17,10 +17,18 @@
 //     motivo — no hay regiones que contrastar. Con ella se fueron el
 //     hiddenRegions/activeRegion y el color por región: es UNA sola serie, así
 //     que va en un solo color (la terracota LatAm del Atlas).
-//   · el toggle "Mi selección / Todos los países": sin marimekko las dos
-//     opciones eran el mismo gráfico. En su lugar quedan los atajos
-//     "Todos / Ninguno", que editan la selección (los chips siguen siendo la
-//     única fuente de verdad de lo que se dibuja: WYSIWYG).
+//   · la sub-vista MARIMEKKO detrás del toggle "Mostrar": el toggle SÍ está
+//     (es la norma de los graficadores de comparación del número), pero acá
+//     "Todos" son las 18 barras y "Mi selección" son sólo las elegidas — no
+//     hay marimekko de por medio.
+//
+// UN SOLO CONTROL DE SELECCIÓN (fix, Daniel 25/7): esta vista llegó a tener el
+// toggle de VISTA (#dk-view) y ADEMÁS unos atajos "Todos / Ninguno" que editaban
+// la selección. Con la vista en "Todos", "Ninguno" vaciaba los chips y el
+// gráfico seguía mostrando las 18 barras: parecía roto. Los atajos se
+// eliminaron. Queda el conjunto canónico de vecinos/barrio/prioridad/migrantes:
+// buscador + chips con ✕ (+ el botón "Limpiar" universal que lib/utils.js
+// engancha solo a los contenedores *-selected-chips).
 //
 // QUÉ SE CONSERVÓ: orden por valor (asc, la barra más larga abajo), referencia
 // punteada (acá el promedio regional en vez de la mediana mundial), buscador +
@@ -212,8 +220,15 @@ function dk_updateSubtitle() {
 function drawDiscriminadoComp() {
   dk_updateSubtitle();
   dk_drawBars();
+  // El hint del picker cambia según la vista (qué "hacen" los chips), igual que
+  // en ranking.js / barrio-comp.js. En 'sel' los chips SON las barras; en 'all'
+  // se dibujan todas, así que lo único que hace la selección es viajar a la
+  // vista de Evolución — decirlo evita que "Todos/Ninguno" parezca roto.
   const hint = document.getElementById('dk-picker-hint');
-  if (hint) hint.textContent = (typeof t === 'function') ? t('c16-pick-hint') : '';
+  if (hint) {
+    const k = (state[16].view === 'all') ? 'c16-pick-hint-all' : 'c16-pick-hint-sel';
+    hint.textContent = (typeof t === 'function') ? t(k) : '';
+  }
   // Títulos NEUTRALES por default (norma del N°5).
   if (typeof atlasSetHeading === 'function') {
     atlasSetHeading('16', false, { title: 'c16-title', titleNeutral: 'c16-title-neutral' });
@@ -479,7 +494,9 @@ function dk_hideTooltip() {
 }
 
 //==================================================================
-//  Selección: chips WYSIWYG + buscador + atajos
+//  Selección: buscador + chips WYSIWYG (con ✕) — sin atajos propios.
+//  El botón "Limpiar" lo agrega solo lib/utils.js (atlasWireClearButtons
+//  engancha todo contenedor con id *-selected-chips y clickea las ✕).
 //==================================================================
 function dk_normalize(s) {
   return (s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
@@ -608,24 +625,6 @@ function setupDiscriminadoCompView() {
       });
       drawDiscriminadoComp();
     });
-  });
-}
-
-// Atajos "Todos / Ninguno": editan la SELECCIÓN (= los chips), que es lo que
-// viaja a la otra vista. No son un modo de vista aparte (eso es #dk-view).
-function setupDiscriminadoCompQuick() {
-  const all = document.getElementById('dk-quick-all');
-  const none = document.getElementById('dk-quick-none');
-  if (all) all.addEventListener('click', () => {
-    const univ = state[16].univ;
-    state[16].sel[univ] = dk_foto(univ, state[16].year).map(r => r[0]);
-    renderDiscriminadoCompChips();
-    drawDiscriminadoComp();
-  });
-  if (none) none.addEventListener('click', () => {
-    state[16].sel[state[16].univ] = [];
-    renderDiscriminadoCompChips();
-    drawDiscriminadoComp();
   });
 }
 
@@ -825,7 +824,6 @@ function initDiscriminadoComp() {
   setupDiscriminadoCompYear();
   setupDiscriminadoCompRefs();
   setupDiscriminadoCompSearch();
-  setupDiscriminadoCompQuick();
   setupDiscriminadoCompCSV();
   renderDiscriminadoCompChips();
   drawDiscriminadoComp();
