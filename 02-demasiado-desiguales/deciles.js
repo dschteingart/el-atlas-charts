@@ -330,6 +330,18 @@ function drawDeciles() {
   d_applyEditorTexts(aeCfg);
 }
 
+// ¿Estado "de fábrica"? = año default + exactamente los países default (sin
+// importar el orden). Si sí → el título/subtítulo muestran el insight editorial;
+// si el usuario cambió el año o la selección → pasan a neutral.
+function d_pristine() {
+  const s = state[3]; if (!s) return true;
+  if (String(s.year) !== String(DATA_DECILES.latest_year || 2025)) return false;
+  const sel = s.selectedCountries || [];
+  if (sel.length !== D_DEFAULT_COUNTRIES.length) return false;
+  const def = new Set(D_DEFAULT_COUNTRIES);
+  return sel.every(c => def.has(c));
+}
+
 // Caption: si el editor lo dejó vacío (trim) → restauramos el default del
 // i18n key c3-sources. Esto permite que el usuario "borre" un caption
 // custom y vuelva al automático sin tener que limpiar localStorage.
@@ -342,14 +354,20 @@ function d_applyEditorTexts(aeCfg) {
   const customTitle    = (t.title    || '').trim();
   const customSubtitle = (t.subtitle || '').trim();
   const customCaption  = (t.caption  || '').trim();
-  if (customTitle) {
-    const el = block.querySelector('.chart-title');
-    if (el) el.textContent = customTitle;
-  }
-  if (customSubtitle) {
-    const el = block.querySelector('.chart-subtitle');
-    if (el) el.textContent = customSubtitle;
-  }
+  // Título/subtítulo: el custom del editor manda; si no, INSIGHT en el estado de
+  // fábrica (año + países default) y NEUTRAL cuando el usuario cambió algo (año o
+  // selección). Se re-evalúa en cada drawDeciles: tocar el slider/agregar-quitar
+  // país → neutral; volver exactamente al default → vuelve el insight. (Patrón
+  // "insight por default, neutral al customizar".)
+  const pristine = d_pristine();
+  const titleEl = block.querySelector('.chart-title');
+  if (titleEl) titleEl.textContent = customTitle
+    || (I18N[docLang] && I18N[docLang][pristine ? 'c3-title' : 'c3-title-neutral'])
+    || titleEl.textContent;
+  const subEl = block.querySelector('.chart-subtitle');
+  if (subEl) subEl.textContent = customSubtitle
+    || (I18N[docLang] && I18N[docLang][pristine ? 'c3-subtitle' : 'c3-subtitle-neutral'])
+    || subEl.textContent;
   const captionEls = document.querySelectorAll(
     '.footer p[data-i18n="c3-sources"], .footer details[class*="mobile-collapse"] p[data-i18n="c3-sources"]'
   );

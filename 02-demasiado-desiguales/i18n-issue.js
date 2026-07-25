@@ -107,6 +107,8 @@ const ISSUE_I18N = {
     // Chart 3 — Deciles
     'c3-title':                  'Las élites cerca, los pobres lejos',
     'c3-subtitle':               'El ingreso de los hogares ricos de América Latina se acerca al de Europa. El de los hogares pobres, no.',
+    'c3-title-neutral':          'Distribución del ingreso por decil',
+    'c3-subtitle-neutral':       'Ingreso per cápita familiar de cada decil de la población, por país.',
     'c3-toggle-y-label':         'Eje Y',
     'c3-toggle-income':          'Ingreso PPP/día',
     'c3-toggle-percentile':      'Percentil mundial',
@@ -273,6 +275,8 @@ const ISSUE_I18N = {
     // Chart 3
     'c3-title':                  'Elites close, poor far',
     'c3-subtitle':               'Rich households in Latin America are close to European ones in income. Poor households are not.',
+    'c3-title-neutral':          'Income distribution by decile',
+    'c3-subtitle-neutral':       'Household income per capita of each population decile, by country.',
     'c3-toggle-y-label':         'Y axis',
     'c3-toggle-income':          'Income PPP/day',
     'c3-toggle-percentile':      'World percentile',
