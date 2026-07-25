@@ -9,19 +9,19 @@
 <meta property="og:locale" content="es_AR">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/chart-quien.html">
 <meta property="og:title" content="¿Quién es el más discriminado? — El Atlas · N°5">
-<meta property="og:description" content="En 14 de 18 países de América Latina el grupo más discriminado no es racial: son los pobres. Latinobarómetro 2020, respuesta única.">
+<meta property="og:description" content="En 14 de 18 países de América Latina el grupo más discriminado no es racial: son los pobres. Ranking por grupo y perfil por país (Latinobarómetro 2020, respuesta única).">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/thumbs/chart-quien.png">
 <meta property="og:image:alt" content="¿Quién es el más discriminado en cada país de América Latina?">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="¿Quién es el más discriminado? — El Atlas · N°5">
-<meta name="twitter:description" content="En 14 de 18 países de América Latina el grupo más discriminado no es racial: son los pobres. Latinobarómetro 2020, respuesta única.">
+<meta name="twitter:description" content="El mismo dato como ranking por grupo y como perfil por país. Latinobarómetro 2020, respuesta única.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/thumbs/chart-quien.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../lib/style.css?v=4">
-<link rel="stylesheet" href="../lib/editor.css?v=1">
+<link rel="stylesheet" href="../lib/style.css?v=8">
+<link rel="stylesheet" href="../lib/editor.css?v=8">
 <style>
   .wrap-wide { max-width: 1100px; padding: 6px 20px 10px; }
   .wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
@@ -33,6 +33,19 @@
   .footer p { margin: 2px 0; }
   .footer .download { margin-right: 8px; margin-bottom: 8px; }
 
+  /* ===== encabezado del graficador ===== */
+  .g-eyebrow { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin: 2px 0 3px; }
+  .g-lead { font-family: var(--serif); font-size: 14px; line-height: 1.4; color: var(--ink-soft); margin: 0 0 8px; max-width: 720px; }
+
+  /* ===== barra de pestañas (vista) ===== */
+  .g-tabs { display: inline-flex; gap: 2px; border: 1px solid var(--rule); border-radius: 10px; padding: 3px; background: var(--bg-soft); margin: 2px 0 10px; }
+  .g-tabs button { font-family: var(--sans); font-size: 13px; font-weight: 600; padding: 7px 16px; border: none; border-radius: 7px; background: transparent; color: var(--ink-soft); cursor: pointer; transition: background 0.14s ease, color 0.14s ease; white-space: nowrap; }
+  .g-tabs button:hover { color: var(--ink); }
+  .g-tabs button.active { background: var(--accent); color: #fff; }
+  .g-panel { display: none; }
+  @media (max-width: 768px) { .g-tabs { display: flex; width: 100%; } .g-tabs button { flex: 1; padding: 8px 4px; font-size: 12px; } }
+
+  /* ===== controles compartidos ===== */
   .m-controls { display: flex; align-items: center; gap: 14px; margin: 4px 0 6px; flex-wrap: wrap; }
   .m-ctrl-group { display: inline-flex; align-items: center; gap: 8px; }
   .m-ctrl-label { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
@@ -48,7 +61,7 @@
   #tooltip12 .tt-sub { font-size: 10.5px; opacity: 0.78; margin: 2px 0 4px; line-height: 1.4; }
   #tooltip12 .tt-sub em { font-style: normal; color: #D9D2C2; }
 
-  /* ===== Panel de detalle: las 42 categorías crudas (vista perfil) ===== */
+  /* ===== Panel de detalle: las 42 categorías crudas (vista Perfil) ===== */
   #qn-detail-wrap { margin-top: 8px; }
   .qn-detail { border: 1px solid var(--rule); border-radius: 8px; background: var(--bg-soft); padding: 2px 12px; max-width: 760px; }
   .qn-detail > summary { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--accent); cursor: pointer; padding: 8px 0; list-style: none; }
@@ -95,43 +108,56 @@
     </div>
   </header>
 
+  <div class="g-eyebrow" data-i18n="g12-eyebrow">Quién es el más discriminado</div>
+  <p class="g-lead" data-i18n="g12-lead">A qué grupo señala cada sociedad como el más discriminado de su país. Mirá el mismo dato de dos maneras: el ranking de los 18 países en un grupo, o el perfil completo de un país.</p>
+
+  <div class="g-tabs" id="g-tabs" role="tablist" aria-label="Ver como">
+    <button data-gview="ranking" class="active" data-i18n="g12-view-ranking">Ranking</button>
+    <button data-gview="perfil" data-i18n="g12-view-perfil">Perfil</button>
+  </div>
+
+  <!-- Las dos vistas comparten el MISMO motor (chart 12) y el MISMO <svg>: los
+       paneles del shell contienen sólo los controles propios de cada vista, y
+       el gráfico + el footer viven fuera (no se duplica ni el SVG ni el CSV). -->
   <section class="chart-block" data-chart="12" data-editor-id="n5-quien">
     <h2 class="chart-title" data-i18n="c12-title-neutral">El grupo más discriminado en cada país de América Latina</h2>
     <p class="chart-subtitle" data-i18n="c12-subtitle">Porcentaje que nombra a Raza o etnia como el grupo más discriminado del país. Cada persona eligió una sola respuesta. Latinobarómetro 2020, 18 países.</p>
 
-    <div class="m-controls">
-      <div class="m-ctrl-group">
-        <span class="m-ctrl-label" data-i18n="c12-view-label">Mostrar</span>
-        <div class="toggle" id="qn-view">
-          <button data-view="ranking" class="active" data-i18n="c12-view-rank">Ranking por grupo</button>
-          <button data-view="perfil" data-i18n="c12-view-perfil">Perfil por país</button>
+    <!-- ============ Panel: RANKING (controles) ============ -->
+    <div class="g-panel" id="g-panel-ranking">
+      <div class="m-controls">
+        <div class="m-ctrl-group" id="qn-cat-group">
+          <span class="m-ctrl-label" data-i18n="c12-cat-label">Grupo señalado</span>
+          <select id="qn-cat-select" class="m-select" aria-label="Grupo">
+            <option value="pobres" data-i18n="qcat-pobres">Pobres</option>
+            <option value="raza_etnia" selected data-i18n="qcat-raza_etnia">Raza o etnia</option>
+            <option value="migrantes" data-i18n="qcat-migrantes">Migrantes</option>
+            <option value="lgbt" data-i18n="qcat-lgbt">Personas LGBT</option>
+            <option value="edad" data-i18n="qcat-edad">Edad (viejos/jóvenes)</option>
+            <option value="mujeres" data-i18n="qcat-mujeres">Mujeres</option>
+            <option value="ideologia" data-i18n="qcat-ideologia">Ideología política</option>
+            <option value="conducta" data-i18n="qcat-conducta">Conducta o estigma</option>
+            <option value="salud_discap" data-i18n="qcat-salud_discap">Salud o discapacidad</option>
+            <option value="religion_origen" data-i18n="qcat-religion_origen">Religión u origen</option>
+            <option value="ninguna" data-i18n="qcat-ninguna">Ninguno</option>
+            <option value="otros" data-i18n="qcat-otros">Otros</option>
+          </select>
+        </div>
+        <div class="m-ctrl-group" id="qn-refs-group">
+          <span class="m-ctrl-label" data-i18n="c12-refs-label">Referencias</span>
+          <div class="toggle" id="qn-refs">
+            <button data-ref="median" class="active" data-i18n="c12-ref-median">Mediana regional</button>
+          </div>
         </div>
       </div>
-      <div class="m-ctrl-group" id="qn-cat-group">
-        <span class="m-ctrl-label" data-i18n="c12-cat-label">Grupo señalado</span>
-        <select id="qn-cat-select" class="m-select" aria-label="Grupo">
-          <option value="pobres" data-i18n="qcat-pobres">Pobres</option>
-          <option value="raza_etnia" selected data-i18n="qcat-raza_etnia">Raza o etnia</option>
-          <option value="migrantes" data-i18n="qcat-migrantes">Migrantes</option>
-          <option value="lgbt" data-i18n="qcat-lgbt">Personas LGBT</option>
-          <option value="edad" data-i18n="qcat-edad">Edad (viejos/jóvenes)</option>
-          <option value="mujeres" data-i18n="qcat-mujeres">Mujeres</option>
-          <option value="ideologia" data-i18n="qcat-ideologia">Ideología política</option>
-          <option value="conducta" data-i18n="qcat-conducta">Conducta o estigma</option>
-          <option value="salud_discap" data-i18n="qcat-salud_discap">Salud o discapacidad</option>
-          <option value="religion_origen" data-i18n="qcat-religion_origen">Religión u origen</option>
-          <option value="ninguna" data-i18n="qcat-ninguna">Ninguno</option>
-          <option value="otros" data-i18n="qcat-otros">Otros</option>
-        </select>
-      </div>
-      <div class="m-ctrl-group" id="qn-country-group" style="display:none;">
-        <span class="m-ctrl-label" data-i18n="c12-country-label">País</span>
-        <select id="qn-country-select" class="m-select" aria-label="País"></select>
-      </div>
-      <div class="m-ctrl-group" id="qn-refs-group">
-        <span class="m-ctrl-label" data-i18n="c12-refs-label">Referencias</span>
-        <div class="toggle" id="qn-refs">
-          <button data-ref="median" class="active" data-i18n="c12-ref-median">Mediana regional</button>
+    </div>
+
+    <!-- ============ Panel: PERFIL (controles) ============ -->
+    <div class="g-panel" id="g-panel-perfil">
+      <div class="m-controls">
+        <div class="m-ctrl-group" id="qn-country-group">
+          <span class="m-ctrl-label" data-i18n="c12-country-label">País</span>
+          <select id="qn-country-select" class="m-select" aria-label="País"></select>
         </div>
       </div>
     </div>
@@ -141,6 +167,7 @@
       <div class="tooltip" id="tooltip12"></div>
     </div>
 
+    <!-- Sólo en Perfil (lo muestra/oculta drawQuien según state[12].view). -->
     <div id="qn-detail-wrap" style="display:none;">
       <details class="qn-detail">
         <summary data-i18n="c12-detail-title">El detalle: las 42 categorías originales del Latinobarómetro</summary>
@@ -167,24 +194,33 @@
 
 </div>
 
-<script src="../lib/regions.js?v=2"></script>
-<script src="../lib/i18n.js?v=3"></script>
+<script src="../lib/regions.js?v=8"></script>
+<script src="../lib/i18n.js?v=9"></script>
 <script src="./i18n-issue.js?v=10"></script>
-<script src="./i18n-quien.js?v=1"></script>
+<script src="./i18n-quien.js?v=2"></script>
 <script src="../lib/utils.js?v=9"></script>
-<script src="../lib/country-names.js?v=2"></script>
+<script src="../lib/country-names.js?v=8"></script>
 <script src="./data-quien.js?v=1"></script>
-<script src="../lib/editor.js?v=1"></script>
-<script src="./quien.js?v=1"></script>
-<script src="../lib/png-export.js?v=9"></script>
+<script src="../lib/editor.js?v=8"></script>
+<script src="./quien.js?v=2"></script>
+<script src="../lib/png-export.js?v=10"></script>
+<script src="../lib/grapher.js?v=3"></script>
 <script>
   window.__N5_V = '5';
-  initQuien();
-  applyI18n();
-  if (window.__atlasRedraw) window.__atlasRedraw();
-  setupLangToggle(() => {
-    setupQuienCountry();
-    drawQuien();
+  initGrapher({
+    defaultView: 'ranking',
+    // ARG primero → al pasar a Perfil, el shell enfoca Argentina por default.
+    defaultSelection: ['ARG'],
+    views: [
+      // Las dos vistas son el mismo motor (state[12]) sobre el mismo <svg>:
+      // sólo cambian de panel de controles y de renderer.
+      { id: 'ranking', panelId: 'g-panel-ranking', chartN: 12, catSel: 'qn-cat-select', selKind: 'none',
+        init: initQuien,
+        redrawFull: function () { state[12].view = 'ranking'; drawQuien(); } },
+      { id: 'perfil', panelId: 'g-panel-perfil', chartN: 12, catSel: null, selKind: 'single',
+        init: initQuien,
+        redrawFull: function () { state[12].view = 'perfil'; setupQuienCountry(); drawQuien(); } },
+    ],
   });
 </script>
 <div id="chart-nav"></div>

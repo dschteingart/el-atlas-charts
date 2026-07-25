@@ -66,11 +66,11 @@
         { "archivo": "chart-vecinos.html", "tipo": "graficador (ranking/marimekko + mapa + líneas + perfil)", "tema": "batería de vecinos IVS: el mismo dato en 4 vistas conmutables, estado en la URL (absorbe ranking, evolución, mapa y perfil)", "motor": "lib/grapher.js" },
         { "archivo": "chart-declarado-implicito.html", "tipo": "dispersión", "tema": "prejuicio declarado (IVS) vs sesgo implícito (Project Implicit)" },
         { "archivo": "chart-latinobarometro.html", "tipo": "barras", "tema": "intolerancia declarada en América Latina (Latinobarómetro 2024)" },
-        { "archivo": "chart-prioridad.html", "tipo": "líneas", "tema": "prioridad a los nativos si escasea el trabajo, 33 años, con espejo de género (IVS C002/C001)" },
+        { "archivo": "chart-prioridad.html", "tipo": "graficador (comparación ranking/marimekko + líneas)", "tema": "prioridad a los nativos si escasea el trabajo, 33 años y 115 países, con espejo de género (IVS C002/C001); la comparación usa el último dato de cada país, con su año", "motor": "lib/grapher.js" },
         { "archivo": "chart-barrio.html", "tipo": "graficador (comparación ranking/marimekko + perfil)", "tema": "qué problemas ve cada sociedad en su barrio, incluido el racismo presenciado (IVS H002); 64 países comparables por ítem", "motor": "lib/grapher.js" },
-        { "archivo": "chart-migrantes.html", "tipo": "barras", "tema": "perfil de hostilidad hacia el inmigrante, frase por frase (Latinobarómetro 2020)" },
-        { "archivo": "chart-discriminado.html", "tipo": "líneas", "tema": "sentirse parte de un grupo discriminado, 2009-2020 (Latinobarómetro)" },
-        { "archivo": "chart-quien.html", "tipo": "barras", "tema": "el grupo más discriminado según cada país: pobres vs raza (Latinobarómetro 2020)" }
+        { "archivo": "chart-migrantes.html", "tipo": "graficador (comparación ranking/marimekko + perfil)", "tema": "hostilidad hacia el inmigrante en 14 frases y 18 países (Latinobarómetro 2020); comparación por frase y perfil centrado por país", "motor": "lib/grapher.js" },
+        { "archivo": "chart-discriminado.html", "tipo": "graficador (comparación en barras + líneas)", "tema": "sentirse parte de un grupo discriminado, 5 rondas 2009-2020 y 18 países, por país o por grupo étnico (Latinobarómetro)", "motor": "lib/grapher.js" },
+        { "archivo": "chart-quien.html", "tipo": "graficador (ranking + perfil)", "tema": "el grupo más discriminado según cada país: pobres vs raza, 12 macro-categorías (Latinobarómetro 2020)", "motor": "lib/grapher.js" }
       ]
     }
   ]

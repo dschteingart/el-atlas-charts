@@ -6,12 +6,16 @@
 // discriminado del país). 18 países de América Latina, % ponderado (wt) sobre
 // respuestas válidas. Recodeo NUESTRO de 42 categorías originales a 12 macro.
 //
-// Dos vistas (clones de motores ya hechos del N°5):
+// Dos vistas (clones de motores ya hechos del N°5), hoy conmutadas por las
+// PESTAÑAS del shell lib/grapher.js (antes: un toggle propio #qn-view):
 //   - 'ranking' : barras horizontales de los 18 países para UNA macrocategoría
 //                 (clon de la vista 'sel' de ranking.js). Selector de categoría,
-//                 orden descendente, mediana regional con toggle.
+//                 mediana regional con toggle.
 //   - 'perfil'  : las 12 macrocategorías de un país (clon de perfil.js), con la
 //                 mediana regional de cada una y el detalle de las 42 crudas.
+// Ambas comparten el MISMO <svg id="chart12"> y el MISMO state[12]: el shell
+// sólo muestra/oculta el panel de controles de cada vista y setea state[12].view
+// antes de llamar a drawQuien() (ver el initGrapher de chart-quien.html).
 //
 // Inputs (data-quien.js): QUIEN_CATS, QUIEN_REGION, QUIEN_FOTO[cat]=[[iso,pct,
 //   2020,study,nBase]], QUIEN_RAW[iso]=[[cod,pct,n]], QUIEN_META.
@@ -157,6 +161,14 @@ function qn_updateSubtitle() {
 //==================================================================
 function drawQuien() {
   const s = state[12];
+  // El shell puede inyectar la categoría desde la URL (?cat=): si no existe,
+  // volvemos al default en vez de dibujar un chart vacío.
+  if (!QUIEN_FOTO[s.cat]) {
+    s.cat = QN_DEFAULT_CAT;
+    const cs = document.getElementById('qn-cat-select');
+    if (cs) cs.value = s.cat;
+  }
+  qn_hideTooltip();   // al cambiar de pestaña/control el SVG se rehace: no dejar el tooltip colgado
   qn_updateSubtitle();
 
   // Visibilidad de controles según la vista.
@@ -626,20 +638,9 @@ function qn_hideTooltip() { const tt = document.getElementById('tooltip12'); if 
 //==================================================================
 //  Controles
 //==================================================================
-function setupQuienView() {
-  document.querySelectorAll('#qn-view button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const v = btn.dataset.view;
-      if (v !== 'ranking' && v !== 'perfil') return;
-      if (state[12].view === v) return;
-      state[12].view = v;
-      document.querySelectorAll('#qn-view button')
-        .forEach(b => b.classList.toggle('active', b.dataset.view === v));
-      qn_hideTooltip();
-      drawQuien();
-    });
-  });
-}
+// La conmutación ranking↔perfil la hacen las pestañas del shell (grapher.js):
+// setean state[12].view en su redrawFull y llaman a drawQuien(). Acá sólo queda
+// el cableado de los controles propios de cada vista.
 
 function setupQuienCat() {
   const sel = document.getElementById('qn-cat-select');
@@ -651,6 +652,10 @@ function setupQuienCat() {
   });
 }
 
+// Rellena el <select> de país (se re-llama al cambiar de idioma y al entrar a
+// la vista Perfil, para reflejar el país que migró desde otra vista). El
+// listener se cablea UNA sola vez: si no, cada recarga de opciones apilaría
+// otro 'change' y drawQuien() correría de más.
 function setupQuienCountry() {
   const sel = document.getElementById('qn-country-select');
   if (!sel) return;
@@ -664,8 +669,12 @@ function setupQuienCountry() {
     o.value = iso; o.textContent = qn_name(iso);
     sel.appendChild(o);
   });
+  if (isos.indexOf(state[12].iso) === -1 && isos.length) state[12].iso = isos[0];
   sel.value = state[12].iso;
-  sel.addEventListener('change', () => { state[12].iso = sel.value; drawQuien(); });
+  if (!setupQuienCountry._wired) {
+    setupQuienCountry._wired = true;
+    sel.addEventListener('change', () => { state[12].iso = sel.value; qn_hideTooltip(); drawQuien(); });
+  }
 }
 
 function setupQuienMedian() {
@@ -723,6 +732,10 @@ function setupQuienCSV() {
 //==================================================================
 //  Init
 //==================================================================
+// initQuien() es el init de las DOS vistas del shell (grapher.js lleva su flag
+// 'inited' por vista, así que lo llama una vez por pestaña): los hooks de PNG se
+// resetean siempre —el shell los captura justo después de cada init()— pero el
+// cableado de controles corre una sola vez.
 function initQuien() {
   if (!state[12]) {
     state[12] = {
@@ -732,27 +745,28 @@ function initQuien() {
       showMedian: true
     };
   }
-  // Sincronizar el <select> de categoría con el default.
-  const catSel = document.getElementById('qn-cat-select');
-  if (catSel) catSel.value = state[12].cat;
 
-  setupQuienView();
-  setupQuienCat();
-  setupQuienCountry();
-  setupQuienMedian();
-  setupQuienCSV();
-  drawQuien();
-
+  // ---- Hooks de PNG (los captura el shell tras cada init) ----
   window.__atlasSupportsFormats = true;
   window.__atlasRedraw = drawQuien;
-  if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
-  if (!initQuien._wired) {
-    initQuien._wired = true;
-    window.addEventListener('atlas-editor-change', () => drawQuien());
-  }
   // Nota corta para el PNG.
   window.onBeforePngExportGetSourceText = function (chartId) {
     if (chartId !== '12') return null;
     return (typeof t === 'function') ? t('c12-sources-png') : null;
   };
+
+  if (initQuien._wired) return;
+  initQuien._wired = true;
+
+  // Sincronizar el <select> de categoría con el default.
+  const catSel = document.getElementById('qn-cat-select');
+  if (catSel) catSel.value = state[12].cat;
+
+  setupQuienCat();
+  setupQuienCountry();
+  setupQuienMedian();
+  setupQuienCSV();
+  if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
+  window.addEventListener('atlas-editor-change', () => drawQuien());
+  drawQuien();
 }
