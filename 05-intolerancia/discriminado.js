@@ -72,21 +72,6 @@ function dc_color(univ, key) {
   return DC_PALETTE[m[key]];
 }
 
-// valor interpolado de una serie en un año (null si el año cae fuera del rango
-// con datos de esa serie). Para el crosshair.
-function dc_valueAt(pts, year) {
-  if (!pts.length) return null;
-  if (year <= pts[0][0]) return year === pts[0][0] ? pts[0][1] : null;
-  if (year >= pts[pts.length - 1][0]) return year === pts[pts.length - 1][0] ? pts[pts.length - 1][1] : null;
-  for (let i = 1; i < pts.length; i++) {
-    if (year <= pts[i][0]) {
-      const [x0, y0] = pts[i - 1], [x1, y1] = pts[i];
-      return y0 + (y1 - y0) * (year - x0) / (x1 - x0);
-    }
-  }
-  return null;
-}
-
 function dc_updateSubtitle() {
   const el = document.querySelector('.chart-subtitle');
   if (!el) return;
@@ -304,10 +289,14 @@ function dc_emph(key) {
   });
 }
 
-// Crosshair vertical + tooltip con valores interpolados al año bajo el cursor.
+// Crosshair vertical + tooltip. NO interpola: el crosshair snapea al año de ola
+// más cercano y cada serie (incluida la referencia del promedio regional) aporta
+// su valor MEDIDO. Ver atlasLineHoverRows en lib/utils.js.
 function dc_setupHover(svg, ctx) {
   const { W, MARGIN, plotH, y0, y1, xScale, yScale, series, univ } = ctx;
   const tooltip = document.getElementById('tooltip11');
+  // años con encuesta de las series VISIBLES (se recalcula en cada redibujo)
+  const snapYears = atlasSnapYears(series);
   const hoverG = dc_ns('g'); hoverG.setAttribute('display', 'none'); svg.appendChild(hoverG);
   const vline = dc_ns('line'); vline.setAttribute('stroke', '#9a9488'); vline.setAttribute('stroke-width', 1);
   vline.setAttribute('stroke-dasharray', '3 3'); vline.setAttribute('y1', MARGIN.top); vline.setAttribute('y2', MARGIN.top + plotH);
@@ -315,29 +304,40 @@ function dc_setupHover(svg, ctx) {
   const cap = dc_ns('rect'); cap.setAttribute('x', MARGIN.left); cap.setAttribute('y', MARGIN.top);
   cap.setAttribute('width', W - MARGIN.left - MARGIN.right); cap.setAttribute('height', plotH);
   cap.setAttribute('fill', 'transparent'); svg.insertBefore(cap, svg.firstChild);
-  function update(year) {
-    if (year == null) { hoverG.setAttribute('display', 'none'); if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; } return; }
+  // el crosshair salta de ola en ola: si el año snapeado no cambió no hay nada
+  // que redibujar (menos escrituras al DOM por mousemove)
+  let lastYear = null;
+  const hide = () => { lastYear = null; hoverG.setAttribute('display', 'none'); if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; } };
+  function update(rawYear) {
+    if (rawYear == null) { hide(); return; }
+    const hit = atlasLineHoverRows(series, rawYear, { snapYears: snapYears });
+    if (hit.year == null || !hit.rows.length) { hide(); return; }
+    const year = hit.year;
+    // (el tap-away genérico de utils.js puede ocultar el tooltip sin que cambie
+    //  el año, así que además exigimos que siga visible)
+    if (year === lastYear && hoverG.getAttribute('display') !== 'none' && (!tooltip || tooltip.style.display === 'block')) return;
+    lastYear = year;
     hoverG.setAttribute('display', ''); while (hoverG.children.length > 1) hoverG.removeChild(hoverG.lastChild);
-    const xAt = xScale(year); vline.setAttribute('x1', xAt); vline.setAttribute('x2', xAt);
-    const rows = [];
-    series.forEach(s => {
-      const v = dc_valueAt(s.pts, year); if (v == null) return;
-      const c = dc_ns('circle'); c.setAttribute('cx', xAt); c.setAttribute('cy', yScale(v)); c.setAttribute('r', 4);
-      c.setAttribute('fill', s.color); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', 1.5); hoverG.appendChild(c);
-      rows.push({ label: dc_name(univ, s.key), color: s.color, v, isRef: !!s.isRef });
+    vline.setAttribute('x1', xScale(year)); vline.setAttribute('x2', xScale(year));
+    const rows = hit.rows.slice().sort((a, b) => b.value - a.value);
+    rows.forEach(r => {
+      // el círculo va en la x del AÑO REAL del dato, no sobre la vertical
+      const c = dc_ns('circle'); c.setAttribute('cx', xScale(r.year)); c.setAttribute('cy', yScale(r.value)); c.setAttribute('r', 4);
+      c.setAttribute('fill', r.color); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', 1.5);
+      if (!r.exact) c.setAttribute('opacity', 0.85);
+      hoverG.appendChild(c);
+      r.label = dc_name(univ, r.key); r.italic = !!r.series.isRef;
     });
-    if (tooltip && rows.length) {
-      rows.sort((a, b) => b.v - a.v);
-      let html = `<div style="font-weight:600;margin-bottom:4px;">${year}</div>`;
-      rows.forEach(r => { html += `<div style="display:flex;align-items:center;gap:6px;line-height:1.5;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${r.color};"></span><span style="flex:1;${r.isRef ? 'font-style:italic;' : ''}">${r.label}</span><strong style="font-variant-numeric:tabular-nums;">${(typeof fmt === 'function') ? fmt(r.v, 1) : r.v.toFixed(1)}%</strong></div>`; });
-      tooltip.innerHTML = html; tooltip.style.display = 'block'; tooltip.style.opacity = '1';
-    } else if (tooltip) { tooltip.style.opacity = '0'; tooltip.style.display = 'none'; }
+    if (tooltip) {
+      tooltip.innerHTML = atlasLineTooltipHTML(year, rows, { dec: 1 });
+      tooltip.style.display = 'block'; tooltip.style.opacity = '1';
+    }
   }
   const moveH = (ev) => {
     const rc = svg.getBoundingClientRect(); const sc = rc.width / W; const lx = ((typeof evClientX === 'function' ? evClientX(ev) : ev.clientX) - rc.left) / sc;
     if (lx < MARGIN.left || lx > W - MARGIN.right) { update(null); return; }
-    const yr = Math.round(y0 + (lx - MARGIN.left) / (W - MARGIN.left - MARGIN.right) * (y1 - y0));
-    update(Math.max(y0, Math.min(y1, yr)));
+    const raw = y0 + (lx - MARGIN.left) / (W - MARGIN.left - MARGIN.right) * (y1 - y0);
+    update(Math.max(y0, Math.min(y1, raw)));
     if (tooltip) { const _x = (typeof evClientX === 'function' ? evClientX(ev) : ev.clientX) - rc.left, _w = tooltip.offsetWidth || 170;
       tooltip.style.left = ((_x + 14 + _w > rc.width || _x > rc.width * 0.72) ? Math.max(2, _x - _w - 14) : (_x + 14)) + 'px';
       tooltip.style.top = ((typeof evClientY === 'function' ? evClientY(ev) : ev.clientY) - rc.top + 14) + 'px'; }

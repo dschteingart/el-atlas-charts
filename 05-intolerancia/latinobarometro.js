@@ -167,16 +167,33 @@ function lb_drawLines() {
   const halosG = lb_ns('g'); svg.appendChild(halosG);
   const linesG = lb_ns('g'); svg.appendChild(linesG);
   const hitG = lb_ns('g'); svg.appendChild(hitG);
+  // Los puntos van en su PROPIA capa, después del hit-path de las líneas y del
+  // eje 0 (ver más abajo): el hit-path es un stroke transparente de 10px sobre
+  // la misma `d` y, apilado encima, se comía el mouseenter de los círculos
+  // intermedios (medido: 0% de área hovereable en el punto de 2009 de TODOS los
+  // países; los extremos sobrevivían por el stroke-linecap butt). Ese era el
+  // "sólo muestra tooltip en los extremos" que reportó Daniel.
+  const dotsG = lb_ns('g');
   const endLabels = [];
   series.forEach(s => {
     const d = s.pts.map((p, i) => (i ? 'L' : 'M') + xScale(p[0]).toFixed(1) + ',' + yScale(p[1]).toFixed(1)).join(' ');
     const halo = lb_ns('path'); halo.setAttribute('d', d); halo.setAttribute('fill', 'none'); halo.setAttribute('stroke', '#FAF8F3'); halo.setAttribute('stroke-width', haloW); halo.setAttribute('stroke-linejoin', 'round'); halo.setAttribute('stroke-linecap', 'round'); halo.setAttribute('data-lb', s.iso); halosG.appendChild(halo);
     const path = lb_ns('path'); path.setAttribute('d', d); path.setAttribute('fill', 'none'); path.setAttribute('stroke', s.color); path.setAttribute('stroke-width', lineW); path.setAttribute('stroke-linejoin', 'round'); path.setAttribute('stroke-linecap', 'round'); path.setAttribute('data-lb', s.iso); path.setAttribute('data-base-w', lineW); path.classList.add('lb-colored'); linesG.appendChild(path);
     s.pts.forEach(p => { const c = lb_ns('circle'); c.setAttribute('cx', xScale(p[0])); c.setAttribute('cy', yScale(p[1])); c.setAttribute('r', dotR); c.setAttribute('fill', s.color); c.setAttribute('stroke', '#FAF8F3'); c.setAttribute('stroke-width', bigFmt ? 2 : 1.2); c.setAttribute('data-lb', s.iso); c.style.cursor = 'pointer';
-      c.addEventListener('mouseenter', (e) => { lb_emph(s.iso); lb_showPointTooltip(e, s.iso, p); });
-      c.addEventListener('mousemove', (e) => lb_posTooltip(e));
-      c.addEventListener('mouseleave', () => { lb_emph(null); lb_hideTooltip(); });
-      linesG.appendChild(c); });
+      dotsG.appendChild(c);
+      // blanco de hover/tap encima del punto. En mobile el viewBox de 1100 se
+      // muestra a ~360px: el dot dibujado queda en ~1,5px de radio real y es
+      // imposible de acertar con el dedo. Radio ajustado para no robarle el
+      // hover al país de al lado (≈0,8 pp en desktop, ≈1,4 pp en mobile).
+      if (!editorFormat) {
+        const ht = lb_ns('circle'); ht.setAttribute('cx', xScale(p[0])); ht.setAttribute('cy', yScale(p[1]));
+        ht.setAttribute('r', bigFmt ? Math.max(dotR * 4, 22) : Math.max(dotR * 2, 7)); ht.setAttribute('fill', 'transparent'); ht.style.cursor = 'pointer';
+        ht.addEventListener('mouseenter', (e) => { lb_emph(s.iso); lb_showPointTooltip(e, s.iso, p); });
+        ht.addEventListener('mousemove', (e) => lb_posTooltip(e));
+        ht.addEventListener('mouseleave', () => { lb_emph(null); lb_hideTooltip(); });
+        dotsG.appendChild(ht);
+      }
+    });
     if (!editorFormat) { const hit = lb_ns('path'); hit.setAttribute('d', d); hit.setAttribute('fill', 'none'); hit.setAttribute('stroke', 'transparent'); hit.setAttribute('stroke-width', Math.max(lineW + 8, 10)); hit.style.cursor = 'pointer'; hit.addEventListener('mouseenter', () => lb_emph(s.iso)); hit.addEventListener('mouseleave', () => lb_emph(null)); hitG.appendChild(hit); }
     const last = s.pts[s.pts.length - 1];
     endLabels.push({ iso: s.iso, color: s.color, text: lb_name(s.iso), x: xScale(last[0]), idealY: yScale(last[1]), valLast: last[1] });
@@ -194,6 +211,9 @@ function lb_drawLines() {
     const tx = lb_ns('text'); tx.setAttribute('x', l.x + (bigFmt ? 12 : 7)); tx.setAttribute('y', l.y); tx.setAttribute('dominant-baseline', 'central'); tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif'); tx.style.fontSize = SIZES.label + 'px'; tx.setAttribute('font-weight', bigFmt ? 700 : 600); tx.setAttribute('fill', l.color); tx.setAttribute('paint-order', 'stroke'); tx.setAttribute('stroke', '#FAF8F3'); tx.setAttribute('stroke-width', labelHalo); tx.setAttribute('stroke-linejoin', 'round'); tx.setAttribute('data-lb', l.iso); tx.textContent = l.text + (editorFormat ? '  ' + Math.round(l.valLast) + '%' : ''); labG.appendChild(tx);
   });
   const zero = lb_ns('line'); zero.setAttribute('x1', MARGIN.left); zero.setAttribute('x2', MARGIN.left); zero.setAttribute('y1', MARGIN.top); zero.setAttribute('y2', MARGIN.top + plotH); zero.setAttribute('stroke', LB_AXIS); zero.setAttribute('stroke-width', 1); svg.appendChild(zero);
+  // ÚLTIMO de todo: nada puede taparle el hover a los puntos (ni el hit-path de
+  // las líneas ni el eje 0, que le comía media área al punto del primer año).
+  svg.appendChild(dotsG);
 }
 function lb_emph(iso) {
   const svg = document.getElementById('chart6'); if (!svg) return;
