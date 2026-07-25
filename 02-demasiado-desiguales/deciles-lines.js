@@ -43,7 +43,7 @@ function dl_margins(format, mobile) {
   if (format === 'newsletter') return { top: 40, right: 190, bottom: 130, left: 96 };
   if (format === 'square')     return { top: 50, right: 190, bottom: 140, left: 96 };
   if (format === 'mobile')     return { top: 80, right: 180, bottom: 220, left: 110 };
-  if (mobile)                  return { top: 110, right: 200, bottom: 150, left: 120 };
+  if (mobile)                  return { top: 110, right: 200, bottom: 150, left: 176 };
   return { top: 24, right: 180, bottom: 56, left: 82 };
 }
 
@@ -132,7 +132,11 @@ function dl_draw(cfg) {
 
   // ---- título eje Y ----
   if (cfg.axisY) {
-    const off = Math.min(bigFmt ? 80 : 54, M.left - Math.ceil(SIZES.axisTitle));
+    // mobile interactivo: ticks Y grandes (32px "$500") → margen izq propio para
+    // que el título rotado no roce los ticks. Desktop/PNG usan el cap fijo.
+    const off = mobile
+      ? (M.left - (12 + Math.ceil(SIZES.axisTitle)))
+      : Math.min(bigFmt ? 80 : 54, M.left - Math.ceil(SIZES.axisTitle));
     const yT = dl_el('text'); yT.setAttribute('class', 'd-axis-title'); yT.setAttribute('text-anchor', 'middle');
     yT.setAttribute('transform', `translate(${M.left - off}, ${M.top + PLOT_H / 2}) rotate(-90)`);
     yT.style.fontSize = SIZES.axisTitle + 'px'; yT.textContent = cfg.axisY; svg.appendChild(yT);
@@ -140,7 +144,7 @@ function dl_draw(cfg) {
 
   // ---- eje X: "D1..D10" (o "Decil N" si el tick es chico) + extremos + guías ----
   const xLabelOffset = mobile ? 50 : mobilePng ? 42 : bigFmt ? 34 : 22;
-  const xExtraOffset = mobile ? 88 : mobilePng ? 84 : bigFmt ? 72 : 42;
+  const xExtraOffset = mobile ? 96 : mobilePng ? 84 : bigFmt ? 72 : 42;
   const usaAbrev = SIZES.tick >= 16;                    // con fuentes grandes "Decil N" no entra → "DN"
   deciles.forEach(d => {
     const x = xS(d);
