@@ -20,7 +20,9 @@ const VE_DEFAULT_VAR = 'v2xpe_exlsocgr';
 const VE_DEFAULT_SEL = ['ARG', 'BRA', 'CHL', 'MEX', 'PER', 'URY', 'USA', 'ESP', 'SWE'];
 // Año inicial: el último con buena cobertura del índice.
 const VE_DEFAULT_YEAR = 2023;
-const VE_HIGHLIGHT = 'ARG';
+// Sin país resaltado: el chart 18 destacaba a Argentina porque el número gira
+// alrededor de ella, pero acá el dato es de V-Dem y no hay protagonista.
+const VE_HIGHLIGHT = null;
 // Anclas globales: cuando el hover revela una región entera y no entran todas
 // las etiquetas, la anti-colisión sacrifica primero a los chicos (criterio del
 // N°1: subPriority 0 para las anclas, 1 para el resto de la región).
@@ -29,7 +31,10 @@ const VE_ANCHORS = {
   CHN: 1, JPN: 1, KOR: 1, IND: 1, BRA: 1, MEX: 1, ARG: 1, ZAF: 1, NGA: 1
 };
 const VE_LATAM = 'Latin America';
-const VE_PLAY_MS = 1100;
+// El play recorre TODA la serie en 10 segundos, sea cual sea la variable
+// (el índice tiene 124 años; poder político y libertades civiles, más).
+const VE_PLAY_TOTAL_MS = 10000;
+const VE_PLAY_MS_MIN = 40;   // piso: por debajo el navegador no llega a redibujar
 // Mínimo de países VISIBLES para estimar el ajuste. Si el usuario apaga
 // regiones desde la leyenda y quedan menos, NO se estima nada: se ocultan la
 // recta y el R² y sólo se informa el n. Nunca un ajuste sobre dos puntos.
@@ -592,7 +597,9 @@ function drawVdemScatter() {
     tx.setAttribute('fill', VE_AXIS_INK);
     tx.setAttribute('font-variant-numeric', 'tabular-nums');
     tx.style.fontSize = SIZES.tick + 'px';
-    tx.textContent = Math.round(vv) + '%';
+    // NO es un porcentaje: el índice va de 0 a 1 y los componentes son una
+    // escala de intervalo centrada en 0. Un decimal, con coma.
+    tx.textContent = (typeof fmt === 'function') ? fmt(vv, 1) : vv.toFixed(1).replace('.', ',');
     gridG.appendChild(tx);
   });
 
@@ -619,7 +626,10 @@ function drawVdemScatter() {
   yTitle.setAttribute('font-weight', 500);
   yTitle.style.fontSize = SIZES.axisTitle + 'px';
   yTitle.setAttribute('transform', `rotate(-90 ${ytx} ${MARGIN.top + plotH / 2})`);
-  yTitle.textContent = ve_varLabel(v) + ve_t('c20-axis-y-suffix');
+  // Sin sufijo: el chart 18 agregaba « (%)» porque su eje era un porcentaje.
+  // Acá no lo es, y dejar la clave vacía hacía que ve_t() devolviera el NOMBRE
+  // de la clave y se viera «…c20-axis-y-suffix» pegado al rótulo.
+  yTitle.textContent = ve_varLabel(v);
   svg.appendChild(yTitle);
 
   // === Curva de regresión ===
@@ -798,7 +808,12 @@ function ve_renderLabels() {
       if (Math.hypot(dx, dy) > src.r + (bigFmt ? 16 : 11)) {
         const gl = ve_ns('line');
         gl.setAttribute('x1', src.cx); gl.setAttribute('y1', src.cy);
-        gl.setAttribute('x2', l.lx); gl.setAttribute('y2', l.ly - fs * 0.3);
+        // Se corta ANTES del texto: si llega hasta la etiqueta, el trazo se lee
+        // como una letra de más (a Daniel le apareció «LLetonia»).
+        const _len = Math.hypot(dx, dy) || 1;
+        const _gap = fs * 0.5;
+        gl.setAttribute('x2', l.lx - (dx / _len) * _gap);
+        gl.setAttribute('y2', l.ly - fs * 0.3 - (dy / _len) * _gap);
         gl.setAttribute('stroke', '#B8AE9C');
         gl.setAttribute('stroke-width', bigFmt ? 1.2 : 0.7);
         gl.setAttribute('stroke-opacity', l.transient ? 0.55 : 1);
@@ -894,7 +909,7 @@ function ve_stripResidText(model) {
   if (!rr) return ve_regionLabel(focus) + ': ' + ve_t('c20-banner-none');
   return ve_t('c20-strip-resid-tpl')
     .replace('{REG}', ve_regionLabel(focus))
-    .replace('{V}', ve_signed(rr.pp, 1, ''));
+    .replace('{V}', ve_signed(rr.pp, 2, ''));
 }
 
 // Leyenda de regiones adentro del SVG. Para el N°5, png-export NO dibuja
@@ -1071,7 +1086,7 @@ function ve_updateBanner(model, n) {
   const rr = model.byRegion[focus];
   const color = ve_regionLabelColor(focus);
   const residHtml = rr
-    ? `<span class="s-banner-val">${ve_signed(rr.pp, 1, '')}</span>`
+    ? `<span class="s-banner-val">${ve_signed(rr.pp, 2, '')}</span>`
       + `<span class="s-banner-note">${ve_t('c20-banner-resid-note')}</span>`
     : `<span class="s-banner-val">—</span><span class="s-banner-note">${ve_t('c20-banner-none')}</span>`;
   el.innerHTML =
@@ -1094,7 +1109,7 @@ function ve_showTooltip(e, p) {
   const above = hasFit && p.resid >= 0;
   const fitRows = hasFit
     ? `<div class="tt-row"><span>${ve_t('c20-tt-expected')}</span><span>${ve_num(p.pred, 1)}%</span></div>`
-      + `<div class="tt-row"><span>${ve_t('c20-tt-resid')}</span><span>${ve_signed(p.resid, 1, '')}</span></div>`
+      + `<div class="tt-row"><span>${ve_t('c20-tt-resid')}</span><span>${ve_signed(p.resid, 2, '')}</span></div>`
       + `<div class="tt-sub">${ve_t(above ? 'c20-tt-resid-above' : 'c20-tt-resid-below')}</div>`
     : '';
   tt.innerHTML =
@@ -1332,7 +1347,7 @@ function ve_setupWave() {
       state[20].wave = ws[cur + 1];
       ve_syncWave();
       drawVdemScatter();
-    }, VE_PLAY_MS);
+    }, Math.max(VE_PLAY_MS_MIN, Math.round(VE_PLAY_TOTAL_MS / Math.max(1, waves.length - 1))));
   });
   ve_syncWave();
 }
