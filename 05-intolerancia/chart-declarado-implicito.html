@@ -41,6 +41,10 @@
   .toggle button + button { border-left: 1px solid var(--rule); }
   .toggle button.active { background: var(--accent); color: #fff; }
   #tooltip5 .tt-sub { font-size: 10.5px; opacity: 0.8; margin-top: 3px; }
+  /* pie de leyenda + "Ver todas las regiones" (aparece sólo si hay apagadas) */
+  .sc-legend-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); margin: 4px 0 0; font-style: italic; }
+  .sc-linkbtn { font-family: var(--sans); font-size: 11px; font-weight: 600; font-style: normal; color: var(--accent); background: none; border: none; padding: 0; margin-left: 8px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  .sc-linkbtn[hidden] { display: none; }
   .m-mobile-collapse { display: none; }
   .m-mobile-collapse > summary { font-family: var(--sans); font-size: 11px; color: var(--accent); cursor: pointer; padding: 6px 0; list-style: none; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
   .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
@@ -81,6 +85,10 @@
       <svg id="chart5" viewBox="0 0 1100 620" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="tooltip" id="tooltip5"></div>
     </div>
+
+    <!-- Pie de la leyenda de regiones (que vive dentro del SVG, debajo del
+         título del eje X) con el botón para volver a prender todo. -->
+    <p class="sc-legend-hint"><span data-i18n="c5-legend-hint">Pasá el mouse por una región de la leyenda para ver los nombres de sus países; hacé clic (o tocá) para apagarla.</span><button type="button" id="sc-show-all" class="sc-linkbtn" data-i18n="c5-show-all" hidden>Ver todas las regiones</button></p>
   </section>
 
   <div class="footer">
@@ -103,19 +111,20 @@
 <script src="../lib/regions.js?v=2"></script>
 <script src="../lib/i18n.js?v=3"></script>
 <script src="./i18n-issue.js?v=11"></script>
+<script src="./i18n-declarado-implicito.js?v=1"></script>
 <script src="../lib/utils.js?v=9"></script>
 <script src="../lib/country-names.js?v=2"></script>
 <script src="../lib/scatter-render.js?v=2"></script>
 <script src="./data-implicito.js?v=1"></script>
 <script src="../lib/editor.js?v=1"></script>
-<script src="./declarado-implicito.js?v=2"></script>
+<script src="./declarado-implicito.js?v=3"></script>
 <script src="../lib/png-export.js?v=11"></script>
 <script>
   window.__N5_V = '5';
   initScatter();
   applyI18n();
   if (window.__atlasRedraw) window.__atlasRedraw();
-  setupLangToggle(() => drawScatter());
+  setupLangToggle(sc_onLangChange);
 </script>
 <div id="chart-nav"></div>
 <script src="./nav.js?v=8"></script>

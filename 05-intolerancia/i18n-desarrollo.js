@@ -31,6 +31,12 @@
     // año de campo, la recta como asociación y no causa) vive en «Ver
     // metodología y fuentes» (c18-sources).
     'c18-subtitle-tpl': 'Cada punto es un país. Eje vertical: {DEF} Eje horizontal: PIB per cápita, ola {PERIODO}.',
+    // Cuando hay ajuste estimado, el subtítulo cuenta EL HALLAZGO en palabras:
+    // dos plantillas según el signo del residuo de América Latina, con el
+    // número REDONDEADO A ENTERO (criterio del N°2: el lector no precisa 9,6 pp
+    // vs 10 pp, y el residuo se mueve de ola en ola). {N} = pp, sin signo.
+    'c18-subtitle-tpl-more': 'América Latina queda {N} pp por encima de lo que predice su ingreso. Eje vertical: {DEF} Eje horizontal: PIB per cápita, ola {PERIODO}.',
+    'c18-subtitle-tpl-less': 'América Latina queda {N} pp por debajo de lo que predice su ingreso. Eje vertical: {DEF} Eje horizontal: PIB per cápita, ola {PERIODO}.',
 
     'c18-var-label':      'Indicador (eje vertical)',
     'c18-grp-vecinos':    'Batería de vecinos',
@@ -58,7 +64,7 @@
     'c18-banner-resid':   'Residuo',
     'c18-banner-resid-note': 'respecto de lo previsto',
     'c18-banner-none':    'sin países de esta región en la ola elegida',
-    'c18-banner-hint':    'Pasá el mouse por una región de la leyenda para destacarla; hacé clic (o tocá) para apagarla y sacarla del ajuste.',
+    'c18-banner-hint':    'Pasá el mouse por una región de la leyenda para ver los nombres de sus países; hacé clic (o tocá) para apagarla y sacarla del ajuste.',
     'c18-show-all':       'Ver todas las regiones',
     'c18-strip-resid-tpl': '{REG}: {V} respecto de lo previsto',
     'c18-fewfit':         'Muy pocos países para estimar un ajuste.',
@@ -87,6 +93,8 @@
 
     'c18-subtitle': 'Each dot is a country: declared intolerance on the vertical axis, GDP per capita on the horizontal one.',
     'c18-subtitle-tpl': 'Each dot is a country. Vertical axis: {DEF} Horizontal axis: GDP per capita, {PERIODO} wave.',
+    'c18-subtitle-tpl-more': 'Latin America sits {N} pp above what its income predicts. Vertical axis: {DEF} Horizontal axis: GDP per capita, {PERIODO} wave.',
+    'c18-subtitle-tpl-less': 'Latin America sits {N} pp below what its income predicts. Vertical axis: {DEF} Horizontal axis: GDP per capita, {PERIODO} wave.',
 
     'c18-var-label':      'Indicator (vertical axis)',
     'c18-grp-vecinos':    'Neighbours battery',
@@ -111,7 +119,7 @@
     'c18-banner-resid':   'Residual',
     'c18-banner-resid-note': 'vs. what its income predicts',
     'c18-banner-none':    'no countries from this region in the selected wave',
-    'c18-banner-hint':    'Hover a region in the legend to highlight it; click (or tap) to switch it off and drop it from the fit.',
+    'c18-banner-hint':    'Hover a region in the legend to reveal its country names; click (or tap) to switch it off and drop it from the fit.',
     'c18-show-all':       'Show all regions',
     'c18-strip-resid-tpl': '{REG}: {V} vs. what its income predicts',
     'c18-fewfit':         'Too few countries to estimate a fit.',

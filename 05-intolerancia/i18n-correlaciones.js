@@ -47,7 +47,7 @@
 
     'c19-leg-diag':      'Línea de 45°: mismo % en los dos ejes',
     'c19-leg-fit':       'Recta de ajuste',
-    'c19-legend-hint':   'Pasá el mouse por una región de la leyenda para destacarla; hacé clic (o tocá) para apagarla y sacarla del ajuste.',
+    'c19-legend-hint':   'Pasá el mouse por una región de la leyenda para ver los nombres de sus países; hacé clic (o tocá) para apagarla y sacarla del ajuste.',
     'c19-show-all':      'Ver todas las regiones',
 
     'c19-axis-tpl':      '{VAR} (%)',
@@ -90,7 +90,7 @@
 
     'c19-leg-diag':      '45° line: same % on both axes',
     'c19-leg-fit':       'Line of best fit',
-    'c19-legend-hint':   'Hover a region in the legend to highlight it; click (or tap) to switch it off and drop it from the fit.',
+    'c19-legend-hint':   'Hover a region in the legend to reveal its country names; click (or tap) to switch it off and drop it from the fit.',
     'c19-show-all':      'Show all regions',
 
     'c19-axis-tpl':      '{VAR} (%)',

@@ -30,12 +30,23 @@
 //     banner dice explícitamente cuándo la región no está en la ola elegida.
 //   - Un país sin PIB dentro de ±3 años NO entra: no se interpola nada.
 //
-// Regla de interacción del Atlas respetada acá: el HOVER nunca redibuja el
-// chart — el foco por región se aplica solo por opacidad sobre los círculos ya
-// dibujados (dv_applyRegionFocus). El CLICK en la leyenda sí redibuja, porque
-// apaga la región y la SACA del modelo (state[18].hiddenRegions): la recta, el
-// R², el n y los residuos se recalculan sobre los países visibles. Es la misma
-// norma del chart 1 (ranking.js, state[1].hiddenRegions).
+// CONTRATO DE INTERACCIÓN DEL SCATTER DEL ATLAS (el de los scatters del N°1,
+// N°2 y N°3, que este chart había perdido al importar la regla "el hover nunca
+// redibuja" de los gráficos de LÍNEAS — donde redibujar sí los tilda):
+//   HOVER sobre una región de la leyenda → se ETIQUETAN todos los países de esa
+//     región (se re-corre la anti-colisión sobre el conjunto ampliado) y el
+//     resto de los puntos se atenúa por opacidad. En un scatter el redibujo ES
+//     el mecanismo de la feature; acá se redibuja SOLO el grupo de etiquetas
+//     (dv_renderLabels), así la leyenda no se recrea bajo el cursor.
+//   CLICK en la leyenda → apaga la región y la SACA del modelo
+//     (state[18].hiddenRegions): la recta, el R², el n y los residuos se
+//     recalculan sobre los países visibles. Misma norma del chart 1
+//     (ranking.js, state[1].hiddenRegions).
+//   TAP sobre un punto → tooltip. El chip se togglea desde el buscador y desde
+//     la ✕ del chip, nunca tocando el punto.
+// WYSIWYG conciliado: el CHIP es la selección persistente y siempre se etiqueta,
+// aun durante el hover de otra región; las etiquetas que revela el hover son
+// transitorias (más livianas, en el color de su región) y desaparecen al salir.
 //
 // Depende de: CR_META, CR_WAVES, CR_VARS, CR_REGION, CR_GDP, CR_FOTO
 // (data-cruces.js), REGION_ORDER/REGION_COLORS/REGION_LABEL_COLORS
@@ -53,6 +64,13 @@ const DV_DEFAULT_VAR = 'otra_raza';
 // globales, para que la recta tenga anclas a los dos lados del ingreso.
 const DV_DEFAULT_SEL = ['ARG', 'BRA', 'CHL', 'MEX', 'PER', 'URY', 'USA', 'ESP', 'SWE'];
 const DV_HIGHLIGHT = 'ARG';
+// Anclas globales: cuando el hover revela una región entera y no entran todas
+// las etiquetas, la anti-colisión sacrifica primero a los chicos (criterio del
+// N°1: subPriority 0 para las anclas, 1 para el resto de la región).
+const DV_ANCHORS = {
+  USA: 1, DEU: 1, FRA: 1, GBR: 1, ESP: 1, ITA: 1, RUS: 1,
+  CHN: 1, JPN: 1, KOR: 1, IND: 1, BRA: 1, MEX: 1, ARG: 1, ZAF: 1, NGA: 1
+};
 const DV_LATAM = 'Latin America';
 const DV_PLAY_MS = 1100;
 // Mínimo de países VISIBLES para estimar el ajuste. Si el usuario apaga
@@ -75,6 +93,9 @@ const DV_HI_INK = '#8B4220';
 let dv_playTimer = null;
 // Círculos del último render, para el foco por región POR OPACIDAD.
 let dv_dots = [];
+// Contexto del último render (grupo de etiquetas, puntos, escalas): permite
+// re-correr el placement de etiquetas en el hover SIN redibujar el chart.
+let dv_labelCtx = null;
 // Último modelo dibujado: lo reusan el banner y la tira de estadísticos cuando
 // cambia la región enfocada, sin volver a dibujar el gráfico.
 let dv_lastModel = null;
@@ -115,23 +136,33 @@ function dv_regionLabel(reg) {
 
 // ---- regiones apagadas desde la leyenda ----
 // Norma del número, fijada en el chart 1 (ranking.js, state[1].hiddenRegions):
-// hover = atenúa por opacidad; CLICK = apaga y QUITA a esos países. Apagar una
-// región no es sólo esconder puntos: los saca del modelo, así que la recta, el
-// R², el n y los residuos se recalculan sobre lo que queda visible. Por eso el
-// click SÍ redibuja (la regla del Atlas prohíbe redibujar en el HOVER).
+// HOVER = revela las etiquetas de la región y atenúa el resto por opacidad;
+// CLICK = apaga y QUITA a esos países. Apagar una región no es sólo esconder
+// puntos: los saca del modelo, así que la recta, el R², el n y los residuos se
+// recalculan sobre lo que queda visible. Por eso el click redibuja el chart
+// entero y el hover redibuja SOLO el grupo de etiquetas.
 function dv_hidden() {
   return new Set(state[18].hiddenRegions || []);
+}
+// Región apuntada por el hover, si sigue encendida (una región apagada no
+// tiene puntos ni etiquetas que revelar).
+function dv_hoverRegion() {
+  const s = state[18];
+  if (!s || !s.hoverRegion) return null;
+  return dv_hidden().has(s.hoverRegion) ? null : s.hoverRegion;
 }
 function dv_toggleRegion(reg) {
   const arr = state[18].hiddenRegions || (state[18].hiddenRegions = []);
   const i = arr.indexOf(reg);
   if (i >= 0) arr.splice(i, 1); else arr.push(reg);
-  if (state[18].pinRegion === reg) state[18].pinRegion = null;
-  if (state[18].hoverRegion === reg) state[18].hoverRegion = null;
+  // En touch el mouseenter llega pero el mouseleave nunca: soltamos el hover
+  // en cada click para no dejar una región "apuntada" pegada.
+  state[18].hoverRegion = null;
   drawDesarrollo();
 }
 function dv_showAllRegions() {
   state[18].hiddenRegions = [];
+  state[18].hoverRegion = null;
   drawDesarrollo();
 }
 // El botón "Ver todas las regiones" sólo existe cuando hay algo apagado (así no
@@ -381,6 +412,10 @@ function dv_layout(editorFormat, mobile) {
     return { W: 1100, H: 619, M: { top: 54, right: 36, left: 82 }, baseBottom: 34,
              SIZES: { tick: 15, axisTitle: 17, label: 16, dot: 6, strip: 15, legend: 14 } };
   }
+  if (editorFormat === 'worldmap') {
+    return { W: 1100, H: 580, M: { top: 52, right: 36, left: 82 }, baseBottom: 32,
+             SIZES: { tick: 15, axisTitle: 17, label: 16, dot: 6, strip: 15, legend: 14 } };
+  }
   if (mobile) {
     return { W: 1100, H: 1250, M: { top: 110, right: 36, left: 126 }, baseBottom: 62,
              SIZES: { tick: 28, axisTitle: 30, label: 27, dot: 9, strip: 28, legend: 23 } };
@@ -419,6 +454,7 @@ function drawDesarrollo() {
   if (!svg) return;
   svg.innerHTML = '';
   dv_dots = [];
+  dv_labelCtx = null;
 
   const s = state[18];
   const v = dv_varMeta(s.k);
@@ -428,7 +464,14 @@ function drawDesarrollo() {
 
   const L = dv_layout(editorFormat, mobile);
   const W = L.W, H = L.H, SIZES = L.SIZES;
-  const MARGIN = { top: L.M.top, right: L.M.right, left: L.M.left, bottom: 0 };
+  // El margen superior existe SÓLO para la tira de estadísticos, y la tira se
+  // dibuja únicamente al exportar (en pantalla los mismos números están en el
+  // banner HTML de abajo: mostrarlos dos veces era la duplicación que marcó
+  // Daniel). Sin tira, ese alto se le devuelve al gráfico.
+  const marginTop = editorFormat
+    ? L.M.top
+    : Math.max(mobile ? 26 : 16, L.M.top - SIZES.strip * 1.6);
+  const MARGIN = { top: marginTop, right: L.M.right, left: L.M.left, bottom: 0 };
   const plotW = W - MARGIN.left - MARGIN.right;
 
   // allPts = todo lo que hay en la celda; pts = lo que queda después de apagar
@@ -479,7 +522,7 @@ function drawDesarrollo() {
     msg.style.fontSize = SIZES.axisTitle + 'px';
     msg.textContent = dv_t('c18-nodata');
     svg.appendChild(msg);
-    dv_updateSubtitle(v);
+    dv_updateSubtitle(v, null);
     dv_updateBanner(null, 0);
     dv_syncShowAll();
     return;
@@ -648,7 +691,8 @@ function drawDesarrollo() {
     dotsG.appendChild(c);
     dv_dots.push(c);
     // Hit-area invisible: el punto mide ~2px reales en el celu, el tap sería
-    // imposible. El click togglea la etiqueta (chip) del país.
+    // imposible. TAP = TOOLTIP (semántica unificada en los tres scatters del
+    // número); el chip se togglea desde el buscador y desde la ✕ del chip.
     const hit = dv_ns('circle');
     hit.setAttribute('cx', cx); hit.setAttribute('cy', cy);
     hit.setAttribute('r', Math.max(15, r * 2.4));
@@ -657,67 +701,44 @@ function drawDesarrollo() {
     hit.addEventListener('mouseenter', (e) => dv_showTooltip(e, p));
     hit.addEventListener('mousemove', (e) => dv_posTooltip(e));
     hit.addEventListener('mouseleave', () => dv_hideTooltip());
-    hit.addEventListener('click', (e) => { e.stopPropagation(); dv_toggleCountry(p.iso); });
+    hit.addEventListener('click', (e) => { e.stopPropagation(); dv_showTooltip(e, p); });
     dotsG.appendChild(hit);
   });
 
-  // === Etiquetas: WYSIWYG — son EXACTAMENTE los chips elegidos ===
-  const items = pts.filter(p => selSet[p.iso]).map(p => {
-    const text = dv_name(p.iso);
-    const isHi = p.iso === DV_HIGHLIGHT;
-    return {
-      cx: xScale(p.gdp), cy: yScale(p.pct), text: text,
-      textW: dv_measure(text, SIZES.label, isHi ? 700 : 600),
-      iso: p.iso, region: p.region, forced: true,
-      r: isHi ? SIZES.dot * 1.45 : SIZES.dot * 1.2
-    };
-  });
-  const placed = (typeof s_layoutLabels === 'function') ? s_layoutLabels(items, plotBox) : [];
-  if (typeof s_relaxLabels === 'function') {
-    const obstacles = pts.map(p => ({ x: xScale(p.gdp), y: yScale(p.pct), r: SIZES.dot + 2 }));
-    s_relaxLabels(placed, SIZES.label, plotBox, bigFmt ? 220 : 80, obstacles);
-  }
+  // === Etiquetas ===
+  // El grupo se re-dibuja SOLO (dv_renderLabels) cuando cambia la región
+  // apuntada por el hover: es ahí donde se re-corre la anti-colisión sobre el
+  // conjunto ampliado.
   const labelsG = dv_ns('g'); svg.appendChild(labelsG);
-  placed.forEach(l => {
-    const it = items.filter(i => i.iso === l.iso)[0];
-    if (it) {
-      const dx = l.lx - it.cx, dy = l.ly - it.cy;
-      if (Math.hypot(dx, dy) > it.r + (bigFmt ? 16 : 11)) {
-        const gl = dv_ns('line');
-        gl.setAttribute('x1', it.cx); gl.setAttribute('y1', it.cy);
-        gl.setAttribute('x2', l.lx); gl.setAttribute('y2', l.ly - SIZES.label * 0.3);
-        gl.setAttribute('stroke', '#B8AE9C');
-        gl.setAttribute('stroke-width', bigFmt ? 1.2 : 0.7);
-        labelsG.appendChild(gl);
-      }
-    }
-    const tx = dv_ns('text');
-    tx.setAttribute('x', l.lx); tx.setAttribute('y', l.ly);
-    tx.setAttribute('text-anchor', l.anchor);
-    tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-    tx.setAttribute('font-weight', l.iso === DV_HIGHLIGHT ? 700 : 600);
-    tx.setAttribute('fill', l.iso === DV_HIGHLIGHT ? DV_HI_INK : dv_regionLabelColor(l.region));
-    tx.setAttribute('paint-order', 'stroke');
-    tx.setAttribute('stroke', DV_BG);
-    tx.setAttribute('stroke-width', bigFmt ? 5 : 2.6);
-    tx.setAttribute('stroke-linejoin', 'round');
-    tx.style.fontSize = SIZES.label + 'px';
-    tx.textContent = l.text;
-    labelsG.appendChild(tx);
-  });
+  dv_labelCtx = {
+    g: labelsG, pts: pts, plotBox: plotBox, SIZES: SIZES, bigFmt: bigFmt,
+    xScale: xScale, yScale: yScale,
+    // Durante la EXPORTACIÓN el hover se congela: png-export.js setea
+    // __atlasPngFormatOverride y vuelve a llamar a __atlasRedraw, así que si el
+    // mouse estaba sobre la leyenda el PNG salía con una región revelada y el
+    // resto al 16%. Ojo: no alcanza con mirar editorFormat, porque con el
+    // editor abierto (preview) el hover SÍ tiene que funcionar.
+    frozen: !!window.__atlasPngFormatOverride
+  };
+  dv_renderLabels();
 
-  // === Tira de estadísticos DENTRO del SVG ===
+  // === Tira de estadísticos DENTRO del SVG — SÓLO al exportar ===
   // El banner HTML no entra al PNG (png-export rasteriza el SVG), así que el R²
-  // y el residuo regional también van adentro del gráfico.
-  dv_drawStatStrip(svg, model, pts.length, MARGIN, SIZES.strip);
+  // y el residuo regional tienen que ir adentro del gráfico… pero SÓLO ahí: en
+  // pantalla el banner de abajo ya los muestra y repetirlos era la duplicación
+  // que marcó Daniel («esto es redundante, misma lógica que en el N°2»).
+  if (editorFormat) dv_drawStatStrip(svg, model, pts.length, MARGIN, SIZES.strip);
 
   // === Leyenda de regiones, debajo del título del eje X ===
   dv_drawLegend(svg, leg, MARGIN, plotW, xTitleY, legendFs);
 
-  // Cierre del tooltip al tocar/clickear fuera de un dato.
-  svg.onclick = (ev) => { if (ev.target.tagName !== 'circle') dv_hideTooltip(); };
+  // Cierre del tooltip al tocar/clickear fuera de un dato (y soltar el hover:
+  // en touch el mouseleave de la leyenda no llega nunca).
+  svg.onclick = (ev) => {
+    if (ev.target.tagName !== 'circle') { dv_hideTooltip(); dv_setHoverRegion(null); }
+  };
 
-  dv_updateSubtitle(v);
+  dv_updateSubtitle(v, model);
   dv_syncShowAll();
   dv_applyRegionFocus();
 
@@ -730,9 +751,87 @@ function drawDesarrollo() {
   }
 }
 
+// =================== Etiquetas ===================
+// Conjunto de etiquetas = los chips elegidos (selección PERSISTENTE, forced: si
+// hay que sacrificar a alguien nunca es un chip) ∪ los países de la región
+// apuntada por el hover (TRANSITORIOS: entran si hay lugar y desaparecen al
+// salir). La anti-colisión se re-corre DESDE CERO sobre el conjunto nuevo: ése
+// es el mecanismo de la feature, no hay layout precalculado ni caché.
+function dv_renderLabels() {
+  const ctx = dv_labelCtx;
+  if (!ctx || !ctx.g) return;
+  while (ctx.g.firstChild) ctx.g.removeChild(ctx.g.firstChild);
+
+  const SIZES = ctx.SIZES, bigFmt = ctx.bigFmt;
+  const hover = ctx.frozen ? null : dv_hoverRegion();
+  const selSet = {};
+  (state[18].selected || []).forEach(c => { selSet[c] = true; });
+
+  const items = [];
+  ctx.pts.forEach(p => {
+    const isSel = !!selSet[p.iso];
+    const isHover = !isSel && !!hover && p.region === hover;
+    if (!isSel && !isHover) return;
+    const isHi = p.iso === DV_HIGHLIGHT;
+    const fs = isSel ? SIZES.label : SIZES.label * 0.92;
+    const weight = isSel ? (isHi ? 700 : 600) : 500;
+    const text = dv_name(p.iso);
+    items.push({
+      cx: ctx.xScale(p.gdp), cy: ctx.yScale(p.pct), text: text,
+      textW: dv_measure(text, fs, weight),
+      iso: p.iso, region: p.region,
+      forced: isSel,
+      subPriority: isSel ? 0 : (DV_ANCHORS[p.iso] ? 1 : 2),
+      transient: !isSel, fs: fs, weight: weight,
+      r: isHi ? SIZES.dot * 1.45 : (isSel ? SIZES.dot * 1.2 : SIZES.dot)
+    });
+  });
+
+  const placed = (typeof s_layoutLabels === 'function') ? s_layoutLabels(items, ctx.plotBox) : [];
+  if (typeof s_relaxLabels === 'function') {
+    const obstacles = ctx.pts.map(p => ({ x: ctx.xScale(p.gdp), y: ctx.yScale(p.pct), r: SIZES.dot + 2 }));
+    s_relaxLabels(placed, SIZES.label, ctx.plotBox, bigFmt ? 220 : 80, obstacles);
+  }
+
+  placed.forEach(l => {
+    const fs = l.fs || SIZES.label;
+    let src = null;
+    for (let i = 0; i < items.length; i++) if (items[i].iso === l.iso) { src = items[i]; break; }
+    if (src) {
+      const dx = l.lx - src.cx, dy = l.ly - src.cy;
+      if (Math.hypot(dx, dy) > src.r + (bigFmt ? 16 : 11)) {
+        const gl = dv_ns('line');
+        gl.setAttribute('x1', src.cx); gl.setAttribute('y1', src.cy);
+        gl.setAttribute('x2', l.lx); gl.setAttribute('y2', l.ly - fs * 0.3);
+        gl.setAttribute('stroke', '#B8AE9C');
+        gl.setAttribute('stroke-width', bigFmt ? 1.2 : 0.7);
+        gl.setAttribute('stroke-opacity', l.transient ? 0.55 : 1);
+        ctx.g.appendChild(gl);
+      }
+    }
+    const tx = dv_ns('text');
+    tx.setAttribute('x', l.lx); tx.setAttribute('y', l.ly);
+    tx.setAttribute('text-anchor', l.anchor);
+    tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+    tx.setAttribute('font-weight', l.weight || 600);
+    tx.setAttribute('fill', l.iso === DV_HIGHLIGHT ? DV_HI_INK : dv_regionLabelColor(l.region));
+    // Peso y opacidad más livianos: se ve que la etiqueta revelada por el hover
+    // no es lo mismo que un chip (la selección persistente).
+    if (l.transient) tx.setAttribute('fill-opacity', 0.9);
+    tx.setAttribute('paint-order', 'stroke');
+    tx.setAttribute('stroke', DV_BG);
+    tx.setAttribute('stroke-width', bigFmt ? 5 : 2.6);
+    tx.setAttribute('stroke-linejoin', 'round');
+    tx.style.fontSize = fs + 'px';
+    tx.textContent = l.text;
+    ctx.g.appendChild(tx);
+  });
+}
+
 // Dos líneas en el margen superior del SVG: R² + n, y el residuo de la región
 // enfocada. La línea 2 lleva data-strip-line="2" para que el foco por región la
-// reescriba sin redibujar el gráfico.
+// reescriba sin redibujar el gráfico. SÓLO se dibuja al exportar (ver
+// drawDesarrollo): en pantalla los mismos números viven en el banner HTML.
 //
 // SIN la pendiente: el N°2 (scatter.js, #s-banner) nunca la mostró, "pp por
 // cada ×10 de PIB" es jerga, y la línea que ahorra es alto que hace falta para
@@ -766,15 +865,22 @@ function dv_drawStatStrip(svg, model, n, MARGIN, fs) {
      dv_regionLabelColor(dv_focusRegion()), '2');
 }
 
-// Región enfocada: hover de leyenda > región fijada por click > América Latina.
+// Región enfocada: hover de leyenda > América Latina.
 // Una región APAGADA no puede estar enfocada (no tiene puntos ni residuo); si
 // la apagada es América Latina, el residuo pasa a la primera región encendida
 // que el modelo tenga, para no mostrar un "sin países" que confunde.
+//
+// state[18].pinRegion SE BORRÓ (era código muerto: se leía acá y en
+// dv_applyRegionFocus pero nunca se le asignaba una región, sólo null). No se
+// le dio el sentido de "fijar el foco" al estilo del stickyConf del N°3 porque
+// en este chart el CLICK en la leyenda ya está tomado —apaga la región y la
+// saca del modelo, y eso Daniel ya lo aprobó—, así que no queda ningún gesto
+// con el que fijar un pin sin inventar un tercero. Un campo que nada puede
+// setear es exactamente el cableado a medias que marcó la auditoría.
 function dv_focusRegion() {
   const s = state[18];
   const hid = dv_hidden();
   if (s.hoverRegion && !hid.has(s.hoverRegion)) return s.hoverRegion;
-  if (s.pinRegion && !hid.has(s.pinRegion)) return s.pinRegion;
   if (!hid.has(DV_LATAM)) return DV_LATAM;
   const m = dv_lastModel;
   if (m) {
@@ -797,7 +903,8 @@ function dv_stripResidText(model) {
 
 // Leyenda de regiones adentro del SVG. Para el N°5, png-export NO dibuja
 // leyenda propia (SHOWS_LEGEND devuelve false), así que tiene que estar acá.
-//   HOVER → foco por región POR OPACIDAD, sin redibujar el chart.
+//   HOVER → REVELA las etiquetas de los países de esa región (re-corriendo la
+//           anti-colisión) + atenúa el resto por opacidad. No redibuja el chart.
 //   CLICK → apaga/prende la región (cambia el modelo → sí redibuja).
 // El ítem apagado va con el punto hueco, tachado y atenuado, como el chip
 // .rk-leg-off del chart 1: tiene que verse que está apagado y poder prenderse.
@@ -812,7 +919,6 @@ function dv_drawLegend(svg, leg, MARGIN, plotW, xTitleY, fs) {
     row.forEach(it => {
       const off = hid.has(it.region);
       const item = dv_ns('g');
-      item.style.cursor = 'pointer';
       item.dataset.legendRegion = it.region;
       if (off) item.dataset.legendOff = '1';
       const dot = dv_ns('circle');
@@ -843,19 +949,18 @@ function dv_drawLegend(svg, leg, MARGIN, plotW, xTitleY, fs) {
         strike.setAttribute('stroke-width', Math.max(1, fs * 0.09));
         item.appendChild(strike);
       }
-      // Hit-area del ítem (para que el tap agarre en el celu).
+      // Hit-area del ítem (para que el tap agarre en el celu). Los listeners se
+      // cablean siempre —también con el editor abierto, donde hay que poder
+      // apagar regiones—: lo que el PNG no puede llevar es el ESTADO de hover,
+      // y de eso se ocupa dv_labelCtx.frozen.
+      item.style.cursor = 'pointer';
       const hit = dv_ns('rect');
       hit.setAttribute('x', x - 2); hit.setAttribute('y', y - leg.rowH / 2);
       hit.setAttribute('width', it.w); hit.setAttribute('height', leg.rowH);
       hit.setAttribute('fill', 'transparent');
       item.appendChild(hit);
-      item.addEventListener('mouseenter', () => {
-        if (dv_hidden().has(it.region)) return;   // apagada: no hay foco que aplicar
-        state[18].hoverRegion = it.region; dv_applyRegionFocus();
-      });
-      item.addEventListener('mouseleave', () => {
-        state[18].hoverRegion = null; dv_applyRegionFocus();
-      });
+      item.addEventListener('mouseenter', () => dv_setHoverRegion(it.region));
+      item.addEventListener('mouseleave', () => dv_setHoverRegion(null));
       item.addEventListener('click', (ev) => {
         ev.stopPropagation();
         dv_toggleRegion(it.region);
@@ -866,15 +971,24 @@ function dv_drawLegend(svg, leg, MARGIN, plotW, xTitleY, fs) {
   });
 }
 
+// Cambio de región apuntada por el hover. IDEMPOTENTE: si la región no cambió,
+// no se toca el DOM (así el mouseenter no parpadea ni entra en loop). Rehace el
+// grupo de etiquetas —con la anti-colisión corrida de nuevo— y aplica el foco
+// por opacidad. El resto del chart (círculos, ejes, leyenda) queda intacto.
+function dv_setHoverRegion(reg) {
+  if (reg && dv_hidden().has(reg)) reg = null;
+  if (!state[18]) return;
+  if ((state[18].hoverRegion || null) === (reg || null)) return;
+  state[18].hoverRegion = reg || null;
+  dv_renderLabels();
+  dv_applyRegionFocus();
+}
+
 // Foco por región: SOLO opacidad + reescritura de los textos que dependen de la
-// región activa. El chart NO se redibuja (regla del Atlas). El apagado de
+// región activa. Las etiquetas las rehace dv_renderLabels. El apagado de
 // regiones NO pasa por acá: ese sí redibuja, porque cambia el modelo.
 function dv_applyRegionFocus() {
-  const s = state[18];
-  const hid = dv_hidden();
-  let focus = null;
-  if (s.hoverRegion && !hid.has(s.hoverRegion)) focus = s.hoverRegion;
-  else if (s.pinRegion && !hid.has(s.pinRegion)) focus = s.pinRegion;
+  const focus = (dv_labelCtx && dv_labelCtx.frozen) ? null : dv_hoverRegion();
   for (let i = 0; i < dv_dots.length; i++) {
     const c = dv_dots[i];
     c.setAttribute('opacity', (!focus || c.dataset.region === focus) ? 1 : 0.16);
@@ -895,7 +1009,18 @@ function dv_applyRegionFocus() {
 }
 
 // =================== Subtítulo dinámico ===================
-function dv_updateSubtitle(v) {
+// El subtítulo es el lugar donde el hallazgo se cuenta EN PALABRAS: con ajuste
+// estimado y residuo de América Latina, dice de qué lado de lo previsto queda
+// la región. Dos plantillas según el signo (c18-subtitle-tpl-more /
+// c18-subtitle-tpl-less), como el N°2 (scatter.js:305-317), y el residuo
+// REDONDEADO A ENTERO: el lector no precisa 9,6 pp vs 10 pp, y el número se
+// mueve de ola en ola. Sin modelo —o con América Latina apagada desde la
+// leyenda— cae a la plantilla descriptiva de siempre (c18-subtitle-tpl).
+//
+// NO se duplica con el banner: el banner da el número exacto (+/−9,6 pp) y el
+// subtítulo da la frase redondeada. La tira dentro del SVG ya no se dibuja en
+// pantalla (sólo al exportar).
+function dv_updateSubtitle(v, model) {
   const block = document.querySelector('.chart-block[data-chart="18"]');
   if (!block) return;
   const el = block.querySelector('.chart-subtitle');
@@ -907,9 +1032,25 @@ function dv_updateSubtitle(v) {
     const tx = ae.texts[(ae.lang || dv_lang())] || {};
     if ((tx.subtitle || '').trim()) return;
   }
+  const wave = dv_waveLabel(state[18].wave);
+  const latam = (model && !dv_hidden().has(DV_LATAM)) ? model.byRegion[DV_LATAM] : null;
+  const n = latam ? Math.round(Math.abs(latam.pp)) : 0;
+  // Con residuo que redondea a 0 no hay nada que contar: "queda 0 pp por
+  // encima" es peor que la descripción de siempre.
+  if (latam && n > 0) {
+    const key = latam.pp >= 0 ? 'c18-subtitle-tpl-more' : 'c18-subtitle-tpl-less';
+    const tpl = dv_t(key);
+    if (tpl && tpl !== key) {
+      el.textContent = tpl
+        .replace('{N}', String(n))
+        .replace('{DEF}', dv_varDef(v))
+        .replace('{PERIODO}', wave);
+      return;
+    }
+  }
   el.textContent = dv_t('c18-subtitle-tpl')
     .replace('{DEF}', dv_varDef(v))
-    .replace('{PERIODO}', dv_waveLabel(state[18].wave));
+    .replace('{PERIODO}', wave);
 }
 
 // =================== Banner (HTML, debajo del SVG) ===================
@@ -1254,11 +1395,11 @@ function initDesarrollo() {
       model: 'linear',
       selected: DV_DEFAULT_SEL.slice(),
       hoverRegion: null,
-      pinRegion: null,
       hiddenRegions: []
     };
   }
   if (!Array.isArray(state[18].hiddenRegions)) state[18].hiddenRegions = [];
+  if (state[18].hoverRegion === undefined) state[18].hoverRegion = null;
   dv_setupVarSelect();
   dv_setupToggles();
   dv_setupWave();
@@ -1274,7 +1415,22 @@ function initDesarrollo() {
   if (!initDesarrollo._wired) {
     initDesarrollo._wired = true;
     window.addEventListener('atlas-editor-change', () => drawDesarrollo());
+    // Tocar/clickear fuera del gráfico suelta tooltip y hover (en touch el
+    // mouseleave de la leyenda no llega nunca y si no queda todo atenuado).
+    document.addEventListener('click', (ev) => {
+      const svg = document.getElementById('chart18');
+      if (svg && !svg.contains(ev.target)) { dv_hideTooltip(); dv_setHoverRegion(null); }
+    });
   }
+  // El PNG rasteriza el SVG: soltamos tooltip y hover antes de exportar, para
+  // que la imagen no salga con una región resaltada y el resto al 16%.
+  // (El render ya ignora el hover cuando hay formato activo — dv_labelCtx.frozen
+  // —; esto además deja limpio el estado de pantalla.)
+  window.onBeforePngExport = function (svgClone, chartId) {
+    if (String(chartId) !== '18') return;
+    dv_hideTooltip();
+    if (state[18]) state[18].hoverRegion = null;
+  };
   // Caption del PNG: versión corta (el "Fuentes" completo del HTML es enorme).
   window.onBeforePngExportGetSourceText = function (chartId) {
     if (String(chartId) !== '18') return null;
