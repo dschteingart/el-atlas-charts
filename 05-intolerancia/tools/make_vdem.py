@@ -57,27 +57,28 @@ YEAR_MIN = 1900          # el índice arranca en 1900; recortamos ahí para no i
 #     usamos la de intervalo porque es la comparable entre países y la que usa OWID.
 VARS = [
     dict(k="v2xpe_exlsocgr", tipo="indice", escala=[0, 1],
+         grupo="Índice", grupo_en="Index",
          es="Exclusión por grupo social (índice)",
          en="Exclusion by social group (index)",
          def_es="Índice de V-Dem: cuánto se le niega a la gente el acceso a servicios o la participación por pertenecer a un grupo social (etnia, lengua, raza, religión, casta, región). 0 = sin exclusión, 1 = exclusión total.",
          def_en="V-Dem index: how far people are denied access to services or participation because they belong to a social group (ethnicity, language, race, religion, caste, region). 0 = no exclusion, 1 = total exclusion."),
-    dict(k="v2peapssoc", tipo="componente", escala=[-3.5, 3.6], peso=0.409,
+    dict(k="v2peapssoc", tipo="componente", grupo="Componentes del índice", grupo_en="Index components", escala=[-3.5, 3.6], peso=0.409,
          es="Acceso a servicios públicos", en="Access to public services",
          def_es="Componente del índice (peso 0,409). Igualdad en el acceso a servicios públicos según el grupo social. Escala de intervalo centrada en 0 (el promedio histórico mundial); mayor = más igualitario.",
          def_en="Index component (weight 0.409). Equality of access to public services by social group. Interval scale centred on 0 (the historical world average); higher = more equal."),
-    dict(k="v2peasbsoc", tipo="componente", escala=[-3.5, 3.6], peso=0.306,
+    dict(k="v2peasbsoc", tipo="componente", grupo="Componentes del índice", grupo_en="Index components", escala=[-3.5, 3.6], peso=0.306,
          es="Acceso a negocios con el Estado", en="Access to state business opportunities",
          def_es="Componente del índice (peso 0,306). Igualdad en el acceso a oportunidades de negocio con el Estado. Escala de intervalo centrada en 0; mayor = más igualitario.",
          def_en="Index component (weight 0.306). Equality of access to state business opportunities. Interval scale centred on 0; higher = more equal."),
-    dict(k="v2peasjsoc", tipo="componente", escala=[-3.5, 3.6], peso=0.298,
+    dict(k="v2peasjsoc", tipo="componente", grupo="Componentes del índice", grupo_en="Index components", escala=[-3.5, 3.6], peso=0.298,
          es="Acceso a empleos del Estado", en="Access to state jobs",
          def_es="Componente del índice (peso 0,298). Igualdad en el acceso a empleos estatales según el grupo social. Escala de intervalo centrada en 0; mayor = más igualitario.",
          def_en="Index component (weight 0.298). Equality of access to state jobs by social group. Interval scale centred on 0; higher = more equal."),
-    dict(k="v2pepwrsoc", tipo="componente", escala=[-3.5, 3.6], peso=0.511,
+    dict(k="v2pepwrsoc", tipo="componente", grupo="Componentes del índice", grupo_en="Index components", escala=[-3.5, 3.6], peso=0.511,
          es="Poder político", en="Political power",
          def_es="Componente del índice (peso 0,511). Cuán repartido está el poder político entre grupos sociales. Escala de intervalo centrada en 0; mayor = más repartido.",
          def_en="Index component (weight 0.511). How evenly political power is distributed across social groups. Interval scale centred on 0; higher = more even."),
-    dict(k="v2clsocgrp", tipo="componente", escala=[-3.5, 3.6], peso=0.522,
+    dict(k="v2clsocgrp", tipo="componente", grupo="Componentes del índice", grupo_en="Index components", escala=[-3.5, 3.6], peso=0.522,
          es="Libertades civiles", en="Civil liberties",
          def_es="Componente del índice (peso 0,522). Igualdad en el respeto de las libertades civiles entre grupos sociales. Escala de intervalo centrada en 0; mayor = más igualitario.",
          def_en="Index component (weight 0.522). Equality in respect for civil liberties across social groups. Interval scale centred on 0; higher = more equal."),
@@ -85,20 +86,68 @@ VARS = [
 KEYS = [v["k"] for v in VARS]
 
 # ---------------------------------------------------------------- regiones
+# lib/regions.js define la TAXONOMÍA (las 10 regiones y su paleta) pero NO el mapa
+# país→región: ese viaja dentro de los datos de cada número. Se reusa el de los
+# data-*.js ya generados (la fuente autorizada del N°5) y se completa a mano con
+# los países que V-Dem cubre y la IVS no.
 def load_regions():
-    """Regiones del Atlas, leídas de lib/regions.js para no duplicar el criterio."""
-    p = os.path.join(os.path.dirname(N5), "lib", "regions.js")
-    txt = io.open(p, encoding="utf-8").read()
     import re
-    m = re.search(r"REGION_OF\s*=\s*(\{.*?\});", txt, re.S)
-    if m:
-        return json.loads(m.group(1))
     out = {}
-    for mm in re.finditer(r"['\"]([A-Z]{3})['\"]\s*:\s*['\"]([^'\"]+)['\"]", txt):
-        out[mm.group(1)] = mm.group(2)
+    for f, n in [("data-cruces.js", "CR_REGION"), ("data-waves.js", "VE_REGION"),
+                 ("data-prioridad.js", "PRIO_REGION"), ("data-quien.js", "QUIEN_REGION")]:
+        p = os.path.join(N5, f)
+        if not os.path.exists(p):
+            continue
+        txt = io.open(p, encoding="utf-8").read()
+        m = re.search(r"const " + n + r"\s*=\s*(\{.*?\});", txt, re.S)
+        if m:
+            for k, v in json.loads(m.group(1)).items():
+                out.setdefault(k, v)
     return out
 
+# Países que V-Dem cubre y la IVS no. Se completan a mano una sola vez.
+REGION_EXTRA = {
+    # África subsahariana
+    "AGO": "Sub-Saharan Africa", "BDI": "Sub-Saharan Africa", "BEN": "Sub-Saharan Africa",
+    "BWA": "Sub-Saharan Africa", "CAF": "Sub-Saharan Africa", "CIV": "Sub-Saharan Africa",
+    "CMR": "Sub-Saharan Africa", "COD": "Sub-Saharan Africa", "COG": "Sub-Saharan Africa",
+    "COM": "Sub-Saharan Africa", "CPV": "Sub-Saharan Africa", "DJI": "Sub-Saharan Africa",
+    "ERI": "Sub-Saharan Africa", "GAB": "Sub-Saharan Africa", "GIN": "Sub-Saharan Africa",
+    "GMB": "Sub-Saharan Africa", "GNB": "Sub-Saharan Africa", "GNQ": "Sub-Saharan Africa",
+    "LBR": "Sub-Saharan Africa", "LSO": "Sub-Saharan Africa", "MDG": "Sub-Saharan Africa",
+    "MOZ": "Sub-Saharan Africa", "MRT": "Sub-Saharan Africa", "MUS": "Sub-Saharan Africa",
+    "MWI": "Sub-Saharan Africa", "NAM": "Sub-Saharan Africa", "NER": "Sub-Saharan Africa",
+    "SDN": "Sub-Saharan Africa", "SEN": "Sub-Saharan Africa", "SLE": "Sub-Saharan Africa",
+    "SML": "Sub-Saharan Africa", "SOM": "Sub-Saharan Africa", "SSD": "Sub-Saharan Africa",
+    "STP": "Sub-Saharan Africa", "SWZ": "Sub-Saharan Africa", "SYC": "Sub-Saharan Africa",
+    "TCD": "Sub-Saharan Africa", "TGO": "Sub-Saharan Africa",
+    # Asia del Sur / Sudeste / Este
+    "AFG": "South Asia", "BTN": "South Asia", "LKA": "South Asia", "NPL": "South Asia",
+    "KHM": "Southeast Asia", "LAO": "Southeast Asia", "TLS": "Southeast Asia",
+    "PRK": "East Asia",
+    # Medio Oriente y Norte de África
+    "ARE": "Middle East & North Africa", "BHR": "Middle East & North Africa",
+    "OMN": "Middle East & North Africa", "SYR": "Middle East & North Africa",
+    "PSG": "Middle East & North Africa",
+    # Europa del Este y Asia Central
+    "TKM": "Eastern Europe & Central Asia", "XKX": "Eastern Europe & Central Asia",
+    # Caribe (incluye Guyana y Surinam, que son sudamericanos pero no latinos y
+    # se agrupan con el Caribe en la taxonomía del Atlas)
+    "BRB": "Caribbean", "CUB": "Caribbean", "JAM": "Caribbean",
+    "GUY": "Caribbean", "SUR": "Caribbean",
+}
+# Deliberadamente SIN región, y por lo tanto descartados:
+#   · entidades históricas que V-Dem cubre y hoy no existen como país (Baden,
+#     Baviera, Brunswick, Hannover, Hesse-Darmstadt, Mecklemburgo, Módena, Nassau,
+#     Oldemburgo, Estados Pontificios, Parma, Piamonte-Cerdeña, Sajonia,
+#     Sajonia-Weimar, Toscana, Dos Sicilias, Wurtemberg, RDA, Vietnam del Sur,
+#     Yemen del Sur, Zanzíbar, Palestina/Mandato Británico);
+#   · las islas del Pacífico (Fiyi, Papúa Nueva Guinea, Islas Salomón, Vanuatu):
+#     la taxonomía del Atlas no tiene un bucket de Oceanía que no sea
+#     "Norteamérica, Australia y N.Z.", y meterlas ahí sería falso.
+
 REGION = load_regions()
+REGION.update(REGION_EXTRA)
 
 def compact(by_year, ymin=None):
     """{año: valor} -> [primerAño, [v,...]] con años consecutivos y null en huecos."""
@@ -139,14 +188,23 @@ for r in csv.DictReader(io.open(VDEM_CSV, encoding="utf-8")):
             except ValueError:
                 pass
 
+# Sólo entran los países CON región: eso descarta de una las entidades históricas
+# que V-Dem cubre (Baden, Dos Sicilias, RDA, Vietnam del Sur…) y las islas del
+# Pacífico, que la taxonomía del Atlas no sabe ubicar.
 VD_SERIES = {}
+descartados = set()
 for k in KEYS:
     VD_SERIES[k] = {}
     for iso, by in series[k].items():
+        if iso not in REGION:
+            descartados.add(iso)
+            continue
         c = compact(by, YEAR_MIN)
         if c and any(x is not None for x in c[1]):
             VD_SERIES[k][iso] = c
     print("  %-16s paises=%d" % (k, len(VD_SERIES[k])))
+print("  descartados por no tener región: %d (%s…)"
+      % (len(descartados), ", ".join(sorted(descartados)[:6])))
 
 # ---------------------------------------------------------------- PIB empalmado
 print("empalmando PIB per cápita...")
@@ -242,16 +300,37 @@ hdr = (
     "//   codebook es la escala ordinal, que V-Dem publica aparte como v2*_ord.\n"
 )
 
+# SE EMITE EN VARIOS ARCHIVOS, uno por variable, y no en uno solo.
+# Motivo práctico, no estético: el servidor de preview local corta las respuestas
+# de archivos grandes servidos como <script src> (ERR_CONNECTION_RESET; ya pasó
+# con data-country-geo.js de 2 MB y data-elo-series.js de 359 KB). Un único
+# data-vdem.js de 610 KB no cargaba. Partido por variable, cada archivo queda en
+# ~90 KB y además una página que sólo necesite el índice puede cargar sólo ese.
 with io.open(OUT, "w", encoding="utf-8") as f:
     f.write(hdr)
+    f.write("// Este archivo trae el NÚCLEO. Las series de cada variable viven en\n"
+            "// data-vdem-<variable>.js y se van sumando a VD_SERIES; hay que cargarlas\n"
+            "// DESPUÉS de este archivo.\n")
     f.write(dump("VD_META", VD_META))
     f.write(dump("VD_VARS", VARS))
     f.write(dump("VD_REGION", VD_REGION))
     f.write(dump("VD_NAMES", {k: v for k, v in names.items() if k in VD_REGION}))
     f.write(dump("VD_GDP", VD_GDP))
-    f.write(dump("VD_SERIES", VD_SERIES))
+    f.write("const VD_SERIES = {};\n")
 
-print("\nescrito %s  (%.0f KB)" % (OUT, os.path.getsize(OUT) / 1024))
+escritos = [(os.path.basename(OUT), os.path.getsize(OUT))]
+for k in KEYS:
+    p = os.path.join(N5, "data-vdem-%s.js" % k)
+    with io.open(p, "w", encoding="utf-8") as f:
+        f.write("// GENERADO por tools/make_vdem.py — serie de %s. Cargar DESPUÉS de data-vdem.js.\n" % k)
+        f.write("VD_SERIES[%s] = %s;\n"
+                % (json.dumps(k), json.dumps(VD_SERIES[k], ensure_ascii=False, separators=(",", ":"))))
+    escritos.append((os.path.basename(p), os.path.getsize(p)))
+
+print("\narchivos escritos:")
+for n, s in escritos:
+    print("  %-34s %6.0f KB" % (n, s / 1024))
+print("  %-34s %6.0f KB  (total)" % ("", sum(s for _, s in escritos) / 1024))
 
 # ---------------------------------------------------------------- verificación
 print("\n== verificación ==")

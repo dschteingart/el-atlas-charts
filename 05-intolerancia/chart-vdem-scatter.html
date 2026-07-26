@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Intolerancia y desarrollo — El Atlas · N°5</title>
+<title>Exclusión social y desarrollo — El Atlas · N°5</title>
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
-<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/chart-desarrollo.html">
-<meta property="og:title" content="Intolerancia y desarrollo — El Atlas · N°5">
-<meta property="og:description" content="Intolerancia declarada contra PIB per cápita: puesto en la fila de su nivel de ingreso, ¿dónde queda cada país? El residuo de América Latina, ola por ola.">
-<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/thumbs/chart-desarrollo.png">
-<meta property="og:image:alt" content="Intolerancia declarada y PIB per cápita, país por país">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/chart-vdem-scatter.html">
+<meta property="og:title" content="Exclusión social y desarrollo — El Atlas · N°5">
+<meta property="og:description" content="Cuánto excluye cada país a sus grupos sociales, según V-Dem, frente a su PIB per cápita. El índice y sus cinco componentes, 1900-2023.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/thumbs/chart-vdem-scatter.png">
+<meta property="og:image:alt" content="Exclusión social y desarrollo">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Intolerancia y desarrollo — El Atlas · N°5">
-<meta name="twitter:description" content="¿América Latina es excepcionalmente intolerante, o es lo que corresponde a su nivel de ingreso?">
-<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/thumbs/chart-desarrollo.png">
+<meta name="twitter:title" content="Exclusión social y desarrollo — El Atlas · N°5">
+<meta name="twitter:description" content="Cuánto excluye cada país a sus grupos sociales, según V-Dem, frente a su PIB per cápita. El índice y sus cinco componentes, 1900-2023.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-intolerancia/thumbs/chart-vdem-scatter.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -75,8 +75,8 @@
   .m-search-result:last-child { border-bottom: none; }
   .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
   .m-search-result.m-already { color: var(--ink-muted); }
-  .dv-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); font-style: italic; }
-  @media (max-width: 768px) { .dv-hint { display: none; } }
+  .ve-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); font-style: italic; }
+  @media (max-width: 768px) { .ve-hint { display: none; } }
 
   /* ===== banner de estadísticos (debajo del SVG) ===== */
   .s-banner { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin: 8px 0 0; padding: 8px 12px; background: var(--bg-soft); border-radius: 6px; font-family: var(--sans); font-size: 13px; color: var(--ink); }
@@ -86,14 +86,14 @@
   .s-banner-region-name { font-weight: 600; }
   .s-banner-note { font-size: 11.5px; color: var(--ink-muted); }
   .s-banner-sep { color: var(--ink-muted); opacity: 0.6; }
-  .dv-banner-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); margin: 4px 0 0; font-style: italic; }
+  .ve-banner-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); margin: 4px 0 0; font-style: italic; }
   /* "Ver todas las regiones": aparece sólo si hay alguna apagada desde la
      leyenda, así no gasta alto cuando no hace falta. */
-  .dv-linkbtn { font-family: var(--sans); font-size: 11px; font-weight: 600; font-style: normal; color: var(--accent); background: none; border: none; padding: 0; margin-left: 8px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
-  .dv-linkbtn[hidden] { display: none; }
+  .ve-linkbtn { font-family: var(--sans); font-size: 11px; font-weight: 600; font-style: normal; color: var(--accent); background: none; border: none; padding: 0; margin-left: 8px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  .ve-linkbtn[hidden] { display: none; }
 
-  #tooltip18 .tt-row-sub { font-size: 10.5px; opacity: 0.72; }
-  #tooltip18 .tt-sub { font-size: 10.5px; opacity: 0.8; margin-top: 2px; font-style: italic; }
+  #tooltip20 .tt-row-sub { font-size: 10.5px; opacity: 0.72; }
+  #tooltip20 .tt-sub { font-size: 10.5px; opacity: 0.8; margin-top: 2px; font-style: italic; }
 
   @media (max-width: 768px) {
     .m-search-wrap { max-width: 100%; }
@@ -158,37 +158,37 @@
     </div>
   </header>
 
-  <div class="g-eyebrow" data-i18n="c18-eyebrow">Intolerancia y desarrollo</div>
-  <p class="g-lead" data-i18n="c18-lead">Los países ricos declaran menos rechazo. La pregunta es otra: puesto en la fila de su ingreso, ¿dónde queda cada país?</p>
+  <div class="g-eyebrow" data-i18n="c20-eyebrow">Intolerancia y desarrollo</div>
+  <p class="g-lead" data-i18n="c20-lead">Los países ricos declaran menos rechazo. La pregunta es otra: puesto en la fila de su ingreso, ¿dónde queda cada país?</p>
 
-  <section class="chart-block" data-chart="18" data-editor-id="n5-desarrollo">
-    <h2 class="chart-title" data-i18n="c18-title-neutral">Intolerancia declarada y PIB per cápita, país por país</h2>
-    <p class="chart-subtitle" data-i18n="c18-subtitle">Cada punto es un país: intolerancia declarada en el eje vertical, PIB per cápita en el horizontal.</p>
+  <section class="chart-block" data-chart="20" data-editor-id="n5-vdem-scatter">
+    <h2 class="chart-title" data-i18n="c20-title-neutral">Intolerancia declarada y PIB per cápita, país por país</h2>
+    <p class="chart-subtitle" data-i18n="c20-subtitle">Cada punto es un país: intolerancia declarada en el eje vertical, PIB per cápita en el horizontal.</p>
 
     <div class="m-controls">
       <div class="m-ctrl-group">
-        <span class="m-ctrl-label" data-i18n="c18-var-label">Indicador (eje vertical)</span>
-        <select id="dv-var" class="m-select" data-i18n-aria="c18-var-label" aria-label="Indicador (eje vertical)"></select>
+        <span class="m-ctrl-label" data-i18n="c20-var-label">Indicador (eje vertical)</span>
+        <select id="ve-var" class="m-select" data-i18n-aria="c20-var-label" aria-label="Indicador (eje vertical)"></select>
       </div>
       <div class="m-ctrl-group">
-        <span class="m-ctrl-label" data-i18n="c18-scale-label">Escala del PIB</span>
-        <div class="toggle" id="dv-scale">
-          <button data-scale="log" class="active" data-i18n="c18-scale-log">Logarítmica</button>
-          <button data-scale="linear" data-i18n="c18-scale-linear">Lineal</button>
+        <span class="m-ctrl-label" data-i18n="c20-scale-label">Escala del PIB</span>
+        <div class="toggle" id="ve-scale">
+          <button data-scale="log" class="active" data-i18n="c20-scale-log">Logarítmica</button>
+          <button data-scale="linear" data-i18n="c20-scale-linear">Lineal</button>
         </div>
       </div>
       <div class="m-ctrl-group">
-        <span class="m-ctrl-label" data-i18n="c18-model-label">Ajuste</span>
-        <div class="toggle" id="dv-model">
-          <button data-model="linear" class="active" data-i18n="c18-model-linear">Recta</button>
-          <button data-model="quad" data-i18n="c18-model-quad">Curva</button>
+        <span class="m-ctrl-label" data-i18n="c20-model-label">Ajuste</span>
+        <div class="toggle" id="ve-model">
+          <button data-model="linear" class="active" data-i18n="c20-model-linear">Recta</button>
+          <button data-model="quad" data-i18n="c20-model-quad">Curva</button>
         </div>
       </div>
-      <div class="m-ctrl-group" id="dv-wave-group">
-        <span class="m-ctrl-label" data-i18n="c18-wave-label">Ola de la encuesta</span>
-        <button id="dv-play" class="mp-play" data-i18n-aria="c18-play" aria-label="Recorrer las olas">&#9654;</button>
-        <input type="range" id="dv-wave-slider" class="mp-wave-slider" data-i18n-aria="c18-wave-label" aria-label="Ola de la encuesta">
-        <span class="mp-wave-display" id="dv-wave-display">2017-2022</span>
+      <div class="m-ctrl-group" id="ve-wave-group">
+        <span class="m-ctrl-label" data-i18n="c20-wave-label">Ola de la encuesta</span>
+        <button id="ve-play" class="mp-play" data-i18n-aria="c20-play" aria-label="Recorrer las olas">&#9654;</button>
+        <input type="range" id="ve-wave-slider" class="mp-wave-slider" data-i18n-aria="c20-wave-label" aria-label="Ola de la encuesta">
+        <span class="mp-wave-display" id="ve-wave-display">2017-2022</span>
       </div>
     </div>
 
@@ -196,35 +196,35 @@
       <div class="m-ctrl-group">
         <span class="m-ctrl-label" data-i18n="ctrl-select">Seleccionar</span>
         <div class="m-search-wrap">
-          <input type="text" id="dv-search" class="m-search-input" data-i18n-placeholder="c18-search-ph" placeholder="Agregar país…" autocomplete="off">
-          <div id="dv-search-results" class="m-search-results"></div>
+          <input type="text" id="ve-search" class="m-search-input" data-i18n-placeholder="c20-search-ph" placeholder="Agregar país…" autocomplete="off">
+          <div id="ve-search-results" class="m-search-results"></div>
         </div>
-        <span class="dv-hint" data-i18n="c18-select-hint">Los países elegidos son los que quedan etiquetados en el gráfico.</span>
+        <span class="ve-hint" data-i18n="c20-select-hint">Los países elegidos son los que quedan etiquetados en el gráfico.</span>
       </div>
     </div>
-    <div class="m-selected-chips" id="dv-selected-chips"></div>
+    <div class="m-selected-chips" id="ve-selected-chips"></div>
 
     <div class="chart-svg-wrap">
-      <svg id="chart18" viewBox="0 0 1100 480" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="tooltip" id="tooltip18"></div>
+      <svg id="chart20" viewBox="0 0 1100 480" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip20"></div>
     </div>
 
     <!-- Banner: el JS lo llena en cada render. Países · R² · residuo de la
          región enfocada (América Latina por default). Mismo set que el N°2. -->
-    <div class="s-banner" id="dv-banner"></div>
-    <p class="dv-banner-hint"><span data-i18n="c18-banner-hint">Pasá el mouse por una región de la leyenda para ver los nombres de sus países; hacé clic (o tocá) para apagarla y sacarla del ajuste.</span><button type="button" id="dv-show-all" class="dv-linkbtn" data-i18n="c18-show-all" hidden>Ver todas las regiones</button></p>
+    <div class="s-banner" id="ve-banner"></div>
+    <p class="ve-banner-hint"><span data-i18n="c20-banner-hint">Pasá el mouse por una región de la leyenda para ver los nombres de sus países; hacé clic (o tocá) para apagarla y sacarla del ajuste.</span><button type="button" id="ve-show-all" class="ve-linkbtn" data-i18n="c20-show-all" hidden>Ver todas las regiones</button></p>
   </section>
 
   <div class="footer">
     <p>
-      <button class="download" data-chart="18-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
-      <button class="download" data-png="18" data-i18n="footer-download-png">Descargar PNG</button>
+      <button class="download" data-chart="20-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="20" data-i18n="footer-download-png">Descargar PNG</button>
     </p>
     <div class="footer-row">
-      <p class="sources m-desktop-only" data-i18n="c18-sources"></p>
+      <p class="sources m-desktop-only" data-i18n="c20-sources"></p>
       <details class="m-mobile-collapse">
         <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
-        <p data-i18n="c18-sources"></p>
+        <p data-i18n="c20-sources"></p>
       </details>
       <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
     </div>
@@ -235,17 +235,26 @@
 <script src="../lib/regions.js?v=8"></script>
 <script src="../lib/i18n.js?v=9"></script>
 <script src="./i18n-issue.js?v=12"></script>
-<script src="./i18n-desarrollo.js?v=4"></script>
+<script src="./i18n-vdem-scatter.js?v=2"></script>
 <script src="../lib/utils.js?v=9"></script>
 <script src="../lib/country-names.js?v=8"></script>
 <script src="../lib/scatter-render.js?v=2"></script>
-<script src="./data-cruces.js?v=1"></script>
+<script src="./data-vdem.js?v=1"></script>
+<!-- Las series van en un archivo por variable: el preview local corta las
+     respuestas grandes servidas como <script src> (pasó con un data-vdem.js
+     único de 610 KB). Cargan DESPUÉS del núcleo, que declara VD_SERIES. -->
+<script src="./data-vdem-v2xpe_exlsocgr.js?v=1"></script>
+<script src="./data-vdem-v2peapssoc.js?v=1"></script>
+<script src="./data-vdem-v2peasbsoc.js?v=1"></script>
+<script src="./data-vdem-v2peasjsoc.js?v=1"></script>
+<script src="./data-vdem-v2pepwrsoc.js?v=1"></script>
+<script src="./data-vdem-v2clsocgrp.js?v=1"></script>
 <script src="../lib/editor.js?v=8"></script>
-<script src="./desarrollo.js?v=4"></script>
+<script src="./vdem-scatter.js?v=2"></script>
 <script src="../lib/png-export.js?v=12"></script>
 <script>
   window.__N5_V = '5';
-  initDesarrollo();
+  initVdemScatter();
   applyI18n();
   if (window.__atlasRedraw) window.__atlasRedraw();
   setupLangToggle(dv_onLangChange);

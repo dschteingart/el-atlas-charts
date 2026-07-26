@@ -143,7 +143,8 @@ const ISSUE_I18N = {
     'c11-title-neutral': 'Sentirse parte de un grupo discriminado, en América Latina',
     'c12-title-neutral': 'El grupo más discriminado en cada país de América Latina',
     'c18-title-neutral': 'Intolerancia declarada y PIB per cápita, país por país',
-    'c19-title-neutral': 'Dos preguntas de la encuesta, país por país'
+    'c19-title-neutral': 'Dos preguntas de la encuesta, país por país',
+    'c20-title-neutral': 'Exclusión social y PIB per cápita, país por país'
   },
   en: {
     'issue-num':  'No. 5',
@@ -277,7 +278,8 @@ const ISSUE_I18N = {
     'c11-title-neutral': 'Feeling part of a discriminated group, in Latin America',
     'c12-title-neutral': 'The most-discriminated group in each Latin American country',
     'c18-title-neutral': 'Declared intolerance and GDP per capita, country by country',
-    'c19-title-neutral': 'Two survey questions, country by country'
+    'c19-title-neutral': 'Two survey questions, country by country',
+    'c20-title-neutral': 'Social exclusion and GDP per capita, country by country'
   }
 };
 
