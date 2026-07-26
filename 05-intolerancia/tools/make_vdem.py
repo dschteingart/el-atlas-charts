@@ -42,32 +42,45 @@ OUT      = os.path.join(N5, "data-vdem.js")
 YEAR_MIN = 1900          # el índice arranca en 1900; recortamos ahí para no inflar el archivo
 
 # --- el índice y sus 5 componentes, con los pesos de la estructura de agregación v16 ---
+#
+# ESCALAS (verificado sobre los datos, no sobre el codebook — la primera versión de
+# este script decía 0-4 y estaba MAL):
+#   · El ÍNDICE v2xpe_exlsocgr va de 0 a 1 (observado: 0,01 a 0,99). 1 = exclusión total.
+#   · Los 5 COMPONENTES son las estimaciones puntuales del modelo de medición de V-Dem:
+#     escala de INTERVALO centrada en ~0, desvío ~1,5, observada entre −3,4 y +3,6, con
+#     alrededor de la mitad de los valores negativos. NO van de 0 a 4. El 0 es
+#     aproximadamente el promedio histórico mundial, que es como los muestra OWID.
+#     Mayor = más igualitario.
+#   · El 0-4 del codebook es la escala ORDINAL original, que V-Dem publica aparte como
+#     v2*_ord (verificado: existen las seis familias _ord en el .RData). Si alguna vez se
+#     quiere la versión 0-4 "cruda de los expertos", hay que extraer esas columnas; acá
+#     usamos la de intervalo porque es la comparable entre países y la que usa OWID.
 VARS = [
     dict(k="v2xpe_exlsocgr", tipo="indice", escala=[0, 1],
          es="Exclusión por grupo social (índice)",
          en="Exclusion by social group (index)",
          def_es="Índice de V-Dem: cuánto se le niega a la gente el acceso a servicios o la participación por pertenecer a un grupo social (etnia, lengua, raza, religión, casta, región). 0 = sin exclusión, 1 = exclusión total.",
          def_en="V-Dem index: how far people are denied access to services or participation because they belong to a social group (ethnicity, language, race, religion, caste, region). 0 = no exclusion, 1 = total exclusion."),
-    dict(k="v2peapssoc", tipo="componente", escala=[0, 4], peso=0.409,
+    dict(k="v2peapssoc", tipo="componente", escala=[-3.5, 3.6], peso=0.409,
          es="Acceso a servicios públicos", en="Access to public services",
-         def_es="Componente del índice (peso 0,409). Igualdad en el acceso a servicios públicos según el grupo social. Mayor = más igualitario.",
-         def_en="Index component (weight 0.409). Equality of access to public services by social group. Higher = more equal."),
-    dict(k="v2peasbsoc", tipo="componente", escala=[0, 4], peso=0.306,
+         def_es="Componente del índice (peso 0,409). Igualdad en el acceso a servicios públicos según el grupo social. Escala de intervalo centrada en 0 (el promedio histórico mundial); mayor = más igualitario.",
+         def_en="Index component (weight 0.409). Equality of access to public services by social group. Interval scale centred on 0 (the historical world average); higher = more equal."),
+    dict(k="v2peasbsoc", tipo="componente", escala=[-3.5, 3.6], peso=0.306,
          es="Acceso a negocios con el Estado", en="Access to state business opportunities",
-         def_es="Componente del índice (peso 0,306). Igualdad en el acceso a oportunidades de negocio con el Estado. Mayor = más igualitario.",
-         def_en="Index component (weight 0.306). Equality of access to state business opportunities. Higher = more equal."),
-    dict(k="v2peasjsoc", tipo="componente", escala=[0, 4], peso=0.298,
+         def_es="Componente del índice (peso 0,306). Igualdad en el acceso a oportunidades de negocio con el Estado. Escala de intervalo centrada en 0; mayor = más igualitario.",
+         def_en="Index component (weight 0.306). Equality of access to state business opportunities. Interval scale centred on 0; higher = more equal."),
+    dict(k="v2peasjsoc", tipo="componente", escala=[-3.5, 3.6], peso=0.298,
          es="Acceso a empleos del Estado", en="Access to state jobs",
-         def_es="Componente del índice (peso 0,298). Igualdad en el acceso a empleos estatales según el grupo social. Mayor = más igualitario.",
-         def_en="Index component (weight 0.298). Equality of access to state jobs by social group. Higher = more equal."),
-    dict(k="v2pepwrsoc", tipo="componente", escala=[0, 4], peso=0.511,
+         def_es="Componente del índice (peso 0,298). Igualdad en el acceso a empleos estatales según el grupo social. Escala de intervalo centrada en 0; mayor = más igualitario.",
+         def_en="Index component (weight 0.298). Equality of access to state jobs by social group. Interval scale centred on 0; higher = more equal."),
+    dict(k="v2pepwrsoc", tipo="componente", escala=[-3.5, 3.6], peso=0.511,
          es="Poder político", en="Political power",
-         def_es="Componente del índice (peso 0,511). Cuán repartido está el poder político entre grupos sociales. Mayor = más repartido.",
-         def_en="Index component (weight 0.511). How evenly political power is distributed across social groups. Higher = more even."),
-    dict(k="v2clsocgrp", tipo="componente", escala=[0, 4], peso=0.522,
+         def_es="Componente del índice (peso 0,511). Cuán repartido está el poder político entre grupos sociales. Escala de intervalo centrada en 0; mayor = más repartido.",
+         def_en="Index component (weight 0.511). How evenly political power is distributed across social groups. Interval scale centred on 0; higher = more even."),
+    dict(k="v2clsocgrp", tipo="componente", escala=[-3.5, 3.6], peso=0.522,
          es="Libertades civiles", en="Civil liberties",
-         def_es="Componente del índice (peso 0,522). Igualdad en el respeto de las libertades civiles entre grupos sociales. Mayor = más igualitario.",
-         def_en="Index component (weight 0.522). Equality in respect for civil liberties across social groups. Higher = more equal."),
+         def_es="Componente del índice (peso 0,522). Igualdad en el respeto de las libertades civiles entre grupos sociales. Escala de intervalo centrada en 0; mayor = más igualitario.",
+         def_en="Index component (weight 0.522). Equality in respect for civil liberties across social groups. Interval scale centred on 0; higher = more equal."),
 ]
 KEYS = [v["k"] for v in VARS]
 
@@ -222,8 +235,11 @@ hdr = (
     "//   adelante, la tasa de variación del Banco Mundial aplicada sobre el nivel de\n"
     "//   Maddison — las dos series están en años base distintos (2011 vs 2021), así\n"
     "//   que concatenarlas habría inventado un salto (Argentina 2017: 19.150 vs 28.335).\n"
-    "// Escalas: el ÍNDICE va de 0 (sin exclusión) a 1 (exclusión total); los 5\n"
-    "//   COMPONENTES van de 0 a 4 y apuntan al REVÉS (mayor = más igualitario).\n"
+    "// Escalas: el ÍNDICE va de 0 (sin exclusión) a 1 (exclusión total). Los 5\n"
+    "//   COMPONENTES son estimaciones del modelo de medición de V-Dem: escala de\n"
+    "//   INTERVALO centrada en ~0 (el promedio histórico mundial), NO de 0 a 4, y\n"
+    "//   apuntan al REVÉS que el índice (mayor = más igualitario). El 0-4 del\n"
+    "//   codebook es la escala ordinal, que V-Dem publica aparte como v2*_ord.\n"
 )
 
 with io.open(OUT, "w", encoding="utf-8") as f:
