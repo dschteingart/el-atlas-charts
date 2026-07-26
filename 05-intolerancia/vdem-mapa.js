@@ -231,8 +231,8 @@ function vm_drawLegend(svg, breaks) {
   // etiquetas adaptativas: "<b1", "b1–b2", ..., "≥bN"
   const labels = [];
   for (let i = 0; i <= breaks.length; i++) {
-    if (i === 0) labels.push('<' + breaks[0] + '%');
-    else if (i === breaks.length) labels.push('≥' + breaks[breaks.length - 1] + '%');
+    if (i === 0) labels.push('<' + vd_fmtVal(breaks[0]));
+    else if (i === breaks.length) labels.push('≥' + vd_fmtVal(breaks[breaks.length - 1]));
     else labels.push(breaks[i - 1] + '–' + breaks[i]);
   }
   const g = vm_ns('g'); svg.appendChild(g);

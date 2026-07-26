@@ -108,3 +108,35 @@ function vd_fillVarSelect(id, current) {
     sel.appendChild(og);
   });
 }
+
+// Rango del eje para una variable, sobre TODOS sus años y países: así el eje no
+// salta al mover el slider. El índice se fija en 0-1; los componentes se
+// redondean hacia afuera al medio punto. Cacheado.
+function vd_rango(k) {
+  if (!vd_rango._c) vd_rango._c = {};
+  if (vd_rango._c[k]) return vd_rango._c[k];
+  if (k === 'v2xpe_exlsocgr') { vd_rango._c[k] = [0, 1]; return vd_rango._c[k]; }
+  const src = VD_SERIES[k] || {};
+  const div = vd_scaleOf(k);
+  let mn = null, mx = null;
+  for (const iso in src) {
+    if (!Object.prototype.hasOwnProperty.call(src, iso)) continue;
+    const arr = src[iso][1];
+    for (let i = 0; i < arr.length; i++) {
+      const v = arr[i];
+      if (v === null || v === undefined) continue;
+      const r = v / div;
+      if (mn === null || r < mn) mn = r;
+      if (mx === null || r > mx) mx = r;
+    }
+  }
+  if (mn === null) { mn = 0; mx = 1; }
+  vd_rango._c[k] = [Math.floor(mn * 2) / 2, Math.ceil(mx * 2) / 2];
+  return vd_rango._c[k];
+}
+
+// Formato de un valor del indicador. NO lleva signo de porcentaje: es un índice.
+function vd_fmtVal(v, dec) {
+  const d = (dec == null) ? 2 : dec;
+  return (typeof fmt === 'function') ? fmt(v, d) : Number(v).toFixed(d).replace('.', ',');
+}

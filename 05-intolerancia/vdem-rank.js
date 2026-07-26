@@ -242,12 +242,13 @@ function vr_drawBars() {
 
   const plotW = VR_W - VR_MARGIN.left - VR_MARGIN.right;
   const maxPct = data.length > 0 ? Math.max(...data.map(d => d.pct), med ? med.value : 0, 1) : 1;
-  const xMax = maxPct * 1.06;
-  const xScale = (v) => VR_MARGIN.left + (v / xMax) * plotW;
+  const _rx = vd_rango(state[21].cat);
+  const xMin = _rx[0], xMax = _rx[1];
+  const xScale = (v) => VR_MARGIN.left + ((v - xMin) / (xMax - xMin)) * plotW;
 
   const gridG = vr_ns('g'); svg.appendChild(gridG);
   const axisG = vr_ns('g'); svg.appendChild(axisG);
-  const xTicks = (typeof niceLinearTicks === 'function') ? niceLinearTicks(0, xMax, 5) : [0, 25, 50, 75];
+  const xTicks = (typeof niceLinearTicks === 'function') ? niceLinearTicks(xMin, xMax, 5) : [0, 25, 50, 75];
   xTicks.forEach(v => {
     const x = xScale(v);
     const line = vr_ns('line');
@@ -351,7 +352,7 @@ function vr_drawBars() {
     svg.appendChild(mline);
     const mlbl = vr_ns('text');
     const mlblTxt = ((typeof t === 'function') ? t('c21-median-lbl') : 'Mediana mundial')
-      + ': ' + ((typeof fmt === 'function') ? fmt(med.value, 1) : med.value) + '%';
+      + ': ' + ((typeof fmt === 'function') ? fmt(med.value, 2) : med.value);
     const lblW = vr_measureText(mlblTxt, SIZES.medLbl, 600);
     const anchorEnd = mx + 8 + lblW > VR_W - 4;
     mlbl.setAttribute('x', anchorEnd ? mx - 8 : mx + 8);
@@ -661,8 +662,11 @@ function vr_drawMarimekko() {
   const med = s1.showMedian ? vr_median() : null;
 
   // Y máximo dinámico según la categoría (drogadictos llega a ~97).
-  const dataMax = n ? Math.max(...data.map(d => d.pct), med ? med.value : 0) : 10;
-  const yMax = Math.max(10, Math.ceil((dataMax * 1.04) / 5) * 5);
+  // Rango del eje según la variable: el índice va de 0 a 1 y los componentes
+  // son escala de intervalo con negativos. El clon forzaba un mínimo de 10 y
+  // múltiplos de 5, que venía de los porcentajes de la batería de vecinos.
+  const _r = vd_rango(state[21].cat);
+  const yMin = _r[0], yMax = _r[1];
 
   // Bottom dinámico para que las etiquetas rotadas no se corten.
   {
@@ -709,7 +713,7 @@ function vr_drawMarimekko() {
     tableLabel: vr_pick(aeSizes && aeSizes.special,   FMT_SIZES.tableLabel)
   };
 
-  const yScale = (v) => MARGIN.top + PLOT_H - (v / yMax) * PLOT_H;
+  const yScale = (v) => MARGIN.top + PLOT_H - ((v - yMin) / (yMax - yMin)) * PLOT_H;
   const barWidth = n > 0 ? PLOT_W / n : PLOT_W;
   const barInner = Math.max(1.2, barWidth - 0.4);
 
@@ -724,8 +728,8 @@ function vr_drawMarimekko() {
   const tableBottomY = (mobilePng ? 110 : VRM_TABLE_Y_FIRST) + regionsPresent.length * tableRowH;
 
   // === Grid Y + ticks ===
-  const yTicksAll = (typeof niceLinearTicks === 'function') ? niceLinearTicks(0, yMax, (mobile || mobilePng) ? 4 : 6) : [0, 20, 40, 60];
-  const yTicks = yTicksAll.filter(v => v <= yMax + 0.001);
+  const yTicksAll = (typeof niceLinearTicks === 'function') ? niceLinearTicks(yMin, yMax, (mobile || mobilePng) ? 4 : 6) : [0, 20, 40, 60];
+  const yTicks = yTicksAll.filter(v => v >= yMin - 0.001 && v <= yMax + 0.001);
   if (!yTicks.includes(0)) yTicks.unshift(0);
   yTicks.forEach(tv => {
     const y = yScale(tv);
@@ -744,7 +748,7 @@ function vr_drawMarimekko() {
     tx.setAttribute('fill', '#7A6E62');
     tx.setAttribute('font-variant-numeric', 'tabular-nums');
     tx.style.fontSize = SIZES.tick + 'px';
-    tx.textContent = tv;
+    tx.textContent = vd_fmtVal(tv, 1);
     svg.appendChild(tx);
   });
 
@@ -820,7 +824,7 @@ function vr_drawMarimekko() {
     mlbl.setAttribute('stroke-linejoin', 'round');
     mlbl.setAttribute('pointer-events', 'none');
     mlbl.textContent = ((typeof t === 'function') ? t('c21-median-lbl') : 'Mediana mundial')
-      + ': ' + ((typeof fmt === 'function') ? fmt(med.value, 1) : med.value) + '%';
+      + ': ' + ((typeof fmt === 'function') ? fmt(med.value, 2) : med.value);
     svg.appendChild(mlbl);
   }
 

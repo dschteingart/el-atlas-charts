@@ -94,19 +94,13 @@ function vl_series(item, iso) {
 // país, un dominio que se moviera con la selección haría que la misma variación
 // se viera con pendientes distintas según qué países estén elegidos.
 function vl_yearBounds() {
-  if (vl_yearBounds._c) return vl_yearBounds._c;
-  let mn = Infinity, mx = -Infinity;
-  if (typeof VD_SERIES !== 'undefined') {
-    Object.keys(VD_SERIES).forEach(item => {
-      const byWave = VD_SERIES[item];
-      Object.keys(byWave).forEach(w => {
-        byWave[w].forEach(r => { if (r[2] < mn) mn = r[2]; if (r[2] > mx) mx = r[2]; });
-      });
-    });
-  }
-  if (!isFinite(mn) || !isFinite(mx) || mx <= mn) { mn = 2010; mx = 2023; }
-  vl_yearBounds._c = [mn, mx];
-  return vl_yearBounds._c;
+  // Rango del eje X. Si el lector movió el slider de período, manda su elección;
+  // si no, el rango completo de la variable activa. El clon recorría la
+  // estructura por olas de la batería del barrio y devolvía basura.
+  const per = state[23] && state[23].period;
+  if (per && per.length === 2 && per[1] > per[0]) return [per[0], per[1]];
+  const ys = vd_years(state[23] ? state[23].cat : VL_DEFAULT_CAT);
+  return ys.length ? [ys[0], ys[ys.length - 1]] : [1900, 2023];
 }
 
 // Países con al menos una observación en el ítem activo (para el buscador).
@@ -142,7 +136,7 @@ function vl_updateSubtitle() {
   // Selector SCOPEADO al bloque del chart 17: en esta página conviven tres
   // .chart-subtitle (charts 13, 17 y 8) y un querySelector global pisaría el
   // que no es (el bug que documenta chart-discriminado.html).
-  const el = document.querySelector('.chart-block[data-chart="17"] .chart-subtitle');
+  const el = document.querySelector('.chart-block[data-chart="23"] .chart-subtitle');
   if (!el) return;
   const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
   const lang = (ae && ae.lang) || (typeof LANG !== 'undefined' ? LANG : 'es');
@@ -194,7 +188,7 @@ function drawVdemLineas() {
   // margen derecho dinámico por las etiquetas de fin de línea
   let maxLabelW = 0;
   series.forEach(s => {
-    const w = vl_measure(vl_name(s.iso) + (isPngFormat ? '  100%' : ''), SIZES.label, 700);
+    const w = vl_measure(vl_name(s.iso) + (isPngFormat ? '  0,00' : ''), SIZES.label, 700);
     if (w > maxLabelW) maxLabelW = w;
   });
   const neededRight = (bigFmt ? 16 : 10) + maxLabelW + (bigFmt ? 12 : 8);
@@ -205,14 +199,15 @@ function drawVdemLineas() {
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
 
-  const yMaxData = series.length ? Math.max(...series.flatMap(s => s.pts.map(p => p[1]))) : 10;
-  const yMax = Math.max(10, Math.ceil((yMaxData * 1.08) / 5) * 5);
+  // Rango por variable (ver vd_rango): el clon forzaba mínimo 10 y múltiplos de 5.
+  const _r = vd_rango(state[23].cat);
+  const yMin = _r[0], yMax = _r[1];
   const xScale = (yr) => MARGIN.left + ((yr - y0) / Math.max(1, y1 - y0)) * plotW;
-  const yScale = (v) => MARGIN.top + plotH - (v / yMax) * plotH;
+  const yScale = (v) => MARGIN.top + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
 
   // grid + ejes
   const gridG = vl_ns('g'); svg.appendChild(gridG);
-  const yticks = (typeof niceLinearTicks === 'function') ? niceLinearTicks(0, yMax, (mobile ? 4 : 6)) : [0, 20, 40];
+  const yticks = (typeof niceLinearTicks === 'function') ? niceLinearTicks(yMin, yMax, (mobile ? 4 : 6)) : [0, 20, 40];
   yticks.forEach(v => {
     const y = yScale(v);
     const l = vl_ns('line'); l.setAttribute('x1', MARGIN.left); l.setAttribute('x2', MARGIN.left + plotW);
@@ -222,7 +217,7 @@ function drawVdemLineas() {
     tx.setAttribute('text-anchor', 'end'); tx.setAttribute('dominant-baseline', 'central');
     tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif'); tx.style.fontSize = SIZES.tick + 'px';
     tx.setAttribute('fill', '#7A6E62'); tx.setAttribute('font-variant-numeric', 'tabular-nums');
-    tx.textContent = Math.round(v) + '%';
+    tx.textContent = Math.round(v);
     gridG.appendChild(tx);
   });
   const xt = (typeof niceLinearTicks === 'function') ? niceLinearTicks(y0, y1, mobile ? 4 : 7).filter(v => v >= y0 && v <= y1) : [];
@@ -315,7 +310,7 @@ function drawVdemLineas() {
     tx.style.fontSize = SIZES.label + 'px'; tx.setAttribute('font-weight', bigFmt ? 700 : 600); tx.setAttribute('fill', l.color);
     tx.setAttribute('paint-order', 'stroke'); tx.setAttribute('stroke', '#FAF8F3'); tx.setAttribute('stroke-width', labelHalo); tx.setAttribute('stroke-linejoin', 'round');
     tx.setAttribute('data-bl', l.key);
-    tx.textContent = l.text + (isPngFormat && l.valLast != null ? '  ' + Math.round(l.valLast) + '%' : '');
+    tx.textContent = l.text + (isPngFormat && l.valLast != null ? '  ' + Math.round(l.valLast) : '');
     labG.appendChild(tx);
   });
 
@@ -521,6 +516,8 @@ function initVdemLineas() {
   setupVdemLineasCSV();
   vl_syncControls();
   renderVdemLineasChips();
+  // El slider necesita state[23] YA creado: por eso va acá y no al principio.
+  setupVdemLineasPeriodo();
   drawVdemLineas();
 
   window.__atlasSupportsFormats = true;
@@ -537,4 +534,23 @@ function initVdemLineas() {
     if (!tpl) return null;
     return tpl.replace('{ITEM}', vl_itemLabel());
   };
+}
+
+// Slider de período de dos manijas (setupWcRangeSlider de lib/utils.js), el mismo
+// criterio que los gráficos de líneas del N°3 y del especial. Sin esto el eje X
+// mostraba el siglo entero y las series se veían aplastadas.
+function setupVdemLineasPeriodo() {
+  if (typeof setupWcRangeSlider !== 'function') return;
+  const ys = vd_years(state[23].cat);
+  if (!ys.length) return;
+  const lo = ys[0], hi = ys[ys.length - 1];
+  if (!state[23].period) state[23].period = [lo, hi];
+  setupWcRangeSlider({
+    fromId: 'vl-slider-from', toId: 'vl-slider-to',
+    displayId: 'vl-range-display', trackActiveId: 'vl-range-track-active',
+    min: lo, max: hi,
+    get: function () { return state[23].period; },
+    set: function (p) { state[23].period = p; },
+    onChange: function () { drawVdemLineas(); }
+  });
 }
