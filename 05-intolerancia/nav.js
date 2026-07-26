@@ -22,7 +22,8 @@
     'chart-quien.html',
     'chart-desarrollo.html',
     'chart-correlaciones.html',
-    'chart-vdem-scatter.html'
+    'chart-vdem-scatter.html',
+    'chart-vdem.html'
   ];
   const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
   const T = {
