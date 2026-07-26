@@ -13,7 +13,9 @@
 
   Object.assign(I18N.es, {
     'c18-eyebrow': 'Intolerancia y desarrollo',
-    'c18-lead':    'Los países ricos declaran menos rechazo que los pobres. La pregunta no es esa, sino otra: puesto en la fila de su nivel de ingreso, ¿dónde queda cada país? Elegí el indicador, movés la ola de la encuesta y mirá el residuo de cada región.',
+    // Una sola línea: el lead de tres líneas costaba 59 px de alto y el gráfico
+    // no entraba en pantalla sin scrollear.
+    'c18-lead':    'Los países ricos declaran menos rechazo. La pregunta es otra: puesto en la fila de su ingreso, ¿dónde queda cada país?',
 
     // Título: insight en el estado default (rechazo racial, ola 2017-2022,
     // recta, eje log); neutral apenas se cambia algo.
@@ -25,7 +27,10 @@
     // definición exacta del indicador y la ola activa.
     'c18-subtitle': 'Cada punto es un país: intolerancia declarada en el eje vertical, PIB per cápita en el horizontal.',
     // {DEF} = definición del indicador; {PERIODO} = etiqueta de la ola.
-    'c18-subtitle-tpl': 'Cada punto es un país. Eje vertical: {DEF} Eje horizontal: PIB per cápita. Ola {PERIODO} de la encuesta: cada país se cruza con el PIB de su propio año de trabajo de campo y, dentro de una misma ola, cada país salió a campo en un año distinto. La recta describe una asociación, no una causa.',
+    // Acortado a una línea: la letra chica (cada país con el PIB de su propio
+    // año de campo, la recta como asociación y no causa) vive en «Ver
+    // metodología y fuentes» (c18-sources).
+    'c18-subtitle-tpl': 'Cada punto es un país. Eje vertical: {DEF} Eje horizontal: PIB per cápita, ola {PERIODO}.',
 
     'c18-var-label':      'Indicador (eje vertical)',
     'c18-grp-vecinos':    'Batería de vecinos',
@@ -45,19 +50,18 @@
     'c18-axis-x-linear':  'PIB per cápita (dólares internacionales de 2011, PPA)',
     'c18-axis-y-suffix':  ' (%)',
 
-    // Banner + tira de estadísticos adentro del SVG.
+    // Banner + tira de estadísticos adentro del SVG. Mismo set que el N°2
+    // (países, R² y el residuo de la región enfocada). La PENDIENTE se sacó:
+    // «pp por cada ×10 de PIB» es jerga y el N°2 nunca la mostró.
     'c18-banner-n':       'Países',
     'c18-banner-r2':      'R²',
-    'c18-banner-slope':   'Pendiente',
-    'c18-banner-slope-tpl': '{V} pp por cada ×10 de PIB',
     'c18-banner-resid':   'Residuo',
-    'c18-banner-above':   'por encima de lo que predice su ingreso',
-    'c18-banner-below':   'por debajo de lo que predice su ingreso',
+    'c18-banner-resid-note': 'respecto de lo previsto',
     'c18-banner-none':    'sin países de esta región en la ola elegida',
-    'c18-banner-hint':    'Pasá el mouse (o tocá) una región de la leyenda para ver su residuo.',
-    'c18-strip-resid-tpl': '{REG}: {V} {DIR} lo previsto por su ingreso',
-    'c18-strip-dir-above': 'por encima de',
-    'c18-strip-dir-below': 'por debajo de',
+    'c18-banner-hint':    'Pasá el mouse por una región de la leyenda para destacarla; hacé clic (o tocá) para apagarla y sacarla del ajuste.',
+    'c18-show-all':       'Ver todas las regiones',
+    'c18-strip-resid-tpl': '{REG}: {V} respecto de lo previsto',
+    'c18-fewfit':         'Muy pocos países para estimar un ajuste.',
     'c18-nodata':         'No hay datos suficientes para esta combinación de indicador y ola.',
 
     // El rótulo de la primera fila del tooltip es el nombre del indicador
@@ -76,13 +80,13 @@
 
   Object.assign(I18N.en, {
     'c18-eyebrow': 'Intolerance and development',
-    'c18-lead':    'Rich countries report less rejection than poor ones. The interesting question is a different one: lined up against its own income level, where does each country land? Pick the indicator, move the survey wave and look at each region’s residual.',
+    'c18-lead':    'Rich countries report less rejection. The real question is another one: lined up against its own income, where does each country land?',
 
     'c18-title':         'Even adjusting for income, Latin America reports less racial rejection than the rest of the world',
     'c18-title-neutral': 'Declared intolerance and GDP per capita, country by country',
 
     'c18-subtitle': 'Each dot is a country: declared intolerance on the vertical axis, GDP per capita on the horizontal one.',
-    'c18-subtitle-tpl': 'Each dot is a country. Vertical axis: {DEF} Horizontal axis: GDP per capita. Survey wave {PERIODO}: each country is matched with the GDP of its own fieldwork year and, within a single wave, each country was surveyed in a different year. The fitted line describes an association, not a cause.',
+    'c18-subtitle-tpl': 'Each dot is a country. Vertical axis: {DEF} Horizontal axis: GDP per capita, {PERIODO} wave.',
 
     'c18-var-label':      'Indicator (vertical axis)',
     'c18-grp-vecinos':    'Neighbours battery',
@@ -104,16 +108,13 @@
 
     'c18-banner-n':       'Countries',
     'c18-banner-r2':      'R²',
-    'c18-banner-slope':   'Slope',
-    'c18-banner-slope-tpl': '{V} pp per ×10 of GDP',
     'c18-banner-resid':   'Residual',
-    'c18-banner-above':   'above what its income predicts',
-    'c18-banner-below':   'below what its income predicts',
+    'c18-banner-resid-note': 'vs. what its income predicts',
     'c18-banner-none':    'no countries from this region in the selected wave',
-    'c18-banner-hint':    'Hover (or tap) a region in the legend to see its residual.',
-    'c18-strip-resid-tpl': '{REG}: {V} {DIR} what its income predicts',
-    'c18-strip-dir-above': 'above',
-    'c18-strip-dir-below': 'below',
+    'c18-banner-hint':    'Hover a region in the legend to highlight it; click (or tap) to switch it off and drop it from the fit.',
+    'c18-show-all':       'Show all regions',
+    'c18-strip-resid-tpl': '{REG}: {V} vs. what its income predicts',
+    'c18-fewfit':         'Too few countries to estimate a fit.',
     'c18-nodata':         'Not enough data for this combination of indicator and wave.',
 
     'c18-tt-year':        'Survey year',

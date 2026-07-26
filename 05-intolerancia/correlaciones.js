@@ -49,6 +49,10 @@ const CO_DEFAULT_Y = 'homosexuales';
 // make_waves.py / make_prioridad.py / make_cruces.py: con menos de 8 países no
 // hay regresión que valga.
 const CO_MIN_N = 8;
+// Mínimo de países VISIBLES para estimar la recta. Si el usuario apaga regiones
+// desde la leyenda y quedan menos, no se dibuja recta ni se informa r / R²:
+// sólo el n. Nunca un ajuste sobre dos puntos.
+const CO_MIN_FIT = 5;
 const CO_PLAY_MS = 1100;
 // Selección default (chips = etiquetas): tres de América Latina, dos anclas de
 // Europa, Estados Unidos y dos casos que rompen la diagonal (Corea y Nigeria
@@ -125,6 +129,35 @@ function co_waveLabel(w) {
   for (let i = 0; i < CR_WAVES.length; i++) if (CR_WAVES[i].w === w) return CR_WAVES[i].label;
   return String(w);
 }
+// ---- regiones apagadas desde la leyenda ----
+// Norma del número, fijada en el chart 1 (ranking.js, state[1].hiddenRegions):
+// hover = atenúa por opacidad; CLICK = apaga y QUITA a esos países. Apagar una
+// región la saca del MODELO: la recta, r, R² y el n se recalculan sobre lo que
+// queda visible. Por eso el click redibuja (la regla prohíbe redibujar en el
+// HOVER, no en el click).
+function co_hidden() {
+  return new Set((state[19] && state[19].hiddenRegions) || []);
+}
+function co_toggleRegion(reg) {
+  const arr = state[19].hiddenRegions || (state[19].hiddenRegions = []);
+  const i = arr.indexOf(reg);
+  if (i >= 0) arr.splice(i, 1); else arr.push(reg);
+  co_regionEmph(null);
+  drawCorrelaciones();
+}
+function co_showAllRegions() {
+  state[19].hiddenRegions = [];
+  co_regionEmph(null);
+  drawCorrelaciones();
+}
+// El botón "Ver todas las regiones" existe sólo si hay algo apagado.
+function co_syncShowAll() {
+  const btn = document.getElementById('co-show-all');
+  if (!btn) return;
+  if (((state[19] && state[19].hiddenRegions) || []).length) btn.removeAttribute('hidden');
+  else btn.setAttribute('hidden', '');
+}
+
 // Filas crudas de una variable en una ola. OJO: las claves de CR_FOTO son
 // STRINGS ("7") y las de CR_VARS[i].olas son ENTEROS.
 function co_cell(k, w) {
@@ -230,38 +263,52 @@ function co_updateDefs() {
       co_varLabel(s.y) + ' — ' + co_varDef(s.y) + '</p>';
 }
 
-// Banner: países · r · R² · ola. (El PNG no rasteriza HTML: los mismos números
-// viajan en la nota de "Datos" vía onBeforePngExportGetSourceText.)
-function co_updateBanner(model, nPts) {
+// Banner: países · r · R². SOBRIO, como el del N°2 (scatter.js, #s-banner). El
+// ítem de la OLA se sacó: el slider de ola ya la muestra al lado, con su propio
+// rótulo. (El PNG no rasteriza HTML: los mismos números viajan en la nota de
+// "Datos" vía onBeforePngExportGetSourceText.)
+// nAll = países del cruce ANTES de apagar regiones: distingue "esta ola no
+// cruza estas dos preguntas" de "el usuario apagó casi todas las regiones".
+function co_updateBanner(model, nPts, nAll) {
   const el = document.getElementById('co-banner');
   if (!el) return;
-  const s = state[19];
-  const rTxt  = model ? co_fmt(model.r, 2) : '—';
-  const r2Txt = model ? co_fmt(model.r2, 2) : '—';
-  el.innerHTML =
+  const nItem =
     '<span class="s-banner-item"><span class="s-banner-key">' + co_T('c19-banner-n') + '</span>' +
-      '<span class="s-banner-val">' + nPts + '</span></span>' +
+      '<span class="s-banner-val">' + nPts + '</span></span>';
+  // Sin ajuste (menos de CO_MIN_FIT países visibles) mostramos el n y decimos
+  // por qué no hay r ni R², en vez de inventar dos estadísticos.
+  if (!model) {
+    el.innerHTML = nItem +
+      '<span class="s-banner-sep">·</span>' +
+      '<span class="s-banner-item"><span class="s-banner-note">' +
+        co_T(nAll ? 'c19-fewfit' : 'c19-empty-short') + '</span></span>';
+    return;
+  }
+  el.innerHTML = nItem +
     '<span class="s-banner-sep">·</span>' +
     '<span class="s-banner-item"><span class="s-banner-key">' + co_T('c19-banner-r') + '</span>' +
-      '<span class="s-banner-val">' + rTxt + '</span></span>' +
+      '<span class="s-banner-val">' + co_fmt(model.r, 2) + '</span></span>' +
     '<span class="s-banner-sep">·</span>' +
     '<span class="s-banner-item"><span class="s-banner-key">' + co_T('c19-banner-r2') + '</span>' +
-      '<span class="s-banner-val">' + r2Txt + '</span></span>' +
-    '<span class="s-banner-sep">·</span>' +
-    '<span class="s-banner-item"><span class="s-banner-key">' + co_T('c19-banner-wave') + '</span>' +
-      '<span class="s-banner-val">' + (s.wave == null ? '—' : co_waveLabel(s.wave)) + '</span></span>';
+      '<span class="s-banner-val">' + co_fmt(model.r2, 2) + '</span></span>';
 }
 
 // =================== Leyenda ===================
 // Regiones presentes + las dos líneas (45° y ajuste). Dos modos: columna a la
 // derecha del cuadrado (desktop / formatos anchos) o filas arriba (mobile).
-function co_legendItems(pts) {
+// Se arma sobre TODOS los países de la ola (allPts), no sobre los visibles: si
+// una región apagada desapareciera de la leyenda, no habría dónde prenderla de
+// nuevo. En los formatos de exportación sí se ocultan las apagadas: el PNG
+// muestra sólo lo que está dibujado.
+function co_legendItems(allPts, hideOff) {
   const order = (typeof REGION_ORDER !== 'undefined') ? REGION_ORDER : [];
+  const hid = co_hidden();
   const items = [];
   order.forEach(r => {
-    for (let i = 0; i < pts.length; i++) {
-      if (pts[i].region === r) {
-        items.push({ kind: 'dot', color: co_regionColor(r), label: co_T('reg.' + r) });
+    for (let i = 0; i < allPts.length; i++) {
+      if (allPts[i].region === r) {
+        if (hideOff && hid.has(r)) return;
+        items.push({ kind: 'dot', region: r, off: hid.has(r), color: co_regionColor(r), label: co_T('reg.' + r) });
         return;
       }
     }
@@ -292,7 +339,14 @@ function co_legendSwatch(g, it, x, y, fs) {
   if (it.kind === 'dot') {
     const c = co_ns('circle');
     c.setAttribute('cx', x + fs * 0.42); c.setAttribute('cy', y);
-    c.setAttribute('r', fs * 0.42); c.setAttribute('fill', it.color);
+    c.setAttribute('r', fs * 0.42);
+    // Región apagada: punto hueco (mismo criterio visual que el chip
+    // .rk-leg-off del chart 1).
+    c.setAttribute('fill', it.off ? 'none' : it.color);
+    if (it.off) {
+      c.setAttribute('stroke', it.color);
+      c.setAttribute('stroke-width', Math.max(1, fs * 0.11));
+    }
     g.appendChild(c);
   } else {
     const l = co_ns('line');
@@ -305,21 +359,62 @@ function co_legendSwatch(g, it, x, y, fs) {
   }
 }
 
+// Un ítem de la leyenda como <g> propio: swatch + rótulo (+ tachado si está
+// apagado) + hit-area táctil. Los ítems de REGIÓN quedan cableados:
+//   HOVER → atenúa el resto por opacidad, sin redibujar (co_regionEmph).
+//   CLICK → apaga/prende la región y redibuja, porque cambia el modelo.
+// Los ítems de línea (45° y ajuste) no son regiones: no se cablean.
+function co_legendNode(it, x, y, fs, rowH) {
+  const g = co_ns('g');
+  co_legendSwatch(g, it, x, y, fs);
+  const labelX = x + (it.kind === 'dot' ? fs * 1.5 : fs * 2.4) + 6;
+  const tx = co_ns('text');
+  tx.setAttribute('x', labelX);
+  tx.setAttribute('y', y);
+  tx.setAttribute('dominant-baseline', 'central');
+  tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+  tx.style.fontSize = fs + 'px';
+  tx.setAttribute('fill', CO_INK_SOFT);
+  tx.textContent = it.label;
+  g.appendChild(tx);
+  if (!it.region) return g;
+
+  g.dataset.coLegend = it.region;
+  if (it.off) {
+    g.dataset.coLegendOff = '1';
+    g.setAttribute('opacity', 0.34);
+    // Tachado dibujado a mano, no text-decoration: el rasterizado SVG→PNG no
+    // garantiza el tachado tipográfico, una línea sí.
+    const strike = co_ns('line');
+    strike.setAttribute('x1', labelX - 1);
+    strike.setAttribute('x2', labelX + co_measure(it.label, fs, 500) + 1);
+    strike.setAttribute('y1', y); strike.setAttribute('y2', y);
+    strike.setAttribute('stroke', CO_INK_SOFT);
+    strike.setAttribute('stroke-width', Math.max(1, fs * 0.09));
+    g.appendChild(strike);
+  }
+  const hit = co_ns('rect');
+  hit.setAttribute('x', x - 3);
+  hit.setAttribute('y', y - rowH / 2);
+  hit.setAttribute('width', co_legendItemW(it, fs) + 8);
+  hit.setAttribute('height', rowH);
+  hit.setAttribute('fill', 'transparent');
+  g.appendChild(hit);
+  g.style.cursor = 'pointer';
+  g.addEventListener('mouseenter', () => {
+    if (co_hidden().has(it.region)) return;   // apagada: no hay foco que aplicar
+    co_regionEmph(it.region);
+  });
+  g.addEventListener('mouseleave', () => co_regionEmph(null));
+  g.addEventListener('click', (ev) => { ev.stopPropagation(); co_toggleRegion(it.region); });
+  return g;
+}
+
 function co_drawLegendSide(svg, items, x, y, fs) {
   const g = co_ns('g'); svg.appendChild(g);
   const rowH = fs * 1.85;
   items.forEach((it, i) => {
-    const yy = y + i * rowH;
-    co_legendSwatch(g, it, x, yy, fs);
-    const tx = co_ns('text');
-    tx.setAttribute('x', x + (it.kind === 'dot' ? fs * 1.5 : fs * 2.4) + 6);
-    tx.setAttribute('y', yy);
-    tx.setAttribute('dominant-baseline', 'central');
-    tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-    tx.style.fontSize = fs + 'px';
-    tx.setAttribute('fill', CO_INK_SOFT);
-    tx.textContent = it.label;
-    g.appendChild(tx);
+    g.appendChild(co_legendNode(it, x, y + i * rowH, fs, rowH));
   });
 }
 
@@ -334,16 +429,7 @@ function co_drawLegendTop(svg, items, rows, x0, y0, maxW, fs) {
     const y = y0 + ri * rowH + fs * 0.6;
     row.forEach(i => {
       const it = items[i];
-      co_legendSwatch(g, it, x, y, fs);
-      const tx = co_ns('text');
-      tx.setAttribute('x', x + (it.kind === 'dot' ? fs * 1.5 : fs * 2.4) + 6);
-      tx.setAttribute('y', y);
-      tx.setAttribute('dominant-baseline', 'central');
-      tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-      tx.style.fontSize = fs + 'px';
-      tx.setAttribute('fill', CO_INK_SOFT);
-      tx.textContent = it.label;
-      g.appendChild(tx);
+      g.appendChild(co_legendNode(it, x, y, fs, rowH));
       x += co_legendItemW(it, fs) + gap;
     });
   });
@@ -381,16 +467,25 @@ function drawCorrelaciones() {
   } else if (mobile) {
     W = 1100; H = 1240; MARGIN = { top: 20, right: 26, bottom: 108, left: 108 };
   } else {
-    W = 1100; H = 620; MARGIN = { top: 18, right: 20, bottom: 58, left: 58 };
+    // DESKTOP EN PANTALLA. Bajado de 1100x620 a 1100x490 para que el gráfico
+    // entre sin scrollear (pedido de Daniel). Acá el alto es caro: el área de
+    // ploteo es CUADRADA, así que cada píxel de alto que se saca achica también
+    // el ancho útil. 490 es el máximo que entra en un viewport de 720 px una
+    // vez compactado el encabezado (medido: el SVG termina en y=694).
+    // Los formatos de exportación NO se tocan: salen de PNG_FORMATS +
+    // co_getMargins, arriba.
+    W = 1100; H = 490; MARGIN = { top: 14, right: 20, bottom: 50, left: 58 };
   }
   const plotW = W - MARGIN.left - MARGIN.right;
   const plotH = H - MARGIN.top - MARGIN.bottom;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
 
+  co_syncShowAll();
+
   // Sin ninguna ola en común: mensaje en vez de un gráfico vacío.
   if (s.wave == null) {
-    co_updateBanner(null, 0);
+    co_updateBanner(null, 0, 0);
     const msg = co_ns('text');
     msg.setAttribute('x', W / 2); msg.setAttribute('y', MARGIN.top + plotH / 2);
     msg.setAttribute('text-anchor', 'middle');
@@ -405,12 +500,16 @@ function drawCorrelaciones() {
     return;
   }
 
-  const pts = co_cross(s.x, s.y, s.wave);
-  const model = co_ols(pts);
-  co_updateBanner(model, pts.length);
+  // allPts = el cruce completo de la ola; pts = lo que queda después de apagar
+  // regiones desde la leyenda. El MODELO (recta, r, R², n) se estima sobre pts.
+  const allPts = co_cross(s.x, s.y, s.wave);
+  const hidden = co_hidden();
+  const pts = allPts.filter(p => !hidden.has(p.region));
+  const model = (pts.length >= CO_MIN_FIT) ? co_ols(pts) : null;
+  co_updateBanner(model, pts.length, allPts.length);
 
   // --- layout: el área de ploteo es CUADRADA (los dos ejes son 0-100) ---
-  const legItems = co_legendItems(pts);
+  const legItems = co_legendItems(allPts, !!editorFormat);
   // La leyenda no se puede comer el cuadrado: si el ítem más ancho ("América
   // del Norte, Australia y N.Z.") pide más del 34% del ancho, se achica la
   // tipografía de la leyenda hasta que entre (con piso, para que en los PNG
@@ -582,6 +681,7 @@ function drawCorrelaciones() {
     c.setAttribute('stroke', isHi ? '#3A3530' : CO_BG);
     c.setAttribute('stroke-width', isHi ? (bigFmt ? 3 : 2) : (bigFmt ? 1.6 : 1));
     c.setAttribute('data-co', p.iso);
+    c.setAttribute('data-co-reg', p.region);   // foco por región desde la leyenda
     dotsG.appendChild(c);
 
     if (isPngFormat) return;   // el PNG no necesita hit-areas ni hover
@@ -635,6 +735,7 @@ function drawCorrelaciones() {
         gl.setAttribute('stroke-width', bigFmt ? 1.2 : 0.8);
         gl.setAttribute('stroke-opacity', 0.75);
         gl.setAttribute('data-co', l.iso);
+        gl.setAttribute('data-co-reg', l.region);
         labelsG.appendChild(gl);
       }
     }
@@ -650,13 +751,15 @@ function drawCorrelaciones() {
     tx.setAttribute('stroke-width', bigFmt ? 5 : 3);
     tx.setAttribute('stroke-linejoin', 'round');
     tx.setAttribute('data-co', l.iso);
+    tx.setAttribute('data-co-reg', l.region);
     tx.textContent = l.text;
     labelsG.appendChild(tx);
   });
 
-  // Tap en zona vacía: cerrar tooltip y sacar el énfasis.
+  // Tap en zona vacía: cerrar tooltip y sacar el énfasis. (El click en la
+  // leyenda no llega acá: co_legendNode hace stopPropagation.)
   svg.onclick = (ev) => {
-    if (ev.target.tagName !== 'circle') { co_hideTooltip(); co_emph(null); }
+    if (ev.target.tagName !== 'circle') { co_hideTooltip(); co_emph(null); co_regionEmph(null); }
   };
 
   // Título: siempre el neutral (norma del número).
@@ -675,6 +778,26 @@ function co_emph(iso) {
     const el = els[i];
     if (iso == null) el.style.opacity = '';
     else el.style.opacity = (el.getAttribute('data-co') === iso) ? '1' : '0.16';
+  }
+}
+
+// Énfasis por REGIÓN al pasar por la leyenda: mismo mecanismo (opacidad sobre
+// lo ya dibujado, cero redibujado). El apagado NO pasa por acá: ese cambia el
+// modelo y redibuja.
+function co_regionEmph(reg) {
+  const svg = document.getElementById('chart19');
+  if (!svg) return;
+  const els = svg.querySelectorAll('[data-co-reg]');
+  for (let i = 0; i < els.length; i++) {
+    const el = els[i];
+    if (reg == null) el.style.opacity = '';
+    else el.style.opacity = (el.getAttribute('data-co-reg') === reg) ? '1' : '0.16';
+  }
+  const leg = svg.querySelectorAll('[data-co-legend]');
+  for (let j = 0; j < leg.length; j++) {
+    const el = leg[j];
+    if (el.dataset.coLegendOff) { el.setAttribute('opacity', 0.34); continue; }
+    el.setAttribute('opacity', (reg == null || el.dataset.coLegend === reg) ? 1 : 0.38);
   }
 }
 
@@ -947,6 +1070,14 @@ function setupCorrelacionesWave() {
   }
 }
 
+// "Ver todas las regiones": vuelve a prender todo lo apagado desde la leyenda.
+function setupCorrelacionesShowAll() {
+  const btn = document.getElementById('co-show-all');
+  if (!btn || btn.dataset.wired) return;
+  btn.dataset.wired = '1';
+  btn.addEventListener('click', () => co_showAllRegions());
+}
+
 // =================== Download CSV ===================
 // El cruce que se está viendo: los dos indicadores, la ola activa, el año real
 // de campo de cada país y el n de cada medición.
@@ -988,6 +1119,7 @@ function initCorrelaciones() {
   if (!co_var(s.y)) s.y = CO_DEFAULT_Y;
   if (s.x === s.y) { s.x = CO_DEFAULT_X; s.y = CO_DEFAULT_Y; }
   if (!Array.isArray(s.selected)) s.selected = CO_DEFAULT_SELECTED.slice();
+  if (!Array.isArray(s.hiddenRegions)) s.hiddenRegions = [];
   s.playing = false;
   const ws = co_waves(s.x, s.y);
   if (ws.indexOf(s.wave) < 0) s.wave = ws.length ? ws[ws.length - 1] : null;
@@ -997,6 +1129,7 @@ function initCorrelaciones() {
   setupCorrelacionesWave();
   setupCorrelacionesSearch();
   setupCorrelacionesCSV();
+  setupCorrelacionesShowAll();
   renderCorrelacionesChips();
   drawCorrelaciones();
 
@@ -1019,6 +1152,7 @@ function initCorrelaciones() {
     if (chartId !== '19') return;
     co_hideTooltip();
     co_emph(null);
+    co_regionEmph(null);
   };
   // Nota "Datos" corta del PNG, con los dos ejes, la ola y los estadísticos
   // que en pantalla viven en el banner (el PNG no rasteriza HTML).
@@ -1026,8 +1160,13 @@ function initCorrelaciones() {
     if (chartId !== '19') return null;
     const tpl = co_T('c19-sources-tpl');
     if (!tpl) return null;
-    const pts = (s.wave == null) ? [] : co_cross(s.x, s.y, s.wave);
-    const model = co_ols(pts);
+    // Los mismos países que el gráfico: si el usuario apagó regiones, el n y el
+    // R² de la nota son los del ajuste que se ve, no los del cruce completo.
+    const hid = co_hidden();
+    const pts = (s.wave == null)
+      ? []
+      : co_cross(s.x, s.y, s.wave).filter(p => !hid.has(p.region));
+    const model = (pts.length >= CO_MIN_FIT) ? co_ols(pts) : null;
     return tpl
       .replace('{PERIODO}', co_waveLabel(s.wave))
       .replace('{X}', co_varLabel(s.x))

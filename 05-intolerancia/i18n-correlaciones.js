@@ -12,13 +12,17 @@
   if (typeof I18N === 'undefined') return;
 
   Object.assign(I18N.es, {
-    'c19-lead':          'Elegí dos preguntas de la encuesta y mirá cómo se ordenan los países. Sobre la diagonal, el rechazo del eje vertical pesa más que el del horizontal; abajo, al revés.',
+    // Una sola línea: el lead largo costaba tres renglones de alto y el gráfico
+    // no entraba en pantalla sin scrollear.
+    'c19-lead':          'Elegí dos preguntas de la encuesta y mirá cómo se ordenan los países. Sobre la diagonal pesa más el eje vertical.',
 
     'c19-title':         'Las intolerancias van juntas, pero no son la misma cosa',
     'c19-title-neutral': 'Dos preguntas de la encuesta, país por país',
     'c19-subtitle':      'Cada punto es un país. Los dos ejes son porcentajes de la misma encuesta.',
-    // {X}, {Y} = nombre de la variable de cada eje; {PERIODO} = etiqueta de la ola.
-    'c19-subtitle-tpl':  'Cada punto es un país. Eje horizontal: {X}. Eje vertical: {Y}. Ola {PERIODO} de la encuesta: dentro de la ola, cada país salió a campo en un año distinto.',
+    // {X}, {Y} = nombre de la variable de cada eje; {PERIODO} = etiqueta de la
+    // ola. La letra chica (cada país sale a campo en un año distinto dentro de
+    // la ola) vive en «Ver metodología y fuentes».
+    'c19-subtitle-tpl':  'Cada punto es un país. Eje horizontal: {X}. Eje vertical: {Y}. Ola {PERIODO}.',
 
     'c19-x-label':       'Eje horizontal',
     'c19-y-label':       'Eje vertical',
@@ -33,13 +37,18 @@
     'c19-search-ph':     'Agregar país…',
     'c19-pick-hint':     'Los países elegidos se etiquetan en el gráfico.',
 
+    // Banner sobrio, como el del N°2: países, r y R². Nada más (la ola ya la
+    // muestra el slider, al lado).
     'c19-banner-n':      'Países',
     'c19-banner-r':      'Correlación (r)',
     'c19-banner-r2':     'R²',
-    'c19-banner-wave':   'Ola',
+    'c19-fewfit':        'Muy pocos países para estimar un ajuste.',
+    'c19-empty-short':   'Sin datos para esta combinación.',
 
     'c19-leg-diag':      'Línea de 45°: mismo % en los dos ejes',
     'c19-leg-fit':       'Recta de ajuste',
+    'c19-legend-hint':   'Pasá el mouse por una región de la leyenda para destacarla; hacé clic (o tocá) para apagarla y sacarla del ajuste.',
+    'c19-show-all':      'Ver todas las regiones',
 
     'c19-axis-tpl':      '{VAR} (%)',
     'c19-def-x':         'Eje X',
@@ -53,12 +62,12 @@
   });
 
   Object.assign(I18N.en, {
-    'c19-lead':          'Pick two survey questions and see how countries line up. Above the diagonal, the rejection on the vertical axis weighs more than the one on the horizontal axis; below it, the other way around.',
+    'c19-lead':          'Pick two survey questions and see how countries line up. Above the diagonal, the vertical axis weighs more.',
 
     'c19-title':         'Intolerances travel together — but they are not the same thing',
     'c19-title-neutral': 'Two survey questions, country by country',
     'c19-subtitle':      'Each dot is a country. Both axes are percentages from the same survey.',
-    'c19-subtitle-tpl':  'Each dot is a country. Horizontal axis: {X}. Vertical axis: {Y}. {PERIODO} wave of the survey: within a wave, each country went to the field in a different year.',
+    'c19-subtitle-tpl':  'Each dot is a country. Horizontal axis: {X}. Vertical axis: {Y}. {PERIODO} wave.',
 
     'c19-x-label':       'Horizontal axis',
     'c19-y-label':       'Vertical axis',
@@ -76,10 +85,13 @@
     'c19-banner-n':      'Countries',
     'c19-banner-r':      'Correlation (r)',
     'c19-banner-r2':     'R²',
-    'c19-banner-wave':   'Wave',
+    'c19-fewfit':        'Too few countries to estimate a fit.',
+    'c19-empty-short':   'No data for this combination.',
 
     'c19-leg-diag':      '45° line: same % on both axes',
     'c19-leg-fit':       'Line of best fit',
+    'c19-legend-hint':   'Hover a region in the legend to highlight it; click (or tap) to switch it off and drop it from the fit.',
+    'c19-show-all':      'Show all regions',
 
     'c19-axis-tpl':      '{VAR} (%)',
     'c19-def-x':         'X axis',

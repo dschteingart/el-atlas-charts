@@ -86,6 +86,7 @@
   .s-banner-item { display: inline-flex; align-items: baseline; gap: 6px; }
   .s-banner-key { font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
   .s-banner-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .s-banner-note { font-size: 11.5px; color: var(--ink-muted); }
   .s-banner-sep { color: var(--ink-muted); opacity: 0.6; }
   @media (max-width: 768px) {
     .s-top-row { flex-direction: column; gap: 6px; }
@@ -93,10 +94,17 @@
     .s-banner { font-size: 12px; }
   }
 
-  /* ===== definición exacta de cada eje (sale de CR_VARS[i].def_*) ===== */
-  #co-defs { margin: 2px 0 4px; }
-  .co-def { font-family: var(--sans); font-size: 11.5px; line-height: 1.4; color: var(--ink-muted); margin: 1px 0; }
+  /* ===== definición exacta de cada eje (sale de CR_VARS[i].def_*) =====
+     Va DEBAJO del gráfico: arriba costaba dos renglones de alto y el gráfico no
+     entraba en pantalla sin scrollear. */
+  #co-defs { margin: 6px 0 0; }
+  .co-def { font-family: var(--sans); font-size: 11px; line-height: 1.4; color: var(--ink-muted); margin: 1px 0; }
   .co-def-key { font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.06em; font-size: 10px; margin-right: 4px; }
+
+  /* pie de leyenda + "Ver todas las regiones" (aparece sólo si hay apagadas) */
+  .co-legend-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); margin: 4px 0 0; font-style: italic; }
+  .co-linkbtn { font-family: var(--sans); font-size: 11px; font-weight: 600; font-style: normal; color: var(--accent); background: none; border: none; padding: 0; margin-left: 8px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  .co-linkbtn[hidden] { display: none; }
 
   #tooltip19 .tt-year { color: #8A8579; font-size: 9.5px; margin-top: 3px; }
 
@@ -114,6 +122,38 @@
   .m-mobile-collapse[open] > summary::before { content: '\2212 '; }
   .m-mobile-collapse > p { margin: 4px 0 8px; font-family: var(--sans); font-size: 11px; color: var(--ink-soft); line-height: 1.45; }
   @media (max-width: 768px) { .m-mobile-collapse { display: block; } .m-desktop-only { display: none; } }
+
+  /* ===== compactación del encabezado en DESKTOP =====
+     Reclamo de Daniel: "necesito q el grafico pueda verse sin scrollear".
+     Scopeado a >=769px para no tocar la UX táctil del celu (que usa su propio
+     viewBox alto). La otra mitad del ajuste es la altura del viewBox de
+     pantalla, en drawCorrelaciones(). */
+  @media (min-width: 769px) {
+    .wrap-wide { padding: 4px 20px 10px; }
+    .wrap-wide header { padding-bottom: 2px; margin-bottom: 4px; }
+    .wrap-wide .chart-block { margin: 2px 0; }
+    .wrap-wide .chart-title { font-size: 17px; margin: 0 0 1px; line-height: 1.18; }
+    .wrap-wide .chart-subtitle { font-size: 12.5px; margin: 0 0 3px; line-height: 1.3; }
+    .g-lead { font-size: 13px; line-height: 1.35; margin: 0 0 5px; }
+    .m-controls { gap: 8px 14px; margin: 2px 0 3px; }
+    .m-ctrl-group { gap: 7px; }
+    .m-ctrl-label { font-size: 10.5px; }
+    .m-select { padding: 4px 26px 4px 12px; }
+    .co-swap { padding: 4px 12px; }
+    .m-play-btn { width: 26px; height: 26px; }
+    .m-year-display { font-size: 13px; min-width: 76px; }
+    .m-search-input { padding: 5px 9px; font-size: 12.5px; }
+    .s-top-row { margin: 2px 0 1px; }
+    .s-banner { padding: 4px 12px; }
+    .m-selected-chips { gap: 5px; margin: 1px 0 2px; }
+    .m-selected-chip { padding: 2px 3px 2px 8px; font-size: 11.5px; }
+    .m-chip-dot { width: 9px; height: 9px; }
+    .m-chip-x { width: 16px; height: 16px; font-size: 13px; }
+    .chart-svg-wrap { margin-top: 0; }
+  }
+  /* Pantallas bajas: el lead es contexto, no control. Se retira para que el
+     gráfico entre entero. */
+  @media (min-width: 769px) and (max-height: 880px) { .g-lead { display: none; } }
 </style>
 </head>
 <body>
@@ -129,7 +169,7 @@
     </div>
   </header>
 
-  <p class="g-lead" data-i18n="c19-lead">Elegí dos preguntas de la encuesta y mirá cómo se ordenan los países. Sobre la diagonal, el rechazo del eje vertical pesa más que el del horizontal; abajo, al revés.</p>
+  <p class="g-lead" data-i18n="c19-lead">Elegí dos preguntas de la encuesta y mirá cómo se ordenan los países. Sobre la diagonal pesa más el eje vertical.</p>
 
   <section class="chart-block" data-chart="19" data-editor-id="n5-cruces">
     <h2 class="chart-title" data-i18n="c19-title-neutral">Dos preguntas de la encuesta, país por país</h2>
@@ -168,12 +208,16 @@
       <div class="s-banner" id="co-banner"></div>
     </div>
     <div class="m-selected-chips" id="co-selected-chips"></div>
-    <div id="co-defs"></div>
 
     <div class="chart-svg-wrap">
-      <svg id="chart19" viewBox="0 0 1100 620" preserveAspectRatio="xMidYMid meet"></svg>
+      <svg id="chart19" viewBox="0 0 1100 490" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="tooltip" id="tooltip19"></div>
     </div>
+
+    <!-- Debajo del gráfico: la definición exacta de cada eje y el pie de la
+         leyenda de regiones (con el botón para volver a prender todo). -->
+    <div id="co-defs"></div>
+    <p class="co-legend-hint"><span data-i18n="c19-legend-hint">Pasá el mouse por una región de la leyenda para destacarla; hacé clic (o tocá) para apagarla y sacarla del ajuste.</span><button type="button" id="co-show-all" class="co-linkbtn" data-i18n="c19-show-all" hidden>Ver todas las regiones</button></p>
   </section>
 
   <div class="footer">
@@ -196,13 +240,13 @@
 <script src="../lib/regions.js?v=8"></script>
 <script src="../lib/i18n.js?v=9"></script>
 <script src="./i18n-issue.js?v=11"></script>
-<script src="./i18n-correlaciones.js?v=1"></script>
+<script src="./i18n-correlaciones.js?v=2"></script>
 <script src="../lib/utils.js?v=9"></script>
 <script src="../lib/country-names.js?v=8"></script>
 <script src="../lib/scatter-render.js?v=2"></script>
 <script src="./data-cruces.js?v=1"></script>
 <script src="../lib/editor.js?v=8"></script>
-<script src="./correlaciones.js?v=1"></script>
+<script src="./correlaciones.js?v=2"></script>
 <script src="../lib/png-export.js?v=11"></script>
 <script>
   window.__N5_V = '5';

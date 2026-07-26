@@ -30,9 +30,12 @@
 //     banner dice explícitamente cuándo la región no está en la ola elegida.
 //   - Un país sin PIB dentro de ±3 años NO entra: no se interpola nada.
 //
-// Regla de interacción del Atlas respetada acá: el hover NUNCA redibuja el
-// chart. El foco por región (hover o click en la leyenda) se aplica solo por
-// opacidad sobre los círculos ya dibujados (dv_applyRegionFocus).
+// Regla de interacción del Atlas respetada acá: el HOVER nunca redibuja el
+// chart — el foco por región se aplica solo por opacidad sobre los círculos ya
+// dibujados (dv_applyRegionFocus). El CLICK en la leyenda sí redibuja, porque
+// apaga la región y la SACA del modelo (state[18].hiddenRegions): la recta, el
+// R², el n y los residuos se recalculan sobre los países visibles. Es la misma
+// norma del chart 1 (ranking.js, state[1].hiddenRegions).
 //
 // Depende de: CR_META, CR_WAVES, CR_VARS, CR_REGION, CR_GDP, CR_FOTO
 // (data-cruces.js), REGION_ORDER/REGION_COLORS/REGION_LABEL_COLORS
@@ -52,6 +55,10 @@ const DV_DEFAULT_SEL = ['ARG', 'BRA', 'CHL', 'MEX', 'PER', 'URY', 'USA', 'ESP', 
 const DV_HIGHLIGHT = 'ARG';
 const DV_LATAM = 'Latin America';
 const DV_PLAY_MS = 1100;
+// Mínimo de países VISIBLES para estimar el ajuste. Si el usuario apaga
+// regiones desde la leyenda y quedan menos, NO se estima nada: se ocultan la
+// recta y el R² y sólo se informa el n. Nunca un ajuste sobre dos puntos.
+const DV_MIN_FIT = 5;
 
 // Dominio del eje X fijo para TODO el dataset (no por ola ni por variable): así
 // el eje no salta al mover el slider. Maddison, en estos 112 países, va de
@@ -71,6 +78,13 @@ let dv_dots = [];
 // Último modelo dibujado: lo reusan el banner y la tira de estadísticos cuando
 // cambia la región enfocada, sin volver a dibujar el gráfico.
 let dv_lastModel = null;
+// Países VISIBLES del último render (los que entraron al modelo). Es el n que
+// muestran el banner y la tira, y cambia cuando se apaga una región.
+let dv_lastN = 0;
+// Países de la celda ANTES de apagar regiones. Distingue los dos "sin ajuste":
+// la celda no tiene datos (c18-nodata) vs. el usuario apagó casi todo
+// (c18-fewfit). Sin esto, apagar todas las regiones decía "no hay datos".
+let dv_lastAll = 0;
 
 // =================== Helpers ===================
 function dv_isMobile() {
@@ -97,6 +111,36 @@ function dv_regionLabelColor(reg) {
 }
 function dv_regionLabel(reg) {
   return reg ? dv_t('reg.' + reg) : '—';
+}
+
+// ---- regiones apagadas desde la leyenda ----
+// Norma del número, fijada en el chart 1 (ranking.js, state[1].hiddenRegions):
+// hover = atenúa por opacidad; CLICK = apaga y QUITA a esos países. Apagar una
+// región no es sólo esconder puntos: los saca del modelo, así que la recta, el
+// R², el n y los residuos se recalculan sobre lo que queda visible. Por eso el
+// click SÍ redibuja (la regla del Atlas prohíbe redibujar en el HOVER).
+function dv_hidden() {
+  return new Set(state[18].hiddenRegions || []);
+}
+function dv_toggleRegion(reg) {
+  const arr = state[18].hiddenRegions || (state[18].hiddenRegions = []);
+  const i = arr.indexOf(reg);
+  if (i >= 0) arr.splice(i, 1); else arr.push(reg);
+  if (state[18].pinRegion === reg) state[18].pinRegion = null;
+  if (state[18].hoverRegion === reg) state[18].hoverRegion = null;
+  drawDesarrollo();
+}
+function dv_showAllRegions() {
+  state[18].hiddenRegions = [];
+  drawDesarrollo();
+}
+// El botón "Ver todas las regiones" sólo existe cuando hay algo apagado (así no
+// gasta alto cuando no hace falta: ver el ajuste de altura del encabezado).
+function dv_syncShowAll() {
+  const btn = document.getElementById('dv-show-all');
+  if (!btn) return;
+  if ((state[18].hiddenRegions || []).length) btn.removeAttribute('hidden');
+  else btn.setAttribute('hidden', '');
 }
 function dv_measure(text, fs, weight) {
   if (!dv_measure._c) {
@@ -283,8 +327,10 @@ function dv_regionResiduals(pts) {
 }
 
 // Modelo activo. Muta los puntos agregándoles pred/resid.
+// Devuelve null si no hay al menos DV_MIN_FIT países visibles: en ese caso el
+// chart se dibuja igual (puntos, ejes, leyenda) pero sin recta ni R².
 function dv_buildModel(pts) {
-  if (pts.length < 3) return null;
+  if (pts.length < DV_MIN_FIT) return null;
   const xy = pts.map(p => ({ x: Math.log10(p.gdp), y: p.pct }));
   const quad = state[18].model === 'quad';
   const reg = quad ? dv_quadFit(xy) : dv_ols(xy);
@@ -339,7 +385,11 @@ function dv_layout(editorFormat, mobile) {
     return { W: 1100, H: 1250, M: { top: 110, right: 36, left: 126 }, baseBottom: 62,
              SIZES: { tick: 28, axisTitle: 30, label: 27, dot: 9, strip: 28, legend: 23 } };
   }
-  return { W: 1100, H: 620, M: { top: 48, right: 34, left: 72 }, baseBottom: 26,
+  // DESKTOP EN PANTALLA. Bajado de 1100x620 a 1100x480 para que el gráfico
+  // entre sin scrollear (pedido de Daniel). OJO: esta rama NO toca el PNG —
+  // los formatos de exportación son las ramas de arriba (newsletter/square/
+  // mobile/public), que siguen con sus medidas de siempre.
+  return { W: 1100, H: 480, M: { top: 44, right: 34, left: 72 }, baseBottom: 22,
            SIZES: { tick: 11, axisTitle: 12, label: 11.5, dot: 5, strip: 11, legend: 10.5 } };
 }
 
@@ -381,11 +431,19 @@ function drawDesarrollo() {
   const MARGIN = { top: L.M.top, right: L.M.right, left: L.M.left, bottom: 0 };
   const plotW = W - MARGIN.left - MARGIN.right;
 
-  const pts = dv_points();
+  // allPts = todo lo que hay en la celda; pts = lo que queda después de apagar
+  // regiones desde la leyenda. El MODELO se estima sobre pts.
+  const allPts = dv_points();
+  const hidden = dv_hidden();
+  const pts = allPts.filter(p => !hidden.has(p.region));
 
-  // Leyenda: solo las regiones REALMENTE presentes, en el orden del Atlas.
+  // Leyenda: las regiones REALMENTE presentes en la celda (incluidas las
+  // apagadas, para poder volver a prenderlas), en el orden del Atlas. En los
+  // formatos de exportación las apagadas no se listan: el PNG muestra sólo lo
+  // que está dibujado.
   const presentRegions = (typeof REGION_ORDER !== 'undefined' ? REGION_ORDER : [])
-    .filter(r => pts.some(p => p.region === r));
+    .filter(r => allPts.some(p => p.region === r))
+    .filter(r => !editorFormat || !hidden.has(r));
   // Válvula de seguridad: si con el cuerpo elegido la leyenda se come más de un
   // cuarto del alto (pasa con nombres largos en formatos chicos), la achicamos
   // en vez de dejar el plot sin altura.
@@ -405,9 +463,13 @@ function drawDesarrollo() {
 
   const model = dv_buildModel(pts);
   dv_lastModel = model;
+  dv_lastN = pts.length;
+  dv_lastAll = allPts.length;
 
-  // Celda sin datos suficientes: no inventamos una regresión.
-  if (!model) {
+  // Celda sin NINGÚN dato: no dibujamos un par de ejes vacíos.
+  // (Con modelo nulo pero puntos visibles sí se dibuja todo: lo único que
+  // desaparece es la recta y el R². Ver dv_buildModel / DV_MIN_FIT.)
+  if (!allPts.length) {
     const msg = dv_ns('text');
     msg.setAttribute('x', W / 2);
     msg.setAttribute('y', MARGIN.top + Math.max(60, plotH / 2));
@@ -418,7 +480,8 @@ function drawDesarrollo() {
     msg.textContent = dv_t('c18-nodata');
     svg.appendChild(msg);
     dv_updateSubtitle(v);
-    dv_updateBanner(null);
+    dv_updateBanner(null, 0);
+    dv_syncShowAll();
     return;
   }
 
@@ -523,31 +586,35 @@ function drawDesarrollo() {
   // === Curva de regresión ===
   // Se dibuja SOLO sobre el rango de PIB realmente observado: no extrapolamos
   // visualmente fuera de los datos. Se corta donde se sale del eje Y.
-  let gLo = Infinity, gHi = -Infinity;
-  for (let i = 0; i < pts.length; i++) {
-    if (pts[i].gdp < gLo) gLo = pts[i].gdp;
-    if (pts[i].gdp > gHi) gHi = pts[i].gdp;
-  }
-  const N_SAMPLES = 200;
-  const lo = Math.log10(gLo), hi = Math.log10(gHi);
-  let d = '', pen = false;
-  for (let i = 0; i <= N_SAMPLES; i++) {
-    const gdp = Math.pow(10, lo + (i / N_SAMPLES) * (hi - lo));
-    const yp = model.predict(gdp);
-    if (yp < 0 || yp > yMax) { pen = false; continue; }
-    const px = xScale(gdp), py = yScale(yp);
-    d += (pen ? ' L ' : ' M ') + px.toFixed(1) + ' ' + py.toFixed(1);
-    pen = true;
-  }
-  if (d) {
-    const path = dv_ns('path');
-    path.setAttribute('d', d.trim());
-    path.setAttribute('fill', 'none');
-    path.setAttribute('stroke', '#9C928A');
-    path.setAttribute('stroke-width', bigFmt ? 2.4 : 1.6);
-    path.setAttribute('stroke-dasharray', bigFmt ? '9 6' : '5 3');
-    path.setAttribute('stroke-linecap', 'round');
-    svg.appendChild(path);
+  // Sin modelo (menos de DV_MIN_FIT países visibles) no hay recta: no se
+  // dibuja un ajuste sobre dos puntos.
+  if (model) {
+    let gLo = Infinity, gHi = -Infinity;
+    for (let i = 0; i < pts.length; i++) {
+      if (pts[i].gdp < gLo) gLo = pts[i].gdp;
+      if (pts[i].gdp > gHi) gHi = pts[i].gdp;
+    }
+    const N_SAMPLES = 200;
+    const lo = Math.log10(gLo), hi = Math.log10(gHi);
+    let d = '', pen = false;
+    for (let i = 0; i <= N_SAMPLES; i++) {
+      const gdp = Math.pow(10, lo + (i / N_SAMPLES) * (hi - lo));
+      const yp = model.predict(gdp);
+      if (yp < 0 || yp > yMax) { pen = false; continue; }
+      const px = xScale(gdp), py = yScale(yp);
+      d += (pen ? ' L ' : ' M ') + px.toFixed(1) + ' ' + py.toFixed(1);
+      pen = true;
+    }
+    if (d) {
+      const path = dv_ns('path');
+      path.setAttribute('d', d.trim());
+      path.setAttribute('fill', 'none');
+      path.setAttribute('stroke', '#9C928A');
+      path.setAttribute('stroke-width', bigFmt ? 2.4 : 1.6);
+      path.setAttribute('stroke-dasharray', bigFmt ? '9 6' : '5 3');
+      path.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(path);
+    }
   }
 
   // === Puntos ===
@@ -642,7 +709,7 @@ function drawDesarrollo() {
   // === Tira de estadísticos DENTRO del SVG ===
   // El banner HTML no entra al PNG (png-export rasteriza el SVG), así que el R²
   // y el residuo regional también van adentro del gráfico.
-  dv_drawStatStrip(svg, model, MARGIN, SIZES.strip);
+  dv_drawStatStrip(svg, model, pts.length, MARGIN, SIZES.strip);
 
   // === Leyenda de regiones, debajo del título del eje X ===
   dv_drawLegend(svg, leg, MARGIN, plotW, xTitleY, legendFs);
@@ -651,6 +718,7 @@ function drawDesarrollo() {
   svg.onclick = (ev) => { if (ev.target.tagName !== 'circle') dv_hideTooltip(); };
 
   dv_updateSubtitle(v);
+  dv_syncShowAll();
   dv_applyRegionFocus();
 
   // Título NEUTRAL por default, como los otros 21 charts del repo (norma de
@@ -662,10 +730,14 @@ function drawDesarrollo() {
   }
 }
 
-// Dos líneas en el margen superior del SVG: R² + N + pendiente, y el residuo de
-// la región enfocada. La línea 2 lleva data-strip-line="2" para que el foco por
-// región la reescriba sin redibujar el gráfico.
-function dv_drawStatStrip(svg, model, MARGIN, fs) {
+// Dos líneas en el margen superior del SVG: R² + n, y el residuo de la región
+// enfocada. La línea 2 lleva data-strip-line="2" para que el foco por región la
+// reescriba sin redibujar el gráfico.
+//
+// SIN la pendiente: el N°2 (scatter.js, #s-banner) nunca la mostró, "pp por
+// cada ×10 de PIB" es jerga, y la línea que ahorra es alto que hace falta para
+// que el gráfico entre sin scrollear. El R² ya comunica el ajuste.
+function dv_drawStatStrip(svg, model, n, MARGIN, fs) {
   const g = dv_ns('g'); svg.appendChild(g);
   const mk = (y, text, weight, ink, line) => {
     const tx = dv_ns('text');
@@ -680,19 +752,38 @@ function dv_drawStatStrip(svg, model, MARGIN, fs) {
     g.appendChild(tx);
     return tx;
   };
-  const slope = dv_t('c18-banner-slope-tpl').replace('{V}', dv_signed(model.b, 1));
-  const line1 = dv_t('c18-banner-r2') + ' ' + dv_num(model.r2, 3)
-    + ' · ' + model.n + ' ' + dv_t('c18-banner-n').toLowerCase()
-    + (model.quad ? '' : ' · ' + slope);
-  mk(MARGIN.top - fs * 2.0, line1, 500, DV_AXIS_INK, null);
+  const nTxt = n + ' ' + dv_t('c18-banner-n').toLowerCase();
+  if (!model) {
+    mk(MARGIN.top - fs * 2.0, nTxt, 500, DV_AXIS_INK, null);
+    mk(MARGIN.top - fs * 0.55, dv_t(dv_lastAll ? 'c18-fewfit' : 'c18-nodata'),
+       500, DV_AXIS_INK, '2');
+    return;
+  }
+  mk(MARGIN.top - fs * 2.0,
+     dv_t('c18-banner-r2') + ' ' + dv_num(model.r2, 3) + ' · ' + nTxt,
+     500, DV_AXIS_INK, null);
   mk(MARGIN.top - fs * 0.55, dv_stripResidText(model), 700,
      dv_regionLabelColor(dv_focusRegion()), '2');
 }
 
 // Región enfocada: hover de leyenda > región fijada por click > América Latina.
+// Una región APAGADA no puede estar enfocada (no tiene puntos ni residuo); si
+// la apagada es América Latina, el residuo pasa a la primera región encendida
+// que el modelo tenga, para no mostrar un "sin países" que confunde.
 function dv_focusRegion() {
   const s = state[18];
-  return s.hoverRegion || s.pinRegion || DV_LATAM;
+  const hid = dv_hidden();
+  if (s.hoverRegion && !hid.has(s.hoverRegion)) return s.hoverRegion;
+  if (s.pinRegion && !hid.has(s.pinRegion)) return s.pinRegion;
+  if (!hid.has(DV_LATAM)) return DV_LATAM;
+  const m = dv_lastModel;
+  if (m) {
+    const order = (typeof REGION_ORDER !== 'undefined') ? REGION_ORDER : [];
+    for (let i = 0; i < order.length; i++) {
+      if (!hid.has(order[i]) && m.byRegion[order[i]]) return order[i];
+    }
+  }
+  return DV_LATAM;
 }
 
 function dv_stripResidText(model) {
@@ -701,28 +792,37 @@ function dv_stripResidText(model) {
   if (!rr) return dv_regionLabel(focus) + ': ' + dv_t('c18-banner-none');
   return dv_t('c18-strip-resid-tpl')
     .replace('{REG}', dv_regionLabel(focus))
-    .replace('{V}', dv_signed(rr.pp, 1, ' pp'))
-    .replace('{DIR}', dv_t(rr.pp >= 0 ? 'c18-strip-dir-above' : 'c18-strip-dir-below'));
+    .replace('{V}', dv_signed(rr.pp, 1, ' pp'));
 }
 
 // Leyenda de regiones adentro del SVG. Para el N°5, png-export NO dibuja
 // leyenda propia (SHOWS_LEGEND devuelve false), así que tiene que estar acá.
-// Hover/click → foco por región POR OPACIDAD, sin redibujar el chart.
+//   HOVER → foco por región POR OPACIDAD, sin redibujar el chart.
+//   CLICK → apaga/prende la región (cambia el modelo → sí redibuja).
+// El ítem apagado va con el punto hueco, tachado y atenuado, como el chip
+// .rk-leg-off del chart 1: tiene que verse que está apagado y poder prenderse.
 function dv_drawLegend(svg, leg, MARGIN, plotW, xTitleY, fs) {
   const g = dv_ns('g'); svg.appendChild(g);
+  const hid = dv_hidden();
   const y0 = xTitleY + fs * 2.2;
   leg.rows.forEach((row, ri) => {
     const rowW = row.reduce((a, it) => a + it.w, 0) - leg.gapItem;
     let x = MARGIN.left + Math.max(0, (plotW - rowW) / 2);
     const y = y0 + ri * leg.rowH;
     row.forEach(it => {
+      const off = hid.has(it.region);
       const item = dv_ns('g');
       item.style.cursor = 'pointer';
       item.dataset.legendRegion = it.region;
+      if (off) item.dataset.legendOff = '1';
       const dot = dv_ns('circle');
       dot.setAttribute('cx', x + leg.dotR); dot.setAttribute('cy', y);
       dot.setAttribute('r', leg.dotR);
-      dot.setAttribute('fill', dv_regionColor(it.region));
+      dot.setAttribute('fill', off ? 'none' : dv_regionColor(it.region));
+      if (off) {
+        dot.setAttribute('stroke', dv_regionColor(it.region));
+        dot.setAttribute('stroke-width', Math.max(1, fs * 0.11));
+      }
       item.appendChild(dot);
       const tx = dv_ns('text');
       tx.setAttribute('x', x + leg.gapDot); tx.setAttribute('y', y);
@@ -732,6 +832,17 @@ function dv_drawLegend(svg, leg, MARGIN, plotW, xTitleY, fs) {
       tx.style.fontSize = fs + 'px';
       tx.textContent = it.label;
       item.appendChild(tx);
+      // Tachado dibujado a mano, no text-decoration: el rasterizado SVG→PNG no
+      // garantiza el subrayado/tachado tipográfico, una línea sí.
+      if (off) {
+        const strike = dv_ns('line');
+        strike.setAttribute('x1', x + leg.gapDot - 1);
+        strike.setAttribute('x2', x + leg.gapDot + dv_measure(it.label, fs, 500) + 1);
+        strike.setAttribute('y1', y); strike.setAttribute('y2', y);
+        strike.setAttribute('stroke', '#4A4A4A');
+        strike.setAttribute('stroke-width', Math.max(1, fs * 0.09));
+        item.appendChild(strike);
+      }
       // Hit-area del ítem (para que el tap agarre en el celu).
       const hit = dv_ns('rect');
       hit.setAttribute('x', x - 2); hit.setAttribute('y', y - leg.rowH / 2);
@@ -739,6 +850,7 @@ function dv_drawLegend(svg, leg, MARGIN, plotW, xTitleY, fs) {
       hit.setAttribute('fill', 'transparent');
       item.appendChild(hit);
       item.addEventListener('mouseenter', () => {
+        if (dv_hidden().has(it.region)) return;   // apagada: no hay foco que aplicar
         state[18].hoverRegion = it.region; dv_applyRegionFocus();
       });
       item.addEventListener('mouseleave', () => {
@@ -746,8 +858,7 @@ function dv_drawLegend(svg, leg, MARGIN, plotW, xTitleY, fs) {
       });
       item.addEventListener('click', (ev) => {
         ev.stopPropagation();
-        state[18].pinRegion = (state[18].pinRegion === it.region) ? null : it.region;
-        dv_applyRegionFocus();
+        dv_toggleRegion(it.region);
       });
       g.appendChild(item);
       x += it.w;
@@ -756,10 +867,14 @@ function dv_drawLegend(svg, leg, MARGIN, plotW, xTitleY, fs) {
 }
 
 // Foco por región: SOLO opacidad + reescritura de los textos que dependen de la
-// región activa. El chart NO se redibuja (regla del Atlas).
+// región activa. El chart NO se redibuja (regla del Atlas). El apagado de
+// regiones NO pasa por acá: ese sí redibuja, porque cambia el modelo.
 function dv_applyRegionFocus() {
   const s = state[18];
-  const focus = s.hoverRegion || s.pinRegion;
+  const hid = dv_hidden();
+  let focus = null;
+  if (s.hoverRegion && !hid.has(s.hoverRegion)) focus = s.hoverRegion;
+  else if (s.pinRegion && !hid.has(s.pinRegion)) focus = s.pinRegion;
   for (let i = 0; i < dv_dots.length; i++) {
     const c = dv_dots[i];
     c.setAttribute('opacity', (!focus || c.dataset.region === focus) ? 1 : 0.16);
@@ -767,6 +882,7 @@ function dv_applyRegionFocus() {
   const svg = document.getElementById('chart18');
   if (svg) {
     svg.querySelectorAll('[data-legend-region]').forEach(el => {
+      if (el.dataset.legendOff) { el.setAttribute('opacity', 0.34); return; }
       el.setAttribute('opacity', (!focus || el.dataset.legendRegion === focus) ? 1 : 0.38);
     });
     const strip = svg.querySelector('text[data-strip-line="2"]');
@@ -775,7 +891,7 @@ function dv_applyRegionFocus() {
       strip.textContent = dv_stripResidText(dv_lastModel);
     }
   }
-  dv_updateBanner(dv_lastModel);
+  dv_updateBanner(dv_lastModel, dv_lastN);
 }
 
 // =================== Subtítulo dinámico ===================
@@ -797,13 +913,21 @@ function dv_updateSubtitle(v) {
 }
 
 // =================== Banner (HTML, debajo del SVG) ===================
-// [Países 88] · [R² 0,148] · [Pendiente −14,0 pp por cada ×10 de PIB]
-// · [Residuo · América Latina −9,6 pp por debajo de lo que predice su ingreso]
-function dv_updateBanner(model) {
+// [Países 88] · [R² 0,148] · [Residuo · América Latina −9,6 pp respecto de lo
+// previsto]. Exactamente el set del N°2 (scatter.js: c2-banner-n, c2-banner-r2,
+// c2-banner-region). La PENDIENTE se sacó: no la tenía el N°2 y es jerga.
+function dv_updateBanner(model, n) {
   const el = document.getElementById('dv-banner');
   if (!el) return;
+  const nItem =
+      `<span class="s-banner-item"><span class="s-banner-key">${dv_t('c18-banner-n')}</span>`
+    + `<span class="s-banner-val">${n || 0}</span></span>`;
+  // Sin modelo: mostramos el n igual (es lo que pidió Daniel) y decimos por qué
+  // no hay ajuste, en vez de un R² inventado.
   if (!model) {
-    el.innerHTML = `<span class="s-banner-item"><span class="s-banner-val">${dv_t('c18-nodata')}</span></span>`;
+    el.innerHTML = nItem
+      + `<span class="s-banner-sep">·</span>`
+      + `<span class="s-banner-item"><span class="s-banner-note">${dv_t(dv_lastAll ? 'c18-fewfit' : 'c18-nodata')}</span></span>`;
     return;
   }
   const focus = dv_focusRegion();
@@ -811,15 +935,12 @@ function dv_updateBanner(model) {
   const color = dv_regionLabelColor(focus);
   const residHtml = rr
     ? `<span class="s-banner-val">${dv_signed(rr.pp, 1, ' pp')}</span>`
-      + `<span class="s-banner-note">${dv_t(rr.pp >= 0 ? 'c18-banner-above' : 'c18-banner-below')}</span>`
+      + `<span class="s-banner-note">${dv_t('c18-banner-resid-note')}</span>`
     : `<span class="s-banner-val">—</span><span class="s-banner-note">${dv_t('c18-banner-none')}</span>`;
-  const slope = dv_t('c18-banner-slope-tpl').replace('{V}', dv_signed(model.b, 1));
   el.innerHTML =
-      `<span class="s-banner-item"><span class="s-banner-key">${dv_t('c18-banner-n')}</span><span class="s-banner-val">${model.n}</span></span>`
+      nItem
     + `<span class="s-banner-sep">·</span>`
     + `<span class="s-banner-item"><span class="s-banner-key">${dv_t('c18-banner-r2')}</span><span class="s-banner-val">${dv_num(model.r2, 3)}</span></span>`
-    + (model.quad ? '' : `<span class="s-banner-sep">·</span>`
-        + `<span class="s-banner-item"><span class="s-banner-key">${dv_t('c18-banner-slope')}</span><span class="s-banner-val">${slope}</span></span>`)
     + `<span class="s-banner-sep">·</span>`
     + `<span class="s-banner-item"><span class="s-banner-key">${dv_t('c18-banner-resid')}</span>`
     + `<span class="s-banner-region-name" style="color:${color}">${dv_regionLabel(focus)}</span>${residHtml}</span>`;
@@ -830,16 +951,22 @@ function dv_showTooltip(e, p) {
   const tt = document.getElementById('tooltip18');
   if (!tt) return;
   const v = dv_varMeta(state[18].k);
-  const above = p.resid >= 0;
+  // Sin ajuste estimado (menos de DV_MIN_FIT países visibles) no hay predicho
+  // ni residuo: el tooltip no inventa las dos filas.
+  const hasFit = (typeof p.pred === 'number');
+  const above = hasFit && p.resid >= 0;
+  const fitRows = hasFit
+    ? `<div class="tt-row"><span>${dv_t('c18-tt-expected')}</span><span>${dv_num(p.pred, 1)}%</span></div>`
+      + `<div class="tt-row"><span>${dv_t('c18-tt-resid')}</span><span>${dv_signed(p.resid, 1, ' pp')}</span></div>`
+      + `<div class="tt-sub">${dv_t(above ? 'c18-tt-resid-above' : 'c18-tt-resid-below')}</div>`
+    : '';
   tt.innerHTML =
       `<strong>${dv_name(p.iso)}</strong>`
     + `<div class="tt-region" style="color:${dv_regionColor(p.region)}">${dv_regionLabel(p.region)}</div>`
     + `<div class="tt-row"><span>${dv_varLabel(v)}</span><span>${dv_num(p.pct, 1)}%</span></div>`
     + `<div class="tt-row tt-row-sub"><span>${dv_t('c18-tt-year')}</span><span>${p.year}</span></div>`
     + `<div class="tt-row"><span>${dv_t('c18-tt-gdp')}</span><span>$${dv_num(p.gdp, 0)} (${p.gdpYear})</span></div>`
-    + `<div class="tt-row"><span>${dv_t('c18-tt-expected')}</span><span>${dv_num(p.pred, 1)}%</span></div>`
-    + `<div class="tt-row"><span>${dv_t('c18-tt-resid')}</span><span>${dv_signed(p.resid, 1, ' pp')}</span></div>`
-    + `<div class="tt-sub">${dv_t(above ? 'c18-tt-resid-above' : 'c18-tt-resid-below')}</div>`
+    + fitRows
     + `<div class="tt-row tt-row-sub"><span>${dv_t('c18-tt-n')}</span><span>${dv_num(p.n, 0)}</span></div>`;
   tt.style.display = 'block';
   tt.style.opacity = '1';
@@ -1067,6 +1194,14 @@ function dv_setupWave() {
   dv_syncWave();
 }
 
+// "Ver todas las regiones": vuelve a prender todo lo apagado desde la leyenda.
+function dv_setupShowAll() {
+  const btn = document.getElementById('dv-show-all');
+  if (!btn || btn.dataset.wired) return;
+  btn.dataset.wired = '1';
+  btn.addEventListener('click', () => dv_showAllRegions());
+}
+
 function dv_stopPlay() {
   if (dv_playTimer) { clearInterval(dv_playTimer); dv_playTimer = null; }
   const playBtn = document.getElementById('dv-play');
@@ -1119,13 +1254,16 @@ function initDesarrollo() {
       model: 'linear',
       selected: DV_DEFAULT_SEL.slice(),
       hoverRegion: null,
-      pinRegion: null
+      pinRegion: null,
+      hiddenRegions: []
     };
   }
+  if (!Array.isArray(state[18].hiddenRegions)) state[18].hiddenRegions = [];
   dv_setupVarSelect();
   dv_setupToggles();
   dv_setupWave();
   dv_setupSearch();
+  dv_setupShowAll();
   dv_renderChips();
   dv_setupCSV();
   drawDesarrollo();
