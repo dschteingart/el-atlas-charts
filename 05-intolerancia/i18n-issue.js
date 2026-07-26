@@ -141,7 +141,9 @@ const ISSUE_I18N = {
     'c9-title-neutral':  'Qué le reprocha cada país al inmigrante',
     'c10-title-neutral': 'Desconfianza de un extranjero frente a desconfianza de un desconocido',
     'c11-title-neutral': 'Sentirse parte de un grupo discriminado, en América Latina',
-    'c12-title-neutral': 'El grupo más discriminado en cada país de América Latina'
+    'c12-title-neutral': 'El grupo más discriminado en cada país de América Latina',
+    'c18-title-neutral': 'Intolerancia declarada y PIB per cápita, país por país',
+    'c19-title-neutral': 'Dos preguntas de la encuesta, país por país'
   },
   en: {
     'issue-num':  'No. 5',
@@ -273,7 +275,9 @@ const ISSUE_I18N = {
     'c9-title-neutral':  'What each country holds against the immigrant',
     'c10-title-neutral': 'Distrust of a foreigner versus distrust of a stranger',
     'c11-title-neutral': 'Feeling part of a discriminated group, in Latin America',
-    'c12-title-neutral': 'The most-discriminated group in each Latin American country'
+    'c12-title-neutral': 'The most-discriminated group in each Latin American country',
+    'c18-title-neutral': 'Declared intolerance and GDP per capita, country by country',
+    'c19-title-neutral': 'Two survey questions, country by country'
   }
 };
 

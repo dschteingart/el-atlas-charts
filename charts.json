@@ -70,7 +70,9 @@
         { "archivo": "chart-barrio.html", "tipo": "graficador (comparación ranking/marimekko + perfil)", "tema": "qué problemas ve cada sociedad en su barrio, incluido el racismo presenciado (IVS H002); 64 países comparables por ítem", "motor": "lib/grapher.js" },
         { "archivo": "chart-migrantes.html", "tipo": "graficador (comparación ranking/marimekko + perfil)", "tema": "hostilidad hacia el inmigrante en 14 frases y 18 países (Latinobarómetro 2020); comparación por frase y perfil centrado por país", "motor": "lib/grapher.js" },
         { "archivo": "chart-discriminado.html", "tipo": "graficador (comparación en barras + líneas)", "tema": "sentirse parte de un grupo discriminado, 5 rondas 2009-2020 y 18 países, por país o por grupo étnico (Latinobarómetro)", "motor": "lib/grapher.js" },
-        { "archivo": "chart-quien.html", "tipo": "graficador (ranking + perfil)", "tema": "el grupo más discriminado según cada país: pobres vs raza, 12 macro-categorías (Latinobarómetro 2020)", "motor": "lib/grapher.js" }
+        { "archivo": "chart-quien.html", "tipo": "graficador (ranking + perfil)", "tema": "el grupo más discriminado según cada país: pobres vs raza, 12 macro-categorías (Latinobarómetro 2020)", "motor": "lib/grapher.js" },
+        { "archivo": "chart-desarrollo.html", "tipo": "dispersión", "tema": "intolerancia declarada vs PIB per cápita (Maddison): residuo por región, R², eje X con toggle lineal/log y slider de ola. El residuo latinoamericano es -9,6 pp", "motor": "clon de 02-demasiado-desiguales/scatter.js" },
+        { "archivo": "chart-correlaciones.html", "tipo": "dispersión", "tema": "cruce entre dos variables de la IVS a elección (24 en el menú), con diagonal de 45°, R² y botón de invertir ejes", "motor": "clon de 02-demasiado-desiguales/scatter.js" }
       ]
     }
   ]

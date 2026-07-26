@@ -19,7 +19,9 @@
     'chart-barrio.html',
     'chart-migrantes.html',
     'chart-discriminado.html',
-    'chart-quien.html'
+    'chart-quien.html',
+    'chart-desarrollo.html',
+    'chart-correlaciones.html'
   ];
   const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
   const T = {
