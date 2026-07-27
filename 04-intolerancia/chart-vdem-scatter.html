@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Exclusión social y desarrollo — El Atlas · N°4</title>
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/04-intolerancia/chart-vdem-scatter.html">
+<meta property="og:title" content="Exclusión social y desarrollo — El Atlas · N°4">
+<meta property="og:description" content="Cuánto excluye cada país a sus grupos sociales, según V-Dem, frente a su PIB per cápita. El índice y sus cinco componentes, 1900-2023.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/04-intolerancia/thumbs/chart-vdem-scatter.png">
+<meta property="og:image:alt" content="Exclusión social y desarrollo">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Exclusión social y desarrollo — El Atlas · N°4">
+<meta name="twitter:description" content="Cuánto excluye cada país a sus grupos sociales, según V-Dem, frente a su PIB per cápita. El índice y sus cinco componentes, 1900-2023.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/04-intolerancia/thumbs/chart-vdem-scatter.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=20">
+<link rel="stylesheet" href="../lib/editor.css?v=20">
+<style>
+  .wrap-wide { max-width: 1100px; padding: 6px 20px 10px; }
+  .wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
+  .wrap-wide .chart-block { margin: 4px 0 2px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+  .wrap-wide .chart-subtitle { margin: 0 0 4px; font-size: 13.5px; line-height: 1.35; }
+  .chart-svg-wrap { margin-top: 2px; position: relative; }
+  .footer { margin-top: 6px; }
+  .footer p { margin: 2px 0; }
+  .footer .download { margin-right: 8px; margin-bottom: 8px; }
+
+  /* ===== encabezado ===== */
+  .g-eyebrow { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin: 2px 0 3px; }
+  .g-lead { font-family: var(--serif); font-size: 14px; line-height: 1.4; color: var(--ink-soft); margin: 0 0 8px; max-width: 760px; }
+
+  /* ===== controles ===== */
+  .m-controls { display: flex; align-items: center; gap: 14px; margin: 4px 0 6px; flex-wrap: wrap; }
+  .m-ctrl-group { display: inline-flex; align-items: center; gap: 8px; }
+  .m-ctrl-label { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+  .m-select { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 28px 6px 13px; border: 1px solid var(--rule); border-radius: 15px; background-color: var(--bg); color: var(--ink-soft); cursor: pointer; -webkit-appearance: none; appearance: none; outline: none; max-width: 320px; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%238a8378' stroke-width='1.5'/></svg>"); background-repeat: no-repeat; background-position: right 11px center; }
+  .m-select:focus { border-color: var(--accent); }
+
+  .toggle { display: inline-flex; border: 1px solid var(--rule); border-radius: 15px; overflow: hidden; background: var(--bg); }
+  .toggle button { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 13px; background: var(--bg); color: var(--ink-soft); border: none; cursor: pointer; white-space: nowrap; transition: background 0.12s ease, color 0.12s ease; }
+  .toggle button + button { border-left: 1px solid var(--rule); }
+  .toggle button.active { background: var(--accent); color: #fff; }
+
+  /* ===== slider de ola + play (mismo control que el mapa de vecinos) ===== */
+  .mp-play { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--rule); background: var(--bg); color: var(--accent); font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+  .mp-play:hover { border-color: var(--accent); }
+  .mp-play.playing { background: var(--accent); color: #fff; }
+  .mp-wave-slider { -webkit-appearance: none; appearance: none; width: 130px; height: 4px; border-radius: 2px; background: var(--grid); outline: none; cursor: pointer; }
+  .mp-wave-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .mp-wave-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .mp-wave-slider:disabled { opacity: 0.4; cursor: default; }
+  .mp-wave-display { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--ink); min-width: 82px; font-variant-numeric: tabular-nums; }
+
+  /* ===== chips + buscador ===== */
+  .m-selected-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 0; margin: 2px 0 4px; }
+  .m-selected-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 9px; border-radius: 12px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); }
+  .m-chip-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+  .m-chip-x { width: 18px; height: 18px; border-radius: 50%; border: none; background: transparent; color: var(--ink-muted); font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .m-chip-x:hover { background: var(--grid); color: var(--ink); }
+
+  .m-search-wrap { position: relative; margin: 0; min-width: 200px; max-width: 280px; }
+  .m-search-input { width: 100%; padding: 7px 10px; border: 1px solid var(--rule); border-radius: 5px; background: var(--bg); font-family: var(--sans); font-size: 13px; color: var(--ink); outline: none; }
+  .m-search-input:focus { border-color: var(--accent); }
+  .m-search-results { position: absolute; top: calc(100% + 2px); left: 0; right: 0; background: var(--bg); border: 1px solid var(--rule); border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-height: 240px; overflow-y: auto; z-index: 30; display: none; }
+  .m-search-results.open { display: block; }
+  .m-search-result { padding: 7px 10px; font-family: var(--sans); font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--grid); }
+  .m-search-result:last-child { border-bottom: none; }
+  .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
+  .m-search-result.m-already { color: var(--ink-muted); }
+  .ve-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); font-style: italic; }
+  @media (max-width: 768px) { .ve-hint { display: none; } }
+
+  /* ===== banner de estadísticos (debajo del SVG) ===== */
+  .s-banner { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; margin: 8px 0 0; padding: 8px 12px; background: var(--bg-soft); border-radius: 6px; font-family: var(--sans); font-size: 13px; color: var(--ink); }
+  .s-banner-item { display: inline-flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+  .s-banner-key { font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
+  .s-banner-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .s-banner-region-name { font-weight: 600; }
+  .s-banner-note { font-size: 11.5px; color: var(--ink-muted); }
+  .s-banner-sep { color: var(--ink-muted); opacity: 0.6; }
+  .ve-banner-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); margin: 4px 0 0; font-style: italic; }
+  /* "Ver todas las regiones": aparece sólo si hay alguna apagada desde la
+     leyenda, así no gasta alto cuando no hace falta. */
+  .ve-linkbtn { font-family: var(--sans); font-size: 11px; font-weight: 600; font-style: normal; color: var(--accent); background: none; border: none; padding: 0; margin-left: 8px; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+  .ve-linkbtn[hidden] { display: none; }
+
+  #tooltip20 .tt-row-sub { font-size: 10.5px; opacity: 0.72; }
+  #tooltip20 .tt-sub { font-size: 10.5px; opacity: 0.8; margin-top: 2px; font-style: italic; }
+
+  @media (max-width: 768px) {
+    .m-search-wrap { max-width: 100%; }
+    .m-select { max-width: 100%; }
+    .wrap-wide .chart-title { font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 4px; }
+    .wrap-wide .chart-subtitle { font-size: 12px; font-weight: 400; color: var(--ink-muted); line-height: 1.4; margin: 0 0 8px; }
+    .m-controls .m-ctrl-group { flex-wrap: wrap; }
+    .s-banner { font-size: 12px; }
+  }
+  .m-mobile-collapse { display: none; }
+  .m-mobile-collapse > summary { font-family: var(--sans); font-size: 11px; color: var(--accent); cursor: pointer; padding: 6px 0; list-style: none; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
+  .m-mobile-collapse > summary::before { content: '+ '; }
+  .m-mobile-collapse[open] > summary::before { content: '\2212 '; }
+  .m-mobile-collapse > p { margin: 4px 0 8px; font-family: var(--sans); font-size: 11px; color: var(--ink-soft); line-height: 1.45; }
+  @media (max-width: 768px) { .m-mobile-collapse { display: block; } .m-desktop-only { display: none; } }
+
+  /* ===== compactación del encabezado en DESKTOP =====
+     Reclamo de Daniel: "necesito q el grafico pueda verse sin scrollear".
+     Todo lo de acá adentro está scopeado a >=769px para no tocar la UX táctil
+     del celu (donde el chart usa su propio viewBox alto). La otra mitad del
+     ajuste es la altura del viewBox de pantalla, en dv_layout(). */
+  @media (min-width: 769px) {
+    .wrap-wide { padding: 4px 20px 10px; }
+    .wrap-wide header { padding-bottom: 2px; margin-bottom: 4px; }
+    .wrap-wide .chart-block { margin: 2px 0; }
+    .wrap-wide .chart-title { font-size: 17px; margin: 0 0 1px; line-height: 1.18; }
+    .wrap-wide .chart-subtitle { font-size: 12.5px; margin: 0 0 3px; line-height: 1.3; }
+    .g-eyebrow { font-size: 10px; margin: 0 0 2px; }
+    .g-lead { font-size: 13px; line-height: 1.35; margin: 0 0 5px; }
+    .m-controls { gap: 8px 14px; margin: 2px 0 3px; }
+    .m-ctrl-group { gap: 7px; }
+    .m-ctrl-label { font-size: 10.5px; }
+    .m-select { padding: 4px 26px 4px 12px; }
+    .toggle button { padding: 4px 12px; }
+    .mp-play { width: 26px; height: 26px; }
+    .mp-wave-slider { width: 118px; }
+    .mp-wave-display { font-size: 13px; min-width: 76px; }
+    .m-search-input { padding: 5px 9px; font-size: 12.5px; }
+    .m-selected-chips { gap: 5px; margin: 1px 0 2px; }
+    .m-selected-chip { padding: 2px 3px 2px 8px; font-size: 11.5px; }
+    .m-chip-dot { width: 9px; height: 9px; }
+    .m-chip-x { width: 16px; height: 16px; font-size: 13px; }
+    .chart-svg-wrap { margin-top: 0; }
+  }
+  /* Pantallas bajas: el lead —y en las más bajas el eyebrow— son contexto, no
+     control. Se retiran para que el gráfico entre entero. */
+  @media (min-width: 769px) and (max-height: 880px) { .g-lead { display: none; } }
+  @media (min-width: 769px) and (max-height: 760px) { .g-eyebrow { display: none; } }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N°4</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="g-eyebrow" data-i18n="c20-eyebrow">Intolerancia y desarrollo</div>
+  <p class="g-lead" data-i18n="c20-lead">Los países ricos declaran menos rechazo. La pregunta es otra: puesto en la fila de su ingreso, ¿dónde queda cada país?</p>
+
+  <section class="chart-block" data-chart="20" data-editor-id="n5-vdem-scatter">
+    <h2 class="chart-title" data-i18n="c20-title-neutral">Intolerancia declarada y PIB per cápita, país por país</h2>
+    <p class="chart-subtitle" data-i18n="c20-subtitle">Cada punto es un país: intolerancia declarada en el eje vertical, PIB per cápita en el horizontal.</p>
+
+    <div class="m-controls">
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c20-var-label">Indicador (eje vertical)</span>
+        <select id="ve-var" class="m-select" data-i18n-aria="c20-var-label" aria-label="Indicador (eje vertical)"></select>
+      </div>
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c20-scale-label">Escala del PIB</span>
+        <div class="toggle" id="ve-scale">
+          <button data-scale="log" class="active" data-i18n="c20-scale-log">Logarítmica</button>
+          <button data-scale="linear" data-i18n="c20-scale-linear">Lineal</button>
+        </div>
+      </div>
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c20-model-label">Ajuste</span>
+        <div class="toggle" id="ve-model">
+          <button data-model="linear" class="active" data-i18n="c20-model-linear">Recta</button>
+          <button data-model="quad" data-i18n="c20-model-quad">Curva</button>
+        </div>
+      </div>
+      <div class="m-ctrl-group" id="ve-wave-group">
+        <span class="m-ctrl-label" data-i18n="c20-wave-label">Ola de la encuesta</span>
+        <button id="ve-play" class="mp-play" data-i18n-aria="c20-play" aria-label="Recorrer las olas">&#9654;</button>
+        <input type="range" id="ve-wave-slider" class="mp-wave-slider" data-i18n-aria="c20-wave-label" aria-label="Ola de la encuesta">
+        <span class="mp-wave-display" id="ve-wave-display">2017-2022</span>
+      </div>
+    </div>
+
+    <div class="m-controls">
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="ctrl-select">Seleccionar</span>
+        <div class="m-search-wrap">
+          <input type="text" id="ve-search" class="m-search-input" data-i18n-placeholder="c20-search-ph" placeholder="Agregar país…" autocomplete="off">
+          <div id="ve-search-results" class="m-search-results"></div>
+        </div>
+        <span class="ve-hint" data-i18n="c20-select-hint">Los países elegidos son los que quedan etiquetados en el gráfico.</span>
+      </div>
+    </div>
+    <div class="m-selected-chips" id="ve-selected-chips"></div>
+
+    <div class="chart-svg-wrap">
+      <svg id="chart20" viewBox="0 0 1100 480" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip20"></div>
+    </div>
+
+    <!-- Banner: el JS lo llena en cada render. Países · R² · residuo de la
+         región enfocada (América Latina por default). Mismo set que el N°2. -->
+    <div class="s-banner" id="ve-banner"></div>
+    <p class="ve-banner-hint"><span data-i18n="c20-banner-hint">Pasá el mouse por una región de la leyenda para ver los nombres de sus países; hacé clic (o tocá) para apagarla y sacarla del ajuste.</span><button type="button" id="ve-show-all" class="ve-linkbtn" data-i18n="c20-show-all" hidden>Ver todas las regiones</button></p>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" data-chart="20-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" data-png="20" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources m-desktop-only" data-i18n="c20-sources"></p>
+      <details class="m-mobile-collapse">
+        <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+        <p data-i18n="c20-sources"></p>
+      </details>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="../lib/regions.js?v=20"></script>
+<script src="../lib/i18n.js?v=20"></script>
+<script src="./i18n-issue.js?v=20"></script>
+<script src="./i18n-vdem-scatter.js?v=20"></script>
+<script src="../lib/utils.js?v=20"></script>
+<script src="../lib/country-names.js?v=20"></script>
+<script src="../lib/scatter-render.js?v=20"></script>
+<script src="./data-vdem.js?v=20"></script>
+<!-- Las series van en un archivo por variable: el preview local corta las
+     respuestas grandes servidas como <script src> (pasó con un data-vdem.js
+     único de 610 KB). Cargan DESPUÉS del núcleo, que declara VD_SERIES. -->
+<script src="./data-vdem-v2xpe_exlsocgr.js?v=20"></script>
+<script src="./data-vdem-v2peapssoc.js?v=20"></script>
+<script src="./data-vdem-v2peasbsoc.js?v=20"></script>
+<script src="./data-vdem-v2peasjsoc.js?v=20"></script>
+<script src="./data-vdem-v2pepwrsoc.js?v=20"></script>
+<script src="./data-vdem-v2clsocgrp.js?v=20"></script>
+<script src="../lib/editor.js?v=20"></script>
+<script src="./vdem-scatter.js?v=20"></script>
+<script src="../lib/png-export.js?v=20"></script>
+<script>
+  window.__N4_V = '20';
+  initVdemScatter();
+  applyI18n();
+  if (window.__atlasRedraw) window.__atlasRedraw();
+  setupLangToggle(dv_onLangChange);
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=20"></script>
+</body>
+</html>

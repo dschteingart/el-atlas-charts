@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Qué pasa en el barrio — El Atlas · N°4</title>
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/04-intolerancia/chart-barrio.html">
+<meta property="og:title" content="Qué pasa en el barrio — El Atlas · N°4">
+<meta property="og:description" content="Robos, alcohol, droga, abuso policial y racismo: qué dice cada sociedad que pasa seguido en su barrio. Comparación entre países y perfil por país (WVS, olas 6-7).">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/04-intolerancia/thumbs/chart-barrio.png">
+<meta property="og:image:alt" content="Qué pasa en el barrio, país por país">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Qué pasa en el barrio — El Atlas · N°4">
+<meta name="twitter:description" content="El mismo dato como comparación entre países y como perfil por país. Mide saliencia percibida, no prevalencia.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/04-intolerancia/thumbs/chart-barrio.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=20">
+<link rel="stylesheet" href="../lib/editor.css?v=20">
+<style>
+  .wrap-wide { max-width: 1100px; padding: 6px 20px 10px; }
+  .wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
+  .wrap-wide .chart-block { margin: 4px 0 2px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+  .wrap-wide .chart-subtitle { margin: 0 0 4px; font-size: 13.5px; line-height: 1.35; }
+  .chart-svg-wrap { margin-top: 2px; position: relative; }
+  .footer { margin-top: 6px; }
+  .footer p { margin: 2px 0; }
+  .footer .download { margin-right: 8px; margin-bottom: 8px; }
+
+  /* ===== encabezado del graficador ===== */
+  .g-eyebrow { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin: 2px 0 3px; }
+  .g-lead { font-family: var(--serif); font-size: 14px; line-height: 1.4; color: var(--ink-soft); margin: 0 0 8px; max-width: 720px; }
+
+  /* ===== barra de pestañas (vista) ===== */
+  .g-tabs { display: inline-flex; gap: 2px; border: 1px solid var(--rule); border-radius: 10px; padding: 3px; background: var(--bg-soft); margin: 2px 0 10px; }
+  .g-tabs button { font-family: var(--sans); font-size: 13px; font-weight: 600; padding: 7px 16px; border: none; border-radius: 7px; background: transparent; color: var(--ink-soft); cursor: pointer; transition: background 0.14s ease, color 0.14s ease; white-space: nowrap; }
+  .g-tabs button:hover { color: var(--ink); }
+  .g-tabs button.active { background: var(--accent); color: #fff; }
+  .g-panel { display: none; }
+  @media (max-width: 768px) { .g-tabs { display: flex; width: 100%; } .g-tabs button { flex: 1; padding: 8px 4px; font-size: 12px; } }
+
+  /* ===== controles compartidos ===== */
+  .m-controls { display: flex; align-items: center; gap: 14px; margin: 4px 0 6px; flex-wrap: wrap; }
+  .m-ctrl-group { display: inline-flex; align-items: center; gap: 8px; }
+  .m-ctrl-label { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 500; }
+  .m-select { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 28px 6px 13px; border: 1px solid var(--rule); border-radius: 15px; background-color: var(--bg); color: var(--ink-soft); cursor: pointer; -webkit-appearance: none; appearance: none; outline: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%238a8378' stroke-width='1.5'/></svg>"); background-repeat: no-repeat; background-position: right 11px center; }
+  .m-select:focus { border-color: var(--accent); }
+
+  .toggle { display: inline-flex; border: 1px solid var(--rule); border-radius: 15px; overflow: hidden; background: var(--bg); }
+  .toggle button { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 13px; background: var(--bg); color: var(--ink-soft); border: none; cursor: pointer; white-space: nowrap; transition: background 0.12s ease, color 0.12s ease; }
+  .toggle button + button { border-left: 1px solid var(--rule); }
+  .toggle button.active { background: var(--accent); color: #fff; }
+
+  .m-selected-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 0; margin: 2px 0 4px; }
+  .m-selected-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 9px; border-radius: 12px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); }
+  .m-chip-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+  .m-chip-x { width: 18px; height: 18px; border-radius: 50%; border: none; background: transparent; color: var(--ink-muted); font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .m-chip-x:hover { background: var(--grid); color: var(--ink); }
+
+  .m-search-wrap { position: relative; margin: 0; min-width: 200px; max-width: 280px; }
+  .m-search-input { width: 100%; padding: 7px 10px; border: 1px solid var(--rule); border-radius: 5px; background: var(--bg); font-family: var(--sans); font-size: 13px; color: var(--ink); outline: none; }
+  .m-search-input:focus { border-color: var(--accent); }
+  .m-search-results { position: absolute; top: calc(100% + 2px); left: 0; right: 0; background: var(--bg); border: 1px solid var(--rule); border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-height: 240px; overflow-y: auto; z-index: 30; display: none; }
+  .m-search-results.open { display: block; }
+  .m-search-result { padding: 7px 10px; font-family: var(--sans); font-size: 13px; cursor: pointer; border-bottom: 1px solid var(--grid); }
+  .m-search-result:last-child { border-bottom: none; }
+  .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
+  .m-search-result.m-already { color: var(--ink-muted); }
+
+  /* ===== Comparación (clon del ranking) ===== */
+  .bc-picker-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); font-style: italic; }
+  @media (max-width: 768px) { .bc-picker-hint { display: none; } }
+  .bc-wave-slider, .ba-wave-slider { -webkit-appearance: none; appearance: none; width: 120px; height: 4px; border-radius: 2px; background: var(--grid); outline: none; cursor: pointer; }
+  .bc-wave-slider::-webkit-slider-thumb, .ba-wave-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .bc-wave-slider::-moz-range-thumb, .ba-wave-slider::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .bc-wave-display, .ba-wave-display { font-family: var(--serif); font-size: 14px; font-weight: 700; color: var(--ink); min-width: 82px; font-variant-numeric: tabular-nums; }
+
+  #bc-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 2px 0 2px; }
+  .bc-leg-item { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 11.5px; color: var(--ink-soft); cursor: pointer; user-select: none; padding: 2px 4px; border-radius: 6px; transition: background 0.12s ease, opacity 0.15s ease; }
+  .bc-leg-item:hover { background: var(--bg-soft); }
+  .bc-leg-item.bc-leg-off { opacity: 0.38; }
+  .bc-leg-item.bc-leg-off .bc-leg-dot { background: var(--grid) !important; }
+  .bc-leg-item.bc-leg-off { text-decoration: line-through; text-decoration-thickness: 1px; }
+  .bc-leg-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+
+  #tooltip13 .tt-sub { font-size: 10.5px; opacity: 0.75; margin: -1px 0 4px; }
+
+  /* Vista "todos": pared marimekko (clases del motor N°2) */
+  .m-bar { transition: opacity 0.2s; cursor: pointer; }
+  .m-bar.m-dim { opacity: 0.15; }
+  .m-country-label { font-family: var(--sans); font-size: 9.5px; pointer-events: none; transition: opacity 0.2s; }
+  .m-country-label.m-spotlight-label { font-weight: 700; }
+  .m-table-title { font-family: var(--sans); font-size: 10px; font-weight: 600; fill: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.08em; pointer-events: none; }
+  .m-table-rule { stroke: var(--rule); stroke-width: 1; }
+  .m-table-swatch { pointer-events: none; }
+  .m-table-label, .m-table-value { font-family: var(--sans); font-size: 11px; font-weight: 500; fill: var(--ink); pointer-events: none; }
+  .m-table-value { font-variant-numeric: tabular-nums; }
+  .m-table-row-active.m-table-label, .m-table-row-active.m-table-value { font-weight: 700; }
+  .m-table-row-dimmed.m-table-label, .m-table-row-dimmed.m-table-value, .m-table-row-dimmed.m-table-swatch { opacity: 0.25; }
+  #bcm-avg-table-mobile-wrap { display: none; margin-top: 6px; }
+  #bcm-avg-table-mobile { max-width: 440px; }
+  .m-mt-row { display: flex; align-items: center; gap: 8px; padding: 3px 0; font-family: var(--sans); font-size: 12.5px; color: var(--ink); }
+  .m-mt-swatch { width: 10px; height: 10px; border-radius: 2px; flex: 0 0 auto; }
+  .m-mt-label { flex: 1; }
+  .m-mt-value { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .m-mt-row-active .m-mt-label, .m-mt-row-active .m-mt-value { font-weight: 700; }
+  .m-mt-row-dimmed { opacity: 0.4; }
+
+  /* ===== Evolución (chart 17, líneas entre las dos olas) ===== */
+  .bl-picker-hint { font-family: var(--sans); font-size: 11px; color: var(--ink-muted); font-style: italic; }
+  @media (max-width: 768px) { .bl-picker-hint { display: none; } }
+
+  /* ===== Perfil (chart 8) ===== */
+  #tooltip8 .tt-sub { font-size: 10.5px; opacity: 0.8; margin-top: 3px; }
+
+  @media (max-width: 768px) {
+    .m-search-wrap { max-width: 100%; }
+    .wrap-wide .chart-title { font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 4px; }
+    .wrap-wide .chart-subtitle { font-size: 12px; font-weight: 400; color: var(--ink-muted); line-height: 1.4; margin: 0 0 8px; }
+    .m-controls .m-ctrl-group { flex-wrap: wrap; }
+  }
+  .m-mobile-collapse { display: none; }
+  .m-mobile-collapse > summary { font-family: var(--sans); font-size: 11px; color: var(--accent); cursor: pointer; padding: 6px 0; list-style: none; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+  .m-mobile-collapse > summary::-webkit-details-marker { display: none; }
+  .m-mobile-collapse > summary::before { content: '+ '; }
+  .m-mobile-collapse[open] > summary::before { content: '\2212 '; }
+  .m-mobile-collapse > p { margin: 4px 0 8px; font-family: var(--sans); font-size: 11px; color: var(--ink-soft); line-height: 1.45; }
+  @media (max-width: 768px) { .m-mobile-collapse { display: block; } .m-desktop-only { display: none; } }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N°4</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="g-eyebrow" data-i18n="g8-eyebrow">El barrio</div>
+  <p class="g-lead" data-i18n="g8-lead">Qué dice cada sociedad que pasa seguido en su barrio. Compará países en un ítem, mirá cómo cambió entre las dos olas de la encuesta, o abrí el perfil completo de un país.</p>
+
+  <div class="g-tabs" id="g-tabs" role="tablist" aria-label="Ver como">
+    <button data-gview="comp" class="active" data-i18n="g8-view-comp">Comparación</button>
+    <button data-gview="evol" data-i18n="g8-view-evol">Evolución</button>
+    <button data-gview="perfil" data-i18n="g8-view-perfil">Perfil</button>
+  </div>
+
+  <!-- ============ Panel: COMPARACIÓN (motor chart 13, clon del ranking) ============ -->
+  <div class="g-panel" id="g-panel-comp">
+    <section class="chart-block" data-chart="13" data-editor-id="n5-barrio-comp">
+      <h2 class="chart-title" data-i18n="c13-title-neutral">Qué pasa seguido en el barrio, país por país</h2>
+      <p class="chart-subtitle" data-i18n="c13-subtitle-tpl">Porcentaje que dice que «Conductas racistas» pasa muy o bastante seguido en su barrio. Encuesta de 2017-2023.</p>
+
+      <div class="m-controls">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c13-cat-label">Qué pasa en el barrio…</span>
+          <select id="bc-cat-select" class="m-select" aria-label="Ítem de la batería">
+            <option value="racismo" selected data-i18n="c8-item-racismo">Conductas racistas</option>
+            <option value="robos" data-i18n="c8-item-robos">Robos</option>
+            <option value="alcohol" data-i18n="c8-item-alcohol">Alcohol en la vía pública</option>
+            <option value="droga" data-i18n="c8-item-droga">Venta de droga en la calle</option>
+            <option value="policia" data-i18n="c8-item-policia">La policía se mete en la vida privada</option>
+          </select>
+        </div>
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c13-view-label">Mostrar</span>
+          <div class="toggle" id="bc-view">
+            <button data-view="sel" data-i18n="c13-view-sel">Mi selección</button>
+            <button data-view="all" class="active" data-i18n="c13-view-all">Todos los países</button>
+          </div>
+        </div>
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c13-refs-label">Referencias</span>
+          <div class="toggle" id="bc-refs">
+            <button data-ref="median" class="active" data-i18n="c13-ref-median">Mediana</button>
+            <button data-ref="table" class="active" data-i18n="c13-ref-table">Tabla regional</button>
+          </div>
+        </div>
+        <div class="m-ctrl-group" id="bc-wave-group">
+          <span class="m-ctrl-label" data-i18n="c13-wave-label">Ola de la encuesta</span>
+          <input type="range" id="bc-wave-slider" class="bc-wave-slider" aria-label="Ola de la encuesta">
+          <span class="bc-wave-display" id="bc-wave-display">2017-2023</span>
+        </div>
+      </div>
+      <div class="m-controls" id="bc-country-picker">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="ctrl-select">Seleccionar</span>
+          <div class="m-search-wrap">
+            <input type="text" id="bc-search" class="m-search-input" data-i18n-placeholder="c13-search-ph" placeholder="Agregar país…" autocomplete="off">
+            <div id="bc-search-results" class="m-search-results"></div>
+          </div>
+          <span id="bc-picker-hint" class="bc-picker-hint"></span>
+        </div>
+        <div class="m-selected-chips" id="bc-selected-chips"></div>
+      </div>
+      <div id="bc-legend"></div>
+
+      <div class="chart-svg-wrap">
+        <svg id="chart13" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="tooltip13"></div>
+      </div>
+      <div id="bcm-avg-table-mobile-wrap">
+        <details class="m-mobile-collapse" style="display:block;">
+          <summary data-i18n="c13-avg-table-title">Promedio por región</summary>
+          <div id="bcm-avg-table-mobile"></div>
+        </details>
+      </div>
+    </section>
+    <div class="footer">
+      <p>
+        <button class="download" data-chart="13-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+        <button class="download" data-png="13" data-i18n="footer-download-png">Descargar PNG</button>
+      </p>
+      <div class="footer-row">
+        <p class="sources m-desktop-only" data-i18n="c13-sources"></p>
+        <details class="m-mobile-collapse">
+          <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+          <p data-i18n="c13-sources"></p>
+        </details>
+        <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Panel: EVOLUCIÓN (motor chart 17, líneas entre olas) ============ -->
+  <div class="g-panel" id="g-panel-evol">
+    <section class="chart-block" data-chart="17" data-editor-id="n5-barrio-lineas">
+      <h2 class="chart-title" data-i18n="c17-title-neutral">Qué cambió en el barrio entre las dos olas de la encuesta</h2>
+      <p class="chart-subtitle" data-i18n="c17-subtitle-tpl">Porcentaje que dice que «Conductas racistas» pasa muy o bastante seguido en su barrio, en la ola 6 (2010-2016) y en la 7 (2017-2023). Cada línea une las dos mediciones de un país, ubicadas en el año real en que se hizo el trabajo de campo.</p>
+
+      <div class="m-controls">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c17-cat-label">Qué pasa en el barrio…</span>
+          <select id="bl-cat-select" class="m-select" data-i18n-aria="c17-cat-label" aria-label="Ítem de la batería">
+            <option value="racismo" selected data-i18n="c8-item-racismo">Conductas racistas</option>
+            <option value="robos" data-i18n="c8-item-robos">Robos</option>
+            <option value="alcohol" data-i18n="c8-item-alcohol">Alcohol en la vía pública</option>
+            <option value="droga" data-i18n="c8-item-droga">Venta de droga en la calle</option>
+            <option value="policia" data-i18n="c8-item-policia">La policía se mete en la vida privada</option>
+          </select>
+        </div>
+      </div>
+      <div class="m-controls" id="bl-country-picker">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="ctrl-select">Seleccionar</span>
+          <div class="m-search-wrap">
+            <input type="text" id="bl-search" class="m-search-input" data-i18n-placeholder="c17-search-ph" placeholder="Agregar país…" autocomplete="off">
+            <div id="bl-search-results" class="m-search-results"></div>
+          </div>
+          <span class="bl-picker-hint" data-i18n="c17-pick-hint">Los países elegidos se dibujan como líneas.</span>
+        </div>
+        <div class="m-selected-chips" id="bl-selected-chips"></div>
+      </div>
+
+      <div class="chart-svg-wrap">
+        <svg id="chart17" viewBox="0 0 1100 560" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="tooltip17"></div>
+      </div>
+    </section>
+    <div class="footer">
+      <p>
+        <button class="download" data-chart="17-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+        <button class="download" data-png="17" data-i18n="footer-download-png">Descargar PNG</button>
+      </p>
+      <div class="footer-row">
+        <p class="sources m-desktop-only" data-i18n="c17-sources"></p>
+        <details class="m-mobile-collapse">
+          <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+          <p data-i18n="c17-sources"></p>
+        </details>
+        <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Panel: PERFIL (motor chart 8) ============ -->
+  <div class="g-panel" id="g-panel-perfil">
+    <section class="chart-block" data-chart="8" data-editor-id="n5-barrio">
+      <h2 class="chart-title" data-i18n="c8-title-neutral">¿Qué ve cada sociedad en su propio barrio?</h2>
+      <p class="chart-subtitle" data-i18n="c8-subtitle-tpl">Qué tan seguido ve Argentina cada problema en su barrio, ordenado de lo más a lo menos frecuente.</p>
+
+      <div class="m-controls">
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c8-country-label">País</span>
+          <select id="ba-country-select" class="m-select" aria-label="País"></select>
+        </div>
+        <div class="m-ctrl-group" id="ba-wave-group">
+          <span class="m-ctrl-label" data-i18n="c8-wave-label">Ola de la encuesta</span>
+          <input type="range" id="ba-wave-slider" class="ba-wave-slider" aria-label="Ola de la encuesta">
+          <span class="ba-wave-display" id="ba-wave-display">2017-2023</span>
+        </div>
+      </div>
+
+      <div class="chart-svg-wrap">
+        <svg id="chart8" viewBox="0 0 1100 460" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="tooltip" id="tooltip8"></div>
+      </div>
+    </section>
+    <div class="footer">
+      <p>
+        <button class="download" data-chart="8-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+        <button class="download" data-png="8" data-i18n="footer-download-png">Descargar PNG</button>
+      </p>
+      <div class="footer-row">
+        <p class="sources m-desktop-only" data-i18n="c8-sources"></p>
+        <details class="m-mobile-collapse">
+          <summary data-i18n="ctrl-show-method">Ver metodología y fuentes</summary>
+          <p data-i18n="c8-sources"></p>
+        </details>
+        <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="../lib/regions.js?v=20"></script>
+<script src="../lib/i18n.js?v=20"></script>
+<script src="./i18n-issue.js?v=20"></script>
+<script src="./i18n-barrio.js?v=20"></script>
+<script src="./i18n-barrio-comp.js?v=20"></script>
+<script src="./i18n-barrio-lineas.js?v=20"></script>
+<script src="../lib/utils.js?v=20"></script>
+<script src="../lib/country-names.js?v=20"></script>
+<script src="./data-barrio.js?v=20"></script>
+<script src="../lib/editor.js?v=20"></script>
+<script src="./barrio-comp.js?v=20"></script>
+<script src="./barrio-lineas.js?v=20"></script>
+<script src="./barrio.js?v=20"></script>
+<script src="../lib/png-export.js?v=20"></script>
+<script src="../lib/grapher.js?v=20"></script>
+<script>
+  window.__N4_V = '20';
+  initGrapher({
+    defaultView: 'comp',
+    // ARG primero → al pasar a Perfil, el shell enfoca Argentina por default.
+    defaultSelection: ['ARG', 'BRA', 'CHL', 'MEX', 'PER', 'URY'],
+    views: [
+      { id: 'comp', panelId: 'g-panel-comp', chartN: 13, catSel: 'bc-cat-select', selKind: 'multi',
+        init: initBarrioComp,
+        // La comparación arranca en marimekko ("Todos los países").
+        postInit: function () {
+          if (typeof state !== 'undefined' && state[13]) state[13].view = 'all';
+          document.querySelectorAll('#bc-view button').forEach(function (b) {
+            b.classList.toggle('active', b.getAttribute('data-view') === 'all');
+          });
+        },
+        redrawFull: function () { renderBarrioCompChips(); bc_buildLegend(); drawBarrioComp(); } },
+      // Evolución: mismo dato, dos olas → gráfico de pendiente. Declara catSel
+      // con la MISMA clave de estado (.cat) que la comparación, así el shell
+      // migra el ítem elegido de una vista a la otra sin costura.
+      { id: 'evol', panelId: 'g-panel-evol', chartN: 17, catSel: 'bl-cat-select', selKind: 'multi',
+        init: initBarrioLineas,
+        redrawFull: function () { bl_syncControls(); renderBarrioLineasChips(); drawBarrioLineas(); } },
+      { id: 'perfil', panelId: 'g-panel-perfil', chartN: 8, catSel: null, selKind: 'single',
+        init: initBarrio, redrawFull: function () { setupBarrioCountry(); drawBarrio(); } },
+    ],
+  });
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=20"></script>
+</body>
+</html>
