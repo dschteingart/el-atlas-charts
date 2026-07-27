@@ -143,7 +143,9 @@ function vl_updateSubtitle() {
   const custom = (ae && ae.texts && ae.texts[lang] && (ae.texts[lang].subtitle || '').trim());
   if (custom) return;   // respetar subtítulo custom del editor (?nl)
   const tpl = (typeof t === 'function') ? t('c23-subtitle-tpl') : '';
-  if (tpl) el.textContent = tpl.replace('{ITEM}', vl_itemLabel());
+  // El nombre del indicador sale de VD_VARS (vd_varLabelOf), no del
+  // diccionario de ítems de la batería del barrio.
+  if (tpl) el.textContent = tpl.replace('{CAT}', vd_varLabelOf(state[23].cat));
 }
 
 //==================================================================
@@ -543,12 +545,13 @@ function setupVdemLineasPeriodo() {
   if (typeof setupWcRangeSlider !== 'function') return;
   const ys = vd_years(state[23].cat);
   if (!ys.length) return;
-  const lo = ys[0], hi = ys[ys.length - 1];
-  if (!state[23].period) state[23].period = [lo, hi];
+  if (!state[23].period) state[23].period = [ys[0], ys[ys.length - 1]];
+  // La firma real de setupWcRangeSlider es {fromId, toId, dispId, trackId, years,
+  // get, set, onChange}: opera sobre ÍNDICES del array `years`, no sobre min/max.
   setupWcRangeSlider({
     fromId: 'vl-slider-from', toId: 'vl-slider-to',
-    displayId: 'vl-range-display', trackActiveId: 'vl-range-track-active',
-    min: lo, max: hi,
+    dispId: 'vl-range-display', trackId: 'vl-range-track-active',
+    years: ys,
     get: function () { return state[23].period; },
     set: function (p) { state[23].period = p; },
     onChange: function () { drawVdemLineas(); }

@@ -37,7 +37,12 @@ const VR_DEFAULT_SELECTED = ['ARG', 'BRA', 'CHL', 'MEX', 'PER', 'URY', 'USA', 'E
 
 // Olas disponibles de la batería (BA_META.waves = [{w,label},...], asc por ola).
 const VR_DEFAULT_CAT = 'v2xpe_exlsocgr';
-const VR_WAVES = [];   // se llena en el init: depende de la variable elegida
+// Años disponibles: se recalculan por variable en vr_yearsNow().
+let VR_WAVES = [];
+function vr_yearsNow() {
+  VR_WAVES = vd_yearList(state[21] ? state[21].cat : VR_DEFAULT_CAT);
+  return VR_WAVES;
+}
 
 const VR_SVG_NS = 'http://www.w3.org/2000/svg';
 const vr_ns = (tag) => document.createElementNS(VR_SVG_NS, tag);
@@ -879,7 +884,10 @@ function vr_drawMarimekko() {
   const tableXFrac = (VRM_TABLE_X - VRM_MARGIN_DESKTOP.left) / (VRM_W_DESKTOP - VRM_MARGIN_DESKTOP.left - VRM_MARGIN_DESKTOP.right);
   const rankUnder = n > 0 ? Math.min(n - 1, Math.floor(tableXFrac * n)) : 0;
   const maxUnderTable = n > 0 ? data[rankUnder].pct : 0;   // data ya está desc
-  const tableFits = maxUnderTable < 0.36 * yMax;
+  // El umbral se mide sobre el RANGO del eje, no sobre su tope: con el índice
+  // (0 a 1) el 0,36*yMax daba 0,36 y las barras de media tabla lo superaban,
+  // así que la tabla flotante quedaba encima de ellas.
+  const tableFits = (maxUnderTable - yMin) < 0.36 * (yMax - yMin);
   // Además: la etiqueta de la mediana va a la derecha (misma franja-x que la
   // tabla). Si la línea de la mediana cae en la banda vertical de la tabla, su
   // etiqueta colisiona con las filas (reporte de Daniel 2026-07-24). En ese caso,
@@ -971,7 +979,7 @@ function vrm_drawRegionalAvgTable(svg, rows, activeRegion, SIZES, mobilePng) {
     valueEl.setAttribute('x', tableX + tableW);
     valueEl.setAttribute('y', y);
     valueEl.setAttribute('text-anchor', 'end');
-    valueEl.textContent = (typeof fmt === 'function') ? fmt(row.value, 1) : row.value.toFixed(1);
+    valueEl.textContent = (typeof fmt === 'function') ? vd_fmtVal(row.value, 2) : row.value.toFixed(1);
     g.appendChild(valueEl);
   });
 }
@@ -987,7 +995,7 @@ function vrm_drawRegionalAvgTableHTML(rows, activeRegion) {
     return `<div class="${cls}">
       <span class="m-mt-swatch" style="background:${row.color}"></span>
       <span class="m-mt-label">${row.label}</span>
-      <span class="m-mt-value">${(typeof fmt === 'function') ? fmt(row.value, 1) : row.value.toFixed(1)}</span>
+      <span class="m-mt-value">${(typeof fmt === 'function') ? vd_fmtVal(row.value, 2) : row.value.toFixed(1)}</span>
     </div>`;
   }).join('');
 }
@@ -1137,6 +1145,7 @@ function setupVdemRankView() {
 // Slider de OLA: un solo thumb sobre las olas presentes (VR_WAVES). Al moverlo
 // se ve la misma categoría en distintas ondas EVS/WVS. Default: la más reciente.
 function setupVdemRankWave() {
+  vr_yearsNow();
   const input = document.getElementById('vr-wave-slider');
   const disp = document.getElementById('vr-wave-display');
   if (!input || !VR_WAVES.length) {
