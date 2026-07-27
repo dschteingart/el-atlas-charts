@@ -16,9 +16,12 @@
 //     (placement anti-colisión de etiquetas, el mismo del N°2 y el N°3).
 //
 // Decisiones propias de este chart:
-//   - Los DOS ejes son porcentajes en la MISMA escala 0-100, así que el área de
-//     ploteo es CUADRADA y se dibuja la línea de 45° punteada además de la
-//     recta de ajuste: sobre la diagonal, el rechazo del eje Y pesa más.
+//   - El área de ploteo es CUADRADA, pero cada eje va en el rango de SU variable
+//     (co_axisBounds): con 0-100 fijo casi todos los cruces quedaban apelotonados
+//     en una esquina. Como los rangos pueden diferir, la punteada ya no está a
+//     45°: marca dónde los dos ejes valen lo mismo, y por encima de ella pesa
+//     más el eje vertical. Las dos referencias (igual valor y recta de ajuste)
+//     se prenden y apagan desde los toggles de la barra de controles.
 //   - El slider de ola recorre sólo la INTERSECCIÓN de olas de las dos
 //     variables, y sólo las celdas con al menos CO_MIN_N países en común
 //     (mismo criterio que el resto del número). Si queda una sola ola, el
@@ -351,6 +354,65 @@ function co_updateBanner(model, nPts, nAll) {
 }
 
 // =================== Leyenda ===================
+// ---------------- Rango de los ejes ----------------
+// Los dos ejes iban SIEMPRE de 0 a 100 y casi todos los cruces quedaban
+// apelotonados en una esquina (reporte de Daniel 2026-07-26). Ahora cada eje se
+// ajusta al nivel de su variable.
+//
+// El rango se calcula sobre TODAS las olas del par, no sobre la ola mostrada: si
+// se recalculara ola por ola, el eje saltaría al mover el slider y la animación
+// del play sería ilegible. Mismo criterio que dv_yMaxFor() en desarrollo.js.
+// Cacheado por par (los datos son estáticos).
+function co_niceStep(span) {
+  // El paso mas chico de la escalera (1, 2, 2.5, 5, 10) que deje como mucho 8
+  // intervalos. Pedir "un sexto del rango" y redondear hacia arriba daba saltos
+  // feos: un rango de 67 caia en paso 20 y el eje se estiraba hasta 80.
+  if (!(span > 0)) return 1;
+  const mags = [1, 2, 2.5, 5, 10];
+  const p0 = Math.pow(10, Math.floor(Math.log10(span)) - 1);
+  for (let k = 0; k < 6; k++) {
+    const p = p0 * Math.pow(10, k);
+    for (let i = 0; i < mags.length; i++) {
+      const st = mags[i] * p;
+      if (span / st <= 8) return st;
+    }
+  }
+  return span / 5;
+}
+function co_niceRange(vals) {
+  if (!vals.length) return { lo: 0, hi: 100, step: 20, dec: 0 };
+  let lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+  if (hi === lo) { lo = Math.max(0, lo - 1); hi = Math.min(100, hi + 1); }
+  const pad = (hi - lo) * 0.08;   // aire para que ningún punto quede pegado al marco
+  lo = Math.max(0, lo - pad); hi = Math.min(100, hi + pad);
+  const step = co_niceStep(hi - lo);
+  lo = Math.max(0, Math.floor(lo / step) * step);
+  hi = Math.min(100, Math.ceil(hi / step) * step);
+  if (hi <= lo) hi = Math.min(100, lo + step);
+  return { lo: lo, hi: hi, step: step, dec: (step < 1) ? 1 : 0 };
+}
+function co_axisBounds(kx, ky, wave) {
+  if (!co_axisBounds._c) co_axisBounds._c = {};
+  const key = kx + '|' + ky + '|' + (wave == null ? 'all' : wave);
+  if (co_axisBounds._c[key]) return co_axisBounds._c[key];
+  const ws = (wave == null) ? co_waves(kx, ky) : [wave];
+  const xs = [], ys = [];
+  ws.forEach(function (w) {
+    co_cross(kx, ky, w).forEach(function (p) { xs.push(p.x); ys.push(p.y); });
+  });
+  const out = { x: co_niceRange(xs), y: co_niceRange(ys) };
+  co_axisBounds._c[key] = out;
+  return out;
+}
+function co_ticksOf(r) {
+  const out = [];
+  for (let v = r.lo; v <= r.hi + 1e-9; v += r.step) out.push(+v.toFixed(6));
+  return out;
+}
+// ¿Se muestra cada referencia? Por defecto sí (es lo que había).
+function co_showDiag() { return state[19].showDiag !== false; }
+function co_showFit()  { return state[19].showFit  !== false; }
+
 // Regiones presentes + las dos líneas (45° y ajuste). Dos modos: columna a la
 // derecha del cuadrado (desktop / formatos anchos) o filas arriba (mobile).
 // Se arma sobre TODOS los países de la ola (allPts), no sobre los visibles: si
@@ -370,8 +432,10 @@ function co_legendItems(allPts, hideOff) {
       }
     }
   });
-  items.push({ kind: 'dash', color: CO_DIAG, label: co_T('c19-leg-diag') });
-  items.push({ kind: 'line', color: CO_FIT,  label: co_T('c19-leg-fit') });
+  // Los dos ítems de línea sólo si la referencia está prendida: la leyenda tiene
+  // que describir lo que se ve, no lo que podría verse.
+  if (co_showDiag()) items.push({ kind: 'dash', color: CO_DIAG, label: co_T('c19-leg-diag') });
+  if (co_showFit())  items.push({ kind: 'line', color: CO_FIT,  label: co_T('c19-leg-fit') });
   return items;
 }
 
@@ -609,24 +673,28 @@ function drawCorrelaciones() {
     plotY = MARGIN.top + legH;
   }
   const plotBox = { x1: plotX, x2: plotX + side, y1: plotY, y2: plotY + side };
-  const xScale = (v) => plotX + (v / 100) * side;
-  const yScale = (v) => plotY + side - (v / 100) * side;
+  // Cada eje en el rango de SU variable (ver co_axisBounds). El área de ploteo
+  // sigue siendo cuadrada, así que con rangos distintos la línea de igual valor
+  // deja de estar a 45°: por eso ya no se llama "línea de 45°".
+  // Rango de la OLA mostrada: es lo que aprovecha el espacio de verdad (con el
+  // rango de todas las olas juntas, un par cuyos valores viejos eran altos deja
+  // media pantalla vacia). MIENTRAS CORRE EL PLAY se usa el de todas las olas:
+  // si el eje cambiara cuadro a cuadro, la animacion no se podria leer.
+  const RB = co_axisBounds(s.x, s.y, s.playing ? null : s.wave);
+  const rx = RB.x, ry = RB.y;
+  const xScale = (v) => plotX + ((v - rx.lo) / (rx.hi - rx.lo)) * side;
+  const yScale = (v) => plotY + side - ((v - ry.lo) / (ry.hi - ry.lo)) * side;
 
-  // --- grid + ticks (0-100 en los dos ejes) ---
-  const ticks = (typeof niceLinearTicks === 'function') ? niceLinearTicks(0, 100, 6) : [0, 20, 40, 60, 80, 100];
+  // --- grid + ticks (uno por eje: ya no comparten escala) ---
+  const xTicks = co_ticksOf(rx), yTicks = co_ticksOf(ry);
   const gridG = co_ns('g'); svg.appendChild(gridG);
-  ticks.forEach(v => {
-    const x = xScale(v), y = yScale(v);
+  xTicks.forEach(v => {
+    const x = xScale(v);
     const lv = co_ns('line');
     lv.setAttribute('x1', x); lv.setAttribute('x2', x);
     lv.setAttribute('y1', plotY); lv.setAttribute('y2', plotY + side);
     lv.setAttribute('stroke', CO_GRID); lv.setAttribute('stroke-width', 1);
     gridG.appendChild(lv);
-    const lh = co_ns('line');
-    lh.setAttribute('x1', plotX); lh.setAttribute('x2', plotX + side);
-    lh.setAttribute('y1', y); lh.setAttribute('y2', y);
-    lh.setAttribute('stroke', CO_GRID); lh.setAttribute('stroke-width', 1);
-    gridG.appendChild(lh);
 
     const tx = co_ns('text');
     tx.setAttribute('x', x); tx.setAttribute('y', plotY + side + (bigFmt ? 30 : 16));
@@ -635,8 +703,16 @@ function drawCorrelaciones() {
     tx.style.fontSize = SIZES.tick + 'px';
     tx.setAttribute('fill', CO_INK_SOFT);
     tx.setAttribute('font-variant-numeric', 'tabular-nums');
-    tx.textContent = Math.round(v) + '%';
+    tx.textContent = ((typeof fmt === 'function') ? fmt(v, rx.dec) : v) + '%';
     gridG.appendChild(tx);
+  });
+  yTicks.forEach(v => {
+    const y = yScale(v);
+    const lh = co_ns('line');
+    lh.setAttribute('x1', plotX); lh.setAttribute('x2', plotX + side);
+    lh.setAttribute('y1', y); lh.setAttribute('y2', y);
+    lh.setAttribute('stroke', CO_GRID); lh.setAttribute('stroke-width', 1);
+    gridG.appendChild(lh);
 
     const ty = co_ns('text');
     ty.setAttribute('x', plotX - (bigFmt ? 12 : 8)); ty.setAttribute('y', y);
@@ -646,7 +722,7 @@ function drawCorrelaciones() {
     ty.style.fontSize = SIZES.tick + 'px';
     ty.setAttribute('fill', CO_INK_SOFT);
     ty.setAttribute('font-variant-numeric', 'tabular-nums');
-    ty.textContent = Math.round(v) + '%';
+    ty.textContent = ((typeof fmt === 'function') ? fmt(v, ry.dec) : v) + '%';
     gridG.appendChild(ty);
   });
 
@@ -663,26 +739,30 @@ function drawCorrelaciones() {
   axY.setAttribute('stroke', CO_AXIS); axY.setAttribute('stroke-width', 1);
   axG.appendChild(axY);
 
-  // --- línea de 45° (punteada): y = x. Con el plot cuadrado y los dos ejes en
-  //     la misma escala, es la diagonal exacta del área de ploteo. ---
-  const diag = co_ns('line');
-  diag.setAttribute('x1', xScale(0));   diag.setAttribute('y1', yScale(0));
-  diag.setAttribute('x2', xScale(100)); diag.setAttribute('y2', yScale(100));
-  diag.setAttribute('stroke', CO_DIAG);
-  diag.setAttribute('stroke-width', bigFmt ? 2 : 1.2);
-  diag.setAttribute('stroke-dasharray', bigFmt ? '10 8' : '5 4');
-  svg.appendChild(diag);
+  // --- línea de IGUAL VALOR (punteada): y = x. Con los ejes en rangos distintos
+  //     ya no es la diagonal del cuadrado, así que se recorta al tramo donde los
+  //     dos rangos se superponen. Si no se superponen, no se dibuja. ---
+  const eqLo = Math.max(rx.lo, ry.lo), eqHi = Math.min(rx.hi, ry.hi);
+  if (co_showDiag() && eqHi > eqLo) {
+    const diag = co_ns('line');
+    diag.setAttribute('x1', xScale(eqLo)); diag.setAttribute('y1', yScale(eqLo));
+    diag.setAttribute('x2', xScale(eqHi)); diag.setAttribute('y2', yScale(eqHi));
+    diag.setAttribute('stroke', CO_DIAG);
+    diag.setAttribute('stroke-width', bigFmt ? 2 : 1.2);
+    diag.setAttribute('stroke-dasharray', bigFmt ? '10 8' : '5 4');
+    svg.appendChild(diag);
+  }
 
-  // --- recta de ajuste (OLS), recortada al cuadrado 0-100 ---
-  if (model) {
-    let xa = 0, xb = 100;
+  // --- recta de ajuste (OLS), recortada al rango dibujado ---
+  if (model && co_showFit()) {
+    let xa = rx.lo, xb = rx.hi;
     if (model.b !== 0) {
-      const xAt0   = (0 - model.a) / model.b;
-      const xAt100 = (100 - model.a) / model.b;
-      const lo = Math.min(xAt0, xAt100), hi = Math.max(xAt0, xAt100);
-      xa = Math.max(0, lo); xb = Math.min(100, hi);
+      const xAtLo = (ry.lo - model.a) / model.b;
+      const xAtHi = (ry.hi - model.a) / model.b;
+      const lo = Math.min(xAtLo, xAtHi), hi = Math.max(xAtLo, xAtHi);
+      xa = Math.max(rx.lo, lo); xb = Math.min(rx.hi, hi);
     } else {
-      if (model.a < 0 || model.a > 100) { xa = 0; xb = -1; }
+      if (model.a < ry.lo || model.a > ry.hi) { xa = 0; xb = -1; }
     }
     if (xb > xa) {
       const fit = co_ns('line');
@@ -1109,6 +1189,29 @@ function co_buildSelects() {
   build('co-y-select', state[19].y);
 }
 
+// Toggles de las dos referencias (igual valor / recta de ajuste). Son
+// independientes entre sí, como los del ranking del graficador.
+function setupCorrelacionesRefs() {
+  const box = document.getElementById('co-refs');
+  if (!box) return;
+  const sync = () => {
+    box.querySelectorAll('button[data-ref]').forEach(b => {
+      const on = (b.getAttribute('data-ref') === 'diag') ? co_showDiag() : co_showFit();
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  };
+  box.querySelectorAll('button[data-ref]').forEach(b => {
+    b.addEventListener('click', () => {
+      const k = (b.getAttribute('data-ref') === 'diag') ? 'showDiag' : 'showFit';
+      state[19][k] = !(state[19][k] !== false);
+      sync();
+      drawCorrelaciones();
+    });
+  });
+  sync();
+}
+
 function setupCorrelacionesSelects() {
   const sx = document.getElementById('co-x-select');
   const sy = document.getElementById('co-y-select');
@@ -1195,7 +1298,7 @@ function setupCorrelacionesWave() {
   if (btn) {
     btn.setAttribute('aria-label', co_T('c19-play'));
     btn.addEventListener('click', () => {
-      if (state[19].playing) { co_stopPlay(); return; }
+      if (state[19].playing) { co_stopPlay(); drawCorrelaciones(); return; }
       const ws = co_waves(state[19].x, state[19].y);
       if (ws.length < 2) return;
       if (ws.indexOf(state[19].wave) === ws.length - 1) {
@@ -1204,12 +1307,13 @@ function setupCorrelacionesWave() {
         drawCorrelaciones();
       }
       state[19].playing = true;
+      drawCorrelaciones();   // el rango del eje pasa al de todas las olas
       btn.classList.add('playing');
       btn.setAttribute('aria-label', co_T('c19-pause'));
       co_stopPlay._timer = setInterval(() => {
         const list = co_waves(state[19].x, state[19].y);
         const i = list.indexOf(state[19].wave);
-        if (i < 0 || i >= list.length - 1) { co_stopPlay(); return; }
+        if (i < 0 || i >= list.length - 1) { co_stopPlay(); drawCorrelaciones(); return; }
         state[19].wave = list[i + 1];
         renderCorrelacionesChips();
         drawCorrelaciones();
@@ -1269,12 +1373,15 @@ function initCorrelaciones() {
   if (!Array.isArray(s.selected)) s.selected = CO_DEFAULT_SELECTED.slice();
   if (!Array.isArray(s.hiddenRegions)) s.hiddenRegions = [];
   if (s.hoverRegion === undefined) s.hoverRegion = null;
+  if (s.showDiag === undefined) s.showDiag = true;
+  if (s.showFit === undefined) s.showFit = true;
   s.playing = false;
   const ws = co_waves(s.x, s.y);
   if (ws.indexOf(s.wave) < 0) s.wave = ws.length ? ws[ws.length - 1] : null;
 
   co_buildSelects();
   setupCorrelacionesSelects();
+  setupCorrelacionesRefs();
   setupCorrelacionesWave();
   setupCorrelacionesSearch();
   setupCorrelacionesCSV();

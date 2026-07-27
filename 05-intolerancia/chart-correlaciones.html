@@ -185,6 +185,13 @@
         <select id="co-y-select" class="m-select" aria-label="Eje vertical"></select>
       </div>
       <button type="button" class="co-swap" id="co-swap" aria-label="Intercambiar el eje horizontal y el vertical" data-i18n-aria="c19-swap-aria"><span class="co-swap-icon" aria-hidden="true">⇄</span><span data-i18n="c19-swap">Invertir ejes</span></button>
+      <div class="m-ctrl-group">
+        <span class="m-ctrl-label" data-i18n="c19-refs-label">Referencias</span>
+        <div class="toggle" id="co-refs">
+          <button type="button" data-ref="diag" class="active" aria-pressed="true" data-i18n="c19-ref-diag">Igual valor</button>
+          <button type="button" data-ref="fit" class="active" aria-pressed="true" data-i18n="c19-ref-fit">Recta de ajuste</button>
+        </div>
+      </div>
     </div>
 
     <div class="m-controls" id="co-wave-group">
@@ -240,13 +247,13 @@
 <script src="../lib/regions.js?v=8"></script>
 <script src="../lib/i18n.js?v=9"></script>
 <script src="./i18n-issue.js?v=12"></script>
-<script src="./i18n-correlaciones.js?v=4"></script>
+<script src="./i18n-correlaciones.js?v=10"></script>
 <script src="../lib/utils.js?v=9"></script>
 <script src="../lib/country-names.js?v=8"></script>
 <script src="../lib/scatter-render.js?v=2"></script>
 <script src="./data-cruces.js?v=2"></script>
 <script src="../lib/editor.js?v=8"></script>
-<script src="./correlaciones.js?v=4"></script>
+<script src="./correlaciones.js?v=10"></script>
 <script src="../lib/png-export.js?v=13"></script>
 <script>
   window.__N5_V = '5';

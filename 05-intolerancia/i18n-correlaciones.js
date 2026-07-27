@@ -14,7 +14,7 @@
   Object.assign(I18N.es, {
     // Una sola línea: el lead largo costaba tres renglones de alto y el gráfico
     // no entraba en pantalla sin scrollear.
-    'c19-lead':          'Elegí dos preguntas de la encuesta y mirá cómo se ordenan los países. Sobre la diagonal pesa más el eje vertical.',
+    'c19-lead':          'Elegí dos preguntas de la encuesta y mirá cómo se ordenan los países. Por encima de la línea de igual valor pesa más el eje vertical.',
 
     'c19-title':         'Las intolerancias van juntas, pero no son la misma cosa',
     'c19-title-neutral': 'Dos preguntas de la encuesta, país por país',
@@ -31,6 +31,9 @@
     'c19-grp-wrp':       'Discriminación vivida (otra encuesta)',
     'c19-sources-wrp':   ' <strong>Ojo con «sufrió discriminación por su color de piel»</strong>: es la única variable del menú que NO sale de la Integrated Values Survey. Viene del World Risk Poll 2023 (Lloyd\u2019s Register Foundation / Gallup, 139 países, CC BY 4.0), que le pregunta a cada persona si alguna vez sufrió discriminación por el color de su piel (sí/no/no corresponde/NS/NC, ponderado por WGT). Cuando está en algún eje, el gráfico deja de cumplir la condición de arriba: los dos ejes salen de <strong>encuestas distintas y de personas distintas</strong>, así que no hay estilo de respuesta compartido —eso juega a favor— pero sí dos operativos, dos muestras y dos años distintos. Se la cruza contra la ola 2017-2022 de la IVS, que es la más cercana; el año real de cada punto (2023 del lado del World Risk Poll) está en el tooltip. Y sobre todo: mide <em>experiencia propia</em>, no opinión sobre terceros. Que en un país poca gente declare haber sufrido discriminación no prueba que sea menos racista: puede ser más homogéneo, o tener menos conciencia del problema.',
     'c19-swap':          'Invertir ejes',
+    'c19-refs-label':    'Referencias',
+    'c19-ref-diag':      'Igual valor',
+    'c19-ref-fit':       'Recta de ajuste',
     'c19-swap-aria':     'Intercambiar el eje horizontal y el vertical',
     'c19-wave-label':    'Ola de la encuesta',
     'c19-play':          'Reproducir',
@@ -47,7 +50,7 @@
     'c19-fewfit':        'Muy pocos países para estimar un ajuste.',
     'c19-empty-short':   'Sin datos para esta combinación.',
 
-    'c19-leg-diag':      'Línea de 45°: mismo % en los dos ejes',
+    'c19-leg-diag':      'Igual valor en los dos ejes',
     'c19-leg-fit':       'Recta de ajuste',
     'c19-legend-hint':   'Pasá el mouse por una región de la leyenda para ver los nombres de sus países; hacé clic (o tocá) para apagarla y sacarla del ajuste.',
     'c19-show-all':      'Ver todas las regiones',
@@ -65,7 +68,7 @@
   });
 
   Object.assign(I18N.en, {
-    'c19-lead':          'Pick two survey questions and see how countries line up. Above the diagonal, the vertical axis weighs more.',
+    'c19-lead':          'Pick two survey questions and see how countries line up. Above the equal-value line, the vertical axis weighs more.',
 
     'c19-title':         'Intolerances travel together — but they are not the same thing',
     'c19-title-neutral': 'Two survey questions, country by country',
@@ -79,6 +82,9 @@
     'c19-grp-wrp':       'Experienced discrimination (another survey)',
     'c19-sources-wrp':   ' <strong>A note on “has experienced discrimination over skin colour”</strong>: it is the only variable in the menu that does NOT come from the Integrated Values Survey. It comes from the World Risk Poll 2023 (Lloyd\u2019s Register Foundation / Gallup, 139 countries, CC BY 4.0), which asks each respondent whether they have ever experienced discrimination because of the colour of their skin (yes/no/does not apply/DK/refused, weighted by WGT). Whenever it sits on an axis, the condition above no longer holds: the two axes come from <strong>different surveys and different people</strong>, so there is no shared response style —which helps— but there are two fieldworks, two samples and two different years. It is crossed against the IVS 2017-2022 wave, the closest one; each dot\u2019s real year (2023 on the World Risk Poll side) is in the tooltip. Above all: it measures <em>first-person experience</em>, not an opinion about others. Fewer people reporting discrimination does not prove a country is less racist: it may be more homogeneous, or less aware of the problem.',
     'c19-swap':          'Swap axes',
+    'c19-refs-label':    'Reference lines',
+    'c19-ref-diag':      'Equal value',
+    'c19-ref-fit':       'Fit line',
     'c19-swap-aria':     'Swap the horizontal and the vertical axis',
     'c19-wave-label':    'Survey wave',
     'c19-play':          'Play',
@@ -93,7 +99,7 @@
     'c19-fewfit':        'Too few countries to estimate a fit.',
     'c19-empty-short':   'No data for this combination.',
 
-    'c19-leg-diag':      '45° line: same % on both axes',
+    'c19-leg-diag':      'Equal value on both axes',
     'c19-leg-fit':       'Line of best fit',
     'c19-legend-hint':   'Hover a region in the legend to reveal its country names; click (or tap) to switch it off and drop it from the fit.',
     'c19-show-all':      'Show all regions',
