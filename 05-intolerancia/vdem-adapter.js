@@ -140,3 +140,22 @@ function vd_fmtVal(v, dec) {
   const d = (dec == null) ? 2 : dec;
   return (typeof fmt === 'function') ? fmt(v, d) : Number(v).toFixed(d).replace('.', ',');
 }
+
+// Países con dato para esa variable (y con región asignada, igual que vd_foto).
+// Los buscadores clonados leían VD_SERIES[k] como si estuviera agrupado POR OLA
+// (VD_SERIES[item][ola] = [[iso, pct, ...], ...]). Acá las claves del segundo
+// nivel son los ISO3 directamente, así que aquel recorrido devolvía números y
+// undefined en vez de países: por eso escribir "argentina" no encontraba nada.
+function vd_paises(k) {
+  if (!vd_paises._c) vd_paises._c = {};
+  if (vd_paises._c[k]) return vd_paises._c[k];
+  const src = VD_SERIES[k] || {};
+  const out = [];
+  for (const iso in src) {
+    if (!Object.prototype.hasOwnProperty.call(src, iso)) continue;
+    if (typeof VD_REGION !== 'undefined' && !VD_REGION[iso]) continue;
+    out.push(iso);
+  }
+  vd_paises._c[k] = out;
+  return out;
+}

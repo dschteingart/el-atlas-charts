@@ -105,11 +105,8 @@ function vl_yearBounds() {
 
 // Países con al menos una observación en el ítem activo (para el buscador).
 function vl_searchable() {
-  const item = state[23].cat;
-  const byWave = (typeof VD_SERIES !== 'undefined' && VD_SERIES[item]) ? VD_SERIES[item] : {};
-  const isos = {};
-  Object.keys(byWave).forEach(w => byWave[w].forEach(r => { isos[r[0]] = true; }));
-  return Object.keys(isos)
+  // Ver vd_paises(): el recorrido por olas del clon no aplica a V-Dem.
+  return vd_paises(state[23].cat).slice()
     .sort((a, b) => vl_name(a).localeCompare(vl_name(b), 'es'))
     .map(iso => ({ iso, name: vl_name(iso) }));
 }
@@ -128,8 +125,8 @@ function vl_color(iso) {
 }
 
 function vl_itemLabel() {
-  // El nombre del ítem sale de las claves del perfil (c8-item-*), una sola verdad.
-  return (typeof t === 'function') ? t('c8-item-' + state[23].cat) : state[23].cat;
+  // Una sola fuente de verdad para el nombre del indicador: VD_VARS.
+  return vd_varLabelOf(state[23].cat);
 }
 
 function vl_updateSubtitle() {
@@ -166,8 +163,13 @@ function drawVdemLineas() {
   const y0 = bounds[0], y1 = bounds[1];
 
   // Series de la selección con al menos una observación en el ítem activo.
+  // Los puntos se recortan al período elegido. Sin esto la línea se dibujaba con
+  // TODOS los años del país y el xScale mandaba el tramo anterior a y0 fuera del
+  // área de dibujo, encima del eje y del título (lo que se veía al mover el
+  // slider).
   const series = (state[23].selected || [])
-    .map(iso => ({ iso: iso, key: iso, color: vl_color(iso), pts: vl_series(item, iso) }))
+    .map(iso => ({ iso: iso, key: iso, color: vl_color(iso),
+                   pts: vl_series(item, iso).filter(p => p[0] >= y0 && p[0] <= y1) }))
     .filter(s => s.pts.length >= 1);
 
   const SIZES = editorFormat
@@ -219,7 +221,8 @@ function drawVdemLineas() {
     tx.setAttribute('text-anchor', 'end'); tx.setAttribute('dominant-baseline', 'central');
     tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif'); tx.style.fontSize = SIZES.tick + 'px';
     tx.setAttribute('fill', '#7A6E62'); tx.setAttribute('font-variant-numeric', 'tabular-nums');
-    tx.textContent = Math.round(v);
+    // El índice va de 0 a 1: Math.round dejaba el eje entero en "0" y "1".
+    tx.textContent = vd_fmtVal(v, 1);
     gridG.appendChild(tx);
   });
   const xt = (typeof niceLinearTicks === 'function') ? niceLinearTicks(y0, y1, mobile ? 4 : 7).filter(v => v >= y0 && v <= y1) : [];
@@ -264,13 +267,17 @@ function drawVdemLineas() {
       path.setAttribute('data-bl', s.iso); path.setAttribute('data-base-w', lineW); path.classList.add('vl-colored');
       linesG.appendChild(path);
     }
-    // marcadores: se ve DÓNDE hay medición (norma del número). Con un solo punto
-    // (país que no está en las dos olas) el marcador es todo lo que hay.
-    s.pts.forEach(p => {
+    // Sin marcadores: V-Dem es anual y con 124 puntos por país la línea se
+    // convertía en un rosario. La norma de marcar dónde hay medición vale para
+    // series de encuesta con pocas olas, no para una serie continua. El único
+    // caso que conserva el punto es el país con UNA sola observación en el
+    // período, donde el marcador es todo lo que hay para dibujar.
+    if (s.pts.length === 1) {
+      const p = s.pts[0];
       const c = vl_ns('circle'); c.setAttribute('cx', xScale(p[0])); c.setAttribute('cy', yScale(p[1]));
       c.setAttribute('r', dotR); c.setAttribute('fill', s.color); c.setAttribute('stroke', '#FAF8F3');
       c.setAttribute('stroke-width', bigFmt ? 2 : 1.4); c.setAttribute('data-bl', s.iso); dotsG.appendChild(c);
-    });
+    }
     // hit-area para el énfasis al hover (no redibuja)
     if (!isPngFormat && s.pts.length > 1) {
       const hit = vl_ns('path'); hit.setAttribute('d', d); hit.setAttribute('fill', 'none');
@@ -312,7 +319,7 @@ function drawVdemLineas() {
     tx.style.fontSize = SIZES.label + 'px'; tx.setAttribute('font-weight', bigFmt ? 700 : 600); tx.setAttribute('fill', l.color);
     tx.setAttribute('paint-order', 'stroke'); tx.setAttribute('stroke', '#FAF8F3'); tx.setAttribute('stroke-width', labelHalo); tx.setAttribute('stroke-linejoin', 'round');
     tx.setAttribute('data-bl', l.key);
-    tx.textContent = l.text + (isPngFormat && l.valLast != null ? '  ' + Math.round(l.valLast) : '');
+    tx.textContent = l.text + (isPngFormat && l.valLast != null ? '  ' + vd_fmtVal(l.valLast, 2) : '');
     labG.appendChild(tx);
   });
 
@@ -383,7 +390,7 @@ function vl_setupHover(svg, ctx) {
       r.label = vl_name(r.key);
     });
     if (tooltip) {
-      tooltip.innerHTML = atlasLineTooltipHTML(year, rows, { dec: 1 });
+      tooltip.innerHTML = atlasLineTooltipHTML(year, rows, { dec: 2 });
       tooltip.style.display = 'block'; tooltip.style.opacity = '1';
     }
   }
@@ -410,7 +417,10 @@ function vl_toggleSelect(iso) {
 }
 
 function renderVdemLineasChips() {
-  const cont = document.getElementById('vl-selected-chips'); if (!cont) return;
+  // El contenedor del panel es #vl-chips (el clon buscaba #vl-selected-chips,
+  // que es el id de la vista de comparación: por eso no aparecía ningún chip y
+  // no había forma de sacar países de la vista).
+  const cont = document.getElementById('vl-chips'); if (!cont) return;
   cont.innerHTML = '';
   (state[23].selected || []).slice().sort((a, b) => vl_name(a).localeCompare(vl_name(b), 'es')).forEach(iso => {
     const chip = document.createElement('span'); chip.className = 'm-selected-chip';
@@ -472,31 +482,28 @@ function vl_syncControls() {
 function setupVdemLineasCSV() {
   document.querySelectorAll('button.download[data-chart="23-csv"]').forEach(btn => {
     btn.addEventListener('click', () => {
+      // El clon exportaba recorriendo VL_WAVES, que en V-Dem está vacío: el CSV
+      // salía sin una sola fila. Acá va la serie ANUAL de la variable mostrada,
+      // recortada al período que el lector tiene en pantalla.
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
+      const item = state[23].cat;
+      const b = vl_yearBounds();
       let csv = '';
-      csv += '# El Atlas N5 — que pasa seguido en el barrio, olas 6 y 7 (WVS, bateria H002)\n';
-      csv += '# pct = % "muy/bastante seguido" {1,2} sobre {1,2,3,4}, ponderado S017.\n';
-      csv += '# anio = ano REAL de campo del pais en esa ola (es el que se usa en el eje x).\n';
-      csv += 'iso3,pais,item,ola,anio,pct,n\n';
-      const items = (typeof VD_VARS !== 'undefined') ? VD_VARS : [];
-      items.forEach(item => {
-        const isos = {};
-        VL_WAVES.forEach(m => {
-          const byWave = (typeof VD_SERIES !== 'undefined' && VD_SERIES[item]) ? VD_SERIES[item] : {};
-          const rows = byWave[String(m.w)] || byWave[m.w] || [];
-          rows.forEach(r => { isos[r[0]] = true; });
-        });
-        Object.keys(isos).sort().forEach(iso => {
-          const name = (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[iso]) ? (COUNTRY_NAMES[iso].en || iso) : iso;
-          const nameQ = (name.indexOf(',') >= 0) ? '"' + name + '"' : name;
-          vl_series(item, iso).forEach(p => {
-            csv += [iso, nameQ, item, p[3], p[0], p[1], (p[2] != null ? p[2] : '')].join(',') + '\n';
-          });
+      csv += '# El Atlas N5 - V-Dem v16, serie anual por pais\n';
+      csv += '# variable: ' + item + ' (' + vd_varLabelOf(item) + ')\n';
+      csv += '# periodo exportado: ' + b[0] + '-' + b[1] + ' (el que muestra el grafico)\n';
+      csv += 'iso3,pais,variable,anio,valor\n';
+      vd_paises(item).slice().sort().forEach(iso => {
+        const name = (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[iso]) ? (COUNTRY_NAMES[iso].en || iso) : iso;
+        const nameQ = (name.indexOf(',') >= 0) ? '"' + name + '"' : name;
+        vl_series(item, iso).forEach(p => {
+          if (p[0] < b[0] || p[0] > b[1]) return;
+          csv += [iso, nameQ, item, p[0], p[1]].join(',') + '\n';
         });
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-      a.download = lang === 'en' ? 'the-atlas-05-neighbourhood-change.csv' : 'el-atlas-05-barrio-evolucion.csv';
+      a.download = lang === 'en' ? 'the-atlas-05-vdem-over-time.csv' : 'el-atlas-05-vdem-evolucion.csv';
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
     });
   });
@@ -543,6 +550,10 @@ function initVdemLineas() {
 // mostraba el siglo entero y las series se veían aplastadas.
 function setupVdemLineasPeriodo() {
   if (typeof setupWcRangeSlider !== 'function') return;
+  // Una sola vez: setupWcRangeSlider agrega listeners cada vez que se llama, y
+  // las seis variables comparten el mismo rango de años (1900-2023).
+  if (setupVdemLineasPeriodo._done) return;
+  setupVdemLineasPeriodo._done = true;
   const ys = vd_years(state[23].cat);
   if (!ys.length) return;
   if (!state[23].period) state[23].period = [ys[0], ys[ys.length - 1]];

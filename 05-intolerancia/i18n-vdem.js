@@ -102,6 +102,8 @@
     'c22-title':          'El mapa de la exclusión social',
     'c22-title-neutral':  'Exclusión por grupo social en el mundo',
     'c22-subtitle-tpl':   '{CAT}. Año {PERIODO}. En el mapa, el tono más oscuro es siempre el peor valor.',
+    'c22-legend-title':   'Valor del indicador',
+    'c22-legend-nodata':  'Sin dato',
     'c22-sources':        FUENTES_ES,
     'c22-sources-tpl':    'Datos: V-Dem v16 (Universidad de Gotemburgo), año {R}. El tono oscuro es siempre el peor valor: la rampa se invierte cuando la variable apunta al revés.',
 
@@ -154,6 +156,8 @@
     'c22-title':          'The map of social exclusion',
     'c22-title-neutral':  'Exclusion by social group around the world',
     'c22-subtitle-tpl':   '{CAT}. Year {PERIODO}. On the map, the darkest shade is always the worst value.',
+    'c22-legend-title':   'Indicator value',
+    'c22-legend-nodata':  'No data',
     'c22-sources':        FUENTES_EN,
     'c22-sources-tpl':    'Data: V-Dem v16 (University of Gothenburg), year {R}. Darker always means worse: the ramp flips when the variable points the other way.',
 

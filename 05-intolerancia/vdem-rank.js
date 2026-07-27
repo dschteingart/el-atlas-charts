@@ -691,7 +691,19 @@ function vr_drawMarimekko() {
     if (maxTextW > 0) {
       const projVert = sin45 * (maxTextW + labelFontSize * 0.3);
       const required = aOff + 4 + projVert + 30;
-      if (MARGIN.bottom < required) MARGIN.bottom = Math.ceil(required);
+      if (MARGIN.bottom < required) {
+        const extra = Math.ceil(required) - MARGIN.bottom;
+        MARGIN.bottom += extra;
+        // En pantalla el gráfico CRECE hacia abajo en vez de comprimir el área de
+        // dibujo. Si el plot se achicara, las MISMAS barras subirían en pantalla
+        // (yScale = top + PLOT_H*(1-v)) y se meterían debajo de la tabla regional:
+        // ese es el mecanismo del "cuadrado que pisa una barra" que aparecía al
+        // agregar países con nombres largos. En los formatos de PNG el alto es
+        // parte de la definición del formato, así que ahí sí se comprime. En
+        // mobile tampoco: la tabla va como bloque HTML debajo (no flota, no hay
+        // nada que pisar) y con tipografías grandes el alto extra se dispara.
+        if (!editorFormat && !mobile) H += extra;
+      }
     }
   }
 
@@ -730,7 +742,11 @@ function vr_drawMarimekko() {
   const regionsPresent = [];
   const seenReg = new Set();
   data.forEach(d => { if (d.region && !seenReg.has(d.region)) { seenReg.add(d.region); regionsPresent.push(d.region); } });
-  const tableBottomY = (mobilePng ? 110 : VRM_TABLE_Y_FIRST) + regionsPresent.length * tableRowH;
+  // Geometría REAL de la tabla: se replica la cuenta de vrm_drawRegionalAvgTable
+  // (primera fila = título + 2,4 alturas de fila) en vez de estimarla, porque de
+  // esta medida depende si la tabla flota o se va abajo.
+  const tableFirstY = (mobilePng ? 84 : VRM_TABLE_Y_TITLE) + ((SIZES.tableLabel != null) ? SIZES.tableLabel : 11) * 2.4;
+  const tableBottomY = tableFirstY + Math.max(0, regionsPresent.length - 1) * tableRowH + tableRowH * 0.25;
 
   // === Grid Y + ticks ===
   const yTicksAll = (typeof niceLinearTicks === 'function') ? niceLinearTicks(yMin, yMax, (mobile || mobilePng) ? 4 : 6) : [0, 20, 40, 60];
@@ -881,13 +897,16 @@ function vr_drawMarimekko() {
   // franja. Si las barras bajo la tabla son altas (ej. drogadictos: todas
   // >37%), no entra → la tabla se muestra como bloque debajo del gráfico en
   // vez de taparlas (opción elegida por Daniel, 2026-07-23).
-  const tableXFrac = (VRM_TABLE_X - VRM_MARGIN_DESKTOP.left) / (VRM_W_DESKTOP - VRM_MARGIN_DESKTOP.left - VRM_MARGIN_DESKTOP.right);
-  const rankUnder = n > 0 ? Math.min(n - 1, Math.floor(tableXFrac * n)) : 0;
-  const maxUnderTable = n > 0 ? data[rankUnder].pct : 0;   // data ya está desc
-  // El umbral se mide sobre el RANGO del eje, no sobre su tope: con el índice
-  // (0 a 1) el 0,36*yMax daba 0,36 y las barras de media tabla lo superaban,
-  // así que la tabla flotante quedaba encima de ellas.
-  const tableFits = (maxUnderTable - yMin) < 0.36 * (yMax - yMin);
+  // La comparación va en PÍXELES, no en unidades del dato. La altura del área de
+  // dibujo cambia sola: el margen inferior crece con las etiquetas rotadas de los
+  // países elegidos, y al achicarse el plot la MISMA barra sube en pantalla. Por
+  // eso cualquier umbral del tipo "0,36 del eje" se desactualiza y la tabla
+  // terminaba pisando una barra (reporte de Daniel 2026-07-26).
+  // La barra más alta bajo la tabla es la del borde izquierdo de la tabla, porque
+  // data va ordenada descendente.
+  const idxUnder = n > 0 ? Math.max(0, Math.min(n - 1, Math.floor((tableX - MARGIN.left) / barWidth))) : 0;
+  const maxUnderTable = n > 0 ? data[idxUnder].pct : 0;
+  const tableFits = yScale(maxUnderTable) > tableBottomY + tableRowH * 0.5;
   // Además: la etiqueta de la mediana va a la derecha (misma franja-x que la
   // tabla). Si la línea de la mediana cae en la banda vertical de la tabla, su
   // etiqueta colisiona con las filas (reporte de Daniel 2026-07-24). En ese caso,
@@ -1194,12 +1213,10 @@ function vr_normalize(s) {
 }
 
 function vr_searchableCountries() {
+  // vd_paises() por variable: el recorrido anterior asumía la estructura por olas
+  // de la batería de vecinos y devolvía basura (el buscador no encontraba nada).
   const isos = new Set();
-  VD_VARS.forEach(item => {
-    const byWave = (typeof VD_SERIES !== 'undefined') ? VD_SERIES[item] : null;
-    if (!byWave) return;
-    Object.keys(byWave).forEach(w => byWave[w].forEach(r => isos.add(r[0])));
-  });
+  VD_VARS.forEach(v => vd_paises(v.k).forEach(iso => isos.add(iso)));
   return Array.from(isos)
     .sort((a, b) => vr_displayName(a).localeCompare(vr_displayName(b), 'es'))
     .map(iso => ({ iso, name: vr_displayName(iso) }));

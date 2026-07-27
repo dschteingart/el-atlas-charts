@@ -233,7 +233,9 @@ function vm_drawLegend(svg, breaks) {
   for (let i = 0; i <= breaks.length; i++) {
     if (i === 0) labels.push('<' + vd_fmtVal(breaks[0]));
     else if (i === breaks.length) labels.push('≥' + vd_fmtVal(breaks[breaks.length - 1]));
-    else labels.push(breaks[i - 1] + '–' + breaks[i]);
+    // Los cortes intermedios salían crudos ("0.1–0.2") mientras el primero y
+    // el último ya pasaban por vd_fmtVal: mismo formato para los tres.
+    else labels.push(vd_fmtVal(breaks[i - 1]) + '–' + vd_fmtVal(breaks[i]));
   }
   const g = vm_ns('g'); svg.appendChild(g);
   const title = vm_ns('text');
