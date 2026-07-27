@@ -37,6 +37,10 @@ const VM_STROKE_HOVER = '#1A1A1A';
 const VM_HALO_HOVER = '#FFFFFF';   // halo debajo del hover: lo hace legible sobre rellenos oscuros
 
 let vm_geo = null, vm_proj = null, vm_featCache = null, vm_playTimer = null;
+// Duracion total de la animacion, del primer anio al ultimo (mismo criterio y
+// mismos nombres que el scatter: VE_PLAY_TOTAL_MS / VE_PLAY_MS_MIN).
+const VM_PLAY_TOTAL_MS = 10000;
+const VM_PLAY_MS_MIN = 40;   // piso: por debajo el navegador no llega a repintar
 
 function vm_isMobile() {
   return (typeof isMobileViewport === 'function') ? isMobileViewport() : (window.innerWidth || 1024) < 768;
@@ -127,8 +131,10 @@ function vm_trajectory(iso, cat) {
 function vm_breaks(values) {
   const v = values.filter(x => x != null).sort((a, b) => a - b);
   if (v.length < VM_NBINS) return v.length ? [...new Set(v)] : [50];
-  const dec = (v[v.length - 1] - v[0]) < 12;   // rango chico → 1 decimal
-  const round = (x) => dec ? Math.round(x * 10) / 10 : Math.round(x);
+  // Rango chico (indice 0-1, componentes ~-3,5 a 3,5) → dos decimales: con uno
+  // solo, medio mundo caia en el mismo corte.
+  const dec = (v[v.length - 1] - v[0]) < 12;
+  const round = (x) => dec ? Math.round(x * 100) / 100 : Math.round(x);
   const breaks = [];
   for (let i = 1; i < VM_NBINS; i++) breaks.push(round(v[Math.floor(v.length * i / VM_NBINS)]));
   return [...new Set(breaks)];
@@ -136,6 +142,29 @@ function vm_breaks(values) {
 // Devuelve una geometría sin los polígonos antárticos (todo su extremo norte
 // por debajo de -55°). Se usa para el landmask, que viene como un único
 // MultiPolygon de toda la tierra.
+// Cortes FIJOS por variable, sobre TODOS los anios y paises. Se recalculaban con
+// los valores del anio mostrado, asi que la escala saltaba al mover el slider: el
+// mismo color significaba cosas distintas en 1902 y en 2023, y la leyenda cambiaba
+// entera durante la animacion. Cacheado por variable.
+function vm_breaksFor(cat) {
+  if (!vm_breaksFor._c) vm_breaksFor._c = {};
+  if (vm_breaksFor._c[cat]) return vm_breaksFor._c[cat];
+  const src = (typeof VD_SERIES !== 'undefined' && VD_SERIES[cat]) ? VD_SERIES[cat] : {};
+  const div = vd_scaleOf(cat);
+  const vals = [];
+  for (const iso in src) {
+    if (!Object.prototype.hasOwnProperty.call(src, iso)) continue;
+    if (typeof VD_REGION !== 'undefined' && !VD_REGION[iso]) continue;
+    const arr = src[iso][1];
+    for (let i = 0; i < arr.length; i++) {
+      const v = arr[i];
+      if (v !== null && v !== undefined) vals.push(v / div);
+    }
+  }
+  vm_breaksFor._c[cat] = vm_breaks(vals);
+  return vm_breaksFor._c[cat];
+}
+
 function vm_dropAntarctic(geom) {
   const keep = (poly) => {
     let maxLat = -90;
@@ -178,7 +207,7 @@ function drawVdemMapa() {
 
   const cat = state[22].cat, wave = state[22].wave;
   const data = vm_dataFor(cat, wave);
-  const breaks = vm_breaks(Object.values(data).map(d => d.pct));
+  const breaks = vm_breaksFor(cat);
 
   // landmask gris "sin dato". OJO: el landmask es UN MultiPolygon de toda la
   // tierra e incluye la Antártida — filtrar solo el feature ATA no alcanzaba y
@@ -213,14 +242,18 @@ function drawVdemMapa() {
     const iso = vm_isoOf(f), v = data[iso], d = vm_pathD(f.geometry);
     const path = vm_ns('path');
     path.setAttribute('d', d);
+    path.setAttribute('data-iso', iso);   // lo usa vm_paintYear() para repintar
     path.setAttribute('fill', vm_colorFor(v ? v.pct : null, breaks));
     path.setAttribute('stroke', VM_STROKE); path.setAttribute('stroke-width', VM_STROKE_W);
     path.setAttribute('stroke-linejoin', 'round');
     path.style.cursor = 'pointer';
-    path.addEventListener('mouseenter', (e) => { vm_setHover(d); vm_showTooltip(e, iso, v, cat); });
+    // El dato se lee del estado en el momento del hover, no del cierre: durante
+    // la animacion los rellenos cambian sin redibujar y el cierre quedaria viejo.
+    const datoAhora = () => vm_dataFor(state[22].cat, state[22].wave)[iso];
+    path.addEventListener('mouseenter', (e) => { vm_setHover(d); vm_showTooltip(e, iso, datoAhora(), state[22].cat); });
     path.addEventListener('mousemove', (e) => vm_posTooltip(e));
     path.addEventListener('mouseleave', () => { vm_setHover(''); vm_hideTooltip(); });
-    path.addEventListener('click', (e) => { vm_setHover(d); vm_showTooltip(e, iso, v, cat); });
+    path.addEventListener('click', (e) => { vm_setHover(d); vm_showTooltip(e, iso, datoAhora(), state[22].cat); });
     g.appendChild(path);
   });
   svg.appendChild(hoverHalo);
@@ -243,7 +276,12 @@ function vm_drawLegend(svg, breaks) {
     else if (i === breaks.length) labels.push('≥' + vd_fmtVal(breaks[breaks.length - 1]));
     // Los cortes intermedios salían crudos ("0.1–0.2") mientras el primero y
     // el último ya pasaban por vd_fmtVal: mismo formato para los tres.
-    else labels.push(vd_fmtVal(breaks[i - 1]) + '–' + vd_fmtVal(breaks[i]));
+    else {
+      // Con cortes negativos (los componentes) el guion pegado daba "-1,58–-0,57":
+      // ahí el rango se escribe con espacios para que se lea.
+      const a = vd_fmtVal(breaks[i - 1]), b = vd_fmtVal(breaks[i]);
+      labels.push((breaks[i - 1] < 0 || breaks[i] < 0) ? (a + ' – ' + b) : (a + '–' + b));
+    }
   }
   const g = vm_ns('g'); svg.appendChild(g);
   const title = vm_ns('text');
@@ -271,21 +309,34 @@ function vm_drawLegend(svg, breaks) {
 // Sparkline (OWID): mini serie de la trayectoria del país a lo largo de las olas.
 function vm_sparkline(traj, curYear) {
   if (traj.length < 2) return '';
-  const W = 132, H = 38, pad = 4;
+  // AXIS_H reserva la banda de abajo para los dos anios: antes el trazo llegaba
+  // hasta el borde y se montaba sobre las etiquetas.
+  const W = 132, H = 46, pad = 4, AXIS_H = 12;
+  const plotH = H - AXIS_H;
   const xs = traj.map(p => p[0]), ys = traj.map(p => p[1]);
   const x0 = Math.min(...xs), x1 = Math.max(...xs);
-  // Escala entre el mínimo y el máximo de la propia serie: la versión anterior
-  // medía contra 0 y los componentes (centrados en 0, con negativos) se salían.
+  // Escala entre el minimo y el maximo de la propia serie: medir contra 0 dejaba
+  // fuera del recuadro a los componentes (centrados en 0, con negativos).
   const yLo = Math.min(...ys), yHi = Math.max(...ys), ySpan = (yHi - yLo) || 1;
   const X = (yr) => pad + (x1 === x0 ? 0.5 : (yr - x0) / (x1 - x0)) * (W - pad * 2);
-  const Y = (v) => H - pad - ((v - yLo) / ySpan) * (H - pad * 2);
+  const Y = (v) => plotH - pad - ((v - yLo) / ySpan) * (plotH - pad * 2);
   const d = traj.map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join(' ');
+  // Marcadores SOLO en el primero, el ultimo y el anio mostrado. Con 124 puntos
+  // anuales, un circulo por observacion convertia la linea en un rosario.
+  const first = traj[0], last = traj[traj.length - 1];
+  const cur = traj.find(p => p[0] === curYear);
+  const marks = [first, last];
+  if (cur && cur !== first && cur !== last) marks.push(cur);
   let dots = '';
-  traj.forEach(p => { const isCur = p[0] === curYear; dots += `<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="${isCur ? 3.2 : 1.8}" fill="${isCur ? '#BE5D32' : '#FFFFFF'}" stroke="#BE5D32" stroke-width="1.2"/>`; });
+  marks.forEach(p => {
+    const isCur = p[0] === curYear;
+    dots += `<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="${isCur ? 3 : 2.4}" `
+         +  `fill="${isCur ? '#BE5D32' : '#FFFFFF'}" stroke="#BE5D32" stroke-width="1.2"/>`;
+  });
   return `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" style="display:block;margin-top:5px;overflow:visible;">`
     + `<path d="${d}" fill="none" stroke="#BE5D32" stroke-width="1.6" stroke-linejoin="round"/>${dots}`
-    + `<text x="${X(x0).toFixed(1)}" y="${H}" font-size="8.5" fill="#8A8579" text-anchor="start">${x0}</text>`
-    + `<text x="${X(x1).toFixed(1)}" y="${H}" font-size="8.5" fill="#8A8579" text-anchor="end">${x1}</text></svg>`;
+    + `<text x="${X(x0).toFixed(1)}" y="${H - 1}" font-size="8.5" fill="#8A8579" text-anchor="start">${x0}</text>`
+    + `<text x="${X(x1).toFixed(1)}" y="${H - 1}" font-size="8.5" fill="#8A8579" text-anchor="end">${x1}</text></svg>`;
 }
 
 function vm_showTooltip(e, iso, v, cat) {
@@ -318,8 +369,25 @@ function vm_hideTooltip() { const tt = document.getElementById('tooltip22'); if 
 function setupMapaCat() {
   const sel = document.getElementById('vm-cat-select'); if (!sel) return;
   sel.addEventListener('change', () => {
-    if (typeof VE_FOTO === 'undefined' || !VE_FOTO[sel.value]) return;
-    state[22].cat = sel.value; drawVdemMapa();
+    // El guard preguntaba por VE_FOTO (la foto de la bateria de vecinos), que en
+    // esta pagina no existe: el handler cortaba siempre y el selector de
+    // indicador del mapa no hacia absolutamente nada.
+    if (typeof VD_SERIES === 'undefined' || !VD_SERIES[sel.value]) return;
+    vm_stopPlay();
+    state[22].cat = sel.value;
+    // El anio elegido puede caer fuera del rango de la variable nueva.
+    const ys = vd_years(state[22].cat);
+    if (ys.length) {
+      state[22].wave = Math.min(Math.max(state[22].wave, ys[0]), ys[ys.length - 1]);
+      const input = document.getElementById('vm-wave-slider');
+      const disp = document.getElementById('vm-wave-display');
+      if (input) {
+        input.max = ys.length - 1;
+        input.value = Math.max(0, ys.indexOf(state[22].wave));
+      }
+      if (disp) disp.textContent = vm_waveLabel(state[22].wave);
+    }
+    drawVdemMapa();
   });
 }
 
@@ -347,14 +415,36 @@ function setupMapaWave() {
     playBtn.classList.add('playing'); playBtn.textContent = '❚❚';
     // arrancar desde la 1ra ola
     state[22].wave = waves[0].w; sync(); drawVdemMapa();
+    // Recorrer toda la serie en ~10 segundos (mismo criterio que el resto del
+    // numero). Con 124 anios son ~81 ms por cuadro; el piso de 40 ms evita pedir
+    // mas de 25 cuadros por segundo si alguna vez la serie es mas corta.
+    const paso = Math.max(VM_PLAY_MS_MIN, Math.round(VM_PLAY_TOTAL_MS / Math.max(1, waves.length - 1)));
     vm_playTimer = setInterval(() => {
       const cur = idxOf(state[22].wave);
       if (cur >= waves.length - 1) { vm_stopPlay(); return; }
-      state[22].wave = waves[cur + 1].w; sync(); drawVdemMapa();
-    }, 1100);
+      vm_paintYear(waves[cur + 1].w); sync();
+    }, paso);
   });
   sync();
 }
+// Repintado rapido: durante la animacion solo cambian los rellenos. La geometria
+// y la leyenda son las mismas (la escala es fija por variable), y un redibujo
+// completo cuesta ~73 ms, que no entra en los ~81 ms por anio que pide recorrer
+// el siglo en 10 segundos.
+function vm_paintYear(year) {
+  const svg = document.getElementById('chart22');
+  if (!svg) return;
+  state[22].wave = year;
+  const cat = state[22].cat;
+  const data = vm_dataFor(cat, year);
+  const breaks = vm_breaksFor(cat);
+  svg.querySelectorAll('path[data-iso]').forEach(p => {
+    const v = data[p.getAttribute('data-iso')];
+    p.setAttribute('fill', vm_colorFor(v ? v.pct : null, breaks));
+  });
+  vm_updateSubtitle();
+}
+
 function vm_stopPlay() {
   if (vm_playTimer) { clearInterval(vm_playTimer); vm_playTimer = null; }
   const playBtn = document.getElementById('vm-play');
@@ -364,22 +454,22 @@ function vm_stopPlay() {
 function setupMapaCSV() {
   document.querySelectorAll('button.download[data-chart="22-csv"]').forEach(btn => {
     btn.addEventListener('click', () => {
+      // El clon recorria las olas de la bateria de vecinos, que en V-Dem no
+      // existen: el archivo salia vacio. Ahora es la foto del anio mostrado.
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
-      let csv = '# El Atlas N5 — mapa de rechazo de vecinos (IVS, por ola)\n';
-      csv += 'iso3,pais,categoria,ola,periodo,pct,anio,n\n';
-      const waves = vd_yearList(state[22].cat);
-      (typeof VD_VARS !== 'undefined' ? VD_VARS : Object.keys(VE_FOTO)).forEach(cat => {
-        waves.forEach(m => {
-          const rows = (typeof VD_SERIES !== 'undefined' && VD_SERIES[cat]) ? VD_SERIES[cat][m.w] : null;
-          (rows || []).forEach(r => {
-            const nm = (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[r[0]]) ? COUNTRY_NAMES[r[0]].en : r[0];
-            csv += `${r[0]},${nm},${cat},${m.w},${m.label},${r[1]},${r[2]},${r[3]}\n`;
-          });
-        });
+      const cat = state[22].cat, year = state[22].wave;
+      let csv = '# El Atlas N5 - V-Dem v16, foto del mapa\n';
+      csv += '# variable: ' + cat + ' (' + vd_varLabelOf(cat) + ')\n';
+      csv += '# anio: ' + year + '\n';
+      csv += 'iso3,pais,variable,anio,valor,puesto\n';
+      vd_foto(cat, year).forEach(r => {
+        const nm = (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[r[0]]) ? (COUNTRY_NAMES[r[0]].en || r[0]) : r[0];
+        const nmQ = (nm.indexOf(',') >= 0) ? '"' + nm + '"' : nm;
+        csv += [r[0], nmQ, cat, r[2], r[1], r[4]].join(',') + '\n';
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-      a.download = lang === 'en' ? 'the-atlas-05-neighbours-map.csv' : 'el-atlas-05-mapa-vecinos.csv';
+      a.download = lang === 'en' ? 'the-atlas-05-vdem-map.csv' : 'el-atlas-05-vdem-mapa.csv';
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
     });
   });
