@@ -390,7 +390,7 @@ function vl_setupHover(svg, ctx) {
       r.label = vl_name(r.key);
     });
     if (tooltip) {
-      tooltip.innerHTML = atlasLineTooltipHTML(year, rows, { dec: 2 });
+      tooltip.innerHTML = atlasLineTooltipHTML(year, rows, { dec: 2, suffix: '' });
       tooltip.style.display = 'block'; tooltip.style.opacity = '1';
     }
   }

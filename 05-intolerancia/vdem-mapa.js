@@ -106,13 +106,19 @@ function vm_dataFor(cat, wave) {
 }
 // trayectoria de un país a lo largo de las olas: [[year, pct], ...] (para el sparkline).
 function vm_trajectory(iso, cat) {
+  // Serie ANUAL del país. El clon recorría las olas de la batería del barrio y
+  // devolvía siempre [], así que el sparkline del tooltip no aparecía nunca.
   if (typeof VD_SERIES === 'undefined' || !VD_SERIES[cat]) return [];
+  const s = VD_SERIES[cat][iso];
+  if (!s) return [];
+  const div = vd_scaleOf(cat);
   const out = [];
-  vm_waves().forEach(m => {
-    const rows = VD_SERIES[cat][m.w]; if (!rows) return;
-    const r = rows.find(x => x[0] === iso); if (r) out.push([r[2], r[1]]);
-  });
-  return out.sort((a, b) => a[0] - b[0]);
+  for (let i = 0; i < s[1].length; i++) {
+    const v = s[1][i];
+    if (v === null || v === undefined) continue;
+    out.push([s[0] + i, v / div]);
+  }
+  return out;
 }
 
 // Cortes ADAPTATIVOS por cuantiles de los valores de la categoría/ola → 5 breaks
@@ -154,7 +160,9 @@ function vm_colorFor(pct, breaks) {
 function vm_updateSubtitle() {
   const el = document.querySelector('.chart-subtitle[data-i18n="c22-subtitle-tpl"]');
   if (!el) return;
-  const catA = (typeof t === 'function') ? t('catA-' + state[22].cat) : state[22].cat;
+  // El nombre del indicador sale de VD_VARS: 'catA-'+cat es una clave de la
+  // batería del barrio y acá se imprimía cruda ("catA-v2xpe_exlsocgr").
+  const catA = vd_varLabelOf(state[22].cat);
   const tpl = (typeof t === 'function') ? t('c22-subtitle-tpl') : '';
   if (tpl) el.textContent = tpl.replace('{CAT}', catA).replace('{PERIODO}', vm_waveLabel(state[22].wave));
 }
@@ -265,9 +273,12 @@ function vm_sparkline(traj, curYear) {
   if (traj.length < 2) return '';
   const W = 132, H = 38, pad = 4;
   const xs = traj.map(p => p[0]), ys = traj.map(p => p[1]);
-  const x0 = Math.min(...xs), x1 = Math.max(...xs), yMax = Math.max(...ys, 1);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs);
+  // Escala entre el mínimo y el máximo de la propia serie: la versión anterior
+  // medía contra 0 y los componentes (centrados en 0, con negativos) se salían.
+  const yLo = Math.min(...ys), yHi = Math.max(...ys), ySpan = (yHi - yLo) || 1;
   const X = (yr) => pad + (x1 === x0 ? 0.5 : (yr - x0) / (x1 - x0)) * (W - pad * 2);
-  const Y = (v) => H - pad - (v / yMax) * (H - pad * 2);
+  const Y = (v) => H - pad - ((v - yLo) / ySpan) * (H - pad * 2);
   const d = traj.map((p, i) => (i ? 'L' : 'M') + X(p[0]).toFixed(1) + ',' + Y(p[1]).toFixed(1)).join(' ');
   let dots = '';
   traj.forEach(p => { const isCur = p[0] === curYear; dots += `<circle cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="${isCur ? 3.2 : 1.8}" fill="${isCur ? '#BE5D32' : '#FFFFFF'}" stroke="#BE5D32" stroke-width="1.2"/>`; });
@@ -285,7 +296,7 @@ function vm_showTooltip(e, iso, v, cat) {
   } else {
     const traj = vm_trajectory(iso, cat);
     tt.innerHTML = `<strong>${vm_name(iso)}</strong>`
-      + `<div class="tt-row"><span>${L('c1-tt-pct')}</span><span>${(typeof fmt === 'function') ? fmt(v.pct, 1) : v.pct}%</span></div>`
+      + `<div class="tt-row"><span>${L('c22-tt-value')}</span><span>${vd_fmtVal(v.pct, 2)}</span></div>`
       + `<div class="tt-row tt-row-sub"><span>${L('c22-tt-year')}</span><span>${v.year}</span></div>`
       + (traj.length >= 2 ? `<div class="tt-sub" style="margin-top:4px;">${L('c22-tt-trend')}</div>` + vm_sparkline(traj, v.year) : '');
   }

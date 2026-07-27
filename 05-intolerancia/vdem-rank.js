@@ -136,7 +136,9 @@ function vr_universe() { return vd_foto(state[21].cat, state[21].wave).length; }
 
 // Rótulo del puesto mundial ("5° de 64" / "#5 of 64") — reusa el tpl del perfil.
 function vr_rankLabel(rank, n) {
-  const tpl = (typeof t === 'function') ? t('c8-rank-tpl') : '{R}/{N}';
+  // c21-rank-tpl, no la del perfil (c8-rank-tpl no existe en este diccionario
+  // y el tooltip terminaba imprimiendo el nombre de la clave).
+  const tpl = (typeof t === 'function') ? t('c21-rank-tpl') : '{R}/{N}';
   return tpl.replace('{R}', rank).replace('{N}', n != null ? n : '?');
 }
 
@@ -151,9 +153,9 @@ function vr_updateSubtitle() {
   const tx = (ae && ae.texts && ae.texts[lang]) || {};
   if ((tx.subtitle || '').trim()) return;
   const tpl = (typeof t === 'function') ? t('c21-subtitle-tpl') : '';
-  // El label del ítem sale directo de las claves del perfil (c8-item-*).
-  const item = (typeof t === 'function') ? t('c8-item-' + state[21].cat) : state[21].cat;
-  el.textContent = tpl.replace('{ITEM}', item).replace('{PERIODO}', vr_waveLabel());
+  // El nombre del indicador sale de VD_VARS, no del diccionario de ítems de la
+  // batería del barrio, y el placeholder del template es {CAT}.
+  el.textContent = tpl.replace('{CAT}', vd_varLabelOf(state[21].cat)).replace('{PERIODO}', vr_waveLabel());
 }
 
 //==================================================================
@@ -271,7 +273,8 @@ function vr_drawBars() {
     lbl.style.fontSize = SIZES.tick + 'px';
     lbl.setAttribute('fill', '#7A6E62');
     lbl.setAttribute('font-variant-numeric', 'tabular-nums');
-    lbl.textContent = (typeof fmt === 'function') ? fmt(v, 0) : String(v);
+    // Cero decimales dejaba el eje en "0 0 0 1 1 1" (herencia de los porcentajes).
+    lbl.textContent = vd_fmtVal(v, 1);
     axisG.appendChild(lbl);
   });
 
@@ -341,7 +344,7 @@ function vr_drawBars() {
     valTxt.setAttribute('font-weight', 600);
     valTxt.setAttribute('fill', dimmed ? '#B5AC9F' : '#3A3530');
     valTxt.setAttribute('font-variant-numeric', 'tabular-nums');
-    valTxt.textContent = (typeof fmt === 'function') ? fmt(d.pct, 1) : d.pct;
+    valTxt.textContent = vd_fmtVal(d.pct, 2);
     barsG.appendChild(valTxt);
   });
 
@@ -1090,7 +1093,8 @@ function vr_showTooltip(event, d) {
   if (!tooltip) return;
   const tt = (k, fb) => (typeof t === 'function' ? t(k) : fb);
   const reg = d.region ? tt('reg.' + d.region, d.region) : '';
-  const F = (v) => (typeof fmt === 'function') ? fmt(v, 1) : v;
+  // Índice, no porcentaje: dos decimales y sin signo de %.
+  const F = (v) => vd_fmtVal(v, 2);
   // Sin rama EVS/WVS (la batería H002 es solo del WVS). En su lugar, el puesto
   // mundial "N° de M" sobre el universo de países con los cinco ítems.
   const uni = vr_universe();
@@ -1099,9 +1103,8 @@ function vr_showTooltip(event, d) {
   tooltip.innerHTML = `
     <strong>${vr_displayName(d.iso)}</strong>
     <div class="tt-sub">${reg} · ${vr_waveLabel()}</div>
-    <div class="tt-row tt-row-strong"><span>${tt('c21-tt-pct', 'Lo ve seguido')}</span><span>${F(d.pct)}%</span></div>
+    <div class="tt-row tt-row-strong"><span>${tt('c21-tt-pct', 'Valor')}</span><span>${F(d.pct)}</span></div>
     <div class="tt-row"><span>${tt('c21-tt-year', 'Año')}</span><span>${d.year}</span></div>
-    <div class="tt-row"><span>${tt('c21-tt-n', 'Muestra')}</span><span>${(typeof fmt === 'function') ? fmt(d.n, 0) : d.n}</span></div>
     ${rankLine}
   `;
   tooltip.style.display = 'block';
