@@ -55,7 +55,9 @@ const CO_INK_SOFT  = '#7A6E62';
 const CO_AXIS      = '#9C928A';
 const CO_DIAG      = '#B0A695';   // línea de 45° (punteada)
 const CO_FIT       = '#5A5346';   // recta de ajuste
-const CO_HIGHLIGHT = 'ARG';
+// Sin pais destacado: Argentina se dibujaba mas grande y con borde negro en
+// todos los cruces, y no corresponde que un pais este marcado de fabrica.
+const CO_HIGHLIGHT = null;
 const CO_HI_COLOR  = '#8B4220';
 
 const CO_DEFAULT_X = 'otra_raza';
@@ -829,9 +831,7 @@ function drawCorrelaciones() {
     dotsG.appendChild(c);
 
     if (isPngFormat) return;   // el PNG no necesita hit-areas ni hover
-    // TAP = exactamente lo que hace el HOVER: tooltip + énfasis del país.
-    // (Semántica unificada en los tres scatters del número: el tap NUNCA
-    // togglea el chip; eso se hace desde el buscador y desde la ✕ del chip.)
+    // Hover: tooltip + énfasis del país.
     c.style.cursor = 'pointer';
     const hit = co_ns('circle');
     hit.setAttribute('cx', cx); hit.setAttribute('cy', cy);
@@ -846,7 +846,17 @@ function drawCorrelaciones() {
     hit.addEventListener('mouseenter', enter);
     hit.addEventListener('mousemove', co_posTooltip);
     hit.addEventListener('mouseleave', leave);
-    hit.addEventListener('click', enter);
+    // CLIC = SELECCIONAR, igual que agregarlo desde el buscador (pedido de
+    // Daniel 2026-07-26). En pantallas SIN hover el tap es la unica forma de
+    // leer el tooltip, asi que ahi el tap sigue siendo tooltip y la seleccion
+    // se hace desde el buscador y la cruz del chip.
+    const clickH = (e) => {
+      if (typeof HAS_HOVER !== 'undefined' && !HAS_HOVER) { enter(e); return; }
+      e.stopPropagation();
+      co_toggleSelect(p.iso);
+    };
+    c.addEventListener('click', clickH);
+    hit.addEventListener('click', clickH);
     dotsG.appendChild(hit);
   });
 

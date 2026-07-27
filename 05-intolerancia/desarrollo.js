@@ -63,7 +63,8 @@ const DV_DEFAULT_VAR = 'otra_raza';
 // grandes de América Latina —protagonistas del número— más tres referencias
 // globales, para que la recta tenga anclas a los dos lados del ingreso.
 const DV_DEFAULT_SEL = ['ARG', 'BRA', 'CHL', 'MEX', 'PER', 'URY', 'USA', 'ESP', 'SWE'];
-const DV_HIGHLIGHT = 'ARG';
+// Sin pais destacado (ver la misma nota en correlaciones.js).
+const DV_HIGHLIGHT = null;
 // Anclas globales: cuando el hover revela una región entera y no entran todas
 // las etiquetas, la anti-colisión sacrifica primero a los chicos (criterio del
 // N°1: subPriority 0 para las anclas, 1 para el resto de la región).
@@ -691,8 +692,7 @@ function drawDesarrollo() {
     dotsG.appendChild(c);
     dv_dots.push(c);
     // Hit-area invisible: el punto mide ~2px reales en el celu, el tap sería
-    // imposible. TAP = TOOLTIP (semántica unificada en los tres scatters del
-    // número); el chip se togglea desde el buscador y desde la ✕ del chip.
+    // imposible sin ella.
     const hit = dv_ns('circle');
     hit.setAttribute('cx', cx); hit.setAttribute('cy', cy);
     hit.setAttribute('r', Math.max(15, r * 2.4));
@@ -701,7 +701,17 @@ function drawDesarrollo() {
     hit.addEventListener('mouseenter', (e) => dv_showTooltip(e, p));
     hit.addEventListener('mousemove', (e) => dv_posTooltip(e));
     hit.addEventListener('mouseleave', () => dv_hideTooltip());
-    hit.addEventListener('click', (e) => { e.stopPropagation(); dv_showTooltip(e, p); });
+    // CLIC = SELECCIONAR, igual que agregarlo desde el buscador (pedido de
+    // Daniel 2026-07-26). En pantallas SIN hover el tap es la unica forma de
+    // leer el tooltip, asi que ahi el tap sigue siendo tooltip y la seleccion
+    // se hace desde el buscador y la cruz del chip.
+    const clickH = (e) => {
+      e.stopPropagation();
+      if (typeof HAS_HOVER !== 'undefined' && !HAS_HOVER) { dv_showTooltip(e, p); return; }
+      dv_toggleCountry(p.iso);
+    };
+    c.addEventListener('click', clickH);
+    hit.addEventListener('click', clickH);
     dotsG.appendChild(hit);
   });
 

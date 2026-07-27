@@ -697,8 +697,7 @@ function drawVdemScatter() {
     dotsG.appendChild(c);
     ve_dots.push(c);
     // Hit-area invisible: el punto mide ~2px reales en el celu, el tap sería
-    // imposible. TAP = TOOLTIP (semántica unificada en los tres scatters del
-    // número); el chip se togglea desde el buscador y desde la ✕ del chip.
+    // imposible sin ella.
     const hit = ve_ns('circle');
     hit.setAttribute('cx', cx); hit.setAttribute('cy', cy);
     hit.setAttribute('r', Math.max(15, r * 2.4));
@@ -707,7 +706,17 @@ function drawVdemScatter() {
     hit.addEventListener('mouseenter', (e) => ve_showTooltip(e, p));
     hit.addEventListener('mousemove', (e) => ve_posTooltip(e));
     hit.addEventListener('mouseleave', () => ve_hideTooltip());
-    hit.addEventListener('click', (e) => { e.stopPropagation(); ve_showTooltip(e, p); });
+    // CLIC = SELECCIONAR, igual que agregarlo desde el buscador (pedido de
+    // Daniel 2026-07-26). En pantallas SIN hover el tap es la unica forma de
+    // leer el tooltip, asi que ahi el tap sigue siendo tooltip y la seleccion
+    // se hace desde el buscador y la cruz del chip.
+    const clickH = (e) => {
+      e.stopPropagation();
+      if (typeof HAS_HOVER !== 'undefined' && !HAS_HOVER) { ve_showTooltip(e, p); return; }
+      ve_toggleCountry(p.iso);
+    };
+    c.addEventListener('click', clickH);
+    hit.addEventListener('click', clickH);
     dotsG.appendChild(hit);
   });
 
