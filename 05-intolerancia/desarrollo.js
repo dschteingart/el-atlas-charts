@@ -1021,6 +1021,7 @@ function dv_applyRegionFocus() {
 // subtítulo da la frase redondeada. La tira dentro del SVG ya no se dibuja en
 // pantalla (sólo al exportar).
 function dv_updateSubtitle(v, model) {
+  dv_updateSources();
   const block = document.querySelector('.chart-block[data-chart="18"]');
   if (!block) return;
   const el = block.querySelector('.chart-subtitle');
@@ -1230,6 +1231,26 @@ function dv_setupSearch() {
 // =================== Controles ===================
 // Menú del eje Y: se construye desde CR_VARS (única fuente de verdad del menú)
 // con un <optgroup> por grupo, en el orden del dataset.
+// Grupo de CR_VARS -> clave i18n del <optgroup>.
+const DV_GRP_KEY = {
+  'Batería de vecinos':    'c18-grp-vecinos',
+  'Otras preguntas':       'c18-grp-otras',
+  'Discriminación vivida': 'c18-grp-wrp'
+};
+
+// La variable del World Risk Poll no es de la IVS: cuando está elegida, la nota
+// de fuentes lo dice (CR_VARS[i].fuente_ext lo marca desde el generador).
+function dv_updateSources() {
+  const base = dv_t('c18-sources');
+  if (base === 'c18-sources') return;
+  const v = (typeof CR_VARS !== 'undefined') ? CR_VARS.find(function (x) { return x.k === state[18].k; }) : null;
+  const ext = (v && v.fuente_ext) ? dv_t('c18-sources-wrp') : '';
+  const add = (ext && ext !== 'c18-sources-wrp') ? ext : '';
+  document.querySelectorAll('[data-i18n="c18-sources"]').forEach(function (el) {
+    el.innerHTML = base + add;
+  });
+}
+
 function dv_buildVarSelect() {
   const sel = document.getElementById('dv-var');
   if (!sel) return;
@@ -1238,7 +1259,10 @@ function dv_buildVarSelect() {
   CR_VARS.forEach(v => { if (groups.indexOf(v.grupo) < 0) groups.push(v.grupo); });
   groups.forEach((grp, gi) => {
     const og = document.createElement('optgroup');
-    og.label = dv_t(gi === 0 ? 'c18-grp-vecinos' : 'c18-grp-otras');
+    // Por NOMBRE de grupo, no por posición: con el índice, cualquier grupo
+    // nuevo del dataset se rotulaba "Otras preguntas".
+    const gk = DV_GRP_KEY[grp] || (gi === 0 ? 'c18-grp-vecinos' : 'c18-grp-otras');
+    og.label = dv_t(gk);
     CR_VARS.filter(v => v.grupo === grp).forEach(v => {
       const o = document.createElement('option');
       o.value = v.k;
@@ -1434,6 +1458,13 @@ function initDesarrollo() {
   // Caption del PNG: versión corta (el "Fuentes" completo del HTML es enorme).
   window.onBeforePngExportGetSourceText = function (chartId) {
     if (String(chartId) !== '18') return null;
+    // Con la variable de afuera en el eje Y, la nota que solo cita la IVS seria
+    // incompleta: hay una version para ese caso.
+    const _v = (typeof CR_VARS !== 'undefined') ? CR_VARS.find(function (x) { return x.k === state[18].k; }) : null;
+    if (_v && _v.fuente_ext) {
+      const _k = dv_t('c18-sources-png-ext');
+      if (_k && _k !== 'c18-sources-png-ext') return _k;
+    }
     return dv_t('c18-sources-png');
   };
 }

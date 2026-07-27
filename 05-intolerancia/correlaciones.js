@@ -82,8 +82,9 @@ const CO_ANCHORS = {
 let co_labelCtx = null;
 // Los dos grupos de CR_VARS[i].grupo → clave i18n del <optgroup>.
 const CO_GRP_KEY = {
-  'Batería de vecinos': 'c19-grp-bateria',
-  'Otras preguntas':    'c19-grp-otras'
+  'Batería de vecinos':    'c19-grp-bateria',
+  'Otras preguntas':       'c19-grp-otras',
+  'Discriminación vivida': 'c19-grp-wrp'
 };
 
 // =================== Helpers ===================
@@ -283,9 +284,32 @@ function co_updateSubtitle() {
     .replace('{PERIODO}', co_waveLabel(s.wave));
 }
 
+// ¿Alguno de los dos ejes viene de una fuente ajena a la IVS? La marca la pone
+// el generador (CR_VARS[i].fuente_ext), no una lista de claves acá: si mañana
+// entra otra variable de afuera, esto sigue funcionando solo.
+function co_ejeExterno() {
+  const s = state[19];
+  const vx = co_var(s.x), vy = co_var(s.y);
+  return !!((vx && vx.fuente_ext) || (vy && vy.fuente_ext));
+}
+
+// La nota de fuentes afirma que los dos ejes salen de la MISMA encuesta y de las
+// mismas personas. Con una variable del World Risk Poll en algún eje eso deja de
+// ser cierto, así que se agrega el párrafo que lo aclara (y se saca al volver).
+function co_updateSources() {
+  const base = co_T('c19-sources');
+  if (base === 'c19-sources') return;
+  const ext = co_ejeExterno() ? co_T('c19-sources-wrp') : '';
+  const add = (ext && ext !== 'c19-sources-wrp') ? ext : '';
+  document.querySelectorAll('[data-i18n="c19-sources"]').forEach(function (el) {
+    el.innerHTML = base + add;
+  });
+}
+
 // Definición exacta de cada eje (sale de CR_VARS[i].def_es/def_en): sin esto,
 // un eje que dice "Personas de otra raza" no se entiende.
 function co_updateDefs() {
+  co_updateSources();
   const el = document.getElementById('co-defs');
   if (!el) return;
   const s = state[19];
@@ -1286,7 +1310,11 @@ function initCorrelaciones() {
   // que en pantalla viven en el banner (el PNG no rasteriza HTML).
   window.onBeforePngExportGetSourceText = function (chartId) {
     if (chartId !== '19') return null;
-    const tpl = co_T('c19-sources-tpl');
+    // Con un eje de afuera, la plantilla que habla de "la misma encuesta y la
+    // misma persona" sería falsa: hay una alternativa para ese caso.
+    const tplKey = co_ejeExterno() ? 'c19-sources-tpl-ext' : 'c19-sources-tpl';
+    let tpl = co_T(tplKey);
+    if (tpl === tplKey) tpl = co_T('c19-sources-tpl');
     if (!tpl) return null;
     // Los mismos países que el gráfico: si el usuario apagó regiones, el n y el
     // R² de la nota son los del ajuste que se ve, no los del cruce completo.

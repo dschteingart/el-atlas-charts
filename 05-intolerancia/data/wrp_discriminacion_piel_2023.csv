@@ -1,0 +1,149 @@
+# El Atlas N5 - World Risk Poll 2023 (Lloyd's Register Foundation / Gallup), CC BY 4.0
+# Pregunta: si la persona alguna vez sufrio discriminacion POR EL COLOR DE SU PIEL.
+# Es experiencia propia declarada y de por vida (no del ultimo anio), no una opinion
+# sobre terceros: NO es comparable con la bateria de vecinos de la IVS.
+# Respuestas: si / no / no corresponde / no sabe / no contesta. pct = % que responde SI,
+# ponderado por WGT, a nivel pais. Ola 2023, 139 paises.
+# Valores tomados de la ficha publica del dataset (shpara.com/bulldozer, CC BY 4.0),
+# bajados el 2026-07-26. Contraste: la OCDE, analizando la misma fuente, publica 9%
+# global y 25% para America del Norte y Oceania; el promedio simple de esta tabla da 7,8%.
+iso3,iso2,pais_en,grupo_wrp,pct
+USA,US,United States,Americas,27.4
+TCD,TD,Chad,Africa,25.1
+MDG,MG,Madagascar,Africa,23.5
+MRT,MR,Mauritania,Africa,23.3
+NZL,NZ,New Zealand,Asia,23.2
+COD,CD,Congo Kinshasa,Africa,22.8
+BOL,BO,Bolivia,Americas,22.1
+COM,KM,Comoros,Africa,19.5
+LBR,LR,Liberia,Africa,19.2
+GIN,GN,Guinea,Africa,19.2
+PHL,PH,Philippines,Asia,18.3
+BRA,BR,Brazil,Americas,18.1
+CAN,CA,Canada,Americas,17.1
+ZAF,ZA,South Africa,Africa,16.2
+KHM,KH,Cambodia,Asia,15.5
+MOZ,MZ,Mozambique,Africa,15.3
+NAM,NA,Namibia,Africa,15.1
+NIC,NI,Nicaragua,Americas,14.6
+BWA,BW,Botswana,Africa,14.4
+DOM,DO,Dominican Republic,Americas,14.4
+LAO,LA,Laos,Asia,14.4
+AUS,AU,Australia,Asia,14.3
+GTM,GT,Guatemala,Americas,14.2
+SGP,SG,Singapore,Asia,14.0
+PER,PE,Peru,Americas,13.8
+UGA,UG,Uganda,Africa,13.4
+ECU,EC,Ecuador,Americas,12.9
+ZMB,ZM,Zambia,Africa,12.9
+CMR,CM,Cameroon,Africa,12.8
+NER,NE,Niger,Africa,12.8
+MUS,MU,Mauritius,Africa,12.4
+PAN,PA,Panama,Americas,12.0
+GAB,GA,Gabon,Africa,11.9
+BEL,BE,Belgium,Europe,11.5
+MWI,MW,Malawi,Africa,11.3
+KEN,KE,Kenya,Africa,11.2
+IRQ,IQ,Iraq,Asia,11.0
+NPL,NP,Nepal,Asia,10.9
+SLE,SL,Sierra Leone,Africa,10.8
+ARG,AR,Argentina,Americas,10.7
+GBR,GB,United Kingdom,Europe,10.6
+SEN,SN,Senegal,Africa,10.4
+MMR,MM,Myanmar,Asia,10.3
+LBY,LY,Libya,Africa,10.1
+COG,CG,Congo Brazzaville,Africa,10.1
+FRA,FR,France,Europe,9.8
+SLV,SV,El Salvador,Americas,9.5
+COL,CO,Colombia,Americas,9.4
+AFG,AF,Afghanistan,Asia,9.3
+DNK,DK,Denmark,Europe,9.3
+SWZ,SZ,Eswatini,Africa,9.0
+NLD,NL,Netherlands,Europe,8.9
+MEX,MX,Mexico,Americas,8.8
+CHN,CN,China,Asia,8.6
+CRI,CR,Costa Rica,Americas,8.2
+BEN,BJ,Benin,Africa,8.2
+KWT,KW,Kuwait,Asia,8.1
+DZA,DZ,Algeria,Africa,8.1
+IRL,IE,Ireland,Europe,8.0
+IDN,ID,Indonesia,Asia,8.0
+PRT,PT,Portugal,Europe,7.8
+IND,IN,India,Asia,7.8
+HND,HN,Honduras,Americas,7.5
+BHR,BH,Bahrain,Asia,7.4
+LUX,LU,Luxembourg,Europe,7.3
+NOR,NO,Norway,Europe,6.9
+VEN,VE,Venezuela,Americas,6.8
+ZWE,ZW,Zimbabwe,Africa,6.6
+JOR,JO,Jordan,Asia,6.6
+SWE,SE,Sweden,Europe,6.5
+KOR,KR,South Korea,Asia,6.4
+HUN,HU,Hungary,Europe,6.1
+URY,UY,Uruguay,Americas,6.1
+ESP,ES,Spain,Europe,5.9
+BGD,BD,Bangladesh,Asia,5.5
+CHL,CL,Chile,Americas,5.5
+PRY,PY,Paraguay,Americas,5.4
+MLT,MT,Malta,Europe,4.7
+BFA,BF,Burkina Faso,Africa,4.7
+ROU,RO,Romania,Europe,4.6
+GHA,GH,Ghana,Africa,4.6
+MLI,ML,Mali,Africa,4.6
+NGA,NG,Nigeria,Africa,4.6
+CYP,CY,Cyprus,Europe,4.5
+ISR,IL,Israel,Asia,4.4
+MAR,MA,Morocco,Africa,4.4
+AUT,AT,Austria,Europe,4.4
+CHE,CH,Switzerland,Europe,4.4
+GRC,GR,Greece,Europe,4.2
+DEU,DE,Germany,Europe,4.1
+TGO,TG,Togo,Africa,4.0
+CIV,CI,Ivory Coast,Africa,3.9
+SVK,SK,Slovakia,Europe,3.6
+FIN,FI,Finland,Europe,3.6
+MYS,MY,Malaysia,Asia,3.6
+PSE,PS,Palestine,Asia,3.6
+PAK,PK,Pakistan,Asia,3.1
+THA,TH,Thailand,Asia,3.1
+CZE,CZ,Czech Republic,Europe,3.1
+HKG,HK,Hong Kong,Asia,2.9
+ITA,IT,Italy,Europe,2.8
+XKS,XK,Kosovo,Other,2.8
+GMB,GM,Gambia,Africa,2.8
+SVN,SI,Slovenia,Europe,2.8
+ISL,IS,Iceland,Europe,2.7
+TWN,TW,Taiwan,Asia,2.7
+ALB,AL,Albania,Europe,2.6
+RUS,RU,Russia,Europe,2.6
+BGR,BG,Bulgaria,Europe,2.4
+ARM,AM,Armenia,Europe,2.4
+LKA,LK,Sri Lanka,Asia,2.3
+TUN,TN,Tunisia,Africa,2.3
+TJK,TJ,Tajikistan,Asia,2.2
+UZB,UZ,Uzbekistan,Asia,2.1
+MNG,MN,Mongolia,Asia,2.1
+SOM,SO,Somalia,Africa,2.0
+MDA,MD,Moldova,Europe,2.0
+TZA,TZ,Tanzania,Africa,2.0
+ETH,ET,Ethiopia,Africa,1.9
+LVA,LV,Latvia,Europe,1.7
+KGZ,KG,Kyrgyzstan,Asia,1.7
+IRN,IR,Iran,Asia,1.6
+EST,EE,Estonia,Europe,1.5
+MKD,MK,North Macedonia,Europe,1.4
+POL,PL,Poland,Europe,1.4
+JPN,JP,Japan,Asia,1.3
+EGY,EG,Egypt,Africa,1.2
+KAZ,KZ,Kazakhstan,Asia,1.1
+MNE,ME,Montenegro,Europe,1.0
+SRB,RS,Serbia,Europe,1.0
+VNM,VN,Vietnam,Asia,0.9
+HRV,HR,Croatia,Europe,0.9
+AZE,AZ,Azerbaijan,Europe,0.9
+LBN,LB,Lebanon,Asia,0.7
+UKR,UA,Ukraine,Europe,0.7
+TUR,TR,Turkey,Europe,0.5
+GEO,GE,Georgia,Europe,0.3
+BIH,BA,Bosnia Herzegovina,Europe,0.2
+LTU,LT,Lithuania,Europe,0.2

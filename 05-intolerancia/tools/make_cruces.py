@@ -6,7 +6,7 @@
             lineal/log en X, slider de ola.
   Chart B — "Cruce de intolerancias": eje X y eje Y elegibles, ambos del menú.
 
-MENÚ (24 variables, dos grupos):
+MENÚ (25 variables, tres grupos):
   · "Batería de vecinos" (14): las categorías core=1 de A124 — % que menciona al
     grupo entre los que NO querría de vecinos. Fuente: data/ivs_vecinos_largo.csv
     (formato largo por estudio); acá se combina EVS+WVS por promedio ponderado
@@ -16,6 +16,11 @@ MENÚ (24 variables, dos grupos):
     agregados por país × ola en tools/ivs_discrim_largo.csv (una fila por
     var × iso3 × ola: ese pipeline ya combinó EVS+WVS, ponderó por S017 y
     filtró celdas chicas).
+  · "Discriminación vivida" (1): la ÚNICA variable que NO es de la IVS. Viene del
+    World Risk Poll 2023 (Lloyd's Register Foundation / Gallup): % que dice haber
+    sufrido alguna vez discriminación por el color de su piel. Ver el bloque
+    WORLD RISK POLL más abajo, que explica por qué se cuelga de la ola 7 y qué
+    NO se puede concluir del cruce.
 
 QUEDAN AFUERA A PROPÓSITO (decisión editorial, no las repongas):
   · G038/G040/G041/G043, G033-G036, E154-E161: baterías EVS puras — 47 países,
@@ -44,6 +49,23 @@ celda, contra la columna pct del CSV — ver el bloque VERIFICACIÓN):
   bastante prudente"}. No es un invento: el ítem es binario y el denominador es
   el mismo, así que el complemento es el otro código, exacto. Es la ÚNICA
   variable que se transforma; todas las demás salen tal cual de la fuente.
+
+WORLD RISK POLL (la variable de afuera):
+  Es experiencia PROPIA y de por vida ("¿alguna vez sufriste discriminación por el
+  color de tu piel?", sí/no/no corresponde/NS/NC, ponderado por WGT), no una
+  opinión sobre terceros como todo el resto del menú. Dos consecuencias que hay
+  que tener presentes al leer cualquier cruce contra ella:
+    · Los dos ejes dejan de ser la misma encuesta y las mismas personas, así que
+      desaparece el sesgo de estilo de respuesta compartido... y aparece todo el
+      ruido de comparar dos operativos distintos.
+    · Un país donde poca gente declara haber sufrido discriminación no es
+      necesariamente menos racista: puede ser más homogéneo, o tener menos
+      conciencia del problema. La correlación mide otra cosa que la intolerancia
+      declarada, y por eso es interesante mirarlas juntas.
+  Se cuelga de la OLA 7 (2017-2022), que es la más cercana, pero cada punto lleva
+  su año real: el eje del WRP dice 2023 en el tooltip y el de la IVS el año de
+  campo del país. El PIB de esas observaciones sale de 2022 (Maddison termina
+  ahí, dentro de la ventana de ±3 años).
 
 EL CRUCE CON EL PIB (lo delicado):
   Cada observación tiene SU año de trabajo de campo (ARG 2017, URY 2022): el PIB
@@ -181,6 +203,38 @@ for var, gv in sub.groupby("var"):
 for r in disc.drop_duplicates("iso3").itertuples():
     region.setdefault(r.iso3, r.region)
 
+# ======================= 2b. World Risk Poll (fuente externa) =================
+# Única variable que no sale de la IVS. El CSV crudo vive en data/ (bajado de la
+# ficha pública del dataset, CC BY 4.0) para que este script no dependa de la web.
+WRP_K = "wrp_piel"
+WRP_WAVE = 7          # la ola de la IVS con la que se puede cruzar (2017-2022)
+WRP_YEAR = 2023       # año real de campo: es el que va en el tooltip
+GRUPO_WRP = ("Discriminación vivida", "Experienced discrimination")
+
+wrp = pd.read_csv(os.path.join(DATA, "wrp_discriminacion_piel_2023.csv"), comment="#")
+foto[WRP_K] = {WRP_WAVE: sorted(
+    [[r.iso3, round(float(r.pct), 1), WRP_YEAR, None] for r in wrp.itertuples()],
+    key=lambda x: (x[1], x[0]))}
+
+# Región de los países que la IVS no cubre (34 de 139). Se toma de VD_REGION en
+# data-vdem.js, que ya usa las mismas 10 regiones del número y está verificado:
+# de los 105 países que están en las dos fuentes, no hay una sola discrepancia.
+_vd = os.path.join(HERE, "..", "data-vdem.js")
+if os.path.exists(_vd):
+    import re as _re
+    _m = _re.search(r"const VD_REGION = (\{.*?\});", open(_vd, encoding="utf-8").read(), _re.S)
+    VD_REGION = json.loads(_m.group(1)) if _m else {}
+else:
+    VD_REGION = {}
+sin_region_wrp = []
+for r in wrp.itertuples():
+    if r.iso3 in region:
+        continue
+    if r.iso3 in VD_REGION:
+        region[r.iso3] = VD_REGION[r.iso3]
+    else:
+        sin_region_wrp.append(r.iso3)
+
 # ============================ 3. menú de variables ============================
 VARS = []
 for cat in VEC_ORDER:
@@ -197,6 +251,24 @@ for var, es, en, d_es, d_en in OTRAS:
     VARS.append({"k": var, "grupo": GRUPO_OTR[0], "es": es, "en": en,
                  "def_es": d_es, "def_en": d_en,
                  "olas": sorted(foto[var]), "fuente": var})
+# La de afuera va última y lleva "fuente_ext": el chart usa esa marca para avisar
+# que los dos ejes ya no son la misma encuesta ni las mismas personas.
+VARS.append({
+    "k": WRP_K, "grupo": GRUPO_WRP[0],
+    "es": "Sufrió discriminación por su color de piel",
+    "en": "Has experienced discrimination over skin colour",
+    "def_es": "% que dice haber sufrido ALGUNA VEZ discriminación por el color de su piel. "
+              "Es experiencia propia y de por vida, no una opinión sobre otros, y viene de otra "
+              "encuesta: World Risk Poll 2023 (Lloyd's Register Foundation / Gallup), 139 países. "
+              "Ojo: que poca gente lo declare no prueba que el país sea menos racista.",
+    "def_en": "% who say they have EVER experienced discrimination because of the colour of their "
+              "skin. It is a first-person, lifetime experience, not an opinion about others, and it "
+              "comes from a different survey: World Risk Poll 2023 (Lloyd's Register Foundation / "
+              "Gallup), 139 countries. Note: fewer people reporting it does not prove the country is "
+              "less racist.",
+    "olas": sorted(foto[WRP_K]), "fuente": "WRP 2023 (skin colour)",
+    "fuente_ext": "World Risk Poll 2023 (Lloyd's Register Foundation / Gallup)",
+})
 VARS = [v for v in VARS if v["olas"]]
 KEYS = [v["k"] for v in VARS]
 
@@ -238,6 +310,9 @@ CR_META = {
     "n_vars": len(VARS),
     "min_paises": MIN_COUNTRIES,
     "ivs_fuente": "Integrated Values Survey (EVS 1981-2021 + WVS 1981-2022)",
+    "wrp_fuente": "World Risk Poll 2023 (Lloyd's Register Foundation / Gallup), CC BY 4.0",
+    "wrp_pregunta_es": "¿Alguna vez sufrió discriminación por el color de su piel? (sí/no/no corresponde/NS/NC, ponderado por WGT)",
+    "wrp_ola_ivs": WRP_WAVE,
     "generado_por": "tools/make_cruces.py",
 }
 
@@ -303,7 +378,8 @@ for k in ["otra_raza", "C002", "H002_04", "G052"]:
     print(f"  {k:<10} ola7: {con}/{len(rows)} países con PIB   sin PIB: {falt}")
 print(f"  pares país-año usados: {len(pares)} | sin match ±{GDP_TOL}: {len(sin_match)} "
       f"({sorted({i for i, _ in sin_match})})")
-print(f"  match aproximado (año != año de encuesta): {aproximados}")
+print(f"  match aproximado (año != año de encuesta): {len(aproximados)}"
+      f" (primeros: {aproximados[:4]})")
 print(f"  países en CR_GDP: {len(gdp_out)} | entradas totales: {sum(len(v) for v in gdp_out.values())}")
 
 print("\n== 4. ORDEN ASC POR PCT EN TODAS LAS CELDAS ==")
@@ -321,6 +397,21 @@ if os.path.exists(wjs):
     same = all(wv.get(d["w"]) == d["label"] for d in CR_WAVES)
     print(f"  {same} -> { {d['w']: d['label'] for d in CR_WAVES} }")
     ok &= same
+
+print("\n== 5b. WORLD RISK POLL ==")
+_w7 = CR_FOTO[WRP_K][str(WRP_WAVE)]
+print(f"  paises: {len(_w7)} | promedio simple: {np.mean([r[1] for r in _w7]):.2f}% (esp 7,8)")
+print(f"  tope: {_w7[-1][:2]} | piso: {_w7[0][:2]}")
+for _iso, _esp in [("ARG", 10.7), ("BRA", 18.1), ("USA", 27.4), ("URY", 6.1)]:
+    _r = next((r for r in _w7 if r[0] == _iso), None)
+    print(f"  {_iso}: {_r[1]}% (esp {_esp}) año={_r[2]} -> {'OK' if _r and _r[1] == _esp else 'FALLA'}")
+    ok &= bool(_r and _r[1] == _esp)
+print(f"  sin region (deberia estar vacio): {sin_region_wrp}")
+ok &= not sin_region_wrp
+_cruce = [r[0] for r in _w7 if any(x[0] == r[0] for x in CR_FOTO["otra_raza"].get("7", []))]
+print(f"  cruzan con 'otra_raza' ola 7: {len(_cruce)} paises")
+_pib = sum(1 for r in _w7 if r[0] in gdp_out and any(abs(int(y) - r[2]) <= GDP_TOL for y in gdp_out[r[0]]))
+print(f"  con PIB (para el scatter de desarrollo): {_pib}/{len(_w7)}")
 
 print("\n== 6. REGIONES ==")
 print(f"  {len(set(CR_REGION.values()))} regiones: {sorted(set(CR_REGION.values()))}")
