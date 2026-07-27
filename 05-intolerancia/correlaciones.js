@@ -603,8 +603,9 @@ function drawCorrelaciones() {
   // png-export rasteriza el SVG y el banner HTML no existe en el PNG. En
   // pantalla no se dibuja: el banner de arriba ya los muestra y repetirlos era
   // la duplicación que marcó Daniel. Reserva su renglón en el margen superior.
-  const stripH = editorFormat ? SIZES.strip * 2.0 : 0;
-  MARGIN.top += stripH;
+  // Sin tira de estadísticos en el PNG (decisión de Daniel 2026-07-27: el R²
+  // vive solo en el banner HTML de la pantalla, como en los scatters del N°2 y
+  // N°3): el margen superior no reserva ese renglón.
   const plotW = W - MARGIN.left - MARGIN.right;
   const plotH = H - MARGIN.top - MARGIN.bottom;
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
@@ -636,7 +637,6 @@ function drawCorrelaciones() {
   const pts = allPts.filter(p => !hidden.has(p.region));
   const model = (pts.length >= CO_MIN_FIT) ? co_ols(pts) : null;
   co_updateBanner(model, pts.length, allPts.length);
-  if (editorFormat) co_drawStatStrip(svg, model, pts.length, allPts.length, MARGIN, SIZES.strip);
 
   // --- layout: el área de ploteo es CUADRADA (los dos ejes son 0-100) ---
   const legItems = co_legendItems(allPts, !!editorFormat);
@@ -941,8 +941,16 @@ function co_renderLabels() {
 
   const placed = (typeof s_layoutLabels === 'function') ? s_layoutLabels(items, ctx.plotBox) : [];
   if (typeof s_relaxLabels === 'function') {
-    const obstacles = ctx.pts.map(p => ({ x: ctx.xScale(p.x), y: ctx.yScale(p.y), r: SIZES.dot + 2 }));
-    s_relaxLabels(placed, SIZES.label, ctx.plotBox, bigFmt ? 220 : 120, obstacles);
+    // Obstáculos: SOLO los puntos etiquetados (criterio del N°1, recuperado en
+    // la auditoría de scatters). Con TODOS los puntos como obstáculo, el label
+    // no encuentra hueco en la zona densa y huye lejos de su círculo — eso eran
+    // las guías larguísimas que marcó Daniel (2026-07-27).
+    const obstacles = items.map(it => ({ x: it.cx, y: it.cy, r: (it.r || SIZES.dot) + 2 }));
+    // El alto que ve el relax incluye el HALO del texto (5 px en formatos
+    // grandes): sin esto el modelo declara separados dos labels cuyos halos
+    // todavia se pisan, y el halo crema BORRA las letras del vecino
+    // (el "ArgeBrasil" del PNG que marco Daniel, 2026-07-27).
+    s_relaxLabels(placed, SIZES.label + (bigFmt ? 5 : 3), ctx.plotBox, bigFmt ? 220 : 120, obstacles, { edgeAware: true });
   }
 
   placed.forEach(l => {
@@ -950,11 +958,14 @@ function co_renderLabels() {
     let src = null;
     for (let i = 0; i < items.length; i++) if (items[i].iso === l.iso) { src = items[i]; break; }
     if (src) {
-      const dx = l.lx - src.cx, dy = l.ly - src.cy;
-      if (Math.hypot(dx, dy) > src.r + (bigFmt ? 18 : 12)) {
+      // Geometría de la guía: s_leaderLine (borde del punto → borde de la caja).
+      const guia = (typeof s_leaderLine === 'function')
+        ? s_leaderLine(l, { x: src.cx, y: src.cy, r: src.r }, fs, bigFmt ? 10 : 7)
+        : null;
+      if (guia) {
         const gl = co_ns('line');
-        gl.setAttribute('x1', src.cx); gl.setAttribute('y1', src.cy);
-        gl.setAttribute('x2', l.lx); gl.setAttribute('y2', l.ly - fs * 0.3);
+        gl.setAttribute('x1', guia.x1); gl.setAttribute('y1', guia.y1);
+        gl.setAttribute('x2', guia.x2); gl.setAttribute('y2', guia.y2);
         gl.setAttribute('stroke', '#B8AE9C');
         gl.setAttribute('stroke-width', bigFmt ? 1.2 : 0.8);
         gl.setAttribute('stroke-opacity', l.transient ? 0.55 : 0.75);
@@ -1022,22 +1033,6 @@ function co_applyRegionFocus() {
 // imagen. Estos son los mismos números del banner —países · r · R²—, dibujados
 // adentro del gráfico SÓLO cuando hay un formato de exportación activo, para
 // que no aparezcan dos veces en pantalla.
-function co_drawStatStrip(svg, model, n, nAll, MARGIN, fs) {
-  const tx = co_ns('text');
-  tx.setAttribute('x', MARGIN.left);
-  tx.setAttribute('y', MARGIN.top - fs * 0.75);
-  tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-  tx.setAttribute('fill', CO_INK_SOFT);
-  tx.setAttribute('font-weight', 500);
-  tx.setAttribute('font-variant-numeric', 'tabular-nums');
-  tx.style.fontSize = fs + 'px';
-  const nTxt = n + ' ' + co_T('c19-banner-n').toLowerCase();
-  tx.textContent = model
-    ? (co_T('c19-banner-r') + ' ' + co_fmt(model.r, 2) + ' · '
-       + co_T('c19-banner-r2') + ' ' + co_fmt(model.r2, 2) + ' · ' + nTxt)
-    : (nTxt + ' · ' + co_T(nAll ? 'c19-fewfit' : 'c19-empty-short'));
-  svg.appendChild(tx);
-}
 
 // =================== Tooltip ===================
 function co_showTooltip(e, p) {

@@ -469,9 +469,9 @@ function drawVdemScatter() {
   // dibuja únicamente al exportar (en pantalla los mismos números están en el
   // banner HTML de abajo: mostrarlos dos veces era la duplicación que marcó
   // Daniel). Sin tira, ese alto se le devuelve al gráfico.
-  const marginTop = editorFormat
-    ? L.M.top
-    : Math.max(mobile ? 26 : 16, L.M.top - SIZES.strip * 1.6);
+  // Sin tira de estadísticos tampoco en el PNG (decisión de Daniel 2026-07-27):
+  // el margen superior devuelve ese alto al gráfico en TODOS los formatos.
+  const marginTop = Math.max(editorFormat ? 28 : (mobile ? 26 : 16), L.M.top - SIZES.strip * 1.6);
   const MARGIN = { top: marginTop, right: L.M.right, left: L.M.left, bottom: 0 };
   const plotW = W - MARGIN.left - MARGIN.right;
 
@@ -742,7 +742,6 @@ function drawVdemScatter() {
   // y el residuo regional tienen que ir adentro del gráfico… pero SÓLO ahí: en
   // pantalla el banner de abajo ya los muestra y repetirlos era la duplicación
   // que marcó Daniel («esto es redundante, misma lógica que en el N°2»).
-  if (editorFormat) ve_drawStatStrip(svg, model, pts.length, MARGIN, SIZES.strip);
 
   // === Leyenda de regiones, debajo del título del eje X ===
   ve_drawLegend(svg, leg, MARGIN, plotW, xTitleY, legendFs);
@@ -804,8 +803,16 @@ function ve_renderLabels() {
 
   const placed = (typeof s_layoutLabels === 'function') ? s_layoutLabels(items, ctx.plotBox) : [];
   if (typeof s_relaxLabels === 'function') {
-    const obstacles = ctx.pts.map(p => ({ x: ctx.xScale(p.gdp), y: ctx.yScale(p.pct), r: SIZES.dot + 2 }));
-    s_relaxLabels(placed, SIZES.label, ctx.plotBox, bigFmt ? 220 : 80, obstacles);
+    // Obstáculos: SOLO los puntos etiquetados (criterio del N°1, recuperado en
+    // la auditoría de scatters). Con TODOS los puntos como obstáculo, el label
+    // no encuentra hueco en la zona densa y huye lejos de su círculo — eso eran
+    // las guías larguísimas que marcó Daniel (2026-07-27).
+    const obstacles = items.map(it => ({ x: it.cx, y: it.cy, r: (it.r || SIZES.dot) + 2 }));
+    // El alto que ve el relax incluye el HALO del texto (5 px en formatos
+    // grandes): sin esto el modelo declara separados dos labels cuyos halos
+    // todavia se pisan, y el halo crema BORRA las letras del vecino
+    // (el "ArgeBrasil" del PNG que marco Daniel, 2026-07-27).
+    s_relaxLabels(placed, SIZES.label + (bigFmt ? 5 : 3), ctx.plotBox, bigFmt ? 220 : 80, obstacles, { edgeAware: true });
   }
 
   placed.forEach(l => {
@@ -813,16 +820,15 @@ function ve_renderLabels() {
     let src = null;
     for (let i = 0; i < items.length; i++) if (items[i].iso === l.iso) { src = items[i]; break; }
     if (src) {
-      const dx = l.lx - src.cx, dy = l.ly - src.cy;
-      if (Math.hypot(dx, dy) > src.r + (bigFmt ? 16 : 11)) {
+      // Geometría de la guía: s_leaderLine (borde del punto → borde de la caja,
+      // con aire antes del texto — el fix de «LLetonia» ya viene incluido).
+      const guia = (typeof s_leaderLine === 'function')
+        ? s_leaderLine(l, { x: src.cx, y: src.cy, r: src.r }, fs, bigFmt ? 10 : 7)
+        : null;
+      if (guia) {
         const gl = ve_ns('line');
-        gl.setAttribute('x1', src.cx); gl.setAttribute('y1', src.cy);
-        // Se corta ANTES del texto: si llega hasta la etiqueta, el trazo se lee
-        // como una letra de más (a Daniel le apareció «LLetonia»).
-        const _len = Math.hypot(dx, dy) || 1;
-        const _gap = fs * 0.5;
-        gl.setAttribute('x2', l.lx - (dx / _len) * _gap);
-        gl.setAttribute('y2', l.ly - fs * 0.3 - (dy / _len) * _gap);
+        gl.setAttribute('x1', guia.x1); gl.setAttribute('y1', guia.y1);
+        gl.setAttribute('x2', guia.x2); gl.setAttribute('y2', guia.y2);
         gl.setAttribute('stroke', '#B8AE9C');
         gl.setAttribute('stroke-width', bigFmt ? 1.2 : 0.7);
         gl.setAttribute('stroke-opacity', l.transient ? 0.55 : 1);
@@ -856,34 +862,6 @@ function ve_renderLabels() {
 // SIN la pendiente: el N°2 (scatter.js, #s-banner) nunca la mostró, "pp por
 // cada ×10 de PIB" es jerga, y la línea que ahorra es alto que hace falta para
 // que el gráfico entre sin scrollear. El R² ya comunica el ajuste.
-function ve_drawStatStrip(svg, model, n, MARGIN, fs) {
-  const g = ve_ns('g'); svg.appendChild(g);
-  const mk = (y, text, weight, ink, line) => {
-    const tx = ve_ns('text');
-    tx.setAttribute('x', MARGIN.left);
-    tx.setAttribute('y', y);
-    tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-    tx.setAttribute('fill', ink);
-    tx.setAttribute('font-weight', weight);
-    if (line) tx.setAttribute('data-strip-line', line);
-    tx.style.fontSize = fs + 'px';
-    tx.textContent = text;
-    g.appendChild(tx);
-    return tx;
-  };
-  const nTxt = n + ' ' + ve_t('c20-banner-n').toLowerCase();
-  if (!model) {
-    mk(MARGIN.top - fs * 2.0, nTxt, 500, VE_AXIS_INK, null);
-    mk(MARGIN.top - fs * 0.55, ve_t(ve_lastAll ? 'c20-fewfit' : 'c20-nodata'),
-       500, VE_AXIS_INK, '2');
-    return;
-  }
-  mk(MARGIN.top - fs * 2.0,
-     ve_t('c20-banner-r2') + ' ' + ve_num(model.r2, 3) + ' · ' + nTxt,
-     500, VE_AXIS_INK, null);
-  mk(MARGIN.top - fs * 0.55, ve_stripResidText(model), 700,
-     ve_regionLabelColor(ve_focusRegion()), '2');
-}
 
 // Región enfocada: hover de leyenda > América Latina.
 // Una región APAGADA no puede estar enfocada (no tiene puntos ni residuo); si
@@ -910,15 +888,6 @@ function ve_focusRegion() {
     }
   }
   return VE_LATAM;
-}
-
-function ve_stripResidText(model) {
-  const focus = ve_focusRegion();
-  const rr = model.byRegion[focus];
-  if (!rr) return ve_regionLabel(focus) + ': ' + ve_t('c20-banner-none');
-  return ve_t('c20-strip-resid-tpl')
-    .replace('{REG}', ve_regionLabel(focus))
-    .replace('{V}', ve_signed(rr.pp, 2, ''));
 }
 
 // Leyenda de regiones adentro del SVG. Para el N°5, png-export NO dibuja
@@ -1019,11 +988,6 @@ function ve_applyRegionFocus() {
       if (el.dataset.legendOff) { el.setAttribute('opacity', 0.34); return; }
       el.setAttribute('opacity', (!focus || el.dataset.legendRegion === focus) ? 1 : 0.38);
     });
-    const strip = svg.querySelector('text[data-strip-line="2"]');
-    if (strip && ve_lastModel) {
-      strip.setAttribute('fill', ve_regionLabelColor(ve_focusRegion()));
-      strip.textContent = ve_stripResidText(ve_lastModel);
-    }
   }
   ve_updateBanner(ve_lastModel, ve_lastN);
 }

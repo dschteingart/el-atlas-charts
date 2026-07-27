@@ -371,8 +371,16 @@ function sc_renderLabels() {
 
   const placed = (typeof s_layoutLabels === 'function') ? s_layoutLabels(items, ctx.plotBox) : [];
   if (typeof s_relaxLabels === 'function') {
-    const obstacles = ctx.pts.map(p => ({ x: ctx.xScale(p.x), y: ctx.yScale(p.y), r: SIZES.dot + 2 }));
-    s_relaxLabels(placed, SIZES.label, ctx.plotBox, bigFmt ? 220 : 80, obstacles);
+    // Obstáculos: SOLO los puntos etiquetados (criterio del N°1, recuperado en
+    // la auditoría de scatters). Con TODOS los puntos como obstáculo, el label
+    // no encuentra hueco en la zona densa y huye lejos de su círculo — eso eran
+    // las guías larguísimas que marcó Daniel (2026-07-27).
+    const obstacles = items.map(it => ({ x: it.cx, y: it.cy, r: (it.r || SIZES.dot) + 2 }));
+    // El alto que ve el relax incluye el HALO del texto (5 px en formatos
+    // grandes): sin esto el modelo declara separados dos labels cuyos halos
+    // todavia se pisan, y el halo crema BORRA las letras del vecino
+    // (el "ArgeBrasil" del PNG que marco Daniel, 2026-07-27).
+    s_relaxLabels(placed, SIZES.label + (bigFmt ? 5 : 3), ctx.plotBox, bigFmt ? 220 : 80, obstacles, { edgeAware: true });
   }
 
   placed.forEach(l => {
@@ -381,11 +389,14 @@ function sc_renderLabels() {
     let src = null;
     for (let i = 0; i < items.length; i++) if (items[i].iso === l.iso) { src = items[i]; break; }
     if (src) {
-      const dx = l.lx - src.cx, dy = l.ly - src.cy;
-      if (Math.hypot(dx, dy) > src.r + (bigFmt ? 14 : 11)) {
+      // Geometría de la guía: s_leaderLine (borde del punto → borde de la caja).
+      const guia = (typeof s_leaderLine === 'function')
+        ? s_leaderLine(l, { x: src.cx, y: src.cy, r: src.r }, fs, bigFmt ? 10 : 7)
+        : null;
+      if (guia) {
         const gl = sc_ns('line');
-        gl.setAttribute('x1', src.cx); gl.setAttribute('y1', src.cy);
-        gl.setAttribute('x2', l.lx); gl.setAttribute('y2', l.ly - fs * 0.3);
+        gl.setAttribute('x1', guia.x1); gl.setAttribute('y1', guia.y1);
+        gl.setAttribute('x2', guia.x2); gl.setAttribute('y2', guia.y2);
         gl.setAttribute('stroke', '#B8AE9C');
         gl.setAttribute('stroke-width', bigFmt ? 1 : 0.7);
         gl.setAttribute('stroke-opacity', l.transient ? 0.55 : 0.85);
