@@ -1330,35 +1330,31 @@ function setupVdemRankSearch() {
 function setupVdemRankDownloadCSV() {
   document.querySelectorAll('button.download[data-chart="21-csv"]').forEach(btn => {
     btn.addEventListener('click', () => {
+      // El clon exportaba recorriendo VD_SERIES por olas (las claves son ISO3,
+      // no olas): el archivo bajaba con encabezado y CERO filas, describiendo
+      // ademas la bateria del barrio y con el MISMO nombre de archivo que el
+      // CSV del barrio. Ahora: la foto del anio mostrado, con puesto mundial.
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
+      const cat = state[21].cat, year = state[21].wave;
       let csv = '';
-      csv += '# El Atlas N°4 — que pasa seguido en el barrio (WVS, bateria H002)\n';
-      csv += '# pct = % "muy/bastante seguido" {1,2} sobre {1,2,3,4}, ponderado S017.\n';
-      csv += '# rank: 1 = pct mas alto, sobre los paises con los cinco items en la ola.\n';
-      csv += 'iso3,pais,item,ola,anio,pct,rank,n\n';
-      VD_VARS.forEach(item => {
-        VR_WAVES.forEach(m => {
-          const byWave = (typeof VD_SERIES !== 'undefined' && VD_SERIES[item]) ? VD_SERIES[item] : {};
-          const rows = byWave[String(m.w)] || byWave[m.w] || [];
-          rows.forEach(r => {
-            const name = (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[r[0]])
-              ? (COUNTRY_NAMES[r[0]].en || r[0]) : r[0];
-            const nameQ = (name.includes(',')) ? '"' + name + '"' : name;
-            csv += [r[0], nameQ, item, m.w, r[2], r[1], r[3], r[4]].join(',') + '\n';
-          });
-        });
+      csv += '# El Atlas N°4 - V-Dem v16, foto de un anio (vista ranking/marimekko)\n';
+      csv += '# variable: ' + cat + ' (' + vd_varLabelOf(cat) + ')\n';
+      csv += '# anio: ' + year + '\n';
+      csv += '# puesto: 1 = el peor del mundo en ese anio (la direccion se ajusta si la variable apunta al reves).\n';
+      csv += 'iso3,pais,variable,variable_label_en,anio,valor,puesto\n';
+      const meta = vd_varMetaOf(cat);
+      const labQ = '"' + (meta.en || cat) + '"';
+      vd_foto(cat, year).forEach(r => {
+        const nm = (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[r[0]]) ? (COUNTRY_NAMES[r[0]].en || r[0]) : r[0];
+        const nmQ = (nm.indexOf(',') >= 0) ? '"' + nm + '"' : nm;
+        csv += [r[0], nmQ, cat, labQ, r[2], r[1], r[4]].join(',') + '\n';
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url;
-      a.download = lang === 'en'
-        ? 'the-atlas-04-neighbourhood-comparison.csv'
-        : 'el-atlas-04-barrio-comparacion.csv';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      a.href = URL.createObjectURL(blob);
+      a.download = lang === 'en' ? 'the-atlas-04-social-exclusion-ranking.csv' : 'el-atlas-04-exclusion-ranking.csv';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
     });
   });
 }

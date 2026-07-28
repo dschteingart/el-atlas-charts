@@ -1291,7 +1291,9 @@ function setupRankingDownloadCSV() {
       csv += '# El Atlas N°4 — Rechazo declarado a distintos tipos de vecinos (IVS: EVS+WVS)\n';
       csv += '# Todas las olas por pais. pct = % ponderado combinado (EVS+WVS) que menciona al\n';
       csv += '# grupo como vecino no deseado; evs/wvs = valor de cada estudio en esa ola.\n';
-      csv += 'iso3,name,region,category,wave,period,pct,year,n,evs,wvs\n';
+      // Mismas columnas en castellano que las otras tres vistas del graficador
+      // (mapa, pelicula, perfil): un mismo lector baja los cuatro archivos.
+      csv += 'iso3,pais,region,categoria,ola,periodo,pct,anio,n,evs,wvs\n';
       const waves = (typeof WV_META !== 'undefined') ? WV_META : [{ w: 7, label: '2017-2022' }];
       const src = (typeof WV_FOTO !== 'undefined') ? WV_FOTO : null;
       VE_CATS.forEach(cat => {

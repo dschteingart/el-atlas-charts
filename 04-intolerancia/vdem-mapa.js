@@ -467,11 +467,12 @@ function setupMapaCSV() {
       let csv = '# El Atlas N4 - V-Dem v16, foto del mapa\n';
       csv += '# variable: ' + cat + ' (' + vd_varLabelOf(cat) + ')\n';
       csv += '# anio: ' + year + '\n';
-      csv += 'iso3,pais,variable,anio,valor,puesto\n';
+      csv += 'iso3,pais,variable,variable_label_en,anio,valor,puesto\n';
+      const labQ = '"' + (vd_varMetaOf(cat).en || cat) + '"';
       vd_foto(cat, year).forEach(r => {
         const nm = (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[r[0]]) ? (COUNTRY_NAMES[r[0]].en || r[0]) : r[0];
         const nmQ = (nm.indexOf(',') >= 0) ? '"' + nm + '"' : nm;
-        csv += [r[0], nmQ, cat, r[2], r[1], r[4]].join(',') + '\n';
+        csv += [r[0], nmQ, cat, labQ, r[2], r[1], r[4]].join(',') + '\n';
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob);

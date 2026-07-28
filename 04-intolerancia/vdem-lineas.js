@@ -478,13 +478,14 @@ function setupVdemLineasCSV() {
       csv += '# El Atlas N4 - V-Dem v16, serie anual por pais\n';
       csv += '# variable: ' + item + ' (' + vd_varLabelOf(item) + ')\n';
       csv += '# periodo exportado: ' + b[0] + '-' + b[1] + ' (el que muestra el grafico)\n';
-      csv += 'iso3,pais,variable,anio,valor\n';
+      csv += 'iso3,pais,variable,variable_label_en,anio,valor\n';
+      const labQ = '"' + (vd_varMetaOf(item).en || item) + '"';
       vd_paises(item).slice().sort().forEach(iso => {
         const name = (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[iso]) ? (COUNTRY_NAMES[iso].en || iso) : iso;
         const nameQ = (name.indexOf(',') >= 0) ? '"' + name + '"' : name;
         vl_series(item, iso).forEach(p => {
           if (p[0] < b[0] || p[0] > b[1]) return;
-          csv += [iso, nameQ, item, p[0], p[1]].join(',') + '\n';
+          csv += [iso, nameQ, item, labQ, p[0], p[1]].join(',') + '\n';
         });
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });

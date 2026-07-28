@@ -1348,13 +1348,17 @@ function setupCorrelacionesCSV() {
       csv += '# ola=' + (s.wave == null ? '' : s.wave) + ' (' + co_waveLabel(s.wave) + ')\n';
       csv += '# x=' + s.x + ' (' + (vx ? vx.fuente : '') + ') | y=' + s.y + ' (' + (vy ? vy.fuente : '') + ')\n';
       csv += '# anio_x / anio_y: ano real de campo del pais. Solo paises con las DOS observaciones.\n';
-      csv += 'iso3,pais,region,ola,x_var,x_pct,x_anio,x_n,y_var,y_pct,y_anio,y_n\n';
+      csv += 'iso3,pais,region,ola,x_var,x_label_en,x_pct,x_anio,x_n,y_var,y_label_en,y_pct,y_anio,y_n\n';
+      // Etiquetas legibles al lado del codigo: un lector que abre el archivo no
+      // tiene por que saber que C002 es la prioridad laboral a los nativos.
+      const xLabQ = '"' + ((vx && vx.en) || s.x) + '"';
+      const yLabQ = '"' + ((vy && vy.en) || s.y) + '"';
       const pts = (s.wave == null) ? [] : co_cross(s.x, s.y, s.wave);
       pts.slice().sort((a, b) => a.iso.localeCompare(b.iso)).forEach(p => {
         const nm = (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[p.iso])
           ? (COUNTRY_NAMES[p.iso].en || p.iso) : p.iso;
         const nmQ = (nm.indexOf(',') >= 0) ? '"' + nm + '"' : nm;
-        csv += [p.iso, nmQ, p.region, s.wave, s.x, p.x, p.yearX, p.nX, s.y, p.y, p.yearY, p.nY].join(',') + '\n';
+        csv += [p.iso, nmQ, p.region, s.wave, s.x, xLabQ, p.x, p.yearX, p.nX, s.y, yLabQ, p.y, p.yearY, p.nY].join(',') + '\n';
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
       const a = document.createElement('a');
