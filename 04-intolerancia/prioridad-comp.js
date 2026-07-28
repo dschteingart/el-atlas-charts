@@ -142,13 +142,26 @@ function pc_computeData() {
 
 // Mediana MUNDIAL del indicador en la ola activa: sobre TODOS los países con
 // dato (ignora selección y regiones apagadas — es la referencia global).
+
+
+// Estadistico MUNDIAL de la celda activa: sobre TODOS los paises con dato
+// (ignora seleccion y regiones apagadas — es la referencia global).
+// Mediana o promedio segun el toggle: la linea y la tabla regional tienen que
+// mostrar el MISMO estadistico. Antes la linea era mediana y la tabla promedios
+// (peras con manzanas, reporte de Daniel 2026-07-27).
+function pc_isMean() { return state[14].stat === 'mean'; }
+function pc_agg(vals) {
+  if (!vals.length) return null;
+  if (pc_isMean()) return vals.reduce(function (a, b) { return a + b; }, 0) / vals.length;
+  const v = vals.slice().sort(function (a, b) { return a - b; });
+  const mid = Math.floor(v.length / 2);
+  return v.length % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2;
+}
 function pc_median() {
   const rows = pc_waveRows();
   if (!rows.length) return null;
-  const v = rows.map(r => r[1]);           // ya ordenado asc
-  const mid = Math.floor(v.length / 2);
-  const med = v.length % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2;
-  return { value: med, n: v.length };
+  const vals = rows.map(function (r) { return r[1]; });
+  return { value: pc_agg(vals), n: vals.length };
 }
 
 // Label del período de la ola activa (ej. "2017-2022").
@@ -383,7 +396,7 @@ function pc_drawBars() {
     mline.setAttribute('stroke-dasharray', bigFmt ? '7 6' : '4 4');
     svg.appendChild(mline);
     const mlbl = pc_ns('text');
-    const mlblTxt = ((typeof t === 'function') ? t('c14-median-lbl') : 'Mediana mundial')
+    const mlblTxt = ((typeof t === 'function') ? t(pc_isMean() ? 'c14-mean-lbl' : 'c14-median-lbl') : 'Mediana mundial')
       + ': ' + ((typeof fmt === 'function') ? fmt(med.value, 1) : med.value) + '%';
     const lblW = pc_measureText(mlblTxt, SIZES.medLbl, 600);
     const anchorEnd = mx + 8 + lblW > PC_W - 4;
@@ -853,7 +866,7 @@ function pc_drawMarimekko() {
     mlbl.setAttribute('stroke-width', (mobile || mobilePng) ? 4 : 3);
     mlbl.setAttribute('stroke-linejoin', 'round');
     mlbl.setAttribute('pointer-events', 'none');
-    mlbl.textContent = ((typeof t === 'function') ? t('c14-median-lbl') : 'Mediana mundial')
+    mlbl.textContent = ((typeof t === 'function') ? t(pc_isMean() ? 'c14-mean-lbl' : 'c14-median-lbl') : 'Mediana mundial')
       + ': ' + ((typeof fmt === 'function') ? fmt(med.value, 1) : med.value) + '%';
     svg.appendChild(mlbl);
   }
@@ -897,7 +910,7 @@ function pc_drawMarimekko() {
         region: r,
         color: (typeof REGION_COLORS !== 'undefined' && REGION_COLORS[r]) || '#888',
         label: (typeof t === 'function') ? t('reg.' + r) : r,
-        value: vals.reduce((a, b) => a + b, 0) / vals.length
+        value: pc_agg(vals)
       };
     })
     .sort((a, b) => b.value - a.value);
@@ -961,7 +974,7 @@ function pcm_drawRegionalAvgTable(svg, rows, activeRegion, SIZES, mobilePng) {
   title.setAttribute('x', tableX);
   title.setAttribute('y', tableYTitle);
   if (titleSize) title.style.fontSize = titleSize + 'px';
-  title.textContent = (typeof t === 'function') ? t('c14-avg-table-title') : 'Promedio por región';
+  title.textContent = (typeof t === 'function') ? t(pc_isMean() ? 'c14-avg-table-title' : 'c14-median-table-title') : 'Mediana por región';
   g.appendChild(title);
 
   const rule = pc_ns('line');
@@ -1201,6 +1214,32 @@ function setupPrioridadCompWave() {
 // Toggle unificado "Referencias": Mediana y Tabla regional, cada uno on/off
 // independiente (ambos, uno o ninguno). Reemplaza los dos toggles mostrar/ocultar
 // (pedido de Daniel 2026-07-23). El botón activo = referencia visible.
+// Toggle Mediana / Promedio. Es un selector EXCLUYENTE (mismo patron que
+// "Mostrar: Mi seleccion | Todos los paises"), separado de "Referencias", que son
+// dos interruptores on/off. Se oculta cuando las dos referencias estan apagadas:
+// sin linea ni tabla no hay estadistico que elegir.
+function setupPrioridadCompRefsStat() {
+  const box = document.getElementById('pc-stat');
+  if (!box) return;
+  const sync = () => {
+    box.querySelectorAll('button[data-stat]').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-stat') === (state[14].stat || 'median'));
+    });
+    const grp = box.closest('.m-ctrl-group') || box;
+    const hay = (state[14].showMedian !== false) || (state[14].showTable !== false);
+    grp.style.display = hay ? '' : 'none';
+  };
+  box.querySelectorAll('button[data-stat]').forEach(b => {
+    b.addEventListener('click', () => {
+      state[14].stat = b.getAttribute('data-stat');
+      sync();
+      drawPrioridadComp();
+    });
+  });
+  sync();
+  setupPrioridadCompRefsStat._sync = sync;
+}
+
 function setupPrioridadCompRefs() {
   document.querySelectorAll('#pc-refs button[data-ref]').forEach(btn => {
     const key = btn.dataset.ref === 'table' ? 'showTable' : 'showMedian';
@@ -1208,6 +1247,8 @@ function setupPrioridadCompRefs() {
     btn.addEventListener('click', () => {
       state[14][key] = !(state[14][key] !== false);   // toggle
       btn.classList.toggle('active', state[14][key]);
+      // el selector de estadistico se esconde si no queda ninguna referencia
+      if (setupPrioridadCompRefsStat._sync) setupPrioridadCompRefsStat._sync();
       drawPrioridadComp();
     });
   });
@@ -1406,6 +1447,7 @@ function initPrioridadComp() {
   setupPrioridadCompCat();
   setupPrioridadCompView();
   setupPrioridadCompRefs();
+  setupPrioridadCompRefsStat();
   setupPrioridadCompWave();
   setupPrioridadCompSearch();
   setupPrioridadCompDownloadCSV();
