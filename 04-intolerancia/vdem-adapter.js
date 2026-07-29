@@ -163,3 +163,8 @@ function vd_paises(k) {
 // Decimales de la tabla regional y de la etiqueta de la mediana. El indice va de
 // 0 a 1: con un solo decimal se pierde la mitad de la precision.
 function vd_dec() { return 2; }
+
+// Decimales de las ESCALAS (ticks del eje, cortes de la leyenda del mapa).
+// Van mas cortos que los valores puntuales: un eje no necesita precision,
+// necesita leerse de un vistazo.
+function vd_decEje() { return 1; }

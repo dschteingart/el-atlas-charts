@@ -278,14 +278,14 @@ function vm_drawLegend(svg, breaks) {
   // etiquetas adaptativas: "<b1", "b1–b2", ..., "≥bN"
   const labels = [];
   for (let i = 0; i <= breaks.length; i++) {
-    if (i === 0) labels.push('<' + vd_fmtVal(breaks[0]));
-    else if (i === breaks.length) labels.push('≥' + vd_fmtVal(breaks[breaks.length - 1]));
+    if (i === 0) labels.push('<' + vd_fmtVal(breaks[0], vd_decEje()));
+    else if (i === breaks.length) labels.push('≥' + vd_fmtVal(breaks[breaks.length - 1], vd_decEje()));
     // Los cortes intermedios salían crudos ("0.1–0.2") mientras el primero y
     // el último ya pasaban por vd_fmtVal: mismo formato para los tres.
     else {
       // Con cortes negativos (los componentes) el guion pegado daba "-1,58–-0,57":
       // ahí el rango se escribe con espacios para que se lea.
-      const a = vd_fmtVal(breaks[i - 1]), b = vd_fmtVal(breaks[i]);
+      const a = vd_fmtVal(breaks[i - 1], vd_decEje()), b = vd_fmtVal(breaks[i], vd_decEje());
       labels.push((breaks[i - 1] < 0 || breaks[i] < 0) ? (a + ' – ' + b) : (a + '–' + b));
     }
   }
@@ -353,7 +353,7 @@ function vm_showTooltip(e, iso, v, cat) {
   } else {
     const traj = vm_trajectory(iso, cat);
     tt.innerHTML = `<strong>${vm_name(iso)}</strong>`
-      + `<div class="tt-row"><span>${L('c22-tt-value')}</span><span>${vd_fmtVal(v.pct, 2)}</span></div>`
+      + `<div class="tt-row"><span>${L('c22-tt-value')}</span><span>${vd_fmtVal(v.pct, vd_dec())}</span></div>`
       + `<div class="tt-row tt-row-sub"><span>${L('c22-tt-year')}</span><span>${v.year}</span></div>`
       + (traj.length >= 2 ? `<div class="tt-sub" style="margin-top:4px;">${L('c22-tt-trend')}</div>` + vm_sparkline(traj, v.year) : '');
   }

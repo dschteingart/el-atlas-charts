@@ -795,7 +795,7 @@ function vr_drawMarimekko() {
     tx.setAttribute('fill', '#7A6E62');
     tx.setAttribute('font-variant-numeric', 'tabular-nums');
     tx.style.fontSize = SIZES.tick + 'px';
-    tx.textContent = vd_fmtVal(tv, 1);
+    tx.textContent = vd_fmtVal(tv, vd_decEje());
     svg.appendChild(tx);
   });
 
@@ -1128,7 +1128,7 @@ function vr_showTooltip(event, d) {
   const tt = (k, fb) => (typeof t === 'function' ? t(k) : fb);
   const reg = d.region ? tt('reg.' + d.region, d.region) : '';
   // Índice, no porcentaje: dos decimales y sin signo de %.
-  const F = (v) => vd_fmtVal(v, 2);
+  const F = (v) => vd_fmtVal(v, vd_dec());
   // Sin rama EVS/WVS (la batería H002 es solo del WVS). En su lugar, el puesto
   // mundial "N° de M" sobre el universo de países con los cinco ítems.
   const uni = vr_universe();

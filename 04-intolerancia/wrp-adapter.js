@@ -57,3 +57,8 @@ function vd_fillVarSelect(id, current) {
 // Decimales de la tabla regional y de la etiqueta de la mediana: son porcentajes
 // de 0 a 30, con uno alcanza.
 function vd_dec() { return 1; }
+
+// Decimales de las ESCALAS (ticks del eje, cortes de la leyenda del mapa).
+// Van mas cortos que los valores puntuales: un eje no necesita precision,
+// necesita leerse de un vistazo.
+function vd_decEje() { return 0; }
