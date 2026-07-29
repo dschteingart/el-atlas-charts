@@ -346,7 +346,7 @@ function setupLatinoSearch() {
 function setupLatinoCSV() {
   document.querySelectorAll('button.download[data-chart="6-csv"]').forEach(btn => btn.addEventListener('click', () => {
     const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
-    let csv = '# El Atlas N4 — Latinobarometro: bateria de vecinos (foto 2024 + serie historica)\n';
+      let csv = '';
     csv += 'iso3,pais,categoria,anio,pct,n\n';
     (typeof LB_CATS !== 'undefined' ? LB_CATS : Object.keys(LB_FOTO)).forEach(c => (LB_FOTO[c] || []).forEach(([iso, pct, nn]) => {
       const nm = (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[iso]) ? COUNTRY_NAMES[iso].en : iso; csv += `${iso},${nm},${c},2024,${pct},${nn}\n`; }));

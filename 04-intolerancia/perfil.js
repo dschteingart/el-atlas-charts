@@ -310,7 +310,7 @@ function setupPerfilCSV() {
   document.querySelectorAll('button.download[data-chart="4-csv"]').forEach(btn => {
     btn.addEventListener('click', () => {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
-      let csv = '# El Atlas N4 — perfil de intolerancia por pais (IVS, ultimo dato 2017-2022)\n';
+      let csv = '';
       csv += 'iso3,pais,categoria,pct,mediana_mundial,anio\n';
       (typeof VE_CATS !== 'undefined' ? VE_CATS : []).forEach(cat => {
         const rows = VE_FOTO[cat] || [];

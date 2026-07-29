@@ -1378,10 +1378,6 @@ function setupVdemRankDownloadCSV() {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
       const cat = state[21].cat, year = state[21].wave;
       let csv = '';
-      csv += '# El Atlas N°4 - V-Dem v16, foto de un anio (vista ranking/marimekko)\n';
-      csv += '# variable: ' + cat + ' (' + vd_varLabelOf(cat) + ')\n';
-      csv += '# anio: ' + year + '\n';
-      csv += '# puesto: 1 = el peor del mundo en ese anio (la direccion se ajusta si la variable apunta al reves).\n';
       csv += 'iso3,pais,variable,variable_label_en,anio,valor,puesto\n';
       const meta = vd_varMetaOf(cat);
       const labQ = '"' + (meta.en || cat) + '"';

@@ -17,7 +17,7 @@
     'c19-lead':          'Elegí dos preguntas de la encuesta y mirá cómo se ordenan los países. Por encima de la línea de igual valor pesa más el eje vertical.',
 
     'c19-title':         'Las intolerancias van juntas, pero no son la misma cosa',
-    'c19-title-neutral': 'Dos preguntas de la encuesta, país por país',
+    'c19-title-neutral': 'Dos preguntas de la encuesta',
     'c19-subtitle':      'Cada punto es un país. Los dos ejes son porcentajes de la misma encuesta.',
     // {X}, {Y} = nombre de la variable de cada eje; {PERIODO} = etiqueta de la
     // ola. La letra chica (cada país sale a campo en un año distinto dentro de
@@ -71,7 +71,7 @@
     'c19-lead':          'Pick two survey questions and see how countries line up. Above the equal-value line, the vertical axis weighs more.',
 
     'c19-title':         'Intolerances travel together — but they are not the same thing',
-    'c19-title-neutral': 'Two survey questions, country by country',
+    'c19-title-neutral': 'Two survey questions',
     'c19-subtitle':      'Each dot is a country. Both axes are percentages from the same survey.',
     'c19-subtitle-tpl':  'Each dot is a country. Horizontal axis: {X}. Vertical axis: {Y}. {PERIODO} wave.',
 

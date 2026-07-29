@@ -20,8 +20,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../lib/style.css?v=23">
-<link rel="stylesheet" href="../lib/editor.css?v=23">
+<link rel="stylesheet" href="../lib/style.css?v=24">
+<link rel="stylesheet" href="../lib/editor.css?v=24">
 <style>
   .wrap-wide { max-width: 1100px; padding: 6px 20px 10px; }
   .wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
@@ -162,7 +162,7 @@
   <p class="g-lead" data-i18n="c20-lead">Los países ricos declaran menos rechazo. La pregunta es otra: puesto en la fila de su ingreso, ¿dónde queda cada país?</p>
 
   <section class="chart-block" data-chart="20" data-editor-id="n5-vdem-scatter">
-    <h2 class="chart-title" data-i18n="c20-title-neutral">Intolerancia declarada y PIB per cápita, país por país</h2>
+    <h2 class="chart-title" data-i18n="c20-title-neutral">Intolerancia declarada y PIB per cápita</h2>
     <p class="chart-subtitle" data-i18n="c20-subtitle">Cada punto es un país: intolerancia declarada en el eje vertical, PIB per cápita en el horizontal.</p>
 
     <div class="m-controls">
@@ -232,34 +232,34 @@
 
 </div>
 
-<script src="../lib/regions.js?v=23"></script>
-<script src="../lib/i18n.js?v=23"></script>
-<script src="./i18n-issue.js?v=23"></script>
-<script src="./i18n-vdem-scatter.js?v=23"></script>
-<script src="../lib/utils.js?v=23"></script>
-<script src="../lib/country-names.js?v=23"></script>
-<script src="../lib/scatter-render.js?v=23"></script>
-<script src="./data-vdem.js?v=23"></script>
+<script src="../lib/regions.js?v=24"></script>
+<script src="../lib/i18n.js?v=24"></script>
+<script src="./i18n-issue.js?v=24"></script>
+<script src="./i18n-vdem-scatter.js?v=24"></script>
+<script src="../lib/utils.js?v=24"></script>
+<script src="../lib/country-names.js?v=24"></script>
+<script src="../lib/scatter-render.js?v=24"></script>
+<script src="./data-vdem.js?v=24"></script>
 <!-- Las series van en un archivo por variable: el preview local corta las
      respuestas grandes servidas como <script src> (pasó con un data-vdem.js
      único de 610 KB). Cargan DESPUÉS del núcleo, que declara VD_SERIES. -->
-<script src="./data-vdem-v2xpe_exlsocgr.js?v=23"></script>
-<script src="./data-vdem-v2peapssoc.js?v=23"></script>
-<script src="./data-vdem-v2peasbsoc.js?v=23"></script>
-<script src="./data-vdem-v2peasjsoc.js?v=23"></script>
-<script src="./data-vdem-v2pepwrsoc.js?v=23"></script>
-<script src="./data-vdem-v2clsocgrp.js?v=23"></script>
-<script src="../lib/editor.js?v=23"></script>
-<script src="./vdem-scatter.js?v=23"></script>
-<script src="../lib/png-export.js?v=23"></script>
+<script src="./data-vdem-v2xpe_exlsocgr.js?v=24"></script>
+<script src="./data-vdem-v2peapssoc.js?v=24"></script>
+<script src="./data-vdem-v2peasbsoc.js?v=24"></script>
+<script src="./data-vdem-v2peasjsoc.js?v=24"></script>
+<script src="./data-vdem-v2pepwrsoc.js?v=24"></script>
+<script src="./data-vdem-v2clsocgrp.js?v=24"></script>
+<script src="../lib/editor.js?v=24"></script>
+<script src="./vdem-scatter.js?v=24"></script>
+<script src="../lib/png-export.js?v=24"></script>
 <script>
-  window.__N4_V = '23';
+  window.__N4_V = '24';
   initVdemScatter();
   applyI18n();
   if (window.__atlasRedraw) window.__atlasRedraw();
   setupLangToggle(dv_onLangChange);
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=23"></script>
+<script src="./nav.js?v=24"></script>
 </body>
 </html>

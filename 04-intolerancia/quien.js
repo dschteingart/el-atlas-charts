@@ -699,9 +699,6 @@ function setupQuienCSV() {
         ? (COUNTRY_NAMES[iso].en || iso) : iso;
       const catEn = (cat) => (QUIEN_META.catLabels.en && QUIEN_META.catLabels.en[cat]) || cat;
       let csv = '';
-      csv += '# El Atlas N°4 — Grupo mas discriminado por pais (Latinobarometro 2020, P58ST, respuesta unica)\n';
-      csv += '# pct = % ponderado (wt) que nombra a la categoria como el grupo MAS discriminado; nBase = respuestas validas del pais.\n';
-      csv += '# BLOQUE 1: 12 macrocategorias (recodeo propio). BLOQUE 2: 42 categorias originales.\n';
       csv += '\n# macro\niso3,country,macro_key,macro_label_en,pct,year,n_base\n';
       (typeof QUIEN_CATS !== 'undefined' ? QUIEN_CATS : []).forEach(cat => {
         (QUIEN_FOTO[cat] || []).forEach(r => {

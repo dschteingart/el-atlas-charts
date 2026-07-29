@@ -420,10 +420,7 @@ function setupDiscriminadoCSV() {
   document.querySelectorAll('button.download[data-chart="11-csv"]').forEach(btn => {
     btn.addEventListener('click', () => {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
-      let csv = '# El Atlas N4 — % que se describe como parte de un grupo discriminado (Latinobarometro 2009-2020)\n';
-      csv += '# Pregunta A_011_001: "Se describiria como parte de un grupo que es discriminado en (pais)?" (Si/No). % de Si, ponderado por wt.\n';
-      csv += '# universo=pais: 18 paises. universo=etnia: grupo etnico autopercibido, agregado regional (pooled).\n';
-      csv += '# regionAvg = promedio simple del panel balanceado de 18 paises.\n';
+      let csv = '';
       csv += 'universo,clave,nombre,anio,pct,n\n';
       ['pais', 'etnia'].forEach(univ => {
         const s = (typeof DISC_SERIES !== 'undefined') ? (DISC_SERIES[univ] || {}) : {};

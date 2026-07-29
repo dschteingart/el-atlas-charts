@@ -380,9 +380,7 @@ function setupPrioridadCSV() {
   document.querySelectorAll('button.download[data-chart="7-csv"]').forEach(btn => {
     btn.addEventListener('click', () => {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
-      let csv = '# El Atlas N4 — prioridad en el empleo cuando escasea el trabajo (IVS, EVS+WVS, 1990-2023)\n';
-      csv += '# indicador origen = C002 (prioridad a nativos sobre inmigrantes); genero = C001 (prioridad a varones sobre mujeres)\n';
-      csv += '# pct = % de acuerdo sobre {de acuerdo, ni/ni, en desacuerdo}, ponderado S017, celdas n>=200. Ano = ano real de la encuesta.\n';
+      let csv = '';
       csv += 'iso3,pais,indicador,var_ivs,anio,pct,n\n';
       const inds = (typeof PRIO_META !== 'undefined' && PRIO_META.inds) ? PRIO_META.inds : Object.keys(PRIO_SERIES);
       const vars = (typeof PRIO_META !== 'undefined' && PRIO_META.vars) ? PRIO_META.vars : {};

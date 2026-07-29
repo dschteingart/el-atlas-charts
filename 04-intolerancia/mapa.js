@@ -342,7 +342,7 @@ function setupMapaCSV() {
   document.querySelectorAll('button.download[data-chart="3-csv"]').forEach(btn => {
     btn.addEventListener('click', () => {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
-      let csv = '# El Atlas N4 — mapa de rechazo de vecinos (IVS, por ola)\n';
+      let csv = '';
       csv += 'iso3,pais,categoria,ola,periodo,pct,anio,n\n';
       const waves = (typeof WV_META !== 'undefined') ? WV_META : [{ w: 7, label: '2017-2022' }];
       (typeof VE_CATS !== 'undefined' ? VE_CATS : Object.keys(VE_FOTO)).forEach(cat => {

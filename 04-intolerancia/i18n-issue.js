@@ -17,7 +17,7 @@ const ISSUE_I18N = {
     // ---- Chart 1: ranking por categoría (barras)
     'c1-title':          'El Río de la Plata, campeón mundial de la tolerancia (declarada)',
     'c1-title-neutral':  'Los vecinos que cada sociedad rechaza',
-    'c1-subtitle-tpl':   'Porcentaje que no querría tener de vecinos a {CAT}, país por país. Encuesta de {PERIODO}.',
+    'c1-subtitle-tpl':   'Porcentaje que no querría tener de vecinos a {CAT}. Encuesta de {PERIODO}.',
     'c1-cat-label':      'No querría de vecinos a…',
     'c1-wave-label':     'Ola de la encuesta',
     'c1-tt-both':        '* promedio de EVS y WVS',
@@ -44,7 +44,7 @@ const ISSUE_I18N = {
     'c1-tt-n':           'Muestra',
     'c1-axis-x':         '% que menciona al grupo como vecino no deseado',
     'c1-axis-mk':        '% que no lo querría de vecino',
-    'c1-sources':        'Datos: Integrated Values Survey (EVS 1981-2021 + WVS 1981-2022), pregunta «¿A cuáles de estos grupos no le gustaría tener de vecinos?» (mención espontánea). Último dato disponible por país (2017-2022); % ponderado sobre respuestas válidas, muestras de 1.000-2.000 casos. Ojo: mide intolerancia <em>declarada</em> ante un encuestador — diferencias de pocos puntos entre países no son informativas (los países medidos por EVS y WVS a la vez difieren hasta 8-13 puntos).',
+    'c1-sources':        'Datos: Integrated Values Survey (EVS 1981-2021 + WVS 1981-2022), pregunta «¿A cuáles de estos grupos no le gustaría tener de vecinos?» (mención espontánea). Último dato disponible por país (2017-2022); % ponderado sobre respuestas válidas, muestras de 1.000-2.000 casos. Mide intolerancia <em>declarada</em> ante un encuestador — diferencias de pocos puntos entre países no son informativas (los países medidos por EVS y WVS a la vez difieren hasta 8-13 puntos).',
     'c1-sources-tpl':    'Datos: Integrated Values Survey (EVS/WVS). «¿A quién no querría de vecino?» — mención espontánea, % ponderado. Último dato por país, {Y}. Mide intolerancia declarada.',
 
     // Categorías: forma corta (selector) y forma "a ..." (subtítulo)
@@ -65,7 +65,7 @@ const ISSUE_I18N = {
     // ---- Chart 3: mapa mundial
     'c3-title':          'El sur de Sudamérica, entre los más tolerantes del planeta',
     'c3-title-neutral':  'El mapa mundial de la intolerancia declarada',
-    'c3-subtitle-tpl':   'Porcentaje que no querría tener de vecinos a {CAT}, país por país. Encuesta de {PERIODO}.',
+    'c3-subtitle-tpl':   'Porcentaje que no querría tener de vecinos a {CAT}. Encuesta de {PERIODO}.',
     'c3-subtitle-png':   'Porcentaje que no querría de vecino a este grupo. Último dato por país, 2017-2022.',
     'c3-legend-title':   '% que lo rechaza',
     'c3-legend-nodata':  'Sin dato',
@@ -147,9 +147,9 @@ const ISSUE_I18N = {
     'c10-title-neutral': 'Desconfianza de un extranjero frente a desconfianza de un desconocido',
     'c11-title-neutral': 'Sentirse parte de un grupo discriminado, en América Latina',
     'c12-title-neutral': 'El grupo más discriminado en cada país de América Latina',
-    'c18-title-neutral': 'Intolerancia declarada y PIB per cápita, país por país',
-    'c19-title-neutral': 'Dos preguntas de la encuesta, país por país',
-    'c20-title-neutral': 'Exclusión social y PIB per cápita, país por país'
+    'c18-title-neutral': 'Intolerancia declarada y PIB per cápita',
+    'c19-title-neutral': 'Dos preguntas de la encuesta',
+    'c20-title-neutral': 'Exclusión social y PIB per cápita'
   },
   en: {
     'issue-num':  'No. 4',
@@ -158,7 +158,7 @@ const ISSUE_I18N = {
 
     'c1-title':          'The River Plate, world champion of (declared) tolerance',
     'c1-title-neutral':  'The neighbours each society rejects',
-    'c1-subtitle-tpl':   'Share who would not like to have {CAT} as neighbours, country by country. Survey wave {PERIODO}.',
+    'c1-subtitle-tpl':   'Share who would not like to have {CAT} as neighbours. Survey wave {PERIODO}.',
     'c1-cat-label':      'Would not want as neighbours…',
     'c1-wave-label':     'Survey wave',
     'c1-tt-both':        '* average of EVS and WVS',
@@ -205,7 +205,7 @@ const ISSUE_I18N = {
     // ---- Chart 3: world map
     'c3-title':          'Southern South America, among the world’s most tolerant',
     'c3-title-neutral':  'The world map of declared intolerance',
-    'c3-subtitle-tpl':   'Share who would not want {CAT} as neighbours, country by country. Survey wave {PERIODO}.',
+    'c3-subtitle-tpl':   'Share who would not want {CAT} as neighbours. Survey wave {PERIODO}.',
     'c3-subtitle-png':   'Share who would not want this group as neighbours. Latest data per country, 2017-2022.',
     'c3-legend-title':   '% who reject them',
     'c3-legend-nodata':  'No data',
@@ -287,9 +287,9 @@ const ISSUE_I18N = {
     'c10-title-neutral': 'Distrust of a foreigner versus distrust of a stranger',
     'c11-title-neutral': 'Feeling part of a discriminated group, in Latin America',
     'c12-title-neutral': 'The most-discriminated group in each Latin American country',
-    'c18-title-neutral': 'Declared intolerance and GDP per capita, country by country',
-    'c19-title-neutral': 'Two survey questions, country by country',
-    'c20-title-neutral': 'Social exclusion and GDP per capita, country by country'
+    'c18-title-neutral': 'Declared intolerance and GDP per capita',
+    'c19-title-neutral': 'Two survey questions',
+    'c20-title-neutral': 'Social exclusion and GDP per capita'
   }
 };
 

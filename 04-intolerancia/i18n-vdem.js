@@ -73,8 +73,8 @@
 
     // ---- chart 21: comparación (ranking + marimekko) ----
     'c21-title':          'La exclusión por grupo social separa más a los países que su ingreso',
-    'c21-title-neutral':  'Exclusión por grupo social, país por país',
-    'c21-subtitle-tpl':   '{CAT}, país por país. Año {PERIODO}.',
+    'c21-title-neutral':  'Exclusión por grupo social',
+    'c21-subtitle-tpl':   '{CAT}. Año {PERIODO}.',
     'c21-cat-label':      'Indicador',
     'c21-wave-label':     'Año',
     'c21-view-label':     'Mostrar',
@@ -137,8 +137,8 @@
     'cvd-year-label': 'Year',
 
     'c21-title':          'Exclusion by social group separates countries more than their income does',
-    'c21-title-neutral':  'Exclusion by social group, country by country',
-    'c21-subtitle-tpl':   '{CAT}, country by country. Year {PERIODO}.',
+    'c21-title-neutral':  'Exclusion by social group',
+    'c21-subtitle-tpl':   '{CAT}. Year {PERIODO}.',
     'c21-cat-label':      'Indicator',
     'c21-wave-label':     'Year',
     'c21-view-label':     'Show',

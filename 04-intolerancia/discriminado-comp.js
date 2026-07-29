@@ -696,10 +696,6 @@ function setupDiscriminadoCompCSV() {
     btn.addEventListener('click', () => {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
       let csv = '';
-      csv += '# El Atlas N4 — % que se describe como parte de un grupo discriminado (Latinobarometro)\n';
-      csv += '# Pregunta A_011_001: "Se describiria como parte de un grupo que es discriminado en (pais)?" (Si/No). % de Si, ponderado por wt.\n';
-      csv += '# universo=pais: 18 paises con dato en las cinco rondas. universo=etnia: agregado REGIONAL por grupo etnico autopercibido.\n';
-      csv += '# rank: 1 = el pct mas alto de la ronda, dentro del universo.\n';
       csv += 'universo,clave,nombre,ronda,pct,rank,n\n';
       ['pais', 'etnia'].forEach(univ => {
         DK_YEARS.forEach(y => {

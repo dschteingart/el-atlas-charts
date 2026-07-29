@@ -17,7 +17,7 @@
 
     // ---- chart 14 — comparación entre países (clon del ranking) ----
     'c14-title':         'En «primero los de acá», América Latina queda por debajo de la mediana mundial',
-    'c14-title-neutral': 'Quién tiene prioridad cuando escasea el trabajo, país por país',
+    'c14-title-neutral': 'Quién tiene prioridad cuando escasea el trabajo',
     // {PERIODO} = etiqueta de la ola activa (la misma que el resto del número).
     'c14-subtitle-origen': 'Porcentaje de acuerdo con que, cuando escasea el trabajo, los nativos deberían tener prioridad sobre los inmigrantes. Ola {PERIODO} de la encuesta: dentro de la ola, cada país salió a campo en un año distinto.',
     'c14-subtitle-genero': 'Porcentaje de acuerdo con que, cuando escasea el trabajo, los varones deberían tener más derecho a un empleo que las mujeres. Ola {PERIODO} de la encuesta: dentro de la ola, cada país salió a campo en un año distinto.',
@@ -49,7 +49,7 @@
     'c14-rank-tpl':      '{R}° de {N}',
 
     'c14-sources':       'Datos: Integrated Values Survey (EVS 1981-2021 + WVS 1981-2022). Dos afirmaciones de la misma batería: «cuando escasea el trabajo, los nativos deberían tener prioridad sobre los inmigrantes» (C002) y «…los varones deberían tener más derecho a un empleo que las mujeres» (C001). Se muestra el % que responde «de acuerdo» sobre el total de respuestas válidas (de acuerdo / ni de acuerdo ni en desacuerdo / en desacuerdo): el «ni una ni otra» queda en el denominador. % ponderado (S017); solo celdas con al menos 200 casos. Los países se comparan dentro de una misma <strong>ola</strong> de la encuesta, la que elija el slider: 1989-1993, 1994-1998, 1999-2004, 2005-2010, 2010-2014 o 2017-2022. <strong>Dentro de una misma ola cada país salió a campo en un año distinto</strong> (en la de 2017-2022, Argentina midió en 2017 y Uruguay en 2022): pasá el mouse por cada barra para ver el año de ese país. Un país que no midió en la ola elegida no aparece: no se interpola ni se completa nada. Países por ola — prioridad a los nativos: 42, 52, 69, 80, 55 y 92; prioridad a los varones: 42, 55, 70, 81, 60 y 92 (115 y 117 países distintos en total). La mediana mundial y el puesto se calculan sobre los países de la ola que se está viendo. Con unos 1.000 casos por medición el error estándar ronda los 1,6 puntos: diferencias de pocos puntos entre países no son informativas. Mide actitudes <em>declaradas</em> ante un encuestador.',
-    'c14-sources-tpl':   'Datos: Integrated Values Survey (EVS + WVS). % de acuerdo, ponderado S017. Ola {PERIODO} de la encuesta: dentro de la ola el año difiere entre países.',
+    'c14-sources-tpl':   'Datos: Integrated Values Survey (EVS + WVS). % de acuerdo. Ola {PERIODO} de la encuesta: dentro de la ola el año difiere entre países.',
   });
 
   Object.assign(I18N.en, {
@@ -61,7 +61,7 @@
 
     // ---- chart 14 — cross-country comparison (ranking clone) ----
     'c14-title':         'On “locals first”, Latin America sits below the world median',
-    'c14-title-neutral': 'Who gets priority when jobs are scarce, country by country',
+    'c14-title-neutral': 'Who gets priority when jobs are scarce',
     'c14-subtitle-origen': 'Share who agree that, when jobs are scarce, employers should give priority to the native-born over immigrants. Survey wave {PERIODO}: within the wave, each country was surveyed in a different year.',
     'c14-subtitle-genero': 'Share who agree that, when jobs are scarce, men should have more right to a job than women. Survey wave {PERIODO}: within the wave, each country was surveyed in a different year.',
 
@@ -92,6 +92,6 @@
     'c14-rank-tpl':      '#{R} of {N}',
 
     'c14-sources':       'Data: Integrated Values Survey (EVS 1981-2021 + WVS 1981-2022). Two statements from the same battery: "when jobs are scarce, employers should give priority to [nation] people over immigrants" (C002) and "…men should have more right to a job than women" (C001). The chart shows the % answering "agree" out of all valid responses (agree / neither / disagree): the "neither" stays in the denominator. Weighted % (S017); only cells with at least 200 cases. <strong>Each country contributes its latest available reading, so the years do not line up</strong> (Argentina 2017, Uruguay 2022, Sweden 2017…): hover over each bar to see the year. Nothing is interpolated and no common-year snapshot is constructed. Priority for the native-born: 115 countries; priority for men: 117 countries. The world median and the rank are computed over those countries. With about 1,000 cases per reading the standard error is around 1.6 points: gaps of a few points between countries are not informative. Measures attitudes <em>declared</em> to an interviewer.',
-    'c14-sources-tpl':   'Data: Integrated Values Survey (EVS + WVS). % who agree, weighted by S017. Latest available reading for each country ({RANGO}): the year differs across countries.',
+    'c14-sources-tpl':   'Data: Integrated Values Survey (EVS + WVS). % who agree. Latest available reading for each country ({RANGO}): the year differs across countries.',
   });
 })();

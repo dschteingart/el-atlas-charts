@@ -359,8 +359,7 @@ function setupMigrantesCSV() {
     btn.addEventListener('click', () => {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
       const items = (typeof MG_ITEMS !== 'undefined') ? MG_ITEMS : [];
-      let csv = '# El Atlas N4 — perfil de hostilidad hacia el inmigrante (Latinobarometro 2020, 14 items)\n';
-      csv += '# nivel_pct = % con postura hostil; perfil_desvio = desvio del perfil regional (pp); mediana_regional = mediana del nivel crudo\n';
+      let csv = '';
       csv += 'iso3,pais,item_code,item,nivel_pct,perfil_desvio,mediana_regional,n\n';
       mg_countries().forEach(iso => {
         const nm = (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[iso]) ? COUNTRY_NAMES[iso].en : iso;

@@ -1386,11 +1386,6 @@ function setupPrioridadCompDownloadCSV() {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
       const vars = (typeof PRIO_META !== 'undefined' && PRIO_META.vars) ? PRIO_META.vars : {};
       let csv = '';
-      csv += '# El Atlas N°4 — prioridad en el empleo cuando escasea el trabajo (IVS, EVS+WVS)\n';
-      csv += '# Una fila por pais x ola. Dentro de una misma ola el ano DIFIERE entre paises.\n';
-      csv += '# indicador origen = C002 (prioridad a nativos sobre inmigrantes); genero = C001 (prioridad a varones sobre mujeres)\n';
-      csv += '# pct = % de acuerdo sobre {de acuerdo, ni/ni, en desacuerdo}, ponderado S017, celdas n>=200.\n';
-      csv += '# rank: 1 = pct mas alto, sobre los paises con dato en ese indicador y esa ola.\n';
       csv += 'iso3,pais,indicador,var_ivs,ola,periodo,anio,pct,rank,n\n';
       PC_INDS.forEach(ind => {
         PC_WAVES.forEach(m => {

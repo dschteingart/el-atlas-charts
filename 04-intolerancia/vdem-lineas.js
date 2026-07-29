@@ -475,9 +475,6 @@ function setupVdemLineasCSV() {
       const item = state[23].cat;
       const b = vl_yearBounds();
       let csv = '';
-      csv += '# El Atlas N4 - V-Dem v16, serie anual por pais\n';
-      csv += '# variable: ' + item + ' (' + vd_varLabelOf(item) + ')\n';
-      csv += '# periodo exportado: ' + b[0] + '-' + b[1] + ' (el que muestra el grafico)\n';
       csv += 'iso3,pais,variable,variable_label_en,anio,valor\n';
       const labQ = '"' + (vd_varMetaOf(item).en || item) + '"';
       vd_paises(item).slice().sort().forEach(iso => {

@@ -20,7 +20,7 @@
     // Título: insight en el estado default (rechazo racial, ola 2017-2022,
     // recta, eje log); neutral apenas se cambia algo.
     'c18-title':         'Aun ajustando por ingreso, América Latina declara menos rechazo racial que el resto del mundo',
-    'c18-title-neutral': 'Intolerancia declarada y PIB per cápita, país por país',
+    'c18-title-neutral': 'Intolerancia declarada y PIB per cápita',
 
     // Subtítulo estático (el que pinta applyI18n antes del primer render y el
     // que restaura el editor). El JS lo reemplaza por la versión con la
@@ -92,7 +92,7 @@
     'c18-lead':    'Rich countries report less rejection. The real question is another one: lined up against its own income, where does each country land?',
 
     'c18-title':         'Even adjusting for income, Latin America reports less racial rejection than the rest of the world',
-    'c18-title-neutral': 'Declared intolerance and GDP per capita, country by country',
+    'c18-title-neutral': 'Declared intolerance and GDP per capita',
 
     'c18-subtitle': 'Each dot is a country: declared intolerance on the vertical axis, GDP per capita on the horizontal one.',
     'c18-subtitle-tpl': 'Each dot is a country. Vertical axis: {DEF} Horizontal axis: GDP per capita, {PERIODO} wave.',

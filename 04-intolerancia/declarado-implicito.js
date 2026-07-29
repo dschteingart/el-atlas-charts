@@ -564,8 +564,7 @@ function setupScatterCSV() {
     btn.addEventListener('click', () => {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
       const cell = (v) => (v == null ? '' : v);
-      let csv = '# El Atlas N4 — declarado (IVS) vs implicito (Project Implicit, IAT D-score)\n';
-      csv += '# dRace/dGay: % que no querria de vecino (IVS, ultimo dato). iRace/iGay: D-score IAT (>0 sesgo pro-dominante).\n';
+      let csv = '';
       csv += 'iso3,pais,region,decl_raza,impl_raza,decl_gay,impl_gay\n';
       Object.keys(IMP).sort().forEach(iso => {
         const r = IMP[iso];

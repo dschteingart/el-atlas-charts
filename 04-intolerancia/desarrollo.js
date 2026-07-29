@@ -1359,9 +1359,7 @@ function dv_setupCSV() {
     btn.addEventListener('click', () => {
       const en = dv_lang() === 'en';
       const q = (str) => '"' + String(str).replace(/"/g, '""') + '"';
-      let csv = '# El Atlas N4 - intolerancia declarada (IVS) vs PIB per capita (Maddison 2023, USD int. 2011 PPA)\n';
-      csv += '# El PIB es el del ano de encuesta de cada pais, o el mas cercano dentro de +-3 anos (columna gdp_year).\n';
-      csv += '# Los paises sin dato en Maddison no aparecen: nada se interpola.\n';
+      let csv = '';
       csv += 'var_key,var_code,var_label_en,wave,wave_label,iso3,country_en,region,pct,survey_year,n,gdp_pc,gdp_year\n';
       CR_VARS.forEach(v => {
         const byWave = CR_FOTO[v.k] || {};

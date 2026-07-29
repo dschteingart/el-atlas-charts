@@ -341,8 +341,7 @@ function setupBarrioCSV() {
   document.querySelectorAll('button.download[data-chart="8-csv"]').forEach(btn => {
     btn.addEventListener('click', () => {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
-      let csv = '# El Atlas N4 — que ve cada sociedad en su barrio (WVS, bateria H002)\n';
-      csv += '# pct = % "muy/bastante seguido" {1,2} sobre {1,2,3,4}, ponderado S017. rank sobre el universo de paises con los 5 items.\n';
+      let csv = '';
       csv += 'iso3,pais,item,var,ola,anio,pct,rank,n_universo,mediana_mundial,n_respondentes\n';
       const items = (typeof BA_ITEMS !== 'undefined') ? BA_ITEMS : [];
       const waves = (typeof BA_META !== 'undefined' && BA_META.waves) ? BA_META.waves.map(x => x.w) : [];

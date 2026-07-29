@@ -13,7 +13,6 @@
   // que se agregan charts.
   const CHARTS = [
     'chart-vecinos.html',              // graficador: absorbe ranking + evolución + mapa + perfil
-    'chart-declarado-implicito.html',
     'chart-latinobarometro.html',
     'chart-prioridad.html',
     'chart-barrio.html',

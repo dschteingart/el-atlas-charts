@@ -472,9 +472,6 @@ function setupBarrioLineasCSV() {
     btn.addEventListener('click', () => {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
       let csv = '';
-      csv += '# El Atlas N4 — que pasa seguido en el barrio, olas 6 y 7 (WVS, bateria H002)\n';
-      csv += '# pct = % "muy/bastante seguido" {1,2} sobre {1,2,3,4}, ponderado S017.\n';
-      csv += '# anio = ano REAL de campo del pais en esa ola (es el que se usa en el eje x).\n';
       csv += 'iso3,pais,item,ola,anio,pct,n\n';
       const items = (typeof BA_ITEMS !== 'undefined') ? BA_ITEMS : [];
       items.forEach(item => {

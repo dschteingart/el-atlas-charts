@@ -1348,13 +1348,7 @@ function ve_setupCSV() {
     btn.addEventListener('click', () => {
       const en = ve_lang() === 'en';
       const q = (str) => '"' + String(str).replace(/"/g, '""') + '"';
-      let csv = '# El Atlas N4 - exclusion social (V-Dem v16) vs PIB per capita\n';
-      csv += '# PIB: Maddison Project Database 2023 (USD int. 2011 PPA) hasta 2022 y, desde 2023,\n';
-      csv += '#   la tasa de variacion del Banco Mundial aplicada sobre el nivel de Maddison.\n';
-      csv += '# ESCALAS: el indice v2xpe_exlsocgr va de 0 (sin exclusion) a 1 (exclusion total).\n';
-      csv += '#   Los 5 componentes son escala de intervalo centrada en ~0 (promedio historico\n';
-      csv += '#   mundial), NO de 0 a 4, y apuntan al reves: mayor = mas igualitario.\n';
-      csv += '# Solo se listan los pares pais-ano con dato en la variable Y en el PIB.\n';
+      let csv = '';
       csv += 'var_key,var_label_en,tipo,year,iso3,country_en,region,value,gdp_pc\n';
       VD_VARS.forEach(v => {
         const src = VD_SERIES[v.k] || {};

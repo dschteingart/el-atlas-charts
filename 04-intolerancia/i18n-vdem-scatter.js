@@ -20,7 +20,7 @@
     // Título: insight en el estado default (rechazo racial, ola 2017-2022,
     // recta, eje log); neutral apenas se cambia algo.
     'c20-title':         'Los países más ricos excluyen menos a sus grupos sociales, pero la relación es floja',
-    'c20-title-neutral': 'Exclusión social y PIB per cápita, país por país',
+    'c20-title-neutral': 'Exclusión social y PIB per cápita',
 
     // Subtítulo estático (el que pinta applyI18n antes del primer render y el
     // que restaura el editor). El JS lo reemplaza por la versión con la
@@ -89,7 +89,7 @@
     'c20-lead':    'How far people are denied access to services or participation because of the social group they belong to, according to V-Dem, set against the income level of each country.',
 
     'c20-title':         'Richer countries exclude their social groups less, but the link is loose',
-    'c20-title-neutral': 'Social exclusion and GDP per capita, country by country',
+    'c20-title-neutral': 'Social exclusion and GDP per capita',
 
     'c20-subtitle': 'Each dot is a country: social exclusion on the vertical axis, GDP per capita on the horizontal one.',
     'c20-subtitle-tpl': 'Each dot is a country. Vertical axis: {DEF} Horizontal axis: GDP per capita. Year {PERIODO}.',

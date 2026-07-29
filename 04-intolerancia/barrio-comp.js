@@ -1350,9 +1350,6 @@ function setupBarrioCompDownloadCSV() {
     btn.addEventListener('click', () => {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
       let csv = '';
-      csv += '# El Atlas N°4 — que pasa seguido en el barrio (WVS, bateria H002)\n';
-      csv += '# pct = % "muy/bastante seguido" {1,2} sobre {1,2,3,4}, ponderado S017.\n';
-      csv += '# rank: 1 = pct mas alto, sobre los paises con los cinco items en la ola.\n';
       csv += 'iso3,pais,item,ola,anio,pct,rank,n\n';
       BA_ITEMS.forEach(item => {
         BC_WAVES.forEach(m => {

@@ -1344,10 +1344,6 @@ function setupCorrelacionesCSV() {
       const s = state[19];
       const vx = co_var(s.x), vy = co_var(s.y);
       let csv = '';
-      csv += '# El Atlas N4 — cruce de dos preguntas de la Integrated Values Survey (EVS + WVS)\n';
-      csv += '# ola=' + (s.wave == null ? '' : s.wave) + ' (' + co_waveLabel(s.wave) + ')\n';
-      csv += '# x=' + s.x + ' (' + (vx ? vx.fuente : '') + ') | y=' + s.y + ' (' + (vy ? vy.fuente : '') + ')\n';
-      csv += '# anio_x / anio_y: ano real de campo del pais. Solo paises con las DOS observaciones.\n';
       csv += 'iso3,pais,region,ola,x_var,x_label_en,x_pct,x_anio,x_n,y_var,y_label_en,y_pct,y_anio,y_n\n';
       // Etiquetas legibles al lado del codigo: un lector que abre el archivo no
       // tiene por que saber que C002 es la prioridad laboral a los nativos.

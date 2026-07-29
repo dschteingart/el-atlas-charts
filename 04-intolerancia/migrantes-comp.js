@@ -1044,10 +1044,6 @@ function setupMigrantesCompDownloadCSV() {
     btn.addEventListener('click', () => {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
       let csv = '';
-      csv += '# El Atlas N°4 — postura hostil hacia el inmigrante (Latinobarometro 2020)\n';
-      csv += '# pct = % con postura hostil sobre respuestas validas, ponderado (wt).\n';
-      csv += '# rank: 1 = pct mas alto del item, sobre los paises con dato en ese item.\n';
-      csv += '# mediana_regional = MG_MED (mediana de los 18 paises; 17 en el item venezolano).\n';
       csv += 'iso3,pais,item_code,item,anio,pct,rank,mediana_regional,n\n';
       MG_ITEMS.forEach((code, idx) => {
         const label = mc_itemLabel(code).replace(/"/g, '""');

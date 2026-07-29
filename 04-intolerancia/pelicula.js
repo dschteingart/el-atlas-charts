@@ -379,8 +379,7 @@ function setupPeliculaCSV() {
   document.querySelectorAll('button.download[data-chart="2-csv"]').forEach(btn => {
     btn.addEventListener('click', () => {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
-      let csv = '# El Atlas N4 — evolucion del rechazo de vecinos (IVS, EVS+WVS, 1981-2022)\n';
-      csv += '# Una serie por pais y categoria (un estudio elegido por continuidad). % ponderado.\n';
+      let csv = '';
       csv += 'iso3,pais,categoria,anio,pct\n';
       (typeof PELI_CATS !== 'undefined' ? PELI_CATS : Object.keys(PELI_SERIES)).forEach(cat => {
         const src = PELI_SERIES[cat] || {};
