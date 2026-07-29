@@ -454,6 +454,10 @@ const MK_BEND_ROW_COUNT = 11;
 const MK_BEND_ROW_GAP = 8;
 const MK_BEND_ROW_OFFSET = 6;
 const MK_LABEL_MIN_GAP_X = 5;
+// Separación mínima entre ANCLAS de dos etiquetas rotadas, en alturas de
+// línea: a 45° las etiquetas son franjas paralelas y con ~2,3 no se tocan
+// (OWID usa el mismo criterio). NO es el ancho del nombre.
+const MK_LABEL_GAP_K = 2.3;
 const MK_CALLOUT_PAD = 3;
 // Tabla de promedios regionales (arriba-derecha, sobre las barras bajas).
 const MK_TABLE_X = 660, MK_TABLE_W = 408, MK_TABLE_Y_TITLE = 64, MK_TABLE_Y_FIRST = 84, MK_TABLE_ROW_H = 16;
@@ -506,122 +510,83 @@ function mk_layoutCountryLabels(sortedData, barWidth, plotArea, labelCodes) {
     });
   });
 
+  // ===================== Colocación: técnica del Marimekko de OWID =====================
+  // ANTES: empaquetado voraz de izquierda a derecha que SOLO podía correr las
+  // etiquetas hacia la derecha y, al chocar contra el borde del viewBox, las
+  // DESCARTABA en silencio — aunque fueran países elegidos por el lector
+  // (reporte de Daniel 2026-07-29: "selecciono países y a veces no los muestra").
+  // Se reemplaza por lo que hace OWID en MarimekkoChart.tsx
+  // (labelsWithPlacementInfo), con dos cambios de fondo:
+  //
+  //   1. EL ANCHO DE COLISIÓN ES EL ALTO DE LÍNEA, no el ancho proyectado del
+  //      texto. Dos etiquetas rotadas 45° son franjas PARALELAS: no se pisan
+  //      mientras sus anclas estén separadas ~2,3 alturas de línea, aunque sus
+  //      proyecciones horizontales se superpongan. Medir con el ancho proyectado
+  //      reservaba de 2 a 4 veces más lugar del necesario, y por eso el espacio
+  //      se agotaba tan pronto.
+  //   2. TRES PASADAS en vez de una: izquierda→derecha, clamp del extremo
+  //      derecho y derecha→izquierda. La tercera es la clave: propaga el tope
+  //      del borde hacia adentro. Sin ella, el clamp del último lo hace pisar al
+  //      anteúltimo — o desaparecer. Es lo que vuelve innecesario espejar la "L".
+  //
+  // GARANTÍA: ninguna etiqueta se descarta. Si el conjunto no entra ni usando
+  // todo el ancho del SVG, se aceptan roces (que se ven y se pueden corregir
+  // sacando un chip) antes que una ausencia muda.
   const orderedAnchors = anchors.slice().sort((a, b) => a.barX - b.barX);
-  const placedTextFootprints = [];
-  const placedCalloutSegments = [];
-  const toDraw = [];
-
-  // Tope duro: el borde del viewBox. La fase forzada (allowOverflow) empujaba
-  // hasta rightBound+80, que se pasaba del SVG → la etiqueta se cortaba en el
-  // PNG (ej. España en el borde derecho, reporte de Daniel 2026-07-23). Ahora
-  // ninguna etiqueta puede exceder el viewBox: si no entra, se descarta.
+  const nLbl = orderedAnchors.length;
+  const gapX = fontSize * MK_LABEL_GAP_K;
   const hardRight = (plotArea.vbRight || (plotArea.right + 40)) - 6;
-  function findFreeTx(idealTx, projW, allowOverflow) {
-    const maxX = Math.min(allowOverflow ? rightBound + 80 : rightBound, hardRight);
-    const minX = leftBound + projW;
-    let tx = Math.max(minX, idealTx);
-    let guard = 0;
-    while (guard++ < 60) {
-      const conflict = placedTextFootprints.find(f =>
-        !(tx <= f.x1 - minGap || (tx - projW) >= f.x2 + minGap)
-      );
-      if (!conflict) return tx <= maxX ? tx : null;
-      tx = conflict.x2 + minGap + projW;
-      if (tx > maxX) return null;
-    }
-    return null;
+  const hardLeft = 2;
+  const xs = orderedAnchors.map(a => a.barX);
+  // El ancla es el extremo DERECHO del texto (rotado -45°, anchor 'end'): el
+  // texto se despliega hacia abajo-izquierda, así que el piso de cada ancla es
+  // su propio ancho proyectado. Debajo del eje el margen izquierdo está vacío,
+  // así que el límite real es el borde del viewBox, no el del área de dibujo.
+  const minAnchor = orderedAnchors.map(a => hardLeft + a.projW);
+
+  for (let i = 0; i < nLbl; i++) {                       // 1) izquierda → derecha
+    if (i > 0 && xs[i] < xs[i - 1] + gapX) xs[i] = xs[i - 1] + gapX;
+    if (xs[i] < minAnchor[i]) xs[i] = minAnchor[i];
+  }
+  if (nLbl) xs[nLbl - 1] = Math.min(xs[nLbl - 1], hardRight);   // 2) tope derecho
+  for (let i = nLbl - 2; i >= 0; i--) {                  // 3) derecha → izquierda
+    if (xs[i] > xs[i + 1] - gapX) xs[i] = xs[i + 1] - gapX;
+  }
+  for (let i = 0; i < nLbl; i++) {                       // 4) piso izquierdo
+    if (xs[i] < minAnchor[i]) xs[i] = minAnchor[i];
   }
 
-  // Valida el callout COMPLETO contra los ya colocados. bendY === null =
-  // palito recto (una sola V de la barra al texto). A diferencia del motor
-  // original del N°2, acá también se chequean la V inicial y los palitos
-  // rectos — sin eso, un palito posterior podía cruzar la H de una etiqueta
-  // anterior sin que el algoritmo lo viera (cruce real detectado 2026-07-22).
-  function calloutIsClear(barX, tx, bendY) {
-    const pad = MK_CALLOUT_PAD;
-    const cand = [];
-    if (bendY === null) {
-      cand.push({ kind: 'V', x: barX, y1: plotArea.bottom, y2: yLine });
-    } else {
-      cand.push({ kind: 'V', x: barX, y1: plotArea.bottom, y2: bendY });
-      cand.push({ kind: 'H', y: bendY, x1: Math.min(barX, tx), x2: Math.max(barX, tx) });
-      cand.push({ kind: 'V', x: tx, y1: bendY, y2: yLine });
+  const desplazada = xs.map((x, i) => Math.abs(x - orderedAnchors[i].barX) > 0.5);
+
+  // Filas de quiebre de las guías en Z: escalonadas dentro de cada corrida
+  // contigua de etiquetas desplazadas, e INVERTIDAS según el lado hacia el que
+  // se movió cada una, para que los tramos horizontales no crucen las bajadas
+  // verticales (mismo criterio que OWID). Con las etiquetas que se fueron a la
+  // izquierda, la de más a la izquierda toma la fila más cercana al eje; con las
+  // que se fueron a la derecha, al revés.
+  const filaQuiebre = new Array(nLbl).fill(null);
+  const maxRow = Math.max(0, Math.min(MK_BEND_ROW_COUNT - 1,
+    Math.floor((yLine - 4 - (plotArea.bottom + MK_BEND_ROW_OFFSET)) / MK_BEND_ROW_GAP)));
+  let iRun = 0;
+  while (iRun < nLbl) {
+    if (!desplazada[iRun]) { iRun++; continue; }
+    let jRun = iRun;
+    while (jRun + 1 < nLbl && desplazada[jRun + 1]) jRun++;
+    const largo = jRun - iRun + 1;
+    for (let k = iRun; k <= jRun; k++) {
+      const pos = k - iRun;
+      const haciaIzquierda = xs[k] < orderedAnchors[k].barX;
+      const r = haciaIzquierda ? pos : (largo - 1 - pos);
+      filaQuiebre[k] = plotArea.bottom + MK_BEND_ROW_OFFSET + Math.min(r, maxRow) * MK_BEND_ROW_GAP;
     }
-    for (const c of cand) {
-      for (const s of placedCalloutSegments) {
-        if (c.kind === 'H' && s.kind === 'H') {
-          if (Math.abs(s.y - c.y) < pad && !(c.x2 + pad < s.x1 || c.x1 > s.x2 + pad)) return false;
-        } else if (c.kind === 'V' && s.kind === 'V') {
-          if (Math.abs(s.x - c.x) < pad && !(c.y2 + pad < s.y1 || c.y1 > s.y2 + pad)) return false;
-        } else {
-          const v = c.kind === 'V' ? c : s;
-          const h = c.kind === 'H' ? c : s;
-          if (v.x >= h.x1 - pad && v.x <= h.x2 + pad && h.y >= v.y1 - pad && h.y <= v.y2 + pad) return false;
-        }
-      }
-    }
-    return true;
+    iRun = jRun + 1;
   }
 
-  function tryPlace(a, allowOverflow) {
-    let tx = findFreeTx(a.barX, a.projW, allowOverflow);
-    let guard = 0;
-    while (tx !== null && guard++ < 24) {
-      const displaced = Math.abs(tx - a.barX) > 0.5;
-      // Palito recto si el texto quedó sobre su barra y el camino está libre.
-      if (!displaced && calloutIsClear(a.barX, tx, null)) {
-        return { ...a, tx, ty: yAnchor, yLine, bendY: null, displaced: false, fontSize };
-      }
-      // Con desplazamiento (o palito bloqueado): probar filas de quiebre desde
-      // la más cercana al label hacia la más cercana al eje (regla OWID).
-      for (let r = MK_BEND_ROW_COUNT - 1; r >= 0; r--) {
-        const candY = plotArea.bottom + MK_BEND_ROW_OFFSET + r * MK_BEND_ROW_GAP;
-        if (candY >= yLine - 4) continue;
-        if (calloutIsClear(a.barX, tx, candY)) {
-          return { ...a, tx, ty: yAnchor, yLine, bendY: candY, displaced: true, fontSize };
-        }
-      }
-      // Ninguna fila limpia con este tx → correr el texto a la derecha y
-      // reintentar (la única escapatoria real cuando una H previa bloquea).
-      const nextTx = findFreeTx(tx + MK_LABEL_MIN_GAP_X + 2, a.projW, allowOverflow);
-      if (nextTx === null || nextTx <= tx + 0.5) break;
-      tx = nextTx;
-    }
-    // Último recurso (fase forzada): colocar aunque roce, para garantizar
-    // seleccionados y extremos.
-    if (!allowOverflow) return null;
-    const tx2 = findFreeTx(a.barX, a.projW, true);
-    if (tx2 === null) return null;
-    const displaced2 = Math.abs(tx2 - a.barX) > 0.5;
-    return { ...a, tx: tx2, ty: yAnchor, yLine,
-             bendY: displaced2 ? plotArea.bottom + MK_BEND_ROW_OFFSET : null,
-             displaced: displaced2, fontSize };
-  }
-
-  function commit(p) {
-    placedTextFootprints.push({ x1: p.tx - p.projW, x2: p.tx });
-    if (p.displaced) {
-      placedCalloutSegments.push({ kind: 'H', y: p.bendY, x1: Math.min(p.barX, p.tx), x2: Math.max(p.barX, p.tx) });
-      placedCalloutSegments.push({ kind: 'V', x: p.tx, y1: p.bendY, y2: yLine });
-      placedCalloutSegments.push({ kind: 'V', x: p.barX, y1: plotArea.bottom, y2: p.bendY });
-    } else {
-      placedCalloutSegments.push({ kind: 'V', x: p.barX, y1: plotArea.bottom, y2: yLine });
-    }
-    toDraw.push(p);
-  }
-
-  // Fase 1: colocar sin overflow (colisión-libre). Fase 2: forzar el resto con
-  // overflow — como todas son chips del usuario, ninguna se descarta.
-  const notPlaced = [];
-  orderedAnchors.forEach(a => {
-    const p = tryPlace(a, false);
-    if (p) commit(p);
-    else notPlaced.push(a);
-  });
-  notPlaced.forEach(a => {
-    const p = tryPlace(a, true);
-    if (p) commit(p);
-  });
+  const toDraw = orderedAnchors.map((a, i) => ({
+    ...a, tx: xs[i], ty: yAnchor, yLine,
+    bendY: desplazada[i] ? filaQuiebre[i] : null,
+    displaced: desplazada[i], fontSize
+  }));
 
   return toDraw;
 }
