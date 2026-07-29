@@ -930,10 +930,16 @@ function vr_drawMarimekko() {
   // países elegidos, y al achicarse el plot la MISMA barra sube en pantalla. Por
   // eso cualquier umbral del tipo "0,36 del eje" se desactualiza y la tabla
   // terminaba pisando una barra (reporte de Daniel 2026-07-26).
-  // La barra más alta bajo la tabla es la del borde izquierdo de la tabla, porque
-  // data va ordenada descendente.
-  const idxUnder = n > 0 ? Math.max(0, Math.min(n - 1, Math.floor((tableX - MARGIN.left) / barWidth))) : 0;
-  const maxUnderTable = n > 0 ? data[idxUnder].pct : 0;
+  // Cuál es la barra más alta de la franja que ocupa la tabla: NO se puede
+  // suponer que es la del borde izquierdo (eso valía cuando data iba siempre
+  // descendente; con orden ascendente —los cinco componentes— la más alta es la
+  // del borde derecho). Se recorre la franja y se toma el máximo: vale para
+  // cualquier orden.
+  const idxDesde = n > 0 ? Math.max(0, Math.min(n - 1, Math.floor((tableX - MARGIN.left) / barWidth))) : 0;
+  let maxUnderTable = 0;
+  for (let i = idxDesde; i < n; i++) {
+    if (data[i].pct > maxUnderTable) maxUnderTable = data[i].pct;
+  }
   const tableFits = yScale(maxUnderTable) > tableBottomY + tableRowH * 0.5;
   // Además: la etiqueta de la mediana va a la derecha (misma franja-x que la
   // tabla). Si la línea de la mediana cae en la banda vertical de la tabla, su
@@ -1195,7 +1201,8 @@ function setupVdemRankWave() {
   vr_yearsNow();
   const input = document.getElementById('vr-wave-slider');
   const disp = document.getElementById('vr-wave-display');
-  if (!input || !VR_WAVES.length) {
+  // Un solo anio en el dataset -> el slider no decide nada: se esconde.
+  if (!input || VR_WAVES.length < 2) {
     const grp = document.getElementById('vr-wave-group'); if (grp) grp.style.display = 'none';
     return;
   }

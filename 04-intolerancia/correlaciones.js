@@ -1099,6 +1099,11 @@ function setupCorrelacionesVista() {
 
 function co_drawDumbbell(svg) {
   const s = state[19];
+  // El título, PRIMERO: drawCorrelaciones sale por return antes del
+  // atlasSetHeading del camino de la dispersión, y más abajo hay otro return
+  // para la selección vacía. Si se seteara al final, sin países elegidos el
+  // encabezado se quedaría con el de dispersión.
+  if (typeof atlasSetHeading === 'function') atlasSetHeading('19', false, co_headingKeys());
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const mobile = !editorFormat && co_isMobile();
   const bigFmt = !!editorFormat || mobile;
@@ -1255,9 +1260,6 @@ function co_drawDumbbell(svg) {
   ax.setAttribute('stroke', CO_AXIS); ax.setAttribute('stroke-width', 1);
   svg.appendChild(ax);
 
-  // El título va acá: drawCorrelaciones sale por return antes de llegar al
-  // atlasSetHeading del camino de la dispersión.
-  if (typeof atlasSetHeading === 'function') atlasSetHeading('19', false, co_headingKeys());
 }
 
 function co_showTooltip(e, p) {

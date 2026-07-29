@@ -402,7 +402,8 @@ function setupMapaWave() {
   const input = document.getElementById('vm-wave-slider');
   const disp = document.getElementById('vm-wave-display');
   const playBtn = document.getElementById('vm-play');
-  if (!input) {
+  // Un solo anio en el dataset -> ni slider ni play: se esconde el grupo.
+  if (!input || vd_yearList(state[22].cat).length < 2) {
     const grp = document.getElementById('vm-wave-group'); if (grp) grp.style.display = 'none';
     return;
   }
