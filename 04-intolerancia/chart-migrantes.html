@@ -20,8 +20,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../lib/style.css?v=24">
-<link rel="stylesheet" href="../lib/editor.css?v=24">
+<link rel="stylesheet" href="../lib/style.css?v=25">
+<link rel="stylesheet" href="../lib/editor.css?v=25">
 <style>
   .wrap-wide { max-width: 1100px; padding: 6px 20px 10px; }
   .wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
@@ -239,33 +239,38 @@
 
 </div>
 
-<script src="../lib/regions.js?v=24"></script>
-<script src="../lib/i18n.js?v=24"></script>
-<script src="./i18n-issue.js?v=24"></script>
-<script src="./i18n-migrantes.js?v=24"></script>
-<script src="./i18n-migrantes-comp.js?v=24"></script>
-<script src="../lib/utils.js?v=24"></script>
-<script src="../lib/country-names.js?v=24"></script>
-<script src="./data-migrantes.js?v=24"></script>
-<script src="../lib/editor.js?v=24"></script>
-<script src="./migrantes-comp.js?v=24"></script>
-<script src="./migrantes.js?v=24"></script>
-<script src="../lib/png-export.js?v=24"></script>
-<script src="../lib/grapher.js?v=24"></script>
+<script src="../lib/regions.js?v=25"></script>
+<script src="../lib/i18n.js?v=25"></script>
+<script src="./i18n-issue.js?v=25"></script>
+<script src="./i18n-migrantes.js?v=25"></script>
+<script src="./i18n-migrantes-comp.js?v=25"></script>
+<script src="../lib/utils.js?v=25"></script>
+<script src="../lib/country-names.js?v=25"></script>
+<script src="./data-migrantes.js?v=25"></script>
+<script src="../lib/editor.js?v=25"></script>
+<script src="./migrantes-comp.js?v=25"></script>
+<script src="./migrantes.js?v=25"></script>
+<script src="../lib/png-export.js?v=25"></script>
+<script src="../lib/grapher.js?v=25"></script>
 <script>
-  window.__N4_V = '24';
+  window.__N4_V = '25';
   initGrapher({
     defaultView: 'comp',
+    // Los 18 países preseleccionados (item 6: con pocos países la vista default
+    // son BARRAS con todos; el shell pisa la selección DESPUÉS del postInit, así
+    // que el "todos" tiene que entrar por acá y no por el init de la vista).
     // ARG primero → al pasar a Perfil, el shell enfoca Argentina por default.
-    defaultSelection: ['ARG', 'BRA', 'CHL', 'MEX', 'PER', 'COL'],
+    defaultSelection: ['ARG'].concat(mc_searchableCountries().map(function (c) { return c.iso; }).filter(function (i) { return i !== 'ARG'; })),
     views: [
       { id: 'comp', panelId: 'g-panel-comp', chartN: 15, catSel: 'mc-cat-select', selKind: 'multi',
         init: initMigrantesComp,
-        // La comparación arranca en marimekko ("Todos los países").
+        // Con 18 países el marimekko no aporta (item 6 de Daniel, 2026-07-28):
+        // la comparación arranca en BARRAS con los 18 preseleccionados. El
+        // marimekko ("Todos los países") sigue disponible en el toggle.
         postInit: function () {
-          if (typeof state !== 'undefined' && state[15]) state[15].view = 'all';
+          if (typeof state !== 'undefined' && state[15]) state[15].view = 'sel';
           document.querySelectorAll('#mc-view button').forEach(function (b) {
-            b.classList.toggle('active', b.getAttribute('data-view') === 'all');
+            b.classList.toggle('active', b.getAttribute('data-view') === 'sel');
           });
         },
         redrawFull: function () { renderMigrantesCompChips(); drawMigrantesComp(); } },
@@ -275,6 +280,6 @@
   });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=24"></script>
+<script src="./nav.js?v=25"></script>
 </body>
 </html>

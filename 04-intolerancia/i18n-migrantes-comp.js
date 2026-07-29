@@ -15,7 +15,7 @@
 
     // chart 15 — comparación entre países (clon del ranking)
     'c15-title':         'Argentina encabeza la región en negarle el hospital y la escuela al inmigrante',
-    'c15-title-neutral': 'La misma frase sobre el inmigrante',
+    'c15-title-neutral': 'Posturas hostiles hacia el inmigrante, frase por frase',
     'c15-subtitle-tpl':  'Porcentaje con una postura hostil en la frase «{ITEM}», sobre {N} países de América Latina. Latinobarómetro {PERIODO}, en plena pandemia y pico del éxodo venezolano.',
     'c15-cat-label':     'Frase sobre el inmigrante…',
     'c15-view-label':    'Mostrar',
@@ -47,7 +47,7 @@
 
     // chart 15 — cross-country comparison (ranking clone)
     'c15-title':         'Argentina leads the region in denying immigrants the hospital and the school',
-    'c15-title-neutral': 'The same statement about immigrants',
+    'c15-title-neutral': 'Hostile stances on immigrants, statement by statement',
     'c15-subtitle-tpl':  'Share taking a hostile stance on the statement “{ITEM}”, across {N} Latin American countries. Latinobarómetro {PERIODO}, amid the pandemic and the peak of the Venezuelan exodus.',
     'c15-cat-label':     'Statement about immigrants…',
     'c15-view-label':    'Show',
