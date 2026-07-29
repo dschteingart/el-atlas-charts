@@ -53,3 +53,7 @@ function vd_fillVarSelect(id, current) {
   const grp = sel.closest('.m-ctrl-group');
   if (grp) grp.style.display = 'none';
 }
+
+// Decimales de la tabla regional y de la etiqueta de la mediana: son porcentajes
+// de 0 a 30, con uno alcanza.
+function vd_dec() { return 1; }

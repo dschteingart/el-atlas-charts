@@ -276,6 +276,14 @@ function co_editorCustom(field) {
   return (tx[field] || '').trim();
 }
 
+// Claves de titulo segun la vista: dispersion y brechas cuentan cosas
+// distintas y no pueden compartir encabezado.
+function co_headingKeys() {
+  return (state[19] && state[19].vista === 'dumbbell')
+    ? { title: 'c19-title-db', titleNeutral: 'c19-title-db-neutral' }
+    : { title: 'c19-title', titleNeutral: 'c19-title-neutral' };
+}
+
 function co_updateSubtitle() {
   const el = document.querySelector('.chart-block[data-chart="19"] .chart-subtitle');
   if (!el) return;
@@ -317,6 +325,15 @@ function co_updateDefs() {
   co_updateSources();
   const el = document.getElementById('co-defs');
   if (!el) return;
+  // En la vista de brechas no hay eje X ni eje Y —las dos variables comparten la
+  // misma vara— así que el bloque de definiciones se oculta entero (pedido de
+  // Daniel 2026-07-28). Se vacía además del display para no dejar el margen.
+  if (state[19] && state[19].vista === 'dumbbell') {
+    el.innerHTML = '';
+    el.style.display = 'none';
+    return;
+  }
+  el.style.display = '';
   const s = state[19];
   el.innerHTML =
     '<p class="co-def"><span class="co-def-key">' + co_T('c19-def-x') + '</span> ' +
@@ -576,6 +593,12 @@ function drawCorrelaciones() {
   // recta) y el banner de estadísticos no significan nada en la vista de
   // brechas, así que se esconden ahí en vez de quedar muertos.
   const _db = s.vista === 'dumbbell';
+  // Los selectores dejan de ser "ejes" en la vista de brechas: ahí las dos
+  // variables son las dos puntas de la misma barra, sobre una única escala.
+  const _lblX = document.querySelector('[data-i18n="c19-x-label"]');
+  const _lblY = document.querySelector('[data-i18n="c19-y-label"]');
+  if (_lblX) _lblX.textContent = co_T(_db ? 'c19-x-label-db' : 'c19-x-label');
+  if (_lblY) _lblY.textContent = co_T(_db ? 'c19-y-label-db' : 'c19-y-label');
   const _refsGrp = document.getElementById('co-refs');
   if (_refsGrp && _refsGrp.closest('.m-ctrl-group')) _refsGrp.closest('.m-ctrl-group').style.display = _db ? 'none' : '';
   const _banner = document.getElementById('co-banner');
@@ -635,7 +658,8 @@ function drawCorrelaciones() {
     msg.textContent = co_T('c19-empty');
     svg.appendChild(msg);
     if (typeof atlasSetHeading === 'function') {
-      atlasSetHeading('19', false, { title: 'c19-title', titleNeutral: 'c19-title-neutral' });
+      // Titulo por vista: la de brechas tiene el suyo (ver i18n).
+      atlasSetHeading('19', false, co_headingKeys());
     }
     return;
   }
@@ -895,7 +919,7 @@ function drawCorrelaciones() {
 
   // Título: siempre el neutral (norma del número).
   if (typeof atlasSetHeading === 'function') {
-    atlasSetHeading('19', false, { title: 'c19-title', titleNeutral: 'c19-title-neutral' });
+    atlasSetHeading('19', false, co_headingKeys());
   }
 }
 
@@ -1230,6 +1254,10 @@ function co_drawDumbbell(svg) {
   ax.setAttribute('y1', MARGIN.top); ax.setAttribute('y2', MARGIN.top + innerH);
   ax.setAttribute('stroke', CO_AXIS); ax.setAttribute('stroke-width', 1);
   svg.appendChild(ax);
+
+  // El título va acá: drawCorrelaciones sale por return antes de llegar al
+  // atlasSetHeading del camino de la dispersión.
+  if (typeof atlasSetHeading === 'function') atlasSetHeading('19', false, co_headingKeys());
 }
 
 function co_showTooltip(e, p) {

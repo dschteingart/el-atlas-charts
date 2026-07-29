@@ -59,6 +59,10 @@
     + 'nor a population survey.';
 
   Object.assign(I18N.es, {
+    // Encabezado propio: sin estas dos claves la pagina se quedaba con el
+    // fallback del HTML, que era el de la bateria de vecinos.
+    'g-eyebrow': 'Exclusión por grupo social',
+    'g-lead': 'Cuánto le cierra el Estado la puerta a unos grupos y no a otros, según expertos de cada país. Elegí un indicador y mirá el mismo dato de tres maneras.',
     // ---- shell del graficador ----
     'gvd-eyebrow':   'Exclusión social',
     'gvd-lead':      'Cuánto se le niega a la gente el acceso a servicios o a la participación por pertenecer a un grupo social. El índice de V-Dem y los cinco indicadores que lo componen, en 174 países desde 1900.',
@@ -126,6 +130,8 @@
   });
 
   Object.assign(I18N.en, {
+    'g-eyebrow': 'Social exclusion by group',
+    'g-lead': 'How far the state closes doors to some groups and not others, as scored by country experts. Pick an indicator and see the same data three ways.',
     'gvd-eyebrow':   'Social exclusion',
     'gvd-lead':      'How far people are denied access to services or participation because of the social group they belong to. The V-Dem index and its five components, across 174 countries since 1900.',
     'gvd-view-comp': 'Comparison',

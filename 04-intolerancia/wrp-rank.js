@@ -376,7 +376,7 @@ function vr_drawBars() {
     svg.appendChild(mline);
     const mlbl = vr_ns('text');
     const mlblTxt = ((typeof t === 'function') ? t(vr_isMean() ? 'c24-mean-lbl' : 'c24-median-lbl') : 'Mediana mundial')
-      + ': ' + ((typeof fmt === 'function') ? fmt(med.value, 2) : med.value);
+      + ': ' + vd_fmtVal(med.value, vd_dec());
     const lblW = vr_measureText(mlblTxt, SIZES.medLbl, 600);
     const anchorEnd = mx + 8 + lblW > VR_W - 4;
     mlbl.setAttribute('x', anchorEnd ? mx - 8 : mx + 8);
@@ -854,13 +854,18 @@ function vr_drawMarimekko() {
     mline.setAttribute('stroke-dasharray', (mobile || mobilePng) ? '8 7' : '5 4');
     mline.setAttribute('pointer-events', 'none');
     svg.appendChild(mline);
-    // Etiqueta a la DERECHA: en el marimekko las barras más altas están a la
-    // izquierda (más intolerantes) y taparían el texto; a la derecha las barras
-    // son bajas y queda despejado (pedido de Daniel 2026-07-23).
+    // El lado lo decide el ORDEN, no una constante: la etiqueta va donde las
+    // barras son BAJAS. Con el índice (más = peor) el orden es descendente y las
+    // bajas quedan a la derecha; con los cinco componentes (más = mejor) el orden
+    // es ascendente y quedan a la izquierda, así que la etiqueta se muda. Antes
+    // estaba fija a la derecha y en ese caso la tapaban las barras más altas
+    // (reporte de Daniel 2026-07-28). Como data va ordenada de forma monótona,
+    // alcanza con comparar las dos puntas.
+    const bajasALaDerecha = (n < 2) || (data[0].pct >= data[n - 1].pct);
     const mlbl = vr_ns('text');
-    mlbl.setAttribute('x', MARGIN.left + PLOT_W - 6);
+    mlbl.setAttribute('x', bajasALaDerecha ? (MARGIN.left + PLOT_W - 6) : (MARGIN.left + 6));
     mlbl.setAttribute('y', my - 6);
-    mlbl.setAttribute('text-anchor', 'end');
+    mlbl.setAttribute('text-anchor', bajasALaDerecha ? 'end' : 'start');
     mlbl.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
     mlbl.style.fontSize = ((mobile || mobilePng) ? 26 : SIZES.tick) + 'px';
     mlbl.setAttribute('font-weight', 600);
@@ -871,7 +876,7 @@ function vr_drawMarimekko() {
     mlbl.setAttribute('stroke-linejoin', 'round');
     mlbl.setAttribute('pointer-events', 'none');
     mlbl.textContent = ((typeof t === 'function') ? t(vr_isMean() ? 'c24-mean-lbl' : 'c24-median-lbl') : 'Mediana mundial')
-      + ': ' + ((typeof fmt === 'function') ? fmt(med.value, 2) : med.value);
+      + ': ' + vd_fmtVal(med.value, vd_dec());
     svg.appendChild(mlbl);
   }
 
@@ -1024,7 +1029,7 @@ function vrm_drawRegionalAvgTable(svg, rows, activeRegion, SIZES, mobilePng) {
     valueEl.setAttribute('x', tableX + tableW);
     valueEl.setAttribute('y', y);
     valueEl.setAttribute('text-anchor', 'end');
-    valueEl.textContent = (typeof fmt === 'function') ? vd_fmtVal(row.value, 2) : row.value.toFixed(1);
+    valueEl.textContent = (typeof fmt === 'function') ? vd_fmtVal(row.value, vd_dec()) : row.value.toFixed(1);
     g.appendChild(valueEl);
   });
 }
@@ -1040,7 +1045,7 @@ function vrm_drawRegionalAvgTableHTML(rows, activeRegion) {
     return `<div class="${cls}">
       <span class="m-mt-swatch" style="background:${row.color}"></span>
       <span class="m-mt-label">${row.label}</span>
-      <span class="m-mt-value">${(typeof fmt === 'function') ? vd_fmtVal(row.value, 2) : row.value.toFixed(1)}</span>
+      <span class="m-mt-value">${(typeof fmt === 'function') ? vd_fmtVal(row.value, vd_dec()) : row.value.toFixed(1)}</span>
     </div>`;
   }).join('');
 }

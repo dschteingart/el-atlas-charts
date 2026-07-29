@@ -18,6 +18,14 @@
 
     'c19-title':         'Las intolerancias van juntas, pero no son la misma cosa',
     'c19-title-neutral': 'Dos preguntas de la encuesta',
+    // Vista de brechas: titulo corto y declarativo, subtitulo con la medicion
+    // exacta (criterio de Daniel: "como si fuera un paper o el Economist"; nada
+    // de "cada fila es un pais", que describe el dibujo y no el hallazgo).
+    'c19-title-db':      'Cuando las dos preguntas no coinciden',
+    'c19-title-db-neutral': 'La brecha entre dos preguntas',
+    'c19-subtitle-db-tpl': '{X} frente a {Y}, en porcentaje. Ola {PERIODO}. Ordenados por el tamaño de la brecha.',
+    'c19-x-label-db':    'Primera variable',
+    'c19-y-label-db':    'Segunda variable',
     'c19-subtitle':      'Cada punto es un país. Los dos ejes son porcentajes de la misma encuesta.',
     // {X}, {Y} = nombre de la variable de cada eje; {PERIODO} = etiqueta de la
     // ola. La letra chica (cada país sale a campo en un año distinto dentro de
@@ -27,7 +35,6 @@
     'c19-view-label':    'Vista',
     'c19-view-scatter':  'Dispersión',
     'c19-view-dumbbell': 'Brechas',
-    'c19-subtitle-db-tpl': 'Cada fila es un país: la brecha entre {X} y {Y}. Ola {PERIODO}.',
     'c19-db-empty':      'Agregá países con el buscador: cada país elegido es una fila.',
     'c19-x-label':       'Eje horizontal',
     'c19-y-label':       'Eje vertical',
@@ -77,13 +84,17 @@
 
     'c19-title':         'Intolerances travel together — but they are not the same thing',
     'c19-title-neutral': 'Two survey questions',
+    'c19-title-db':      'When the two questions disagree',
+    'c19-title-db-neutral': 'The gap between two questions',
+    'c19-subtitle-db-tpl': '{X} versus {Y}, per cent. {PERIODO} wave. Ordered by the size of the gap.',
+    'c19-x-label-db':    'First variable',
+    'c19-y-label-db':    'Second variable',
     'c19-subtitle':      'Each dot is a country. Both axes are percentages from the same survey.',
     'c19-subtitle-tpl':  'Each dot is a country. Horizontal axis: {X}. Vertical axis: {Y}. {PERIODO} wave.',
 
     'c19-view-label':    'View',
     'c19-view-scatter':  'Scatter',
     'c19-view-dumbbell': 'Gaps',
-    'c19-subtitle-db-tpl': 'Each row is a country: the gap between {X} and {Y}. {PERIODO} wave.',
     'c19-db-empty':      'Add countries with the search box: each selected country is a row.',
     'c19-x-label':       'Horizontal axis',
     'c19-y-label':       'Vertical axis',

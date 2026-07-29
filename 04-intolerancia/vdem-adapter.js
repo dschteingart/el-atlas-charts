@@ -159,3 +159,7 @@ function vd_paises(k) {
   vd_paises._c[k] = out;
   return out;
 }
+
+// Decimales de la tabla regional y de la etiqueta de la mediana. El indice va de
+// 0 a 1: con un solo decimal se pierde la mitad de la precision.
+function vd_dec() { return 2; }
