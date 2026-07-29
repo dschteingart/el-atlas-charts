@@ -678,7 +678,14 @@ function vr_drawMarimekko() {
   const labelCodes = (aeCfg && Array.isArray(aeCountries)) ? aeCountries : (s1.selected || []);
   // Mayor rechazo a la izquierda; las barras bajas (tolerantes) quedan a la
   // derecha, dejando el hueco arriba-derecha para la tabla regional.
-  const data = vr_computeData().slice().sort((a, b) => b.pct - a.pct);
+  // El PEOR valor siempre a la izquierda (item 8 de Daniel, 2026-07-28): el
+  // criterio de los marimekkos nunca fue "alto a la izquierda" sino "peor a la
+  // izquierda" — en los porcentajes de rechazo coinciden. Con el indice (mas =
+  // peor) se ordena desc; con los cinco componentes (mas = mejor) asc, para que
+  // los paises no cambien de lado al cambiar de variable. El mapa ya invierte
+  // la rampa con el mismo criterio (vd_peorEsMas).
+  const data = vr_computeData().slice().sort((a, b) =>
+    vd_peorEsMas(state[21].cat) ? (b.pct - a.pct) : (a.pct - b.pct));
   const n = data.length;
   const med = s1.showMedian ? vr_median() : null;
 
