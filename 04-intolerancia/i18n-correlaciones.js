@@ -18,19 +18,25 @@
 
     'c19-title':         'Las intolerancias van juntas, pero no son la misma cosa',
     'c19-title-neutral': 'Dos preguntas de la encuesta',
+    // Titulo dinamico, criterio OWID (decision de Daniel 2026-07-29): el titulo
+    // son las DOS mediciones; el conector distingue la vista ("frente a" cruza,
+    // "y" compara). Los nombres salen de CR_VARS[i].titulo_es, que son formas de
+    // titulo y no rotulos de categoria.
+    'c19-title-tpl':     '{X} frente a {Y}',
+    'c19-title-db-tpl':  '{X} y {Y}',
+    'c19-subtitle-tpl':  'Cada punto es un país. Porcentaje que da cada respuesta, ola {PERIODO}.',
+    'c19-subtitle-db-tpl': 'Cada barra une los dos porcentajes de un mismo país, ordenados por la distancia entre ambos. Ola {PERIODO}.',
     // Vista de brechas: titulo corto y declarativo, subtitulo con la medicion
     // exacta (criterio de Daniel: "como si fuera un paper o el Economist"; nada
     // de "cada fila es un pais", que describe el dibujo y no el hallazgo).
     'c19-title-db':      'Cuando las dos preguntas no coinciden',
     'c19-title-db-neutral': 'La brecha entre dos preguntas',
-    'c19-subtitle-db-tpl': '{X} frente a {Y}, en porcentaje. Ola {PERIODO}. Ordenados por el tamaño de la brecha.',
     'c19-x-label-db':    'Primera variable',
     'c19-y-label-db':    'Segunda variable',
     'c19-subtitle':      'Cada punto es un país. Los dos ejes son porcentajes de la misma encuesta.',
     // {X}, {Y} = nombre de la variable de cada eje; {PERIODO} = etiqueta de la
     // ola. La letra chica (cada país sale a campo en un año distinto dentro de
     // la ola) vive en «Ver metodología y fuentes».
-    'c19-subtitle-tpl':  'Cada punto es un país. Eje horizontal: {X}. Eje vertical: {Y}. Ola {PERIODO}.',
 
     'c19-view-label':    'Vista',
     'c19-view-scatter':  'Dispersión',
@@ -84,13 +90,15 @@
 
     'c19-title':         'Intolerances travel together — but they are not the same thing',
     'c19-title-neutral': 'Two survey questions',
+    'c19-title-tpl':     '{X} vs. {Y}',
+    'c19-title-db-tpl':  '{X} and {Y}',
+    'c19-subtitle-tpl':  'Each dot is a country. Share giving each answer, {PERIODO} wave.',
+    'c19-subtitle-db-tpl': 'Each bar joins the two shares for the same country, ordered by the distance between them. {PERIODO} wave.',
     'c19-title-db':      'When the two questions disagree',
     'c19-title-db-neutral': 'The gap between two questions',
-    'c19-subtitle-db-tpl': '{X} versus {Y}, per cent. {PERIODO} wave. Ordered by the size of the gap.',
     'c19-x-label-db':    'First variable',
     'c19-y-label-db':    'Second variable',
     'c19-subtitle':      'Each dot is a country. Both axes are percentages from the same survey.',
-    'c19-subtitle-tpl':  'Each dot is a country. Horizontal axis: {X}. Vertical axis: {Y}. {PERIODO} wave.',
 
     'c19-view-label':    'View',
     'c19-view-scatter':  'Scatter',

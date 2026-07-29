@@ -154,6 +154,43 @@ OTRAS = [
 # La única variable que se emite invertida respecto de la fuente (ver docstring).
 INVERTIR = {"A165"}
 
+
+# ============================ FORMA DE TÍTULO ================================
+# Los rotulos cortos son NOMBRES DE CATEGORIA ("Personas de otra raza"), no de
+# medicion: pegados a un eje funcionan, pero sueltos en un titulo se leen como
+# una lista de grupos de personas en vez de "el porcentaje que no los quiere de
+# vecino". Por eso cada variable lleva ademas una FORMA DE TITULO, en minuscula
+# y lista para componer: "{X} frente a {Y}" (dispersion) y "{X} y {Y}"
+# (brechas). Decision de Daniel 2026-07-29, criterio OWID.
+TITULO_VEC = {
+    "otra_raza":          (u"rechazo a vecinos de otra raza", u"rejection of neighbours of another race"),
+    "inmigrantes":        (u"rechazo a vecinos inmigrantes", u"rejection of immigrant neighbours"),
+    "homosexuales":       (u"rechazo a vecinos homosexuales", u"rejection of homosexual neighbours"),
+    "otra_religion":      (u"rechazo a vecinos de otra religión", u"rejection of neighbours of another religion"),
+    "otro_idioma":        (u"rechazo a vecinos de otro idioma", u"rejection of neighbours who speak another language"),
+    "parejas_no_casadas": (u"rechazo a vecinos que conviven sin casarse", u"rejection of unmarried couples as neighbours"),
+    "sida":               (u"rechazo a vecinos con sida", u"rejection of neighbours with AIDS"),
+    "bebedores":          (u"rechazo a vecinos bebedores", u"rejection of heavy-drinking neighbours"),
+    "drogadictos":        (u"rechazo a vecinos drogadictos", u"rejection of drug-addicted neighbours"),
+    "antecedentes":       (u"rechazo a vecinos con antecedentes penales", u"rejection of neighbours with a criminal record"),
+    "inestables":         (u"rechazo a vecinos emocionalmente inestables", u"rejection of emotionally unstable neighbours"),
+    "musulmanes":         (u"rechazo a vecinos musulmanes", u"rejection of Muslim neighbours"),
+    "judios":             (u"rechazo a vecinos judíos", u"rejection of Jewish neighbours"),
+    "gitanos":            (u"rechazo a vecinos gitanos", u"rejection of Roma neighbours"),
+}
+TITULO_OTRAS = {
+    "C002":      (u"prioridad laboral a los nativos", u"job priority for the native-born"),
+    "C001":      (u"prioridad laboral a los varones", u"job priority for men"),
+    "H002_04":   (u"racismo visto en el barrio", u"racist behaviour seen in the neighbourhood"),
+    "H002_01":   (u"robos vistos en el barrio", u"robberies seen in the neighbourhood"),
+    "E143":      (u"apoyo a limitar la inmigración", u"support for limiting immigration"),
+    "G052":      (u"creer que el inmigrante perjudica", u"believing immigrants harm the country"),
+    "A165":      (u"desconfianza en la gente", u"distrust of people in general"),
+    "A035":      (u"enseñar tolerancia a los hijos", u"teaching children tolerance"),
+    "G007_36_B": (u"desconfianza en otra nacionalidad", u"distrust of people of another nationality"),
+    "G007_34_B": (u"desconfianza en un desconocido", u"distrust of someone met for the first time"),
+}
+
 # ============================ 1. batería de vecinos ============================
 cats = pd.read_csv(os.path.join(DATA, "ivs_vecinos_cats.csv"))
 core = cats[cats.core == 1].set_index("cat")
@@ -246,11 +283,13 @@ for cat in VEC_ORDER:
         "def_en": "% who mention “" + str(core.loc[cat, "label_en"]).lower()
                   + "” among the groups they would not want as neighbours.",
         "olas": sorted(foto[cat]), "fuente": core.loc[cat, "ivs_var"],
+        "titulo_es": TITULO_VEC[cat][0], "titulo_en": TITULO_VEC[cat][1],
     })
 for var, es, en, d_es, d_en in OTRAS:
     VARS.append({"k": var, "grupo": GRUPO_OTR[0], "es": es, "en": en,
                  "def_es": d_es, "def_en": d_en,
-                 "olas": sorted(foto[var]), "fuente": var})
+                 "olas": sorted(foto[var]), "fuente": var,
+                 "titulo_es": TITULO_OTRAS[var][0], "titulo_en": TITULO_OTRAS[var][1]})
 # La de afuera va última y lleva "fuente_ext": el chart usa esa marca para avisar
 # que los dos ejes ya no son la misma encuesta ni las mismas personas.
 VARS.append({
@@ -267,6 +306,8 @@ VARS.append({
               "Gallup), 139 countries. Note: fewer people reporting it does not prove the country is "
               "less racist.",
     "olas": sorted(foto[WRP_K]), "fuente": "WRP 2023 (skin colour)",
+    "titulo_es": "discriminación vivida por color de piel",
+    "titulo_en": "experienced discrimination over skin colour",
     "fuente_ext": "World Risk Poll 2023 (Lloyd's Register Foundation / Gallup)",
 })
 VARS = [v for v in VARS if v["olas"]]

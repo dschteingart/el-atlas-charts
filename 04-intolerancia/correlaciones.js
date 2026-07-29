@@ -276,12 +276,29 @@ function co_editorCustom(field) {
   return (tx[field] || '').trim();
 }
 
-// Claves de titulo segun la vista: dispersion y brechas cuentan cosas
-// distintas y no pueden compartir encabezado.
-function co_headingKeys() {
-  return (state[19] && state[19].vista === 'dumbbell')
-    ? { title: 'c19-title-db', titleNeutral: 'c19-title-db-neutral' }
-    : { title: 'c19-title', titleNeutral: 'c19-title-neutral' };
+// Forma de titulo de una variable: CR_VARS[i].titulo_es/_en. Son frases en
+// minuscula, listas para componer ("rechazo a vecinos de otra raza"), no los
+// rotulos de categoria del menu ("Personas de otra raza"), que sueltos en un
+// titulo se leen como una lista de grupos y no como una medicion.
+function co_varTitulo(k) {
+  const v = co_var(k);
+  if (!v) return k;
+  const tit = (co_lang() === 'en') ? v.titulo_en : v.titulo_es;
+  return tit || co_varLabel(k);
+}
+
+// Titulo del chart: lo arman las DOS variables elegidas (criterio OWID), asi
+// que no puede salir de una clave fija. Respeta el titulo custom del editor,
+// igual que el subtitulo.
+function co_updateTitle() {
+  const el = document.querySelector('.chart-block[data-chart="19"] .chart-title');
+  if (!el) return;
+  if (co_editorCustom('title')) return;
+  const s = state[19];
+  const tpl = co_T(s.vista === 'dumbbell' ? 'c19-title-db-tpl' : 'c19-title-tpl');
+  if (!tpl || tpl.indexOf('{X}') < 0) return;
+  const txt = tpl.replace('{X}', co_varTitulo(s.x)).replace('{Y}', co_varTitulo(s.y));
+  el.textContent = txt.charAt(0).toUpperCase() + txt.slice(1);
 }
 
 function co_updateSubtitle() {
@@ -657,10 +674,7 @@ function drawCorrelaciones() {
     msg.setAttribute('fill', CO_INK_SOFT);
     msg.textContent = co_T('c19-empty');
     svg.appendChild(msg);
-    if (typeof atlasSetHeading === 'function') {
-      // Titulo por vista: la de brechas tiene el suyo (ver i18n).
-      atlasSetHeading('19', false, co_headingKeys());
-    }
+    co_updateTitle();
     return;
   }
 
@@ -917,10 +931,8 @@ function drawCorrelaciones() {
     if (ev.target.tagName !== 'circle') { co_hideTooltip(); co_emph(null); co_setHoverRegion(null); }
   };
 
-  // Título: siempre el neutral (norma del número).
-  if (typeof atlasSetHeading === 'function') {
-    atlasSetHeading('19', false, co_headingKeys());
-  }
+  // Título: lo arman las dos variables elegidas (ver co_updateTitle).
+  co_updateTitle();
 }
 
 // Énfasis al hover: atenúa el resto por OPACIDAD, sin redibujar (redibujar en
@@ -1099,11 +1111,10 @@ function setupCorrelacionesVista() {
 
 function co_drawDumbbell(svg) {
   const s = state[19];
-  // El título, PRIMERO: drawCorrelaciones sale por return antes del
-  // atlasSetHeading del camino de la dispersión, y más abajo hay otro return
-  // para la selección vacía. Si se seteara al final, sin países elegidos el
-  // encabezado se quedaría con el de dispersión.
-  if (typeof atlasSetHeading === 'function') atlasSetHeading('19', false, co_headingKeys());
+  // El título, PRIMERO: drawCorrelaciones sale por return antes de llegar al
+  // título del camino de la dispersión, y más abajo hay otro return para la
+  // selección vacía.
+  co_updateTitle();
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const mobile = !editorFormat && co_isMobile();
   const bigFmt = !!editorFormat || mobile;
