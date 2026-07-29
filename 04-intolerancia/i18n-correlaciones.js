@@ -22,10 +22,11 @@
     // son las DOS mediciones; el conector distingue la vista ("frente a" cruza,
     // "y" compara). Los nombres salen de CR_VARS[i].titulo_es, que son formas de
     // titulo y no rotulos de categoria.
+    'c19-db-axis':       '% de encuestados de cada país',
     'c19-title-tpl':     '{X} frente a {Y}',
     'c19-title-db-tpl':  '{X} y {Y}',
-    'c19-subtitle-tpl':  'Cada punto es un país. Porcentaje que da cada respuesta, ola {PERIODO}.',
-    'c19-subtitle-db-tpl': 'Cada barra une los dos porcentajes de un mismo país, ordenados por la distancia entre ambos. Ola {PERIODO}.',
+    'c19-subtitle-tpl':  'Porcentaje de encuestados que da cada respuesta, ola {PERIODO}. Cada punto es un país.',
+    'c19-subtitle-db-tpl': 'Porcentaje de encuestados que da cada respuesta, ola {PERIODO}. Cada barra une los dos valores de un mismo país, ordenados por la distancia entre ambos.',
     // Vista de brechas: titulo corto y declarativo, subtitulo con la medicion
     // exacta (criterio de Daniel: "como si fuera un paper o el Economist"; nada
     // de "cada fila es un pais", que describe el dibujo y no el hallazgo).
@@ -90,10 +91,11 @@
 
     'c19-title':         'Intolerances travel together — but they are not the same thing',
     'c19-title-neutral': 'Two survey questions',
+    'c19-db-axis':       '% of respondents in each country',
     'c19-title-tpl':     '{X} vs. {Y}',
     'c19-title-db-tpl':  '{X} and {Y}',
-    'c19-subtitle-tpl':  'Each dot is a country. Share giving each answer, {PERIODO} wave.',
-    'c19-subtitle-db-tpl': 'Each bar joins the two shares for the same country, ordered by the distance between them. {PERIODO} wave.',
+    'c19-subtitle-tpl':  'Share of respondents giving each answer, {PERIODO} wave. Each dot is a country.',
+    'c19-subtitle-db-tpl': 'Share of respondents giving each answer, {PERIODO} wave. Each bar joins the two values for the same country, ordered by the distance between them.',
     'c19-title-db':      'When the two questions disagree',
     'c19-title-db-neutral': 'The gap between two questions',
     'c19-x-label-db':    'First variable',

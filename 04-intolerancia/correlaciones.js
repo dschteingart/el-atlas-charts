@@ -287,6 +287,15 @@ function co_varTitulo(k) {
   return tit || co_varLabel(k);
 }
 
+// Forma de titulo con mayuscula inicial, para la leyenda y los titulos de eje:
+// son los lugares donde el lector tiene que entender QUE se mide sin ir a la
+// nota. El rotulo corto del menu no alcanza ("Homosexuales" no dice que se mide
+// el rechazo a tenerlos de vecinos): reporte de Daniel 2026-07-29.
+function co_varTituloCap(k) {
+  const s = co_varTitulo(k);
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 // Titulo del chart: lo arman las DOS variables elegidas (criterio OWID), asi
 // que no puede salir de una clave fija. Respeta el titulo custom del editor,
 // igual que el subtitulo.
@@ -835,7 +844,7 @@ function drawCorrelaciones() {
   xTitle.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
   xTitle.style.fontSize = SIZES.axisTitle + 'px';
   xTitle.setAttribute('fill', '#5A5346'); xTitle.setAttribute('font-weight', 600);
-  xTitle.textContent = axisTpl.replace('{VAR}', co_varLabel(s.x));
+  xTitle.textContent = axisTpl.replace('{VAR}', co_varTituloCap(s.x));
   svg.appendChild(xTitle);
 
   const ytx = Math.max(bigFmt ? 22 : 14, plotX - (bigFmt ? 80 : 48));
@@ -846,7 +855,7 @@ function drawCorrelaciones() {
   yTitle.style.fontSize = SIZES.axisTitle + 'px';
   yTitle.setAttribute('fill', '#5A5346'); yTitle.setAttribute('font-weight', 600);
   yTitle.setAttribute('transform', `rotate(-90 ${ytx} ${plotY + side / 2})`);
-  yTitle.textContent = axisTpl.replace('{VAR}', co_varLabel(s.y));
+  yTitle.textContent = axisTpl.replace('{VAR}', co_varTituloCap(s.y));
   svg.appendChild(yTitle);
 
   // --- leyenda ---
@@ -1139,9 +1148,9 @@ function co_drawDumbbell(svg) {
   if (editorFormat) {
     const f = PNG_FORMATS[editorFormat] || PNG_FORMATS.square;
     H = f.vbH;
-    MARGIN = { top: 30 + legendH, right: 70, bottom: 46, left: 210 };
+    MARGIN = { top: 30 + legendH, right: 70, bottom: 78, left: 210 };
   } else {
-    MARGIN = { top: 12 + legendH, right: mobile ? 54 : 60, bottom: mobile ? 56 : 40, left: mobile ? 180 : 150 };
+    MARGIN = { top: 12 + legendH, right: mobile ? 54 : 60, bottom: mobile ? 84 : 62, left: mobile ? 180 : 150 };
     H = MARGIN.top + Math.max(1, rows.length) * rowH + MARGIN.bottom;
   }
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
@@ -1189,7 +1198,7 @@ function co_drawDumbbell(svg) {
 
   // leyenda: qué es cada punta (los nombres largos van en dos renglones)
   const legG = co_ns('g'); svg.appendChild(legG);
-  [[CO_DB_X, co_varLabel(s.x)], [CO_DB_Y, co_varLabel(s.y)]].forEach((par, i) => {
+  [[CO_DB_X, co_varTituloCap(s.x)], [CO_DB_Y, co_varTituloCap(s.y)]].forEach((par, i) => {
     const y = (bigFmt ? 16 : 10) + i * SIZES.legend * 1.5;
     const c = co_ns('circle');
     c.setAttribute('cx', MARGIN.left + SIZES.dot); c.setAttribute('cy', y);
@@ -1270,6 +1279,20 @@ function co_drawDumbbell(svg) {
   ax.setAttribute('y1', MARGIN.top); ax.setAttribute('y2', MARGIN.top + innerH);
   ax.setAttribute('stroke', CO_AXIS); ax.setAttribute('stroke-width', 1);
   svg.appendChild(ax);
+
+  // Título del eje: acá las dos variables comparten la misma vara, así que no
+  // puede nombrar una sola; dice la UNIDAD, que es lo que faltaba (quién es
+  // cada punta lo dice la leyenda, con la medición completa).
+  const axTitle = co_ns('text');
+  axTitle.setAttribute('x', MARGIN.left + plotW / 2);
+  axTitle.setAttribute('y', MARGIN.top + innerH + (bigFmt ? 62 : 36));
+  axTitle.setAttribute('text-anchor', 'middle');
+  axTitle.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+  axTitle.style.fontSize = (SIZES.tick + (bigFmt ? 3 : 1)) + 'px';
+  axTitle.setAttribute('fill', CO_INK_SOFT);
+  axTitle.setAttribute('font-weight', 500);
+  axTitle.textContent = co_T('c19-db-axis');
+  svg.appendChild(axTitle);
 
 }
 

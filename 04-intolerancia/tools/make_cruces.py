@@ -179,15 +179,15 @@ TITULO_VEC = {
     "gitanos":            (u"rechazo a vecinos gitanos", u"rejection of Roma neighbours"),
 }
 TITULO_OTRAS = {
-    "C002":      (u"prioridad laboral a los nativos", u"job priority for the native-born"),
-    "C001":      (u"prioridad laboral a los varones", u"job priority for men"),
+    "C002":      (u"acuerdo con dar prioridad laboral a los nativos", u"agreement with job priority for the native-born"),
+    "C001":      (u"acuerdo con dar prioridad laboral a los varones", u"agreement with job priority for men"),
     "H002_04":   (u"racismo visto en el barrio", u"racist behaviour seen in the neighbourhood"),
     "H002_01":   (u"robos vistos en el barrio", u"robberies seen in the neighbourhood"),
     "E143":      (u"apoyo a limitar la inmigración", u"support for limiting immigration"),
-    "G052":      (u"creer que el inmigrante perjudica", u"believing immigrants harm the country"),
+    "G052":      (u"creencia de que el inmigrante perjudica al país", u"belief that immigrants harm the country"),
     "A165":      (u"desconfianza en la gente", u"distrust of people in general"),
-    "A035":      (u"enseñar tolerancia a los hijos", u"teaching children tolerance"),
-    "G007_36_B": (u"desconfianza en otra nacionalidad", u"distrust of people of another nationality"),
+    "A035":      (u"mención de la tolerancia como valor a enseñar", u"mentioning tolerance as a value to teach"),
+    "G007_36_B": (u"desconfianza en gente de otra nacionalidad", u"distrust of people of another nationality"),
     "G007_34_B": (u"desconfianza en un desconocido", u"distrust of someone met for the first time"),
 }
 
