@@ -62,7 +62,9 @@ function bl_getMargins(format) {
   switch (format) {
     case 'newsletter': case 'square': return { top: 40, right: 190, bottom: 92, left: 78 };
     case 'mobile': return { top: 30, right: 150, bottom: 74, left: 70 };
-    default: return null;
+    // 'public' y 'worldmap' los OFRECE el editor: sin caso propio, esto
+    // devolvia null y el llamador lo desreferenciaba (PNG en blanco).
+    default: return { top: 30, right: 150, bottom: 74, left: 70 };
   }
 }
 

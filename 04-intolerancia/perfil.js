@@ -41,7 +41,11 @@ function pf_getMargins(format) {
   switch (format) {
     case 'newsletter': case 'square': return { top: 44, right: 96, bottom: 86, left: 300 };
     case 'mobile': return { top: 30, right: 70, bottom: 60, left: 250 };
-    default: return null;
+    case 'public': return { top: 34, right: 76, bottom: 64, left: 240 };
+    case 'worldmap': return { top: 32, right: 72, bottom: 60, left: 230 };
+    // 'public' y 'worldmap' los OFRECE el editor: sin estos casos, getMargins
+    // devolvia null y dos lineas despues se desreferenciaba (PNG en blanco).
+    default: return { top: 34, right: 76, bottom: 64, left: 240 };
   }
 }
 

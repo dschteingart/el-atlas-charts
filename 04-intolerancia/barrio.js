@@ -43,7 +43,9 @@ function ba_getMargins(format) {
   switch (format) {
     case 'newsletter': case 'square': return { top: 44, right: 210, bottom: 86, left: 300 };
     case 'mobile': return { top: 30, right: 170, bottom: 60, left: 250 };
-    default: return null;
+    // 'public' y 'worldmap' los OFRECE el editor: sin caso propio, esto
+    // devolvia null y el llamador lo desreferenciaba (PNG en blanco).
+    default: return { top: 30, right: 170, bottom: 60, left: 250 };
   }
 }
 

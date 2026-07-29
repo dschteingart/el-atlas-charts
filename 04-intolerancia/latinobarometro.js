@@ -74,7 +74,9 @@ function lb_getMargins(format) {
   switch (format) {
     case 'newsletter': case 'square': return { top: 40, right: 92, bottom: 78, left: 150 };
     case 'mobile': return { top: 30, right: 66, bottom: 60, left: 128 };
-    default: return null;
+    // 'public' y 'worldmap' los OFRECE el editor: sin caso propio, esto
+    // devolvia null y el llamador lo desreferenciaba (PNG en blanco).
+    default: return { top: 30, right: 66, bottom: 60, left: 128 };
   }
 }
 function lb_drawBars() {
