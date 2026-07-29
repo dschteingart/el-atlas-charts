@@ -24,6 +24,11 @@
     // la ola) vive en «Ver metodología y fuentes».
     'c19-subtitle-tpl':  'Cada punto es un país. Eje horizontal: {X}. Eje vertical: {Y}. Ola {PERIODO}.',
 
+    'c19-view-label':    'Vista',
+    'c19-view-scatter':  'Dispersión',
+    'c19-view-dumbbell': 'Brechas',
+    'c19-subtitle-db-tpl': 'Cada fila es un país: la brecha entre {X} y {Y}. Ola {PERIODO}.',
+    'c19-db-empty':      'Agregá países con el buscador: cada país elegido es una fila.',
     'c19-x-label':       'Eje horizontal',
     'c19-y-label':       'Eje vertical',
     'c19-grp-bateria':   'No querría de vecinos a…',
@@ -75,6 +80,11 @@
     'c19-subtitle':      'Each dot is a country. Both axes are percentages from the same survey.',
     'c19-subtitle-tpl':  'Each dot is a country. Horizontal axis: {X}. Vertical axis: {Y}. {PERIODO} wave.',
 
+    'c19-view-label':    'View',
+    'c19-view-scatter':  'Scatter',
+    'c19-view-dumbbell': 'Gaps',
+    'c19-subtitle-db-tpl': 'Each row is a country: the gap between {X} and {Y}. {PERIODO} wave.',
+    'c19-db-empty':      'Add countries with the search box: each selected country is a row.',
     'c19-x-label':       'Horizontal axis',
     'c19-y-label':       'Vertical axis',
     'c19-grp-bateria':   'Would not want as neighbours…',

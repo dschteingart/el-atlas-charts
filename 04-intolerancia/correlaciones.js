@@ -281,7 +281,7 @@ function co_updateSubtitle() {
   if (!el) return;
   if (co_editorCustom('subtitle')) return;   // respetar el subtítulo custom del editor (?nl)
   const s = state[19];
-  const tpl = co_T('c19-subtitle-tpl');
+  const tpl = co_T(s.vista === 'dumbbell' ? 'c19-subtitle-db-tpl' : 'c19-subtitle-tpl');
   if (!tpl) return;
   el.textContent = tpl
     .replace('{X}', co_varLabel(s.x))
@@ -571,6 +571,16 @@ function drawCorrelaciones() {
   co_syncWaveControl(waves);
   co_updateSubtitle();
   co_updateDefs();
+
+  // Controles que son SOLO de la dispersión: las referencias (igual valor /
+  // recta) y el banner de estadísticos no significan nada en la vista de
+  // brechas, así que se esconden ahí en vez de quedar muertos.
+  const _db = s.vista === 'dumbbell';
+  const _refsGrp = document.getElementById('co-refs');
+  if (_refsGrp && _refsGrp.closest('.m-ctrl-group')) _refsGrp.closest('.m-ctrl-group').style.display = _db ? 'none' : '';
+  const _banner = document.getElementById('co-banner');
+  if (_banner) _banner.style.display = _db ? 'none' : '';
+  if (_db) { co_drawDumbbell(svg); return; }
 
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const mobile = !editorFormat && co_isMobile();
@@ -1035,6 +1045,193 @@ function co_applyRegionFocus() {
 // que no aparezcan dos veces en pantalla.
 
 // =================== Tooltip ===================
+// =================== Vista BRECHAS (dumbbell) ===================
+// El gráfico 3 del texto: cada fila es un país de la SELECCIÓN (WYSIWYG, los
+// chips son las filas), con una punta por variable, ordenado por la brecha
+// X − Y. Cuenta "mismo país, dos varas" mejor que la dispersión cuando el
+// punto son los países con distancia grande (Brasil declara poco rechazo y ve
+// mucho racismo). Colores fijos por EJE (no por región): terracota = eje
+// horizontal elegido, azul = eje vertical.
+const CO_DB_X = '#BE5D32';
+const CO_DB_Y = '#234B85';
+
+function setupCorrelacionesVista() {
+  const box = document.getElementById('co-vista');
+  if (!box) return;
+  const sync = () => {
+    box.querySelectorAll('button[data-vista]').forEach(b => {
+      b.classList.toggle('active', b.getAttribute('data-vista') === (state[19].vista || 'scatter'));
+    });
+  };
+  box.querySelectorAll('button[data-vista]').forEach(b => {
+    b.addEventListener('click', () => {
+      state[19].vista = b.getAttribute('data-vista');
+      sync();
+      drawCorrelaciones();
+    });
+  });
+  sync();
+}
+
+function co_drawDumbbell(svg) {
+  const s = state[19];
+  const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
+  const mobile = !editorFormat && co_isMobile();
+  const bigFmt = !!editorFormat || mobile;
+  const isPngFormat = editorFormat === 'newsletter' || editorFormat === 'square' || editorFormat === 'mobile';
+  const SIZES = editorFormat
+    ? { tick: 22, name: 24, val: 21, legend: 22, dot: 10 }
+    : mobile
+    ? { tick: 19, name: 21, val: 18, legend: 19, dot: 8 }
+    : { tick: 11, name: 12.5, val: 11, legend: 12, dot: 5.5 };
+
+  // Filas: la selección con las DOS observaciones en la ola, ordenada por la
+  // brecha X − Y (los dos extremos del contraste quedan en las puntas).
+  const sel = s.selected || [];
+  const cruce = (s.wave == null) ? [] : co_cross(s.x, s.y, s.wave);
+  const rows = cruce.filter(p => sel.indexOf(p.iso) >= 0)
+    .sort((a, b) => (b.x - b.y) - (a.x - a.y));
+
+  const W = 1100;
+  const legendH = SIZES.legend * 3.4;
+  const rowH = Math.max(bigFmt ? 44 : 26, SIZES.name * 2.1);
+  let H, MARGIN;
+  if (editorFormat) {
+    const f = PNG_FORMATS[editorFormat] || PNG_FORMATS.square;
+    H = f.vbH;
+    MARGIN = { top: 30 + legendH, right: 70, bottom: 46, left: 210 };
+  } else {
+    MARGIN = { top: 12 + legendH, right: mobile ? 54 : 60, bottom: mobile ? 56 : 40, left: mobile ? 180 : 150 };
+    H = MARGIN.top + Math.max(1, rows.length) * rowH + MARGIN.bottom;
+  }
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
+
+  if (!rows.length) {
+    const tx = co_ns('text');
+    tx.setAttribute('x', W / 2); tx.setAttribute('y', H / 2);
+    tx.setAttribute('text-anchor', 'middle');
+    tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+    tx.style.fontSize = (SIZES.name + 2) + 'px'; tx.setAttribute('fill', CO_INK_SOFT);
+    tx.textContent = co_T('c19-db-empty');
+    svg.appendChild(tx);
+    return;
+  }
+
+  const plotW = W - MARGIN.left - MARGIN.right;
+  const innerH = editorFormat ? (H - MARGIN.top - MARGIN.bottom) : rows.length * rowH;
+  const rH = innerH / rows.length;
+
+  // Escala compartida por las dos variables: la brecha se lee en la MISMA vara.
+  const vals = [];
+  rows.forEach(p => { vals.push(p.x); vals.push(p.y); });
+  const R = co_niceRange(vals);
+  const xScale = (v) => MARGIN.left + ((v - R.lo) / (R.hi - R.lo)) * plotW;
+
+  // grid + ticks
+  const gridG = co_ns('g'); svg.appendChild(gridG);
+  co_ticksOf(R).forEach(v => {
+    const x = xScale(v);
+    const ln = co_ns('line');
+    ln.setAttribute('x1', x); ln.setAttribute('x2', x);
+    ln.setAttribute('y1', MARGIN.top); ln.setAttribute('y2', MARGIN.top + innerH);
+    ln.setAttribute('stroke', CO_GRID); ln.setAttribute('stroke-width', 1);
+    gridG.appendChild(ln);
+    const tx = co_ns('text');
+    tx.setAttribute('x', x); tx.setAttribute('y', MARGIN.top + innerH + (bigFmt ? 30 : 17));
+    tx.setAttribute('text-anchor', 'middle');
+    tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+    tx.style.fontSize = SIZES.tick + 'px'; tx.setAttribute('fill', CO_INK_SOFT);
+    tx.setAttribute('font-variant-numeric', 'tabular-nums');
+    tx.textContent = ((typeof fmt === 'function') ? fmt(v, R.dec) : v) + '%';
+    gridG.appendChild(tx);
+  });
+
+  // leyenda: qué es cada punta (los nombres largos van en dos renglones)
+  const legG = co_ns('g'); svg.appendChild(legG);
+  [[CO_DB_X, co_varLabel(s.x)], [CO_DB_Y, co_varLabel(s.y)]].forEach((par, i) => {
+    const y = (bigFmt ? 16 : 10) + i * SIZES.legend * 1.5;
+    const c = co_ns('circle');
+    c.setAttribute('cx', MARGIN.left + SIZES.dot); c.setAttribute('cy', y);
+    c.setAttribute('r', SIZES.dot * 0.85); c.setAttribute('fill', par[0]);
+    legG.appendChild(c);
+    const tx = co_ns('text');
+    tx.setAttribute('x', MARGIN.left + SIZES.dot * 2 + 6); tx.setAttribute('y', y);
+    tx.setAttribute('dominant-baseline', 'central');
+    tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+    tx.style.fontSize = SIZES.legend + 'px'; tx.setAttribute('fill', CO_INK);
+    tx.setAttribute('font-weight', 600);
+    tx.textContent = par[1];
+    legG.appendChild(tx);
+  });
+
+  // filas
+  const rowsG = co_ns('g'); svg.appendChild(rowsG);
+  rows.forEach((p, i) => {
+    const cy = MARGIN.top + i * rH + rH / 2;
+    const x1 = xScale(p.x), x2 = xScale(p.y);
+    const name = co_ns('text');
+    name.setAttribute('x', MARGIN.left - 10); name.setAttribute('y', cy);
+    name.setAttribute('text-anchor', 'end'); name.setAttribute('dominant-baseline', 'central');
+    name.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+    name.style.fontSize = SIZES.name + 'px'; name.setAttribute('font-weight', 600);
+    name.setAttribute('fill', CO_INK);
+    name.textContent = co_name(p.iso);
+    rowsG.appendChild(name);
+
+    const ln = co_ns('line');
+    ln.setAttribute('x1', x1); ln.setAttribute('x2', x2);
+    ln.setAttribute('y1', cy); ln.setAttribute('y2', cy);
+    ln.setAttribute('stroke', '#B8AE9C'); ln.setAttribute('stroke-width', bigFmt ? 3 : 2);
+    rowsG.appendChild(ln);
+
+    [[x1, CO_DB_X, p.x], [x2, CO_DB_Y, p.y]].forEach(par => {
+      const c = co_ns('circle');
+      c.setAttribute('cx', par[0]); c.setAttribute('cy', cy);
+      c.setAttribute('r', SIZES.dot); c.setAttribute('fill', par[1]);
+      c.setAttribute('stroke', CO_BG); c.setAttribute('stroke-width', bigFmt ? 2 : 1.2);
+      rowsG.appendChild(c);
+    });
+
+    // valores en las puntas SOLO en PNG/mobile (en pantalla los da el tooltip);
+    // el de la punta menor va a la izquierda y el de la mayor a la derecha,
+    // para que no se pisen entre sí cuando la brecha es corta.
+    if (bigFmt) {
+      const menor = (p.x <= p.y) ? [x1, p.x] : [x2, p.y];
+      const mayor = (p.x <= p.y) ? [x2, p.y] : [x1, p.x];
+      [[menor, 'end', -1], [mayor, 'start', 1]].forEach(spec => {
+        const tx = co_ns('text');
+        tx.setAttribute('x', spec[0][0] + spec[2] * (SIZES.dot + 6));
+        tx.setAttribute('y', cy);
+        tx.setAttribute('text-anchor', spec[1]); tx.setAttribute('dominant-baseline', 'central');
+        tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+        tx.style.fontSize = SIZES.val + 'px'; tx.setAttribute('fill', CO_INK_SOFT);
+        tx.setAttribute('font-variant-numeric', 'tabular-nums');
+        tx.textContent = (typeof fmt === 'function') ? fmt(spec[0][1], 1) : spec[0][1];
+        rowsG.appendChild(tx);
+      });
+    }
+
+    if (!isPngFormat) {
+      const hit = co_ns('rect');
+      hit.setAttribute('x', 0); hit.setAttribute('y', MARGIN.top + i * rH);
+      hit.setAttribute('width', W); hit.setAttribute('height', rH);
+      hit.setAttribute('fill', 'transparent'); hit.style.cursor = 'pointer';
+      hit.addEventListener('mouseenter', (e) => co_showTooltip(e, p));
+      hit.addEventListener('mousemove', (e) => co_posTooltip(e));
+      hit.addEventListener('mouseleave', () => co_hideTooltip());
+      rowsG.appendChild(hit);
+    }
+  });
+
+  // eje base
+  const ax = co_ns('line');
+  ax.setAttribute('x1', MARGIN.left); ax.setAttribute('x2', MARGIN.left);
+  ax.setAttribute('y1', MARGIN.top); ax.setAttribute('y2', MARGIN.top + innerH);
+  ax.setAttribute('stroke', CO_AXIS); ax.setAttribute('stroke-width', 1);
+  svg.appendChild(ax);
+}
+
 function co_showTooltip(e, p) {
   const tt = document.getElementById('tooltip19');
   if (!tt) return;
@@ -1380,6 +1577,7 @@ function initCorrelaciones() {
   if (s.hoverRegion === undefined) s.hoverRegion = null;
   if (s.showDiag === undefined) s.showDiag = true;
   if (s.showFit === undefined) s.showFit = true;
+  if (s.vista !== 'dumbbell') s.vista = 'scatter';
   s.playing = false;
   const ws = co_waves(s.x, s.y);
   if (ws.indexOf(s.wave) < 0) s.wave = ws.length ? ws[ws.length - 1] : null;
@@ -1387,6 +1585,7 @@ function initCorrelaciones() {
   co_buildSelects();
   setupCorrelacionesSelects();
   setupCorrelacionesRefs();
+  setupCorrelacionesVista();
   setupCorrelacionesWave();
   setupCorrelacionesSearch();
   setupCorrelacionesCSV();
