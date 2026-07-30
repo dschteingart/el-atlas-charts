@@ -15,9 +15,13 @@ const ISSUE_I18N = {
     'page-lede':  'Qué declaran las encuestas sobre la intolerancia en Argentina, América Latina y el mundo.',
 
     // ---- Chart 1: ranking por categoría (barras)
-    'c1-title':          'El Río de la Plata, campeón mundial de la tolerancia (declarada)',
+    // Titulo editorial: vale SOLO en el estado por default (categoria = otra
+    // raza). Nombra el objeto (a quien se rechaza) y contra que se compara —sin
+    // eso, un titulo que viaja solo en el PNG no se entiende— y conserva el
+    // verbo DECLARA, que es la advertencia central del numero.
+    'c1-title':          'América Latina declara menos rechazo al vecino de otra raza que el resto del mundo',
     'c1-title-neutral':  'Los vecinos que cada sociedad rechaza',
-    'c1-subtitle-tpl':   'Porcentaje que no querría tener de vecinos a {CAT}. Encuesta de {PERIODO}.',
+    'c1-subtitle-tpl':   'Porcentaje que menciona a {CAT} entre los grupos que no querría de vecinos. Último dato por país, {Y}.',
     'c1-cat-label':      'No querría de vecinos a…',
     'c1-wave-label':     'Ola de la encuesta',
     'c1-tt-both':        '* promedio de EVS y WVS',
@@ -45,7 +49,7 @@ const ISSUE_I18N = {
     'c1-axis-x':         '% que menciona al grupo como vecino no deseado',
     'c1-axis-mk':        '% que no lo querría de vecino',
     'c1-sources':        'Datos: Integrated Values Survey (EVS 1981-2021 + WVS 1981-2022), pregunta «¿A cuáles de estos grupos no le gustaría tener de vecinos?» (mención espontánea). Último dato disponible por país (2017-2022); % ponderado sobre respuestas válidas, muestras de 1.000-2.000 casos. Mide intolerancia <em>declarada</em> ante un encuestador — diferencias de pocos puntos entre países no son informativas (los países medidos por EVS y WVS a la vez difieren hasta 8-13 puntos).',
-    'c1-sources-tpl':    'Datos: Integrated Values Survey (EVS/WVS). «¿A quién no querría de vecino?» — mención espontánea, % ponderado. Último dato por país, {Y}. Mide intolerancia declarada.',
+    'c1-sources-tpl':    'Datos: Integrated Values Survey (EVS/WVS). Último dato por país, {Y}.',
 
     // Categorías: forma corta (selector) y forma "a ..." (subtítulo)
     'cat-otra_raza':          'Personas de otra raza',
@@ -156,9 +160,9 @@ const ISSUE_I18N = {
     'page-title': 'The most racist country in the world?',
     'page-lede':  'What surveys say about intolerance in Argentina, Latin America and the world.',
 
-    'c1-title':          'The River Plate, world champion of (declared) tolerance',
+    'c1-title':          'Latin America reports less rejection of neighbours of another race than the rest of the world',
     'c1-title-neutral':  'The neighbours each society rejects',
-    'c1-subtitle-tpl':   'Share who would not like to have {CAT} as neighbours. Survey wave {PERIODO}.',
+    'c1-subtitle-tpl':   'Share who mention {CAT} among the groups they would not want as neighbours. Latest data per country, {Y}.',
     'c1-cat-label':      'Would not want as neighbours…',
     'c1-wave-label':     'Survey wave',
     'c1-tt-both':        '* average of EVS and WVS',
@@ -186,7 +190,7 @@ const ISSUE_I18N = {
     'c1-axis-x':         '% mentioning the group as unwanted neighbours',
     'c1-axis-mk':        '% who would not want them as neighbours',
     'c1-sources':        'Data: Integrated Values Survey (EVS 1981-2021 + WVS 1981-2022), question "Which of these groups would you not like to have as neighbours?" (spontaneous mention). Latest available data per country (2017-2022); weighted % over valid responses, samples of 1,000-2,000 cases. Note: this measures intolerance as <em>declared</em> to an interviewer — small gaps between countries are not informative (countries surveyed by both EVS and WVS differ by up to 8-13 points).',
-    'c1-sources-tpl':    'Data: Integrated Values Survey (EVS/WVS). "Who would you not want as a neighbour?" — spontaneous mention, weighted %. Latest data per country, {Y}. Measures declared intolerance.',
+    'c1-sources-tpl':    'Data: Integrated Values Survey (EVS/WVS). Latest data per country, {Y}.',
 
     'cat-otra_raza':          'People of a different race',
     'cat-inmigrantes':        'Immigrants',

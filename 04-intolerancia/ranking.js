@@ -28,9 +28,11 @@ const RK_LATAM_REGIONS = new Set(['Latin America', 'Caribbean']);
 // Set curado inicial (WYSIWYG: son los chips = las etiquetas). La tesis
 // rioplatense + spread LatAm + referencias globales. ~17 entra limpio en el
 // marimekko; el usuario agrega/saca a gusto.
+// Los once del PNG que aprobó Daniel (2026-07-29): los dos extremos mundiales,
+// el Río de la Plata, y las referencias europeas y del norte con las que se lo
+// compara en la nota.
 const RK_DEFAULT_SELECTED = [
-  'URY','ARG','BRA','CHL','PER','COL','MEX','GTM','VEN',
-  'USA','FRA','ESP','ITA','JPN','TUR'
+  'MMR','VNM','ESP','ITA','MEX','FRA','USA','ARG','BRA','SWE','URY'
 ];
 
 const RK_SVG_NS = 'http://www.w3.org/2000/svg';
@@ -153,7 +155,33 @@ function rk_updateSubtitle() {
   if ((tx.subtitle || '').trim()) return;
   const tpl = (typeof t === 'function') ? t('c1-subtitle-tpl') : '';
   const cat = (typeof t === 'function') ? t('catA-' + state[1].cat) : state[1].cat;
-  el.textContent = tpl.replace('{CAT}', cat).replace('{PERIODO}', rk_waveLabel());
+  el.textContent = tpl.replace('{CAT}', cat)
+    .replace('{PERIODO}', rk_waveLabel())
+    .replace('{Y}', rk_rangoAnios());
+}
+
+// Rango REAL de años de campo de la foto que se está mostrando. La etiqueta de
+// la ola ("2017-2022") es el nombre nominal del período; el campo de verdad
+// llega hasta 2023 (India). El subtítulo y la nota muestran el rango real y se
+// corrigen solos cuando cambian los datos.
+function rk_rangoAnios() {
+  const rows = (typeof rk_computeData === 'function') ? rk_computeData() : [];
+  const ys = rows.map(r => r.year).filter(y => y);
+  if (!ys.length) return rk_waveLabel();
+  const a = Math.min.apply(null, ys), b = Math.max.apply(null, ys);
+  return (a === b) ? String(a) : (a + '-' + b);
+}
+
+// ¿Estado por default? El título editorial afirma algo sobre la categoría
+// "otra raza" en la última ola: si el lector cambió cualquiera de las dos, deja
+// de valer y el encabezado pasa al descriptivo.
+function rk_esDefault() {
+  const s = state[1];
+  if (!s || s.cat !== 'otra_raza') return false;
+  if (typeof WV_META !== 'undefined' && WV_META.length) {
+    if (s.wave !== WV_META[WV_META.length - 1].w) return false;
+  }
+  return true;
 }
 
 //==================================================================
@@ -176,9 +204,12 @@ function drawRanking() {
     const k = state[1].view === 'all' ? 'c1-pick-hint-all' : 'c1-pick-hint-sel';
     hint.textContent = (typeof t === 'function') ? t(k) : '';
   }
-  // Título: neutral por ahora (el insight queda en i18n para más adelante).
+  // Título: el EDITORIAL sólo en el estado por default (criterio OWID + norma de
+  // títulos dinámicos del repo). Apenas el lector cambia de categoría, el título
+  // pasa al descriptivo: el editorial afirma algo sobre "otra raza" y sería
+  // falso con drogadictos o bebedores.
   if (typeof atlasSetHeading === 'function') {
-    atlasSetHeading('1', false, { title: 'c1-title', titleNeutral: 'c1-title-neutral' });
+    atlasSetHeading('1', rk_esDefault(), { title: 'c1-title', titleNeutral: 'c1-title-neutral' });
   }
 }
 
