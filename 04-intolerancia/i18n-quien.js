@@ -36,7 +36,7 @@ Object.assign(I18N.es, {
   'c12-median-lbl':     'Mediana regional',
   'c12-median-legend':  'Mediana regional',
   'c12-heat-legend':    '% que lo nombra como el más discriminado',
-  'c12-heat-box-note':  'El número en negrita, con recuadro, es el grupo que ese país señala primero.',
+  'c12-heat-box-note':  'En cada fila, el número destacado es el grupo que ese país señala primero.',
 
   // ---- Tooltip
   'c12-tt-pct':         'Lo nombran como el más discriminado',
@@ -97,7 +97,7 @@ Object.assign(I18N.en, {
   'c12-median-lbl':     'Regional median',
   'c12-median-legend':  'Regional median',
   'c12-heat-legend':    '% who name it as the most discriminated',
-  'c12-heat-box-note':  'The bold, boxed number is the group that country names first.',
+  'c12-heat-box-note':  'In each row, the highlighted number is the group that country names first.',
 
   'c12-tt-pct':         'Name it as the most discriminated',
   'c12-tt-top':         'Most-named group',

@@ -540,40 +540,27 @@ function qn_drawMatriz() {
         tx.setAttribute('text-anchor', 'middle');
         tx.setAttribute('dominant-baseline', 'central');
         tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-        // El máximo de la fila se destaca con el peso del NÚMERO, no con su
-        // tamaño: agrandarlo desalineaba la fila y encima el 800 que tenía no
-        // existe —la página carga Source Sans 3 en 400, 500 y 600— así que el
-        // navegador lo sintetizaba engrosando los trazos, y ESO era lo que se
-        // veía sucio. 600 es un peso real de la fuente.
-        tx.style.fontSize = SIZES.cell + 'px';
+        // TODAS las celdas llevan el mismo contorno: el máximo de la fila se
+        // marca sólo con el número. Y se marca por contraste en los dos
+        // sentidos —el líder al frente y el resto un paso atrás—, que es lo que
+        // deja destacarlo sin recurrir a una negrita gruesa: la página carga
+        // Source Sans 3 en 400, 500 y 600, así que cualquier peso mayor lo
+        // sintetiza el navegador engrosando trazos y se ve sucio.
+        tx.style.fontSize = (esTop ? SIZES.cell * 1.1 : SIZES.cell) + 'px';
         tx.setAttribute('font-variant-numeric', 'tabular-nums');
         tx.setAttribute('font-weight', esTop ? 600 : 400);
         // Texto claro sobre los dos tonos más oscuros; si no, no se lee.
-        tx.setAttribute('fill', bin >= 4 ? '#FBF8F1' : '#3A3530');
+        if (bin >= 4) {
+          tx.setAttribute('fill', '#FBF8F1');
+          tx.setAttribute('fill-opacity', esTop ? 1 : 0.74);
+        } else {
+          tx.setAttribute('fill', esTop ? '#2E2A25' : '#6B6257');
+        }
         tx.style.pointerEvents = 'none';
         tx.textContent = qn_fmt(v, 0);
         gCells.appendChild(tx);
       }
     });
-
-    // Recuadro del máximo de la fila. El color del filete sigue la MISMA regla
-    // de contraste que el número: claro sobre las celdas oscuras, oscuro sobre
-    // las claras. Antes era siempre casi negro y desaparecía justo donde más
-    // hace falta, que es en la celda más oscura de la fila.
-    const jTop = cats.indexOf(r.top);
-    if (jTop >= 0) {
-      const binTop = qn_heatBin(r.pct[r.top], breaks);
-      const box = qn_ns('rect');
-      const inset = bigFmt ? 2 : 1.4;
-      box.setAttribute('x', MARGIN.left + jTop * cellW + inset);
-      box.setAttribute('y', y + inset);
-      box.setAttribute('width', cellW - inset * 2); box.setAttribute('height', cellH - inset * 2);
-      box.setAttribute('fill', 'none');
-      box.setAttribute('stroke', binTop >= 4 ? '#FBF8F1' : '#2E2A25');
-      box.setAttribute('stroke-width', bigFmt ? 3 : 2);
-      box.style.pointerEvents = 'none';
-      gCells.appendChild(box);
-    }
   });
 
   // ---- Leyenda de color + nota del recuadro ----
