@@ -62,7 +62,10 @@ const DV_DEFAULT_VAR = 'otra_raza';
 // Default pre-tildado (regla WYSIWYG: los chips SON las etiquetas). Los seis
 // grandes de América Latina —protagonistas del número— más tres referencias
 // globales, para que la recta tenga anclas a los dos lados del ingreso.
-const DV_DEFAULT_SEL = ['ARG', 'BRA', 'CHL', 'MEX', 'PER', 'URY', 'USA', 'ESP', 'SWE'];
+// America Latina completa: la tesis del chart ES el residuo regional, asi que
+// la region entera nace etiquetada (Daniel 2026-07-29). Son chips normales: se
+// sacan de a uno con la cruz o con Limpiar.
+const DV_DEFAULT_SEL = ['GTM','NIC','VEN','ECU','BOL','COL','PER','BRA','MEX','ARG','CHL','URY','PRI'];
 // Sin pais destacado (ver la misma nota en correlaciones.js).
 const DV_HIGHLIGHT = null;
 // Anclas globales: cuando el hover revela una región entera y no entran todas
