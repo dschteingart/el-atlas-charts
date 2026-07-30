@@ -205,6 +205,74 @@ function dv_varLabel(v) {
 function dv_varDef(v) {
   return dv_lang() === 'en' ? v.def_en : v.def_es;
 }
+// Forma de TÍTULO de la variable ("rechazo a vecinos de otra raza"): frase en
+// minúscula lista para componer, no el rótulo del menú ("Personas de otra
+// raza"), que suelto en un título se lee como una lista de grupos y no como una
+// medición. Mismo criterio y mismo campo del dataset que el chart 19.
+function dv_varTitulo(v) {
+  if (!v) return '';
+  const tit = dv_lang() === 'en' ? v.titulo_en : v.titulo_es;
+  return tit || dv_varLabel(v);
+}
+// Definición CORTA para el subtítulo: la primera oración de def_es/def_en. Lo
+// que sigue son advertencias («OJO: acá más es MEJOR», de dónde sale el World
+// Risk Poll) y ésas viven en la nota, no en la bajada. Se abre el «%» en
+// palabra —una bajada no empieza con un símbolo— y se saca el punto final,
+// porque la plantilla sigue con «, y PIB per cápita».
+function dv_defCorta(v) {
+  let d = (dv_varDef(v) || '').trim();
+  const i = d.indexOf('. ');
+  if (i > 0) d = d.slice(0, i);
+  d = d.replace(/\.$/, '');
+  // Y sin la aclaración entre paréntesis del final ("(el «ni una ni otra» queda
+  // en el denominador)"): es metodología, y la metodología va en la nota.
+  d = d.replace(/\s*\([^()]*\)$/, '');
+  return d.replace(/^%\s*/, dv_lang() === 'en' ? 'Share ' : 'Porcentaje ');
+}
+// ¿La variable es una de las 14 categorías de la batería de vecinos? Es la
+// única familia donde «declara menos rechazo» es literal y donde una sola
+// definición sirve para todas.
+function dv_esBateria(v) {
+  return !!v && DV_GRP_KEY[v.grupo] === 'c18-grp-vecinos';
+}
+// Rango REAL de años de campo de los puntos dibujados. La etiqueta de la ola
+// ("2017-2022") es el nombre nominal del período; el campo de verdad llega
+// hasta 2023 (India). Mismo helper que rk_rangoAnios en el chart 1.
+function dv_rangoAnios(pts) {
+  const ys = (pts || []).map(p => p.year).filter(y => y);
+  if (!ys.length) return dv_waveLabel(state[18].wave);
+  const a = Math.min.apply(null, ys), b = Math.max.apply(null, ys);
+  return (a === b) ? String(a) : (a + '-' + b);
+}
+// ¿La ola elegida es la última que tiene esta variable? Con la última, la foto
+// ES el último dato de cada país; con una ola vieja, decirlo sería falso.
+function dv_esUltimaOla() {
+  const olas = dv_wavesFor(state[18].k);
+  return !!olas.length && state[18].wave === Math.max.apply(null, olas);
+}
+// ¿Estado por default? El título editorial afirma algo sobre América Latina en
+// la foto completa: sigue valiendo si el lector cambia de CATEGORÍA (el título
+// se rearma con la nueva), pero no si cambia de ola, apaga una región o toca la
+// selección de países, porque entonces el número que lo sostiene ya no es el
+// que se calculó (criterio de Daniel 2026-07-30: "al cambiar cualquier otra
+// cosa, título neutral… agregar o sacar países también").
+function dv_esDefault() {
+  const s = state[18];
+  if (!s) return false;
+  if (!dv_esUltimaOla()) return false;
+  if (dv_hidden().size) return false;
+  const sel = (s.selected || []).slice().sort().join(',');
+  return sel === DV_DEFAULT_SEL.slice().sort().join(',');
+}
+// Texto custom del editor (?nl=1) para un campo: si lo hay, los títulos
+// dinámicos no lo pisan.
+function dv_editorCustom(field) {
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig)
+    ? window.AtlasEditor.getConfig() : null;
+  if (!ae || !ae.texts) return '';
+  const tx = ae.texts[(ae.lang || dv_lang())] || {};
+  return (tx[field] || '').trim();
+}
 function dv_waveLabel(w) {
   for (let i = 0; i < CR_WAVES.length; i++) {
     if (CR_WAVES[i].w === w) return CR_WAVES[i].label;
@@ -526,7 +594,8 @@ function drawDesarrollo() {
     msg.style.fontSize = SIZES.axisTitle + 'px';
     msg.textContent = dv_t('c18-nodata');
     svg.appendChild(msg);
-    dv_updateSubtitle(v, null);
+    dv_updateSubtitle(v, pts);
+    dv_updateTitle(v, null);
     dv_updateBanner(null, 0);
     dv_syncShowAll();
     return;
@@ -750,17 +819,13 @@ function drawDesarrollo() {
     if (ev.target.tagName !== 'circle') { dv_hideTooltip(); dv_setHoverRegion(null); }
   };
 
-  dv_updateSubtitle(v, model);
+  dv_updateSubtitle(v, pts);
+  // El título lo arman la variable elegida y el residuo recién calculado, así
+  // que no puede salir de una clave fija y no va por atlasSetHeading (mismo
+  // mecanismo que co_updateTitle en el chart 19).
+  dv_updateTitle(v, model);
   dv_syncShowAll();
   dv_applyRegionFocus();
-
-  // Título NEUTRAL por default, como los otros 21 charts del repo (norma de
-  // Daniel: "para todos los charts, dejemos por ahora titulos neutrales por
-  // default; luego vemos editorialización"). La clave c18-title con el insight
-  // queda escrita y lista para cuando se decida activarla.
-  if (typeof atlasSetHeading === 'function') {
-    atlasSetHeading('18', false, { title: 'c18-title', titleNeutral: 'c18-title-neutral' });
-  }
 }
 
 // =================== Etiquetas ===================
@@ -989,50 +1054,69 @@ function dv_applyRegionFocus() {
   dv_updateBanner(dv_lastModel, dv_lastN);
 }
 
+// =================== Título dinámico ===================
+// Tres capas que no se repiten (criterio OWID): acá va EL HALLAZGO, y sólo
+// cuando el gráfico que está en pantalla lo sostiene. Se pide todo junto:
+//   · una categoría de la batería de vecinos (donde "declara menos rechazo a
+//     vecinos X" es literal; con "enseña tolerancia a sus hijos" el signo se
+//     lee al revés y con el World Risk Poll ni siquiera es la misma encuesta),
+//   · el estado por default (ver dv_esDefault),
+//   · y América Latina POR DEBAJO de lo previsto, con un residuo que no
+//     redondee a cero: el titular afirma un hecho, y si el hecho se da vuelta
+//     al mover un control el titular tiene que irse.
+// En cualquier otro caso el título es DESCRIPTIVO y nombra la medición
+// ("Rechazo a vecinos de otra raza y PIB per cápita"): el neutral fijo de antes
+// —"Intolerancia declarada y PIB per cápita"— no decía qué se estaba midiendo
+// cuando el lector cambiaba de categoría.
+function dv_updateTitle(v, model) {
+  const block = document.querySelector('.chart-block[data-chart="18"]');
+  if (!block) return;
+  const el = block.querySelector('.chart-title');
+  if (!el || dv_editorCustom('title')) return;
+  const nom = dv_varTitulo(v);
+  const latam = (model && !dv_hidden().has(DV_LATAM)) ? model.byRegion[DV_LATAM] : null;
+  const tplEd = dv_t('c18-title-tpl');
+  if (dv_esBateria(v) && dv_esDefault() && latam &&
+      latam.pp < 0 && Math.round(Math.abs(latam.pp)) > 0 &&
+      tplEd && tplEd.indexOf('{VAR}') >= 0) {
+    el.textContent = tplEd.replace('{VAR}', nom);
+    return;
+  }
+  const tpl = dv_t('c18-title-neutral-tpl');
+  if (tpl && tpl.indexOf('{VAR}') >= 0) {
+    const txt = tpl.replace('{VAR}', nom);
+    el.textContent = txt.charAt(0).toUpperCase() + txt.slice(1);
+    return;
+  }
+  el.textContent = dv_t('c18-title-neutral');
+}
+
 // =================== Subtítulo dinámico ===================
-// El subtítulo es el lugar donde el hallazgo se cuenta EN PALABRAS: con ajuste
-// estimado y residuo de América Latina, dice de qué lado de lo previsto queda
-// la región. Dos plantillas según el signo (c18-subtitle-tpl-more /
-// c18-subtitle-tpl-less), como el N°2 (scatter.js:305-317), y el residuo
-// REDONDEADO A ENTERO: el lector no precisa 9,6 pp vs 10 pp, y el número se
-// mueve de ola en ola. Sin modelo —o con América Latina apagada desde la
-// leyenda— cae a la plantilla descriptiva de siempre (c18-subtitle-tpl).
+// Capa del medio: QUÉ se mide y CUÁNDO. Nada más.
 //
-// NO se duplica con el banner: el banner da el número exacto (+/−9,6 pp) y el
-// subtítulo da la frase redondeada. La tira dentro del SVG ya no se dibuja en
-// pantalla (sólo al exportar).
-function dv_updateSubtitle(v, model) {
+// ANTES contaba el hallazgo ("América Latina queda 10 pp por debajo…") y además
+// describía los dos ejes, con lo cual el número aparecía tres veces —título,
+// subtítulo y banner— y la descripción de ejes repetía los rótulos que ya están
+// dibujados. El residuo se mudó al título (dv_updateTitle) y el número exacto
+// quedó sólo en el banner.
+function dv_updateSubtitle(v, pts) {
   dv_updateSources();
   const block = document.querySelector('.chart-block[data-chart="18"]');
   if (!block) return;
   const el = block.querySelector('.chart-subtitle');
-  if (!el) return;
-  // No pisamos el subtítulo custom del editor (?nl=1).
-  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig)
-    ? window.AtlasEditor.getConfig() : null;
-  if (ae && ae.texts) {
-    const tx = ae.texts[(ae.lang || dv_lang())] || {};
-    if ((tx.subtitle || '').trim()) return;
-  }
-  const wave = dv_waveLabel(state[18].wave);
-  const latam = (model && !dv_hidden().has(DV_LATAM)) ? model.byRegion[DV_LATAM] : null;
-  const n = latam ? Math.round(Math.abs(latam.pp)) : 0;
-  // Con residuo que redondea a 0 no hay nada que contar: "queda 0 pp por
-  // encima" es peor que la descripción de siempre.
-  if (latam && n > 0) {
-    const key = latam.pp >= 0 ? 'c18-subtitle-tpl-more' : 'c18-subtitle-tpl-less';
-    const tpl = dv_t(key);
-    if (tpl && tpl !== key) {
-      el.textContent = tpl
-        .replace('{N}', String(n))
-        .replace('{DEF}', dv_varDef(v))
-        .replace('{PERIODO}', wave);
-      return;
-    }
+  if (!el || dv_editorCustom('subtitle')) return;
+  const cuando = dv_t(dv_esUltimaOla() ? 'c18-when-last' : 'c18-when-wave')
+    .replace('{Y}', dv_rangoAnios(pts));
+  if (dv_esBateria(v)) {
+    const cat = dv_varLabel(v);
+    el.textContent = dv_t('c18-subtitle-vec-tpl')
+      .replace('{CAT}', cat.charAt(0).toLowerCase() + cat.slice(1))
+      .replace('{CUANDO}', cuando);
+    return;
   }
   el.textContent = dv_t('c18-subtitle-tpl')
-    .replace('{DEF}', dv_varDef(v))
-    .replace('{PERIODO}', wave);
+    .replace('{DEF}', dv_defCorta(v))
+    .replace('{CUANDO}', cuando);
 }
 
 // =================== Banner (HTML, debajo del SVG) ===================
