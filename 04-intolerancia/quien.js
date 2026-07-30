@@ -425,7 +425,7 @@ function qn_drawMatriz() {
   else { W = 1100; totalH = 0; }
 
   let maxHead = 0;
-  cats.forEach(c => { const w = qn_measure(qn_catLabel(c) + flecha, SIZES.head, 700); if (w > maxHead) maxHead = w; });
+  cats.forEach(c => { const w = qn_measure(qn_heatLabel(c) + flecha, SIZES.head, 700); if (w > maxHead) maxHead = w; });
   let maxName = 0;
   rows.forEach(r => { const w = qn_measure(qn_name(r.iso), SIZES.name, 500); if (w > maxName) maxName = w; });
 
@@ -491,7 +491,7 @@ function qn_drawMatriz() {
     th.style.fontSize = SIZES.head + 'px';
     th.setAttribute('font-weight', sel ? 700 : 500);
     th.setAttribute('fill', sel ? '#8B3F1E' : '#5A5346');
-    th.textContent = qn_catLabel(c) + (sel ? flecha : '');
+    th.textContent = qn_heatLabel(c) + (sel ? flecha : '');
     th.style.cursor = 'pointer';
     th.addEventListener('click', () => qn_heatSort(c));
     gCells.appendChild(th);
@@ -525,7 +525,7 @@ function qn_drawMatriz() {
       rect.setAttribute('stroke', '#FBF8F1');      // el fondo del papel: separa sin dibujar una grilla
       rect.setAttribute('stroke-width', 1);
       rect.style.cursor = 'pointer';
-      const show = (ev) => qn_showTooltipHeat(ev, r.iso, c, v);
+      const show = (ev) => qn_showTooltipHeat(ev, r.iso, c, v, { cat: r.top, pct: r.pct[r.top] });
       rect.addEventListener('mouseenter', show);
       rect.addEventListener('click', show);        // en touch no hay hover: el tap abre el tooltip
       rect.addEventListener('mousemove', (ev) => qn_posTooltip(ev));
@@ -540,12 +540,14 @@ function qn_drawMatriz() {
         tx.setAttribute('text-anchor', 'middle');
         tx.setAttribute('dominant-baseline', 'central');
         tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-        // El máximo de la fila se destaca con el NÚMERO: más grande y en negrita.
-        // El recuadro solo no alcanzaba —un filete oscuro sobre una celda oscura
-        // no se ve— y era lo que Daniel no encontraba en el PNG.
-        tx.style.fontSize = (esTop ? SIZES.cell * 1.22 : SIZES.cell) + 'px';
+        // El máximo de la fila se destaca con el peso del NÚMERO, no con su
+        // tamaño: agrandarlo desalineaba la fila y encima el 800 que tenía no
+        // existe —la página carga Source Sans 3 en 400, 500 y 600— así que el
+        // navegador lo sintetizaba engrosando los trazos, y ESO era lo que se
+        // veía sucio. 600 es un peso real de la fuente.
+        tx.style.fontSize = SIZES.cell + 'px';
         tx.setAttribute('font-variant-numeric', 'tabular-nums');
-        tx.setAttribute('font-weight', esTop ? 800 : 400);
+        tx.setAttribute('font-weight', esTop ? 600 : 400);
         // Texto claro sobre los dos tonos más oscuros; si no, no se lee.
         tx.setAttribute('fill', bin >= 4 ? '#FBF8F1' : '#3A3530');
         tx.style.pointerEvents = 'none';
@@ -593,54 +595,82 @@ function qn_heatBin(v, breaks) {
   let i = 0; for (const b of breaks) { if (v < b) return i; i++; }
   return Math.min(i, QN_HEAT_COLORS.length - 1);
 }
-// Columnas ordenadas por la mediana regional, de más a menos señalado: la matriz
-// se lee de izquierda a derecha como el orden en que América Latina nombra a sus
-// discriminados.
-// Las 8 columnas de la matriz. Las otras cuatro macrocategorías del dataset
+// Las 8 columnas de la matriz. Doce columnas se leían como una grilla de
+// números, así que las cuatro macrocategorías que nunca ganan en ningún país
 // —ideología política, conducta o estigma, salud o discapacidad, religión u
-// origen— NO se muestran acá: ninguna es la más señalada en ningún país, y con
-// doce columnas la tabla se leía como una grilla de números. Están enteras en
-// las otras dos pestañas y en el CSV. Ojo: por eso las filas de la matriz NO
-// suman 100 (les falta lo que se llevan esas cuatro), y por eso «Otros» sigue
-// siendo el «otros» del dataset y significa lo mismo en las tres vistas: no se
-// le metió adentro lo que se sacó.
-const QN_HEAT_CATS = ['pobres', 'raza_etnia', 'lgbt', 'migrantes', 'edad', 'mujeres', 'ninguna', 'otros'];
+// origen— se SUMAN a «Otros». No se descartan: la pregunta es de respuesta
+// única, y si se tiraran, la fila dejaría de sumar 100 y la matriz mostraría
+// una composición incompleta sin decirlo.
+//
+// Por eso la última columna es una categoría PROPIA de esta vista (clave
+// __resto) y no el «otros» del dataset: acá vale más y significa otra cosa. Se
+// la trata aparte en todos lados —valor, mediana, etiqueta, tooltip— y, sobre
+// todo, NO escribe state[12].cat: si lo hiciera, pasar al Ranking mostraría el
+// «Otros» angosto con otro número y el lector no entendería por qué.
+const QN_HEAT_RESTO = '__resto';
+const QN_HEAT_RESTO_SRC = ['otros', 'ideologia', 'conducta', 'salud_discap', 'religion_origen'];
+const QN_HEAT_CATS = ['pobres', 'raza_etnia', 'lgbt', 'migrantes', 'edad', 'mujeres', 'ninguna', QN_HEAT_RESTO];
 // «Ninguno» y «Otros» van siempre al final aunque su mediana sea alta: no son
 // grupos, y metidos en el medio de la fila rompen la lectura de izquierda a
 // derecha (Nicaragua contesta «ninguno» tanto como Brasil contesta «pobres»).
-const QN_HEAT_LAST = ['ninguna', 'otros'];
+const QN_HEAT_LAST = ['ninguna', QN_HEAT_RESTO];
+
+// Valor, etiqueta y mediana de una columna de la matriz: idénticos a los del
+// resto del chart salvo en __resto, que suma sus cinco macros.
+function qn_heatPct(iso, c) {
+  if (c !== QN_HEAT_RESTO) return qn_pctOf(iso, c);
+  return QN_HEAT_RESTO_SRC.reduce((s, k) => s + qn_pctOf(iso, k), 0);
+}
+function qn_heatLabel(c) {
+  return qn_catLabel(c === QN_HEAT_RESTO ? 'otros' : c);
+}
+function qn_heatIsos() {
+  return Array.from(new Set((QUIEN_FOTO['pobres'] || []).map(r => r[0])));
+}
+function qn_heatMedian(c) {
+  if (c !== QN_HEAT_RESTO) return qn_median(c);
+  const v = qn_heatIsos().map(iso => qn_heatPct(iso, c)).sort((a, b) => a - b);
+  if (!v.length) return null;
+  const mid = Math.floor(v.length / 2);
+  return { value: v.length % 2 ? v[mid] : (v[mid - 1] + v[mid]) / 2, n: v.length };
+}
+
 // Orden de las columnas: por la MEDIANA de los 18 países, de más señalado a
 // menos. O sea: la fila de encabezados es el ranking de América Latina entera, y
 // la matriz se lee de izquierda a derecha en ese orden.
 function qn_heatCols() {
-  const cats = QN_HEAT_CATS.filter(c => QUIEN_FOTO[c]);
+  const cats = QN_HEAT_CATS.filter(c => c === QN_HEAT_RESTO || QUIEN_FOTO[c]);
   return cats.sort((a, b) => {
     const ra = QN_HEAT_LAST.indexOf(a), rb = QN_HEAT_LAST.indexOf(b);
     if (ra >= 0 || rb >= 0) return (ra < 0 ? -1 : ra) - (rb < 0 ? -1 : rb);
-    const ma = qn_median(a), mb = qn_median(b);
+    const ma = qn_heatMedian(a), mb = qn_heatMedian(b);
     return (mb ? mb.value : 0) - (ma ? ma.value : 0);
   });
 }
 // Filas: un país por fila, ordenadas por la columna elegida (desc por default).
 function qn_heatRows(cats) {
-  const isos = Array.from(new Set((QUIEN_FOTO[cats[0]] || []).map(r => r[0])));
-  const out = isos.map(iso => {
+  const orden = qn_heatSortCat();
+  const out = qn_heatIsos().map(iso => {
     const pct = {};
-    cats.forEach(c => { pct[c] = qn_pctOf(iso, c); });
-    // El máximo se busca entre lo que la matriz DIBUJA, y sin «Otros»: es una
-    // bolsa residual, no un grupo, y marcarla no querría decir nada.
+    cats.forEach(c => { pct[c] = qn_heatPct(iso, c); });
+    // El máximo se busca sin «Otros»: es una bolsa residual —y ahora, además,
+    // la más grande de las ocho en varios países— y marcarla como «el grupo que
+    // este país señala primero» sería falso.
     let top = null;
-    cats.forEach(c => { if (c !== 'otros' && (top === null || pct[c] > pct[top])) top = c; });
+    cats.forEach(c => { if (c !== QN_HEAT_RESTO && (top === null || pct[c] > pct[top])) top = c; });
     return { iso, pct, top };
   });
-  const k = (QN_HEAT_CATS.indexOf(state[12].cat) >= 0) ? state[12].cat : QN_HEAT_CATS[0];
   const dir = (state[12].heatAsc ? 1 : -1);
-  out.sort((a, b) => dir * ((a.pct[k] || 0) - (b.pct[k] || 0)));
+  out.sort((a, b) => dir * ((a.pct[orden] || 0) - (b.pct[orden] || 0)));
   return out;
 }
-// Columna que manda el orden: la elegida, si está entre las ocho dibujadas.
+// Columna que manda el orden. Vive en su propio estado (heatCat) porque puede
+// ser __resto, que no existe fuera de esta vista. Los dos se mantienen atados en
+// la otra punta: clic en un encabezado real y cambio en el <select> del Ranking
+// escriben los dos, así que la categoría sigue viajando entre pestañas.
 function qn_heatSortCat() {
-  return (QN_HEAT_CATS.indexOf(state[12].cat) >= 0) ? state[12].cat : QN_HEAT_CATS[0];
+  const k = state[12].heatCat;
+  return (QN_HEAT_CATS.indexOf(k) >= 0) ? k : QN_HEAT_CATS[0];
 }
 
 function qn_drawHeatLegend(svg, MARGIN, plotW, y, breaks, SIZES, bigFmt) {
@@ -949,19 +979,27 @@ function qn_showTooltipPerfil(event, d) {
 // Tooltip de una celda de la matriz. Da el valor con decimal (la celda muestra
 // el entero) y, sobre todo, el grupo que ese país señala primero: sin eso, un
 // 12% suelto no dice si es mucho o poco para ESE país.
-function qn_showTooltipHeat(event, iso, cat, pct) {
+function qn_showTooltipHeat(event, iso, cat, pct, top) {
   const tt = document.getElementById('tooltip12');
   if (!tt) return;
   const L = (k, fb) => (typeof t === 'function' ? t(k) : fb);
-  const top = qn_topMacro(iso);
-  const med = qn_median(cat);
+  const med = qn_heatMedian(cat);
+  const resto = (cat === QN_HEAT_RESTO);
+  // En la columna combinada el desglose son las macros que la componen, no las
+  // 42 respuestas crudas: es lo único que contesta "¿qué hay acá adentro?".
+  const detalle = resto
+    ? `<div class="tt-sub"><em>${L('c12-tt-resto-incl', 'Incluye')}:</em> ` +
+      QN_HEAT_RESTO_SRC.map(k => ({ k, v: qn_pctOf(iso, k) }))
+        .sort((a, b) => b.v - a.v)
+        .map(x => `${qn_catLabel(x.k)} ${qn_fmt(x.v, 1)}%`).join(' · ') + '</div>'
+    : qn_compositionLine(iso, cat);
   tt.innerHTML =
     `<strong>${qn_name(iso)}</strong>` +
-    `<div class="tt-sub">${qn_catLabel(cat)} · Latinobarómetro 2020</div>` +
+    `<div class="tt-sub">${qn_heatLabel(cat)} · Latinobarómetro 2020</div>` +
     `<div class="tt-row tt-row-strong"><span>${L('c12-tt-pct', 'Lo nombran')}</span><span>${qn_fmt(pct, 1)}%</span></div>` +
     (med ? `<div class="tt-row"><span>${L('c12-median-legend', 'Mediana regional')}</span><span>${qn_fmt(med.value, 1)}%</span></div>` : '') +
-    `<div class="tt-row"><span>${L('c12-tt-top', 'Grupo más señalado')}</span><span>${qn_catLabel(top.cat)} (${qn_fmt(top.pct, 1)}%)</span></div>` +
-    qn_compositionLine(iso, cat);
+    (top ? `<div class="tt-row"><span>${L('c12-tt-top', 'Grupo más señalado')}</span><span>${qn_heatLabel(top.cat)} (${qn_fmt(top.pct, 1)}%)</span></div>` : '') +
+    detalle;
   tt.style.display = 'block'; tt.style.opacity = '1';
   qn_posTooltip(event);
 }
@@ -993,6 +1031,9 @@ function setupQuienCat() {
   sel.addEventListener('change', () => {
     if (!QUIEN_FOTO[sel.value]) return;
     state[12].cat = sel.value;
+    // La matriz ordena por su propio heatCat: se lo lleva de acá para que
+    // elegir un grupo en el Ranking y pasar a la Matriz no pierda el hilo.
+    if (QN_HEAT_CATS.indexOf(sel.value) >= 0) state[12].heatCat = sel.value;
     drawQuien();
   });
 }
@@ -1027,12 +1068,17 @@ function setupQuienCountry() {
 // que usa el Ranking, así que la columna elegida acá es la categoría que ese
 // gráfico muestra al cambiar de pestaña.
 function qn_heatSort(cat) {
-  if (!QUIEN_FOTO[cat]) return;
+  if (cat !== QN_HEAT_RESTO && !QUIEN_FOTO[cat]) return;
   const s = state[12];
-  if (s.cat === cat) s.heatAsc = !s.heatAsc;
-  else { s.cat = cat; s.heatAsc = false; }
-  const sel = document.getElementById('qn-cat-select');
-  if (sel) sel.value = s.cat;
+  if (s.heatCat === cat) s.heatAsc = !s.heatAsc;
+  else { s.heatCat = cat; s.heatAsc = false; }
+  // «Otros» de la matriz no es el «Otros» del dataset (suma cuatro macros más),
+  // así que esa columna NO se lleva a las otras pestañas.
+  if (cat !== QN_HEAT_RESTO) {
+    s.cat = cat;
+    const sel = document.getElementById('qn-cat-select');
+    if (sel) sel.value = cat;
+  }
   qn_hideTooltip();
   drawQuien();
 }
@@ -1100,7 +1146,8 @@ function initQuien() {
       view: 'ranking',
       iso: QN_DEFAULT_ISO,
       showMedian: true,
-      heatAsc: false            // matriz: de mayor a menor por la columna elegida
+      heatCat: QN_DEFAULT_CAT,  // matriz: columna que ordena las filas
+      heatAsc: false            // matriz: de mayor a menor por esa columna
     };
   }
 

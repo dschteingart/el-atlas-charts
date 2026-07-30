@@ -22,7 +22,7 @@ Object.assign(I18N.es, {
   'c12-subtitle-perfil-tpl': 'A qué grupo señala como el más discriminado del país la gente de {PAIS}. Cada persona eligió una sola respuesta. Latinobarómetro 2020.',
   // Matriz: la bajada tiene que explicar QUÉ ordena las filas, porque el orden
   // cambia con el selector y sin eso el lector no sabe qué está mirando.
-  'c12-subtitle-matriz-tpl': 'Porcentaje que nombra a cada grupo como el más discriminado de su país. Los ocho grupos más nombrados, con los países ordenados por {CAT}. Latinobarómetro 2020.',
+  'c12-subtitle-matriz-tpl': 'Porcentaje que nombra a cada grupo como el más discriminado de su país; cada fila suma 100. Países ordenados por {CAT}. Latinobarómetro 2020, 18 países.',
 
   // ---- Controles (el viejo toggle Mostrar: ranking/perfil son hoy las pestañas g12-view-*)
   'c12-cat-label':      'Grupo señalado',
@@ -36,13 +36,14 @@ Object.assign(I18N.es, {
   'c12-median-lbl':     'Mediana regional',
   'c12-median-legend':  'Mediana regional',
   'c12-heat-legend':    '% que lo nombra como el más discriminado',
-  'c12-heat-box-note':  'El número grande, en recuadro, es el grupo que ese país señala primero.',
+  'c12-heat-box-note':  'El número en negrita, con recuadro, es el grupo que ese país señala primero.',
 
   // ---- Tooltip
   'c12-tt-pct':         'Lo nombran como el más discriminado',
   'c12-tt-top':         'Grupo más señalado',
   'c12-tt-n':           'Muestra',
   'c12-tt-incl':        'Respuestas originales',
+  'c12-tt-resto-incl':  'Incluye',
   'c12-tt-more-tpl':    'y {N} más',
   'c12-tt-above':       'Por encima de la mediana regional.',
   'c12-tt-below':       'Por debajo de la mediana regional.',
@@ -53,7 +54,7 @@ Object.assign(I18N.es, {
   'c12-detail-intro-tpl': 'El Latinobarómetro ofrecía 42 respuestas posibles; nosotros las agrupamos en 12 macrocategorías (el recodeo es nuestro, no del Latinobarómetro). Así se reparte cada macro entre las respuestas originales en {PAIS} (% ponderado sobre respuestas válidas):',
 
   // ---- Fuentes / metodología
-  'c12-sources':        'Datos: Latinobarómetro 2020, pregunta P58ST: «¿Cuáles cree Ud. que son las personas o grupos más discriminados en el país?» — RESPUESTA ÚNICA (cada persona nombró un solo grupo). 18 países de América Latina, muestras nacionales de ~1.000-1.200 casos; % ponderado (wt) sobre 16.752 respuestas válidas (82,9% de 20.204; el 17,1% no sabe o no responde). El menú original tenía 42 categorías: las agrupamos en 12 macrocategorías (el recodeo es nuestro, no del Latinobarómetro; el detalle de las 42 está en la pestaña «Perfil»). La pestaña «Matriz» dibuja las ocho macrocategorías más nombradas; ideología política, conducta o estigma, salud o discapacidad y religión u origen no aparecen ahí —ninguna es la más señalada en ningún país— así que sus filas no suman 100. Están enteras en «Ranking», en «Perfil» y en el CSV. «Ninguno» es una respuesta sustantiva (nadie es discriminado) y se muestra como tal. El indicador mide el grupo MÁS señalado, no cuántos grupos sufren discriminación. Sólo 2020: el menú de categorías se diseñó para esa ronda (incluía, por ejemplo, «inmigrantes de Venezuela»).',
+  'c12-sources':        'Datos: Latinobarómetro 2020, pregunta P58ST: «¿Cuáles cree Ud. que son las personas o grupos más discriminados en el país?» — RESPUESTA ÚNICA (cada persona nombró un solo grupo). 18 países de América Latina, muestras nacionales de ~1.000-1.200 casos; % ponderado (wt) sobre 16.752 respuestas válidas (82,9% de 20.204; el 17,1% no sabe o no responde). El menú original tenía 42 categorías: las agrupamos en 12 macrocategorías (el recodeo es nuestro, no del Latinobarómetro; el detalle de las 42 está en la pestaña «Perfil»). La pestaña «Matriz» muestra ocho columnas: los seis grupos más nombrados, «Ninguno» y un «Otros» que ahí suma también ideología política, conducta o estigma, salud o discapacidad y religión u origen (ninguna de esas cuatro es la más señalada en ningún país). Así cada fila de la matriz sigue sumando 100. Las doce macrocategorías por separado están en «Ranking», en «Perfil» y en el CSV. «Ninguno» es una respuesta sustantiva (nadie es discriminado) y se muestra como tal. El indicador mide el grupo MÁS señalado, no cuántos grupos sufren discriminación. Sólo 2020: el menú de categorías se diseñó para esa ronda (incluía, por ejemplo, «inmigrantes de Venezuela»).',
   'c12-sources-png':    'Datos: Latinobarómetro 2020, pregunta P58ST (el grupo más discriminado, respuesta única). 18 países de América Latina, % ponderado sobre 16.752 respuestas válidas. 12 macrocategorías: recodeo propio de las 42 originales.',
 
   // ---- Etiquetas de las 12 macrocategorías (calzan con QUIEN_CATS)
@@ -84,7 +85,7 @@ Object.assign(I18N.en, {
   'c12-subtitle':            'Share who name Race or ethnicity as the most-discriminated group in the country. Each respondent chose a single answer. Latinobarómetro 2020, 18 countries.',
   'c12-subtitle-rank-tpl':   'Share who name {CAT} as the most-discriminated group in the country. Each respondent chose a single answer. Latinobarómetro 2020, 18 countries.',
   'c12-subtitle-perfil-tpl': 'Which group people in {PAIS} name as the most discriminated against in the country. Each respondent chose a single answer. Latinobarómetro 2020.',
-  'c12-subtitle-matriz-tpl': 'Share who name each group as the most-discriminated one in their country. The eight most-named groups, with countries ordered by {CAT}. Latinobarómetro 2020.',
+  'c12-subtitle-matriz-tpl': 'Share who name each group as the most-discriminated one in their country; each row adds up to 100. Countries ordered by {CAT}. Latinobarómetro 2020, 18 countries.',
 
   'c12-cat-label':      'Group named',
   'c12-country-label':  'Country',
@@ -96,12 +97,13 @@ Object.assign(I18N.en, {
   'c12-median-lbl':     'Regional median',
   'c12-median-legend':  'Regional median',
   'c12-heat-legend':    '% who name it as the most discriminated',
-  'c12-heat-box-note':  'The large, boxed number is the group that country names first.',
+  'c12-heat-box-note':  'The bold, boxed number is the group that country names first.',
 
   'c12-tt-pct':         'Name it as the most discriminated',
   'c12-tt-top':         'Most-named group',
   'c12-tt-n':           'Sample',
   'c12-tt-incl':        'Original answers',
+  'c12-tt-resto-incl':  'Includes',
   'c12-tt-more-tpl':    'and {N} more',
   'c12-tt-above':       'Above the regional median.',
   'c12-tt-below':       'Below the regional median.',
@@ -110,7 +112,7 @@ Object.assign(I18N.en, {
   'c12-detail-title':   'The detail: Latinobarómetro’s 42 original categories',
   'c12-detail-intro-tpl': 'Latinobarómetro offered 42 possible answers; we grouped them into 12 macro-categories (the recoding is ours, not Latinobarómetro’s). Here is how each macro breaks down into the original answers in {PAIS} (weighted % over valid answers):',
 
-  'c12-sources':        'Data: Latinobarómetro 2020, question P58ST: “Which people or groups do you think are the most discriminated against in the country?” — SINGLE answer (each respondent named one group only). 18 Latin American countries, national samples of ~1,000-1,200; weighted % (wt) over 16,752 valid answers (82.9% of 20,204; 17.1% don’t know or no answer). The original menu had 42 categories: we grouped them into 12 macro-categories (the recoding is ours, not Latinobarómetro’s; the full 42 are in the “Profile” tab). The “Matrix” tab draws the eight most-named macro-categories; political ideology, behaviour or stigma, health or disability and religion or origin are not there —none of them is the most-named group in any country— so its rows do not add up to 100. They are all in “Ranking”, in “Profile” and in the CSV. “None” is a substantive answer (no group is discriminated against) and is shown as such. The indicator measures the MOST-named group, not how many groups face discrimination. 2020 only: the category menu was designed for that round (it included, for example, “Venezuelan immigrants”).',
+  'c12-sources':        'Data: Latinobarómetro 2020, question P58ST: “Which people or groups do you think are the most discriminated against in the country?” — SINGLE answer (each respondent named one group only). 18 Latin American countries, national samples of ~1,000-1,200; weighted % (wt) over 16,752 valid answers (82.9% of 20,204; 17.1% don’t know or no answer). The original menu had 42 categories: we grouped them into 12 macro-categories (the recoding is ours, not Latinobarómetro’s; the full 42 are in the “Profile” tab). The “Matrix” tab shows eight columns: the six most-named groups, “None”, and an “Others” that there also adds up political ideology, behaviour or stigma, health or disability and religion or origin (none of those four is the most-named group in any country). That way every row of the matrix still adds up to 100. The twelve macro-categories on their own are in “Ranking”, in “Profile” and in the CSV. “None” is a substantive answer (no group is discriminated against) and is shown as such. The indicator measures the MOST-named group, not how many groups face discrimination. 2020 only: the category menu was designed for that round (it included, for example, “Venezuelan immigrants”).',
   'c12-sources-png':    'Data: Latinobarómetro 2020, question P58ST (the most-discriminated group, single answer). 18 Latin American countries, weighted % over 16,752 valid answers. 12 macro-categories: our recode of the 42 originals.',
 
   'qcat-pobres':          'The poor',
