@@ -163,27 +163,13 @@
       </div>
     </div>
 
-    <!-- ============ Panel: MATRIZ (controles) ============
-         Mismas 12 opciones que el selector del Ranking porque es el MISMO
-         state[12].cat: acá ordena las filas y resalta la columna. -->
+    <!-- ============ Panel: MATRIZ ============
+         Sin controles: el nombre de cada columna ES el botón de orden (ver
+         qn_drawMatriz). Queda sólo la pista de que se puede hacer clic. -->
     <div class="g-panel" id="g-panel-matriz">
       <div class="m-controls">
-        <div class="m-ctrl-group" id="qn-sort-group">
-          <span class="m-ctrl-label" data-i18n="c12-sort-label">Ordenar países por</span>
-          <select id="qn-sort-select" class="m-select" aria-label="Ordenar por">
-            <option value="pobres" data-i18n="qcat-pobres">Pobres</option>
-            <option value="raza_etnia" selected data-i18n="qcat-raza_etnia">Raza o etnia</option>
-            <option value="migrantes" data-i18n="qcat-migrantes">Migrantes</option>
-            <option value="lgbt" data-i18n="qcat-lgbt">Personas LGBT</option>
-            <option value="edad" data-i18n="qcat-edad">Edad (viejos/jóvenes)</option>
-            <option value="mujeres" data-i18n="qcat-mujeres">Mujeres</option>
-            <option value="ideologia" data-i18n="qcat-ideologia">Ideología política</option>
-            <option value="conducta" data-i18n="qcat-conducta">Conducta o estigma</option>
-            <option value="salud_discap" data-i18n="qcat-salud_discap">Salud o discapacidad</option>
-            <option value="religion_origen" data-i18n="qcat-religion_origen">Religión u origen</option>
-            <option value="ninguna" data-i18n="qcat-ninguna">Ninguno</option>
-            <option value="otros" data-i18n="qcat-otros">Otros</option>
-          </select>
+        <div class="m-ctrl-group">
+          <span class="m-ctrl-label" data-i18n="c12-heat-hint">Tocá el nombre de un grupo para ordenar los países por esa columna</span>
         </div>
       </div>
     </div>
@@ -249,9 +235,9 @@
       // La matriz usa el mismo state[12].cat que el ranking (catSel), así que la
       // categoría viaja entre pestañas: acá ordena las filas en vez de elegir
       // qué barras se dibujan.
-      { id: 'matriz', panelId: 'g-panel-matriz', chartN: 12, catSel: 'qn-sort-select', selKind: 'none',
+      { id: 'matriz', panelId: 'g-panel-matriz', chartN: 12, catSel: null, selKind: 'none',
         init: initQuien,
-        redrawFull: function () { state[12].view = 'matriz'; setupQuienSort(); drawQuien(); } },
+        redrawFull: function () { state[12].view = 'matriz'; drawQuien(); } },
     ],
   });
 </script>

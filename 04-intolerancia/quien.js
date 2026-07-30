@@ -173,10 +173,8 @@ function drawQuien() {
   // Los dos <select> de categoría (Ranking y Matriz) son vistas del MISMO
   // state[12].cat: se sincronizan en cada dibujo, así el valor sobrevive al
   // cambio de pestaña y a la categoría que inyecta la URL (?cat=).
-  ['qn-cat-select', 'qn-sort-select'].forEach(id => {
-    const cs = document.getElementById(id);
-    if (cs && cs.value !== s.cat) cs.value = s.cat;
-  });
+  const cs = document.getElementById('qn-cat-select');
+  if (cs && cs.value !== s.cat) cs.value = s.cat;
   qn_hideTooltip();   // al cambiar de pestaña/control el SVG se rehace: no dejar el tooltip colgado
   qn_updateSubtitle();
 
@@ -185,7 +183,6 @@ function drawQuien() {
   show('qn-cat-group', s.view === 'ranking');
   show('qn-refs-group', s.view === 'ranking');
   show('qn-country-group', s.view === 'perfil');
-  show('qn-sort-group', s.view === 'matriz');
   const detailWrap = document.getElementById('qn-detail-wrap');
   if (detailWrap) detailWrap.style.display = (s.view === 'perfil') ? '' : 'none';
 
@@ -379,21 +376,21 @@ function qn_drawRanking() {
 }
 
 //==================================================================
-//  Vista 'matriz': el heatmap de 18 países × 12 grupos
+//  Vista 'matriz': el heatmap de 18 países × 8 grupos
 //==================================================================
 // Las otras dos vistas son cortes de esta misma tabla: el Ranking es UNA COLUMNA
 // dibujada como barras y el Perfil es UNA FILA. La matriz las muestra juntas, que
 // es donde se ve el hallazgo del chart: la columna de los pobres es la oscura en
 // casi todas las filas.
 //
-// Como la pregunta es de respuesta ÚNICA, cada fila suma 100: los valores son una
-// composición, no 12 mediciones independientes. Por eso el recuadro que marca el
-// máximo de cada fila es la lectura principal —"a quién señala primero cada
-// país"— y no un adorno.
+// Como la pregunta es de respuesta ÚNICA, los valores de una fila son una
+// composición y no 8 mediciones independientes. Por eso la celda marcada —el
+// grupo que ese país señala PRIMERO— es la lectura principal y no un adorno.
 //
-// La categoría elegida en el selector ORDENA las filas y resalta su columna: es
-// el mismo state[12].cat que usa el Ranking, así que pasar de una pestaña a la
-// otra no pierde el hilo.
+// Ordenar: se hace clic en el nombre de una columna (no hay selector). El primer
+// clic ordena de mayor a menor por esa columna y el segundo invierte; la flecha
+// al lado del nombre dice cuál manda. Es el mismo state[12].cat que usa el
+// Ranking, así que pasar de una pestaña a la otra no pierde el hilo.
 function qn_drawMatriz() {
   const svg = document.getElementById('chart12');
   if (!svg) return;
@@ -413,9 +410,11 @@ function qn_drawMatriz() {
     : { name: 12.5, head: 11.5, cell: 11, legend: 11, note: 11 };
 
   const cats = qn_heatCols();
-  const rows = qn_heatRows();
+  const rows = qn_heatRows(cats);
   const nC = cats.length, nR = rows.length;
   if (!nC || !nR) return;
+  const catOrden = qn_heatSortCat();
+  const flecha = state[12].heatAsc ? ' ▲' : ' ▼';
 
   // Geometría. El margen superior y el derecho salen del ancho REAL de la
   // etiqueta de columna más larga: van rotadas 45°, así que ocupan su ancho
@@ -426,7 +425,7 @@ function qn_drawMatriz() {
   else { W = 1100; totalH = 0; }
 
   let maxHead = 0;
-  cats.forEach(c => { const w = qn_measure(qn_catLabel(c), SIZES.head, 600); if (w > maxHead) maxHead = w; });
+  cats.forEach(c => { const w = qn_measure(qn_catLabel(c) + flecha, SIZES.head, 700); if (w > maxHead) maxHead = w; });
   let maxName = 0;
   rows.forEach(r => { const w = qn_measure(qn_name(r.iso), SIZES.name, 500); if (w > maxName) maxName = w; });
 
@@ -475,20 +474,26 @@ function qn_drawMatriz() {
 
   const gCells = qn_ns('g'); svg.appendChild(gCells);
 
-  // ---- Encabezados de columna (rotados 45°) ----
+  // ---- Encabezados de columna (rotados 45°, y son el control de orden) ----
+  // El nombre de la columna ES el botón: un clic ordena los países por ella, otro
+  // invierte. La flecha aparece sólo en la que manda; sin control aparte, el
+  // gráfico no tiene que explicar dos veces qué está ordenado.
   cats.forEach((c, j) => {
     const cx = MARGIN.left + j * cellW + cellW / 2;
-    const sel = (c === state[12].cat);
+    const cy = MARGIN.top - (bigFmt ? 10 : 7);
+    const sel = (c === catOrden);
     const th = qn_ns('text');
     th.setAttribute('x', cx);
-    th.setAttribute('y', MARGIN.top - (bigFmt ? 10 : 7));
+    th.setAttribute('y', cy);
     th.setAttribute('text-anchor', 'start');
-    th.setAttribute('transform', `rotate(-45, ${cx}, ${MARGIN.top - (bigFmt ? 10 : 7)})`);
+    th.setAttribute('transform', `rotate(-45, ${cx}, ${cy})`);
     th.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
     th.style.fontSize = SIZES.head + 'px';
     th.setAttribute('font-weight', sel ? 700 : 500);
     th.setAttribute('fill', sel ? '#8B3F1E' : '#5A5346');
-    th.textContent = qn_catLabel(c);
+    th.textContent = qn_catLabel(c) + (sel ? flecha : '');
+    th.style.cursor = 'pointer';
+    th.addEventListener('click', () => qn_heatSort(c));
     gCells.appendChild(th);
   });
 
@@ -528,15 +533,19 @@ function qn_drawMatriz() {
       gCells.appendChild(rect);
 
       if (showVals) {
+        const esTop = (c === r.top);
         const tx = qn_ns('text');
         tx.setAttribute('x', x + cellW / 2);
         tx.setAttribute('y', y + cellH / 2);
         tx.setAttribute('text-anchor', 'middle');
         tx.setAttribute('dominant-baseline', 'central');
         tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-        tx.style.fontSize = SIZES.cell + 'px';
+        // El máximo de la fila se destaca con el NÚMERO: más grande y en negrita.
+        // El recuadro solo no alcanzaba —un filete oscuro sobre una celda oscura
+        // no se ve— y era lo que Daniel no encontraba en el PNG.
+        tx.style.fontSize = (esTop ? SIZES.cell * 1.22 : SIZES.cell) + 'px';
         tx.setAttribute('font-variant-numeric', 'tabular-nums');
-        tx.setAttribute('font-weight', c === r.top ? 700 : 400);
+        tx.setAttribute('font-weight', esTop ? 800 : 400);
         // Texto claro sobre los dos tonos más oscuros; si no, no se lee.
         tx.setAttribute('fill', bin >= 4 ? '#FBF8F1' : '#3A3530');
         tx.style.pointerEvents = 'none';
@@ -545,34 +554,25 @@ function qn_drawMatriz() {
       }
     });
 
-    // Recuadro del máximo de la fila: el grupo que ESE país señala primero.
+    // Recuadro del máximo de la fila. El color del filete sigue la MISMA regla
+    // de contraste que el número: claro sobre las celdas oscuras, oscuro sobre
+    // las claras. Antes era siempre casi negro y desaparecía justo donde más
+    // hace falta, que es en la celda más oscura de la fila.
     const jTop = cats.indexOf(r.top);
     if (jTop >= 0) {
+      const binTop = qn_heatBin(r.pct[r.top], breaks);
       const box = qn_ns('rect');
-      box.setAttribute('x', MARGIN.left + jTop * cellW + 1);
-      box.setAttribute('y', y + 1);
-      box.setAttribute('width', cellW - 2); box.setAttribute('height', cellH - 2);
+      const inset = bigFmt ? 2 : 1.4;
+      box.setAttribute('x', MARGIN.left + jTop * cellW + inset);
+      box.setAttribute('y', y + inset);
+      box.setAttribute('width', cellW - inset * 2); box.setAttribute('height', cellH - inset * 2);
       box.setAttribute('fill', 'none');
-      box.setAttribute('stroke', '#2E2A25');
-      box.setAttribute('stroke-width', bigFmt ? 2.4 : 1.6);
+      box.setAttribute('stroke', binTop >= 4 ? '#FBF8F1' : '#2E2A25');
+      box.setAttribute('stroke-width', bigFmt ? 3 : 2);
       box.style.pointerEvents = 'none';
       gCells.appendChild(box);
     }
   });
-
-  // ---- Marco de la columna ordenadora ----
-  const jSel = cats.indexOf(state[12].cat);
-  if (jSel >= 0) {
-    const col = qn_ns('rect');
-    col.setAttribute('x', MARGIN.left + jSel * cellW);
-    col.setAttribute('y', MARGIN.top);
-    col.setAttribute('width', cellW); col.setAttribute('height', nR * cellH);
-    col.setAttribute('fill', 'none');
-    col.setAttribute('stroke', '#8B3F1E');
-    col.setAttribute('stroke-width', bigFmt ? 2.4 : 1.6);
-    col.style.pointerEvents = 'none';
-    svg.appendChild(col);
-  }
 
   // ---- Leyenda de color + nota del recuadro ----
   qn_drawHeatLegend(svg, MARGIN, plotW, MARGIN.top + nR * cellH + (bigFmt ? 40 : 26),
@@ -596,12 +596,24 @@ function qn_heatBin(v, breaks) {
 // Columnas ordenadas por la mediana regional, de más a menos señalado: la matriz
 // se lee de izquierda a derecha como el orden en que América Latina nombra a sus
 // discriminados.
+// Las 8 columnas de la matriz. Las otras cuatro macrocategorías del dataset
+// —ideología política, conducta o estigma, salud o discapacidad, religión u
+// origen— NO se muestran acá: ninguna es la más señalada en ningún país, y con
+// doce columnas la tabla se leía como una grilla de números. Están enteras en
+// las otras dos pestañas y en el CSV. Ojo: por eso las filas de la matriz NO
+// suman 100 (les falta lo que se llevan esas cuatro), y por eso «Otros» sigue
+// siendo el «otros» del dataset y significa lo mismo en las tres vistas: no se
+// le metió adentro lo que se sacó.
+const QN_HEAT_CATS = ['pobres', 'raza_etnia', 'lgbt', 'migrantes', 'edad', 'mujeres', 'ninguna', 'otros'];
 // «Ninguno» y «Otros» van siempre al final aunque su mediana sea alta: no son
 // grupos, y metidos en el medio de la fila rompen la lectura de izquierda a
 // derecha (Nicaragua contesta «ninguno» tanto como Brasil contesta «pobres»).
 const QN_HEAT_LAST = ['ninguna', 'otros'];
+// Orden de las columnas: por la MEDIANA de los 18 países, de más señalado a
+// menos. O sea: la fila de encabezados es el ranking de América Latina entera, y
+// la matriz se lee de izquierda a derecha en ese orden.
 function qn_heatCols() {
-  const cats = (typeof QUIEN_CATS !== 'undefined') ? QUIEN_CATS.slice() : [];
+  const cats = QN_HEAT_CATS.filter(c => QUIEN_FOTO[c]);
   return cats.sort((a, b) => {
     const ra = QN_HEAT_LAST.indexOf(a), rb = QN_HEAT_LAST.indexOf(b);
     if (ra >= 0 || rb >= 0) return (ra < 0 ? -1 : ra) - (rb < 0 ? -1 : rb);
@@ -609,18 +621,26 @@ function qn_heatCols() {
     return (mb ? mb.value : 0) - (ma ? ma.value : 0);
   });
 }
-// Filas: un país por fila, ordenadas DESC por la categoría elegida.
-function qn_heatRows() {
-  const cats = (typeof QUIEN_CATS !== 'undefined') ? QUIEN_CATS : [];
+// Filas: un país por fila, ordenadas por la columna elegida (desc por default).
+function qn_heatRows(cats) {
   const isos = Array.from(new Set((QUIEN_FOTO[cats[0]] || []).map(r => r[0])));
   const out = isos.map(iso => {
     const pct = {};
     cats.forEach(c => { pct[c] = qn_pctOf(iso, c); });
-    return { iso, pct, top: qn_topMacro(iso).cat };
+    // El máximo se busca entre lo que la matriz DIBUJA, y sin «Otros»: es una
+    // bolsa residual, no un grupo, y marcarla no querría decir nada.
+    let top = null;
+    cats.forEach(c => { if (c !== 'otros' && (top === null || pct[c] > pct[top])) top = c; });
+    return { iso, pct, top };
   });
-  const k = state[12].cat;
-  out.sort((a, b) => (b.pct[k] || 0) - (a.pct[k] || 0));
+  const k = (QN_HEAT_CATS.indexOf(state[12].cat) >= 0) ? state[12].cat : QN_HEAT_CATS[0];
+  const dir = (state[12].heatAsc ? 1 : -1);
+  out.sort((a, b) => dir * ((a.pct[k] || 0) - (b.pct[k] || 0)));
   return out;
+}
+// Columna que manda el orden: la elegida, si está entre las ocho dibujadas.
+function qn_heatSortCat() {
+  return (QN_HEAT_CATS.indexOf(state[12].cat) >= 0) ? state[12].cat : QN_HEAT_CATS[0];
 }
 
 function qn_drawHeatLegend(svg, MARGIN, plotW, y, breaks, SIZES, bigFmt) {
@@ -1002,23 +1022,19 @@ function setupQuienCountry() {
   }
 }
 
-// Selector de la matriz: es el MISMO state[12].cat que el del Ranking (el shell
-// los sincroniza vía catSel), así que elegir "Migrantes" en una pestaña y pasar
-// a la otra mantiene el hilo. Acá ordena las filas y resalta la columna.
-function setupQuienSort() {
-  const sel = document.getElementById('qn-sort-select');
-  if (!sel) return;
-  sel.value = state[12].cat;
-  if (setupQuienSort._wired) return;
-  setupQuienSort._wired = true;
-  sel.addEventListener('change', () => {
-    if (!QUIEN_FOTO[sel.value]) return;
-    state[12].cat = sel.value;
-    const otro = document.getElementById('qn-cat-select');
-    if (otro) otro.value = sel.value;
-    qn_hideTooltip();
-    drawQuien();
-  });
+// Clic en el nombre de una columna de la matriz: ordena por ella de mayor a
+// menor y, si ya era la que mandaba, invierte. Escribe el MISMO state[12].cat
+// que usa el Ranking, así que la columna elegida acá es la categoría que ese
+// gráfico muestra al cambiar de pestaña.
+function qn_heatSort(cat) {
+  if (!QUIEN_FOTO[cat]) return;
+  const s = state[12];
+  if (s.cat === cat) s.heatAsc = !s.heatAsc;
+  else { s.cat = cat; s.heatAsc = false; }
+  const sel = document.getElementById('qn-cat-select');
+  if (sel) sel.value = s.cat;
+  qn_hideTooltip();
+  drawQuien();
 }
 
 function setupQuienMedian() {
@@ -1083,7 +1099,8 @@ function initQuien() {
       cat: QN_DEFAULT_CAT,
       view: 'ranking',
       iso: QN_DEFAULT_ISO,
-      showMedian: true
+      showMedian: true,
+      heatAsc: false            // matriz: de mayor a menor por la columna elegida
     };
   }
 
@@ -1105,7 +1122,6 @@ function initQuien() {
 
   setupQuienCat();
   setupQuienCountry();
-  setupQuienSort();
   setupQuienMedian();
   setupQuienCSV();
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
