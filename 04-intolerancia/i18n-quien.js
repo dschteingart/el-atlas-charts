@@ -6,9 +6,10 @@
 Object.assign(I18N.es, {
   // ---- Shell del graficador (encabezado + pestañas de vista, lib/grapher.js)
   'g12-eyebrow':        'Quién es el más discriminado',
-  'g12-lead':           'A qué grupo señala cada sociedad como el más discriminado de su país. Mirá el mismo dato de dos maneras: el ranking de los 18 países en un grupo, o el perfil completo de un país.',
+  'g12-lead':           'A qué grupo señala cada sociedad como el más discriminado de su país. Mirá el mismo dato de tres maneras: la tabla completa, el ranking de los 18 países en un grupo, o el perfil de un país.',
   'g12-view-ranking':   'Ranking',
   'g12-view-perfil':    'Perfil',
+  'g12-view-matriz':    'Matriz',
 
   // ---- Títulos (default NEUTRAL vía atlasSetHeading; el insight queda para el editor)
   'c12-title':          'En 14 de 18 países el más discriminado no es un grupo racial: son los pobres',
@@ -19,17 +20,23 @@ Object.assign(I18N.es, {
   'c12-subtitle':            'Porcentaje que nombra a Raza o etnia como el grupo más discriminado del país. Cada persona eligió una sola respuesta. Latinobarómetro 2020, 18 países.',
   'c12-subtitle-rank-tpl':   'Porcentaje que nombra a {CAT} como el grupo más discriminado del país. Cada persona eligió una sola respuesta. Latinobarómetro 2020, 18 países.',
   'c12-subtitle-perfil-tpl': 'A qué grupo señala como el más discriminado del país la gente de {PAIS}. Cada persona eligió una sola respuesta. Latinobarómetro 2020.',
+  // Matriz: la bajada tiene que explicar QUÉ ordena las filas, porque el orden
+  // cambia con el selector y sin eso el lector no sabe qué está mirando.
+  'c12-subtitle-matriz-tpl': 'Porcentaje que nombra a cada grupo como el más discriminado de su país, con los países ordenados por {CAT}. Latinobarómetro 2020, 18 países.',
 
   // ---- Controles (el viejo toggle Mostrar: ranking/perfil son hoy las pestañas g12-view-*)
   'c12-cat-label':      'Grupo señalado',
   'c12-country-label':  'País',
   'c12-refs-label':     'Referencias',
+  'c12-sort-label':     'Ordenar países por',
   'c12-ref-median':     'Mediana regional',
 
   // ---- Ejes / leyendas
   'c12-axis-x':         '% que lo nombra como el grupo más discriminado',
   'c12-median-lbl':     'Mediana regional',
   'c12-median-legend':  'Mediana regional',
+  'c12-heat-legend':    '% que lo nombra como el más discriminado',
+  'c12-heat-box-note':  'El recuadro marca el grupo que cada país señala primero.',
 
   // ---- Tooltip
   'c12-tt-pct':         'Lo nombran como el más discriminado',
@@ -66,9 +73,10 @@ Object.assign(I18N.es, {
 
 Object.assign(I18N.en, {
   'g12-eyebrow':        'Who is the most discriminated against',
-  'g12-lead':           'Which group each society names as the most discriminated against in its own country. See the same data two ways: the ranking of all 18 countries on one group, or the full profile of one country.',
+  'g12-lead':           'Which group each society names as the most discriminated against in its own country. See the same data three ways: the full table, the ranking of all 18 countries on one group, or the profile of one country.',
   'g12-view-ranking':   'Ranking',
   'g12-view-perfil':    'Profile',
+  'g12-view-matriz':    'Matrix',
 
   'c12-title':          'In 14 of 18 countries the most-discriminated group is not racial: it is the poor',
   'c12-title-neutral':  'The most-discriminated group in each Latin American country',
@@ -76,15 +84,19 @@ Object.assign(I18N.en, {
   'c12-subtitle':            'Share who name Race or ethnicity as the most-discriminated group in the country. Each respondent chose a single answer. Latinobarómetro 2020, 18 countries.',
   'c12-subtitle-rank-tpl':   'Share who name {CAT} as the most-discriminated group in the country. Each respondent chose a single answer. Latinobarómetro 2020, 18 countries.',
   'c12-subtitle-perfil-tpl': 'Which group people in {PAIS} name as the most discriminated against in the country. Each respondent chose a single answer. Latinobarómetro 2020.',
+  'c12-subtitle-matriz-tpl': 'Share who name each group as the most-discriminated one in their country, with countries ordered by {CAT}. Latinobarómetro 2020, 18 countries.',
 
   'c12-cat-label':      'Group named',
   'c12-country-label':  'Country',
   'c12-refs-label':     'References',
+  'c12-sort-label':     'Order countries by',
   'c12-ref-median':     'Regional median',
 
   'c12-axis-x':         '% who name it as the most-discriminated group',
   'c12-median-lbl':     'Regional median',
   'c12-median-legend':  'Regional median',
+  'c12-heat-legend':    '% who name it as the most discriminated',
+  'c12-heat-box-note':  'The box marks the group each country names first.',
 
   'c12-tt-pct':         'Name it as the most discriminated',
   'c12-tt-top':         'Most-named group',

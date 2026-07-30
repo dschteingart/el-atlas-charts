@@ -31,6 +31,9 @@ const QN_DEFAULT_CAT = 'raza_etnia';   // el gancho editorial arranca por lo rac
 const QN_DEFAULT_ISO = 'ARG';
 const QN_MED = '#5A5346';              // gris de la mediana regional
 const QN_AXIS = '#9C928A';
+// Rampa secuencial del Atlas: la misma del mapa del número (mapa.js), para que
+// "más oscuro = más lo señalan" signifique lo mismo en las dos páginas.
+const QN_HEAT_COLORS = ['#F4E4CE', '#E8B98C', '#D98E5B', '#C0632F', '#8F3F1E', '#5A2412'];
 
 const QN_RK_MARGIN_DESKTOP = { top: 34, right: 88, bottom: 48, left: 132 };
 const QN_RK_MARGIN_MOBILE  = { top: 34, right: 60, bottom: 72, left: 118 };  // bottom holga p/ el título de eje (+64) en mobile
@@ -150,6 +153,9 @@ function qn_updateSubtitle() {
   if (s.view === 'perfil') {
     const tpl = (typeof t === 'function') ? t('c12-subtitle-perfil-tpl') : '';
     el.textContent = tpl.replace('{PAIS}', qn_name(s.iso));
+  } else if (s.view === 'matriz') {
+    const tpl = (typeof t === 'function') ? t('c12-subtitle-matriz-tpl') : '';
+    el.textContent = tpl.replace('{CAT}', qn_catLabel(s.cat));
   } else {
     const tpl = (typeof t === 'function') ? t('c12-subtitle-rank-tpl') : '';
     el.textContent = tpl.replace('{CAT}', qn_catLabel(s.cat));
@@ -163,11 +169,14 @@ function drawQuien() {
   const s = state[12];
   // El shell puede inyectar la categoría desde la URL (?cat=): si no existe,
   // volvemos al default en vez de dibujar un chart vacío.
-  if (!QUIEN_FOTO[s.cat]) {
-    s.cat = QN_DEFAULT_CAT;
-    const cs = document.getElementById('qn-cat-select');
-    if (cs) cs.value = s.cat;
-  }
+  if (!QUIEN_FOTO[s.cat]) s.cat = QN_DEFAULT_CAT;
+  // Los dos <select> de categoría (Ranking y Matriz) son vistas del MISMO
+  // state[12].cat: se sincronizan en cada dibujo, así el valor sobrevive al
+  // cambio de pestaña y a la categoría que inyecta la URL (?cat=).
+  ['qn-cat-select', 'qn-sort-select'].forEach(id => {
+    const cs = document.getElementById(id);
+    if (cs && cs.value !== s.cat) cs.value = s.cat;
+  });
   qn_hideTooltip();   // al cambiar de pestaña/control el SVG se rehace: no dejar el tooltip colgado
   qn_updateSubtitle();
 
@@ -176,10 +185,12 @@ function drawQuien() {
   show('qn-cat-group', s.view === 'ranking');
   show('qn-refs-group', s.view === 'ranking');
   show('qn-country-group', s.view === 'perfil');
+  show('qn-sort-group', s.view === 'matriz');
   const detailWrap = document.getElementById('qn-detail-wrap');
   if (detailWrap) detailWrap.style.display = (s.view === 'perfil') ? '' : 'none';
 
   if (s.view === 'perfil') qn_drawPerfil();
+  else if (s.view === 'matriz') qn_drawMatriz();
   else qn_drawRanking();
 
   if (typeof atlasSetHeading === 'function') {
@@ -365,6 +376,300 @@ function qn_drawRanking() {
   zeroLine.setAttribute('y1', MARGIN.top); zeroLine.setAttribute('y2', MARGIN.top + plotH);
   zeroLine.setAttribute('stroke', '#9C928A'); zeroLine.setAttribute('stroke-width', 1);
   svg.appendChild(zeroLine);
+}
+
+//==================================================================
+//  Vista 'matriz': el heatmap de 18 países × 12 grupos
+//==================================================================
+// Las otras dos vistas son cortes de esta misma tabla: el Ranking es UNA COLUMNA
+// dibujada como barras y el Perfil es UNA FILA. La matriz las muestra juntas, que
+// es donde se ve el hallazgo del chart: la columna de los pobres es la oscura en
+// casi todas las filas.
+//
+// Como la pregunta es de respuesta ÚNICA, cada fila suma 100: los valores son una
+// composición, no 12 mediciones independientes. Por eso el recuadro que marca el
+// máximo de cada fila es la lectura principal —"a quién señala primero cada
+// país"— y no un adorno.
+//
+// La categoría elegida en el selector ORDENA las filas y resalta su columna: es
+// el mismo state[12].cat que usa el Ranking, así que pasar de una pestaña a la
+// otra no pierde el hilo.
+function qn_drawMatriz() {
+  const svg = document.getElementById('chart12');
+  if (!svg) return;
+  svg.innerHTML = '';
+
+  const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
+  const bigPng = editorFormat === 'square' || editorFormat === 'newsletter' || editorFormat === 'mobile';
+  const mobile = !editorFormat && qn_isMobile();
+  const bigFmt = bigPng || mobile;
+
+  if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
+
+  const SIZES = bigPng
+    ? { name: 26, head: 24, cell: 22, legend: 22, note: 22 }
+    : mobile
+    ? { name: 20, head: 17, cell: 14, legend: 18, note: 18 }
+    : { name: 12.5, head: 11.5, cell: 11, legend: 11, note: 11 };
+
+  const cats = qn_heatCols();
+  const rows = qn_heatRows();
+  const nC = cats.length, nR = rows.length;
+  if (!nC || !nR) return;
+
+  // Geometría. El margen superior y el derecho salen del ancho REAL de la
+  // etiqueta de columna más larga: van rotadas 45°, así que ocupan su ancho
+  // por el coseno de 45 en las dos direcciones. Medirlo es lo que evita que
+  // "Salud o discapacidad" se corte contra el borde del viewBox.
+  let W, totalH;
+  if (editorFormat) { const f = PNG_FORMATS[editorFormat]; W = f.vbW; totalH = f.vbH; }
+  else { W = 1100; totalH = 0; }
+
+  let maxHead = 0;
+  cats.forEach(c => { const w = qn_measure(qn_catLabel(c), SIZES.head, 600); if (w > maxHead) maxHead = w; });
+  let maxName = 0;
+  rows.forEach(r => { const w = qn_measure(qn_name(r.iso), SIZES.name, 500); if (w > maxName) maxName = w; });
+
+  // Una etiqueta rotada 45° ocupa, en cada eje, (ancho + alto) × cos 45. El alto
+  // NO es despreciable en los formatos PNG, donde la tipografía se duplica: con
+  // sólo el ancho, la fila de encabezados se salía 7 px por arriba del viewBox.
+  const diag = (maxHead + SIZES.head * 1.15) * Math.SQRT1_2;
+  const MARGIN = {
+    top:    Math.ceil(diag) + (bigFmt ? 18 : 12),
+    right:  Math.min(Math.round(W * 0.24), Math.ceil(diag) + (bigFmt ? 16 : 10)),
+    left:   Math.ceil(maxName) + (bigFmt ? 18 : 10),
+    bottom: bigFmt ? 118 : 74           // leyenda de color + nota del recuadro
+  };
+
+  let cellH;
+  if (editorFormat) {
+    cellH = (totalH - MARGIN.top - MARGIN.bottom) / nR;
+  } else {
+    cellH = mobile ? 30 : 24;
+    totalH = MARGIN.top + nR * cellH + MARGIN.bottom;
+  }
+  const plotW = W - MARGIN.left - MARGIN.right;
+  const cellW = plotW / nC;
+  svg.setAttribute('viewBox', `0 0 ${W} ${totalH}`);
+
+  // El número se achica a la celda: son 216, y el cuerpo de los otros formatos
+  // (22 px, pensado para barras) no entra en una celda de 24. Si ni así entra
+  // —pantalla angosta— la matriz se queda sólo con el color, que es su lectura
+  // principal, y el valor exacto lo da el tooltip.
+  SIZES.cell = Math.min(SIZES.cell, cellH * 0.62, cellW * 0.36);
+  // En pantalla la medida que importa no es la del viewBox sino la REAL: el SVG
+  // se escala al ancho del contenedor, así que en un celular de 400 px estos
+  // 14 px de viewBox se dibujan como 5. Ahí los números se van y queda el color,
+  // que es lo que la matriz tiene para decir de un vistazo; el valor exacto lo
+  // sigue dando el tooltip al tocar.
+  const cssW = editorFormat ? W : ((svg.getBoundingClientRect().width || W));
+  const showVals = SIZES.cell >= 8 && SIZES.cell * (cssW / W) >= 7;
+
+  // Escala de color: cuantiles sobre las 216 celdas, no sobre un 0-100 fijo.
+  // La distribución es muy asimétrica (la mayoría de los grupos ronda el 2% y
+  // los pobres se van al 30%), así que con cortes iguales la matriz quedaba
+  // casi toda del tono más claro.
+  const todos = [];
+  rows.forEach(r => cats.forEach(c => todos.push(r.pct[c])));
+  const breaks = qn_heatBreaks(todos);
+
+  const gCells = qn_ns('g'); svg.appendChild(gCells);
+
+  // ---- Encabezados de columna (rotados 45°) ----
+  cats.forEach((c, j) => {
+    const cx = MARGIN.left + j * cellW + cellW / 2;
+    const sel = (c === state[12].cat);
+    const th = qn_ns('text');
+    th.setAttribute('x', cx);
+    th.setAttribute('y', MARGIN.top - (bigFmt ? 10 : 7));
+    th.setAttribute('text-anchor', 'start');
+    th.setAttribute('transform', `rotate(-45, ${cx}, ${MARGIN.top - (bigFmt ? 10 : 7)})`);
+    th.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+    th.style.fontSize = SIZES.head + 'px';
+    th.setAttribute('font-weight', sel ? 700 : 500);
+    th.setAttribute('fill', sel ? '#8B3F1E' : '#5A5346');
+    th.textContent = qn_catLabel(c);
+    gCells.appendChild(th);
+  });
+
+  // ---- Celdas ----
+  rows.forEach((r, i) => {
+    const y = MARGIN.top + i * cellH;
+
+    const nm = qn_ns('text');
+    nm.setAttribute('x', MARGIN.left - (bigFmt ? 10 : 6));
+    nm.setAttribute('y', y + cellH / 2);
+    nm.setAttribute('text-anchor', 'end');
+    nm.setAttribute('dominant-baseline', 'central');
+    nm.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+    nm.style.fontSize = SIZES.name + 'px';
+    nm.setAttribute('font-weight', 500);
+    nm.setAttribute('fill', '#3A3530');
+    nm.textContent = qn_name(r.iso);
+    gCells.appendChild(nm);
+
+    cats.forEach((c, j) => {
+      const x = MARGIN.left + j * cellW;
+      const v = r.pct[c];
+      const bin = qn_heatBin(v, breaks);
+
+      const rect = qn_ns('rect');
+      rect.setAttribute('x', x); rect.setAttribute('y', y);
+      rect.setAttribute('width', cellW); rect.setAttribute('height', cellH);
+      rect.setAttribute('fill', QN_HEAT_COLORS[bin]);
+      rect.setAttribute('stroke', '#FBF8F1');      // el fondo del papel: separa sin dibujar una grilla
+      rect.setAttribute('stroke-width', 1);
+      rect.style.cursor = 'pointer';
+      const show = (ev) => qn_showTooltipHeat(ev, r.iso, c, v);
+      rect.addEventListener('mouseenter', show);
+      rect.addEventListener('click', show);        // en touch no hay hover: el tap abre el tooltip
+      rect.addEventListener('mousemove', (ev) => qn_posTooltip(ev));
+      rect.addEventListener('mouseleave', qn_hideTooltip);
+      gCells.appendChild(rect);
+
+      if (showVals) {
+        const tx = qn_ns('text');
+        tx.setAttribute('x', x + cellW / 2);
+        tx.setAttribute('y', y + cellH / 2);
+        tx.setAttribute('text-anchor', 'middle');
+        tx.setAttribute('dominant-baseline', 'central');
+        tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+        tx.style.fontSize = SIZES.cell + 'px';
+        tx.setAttribute('font-variant-numeric', 'tabular-nums');
+        tx.setAttribute('font-weight', c === r.top ? 700 : 400);
+        // Texto claro sobre los dos tonos más oscuros; si no, no se lee.
+        tx.setAttribute('fill', bin >= 4 ? '#FBF8F1' : '#3A3530');
+        tx.style.pointerEvents = 'none';
+        tx.textContent = qn_fmt(v, 0);
+        gCells.appendChild(tx);
+      }
+    });
+
+    // Recuadro del máximo de la fila: el grupo que ESE país señala primero.
+    const jTop = cats.indexOf(r.top);
+    if (jTop >= 0) {
+      const box = qn_ns('rect');
+      box.setAttribute('x', MARGIN.left + jTop * cellW + 1);
+      box.setAttribute('y', y + 1);
+      box.setAttribute('width', cellW - 2); box.setAttribute('height', cellH - 2);
+      box.setAttribute('fill', 'none');
+      box.setAttribute('stroke', '#2E2A25');
+      box.setAttribute('stroke-width', bigFmt ? 2.4 : 1.6);
+      box.style.pointerEvents = 'none';
+      gCells.appendChild(box);
+    }
+  });
+
+  // ---- Marco de la columna ordenadora ----
+  const jSel = cats.indexOf(state[12].cat);
+  if (jSel >= 0) {
+    const col = qn_ns('rect');
+    col.setAttribute('x', MARGIN.left + jSel * cellW);
+    col.setAttribute('y', MARGIN.top);
+    col.setAttribute('width', cellW); col.setAttribute('height', nR * cellH);
+    col.setAttribute('fill', 'none');
+    col.setAttribute('stroke', '#8B3F1E');
+    col.setAttribute('stroke-width', bigFmt ? 2.4 : 1.6);
+    col.style.pointerEvents = 'none';
+    svg.appendChild(col);
+  }
+
+  // ---- Leyenda de color + nota del recuadro ----
+  qn_drawHeatLegend(svg, MARGIN, plotW, MARGIN.top + nR * cellH + (bigFmt ? 40 : 26),
+                    breaks, SIZES, bigFmt);
+}
+
+// Cortes por cuantiles → 6 bins (mismo criterio que el mapa del número).
+function qn_heatBreaks(values) {
+  const v = values.filter(x => x != null).sort((a, b) => a - b);
+  const N = QN_HEAT_COLORS.length;
+  if (v.length < N) return v.length ? [...new Set(v)] : [10];
+  const br = [];
+  for (let i = 1; i < N; i++) br.push(Math.round(v[Math.floor(v.length * i / N)]));
+  return [...new Set(br)];
+}
+function qn_heatBin(v, breaks) {
+  if (v == null) return 0;
+  let i = 0; for (const b of breaks) { if (v < b) return i; i++; }
+  return Math.min(i, QN_HEAT_COLORS.length - 1);
+}
+// Columnas ordenadas por la mediana regional, de más a menos señalado: la matriz
+// se lee de izquierda a derecha como el orden en que América Latina nombra a sus
+// discriminados.
+// «Ninguno» y «Otros» van siempre al final aunque su mediana sea alta: no son
+// grupos, y metidos en el medio de la fila rompen la lectura de izquierda a
+// derecha (Nicaragua contesta «ninguno» tanto como Brasil contesta «pobres»).
+const QN_HEAT_LAST = ['ninguna', 'otros'];
+function qn_heatCols() {
+  const cats = (typeof QUIEN_CATS !== 'undefined') ? QUIEN_CATS.slice() : [];
+  return cats.sort((a, b) => {
+    const ra = QN_HEAT_LAST.indexOf(a), rb = QN_HEAT_LAST.indexOf(b);
+    if (ra >= 0 || rb >= 0) return (ra < 0 ? -1 : ra) - (rb < 0 ? -1 : rb);
+    const ma = qn_median(a), mb = qn_median(b);
+    return (mb ? mb.value : 0) - (ma ? ma.value : 0);
+  });
+}
+// Filas: un país por fila, ordenadas DESC por la categoría elegida.
+function qn_heatRows() {
+  const cats = (typeof QUIEN_CATS !== 'undefined') ? QUIEN_CATS : [];
+  const isos = Array.from(new Set((QUIEN_FOTO[cats[0]] || []).map(r => r[0])));
+  const out = isos.map(iso => {
+    const pct = {};
+    cats.forEach(c => { pct[c] = qn_pctOf(iso, c); });
+    return { iso, pct, top: qn_topMacro(iso).cat };
+  });
+  const k = state[12].cat;
+  out.sort((a, b) => (b.pct[k] || 0) - (a.pct[k] || 0));
+  return out;
+}
+
+function qn_drawHeatLegend(svg, MARGIN, plotW, y, breaks, SIZES, bigFmt) {
+  const g = qn_ns('g'); svg.appendChild(g);
+  const swW = bigFmt ? 54 : 34, swH = bigFmt ? 14 : 10;
+  const total = QN_HEAT_COLORS.length * swW;
+  const x0 = MARGIN.left;
+
+  const title = qn_ns('text');
+  title.setAttribute('x', x0); title.setAttribute('y', y - (bigFmt ? 10 : 7));
+  title.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+  title.style.fontSize = SIZES.legend + 'px';
+  title.setAttribute('fill', '#7A6E62'); title.setAttribute('font-weight', 600);
+  title.textContent = (typeof t === 'function') ? t('c12-heat-legend') : '% que lo nombra';
+  g.appendChild(title);
+
+  QN_HEAT_COLORS.forEach((col, i) => {
+    const sw = qn_ns('rect');
+    sw.setAttribute('x', x0 + i * swW); sw.setAttribute('y', y);
+    sw.setAttribute('width', swW); sw.setAttribute('height', swH);
+    sw.setAttribute('fill', col);
+    g.appendChild(sw);
+    if (i < breaks.length) {
+      const lb = qn_ns('text');
+      lb.setAttribute('x', x0 + (i + 1) * swW);
+      lb.setAttribute('y', y + swH + (bigFmt ? 20 : 13));
+      lb.setAttribute('text-anchor', 'middle');
+      lb.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+      lb.style.fontSize = SIZES.legend + 'px';
+      lb.setAttribute('fill', '#7A6E62');
+      lb.setAttribute('font-variant-numeric', 'tabular-nums');
+      lb.textContent = qn_fmt(breaks[i], 0);
+      g.appendChild(lb);
+    }
+  });
+
+  // Nota del recuadro, a la derecha de la leyenda si hay lugar; si no, debajo.
+  const nota = (typeof t === 'function') ? t('c12-heat-box-note') : '';
+  if (!nota) return;
+  const notaW = qn_measure(nota, SIZES.note, 400);
+  const cabe = (x0 + total + 24 + notaW) <= (MARGIN.left + plotW);
+  const nt = qn_ns('text');
+  nt.setAttribute('x', cabe ? x0 + total + 24 : x0);
+  nt.setAttribute('y', cabe ? y + swH - (bigFmt ? 1 : 1) : y + swH + (bigFmt ? 44 : 30));
+  nt.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
+  nt.style.fontSize = SIZES.note + 'px';
+  nt.setAttribute('fill', '#7A6E62');
+  nt.textContent = nota;
+  svg.appendChild(nt);
 }
 
 //==================================================================
@@ -621,6 +926,26 @@ function qn_showTooltipPerfil(event, d) {
   qn_posTooltip(event);
 }
 
+// Tooltip de una celda de la matriz. Da el valor con decimal (la celda muestra
+// el entero) y, sobre todo, el grupo que ese país señala primero: sin eso, un
+// 12% suelto no dice si es mucho o poco para ESE país.
+function qn_showTooltipHeat(event, iso, cat, pct) {
+  const tt = document.getElementById('tooltip12');
+  if (!tt) return;
+  const L = (k, fb) => (typeof t === 'function' ? t(k) : fb);
+  const top = qn_topMacro(iso);
+  const med = qn_median(cat);
+  tt.innerHTML =
+    `<strong>${qn_name(iso)}</strong>` +
+    `<div class="tt-sub">${qn_catLabel(cat)} · Latinobarómetro 2020</div>` +
+    `<div class="tt-row tt-row-strong"><span>${L('c12-tt-pct', 'Lo nombran')}</span><span>${qn_fmt(pct, 1)}%</span></div>` +
+    (med ? `<div class="tt-row"><span>${L('c12-median-legend', 'Mediana regional')}</span><span>${qn_fmt(med.value, 1)}%</span></div>` : '') +
+    `<div class="tt-row"><span>${L('c12-tt-top', 'Grupo más señalado')}</span><span>${qn_catLabel(top.cat)} (${qn_fmt(top.pct, 1)}%)</span></div>` +
+    qn_compositionLine(iso, cat);
+  tt.style.display = 'block'; tt.style.opacity = '1';
+  qn_posTooltip(event);
+}
+
 function qn_posTooltip(event) {
   const tt = document.getElementById('tooltip12');
   if (!tt || !tt.parentElement) return;
@@ -675,6 +1000,25 @@ function setupQuienCountry() {
     setupQuienCountry._wired = true;
     sel.addEventListener('change', () => { state[12].iso = sel.value; qn_hideTooltip(); drawQuien(); });
   }
+}
+
+// Selector de la matriz: es el MISMO state[12].cat que el del Ranking (el shell
+// los sincroniza vía catSel), así que elegir "Migrantes" en una pestaña y pasar
+// a la otra mantiene el hilo. Acá ordena las filas y resalta la columna.
+function setupQuienSort() {
+  const sel = document.getElementById('qn-sort-select');
+  if (!sel) return;
+  sel.value = state[12].cat;
+  if (setupQuienSort._wired) return;
+  setupQuienSort._wired = true;
+  sel.addEventListener('change', () => {
+    if (!QUIEN_FOTO[sel.value]) return;
+    state[12].cat = sel.value;
+    const otro = document.getElementById('qn-cat-select');
+    if (otro) otro.value = sel.value;
+    qn_hideTooltip();
+    drawQuien();
+  });
 }
 
 function setupQuienMedian() {
@@ -761,6 +1105,7 @@ function initQuien() {
 
   setupQuienCat();
   setupQuienCountry();
+  setupQuienSort();
   setupQuienMedian();
   setupQuienCSV();
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
