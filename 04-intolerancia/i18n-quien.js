@@ -5,24 +5,35 @@
 
 Object.assign(I18N.es, {
   // ---- Shell del graficador (encabezado + pestañas de vista, lib/grapher.js)
+  // La bajada de la página salió del HTML: era la cuarta capa de texto y decía
+  // lo que ya dicen el título y los nombres de las pestañas.
   'g12-eyebrow':        'Quién es el más discriminado',
-  'g12-lead':           'A qué grupo señala cada sociedad como el más discriminado de su país. Mirá el mismo dato de tres maneras: la tabla completa, el ranking de los 18 países en un grupo, o el perfil de un país.',
   'g12-view-ranking':   'Ranking',
   'g12-view-perfil':    'Perfil',
   'g12-view-matriz':    'Matriz',
 
-  // ---- Títulos (default NEUTRAL vía atlasSetHeading; el insight queda para el editor)
-  'c12-title':          'En 14 de 18 países el más discriminado no es un grupo racial: son los pobres',
-  'c12-title-neutral':  'El grupo más discriminado en cada país de América Latina',
+  // ---- Títulos. El EDITORIAL es de la Matriz: es la única vista donde el
+  // hallazgo se ve —las 18 filas juntas— y sus dos números los calcula el JS
+  // (qn_conteoLideres), así que no pueden quedar desfasados del dibujo. En el
+  // Ranking (una columna) y en el Perfil (una fila) el título nombra la
+  // MEDICIÓN, que es lo que ahí está en pantalla.
+  'c12-title-tpl':          'En {N} de los {T} países de América Latina el más discriminado no es un grupo racial: son los pobres',
+  'c12-title-neutral':      'El grupo más discriminado en cada país de América Latina',
+  'c12-title-rank-tpl':     'Quién nombra a {CAT} como el más discriminado de su país',
+  'c12-title-rank-ninguna': 'Quién dice que en su país no hay ningún grupo discriminado',
+  'c12-title-perfil-tpl':   'El grupo más discriminado según la gente de {PAIS}',
 
   // ---- Subtítulos: estático (default, por si el editor restaura el data-i18n)
   // + dinámicos que el JS rellena según vista/categoría/país.
-  'c12-subtitle':            'Porcentaje que nombra a Raza o etnia como el grupo más discriminado del país. Cada persona eligió una sola respuesta. Latinobarómetro 2020, 18 países.',
-  'c12-subtitle-rank-tpl':   'Porcentaje que nombra a {CAT} como el grupo más discriminado del país. Cada persona eligió una sola respuesta. Latinobarómetro 2020, 18 países.',
-  'c12-subtitle-perfil-tpl': 'A qué grupo señala como el más discriminado del país la gente de {PAIS}. Cada persona eligió una sola respuesta. Latinobarómetro 2020.',
-  // Matriz: la bajada tiene que explicar QUÉ ordena las filas, porque el orden
-  // cambia con el selector y sin eso el lector no sabe qué está mirando.
-  'c12-subtitle-matriz-tpl': 'Porcentaje que nombra a cada grupo como el más discriminado de su país; cada fila suma 100. Países ordenados por {CAT}. Latinobarómetro 2020, 18 países.',
+  // Subtítulos: qué se mide y cuándo. Nada más. Salieron «cada persona eligió
+  // una sola respuesta» y «cada fila suma 100» (son metodología: van a la
+  // nota), «países ordenados por X» (lo dice la flecha del encabezado) y «18
+  // países» (también en la nota).
+  'c12-subtitle':            'Porcentaje que nombra a cada grupo como el más discriminado de su país. Latinobarómetro 2020.',
+  'c12-subtitle-rank-tpl':   'Porcentaje que nombra a {CAT} como el más discriminado de su país. Latinobarómetro 2020.',
+  'c12-subtitle-rank-ninguna': 'Porcentaje que dice que en su país no hay ningún grupo discriminado. Latinobarómetro 2020.',
+  'c12-subtitle-perfil-tpl': 'Porcentaje que nombra a cada grupo como el más discriminado del país. Latinobarómetro 2020.',
+  'c12-subtitle-matriz':     'Porcentaje que nombra a cada grupo como el más discriminado de su país. Latinobarómetro 2020.',
 
   // ---- Controles (el viejo toggle Mostrar: ranking/perfil son hoy las pestañas g12-view-*)
   'c12-cat-label':      'Grupo señalado',
@@ -55,9 +66,31 @@ Object.assign(I18N.es, {
 
   // ---- Fuentes / metodología
   'c12-sources':        'Datos: Latinobarómetro 2020, pregunta P58ST: «¿Cuáles cree Ud. que son las personas o grupos más discriminados en el país?» — RESPUESTA ÚNICA (cada persona nombró un solo grupo). 18 países de América Latina, muestras nacionales de ~1.000-1.200 casos; % ponderado (wt) sobre 16.752 respuestas válidas (82,9% de 20.204; el 17,1% no sabe o no responde). El menú original tenía 42 categorías: las agrupamos en 12 macrocategorías (el recodeo es nuestro, no del Latinobarómetro; el detalle de las 42 está en la pestaña «Perfil»). La pestaña «Matriz» muestra ocho columnas: los seis grupos más nombrados, «Ninguno» y un «Otros» que ahí suma también ideología política, conducta o estigma, salud o discapacidad y religión u origen (ninguna de esas cuatro es la más señalada en ningún país). Así cada fila de la matriz sigue sumando 100. Las doce macrocategorías por separado están en «Ranking», en «Perfil» y en el CSV. «Ninguno» es una respuesta sustantiva (nadie es discriminado) y se muestra como tal. El indicador mide el grupo MÁS señalado, no cuántos grupos sufren discriminación. Sólo 2020: el menú de categorías se diseñó para esa ronda (incluía, por ejemplo, «inmigrantes de Venezuela»).',
-  'c12-sources-png':    'Datos: Latinobarómetro 2020, pregunta P58ST (el grupo más discriminado, respuesta única). 18 países de América Latina, % ponderado sobre 16.752 respuestas válidas. 12 macrocategorías: recodeo propio de las 42 originales.',
+  'c12-sources-png':    'Datos: Latinobarómetro 2020, pregunta P58ST: el grupo más discriminado del país, respuesta única. 18 países de América Latina, % ponderado sobre 16.752 respuestas válidas. Las 12 macrocategorías son un recodeo propio de las 42 originales.',
+  // La matriz necesita su propia nota corta: es la única vista donde la fila
+  // suma 100 y la única que agrupa cuatro macros dentro de «Otros».
+  'c12-sources-png-matriz': 'Datos: Latinobarómetro 2020, pregunta P58ST: el grupo más discriminado del país. Cada persona eligió una sola respuesta, así que cada fila suma 100. 18 países de América Latina, % ponderado sobre 16.752 respuestas válidas. «Otros» incluye acá ideología política, conducta o estigma, salud o discapacidad y religión u origen.',
 
   // ---- Etiquetas de las 12 macrocategorías (calzan con QUIEN_CATS)
+  // ---- Forma de FRASE de cada macrocategoría (qcatf-*), la que entra en una
+  // oración: «Quién nombra a LOS POBRES como el más discriminado». El rótulo del
+  // menú (qcat-*) es una etiqueta y suelto en un título no concuerda («a
+  // pobres», «a mujeres»). Mismo desdoblamiento que titulo_es en los charts 18
+  // y 19. «Ninguno» no tiene forma de frase: su título y su subtítulo son
+  // propios, porque no es un grupo.
+  'qcatf-pobres':          'los pobres',
+  'qcatf-raza_etnia':      'un grupo racial o étnico',
+  'qcatf-migrantes':       'los migrantes',
+  'qcatf-lgbt':            'las personas LGBT',
+  'qcatf-edad':            'los viejos o los jóvenes',
+  'qcatf-mujeres':         'las mujeres',
+  'qcatf-ideologia':       'quienes piensan distinto',
+  'qcatf-conducta':        'un grupo estigmatizado por su conducta',
+  'qcatf-salud_discap':    'las personas con problemas de salud o discapacidad',
+  'qcatf-religion_origen': 'un grupo religioso o de otro origen',
+  'qcatf-otros':           'otro grupo',
+
+  // ---- Etiquetas cortas del menú (calzan con QUIEN_CATS)
   'qcat-pobres':          'Pobres',
   'qcat-raza_etnia':      'Raza o etnia',
   'qcat-migrantes':       'Migrantes',
@@ -74,18 +107,21 @@ Object.assign(I18N.es, {
 
 Object.assign(I18N.en, {
   'g12-eyebrow':        'Who is the most discriminated against',
-  'g12-lead':           'Which group each society names as the most discriminated against in its own country. See the same data three ways: the full table, the ranking of all 18 countries on one group, or the profile of one country.',
   'g12-view-ranking':   'Ranking',
   'g12-view-perfil':    'Profile',
   'g12-view-matriz':    'Matrix',
 
-  'c12-title':          'In 14 of 18 countries the most-discriminated group is not racial: it is the poor',
-  'c12-title-neutral':  'The most-discriminated group in each Latin American country',
+  'c12-title-tpl':          'In {N} of the {T} Latin American countries the most-discriminated group is not racial: it is the poor',
+  'c12-title-neutral':      'The most-discriminated group in each Latin American country',
+  'c12-title-rank-tpl':     'Who names {CAT} as the most discriminated against in their country',
+  'c12-title-rank-ninguna': 'Who says no group is discriminated against in their country',
+  'c12-title-perfil-tpl':   'The most-discriminated group according to people in {PAIS}',
 
-  'c12-subtitle':            'Share who name Race or ethnicity as the most-discriminated group in the country. Each respondent chose a single answer. Latinobarómetro 2020, 18 countries.',
-  'c12-subtitle-rank-tpl':   'Share who name {CAT} as the most-discriminated group in the country. Each respondent chose a single answer. Latinobarómetro 2020, 18 countries.',
-  'c12-subtitle-perfil-tpl': 'Which group people in {PAIS} name as the most discriminated against in the country. Each respondent chose a single answer. Latinobarómetro 2020.',
-  'c12-subtitle-matriz-tpl': 'Share who name each group as the most-discriminated one in their country; each row adds up to 100. Countries ordered by {CAT}. Latinobarómetro 2020, 18 countries.',
+  'c12-subtitle':            'Share who name each group as the most-discriminated one in their country. Latinobarómetro 2020.',
+  'c12-subtitle-rank-tpl':   'Share who name {CAT} as the most discriminated against in their country. Latinobarómetro 2020.',
+  'c12-subtitle-rank-ninguna': 'Share who say no group is discriminated against in their country. Latinobarómetro 2020.',
+  'c12-subtitle-perfil-tpl': 'Share who name each group as the most-discriminated one in the country. Latinobarómetro 2020.',
+  'c12-subtitle-matriz':     'Share who name each group as the most-discriminated one in their country. Latinobarómetro 2020.',
 
   'c12-cat-label':      'Group named',
   'c12-country-label':  'Country',
@@ -113,7 +149,20 @@ Object.assign(I18N.en, {
   'c12-detail-intro-tpl': 'Latinobarómetro offered 42 possible answers; we grouped them into 12 macro-categories (the recoding is ours, not Latinobarómetro’s). Here is how each macro breaks down into the original answers in {PAIS} (weighted % over valid answers):',
 
   'c12-sources':        'Data: Latinobarómetro 2020, question P58ST: “Which people or groups do you think are the most discriminated against in the country?” — SINGLE answer (each respondent named one group only). 18 Latin American countries, national samples of ~1,000-1,200; weighted % (wt) over 16,752 valid answers (82.9% of 20,204; 17.1% don’t know or no answer). The original menu had 42 categories: we grouped them into 12 macro-categories (the recoding is ours, not Latinobarómetro’s; the full 42 are in the “Profile” tab). The “Matrix” tab shows eight columns: the six most-named groups, “None”, and an “Others” that there also adds up political ideology, behaviour or stigma, health or disability and religion or origin (none of those four is the most-named group in any country). That way every row of the matrix still adds up to 100. The twelve macro-categories on their own are in “Ranking”, in “Profile” and in the CSV. “None” is a substantive answer (no group is discriminated against) and is shown as such. The indicator measures the MOST-named group, not how many groups face discrimination. 2020 only: the category menu was designed for that round (it included, for example, “Venezuelan immigrants”).',
-  'c12-sources-png':    'Data: Latinobarómetro 2020, question P58ST (the most-discriminated group, single answer). 18 Latin American countries, weighted % over 16,752 valid answers. 12 macro-categories: our recode of the 42 originals.',
+  'c12-sources-png':    'Data: Latinobarómetro 2020, question P58ST: the most-discriminated group in the country, single answer. 18 Latin American countries, weighted % over 16,752 valid answers. The 12 macro-categories are our recode of the 42 originals.',
+  'c12-sources-png-matriz': 'Data: Latinobarómetro 2020, question P58ST: the most-discriminated group in the country. Each respondent chose a single answer, so every row adds up to 100. 18 Latin American countries, weighted % over 16,752 valid answers. “Others” here also includes political ideology, behaviour or stigma, health or disability and religion or origin.',
+
+  'qcatf-pobres':          'the poor',
+  'qcatf-raza_etnia':      'a racial or ethnic group',
+  'qcatf-migrantes':       'migrants',
+  'qcatf-lgbt':            'LGBT people',
+  'qcatf-edad':            'the old or the young',
+  'qcatf-mujeres':         'women',
+  'qcatf-ideologia':       'people who think differently',
+  'qcatf-conducta':        'a group stigmatised for its behaviour',
+  'qcatf-salud_discap':    'people with health problems or disabilities',
+  'qcatf-religion_origen': 'a religious group or one of another origin',
+  'qcatf-otros':           'another group',
 
   'qcat-pobres':          'The poor',
   'qcat-raza_etnia':      'Race or ethnicity',

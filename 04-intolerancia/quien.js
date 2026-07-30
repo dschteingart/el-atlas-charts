@@ -67,6 +67,13 @@ function qn_name(iso) {
   return iso;
 }
 function qn_catLabel(cat) { return (typeof t === 'function') ? t('qcat-' + cat) : cat; }
+// Forma de FRASE («los pobres»), la que entra en un título o un subtítulo. Cae
+// al rótulo del menú si falta la clave.
+function qn_catFrase(cat) {
+  const k = 'qcatf-' + cat;
+  const v = (typeof t === 'function') ? t(k) : k;
+  return (v && v !== k) ? v : qn_catLabel(cat);
+}
 function qn_itemLabel(cod) {
   const lang = qn_lang();
   const L = QUIEN_META.itemLabels[lang] || QUIEN_META.itemLabels.es;
@@ -139,26 +146,78 @@ function qn_perfilData(iso) {
 }
 
 //==================================================================
-//  Subtítulo dinámico
+//  Título y subtítulo dinámicos
 //==================================================================
+// Tres capas y ninguna repite a la otra (criterio OWID, el mismo de los charts
+// 1, 18, 19 y 20): TÍTULO el hallazgo o la medición, SUBTÍTULO qué se mide y
+// cuándo, NOTA la letra chica. Salieron de la bajada «cada fila suma 100» (es
+// metodología), «países ordenados por X» (lo dice la flecha del encabezado) y
+// «18 países» (está en la nota).
+
+function qn_editorCustom(field) {
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  if (!ae || !ae.texts) return '';
+  const tx = ae.texts[(ae.lang || qn_lang())] || {};
+  return (tx[field] || '').trim();
+}
+
+// Recuento del hallazgo: en cuántos países gana cada grupo. Se calcula, no se
+// escribe a mano, así el titular no puede quedar desfasado del dibujo.
+function qn_conteoLideres() {
+  const cats = qn_heatCols();
+  const conteo = {};
+  qn_heatRows(cats).forEach(r => { conteo[r.top] = (conteo[r.top] || 0) + 1; });
+  let mejor = null;
+  Object.keys(conteo).forEach(k => { if (!mejor || conteo[k] > conteo[mejor]) mejor = k; });
+  return { cat: mejor, n: mejor ? conteo[mejor] : 0, total: qn_heatIsos().length };
+}
+
+function qn_updateTitle() {
+  const block = document.querySelector('.chart-block[data-chart="12"]') || document;
+  const el = block.querySelector('.chart-title');
+  if (!el || qn_editorCustom('title')) return;
+  const s = state[12];
+  const T = (k) => (typeof t === 'function') ? t(k) : k;
+
+  // La MATRIZ es la única vista donde el hallazgo se ve: son las 18 filas
+  // juntas. Ahí va el título editorial, con el recuento calculado. En el
+  // Ranking (una columna) y en el Perfil (una fila) sería una afirmación sobre
+  // algo que no está en pantalla, así que ahí el título nombra la MEDICIÓN.
+  if (s.view === 'matriz') {
+    const L = qn_conteoLideres();
+    const tpl = T('c12-title-tpl');
+    if (L.cat === 'pobres' && L.n > L.total / 2 && tpl.indexOf('{N}') >= 0) {
+      el.textContent = tpl.replace('{N}', String(L.n)).replace('{T}', String(L.total));
+      return;
+    }
+    el.textContent = T('c12-title-neutral');
+    return;
+  }
+  if (s.view === 'perfil') {
+    el.textContent = T('c12-title-perfil-tpl').replace('{PAIS}', qn_name(s.iso));
+    return;
+  }
+  // Ranking. «Ninguno» no es un grupo y no entra en la plantilla («Quién señala
+  // a Ninguno como…»): tiene su propio título.
+  el.textContent = (s.cat === 'ninguna')
+    ? T('c12-title-rank-ninguna')
+    : T('c12-title-rank-tpl').replace('{CAT}', qn_catFrase(s.cat));
+}
+
 function qn_updateSubtitle() {
   const block = document.querySelector('.chart-block[data-chart="12"]') || document;
   const el = block.querySelector('.chart-subtitle');
-  if (!el) return;
-  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
-  const lang = (ae && ae.lang) || qn_lang();
-  const tx = (ae && ae.texts && ae.texts[lang]) || {};
-  if ((tx.subtitle || '').trim()) return;   // respeta el subtítulo custom del editor
+  if (!el || qn_editorCustom('subtitle')) return;
   const s = state[12];
+  const T = (k) => (typeof t === 'function') ? t(k) : '';
   if (s.view === 'perfil') {
-    const tpl = (typeof t === 'function') ? t('c12-subtitle-perfil-tpl') : '';
-    el.textContent = tpl.replace('{PAIS}', qn_name(s.iso));
+    el.textContent = T('c12-subtitle-perfil-tpl').replace('{PAIS}', qn_name(s.iso));
   } else if (s.view === 'matriz') {
-    const tpl = (typeof t === 'function') ? t('c12-subtitle-matriz-tpl') : '';
-    el.textContent = tpl.replace('{CAT}', qn_catLabel(s.cat));
+    el.textContent = T('c12-subtitle-matriz');
+  } else if (s.cat === 'ninguna') {
+    el.textContent = T('c12-subtitle-rank-ninguna');
   } else {
-    const tpl = (typeof t === 'function') ? t('c12-subtitle-rank-tpl') : '';
-    el.textContent = tpl.replace('{CAT}', qn_catLabel(s.cat));
+    el.textContent = T('c12-subtitle-rank-tpl').replace('{CAT}', qn_catFrase(s.cat));
   }
 }
 
@@ -190,9 +249,9 @@ function drawQuien() {
   else if (s.view === 'matriz') qn_drawMatriz();
   else qn_drawRanking();
 
-  if (typeof atlasSetHeading === 'function') {
-    atlasSetHeading('12', false, { title: 'c12-title', titleNeutral: 'c12-title-neutral' });
-  }
+  // El título lo arman la vista y el recuento recién calculado, así que no sale
+  // de una clave fija y no va por atlasSetHeading (ver qn_updateTitle).
+  qn_updateTitle();
 }
 
 //==================================================================
@@ -1144,7 +1203,11 @@ function initQuien() {
   // Nota corta para el PNG.
   window.onBeforePngExportGetSourceText = function (chartId) {
     if (chartId !== '12') return null;
-    return (typeof t === 'function') ? t('c12-sources-png') : null;
+    if (typeof t !== 'function') return null;
+    // La matriz necesita su propia nota: es la única vista que agrupa dentro de
+    // «Otros» y la única donde la fila suma 100. La genérica hablaba de las 12
+    // macrocategorías, que ahí no son las que se dibujan.
+    return t(state[12].view === 'matriz' ? 'c12-sources-png-matriz' : 'c12-sources-png');
   };
 
   if (initQuien._wired) return;
