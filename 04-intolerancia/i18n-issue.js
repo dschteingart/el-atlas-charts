@@ -48,8 +48,8 @@ const ISSUE_I18N = {
     'c1-tt-n':           'Muestra',
     'c1-axis-x':         '% que menciona al grupo como vecino no deseado',
     'c1-axis-mk':        '% que no lo querría de vecino',
-    'c1-sources':        'Datos: Integrated Values Survey (EVS 1981-2021 + WVS 1981-2022), pregunta «¿A cuáles de estos grupos no le gustaría tener de vecinos?» (mención espontánea). Último dato disponible por país (2017-2022); % ponderado sobre respuestas válidas, muestras de 1.000-2.000 casos. Mide intolerancia <em>declarada</em> ante un encuestador — diferencias de pocos puntos entre países no son informativas (los países medidos por EVS y WVS a la vez difieren hasta 8-13 puntos).',
-    'c1-sources-tpl':    'Datos: Integrated Values Survey (EVS/WVS). Último dato por país, {Y}.',
+    'c1-sources':        'Datos: Integrated Values Survey (WVS/EVS, 1981-2022), pregunta «¿A cuáles de estos grupos no le gustaría tener de vecinos?» (mención espontánea). Último dato disponible por país (2017-2023); % ponderado sobre respuestas válidas, muestras de 1.000-2.000 casos. Mide intolerancia <em>declarada</em> ante un encuestador — diferencias de pocos puntos entre países no son informativas (los países medidos por EVS y WVS a la vez difieren hasta 8-13 puntos).',
+    'c1-sources-tpl':    'Datos: Integrated Values Survey (WVS/EVS). Último dato por país, {Y}.',
 
     // Categorías: forma corta (selector) y forma "a ..." (subtítulo)
     'cat-otra_raza':          'Personas de otra raza',
@@ -76,21 +76,21 @@ const ISSUE_I18N = {
     'c3-tt-year':        'Medición',
     'c3-tt-trend':       'Evolución en el tiempo',
     'c3-tt-nodata':      'Sin dato en la encuesta',
-    'c3-sources':        'Datos: Integrated Values Survey (EVS/WVS), pregunta de vecinos, mención espontánea, % ponderado, último dato 2017-2022. Los cortes de color son fijos (en puntos de %) para que el mapa sea comparable entre categorías. A diferencia del mapa viral de 2013, la ventana temporal es única y el año de cada país está en el tooltip. Mide intolerancia declarada.',
+    'c3-sources':        'Datos: Integrated Values Survey (WVS/EVS), pregunta de vecinos, mención espontánea, % ponderado, último dato 2017-2023. Los cortes de color son fijos (en puntos de %) para que el mapa sea comparable entre categorías. A diferencia del mapa viral de 2013, la ventana temporal es única y el año de cada país está en el tooltip. Mide intolerancia declarada.',
 
     // ---- Chart 2: la película (líneas temporales)
     'c2-title':          'El derrumbe de la homofobia latinoamericana',
     'c2-title-neutral':  'La evolución de la intolerancia declarada',
     'c2-period-label':   'Período',
     'c2-subtitle-tpl':   'Porcentaje que no querría tener de vecinos a {CAT}, a lo largo del tiempo (Integrated Values Survey, 1981-2022).',
-    'c2-sources':        'Datos: Integrated Values Survey (EVS 1981-2021 + WVS 1981-2022), pregunta de vecinos, mención espontánea, % ponderado. Para cada país se muestra una serie coherente (el estudio con más olas) para evitar saltos por diferencias de instrumento entre EVS y WVS. Los datos son olas de encuesta en años irregulares, que además no coinciden entre países: los puntos marcan las mediciones y las líneas sólo las unen, no representan valores anuales. Mide intolerancia declarada.',
+    'c2-sources':        'Datos: Integrated Values Survey (WVS/EVS, 1981-2022), pregunta de vecinos, mención espontánea, % ponderado. Para cada país se muestra una serie coherente (el estudio con más olas) para evitar saltos por diferencias de instrumento entre EVS y WVS. Los datos son olas de encuesta en años irregulares, que además no coinciden entre países: los puntos marcan las mediciones y las líneas sólo las unen, no representan valores anuales. Mide intolerancia declarada.',
 
     // ---- Chart 5: declarado vs implícito (scatter)
     'c5-title':          'Argentina declara poco racismo, pero lo asocia como cualquiera',
     'c5-title-neutral':  'Lo que se dice y lo que se asocia',
     'c5-subtitle':       'Prejuicio declarado en encuestas vs. sesgo implícito medido con un test de asociación.',
-    'c5-subtitle-race':  'Rechazo racial declarado (encuesta) vs. sesgo racial implícito (test de asociación IAT). Cada punto, un país.',
-    'c5-subtitle-gay':   'Rechazo a homosexuales declarado (encuesta) vs. sesgo anti-gay implícito (test de asociación IAT). Cada punto, un país.',
+    'c5-subtitle-race':  'Rechazo racial declarado (encuesta) vs. sesgo racial implícito (test de asociación IAT).',
+    'c5-subtitle-gay':   'Rechazo a homosexuales declarado (encuesta) vs. sesgo anti-gay implícito (test de asociación IAT).',
     'c5-dim-label':      'Dimensión',
     'c5-dim-race':       'Raza',
     'c5-dim-gay':        'Orientación sexual',
@@ -98,7 +98,7 @@ const ISSUE_I18N = {
     'c5-axis-y':         'Sesgo implícito (D-score del IAT)',
     'c5-tt-declared':    'Declarado (encuesta)',
     'c5-tt-implicit':    'Implícito (IAT)',
-    'c5-sources':        'Datos: rechazo declarado, Integrated Values Survey (EVS/WVS, último dato). Sesgo implícito, Project Implicit International (Charlesworth et al. 2023): D-score del Test de Asociación Implícita (IAT), 2009-2019; &gt;0 = asociación más veloz del grupo dominante (blancos/heterosexuales) con lo positivo. La muestra del IAT es autoseleccionada (visitantes del sitio): sirve para comparar niveles relativos entre países, no prevalencias.',
+    'c5-sources':        'Datos: rechazo declarado, Integrated Values Survey (WVS/EVS, último dato). Sesgo implícito, Project Implicit International (Charlesworth et al. 2023): D-score del Test de Asociación Implícita (IAT), 2009-2019; &gt;0 = asociación más veloz del grupo dominante (blancos/heterosexuales) con lo positivo. La muestra del IAT es autoseleccionada (visitantes del sitio): sirve para comparar niveles relativos entre países, no prevalencias.',
 
     // ---- Chart 4: perfil de intolerancia de un país
     'c4-title':          'La Argentina le teme al vicio, no al distinto',
@@ -109,7 +109,7 @@ const ISSUE_I18N = {
     'c4-median-legend':  'Mediana mundial',
     'c4-tt-above':       'Por encima de la mediana mundial.',
     'c4-tt-below':       'Por debajo de la mediana mundial.',
-    'c4-sources':        'Datos: Integrated Values Survey (EVS/WVS), pregunta de vecinos, mención espontánea. Último dato disponible por país (2017-2022); % ponderado. La mediana mundial es la de todos los países con dato en cada categoría. Mide intolerancia declarada.',
+    'c4-sources':        'Datos: Integrated Values Survey (WVS/EVS), pregunta de vecinos, mención espontánea. Último dato disponible por país (2017-2023); % ponderado. La mediana mundial es la de todos los países con dato en cada categoría. Mide intolerancia declarada.',
 
     // ---- Chart 6: Latinobarómetro 2024 (barras LatAm)
     'c6-title':          'Chile y Perú, los más recelosos del inmigrante en la región',
@@ -189,8 +189,8 @@ const ISSUE_I18N = {
     'c1-tt-n':           'Sample',
     'c1-axis-x':         '% mentioning the group as unwanted neighbours',
     'c1-axis-mk':        '% who would not want them as neighbours',
-    'c1-sources':        'Data: Integrated Values Survey (EVS 1981-2021 + WVS 1981-2022), question "Which of these groups would you not like to have as neighbours?" (spontaneous mention). Latest available data per country (2017-2022); weighted % over valid responses, samples of 1,000-2,000 cases. Note: this measures intolerance as <em>declared</em> to an interviewer — small gaps between countries are not informative (countries surveyed by both EVS and WVS differ by up to 8-13 points).',
-    'c1-sources-tpl':    'Data: Integrated Values Survey (EVS/WVS). Latest data per country, {Y}.',
+    'c1-sources':        'Data: Integrated Values Survey (WVS/EVS, 1981-2022), question "Which of these groups would you not like to have as neighbours?" (spontaneous mention). Latest available data per country (2017-2023); weighted % over valid responses, samples of 1,000-2,000 cases. Note: this measures intolerance as <em>declared</em> to an interviewer — small gaps between countries are not informative (countries surveyed by both EVS and WVS differ by up to 8-13 points).',
+    'c1-sources-tpl':    'Data: Integrated Values Survey (WVS/EVS). Latest data per country, {Y}.',
 
     'cat-otra_raza':          'People of a different race',
     'cat-inmigrantes':        'Immigrants',
@@ -216,21 +216,21 @@ const ISSUE_I18N = {
     'c3-tt-year':        'Measured',
     'c3-tt-trend':       'Trend over time',
     'c3-tt-nodata':      'No survey data',
-    'c3-sources':        'Data: Integrated Values Survey (EVS/WVS), neighbours question, spontaneous mention, weighted %, latest data 2017-2022. Colour breaks are fixed (in percentage points) so the map is comparable across categories. Unlike the viral 2013 map, the time window is single and each country’s year is in the tooltip. Measures declared intolerance.',
+    'c3-sources':        'Data: Integrated Values Survey (WVS/EVS), neighbours question, spontaneous mention, weighted %, latest data 2017-2023. Colour breaks are fixed (in percentage points) so the map is comparable across categories. Unlike the viral 2013 map, the time window is single and each country’s year is in the tooltip. Measures declared intolerance.',
 
     // ---- Chart 2: the trend (time series)
     'c2-title':          'The collapse of Latin American homophobia',
     'c2-title-neutral':  'The trend in declared intolerance',
     'c2-period-label':   'Period',
     'c2-subtitle-tpl':   'Share who would not want {CAT} as neighbours, over time (Integrated Values Survey, 1981-2022).',
-    'c2-sources':        'Data: Integrated Values Survey (EVS 1981-2021 + WVS 1981-2022), neighbours question, spontaneous mention, weighted %. For each country a single consistent series is shown (the study with more waves) to avoid jumps from EVS/WVS instrument differences. The data are survey waves at irregular years that do not line up across countries: the dots mark the actual measurements and the lines merely connect them — they are not annual values. Measures declared intolerance.',
+    'c2-sources':        'Data: Integrated Values Survey (WVS/EVS, 1981-2022), neighbours question, spontaneous mention, weighted %. For each country a single consistent series is shown (the study with more waves) to avoid jumps from EVS/WVS instrument differences. The data are survey waves at irregular years that do not line up across countries: the dots mark the actual measurements and the lines merely connect them — they are not annual values. Measures declared intolerance.',
 
     // ---- Chart 5: declared vs implicit (scatter)
     'c5-title':          'Argentina declares little racism, but associates like everyone else',
     'c5-title-neutral':  'What people say vs. what they associate',
     'c5-subtitle':       'Prejudice declared in surveys vs. implicit bias measured with an association test.',
-    'c5-subtitle-race':  'Declared racial rejection (survey) vs. implicit racial bias (IAT association test). Each dot is a country.',
-    'c5-subtitle-gay':   'Declared rejection of homosexuals (survey) vs. implicit anti-gay bias (IAT association test). Each dot is a country.',
+    'c5-subtitle-race':  'Declared racial rejection (survey) vs. implicit racial bias (IAT association test).',
+    'c5-subtitle-gay':   'Declared rejection of homosexuals (survey) vs. implicit anti-gay bias (IAT association test).',
     'c5-dim-label':      'Dimension',
     'c5-dim-race':       'Race',
     'c5-dim-gay':        'Sexual orientation',
@@ -238,7 +238,7 @@ const ISSUE_I18N = {
     'c5-axis-y':         'Implicit bias (IAT D-score)',
     'c5-tt-declared':    'Declared (survey)',
     'c5-tt-implicit':    'Implicit (IAT)',
-    'c5-sources':        'Data: declared rejection, Integrated Values Survey (EVS/WVS, latest). Implicit bias, Project Implicit International (Charlesworth et al. 2023): Implicit Association Test (IAT) D-score, 2009-2019; &gt;0 = faster association of the dominant group (white/heterosexual) with positive. The IAT sample is self-selected (site visitors): it compares relative levels across countries, not prevalences.',
+    'c5-sources':        'Data: declared rejection, Integrated Values Survey (WVS/EVS, latest). Implicit bias, Project Implicit International (Charlesworth et al. 2023): Implicit Association Test (IAT) D-score, 2009-2019; &gt;0 = faster association of the dominant group (white/heterosexual) with positive. The IAT sample is self-selected (site visitors): it compares relative levels across countries, not prevalences.',
 
     // ---- Chart 4: country intolerance profile
     'c4-title':          'Argentina fears vice, not the different',
@@ -249,7 +249,7 @@ const ISSUE_I18N = {
     'c4-median-legend':  'World median',
     'c4-tt-above':       'Above the world median.',
     'c4-tt-below':       'Below the world median.',
-    'c4-sources':        'Data: Integrated Values Survey (EVS/WVS), neighbours question, spontaneous mention. Latest available data per country (2017-2022); weighted %. The world median covers all countries with data in each category. Measures declared intolerance.',
+    'c4-sources':        'Data: Integrated Values Survey (WVS/EVS), neighbours question, spontaneous mention. Latest available data per country (2017-2023); weighted %. The world median covers all countries with data in each category. Measures declared intolerance.',
 
     // ---- Chart 6: Latinobarómetro 2024 (LatAm bars)
     'c6-title':          'Chile and Peru, the region’s wariest of immigrants',

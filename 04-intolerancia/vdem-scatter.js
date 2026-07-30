@@ -523,7 +523,8 @@ function drawVdemScatter() {
     msg.style.fontSize = SIZES.axisTitle + 'px';
     msg.textContent = ve_t('c20-nodata');
     svg.appendChild(msg);
-    ve_updateSubtitle(v, null);
+    ve_updateSubtitle(v);
+    ve_updateTitle(v);
     ve_updateBanner(null, 0);
     ve_syncShowAll();
     return;
@@ -752,17 +753,12 @@ function drawVdemScatter() {
     if (ev.target.tagName !== 'circle') { ve_hideTooltip(); ve_setHoverRegion(null); }
   };
 
-  ve_updateSubtitle(v, model);
+  ve_updateSubtitle(v);
+  // El título lo arma el indicador elegido, así que no sale de una clave fija
+  // y no va por atlasSetHeading (ver ve_updateTitle).
+  ve_updateTitle(v);
   ve_syncShowAll();
   ve_applyRegionFocus();
-
-  // Título NEUTRAL por default, como los otros 21 charts del repo (norma de
-  // Daniel: "para todos los charts, dejemos por ahora titulos neutrales por
-  // default; luego vemos editorialización"). La clave c20-title con el insight
-  // queda escrita y lista para cuando se decida activarla.
-  if (typeof atlasSetHeading === 'function') {
-    atlasSetHeading('20', false, { title: 'c20-title', titleNeutral: 'c20-title-neutral' });
-  }
 }
 
 // =================== Etiquetas ===================
@@ -992,49 +988,77 @@ function ve_applyRegionFocus() {
   ve_updateBanner(ve_lastModel, ve_lastN);
 }
 
-// =================== Subtítulo dinámico ===================
-// El subtítulo es el lugar donde el hallazgo se cuenta EN PALABRAS: con ajuste
-// estimado y residuo de América Latina, dice de qué lado de lo previsto queda
-// la región. Dos plantillas según el signo (c20-subtitle-tpl-more /
-// c20-subtitle-tpl-less), como el N°2 (scatter.js:305-317), y el residuo
-// REDONDEADO A ENTERO: el lector no precisa 9,6 pp vs 10 pp, y el número se
-// mueve de ola en ola. Sin modelo —o con América Latina apagada desde la
-// leyenda— cae a la plantilla descriptiva de siempre (c20-subtitle-tpl).
-//
-// NO se duplica con el banner: el banner da el número exacto (+/−9,6 pp) y el
-// subtítulo da la frase redondeada. La tira dentro del SVG ya no se dibuja en
-// pantalla (sólo al exportar).
-function ve_updateSubtitle(v, model) {
-  const block = document.querySelector('.chart-block[data-chart="18"]');
-  if (!block) return;
-  const el = block.querySelector('.chart-subtitle');
-  if (!el) return;
-  // No pisamos el subtítulo custom del editor (?nl=1).
+// =================== Título y subtítulo dinámicos ===================
+// Tres capas que no se repiten, igual que en el chart 18: TÍTULO el hallazgo,
+// SUBTÍTULO qué se mide y cuándo, NOTA la letra chica. El subtítulo de antes
+// decía el residuo de América Latina —que también estaban diciendo el título y
+// el banner—, describía los dos ejes que ya están rotulados en el dibujo y
+// abría con "cada punto es un país", que es información de la nota.
+
+// Texto custom del editor (?nl=1) para un campo.
+function ve_editorCustom(field) {
   const ae = (window.AtlasEditor && window.AtlasEditor.getConfig)
     ? window.AtlasEditor.getConfig() : null;
-  if (ae && ae.texts) {
-    const tx = ae.texts[(ae.lang || ve_lang())] || {};
-    if ((tx.subtitle || '').trim()) return;
+  if (!ae || !ae.texts) return '';
+  const tx = ae.texts[(ae.lang || ve_lang())] || {};
+  return (tx[field] || '').trim();
+}
+
+// ¿Estado por default? El título editorial afirma algo sobre la nube entera
+// (los países ricos excluyen menos): apagar una región o mover el año cambia
+// la nube sobre la que se hizo la afirmación.
+function ve_esDefault() {
+  const s = state[20];
+  if (!s) return false;
+  if (s.k !== VE_DEFAULT_VAR) return false;
+  if (s.wave !== VE_DEFAULT_YEAR) return false;
+  if (ve_hidden().size) return false;
+  const sel = (s.selected || []).slice().sort().join(',');
+  return sel === VE_DEFAULT_SEL.slice().sort().join(',');
+}
+
+// Título descriptivo cuando el editorial no aplica: nombra la MEDICIÓN elegida
+// ("Acceso a servicios públicos y PIB per cápita"), no el tema del chart.
+function ve_updateTitle(v) {
+  const block = document.querySelector('.chart-block[data-chart="20"]');
+  if (!block) return;
+  const el = block.querySelector('.chart-title');
+  if (!el || ve_editorCustom('title')) return;
+  if (ve_esDefault()) { el.textContent = ve_t('c20-title'); return; }
+  const tpl = ve_t('c20-title-neutral-tpl');
+  if (tpl && tpl.indexOf('{VAR}') >= 0) {
+    const txt = tpl.replace('{VAR}', ve_varLabel(v));
+    el.textContent = txt.charAt(0).toUpperCase() + txt.slice(1);
+    return;
   }
-  const wave = ve_waveLabel(state[20].wave);
-  const latam = (model && !ve_hidden().has(VE_LATAM)) ? model.byRegion[VE_LATAM] : null;
-  const n = latam ? Math.round(Math.abs(latam.pp)) : 0;
-  // Con residuo que redondea a 0 no hay nada que contar: "queda 0 pp por
-  // encima" es peor que la descripción de siempre.
-  if (latam && n > 0) {
-    const key = latam.pp >= 0 ? 'c20-subtitle-tpl-more' : 'c20-subtitle-tpl-less';
-    const tpl = ve_t(key);
-    if (tpl && tpl !== key) {
-      el.textContent = tpl
-        .replace('{N}', String(n))
-        .replace('{DEF}', ve_varDef(v))
-        .replace('{PERIODO}', wave);
-      return;
-    }
-  }
+  el.textContent = ve_t('c20-title-neutral');
+}
+
+// Definición CORTA para el subtítulo: la definición completa de V-Dem viene con
+// dos envoltorios que son metodología y no medición —el peso del componente
+// dentro del índice y la escala ("0 = sin exclusión, 1 = exclusión total")—, y
+// entre los dos dejaban una bajada de tres renglones. La escala ya está en el
+// eje Y y el peso, en la nota.
+function ve_defCorta(v) {
+  const d = (ve_varDef(v) || '').trim();
+  const meta = (ve_lang() === 'en')
+    ? /^(Index component|Interval scale|\d)/
+    : /^(Componente del índice|Escala de intervalo|\d)/;
+  const partes = d.split('. ').map(s => s.trim()).filter(s => s && !meta.test(s));
+  return partes.length ? (partes.join('. ').replace(/\.$/, '') + '.') : d;
+}
+
+function ve_updateSubtitle(v) {
+  // OJO: el bloque de esta página es data-chart="20". Decía "18", heredado de
+  // desarrollo.js al clonar el motor, así que el subtítulo dinámico no se
+  // pintaba nunca y quedaba el estático del HTML.
+  const block = document.querySelector('.chart-block[data-chart="20"]');
+  if (!block) return;
+  const el = block.querySelector('.chart-subtitle');
+  if (!el || ve_editorCustom('subtitle')) return;
   el.textContent = ve_t('c20-subtitle-tpl')
-    .replace('{DEF}', ve_varDef(v))
-    .replace('{PERIODO}', wave);
+    .replace('{DEF}', ve_defCorta(v))
+    .replace('{PERIODO}', ve_waveLabel(state[20].wave));
 }
 
 // =================== Banner (HTML, debajo del SVG) ===================

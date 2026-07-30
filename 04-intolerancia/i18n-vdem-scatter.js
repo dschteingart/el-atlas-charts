@@ -17,26 +17,23 @@
     // no entraba en pantalla sin scrollear.
     'c20-lead':    'Cuánto se le niega a la gente el acceso a servicios o a la participación por pertenecer a un grupo social, según V-Dem, frente al nivel de ingreso de cada país.',
 
-    // Título: insight en el estado default (rechazo racial, ola 2017-2022,
-    // recta, eje log); neutral apenas se cambia algo.
+    // Título: el editorial vale SOLO en el estado por default (indicador y año
+    // de arranque, todas las regiones, selección sin tocar). Apenas el lector
+    // cambia algo pasa al descriptivo, que nombra la MEDICIÓN elegida y no el
+    // tema: "Exclusión social" no decía qué se estaba midiendo cuando el menú
+    // pasaba al componente "Acceso a negocios con el Estado".
     'c20-title':         'Los países más ricos excluyen menos a sus grupos sociales, pero la relación es floja',
     'c20-title-neutral': 'Exclusión social y PIB per cápita',
+    'c20-title-neutral-tpl': '{VAR} y PIB per cápita',
 
-    // Subtítulo estático (el que pinta applyI18n antes del primer render y el
-    // que restaura el editor). El JS lo reemplaza por la versión con la
-    // definición exacta del indicador y la ola activa.
-    'c20-subtitle': 'Cada punto es un país: exclusión social en el eje vertical, PIB per cápita en el horizontal.',
-    // {DEF} = definición del indicador; {PERIODO} = etiqueta de la ola.
-    // Acortado a una línea: la letra chica (cada país con el PIB de su propio
-    // año de campo, la recta como asociación y no causa) vive en «Ver
-    // metodología y fuentes» (c20-sources).
-    'c20-subtitle-tpl': 'Cada punto es un país. Eje vertical: {DEF} Eje horizontal: PIB per cápita. Año {PERIODO}.',
-    // Cuando hay ajuste estimado, el subtítulo cuenta EL HALLAZGO en palabras:
-    // dos plantillas según el signo del residuo de América Latina, con el
-    // número REDONDEADO A ENTERO (criterio del N°2: el lector no precisa 9,6 pp
-    // vs 10 pp, y el residuo se mueve de ola en ola). {N} = pp, sin signo.
-    'c20-subtitle-tpl-more': 'América Latina queda {N} puntos por encima de lo que predice su ingreso. Eje vertical: {DEF} Eje horizontal: PIB per cápita, año {PERIODO}.',
-    'c20-subtitle-tpl-less': 'América Latina queda {N} puntos por debajo de lo que predice su ingreso. Eje vertical: {DEF} Eje horizontal: PIB per cápita, año {PERIODO}.',
+    // Subtítulo: QUÉ se mide y CUÁNDO, nada más (mismas tres capas que el chart
+    // 18). Salieron «cada punto es un país» —eso es la nota—, la descripción de
+    // los dos ejes —ya están rotulados en el dibujo— y el residuo de América
+    // Latina, que se decía acá, en el título y en el banner: tres veces el
+    // mismo número.
+    'c20-subtitle': 'Índice de V-Dem de exclusión por grupo social, y PIB per cápita.',
+    // {DEF} = definición del indicador (termina en punto); {PERIODO} = año.
+    'c20-subtitle-tpl': '{DEF} Se cruza con el PIB per cápita de {PERIODO}.',
 
     'c20-var-label':      'Indicador (eje vertical)',
     'c20-grp-vecinos':    'Batería de vecinos',
@@ -90,11 +87,10 @@
 
     'c20-title':         'Richer countries exclude their social groups less, but the link is loose',
     'c20-title-neutral': 'Social exclusion and GDP per capita',
+    'c20-title-neutral-tpl': '{VAR} and GDP per capita',
 
-    'c20-subtitle': 'Each dot is a country: social exclusion on the vertical axis, GDP per capita on the horizontal one.',
-    'c20-subtitle-tpl': 'Each dot is a country. Vertical axis: {DEF} Horizontal axis: GDP per capita. Year {PERIODO}.',
-    'c20-subtitle-tpl-more': 'Latin America sits {N} points above what its income predicts. Vertical axis: {DEF} Horizontal axis: GDP per capita, year {PERIODO}.',
-    'c20-subtitle-tpl-less': 'Latin America sits {N} points below what its income predicts. Vertical axis: {DEF} Horizontal axis: GDP per capita, year {PERIODO}.',
+    'c20-subtitle': 'V-Dem index of exclusion by social group, and GDP per capita.',
+    'c20-subtitle-tpl': '{DEF} Matched with GDP per capita for {PERIODO}.',
 
     'c20-var-label':      'Indicator (vertical axis)',
     'c20-grp-vecinos':    'Neighbours battery',
