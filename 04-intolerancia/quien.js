@@ -242,6 +242,8 @@ function drawQuien() {
   show('qn-cat-group', s.view === 'ranking');
   show('qn-refs-group', s.view === 'ranking');
   show('qn-country-group', s.view === 'perfil');
+  const hint = document.getElementById('qn-heat-hint');
+  if (hint) hint.style.display = (s.view === 'matriz') ? '' : 'none';
   const detailWrap = document.getElementById('qn-detail-wrap');
   if (detailWrap) detailWrap.style.display = (s.view === 'perfil') ? '' : 'none';
 

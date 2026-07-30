@@ -9,12 +9,12 @@
 <meta property="og:locale" content="es_AR">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/04-intolerancia/chart-quien.html">
 <meta property="og:title" content="¿Quién es el más discriminado? — El Atlas · N°4">
-<meta property="og:description" content="En 14 de 18 países de América Latina el grupo más discriminado no es racial: son los pobres. Ranking por grupo y perfil por país (Latinobarómetro 2020, respuesta única).">
+<meta property="og:description" content="Cuando se les pregunta quién sufre más discriminación, 14 de los 18 países de América Latina responden: los pobres. Matriz completa, ranking por grupo y perfil por país (Latinobarómetro 2020, una sola respuesta por persona).">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/04-intolerancia/thumbs/chart-quien.png">
 <meta property="og:image:alt" content="¿Quién es el más discriminado en cada país de América Latina?">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="¿Quién es el más discriminado? — El Atlas · N°4">
-<meta name="twitter:description" content="El mismo dato como ranking por grupo y como perfil por país. Latinobarómetro 2020, respuesta única.">
+<meta name="twitter:description" content="El mismo dato como matriz completa, como ranking por grupo y como perfil por país. Latinobarómetro 2020, una sola respuesta por persona.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/04-intolerancia/thumbs/chart-quien.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -62,6 +62,7 @@
   #tooltip12 .tt-sub em { font-style: normal; color: #D9D2C2; }
 
   /* ===== Panel de detalle: las 42 categorías crudas (vista Perfil) ===== */
+  .qn-hint { font-family: var(--sans); font-size: 11.5px; color: var(--ink-muted); margin: 2px 0 0; }
   #qn-detail-wrap { margin-top: 8px; }
   .qn-detail { border: 1px solid var(--rule); border-radius: 8px; background: var(--bg-soft); padding: 2px 12px; max-width: 760px; }
   .qn-detail > summary { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--accent); cursor: pointer; padding: 8px 0; list-style: none; }
@@ -165,19 +166,20 @@
 
     <!-- ============ Panel: MATRIZ ============
          Sin controles: el nombre de cada columna ES el botón de orden (ver
-         qn_drawMatriz). Queda sólo la pista de que se puede hacer clic. -->
-    <div class="g-panel" id="g-panel-matriz">
-      <div class="m-controls">
-        <div class="m-ctrl-group">
-          <span class="m-ctrl-label" data-i18n="c12-heat-hint">Tocá el nombre de un grupo para ordenar los países por esa columna</span>
-        </div>
-      </div>
-    </div>
+         qn_drawMatriz). La pista de que se puede hacer clic vive DEBAJO del
+         gráfico (#qn-heat-hint): arriba, en versalitas, competía con el
+         subtítulo como si fuera una tercera capa de texto. -->
+    <div class="g-panel" id="g-panel-matriz"></div>
 
     <div class="chart-svg-wrap">
       <svg id="chart12" viewBox="0 0 1100 560" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="tooltip" id="tooltip12"></div>
     </div>
+
+    <!-- Sólo en Matriz (lo muestra/oculta drawQuien). Es una pista de
+         interacción, así que vive en el HTML y no en el SVG: en el PNG no hay
+         nada que tocar. -->
+    <p class="qn-hint" id="qn-heat-hint" data-i18n="c12-heat-hint" style="display:none;">Tocá el nombre de un grupo para ordenar los países por esa columna</p>
 
     <!-- Sólo en Perfil (lo muestra/oculta drawQuien según state[12].view). -->
     <div id="qn-detail-wrap" style="display:none;">

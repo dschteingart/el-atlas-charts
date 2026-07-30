@@ -17,7 +17,10 @@ Object.assign(I18N.es, {
   // (qn_conteoLideres), así que no pueden quedar desfasados del dibujo. En el
   // Ranking (una columna) y en el Perfil (una fila) el título nombra la
   // MEDICIÓN, que es lo que ahí está en pantalla.
-  'c12-title-tpl':          'En {N} de los {T} países de América Latina el más discriminado no es un grupo racial: son los pobres',
+  // El titular nombra LA PREGUNTA. Sin eso, "el grupo más discriminado" se lee
+  // como una medición de discriminación y es otra cosa: es a quién señala la
+  // gente. Mismo cuidado que el verbo «declara» en el chart 18.
+  'c12-title-tpl':          'Cuando se les pregunta quién sufre más discriminación, {N} de los {T} países responden: los pobres',
   'c12-title-neutral':      'El grupo más discriminado en cada país de América Latina',
   'c12-title-rank-tpl':     'Quién nombra a {CAT} como el más discriminado de su país',
   'c12-title-rank-ninguna': 'Quién dice que en su país no hay ningún grupo discriminado',
@@ -25,15 +28,17 @@ Object.assign(I18N.es, {
 
   // ---- Subtítulos: estático (default, por si el editor restaura el data-i18n)
   // + dinámicos que el JS rellena según vista/categoría/país.
-  // Subtítulos: qué se mide y cuándo. Nada más. Salieron «cada persona eligió
-  // una sola respuesta» y «cada fila suma 100» (son metodología: van a la
-  // nota), «países ordenados por X» (lo dice la flecha del encabezado) y «18
-  // países» (también en la nota).
-  'c12-subtitle':            'Porcentaje que nombra a cada grupo como el más discriminado de su país. Latinobarómetro 2020.',
-  'c12-subtitle-rank-tpl':   'Porcentaje que nombra a {CAT} como el más discriminado de su país. Latinobarómetro 2020.',
-  'c12-subtitle-rank-ninguna': 'Porcentaje que dice que en su país no hay ningún grupo discriminado. Latinobarómetro 2020.',
-  'c12-subtitle-perfil-tpl': 'Porcentaje que nombra a cada grupo como el más discriminado del país. Latinobarómetro 2020.',
-  'c12-subtitle-matriz':     'Porcentaje que nombra a cada grupo como el más discriminado de su país. Latinobarómetro 2020.',
+  // Subtítulos: qué se mide y cuándo. «Una sola respuesta por persona» SÍ va
+  // acá —no es aritmética, es qué se midió—: sin eso el lector lee las columnas
+  // como porcentajes independientes («el 25% dice que los pobres sufren
+  // discriminación») y el dato es otro («puesto a elegir uno, el 25% eligió a
+  // los pobres»). Salieron «cada fila suma 100», «países ordenados por X» (lo
+  // dice la flecha del encabezado) y «18 países» (está en la nota).
+  'c12-subtitle':            'Porcentaje que nombra a cada grupo como el más discriminado del país. Una sola respuesta por persona; Latinobarómetro 2020.',
+  'c12-subtitle-rank-tpl':   'Porcentaje que nombra a {CAT} como el más discriminado del país. Una sola respuesta por persona; Latinobarómetro 2020.',
+  'c12-subtitle-rank-ninguna': 'Porcentaje que dice que en su país no hay ningún grupo discriminado. Una sola respuesta por persona; Latinobarómetro 2020.',
+  'c12-subtitle-perfil-tpl': 'Porcentaje que nombra a cada grupo como el más discriminado del país. Una sola respuesta por persona; Latinobarómetro 2020.',
+  'c12-subtitle-matriz':     'Porcentaje que nombra a cada grupo como el más discriminado del país. Una sola respuesta por persona; Latinobarómetro 2020.',
 
   // ---- Controles (el viejo toggle Mostrar: ranking/perfil son hoy las pestañas g12-view-*)
   'c12-cat-label':      'Grupo señalado',
@@ -111,17 +116,17 @@ Object.assign(I18N.en, {
   'g12-view-perfil':    'Profile',
   'g12-view-matriz':    'Matrix',
 
-  'c12-title-tpl':          'In {N} of the {T} Latin American countries the most-discriminated group is not racial: it is the poor',
+  'c12-title-tpl':          'Asked who suffers the most discrimination, {N} of the {T} countries answer: the poor',
   'c12-title-neutral':      'The most-discriminated group in each Latin American country',
   'c12-title-rank-tpl':     'Who names {CAT} as the most discriminated against in their country',
   'c12-title-rank-ninguna': 'Who says no group is discriminated against in their country',
   'c12-title-perfil-tpl':   'The most-discriminated group according to people in {PAIS}',
 
-  'c12-subtitle':            'Share who name each group as the most-discriminated one in their country. Latinobarómetro 2020.',
-  'c12-subtitle-rank-tpl':   'Share who name {CAT} as the most discriminated against in their country. Latinobarómetro 2020.',
-  'c12-subtitle-rank-ninguna': 'Share who say no group is discriminated against in their country. Latinobarómetro 2020.',
-  'c12-subtitle-perfil-tpl': 'Share who name each group as the most-discriminated one in the country. Latinobarómetro 2020.',
-  'c12-subtitle-matriz':     'Share who name each group as the most-discriminated one in their country. Latinobarómetro 2020.',
+  'c12-subtitle':            'Share who name each group as the most-discriminated one in the country. One answer per person; Latinobarómetro 2020.',
+  'c12-subtitle-rank-tpl':   'Share who name {CAT} as the most discriminated against in the country. One answer per person; Latinobarómetro 2020.',
+  'c12-subtitle-rank-ninguna': 'Share who say no group is discriminated against in their country. One answer per person; Latinobarómetro 2020.',
+  'c12-subtitle-perfil-tpl': 'Share who name each group as the most-discriminated one in the country. One answer per person; Latinobarómetro 2020.',
+  'c12-subtitle-matriz':     'Share who name each group as the most-discriminated one in the country. One answer per person; Latinobarómetro 2020.',
 
   'c12-cat-label':      'Group named',
   'c12-country-label':  'Country',
