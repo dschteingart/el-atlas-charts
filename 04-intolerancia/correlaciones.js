@@ -346,6 +346,15 @@ function co_updateTitle() {
   el.textContent = txt.charAt(0).toUpperCase() + txt.slice(1);
 }
 
+// Forma verbal de una variable («rechaza tener vecinos de otra raza»), la que
+// entra en el subtítulo. Si falta la clave cae a la forma de título, que es
+// sustantiva pero al menos nombra la medición.
+function co_varFrase(k) {
+  const key = 'c19-frase-' + k;
+  const v = co_T(key);
+  return (v && v !== key) ? v : co_varTitulo(k);
+}
+
 function co_updateSubtitle() {
   const el = document.querySelector('.chart-block[data-chart="19"] .chart-subtitle');
   if (!el) return;
@@ -354,8 +363,8 @@ function co_updateSubtitle() {
   const tpl = co_T('c19-subtitle-tpl');
   if (!tpl) return;
   el.textContent = tpl
-    .replace('{X}', co_varLabel(s.x))
-    .replace('{Y}', co_varLabel(s.y))
+    .replace('{X}', co_varFrase(s.x))
+    .replace('{Y}', co_varFrase(s.y))
     .replace('{PERIODO}', co_waveLabel(s.wave));
 }
 
@@ -1344,12 +1353,9 @@ function co_drawDumbbell(svg) {
     }
   });
 
-  // eje base
-  const ax = co_ns('line');
-  ax.setAttribute('x1', MARGIN.left); ax.setAttribute('x2', MARGIN.left);
-  ax.setAttribute('y1', MARGIN.top); ax.setAttribute('y2', MARGIN.top + innerH);
-  ax.setAttribute('stroke', CO_AXIS); ax.setAttribute('stroke-width', 1);
-  svg.appendChild(ax);
+  // Sin línea vertical en el cero: no hay nada apoyado en ella —las barras
+  // flotan— así que era un trazo más y no una referencia (pedido de Daniel
+  // 2026-07-30). La grilla ya marca dónde está el cero.
 
   // Título del eje: acá las dos variables comparten la misma vara, así que no
   // puede nombrar una sola; dice la UNIDAD, que es lo que faltaba (quién es
