@@ -186,7 +186,10 @@ function qn_updateTitle() {
   if (s.view === 'matriz') {
     const L = qn_conteoLideres();
     const tpl = T('c12-title-tpl');
-    if (L.cat === 'pobres' && L.n > L.total / 2 && tpl.indexOf('{N}') >= 0) {
+    // La guarda es sobre el DATO, no sobre la plantilla: el titular afirma que
+    // los pobres son los más señalados en gran parte de la región, así que sólo
+    // vale mientras «pobres» gane de verdad en más de la mitad de los países.
+    if (tpl && tpl !== 'c12-title-tpl' && L.cat === 'pobres' && L.n > L.total / 2) {
       el.textContent = tpl.replace('{N}', String(L.n)).replace('{T}', String(L.total));
       return;
     }
@@ -475,7 +478,10 @@ function qn_drawMatriz() {
   const nC = cats.length, nR = rows.length;
   if (!nC || !nR) return;
   const catOrden = qn_heatSortCat();
-  const flecha = state[12].heatAsc ? ' ▲' : ' ▼';
+  // La flecha es un control de pantalla: en el PNG no hay nada que clickear, así
+  // que no viaja. El color de acento del encabezado sí queda, porque es lo que
+  // explica por qué las filas están en ese orden.
+  const flecha = editorFormat ? '' : (state[12].heatAsc ? ' ▲' : ' ▼');
 
   // Geometría. El margen superior y el derecho salen del ancho REAL de la
   // etiqueta de columna más larga: van rotadas 45°, así que ocupan su ancho
@@ -486,7 +492,7 @@ function qn_drawMatriz() {
   else { W = 1100; totalH = 0; }
 
   let maxHead = 0;
-  cats.forEach(c => { const w = qn_measure(qn_heatLabel(c) + flecha, SIZES.head, 700); if (w > maxHead) maxHead = w; });
+  cats.forEach(c => { const w = qn_measure(qn_heatHeadLabel(c) + flecha, SIZES.head, 700); if (w > maxHead) maxHead = w; });
   let maxName = 0;
   rows.forEach(r => { const w = qn_measure(qn_name(r.iso), SIZES.name, 500); if (w > maxName) maxName = w; });
 
@@ -498,7 +504,7 @@ function qn_drawMatriz() {
     top:    Math.ceil(diag) + (bigFmt ? 18 : 12),
     right:  Math.min(Math.round(W * 0.24), Math.ceil(diag) + (bigFmt ? 16 : 10)),
     left:   Math.ceil(maxName) + (bigFmt ? 18 : 10),
-    bottom: bigFmt ? 118 : 74           // leyenda de color + nota del recuadro
+    bottom: bigFmt ? 90 : 58            // sólo la leyenda de color
   };
 
   let cellH;
@@ -552,7 +558,7 @@ function qn_drawMatriz() {
     th.style.fontSize = SIZES.head + 'px';
     th.setAttribute('font-weight', sel ? 700 : 500);
     th.setAttribute('fill', sel ? '#8B3F1E' : '#5A5346');
-    th.textContent = qn_heatLabel(c) + (sel ? flecha : '');
+    th.textContent = qn_heatHeadLabel(c) + (sel ? flecha : '');
     th.style.cursor = 'pointer';
     th.addEventListener('click', () => qn_heatSort(c));
     gCells.appendChild(th);
@@ -672,6 +678,13 @@ function qn_heatPct(iso, c) {
 function qn_heatLabel(c) {
   return qn_catLabel(c === QN_HEAT_RESTO ? 'otros' : c);
 }
+// Etiqueta del ENCABEZADO: la corta si existe (qcats-*). Sólo se usa acá; el
+// tooltip sigue mostrando el nombre completo.
+function qn_heatHeadLabel(c) {
+  const k = 'qcats-' + (c === QN_HEAT_RESTO ? 'otros' : c);
+  const v = (typeof t === 'function') ? t(k) : k;
+  return (v && v !== k) ? v : qn_heatLabel(c);
+}
 function qn_heatIsos() {
   return Array.from(new Set((QUIEN_FOTO['pobres'] || []).map(r => r[0])));
 }
@@ -721,10 +734,12 @@ function qn_heatSortCat() {
   return (QN_HEAT_CATS.indexOf(k) >= 0) ? k : QN_HEAT_CATS[0];
 }
 
+// Leyenda de color. La línea "En cada fila, el número destacado…" se mudó a la
+// nota del pie: adentro del dibujo era una cuarta capa de texto y empujaba la
+// tabla hacia arriba.
 function qn_drawHeatLegend(svg, MARGIN, plotW, y, breaks, SIZES, bigFmt) {
   const g = qn_ns('g'); svg.appendChild(g);
   const swW = bigFmt ? 54 : 34, swH = bigFmt ? 14 : 10;
-  const total = QN_HEAT_COLORS.length * swW;
   const x0 = MARGIN.left;
 
   const title = qn_ns('text');
@@ -755,19 +770,6 @@ function qn_drawHeatLegend(svg, MARGIN, plotW, y, breaks, SIZES, bigFmt) {
     }
   });
 
-  // Nota del recuadro, a la derecha de la leyenda si hay lugar; si no, debajo.
-  const nota = (typeof t === 'function') ? t('c12-heat-box-note') : '';
-  if (!nota) return;
-  const notaW = qn_measure(nota, SIZES.note, 400);
-  const cabe = (x0 + total + 24 + notaW) <= (MARGIN.left + plotW);
-  const nt = qn_ns('text');
-  nt.setAttribute('x', cabe ? x0 + total + 24 : x0);
-  nt.setAttribute('y', cabe ? y + swH - (bigFmt ? 1 : 1) : y + swH + (bigFmt ? 44 : 30));
-  nt.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-  nt.style.fontSize = SIZES.note + 'px';
-  nt.setAttribute('fill', '#7A6E62');
-  nt.textContent = nota;
-  svg.appendChild(nt);
 }
 
 //==================================================================
