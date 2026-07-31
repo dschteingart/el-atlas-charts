@@ -864,14 +864,34 @@ function vr_drawMarimekko() {
   // ¿Va a haber tabla flotante? Se resuelve ANTES de dibujar la línea del
   // promedio, porque de eso depende si la línea lleva rótulo.
   const vrmTablaALaVista = (s1.showTable !== false) && tableVisible;
+  // Cuánto entra la tabla en el hueco: se resuelve ACÁ y no más abajo porque la
+  // línea del promedio, que se dibuja antes, necesita saber dónde termina la
+  // tabla para cortarse contra ella.
+  const idxDesde = n > 0 ? Math.max(0, Math.min(n - 1, Math.floor((tableX - MARGIN.left) / barWidth))) : 0;
+  let maxUnderTable = 0;
+  for (let i = idxDesde; i < n; i++) {
+    if (data[i].pct > maxUnderTable) maxUnderTable = data[i].pct;
+  }
+  const huecoAlto = yScale(maxUnderTable) - tableTopY - tableRowH * 0.5;
+  const altoNominal = (tableBottomY - tableTopY);
+  const escalaTabla = (altoNominal > 0) ? Math.min(1, huecoAlto / altoNominal) : 1;
+  const tableFits = escalaTabla >= 0.72;
+  const showSvgTable = vrmTablaALaVista && tableFits;
+  // Alto REAL de la tabla ya escalada: es contra este borde que se corta la línea.
+  const tableBottomReal = tableTopY + altoNominal * escalaTabla;
 
   // === Promedio mundial (línea horizontal punteada) ===
   (function () {
   if (med) {
     const my = yScale(med.value);
+    // Si la línea cae en la banda de la tabla, se corta contra su borde
+    // izquierdo en vez de cruzarla por encima: es el mismo criterio con el que
+    // ya se cortan las líneas de la grilla en este gráfico. Y encadena bien,
+    // porque la última fila de la tabla es ese mismo trazo punteado.
+    const cruzaTabla = showSvgTable && my >= tableTopY && my <= tableBottomReal;
     const mline = vr_ns('line');
     mline.setAttribute('x1', MARGIN.left);
-    mline.setAttribute('x2', MARGIN.left + PLOT_W);
+    mline.setAttribute('x2', cruzaTabla ? (tableX - 10) : (MARGIN.left + PLOT_W));
     mline.setAttribute('y1', my); mline.setAttribute('y2', my);
     mline.setAttribute('stroke', '#5A5346');
     mline.setAttribute('stroke-width', (mobile || mobilePng) ? 2.5 : 1.4);
@@ -974,40 +994,10 @@ function vr_drawMarimekko() {
   // países elegidos, y al achicarse el plot la MISMA barra sube en pantalla. Por
   // eso cualquier umbral del tipo "0,36 del eje" se desactualiza y la tabla
   // terminaba pisando una barra (reporte de Daniel 2026-07-26).
-  // Cuál es la barra más alta de la franja que ocupa la tabla: NO se puede
-  // suponer que es la del borde izquierdo (eso valía cuando data iba siempre
-  // descendente; con orden ascendente —los cinco componentes— la más alta es la
-  // del borde derecho). Se recorre la franja y se toma el máximo: vale para
-  // cualquier orden.
-  const idxDesde = n > 0 ? Math.max(0, Math.min(n - 1, Math.floor((tableX - MARGIN.left) / barWidth))) : 0;
-  let maxUnderTable = 0;
-  for (let i = idxDesde; i < n; i++) {
-    if (data[i].pct > maxUnderTable) maxUnderTable = data[i].pct;
-  }
-  // Único guard que queda: que las barras de la franja de la tabla no lleguen
-  // hasta ella. Con el orden monótono del ranking, la franja elegida es siempre
-  // la de las barras bajas, así que en la práctica entra.
-  // La tabla se ESCALA al hueco que realmente dejan las barras, en vez de
-  // rendirse cuando no entra a tamaño nominal. En pantalla el área de dibujo es
-  // baja y entra holgada; en los formatos de exportación es casi el doble de
-  // alta y las barras suben, y ahí la tabla nominal se pasaba por unos pocos
-  // píxeles —y se iba a un bloque HTML que el PNG no rasteriza, que es
-  // justamente el problema que reportó Daniel—. Sólo se rinde si tendría que
-  // achicarse tanto que dejara de leerse.
-  const huecoAlto = yScale(maxUnderTable) - tableTopY - tableRowH * 0.5;
-  const altoNominal = (tableBottomY - tableTopY);
-  const escalaTabla = (altoNominal > 0) ? Math.min(1, huecoAlto / altoNominal) : 1;
-  const tableFits = escalaTabla >= 0.72;
-  // Además: la etiqueta de la mediana va a la derecha (misma franja-x que la
-  // tabla). Si la línea de la mediana cae en la banda vertical de la tabla, su
-  // etiqueta colisiona con las filas (reporte de Daniel 2026-07-24). En ese caso,
-  // mismo criterio que con las barras: la tabla se va abajo y el lado derecho
-  // queda libre para la etiqueta de la mediana.
-  const medHitsTable = false;   // la línea ya no lleva rótulo: nada que colisione
-  // El toggle "Tabla regional" (state.showTable) gobierna si se muestra; el
-  // heurístico solo decide flotante-vs-abajo cuando sí se muestra.
+  // (maxUnderTable, escalaTabla y showSvgTable se calculan más arriba, junto con
+  // la geometría de la tabla: la línea del promedio se dibuja ANTES que la tabla
+  // y necesita saber dónde termina para cortarse contra ella.)
   const wantTable = s1.showTable !== false;
-  const showSvgTable = wantTable && tableVisible && tableFits && !medHitsTable;
   if (showSvgTable) {
     vrm_drawRegionalAvgTable(svg, tableRows, s1.activeRegion, SIZES, mobilePng, escalaTabla);
   }
