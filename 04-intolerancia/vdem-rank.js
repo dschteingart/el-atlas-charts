@@ -761,15 +761,12 @@ function vr_drawMarimekko() {
   // (primera fila = título + 2,4 alturas de fila) en vez de estimarla, porque de
   // esta medida depende si la tabla flota o se va abajo.
   const tableFirstY = (mobilePng ? 84 : VRM_TABLE_Y_TITLE) + ((SIZES.tableLabel != null) ? SIZES.tableLabel : 11) * 2.4;
-  const tableBottomY = tableFirstY + Math.max(0, regionsPresent.length - 1) * tableRowH + tableRowH * 0.25;
+  // +1 fila cuando hay promedio mundial: desde que ese número es una fila de la
+  // tabla, la geometría que decide si la tabla entra tiene que contarla. Sin
+  // esto la última fila se metía entre las barras.
+  const tableFilas = regionsPresent.length + ((s1.showMedian !== false) ? 1 : 0);
+  const tableBottomY = tableFirstY + Math.max(0, tableFilas - 1) * tableRowH + tableRowH * 0.25;
 
-  // La tabla deja de competir con las barras: se le RESERVA el alto. El área de
-  // dibujo empieza debajo de ella, así que no puede pisar nada por construcción
-  // —ni la barra más alta ni la línea del promedio— y, sobre todo, siempre se
-  // dibuja adentro del SVG. Antes había un heurístico que decidía si "entraba"
-  // en el hueco arriba-derecha y, cuando no, la mandaba a un bloque HTML debajo
-  // del gráfico: ese bloque el PNG no lo rasteriza, así que la tabla se perdía
-  // justo en la exportación (reporte de Daniel 2026-07-31).
   // Aire para el título del eje Y. Los números del eje ya ocupan la izquierda y
   // el título rotado necesita su propio alto: si el margen no alcanza, CRECE. Sin
   // esto, al separarlo de los números se dibujaba en x negativo y se cortaba
@@ -785,21 +782,14 @@ function vr_drawMarimekko() {
     PLOT_W = W - MARGIN.left - MARGIN.right;
   }
 
-  if ((s1.showTable !== false) && !mobile && n > 0) {
-    const necesita = Math.ceil(tableBottomY + tableRowH * 0.9);
-    if (MARGIN.top < necesita) {
-      const extraTop = necesita - MARGIN.top;
-      MARGIN.top = necesita;
-      // En pantalla el gráfico crece; en los formatos de PNG el alto es parte de
-      // la definición del formato, así que ahí se comprime el área de dibujo.
-      if (!editorFormat) H += extraTop;
-      // Y se RECALCULA el área de dibujo: PLOT_H y el viewBox se habían fijado
-      // más arriba con el margen viejo, así que sin esto el gráfico entero
-      // bajaba 'extraTop' píxeles y se salía por abajo del lienzo.
-      PLOT_H = H - MARGIN.top - MARGIN.bottom;
-      svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-    }
-  }
+  // La tabla vuelve a FLOTAR en el hueco que dejan las barras bajas. Reservarle
+  // alto arriba —lo que se probó primero— aplastaba el gráfico contra el piso
+  // del lienzo: 172 barras en una franja de 300 px no se leen (reporte de Daniel
+  // 2026-07-31). Lo que sí se saca es la ETIQUETA suelta del promedio mundial,
+  // que era el verdadero motivo por el que la tabla se iba abajo: su altura es
+  // la del promedio, o sea justo la banda que ocupa la tabla. Ahora el promedio
+  // mundial es una fila más de la tabla (idea de Daniel), así que no queda nada
+  // que colisione y el número no se pierde.
 
   // === Grid Y + ticks ===
   const yTicksAll = (typeof niceLinearTicks === 'function') ? niceLinearTicks(yMin, yMax, (mobile || mobilePng) ? 4 : 6) : [0, 20, 40, 60];
@@ -871,7 +861,12 @@ function vr_drawMarimekko() {
     barsG.appendChild(rect);
   });
 
-  // === Mediana mundial (línea horizontal punteada) ===
+  // ¿Va a haber tabla flotante? Se resuelve ANTES de dibujar la línea del
+  // promedio, porque de eso depende si la línea lleva rótulo.
+  const vrmTablaALaVista = (s1.showTable !== false) && tableVisible;
+
+  // === Promedio mundial (línea horizontal punteada) ===
+  (function () {
   if (med) {
     const my = yScale(med.value);
     const mline = vr_ns('line');
@@ -891,6 +886,10 @@ function vr_drawMarimekko() {
     // (reporte de Daniel 2026-07-28). Como data va ordenada de forma monótona,
     // alcanza con comparar las dos puntas.
     const bajasALaDerecha = (n < 2) || (data[0].pct >= data[n - 1].pct);
+    // Con la tabla a la vista el número ya está en su última fila: repetirlo acá
+    // es lo que hacía chocar las dos cosas. La línea punteada se sigue dibujando
+    // —es la referencia visual— pero sin rótulo.
+    if (vrmTablaALaVista) return;
     const mlbl = vr_ns('text');
     mlbl.setAttribute('x', bajasALaDerecha ? (MARGIN.left + PLOT_W - 6) : (MARGIN.left + 6));
     mlbl.setAttribute('y', my - 6);
@@ -908,6 +907,7 @@ function vr_drawMarimekko() {
       + ': ' + vd_fmtVal(med.value, vd_dec());
     svg.appendChild(mlbl);
   }
+  })();
 
   // === Etiquetas de país rotadas con callouts ===
   const labelsG = vr_ns('g'); svg.appendChild(labelsG);
@@ -952,6 +952,18 @@ function vr_drawMarimekko() {
       };
     })
     .sort((a, b) => b.value - a.value);
+  // Fila del promedio mundial, al final y separada: reemplaza a la etiqueta que
+  // antes flotaba sobre la línea punteada. Se dibuja con un trazo punteado en
+  // lugar de un cuadrado de color, para que se lea como "esta es la línea".
+  if (med) {
+    tableRows.push({
+      region: '__world',
+      isWorld: true,
+      color: '#5A5346',
+      label: (typeof t === 'function') ? t(vr_isMean() ? 'c21-mean-lbl' : 'c21-median-lbl') : 'Promedio mundial',
+      value: med.value
+    });
+  }
   // ¿Entra la tabla flotante en el hueco arriba-derecha? Ocupa la franja-x
   // derecha (~60%→100% del ancho) y necesita libre el ~64% superior de esa
   // franja. Si las barras bajo la tabla son altas (ej. drogadictos: todas
@@ -972,19 +984,32 @@ function vr_drawMarimekko() {
   for (let i = idxDesde; i < n; i++) {
     if (data[i].pct > maxUnderTable) maxUnderTable = data[i].pct;
   }
-  const tableFits = true;   // ya no compite con las barras: tiene alto reservado
+  // Único guard que queda: que las barras de la franja de la tabla no lleguen
+  // hasta ella. Con el orden monótono del ranking, la franja elegida es siempre
+  // la de las barras bajas, así que en la práctica entra.
+  // La tabla se ESCALA al hueco que realmente dejan las barras, en vez de
+  // rendirse cuando no entra a tamaño nominal. En pantalla el área de dibujo es
+  // baja y entra holgada; en los formatos de exportación es casi el doble de
+  // alta y las barras suben, y ahí la tabla nominal se pasaba por unos pocos
+  // píxeles —y se iba a un bloque HTML que el PNG no rasteriza, que es
+  // justamente el problema que reportó Daniel—. Sólo se rinde si tendría que
+  // achicarse tanto que dejara de leerse.
+  const huecoAlto = yScale(maxUnderTable) - tableTopY - tableRowH * 0.5;
+  const altoNominal = (tableBottomY - tableTopY);
+  const escalaTabla = (altoNominal > 0) ? Math.min(1, huecoAlto / altoNominal) : 1;
+  const tableFits = escalaTabla >= 0.72;
   // Además: la etiqueta de la mediana va a la derecha (misma franja-x que la
   // tabla). Si la línea de la mediana cae en la banda vertical de la tabla, su
   // etiqueta colisiona con las filas (reporte de Daniel 2026-07-24). En ese caso,
   // mismo criterio que con las barras: la tabla se va abajo y el lado derecho
   // queda libre para la etiqueta de la mediana.
-  const medHitsTable = false;   // idem: la linea del promedio vive dentro del plot
+  const medHitsTable = false;   // la línea ya no lleva rótulo: nada que colisione
   // El toggle "Tabla regional" (state.showTable) gobierna si se muestra; el
   // heurístico solo decide flotante-vs-abajo cuando sí se muestra.
   const wantTable = s1.showTable !== false;
   const showSvgTable = wantTable && tableVisible && tableFits && !medHitsTable;
   if (showSvgTable) {
-    vrm_drawRegionalAvgTable(svg, tableRows, s1.activeRegion, SIZES, mobilePng);
+    vrm_drawRegionalAvgTable(svg, tableRows, s1.activeRegion, SIZES, mobilePng, escalaTabla);
   }
   vrm_drawRegionalAvgTableHTML(tableRows, s1.activeRegion);
   // Tabla HTML debajo del gráfico: en mobile SIEMPRE (si wantTable); en desktop
@@ -998,9 +1023,10 @@ function vr_drawMarimekko() {
   }
 }
 
-function vrm_drawRegionalAvgTable(svg, rows, activeRegion, SIZES, mobilePng) {
-  const titleSize = SIZES ? SIZES.tableTitle : null;
-  const labelSize = SIZES ? SIZES.tableLabel : null;
+function vrm_drawRegionalAvgTable(svg, rows, activeRegion, SIZES, mobilePng, escala) {
+  const k = (escala && escala > 0 && escala < 1) ? escala : 1;
+  const titleSize = SIZES ? SIZES.tableTitle * k : null;
+  const labelSize = SIZES ? SIZES.tableLabel * k : null;
   const rowFactor = 1.45, swatchFactor = 0.82, gapFactor = 0.64;
   const base = (labelSize != null) ? labelSize : 11;
   const rowH = base * rowFactor;
@@ -1009,10 +1035,10 @@ function vrm_drawRegionalAvgTable(svg, rows, activeRegion, SIZES, mobilePng) {
   // Más aire entre el título "PROMEDIO POR REGIÓN" y la primera fila (pedido de
   // Daniel 2026-07-23): ~2.4 alturas de fila bajo el título (antes ~20px, ahora ~26).
   const titleGap = base * 2.4;
-  const yFirst = (mobilePng ? 84 : VRM_TABLE_Y_TITLE) + titleGap;
+  const yFirst = (mobilePng ? 84 : VRM_TABLE_Y_TITLE) * (k < 1 ? Math.max(0.55, k) : 1) + titleGap;
   const tableX = mobilePng ? 520 : VRM_TABLE_X;
   const tableW = mobilePng ? 540 : VRM_TABLE_W;
-  const tableYTitle = mobilePng ? 80 : VRM_TABLE_Y_TITLE;
+  const tableYTitle = (mobilePng ? 80 : VRM_TABLE_Y_TITLE) * (k < 1 ? Math.max(0.55, k) : 1);
   const ruleY = tableYTitle + base * 0.7;
   const g = vr_ns('g');
   g.setAttribute('id', 'vrm-avg-table');
@@ -1040,8 +1066,22 @@ function vrm_drawRegionalAvgTable(svg, rows, activeRegion, SIZES, mobilePng) {
     const isDimmed = activeRegion && !isActive;
     const stateClass = (isActive ? ' m-table-row-active' : '') + (isDimmed ? ' m-table-row-dimmed' : '');
 
+    if (row.isWorld) {
+      // La fila del promedio mundial lleva el mismo trazo punteado que la línea
+      // del gráfico, no un cuadrado de color: así se lee que son lo mismo.
+      const dash = vr_ns('line');
+      dash.setAttribute('x1', tableX);
+      dash.setAttribute('x2', tableX + swatchSize);
+      dash.setAttribute('y1', y - swatchSize * 0.45);
+      dash.setAttribute('y2', y - swatchSize * 0.45);
+      dash.setAttribute('stroke', '#5A5346');
+      dash.setAttribute('stroke-width', Math.max(1.4, swatchSize * 0.18));
+      dash.setAttribute('stroke-dasharray', (swatchSize * 0.34) + ' ' + (swatchSize * 0.28));
+      g.appendChild(dash);
+    }
     const swatch = vr_ns('rect');
     swatch.setAttribute('class', 'm-table-swatch' + stateClass);
+    swatch.setAttribute('opacity', row.isWorld ? 0 : 1);
     swatch.setAttribute('x', tableX);
     swatch.setAttribute('y', y - swatchSize + 1);
     swatch.setAttribute('width', swatchSize);
