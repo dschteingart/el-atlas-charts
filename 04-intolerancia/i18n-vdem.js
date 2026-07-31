@@ -78,7 +78,22 @@
     // ---- chart 21: comparación (ranking + marimekko) ----
     'c21-title':          'La exclusión por grupo social separa más a los países que su ingreso',
     'c21-title-neutral':  'Exclusión por grupo social',
-    'c21-subtitle-tpl':   '{CAT}. Año {PERIODO}.',
+    // El subtítulo DEFINE el fenómeno (el título y el eje ya lo nombran) y da la
+    // dirección de la escala, que es la trampa de este dataset: el índice va de
+    // 0 a 1 y más es peor; sus cinco componentes están centrados en 0 y más es
+    // mejor. Por eso hay una versión para cada familia.
+    'c21-subtitle-idx':  'Cuánto le cierra el Estado la puerta a unos grupos y no a otros: servicios, empleo público, poder político y libertades civiles. De 0 a 1: más es más exclusión. {PERIODO}.',
+    'c21-subtitle-comp': 'Cuánto le cierra el Estado la puerta a unos grupos y no a otros. Escala centrada en 0; más es más igualitario. {PERIODO}.',
+
+    // Nota del HTML, por familia de indicador.
+    'c21-src-idx':  'Datos: V-Dem v16 (Universidad de Gotemburgo). El índice combina cinco dimensiones: acceso a servicios públicos, a negocios con el Estado y a empleos estatales, poder político y libertades civiles. Va de 0 (sin exclusión) a 1 (exclusión total). Son estimaciones de expertos, no un censo ni una encuesta.',
+    'c21-src-comp': 'Datos: V-Dem v16 (Universidad de Gotemburgo). Es uno de los cinco componentes del índice de exclusión por grupo social. Va en escala de intervalo centrada en 0. Un valor más alto supone que el país es más igualitario. Son estimaciones de expertos, no un censo ni una encuesta.',
+
+    // Nota del PNG, por familia. {PERIODO} = rango real de años de los datos
+    // dibujados (la plantilla vieja decía "{R}" y el JS reemplazaba "{Y}", así
+    // que el PNG salía con el marcador literal impreso).
+    'c21-png-idx':  'Datos: V-Dem v16 (Universidad de Gotemburgo), año {PERIODO}. El índice combina cinco dimensiones: acceso a servicios públicos, a negocios con el Estado y a empleos estatales, poder político y libertades civiles. De 0 (sin exclusión) a 1 (exclusión total).',
+    'c21-png-comp': 'Datos: V-Dem v16 (Universidad de Gotemburgo), año {PERIODO}. Escala centrada en 0. Un valor más alto supone que el país es más igualitario.',
     'c21-cat-label':      'Indicador',
     'c21-wave-label':     'Año',
     'c21-view-label':     'Mostrar',
@@ -144,7 +159,14 @@
 
     'c21-title':          'Exclusion by social group separates countries more than their income does',
     'c21-title-neutral':  'Exclusion by social group',
-    'c21-subtitle-tpl':   '{CAT}. Year {PERIODO}.',
+    'c21-subtitle-idx':  'How far the state shuts the door on some groups and not others: public services, state jobs, political power and civil liberties. From 0 to 1: higher means more exclusion. {PERIODO}.',
+    'c21-subtitle-comp': 'How far the state shuts the door on some groups and not others. Scale centred on 0; higher means more equal. {PERIODO}.',
+
+    'c21-src-idx':  'Data: V-Dem v16 (University of Gothenburg). The index combines five dimensions: access to public services, to state business opportunities and to state jobs, political power and civil liberties. It runs from 0 (no exclusion) to 1 (total exclusion). These are expert estimates, not a census or a survey.',
+    'c21-src-comp': 'Data: V-Dem v16 (University of Gothenburg). It is one of the five components of the exclusion by social group index. It runs on an interval scale centred on 0. A higher value means the country is more equal. These are expert estimates, not a census or a survey.',
+
+    'c21-png-idx':  'Data: V-Dem v16 (University of Gothenburg), year {PERIODO}. The index combines five dimensions: access to public services, to state business opportunities and to state jobs, political power and civil liberties. From 0 (no exclusion) to 1 (total exclusion).',
+    'c21-png-comp': 'Data: V-Dem v16 (University of Gothenburg), year {PERIODO}. Scale centred on 0. A higher value means the country is more equal.',
     'c21-cat-label':      'Indicator',
     'c21-wave-label':     'Year',
     'c21-view-label':     'Show',

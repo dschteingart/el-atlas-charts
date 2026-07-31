@@ -33,7 +33,11 @@ const VR_LATAM_REGIONS = new Set(['Latin America', 'Caribbean']);
 // Set curado inicial (WYSIWYG: son los chips = las etiquetas): LatAm con dato
 // + referencias globales presentes en la ola 7 de la batería H002.
 // Verificado contra VD_SERIES.racismo['7'] — ESP y ZAF no tienen ola 7, afuera.
-const VR_DEFAULT_SELECTED = ['ARG', 'BRA', 'CHL', 'MEX', 'PER', 'URY', 'USA', 'ESP', 'SWE'];
+// Los quince que aprobó Daniel (2026-07-31): América Latina de punta a punta
+// —Nicaragua 13° y Costa Rica 157° de 172— con Yemen y Dinamarca como los dos
+// extremos del mundo, y España y Estados Unidos de referencia.
+const VR_DEFAULT_SELECTED = ['YEM', 'NIC', 'GTM', 'PRY', 'SLV', 'PER', 'MEX',
+  'CHL', 'BRA', 'USA', 'ARG', 'URY', 'ESP', 'CRI', 'DNK'];
 
 // Olas disponibles de la batería (BA_META.waves = [{w,label},...], asc por ola).
 const VR_DEFAULT_CAT = 'v2xpe_exlsocgr';
@@ -159,23 +163,40 @@ function vr_rankLabel(rank, n) {
 //  Subtítulo dinámico (con la categoría activa)
 //==================================================================
 function vr_updateSubtitle() {
-  const el = document.querySelector('.chart-subtitle[data-i18n="c21-subtitle-tpl"]');
+  const el = document.querySelector('.chart-block[data-chart="21"] .chart-subtitle');
   if (!el) return;
   const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
   const lang = (ae && ae.lang) || (typeof LANG !== 'undefined' ? LANG : 'es');
   const tx = (ae && ae.texts && ae.texts[lang]) || {};
   if ((tx.subtitle || '').trim()) return;
-  const tpl = (typeof t === 'function') ? t('c21-subtitle-tpl') : '';
-  // El nombre del indicador sale de VD_VARS, no del diccionario de ítems de la
-  // batería del barrio, y el placeholder del template es {CAT}.
-  el.textContent = tpl.replace('{CAT}', vd_varLabelOf(state[21].cat)).replace('{PERIODO}', vr_waveLabel());
+  // El subtítulo ya no repite el nombre del indicador —eso lo dicen el título y
+  // el eje— sino que DEFINE el fenómeno y da la dirección de la escala, que es
+  // la trampa de este dataset: el índice va de 0 a 1 y más es peor, y sus cinco
+  // componentes están centrados en 0 y más es mejor.
+  const esIndice = !vd_peorEsMas || vd_peorEsMas(state[21].cat);
+  const tpl = (typeof t === 'function') ? t(esIndice ? 'c21-subtitle-idx' : 'c21-subtitle-comp') : '';
+  el.textContent = tpl.replace('{PERIODO}', vr_waveLabel());
 }
 
 //==================================================================
 //  Dispatcher
 //==================================================================
+// La nota del HTML también cambia con el selector: con el índice explica que
+// combina cinco dimensiones; con un componente, que es uno de esos cinco y que
+// su escala apunta al revés.
+function vr_updateSources() {
+  const esIndice = !vd_peorEsMas || vd_peorEsMas(state[21].cat);
+  const k = esIndice ? 'c21-src-idx' : 'c21-src-comp';
+  const txt = (typeof t === 'function') ? t(k) : '';
+  if (!txt || txt === k) return;
+  document.querySelectorAll('[data-i18n="c21-sources"]').forEach(function (el) {
+    el.innerHTML = txt;
+  });
+}
+
 function drawVdemRank() {
   vr_updateSubtitle();
+  vr_updateSources();
   vr_syncLegend();
   if (state[21].view === 'all') vr_drawMarimekko();
   else vr_drawBars();
@@ -191,9 +212,15 @@ function drawVdemRank() {
     const k = state[21].view === 'all' ? 'c21-pick-hint-all' : 'c21-pick-hint-sel';
     hint.textContent = (typeof t === 'function') ? t(k) : '';
   }
-  // Título: neutral por ahora (el insight queda en i18n para más adelante).
-  if (typeof atlasSetHeading === 'function') {
-    atlasSetHeading('21', false, { title: 'c21-title', titleNeutral: 'c21-title-neutral' });
+  // Título: el NOMBRE del indicador, que cambia con el selector. No hay titular
+  // editorial acá: el gráfico es el ranking completo de 172 países y lo que
+  // tiene para decir cambia con cada variable (decisión de Daniel 2026-07-31).
+  const _tit = document.querySelector('.chart-block[data-chart="21"] .chart-title');
+  if (_tit) {
+    const _ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+    const _lang = (_ae && _ae.lang) || (typeof LANG !== 'undefined' ? LANG : 'es');
+    const _tx = (_ae && _ae.texts && _ae.texts[_lang]) || {};
+    if (!(_tx.title || '').trim()) _tit.textContent = vd_varLabelOf(state[21].cat);
   }
 }
 
@@ -299,7 +326,7 @@ function vr_drawBars() {
   xTitle.style.fontSize = SIZES.axisTitle + 'px';
   xTitle.setAttribute('fill', '#7A6E62');
   xTitle.setAttribute('font-weight', 500);
-  xTitle.textContent = (typeof t === 'function') ? t('c21-axis-x') : '% que lo ve seguido en su barrio';
+  xTitle.textContent = vd_varLabelOf(state[21].cat);
   svg.appendChild(xTitle);
 
   const barsG = vr_ns('g'); svg.appendChild(barsG);
@@ -695,8 +722,8 @@ function vr_drawMarimekko() {
     }
   }
 
-  const PLOT_W = W - MARGIN.left - MARGIN.right;
-  const PLOT_H = H - MARGIN.top - MARGIN.bottom;
+  let PLOT_W = W - MARGIN.left - MARGIN.right;   // let: el aire del eje Y lo recalcula
+  let PLOT_H = H - MARGIN.top - MARGIN.bottom;   // let: la reserva de la tabla lo recalcula
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
 
@@ -736,6 +763,44 @@ function vr_drawMarimekko() {
   const tableFirstY = (mobilePng ? 84 : VRM_TABLE_Y_TITLE) + ((SIZES.tableLabel != null) ? SIZES.tableLabel : 11) * 2.4;
   const tableBottomY = tableFirstY + Math.max(0, regionsPresent.length - 1) * tableRowH + tableRowH * 0.25;
 
+  // La tabla deja de competir con las barras: se le RESERVA el alto. El área de
+  // dibujo empieza debajo de ella, así que no puede pisar nada por construcción
+  // —ni la barra más alta ni la línea del promedio— y, sobre todo, siempre se
+  // dibuja adentro del SVG. Antes había un heurístico que decidía si "entraba"
+  // en el hueco arriba-derecha y, cuando no, la mandaba a un bloque HTML debajo
+  // del gráfico: ese bloque el PNG no lo rasteriza, así que la tabla se perdía
+  // justo en la exportación (reporte de Daniel 2026-07-31).
+  // Aire para el título del eje Y. Los números del eje ya ocupan la izquierda y
+  // el título rotado necesita su propio alto: si el margen no alcanza, CRECE. Sin
+  // esto, al separarlo de los números se dibujaba en x negativo y se cortaba
+  // contra el borde del lienzo en los formatos de PNG.
+  const anchoTick = Math.ceil(SIZES.tick * 2.4 + 12);
+  // El texto rotado -90° se dibuja alrededor de su línea de base, así que su
+  // caja se extiende ~un cuerpo hacia la izquierda: el piso no es 0, es el
+  // cuerpo de la tipografía.
+  const yLabGap = Math.ceil(SIZES.axisLabel * 1.3);
+  const necesitaLeft = anchoTick + yLabGap;
+  if (MARGIN.left < necesitaLeft) {
+    MARGIN.left = necesitaLeft;
+    PLOT_W = W - MARGIN.left - MARGIN.right;
+  }
+
+  if ((s1.showTable !== false) && !mobile && n > 0) {
+    const necesita = Math.ceil(tableBottomY + tableRowH * 0.9);
+    if (MARGIN.top < necesita) {
+      const extraTop = necesita - MARGIN.top;
+      MARGIN.top = necesita;
+      // En pantalla el gráfico crece; en los formatos de PNG el alto es parte de
+      // la definición del formato, así que ahí se comprime el área de dibujo.
+      if (!editorFormat) H += extraTop;
+      // Y se RECALCULA el área de dibujo: PLOT_H y el viewBox se habían fijado
+      // más arriba con el margen viejo, así que sin esto el gráfico entero
+      // bajaba 'extraTop' píxeles y se salía por abajo del lienzo.
+      PLOT_H = H - MARGIN.top - MARGIN.bottom;
+      svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    }
+  }
+
   // === Grid Y + ticks ===
   const yTicksAll = (typeof niceLinearTicks === 'function') ? niceLinearTicks(yMin, yMax, (mobile || mobilePng) ? 4 : 6) : [0, 20, 40, 60];
   const yTicks = yTicksAll.filter(v => v >= yMin - 0.001 && v <= yMax + 0.001);
@@ -761,9 +826,11 @@ function vr_drawMarimekko() {
     svg.appendChild(tx);
   });
 
-  // Título del eje Y, rotado.
+  // Título del eje Y, rotado. Dice el NOMBRE del indicador —cambia con el
+  // selector— y no "valor del indicador", que no decía nada. Y se separa del
+  // eje: a 35 px quedaba pegado a los números (pedido de Daniel 2026-07-31).
   const yLab = vr_ns('text');
-  const yLabX = MARGIN.left - 35;
+  const yLabX = Math.max(SIZES.axisLabel * 1.15, MARGIN.left - anchoTick - yLabGap * 0.15);
   const yLabY = MARGIN.top + PLOT_H / 2;
   yLab.setAttribute('x', yLabX);
   yLab.setAttribute('y', yLabY);
@@ -773,7 +840,7 @@ function vr_drawMarimekko() {
   yLab.setAttribute('fill', '#7A6E62');
   yLab.setAttribute('font-weight', 500);
   yLab.style.fontSize = SIZES.axisLabel + 'px';
-  yLab.textContent = (typeof t === 'function') ? t('c21-axis-mk') : '% que lo ve seguido en su barrio';
+  yLab.textContent = vd_varLabelOf(state[21].cat);
   svg.appendChild(yLab);
 
   // === Barras ===
@@ -905,14 +972,13 @@ function vr_drawMarimekko() {
   for (let i = idxDesde; i < n; i++) {
     if (data[i].pct > maxUnderTable) maxUnderTable = data[i].pct;
   }
-  const tableFits = yScale(maxUnderTable) > tableBottomY + tableRowH * 0.5;
+  const tableFits = true;   // ya no compite con las barras: tiene alto reservado
   // Además: la etiqueta de la mediana va a la derecha (misma franja-x que la
   // tabla). Si la línea de la mediana cae en la banda vertical de la tabla, su
   // etiqueta colisiona con las filas (reporte de Daniel 2026-07-24). En ese caso,
   // mismo criterio que con las barras: la tabla se va abajo y el lado derecho
   // queda libre para la etiqueta de la mediana.
-  const medY = med ? yScale(med.value) : null;
-  const medHitsTable = med && medY >= (tableTopY - tableRowH) && medY <= (tableBottomY + tableRowH * 0.5);
+  const medHitsTable = false;   // idem: la linea del promedio vive dentro del plot
   // El toggle "Tabla regional" (state.showTable) gobierna si se muestra; el
   // heurístico solo decide flotante-vs-abajo cuando sí se muestra.
   const wantTable = s1.showTable !== false;
@@ -1201,7 +1267,7 @@ function setupVdemRankRefsStat() {
   if (!box) return;
   const sync = () => {
     box.querySelectorAll('button[data-stat]').forEach(b => {
-      b.classList.toggle('active', b.getAttribute('data-stat') === (state[21].stat || 'median'));
+      b.classList.toggle('active', b.getAttribute('data-stat') === (state[21].stat || 'mean'));
     });
     const grp = box.closest('.m-ctrl-group') || box;
     const hay = (state[21].showMedian !== false) || (state[21].showTable !== false);
@@ -1395,6 +1461,7 @@ function initVdemRank() {
       view: 'sel',
       wave: lastWave,            // default = ola más reciente (== "último dato >=2017")
       selected: [...VR_DEFAULT_SELECTED],
+      stat: 'mean',              // promedio, no mediana (pedido de Daniel 2026-07-31)
       showMedian: true,
       showTable: true,
       hiddenRegions: [],
@@ -1426,12 +1493,17 @@ function initVdemRank() {
   // Nota "Datos" corta del PNG, con el rango de años realmente mostrado.
   window.onBeforePngExportGetSourceText = function(chartId) {
     if (chartId !== '21') return null;
-    const tpl = (typeof t === 'function') ? t('c21-sources-tpl') : '';
+    // OJO: la plantilla decía "año {R}" y acá se reemplazaba {Y}, así que el PNG
+    // salía con el "{R}" literal impreso (reporte de Daniel 2026-07-31).
+    const esIndice = !vd_peorEsMas || vd_peorEsMas(state[21].cat);
+    const tpl = (typeof t === 'function') ? t(esIndice ? 'c21-png-idx' : 'c21-png-comp') : '';
     if (!tpl) return null;
     const data = vr_computeData();
     const years = data.map(d => d.year);
-    const y = years.length ? Math.min(...years) + '-' + Math.max(...years) : '2017-2023';
-    return tpl.replace('{Y}', y);
+    const y0 = years.length ? Math.min(...years) : state[21].wave;
+    const y1 = years.length ? Math.max(...years) : state[21].wave;
+    const y = (y0 === y1) ? String(y0) : (y0 + '-' + y1);
+    return tpl.replace('{PERIODO}', y);
   };
 
   // Marimekko: los textos de la tabla regional van al canvas (las webfonts
