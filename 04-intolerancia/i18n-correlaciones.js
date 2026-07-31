@@ -28,7 +28,7 @@
     'c19-db-axis':       '% de encuestados de cada país',
     'c19-title-tpl':     '{X} frente a {Y}',
     'c19-title-db-tpl':  '{X} y {Y}',
-    'c19-subtitle-tpl':  'Porcentaje que {X} frente al porcentaje que {Y}. Ola {PERIODO}.',
+    'c19-subtitle-tpl':  'Porcentaje que {X} frente al porcentaje que {Y}. {PERIODO}.',
     // Vista de brechas: titulo corto y declarativo, subtitulo con la medicion
     // exacta (criterio de Daniel: "como si fuera un paper o el Economist"; nada
     // de "cada fila es un pais", que describe el dibujo y no el hallazgo).
@@ -137,7 +137,7 @@
     'c19-db-axis':       '% of respondents in each country',
     'c19-title-tpl':     '{X} vs. {Y}',
     'c19-title-db-tpl':  '{X} and {Y}',
-    'c19-subtitle-tpl':  'Share who {X} vs. share who {Y}. {PERIODO} wave.',
+    'c19-subtitle-tpl':  'Share who {X} vs. share who {Y}. {PERIODO}.',
     'c19-x-label-db':    'First variable',
     'c19-y-label-db':    'Second variable',
     'c19-subtitle':      'Share of respondents giving each answer.',
