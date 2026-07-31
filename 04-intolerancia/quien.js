@@ -28,6 +28,10 @@ const QN_SVG_NS = 'http://www.w3.org/2000/svg';
 const qn_ns = (tag) => document.createElementNS(QN_SVG_NS, tag);
 
 const QN_DEFAULT_CAT = 'raza_etnia';   // el gancho editorial arranca por lo racial
+// La matriz arranca ordenada por POBRES, que es lo que afirma su título: si las
+// filas vinieran ordenadas por lo racial, el lector tendría que reconstruir a
+// mano la columna de la que habla el titular.
+const QN_HEAT_DEFAULT_CAT = 'pobres';
 const QN_DEFAULT_ISO = 'ARG';
 const QN_MED = '#5A5346';              // gris de la mediana regional
 const QN_AXIS = '#9C928A';
@@ -1201,7 +1205,7 @@ function initQuien() {
       view: 'ranking',
       iso: QN_DEFAULT_ISO,
       showMedian: true,
-      heatCat: QN_DEFAULT_CAT,  // matriz: columna que ordena las filas
+      heatCat: QN_HEAT_DEFAULT_CAT,  // matriz: columna que ordena las filas
       heatAsc: false            // matriz: de mayor a menor por esa columna
     };
   }
