@@ -60,8 +60,14 @@ const CO_FIT       = '#5A5346';   // recta de ajuste
 const CO_HIGHLIGHT = null;
 const CO_HI_COLOR  = '#8B4220';
 
+// El cruce con el que abre el chart: lo declarado sobre uno mismo (rechazo al
+// vecino de otra raza) contra lo que se dice ver alrededor (racismo en el
+// barrio). Son las dos preguntas que el número contrapone.
 const CO_DEFAULT_X = 'otra_raza';
-const CO_DEFAULT_Y = 'homosexuales';
+const CO_DEFAULT_Y = 'H002_04';
+// Y abre en BRECHAS: el par de arriba es una historia de "estas dos no
+// coinciden", y eso el dumbbell lo muestra directo; el scatter lo hace deducir.
+const CO_DEFAULT_VISTA = 'dumbbell';
 // Mínimo de países en común para que una ola entre al slider. Mismo umbral que
 // make_waves.py / make_prioridad.py / make_cruces.py: con menos de 8 países no
 // hay regresión que valga.
@@ -74,7 +80,11 @@ const CO_PLAY_MS = 1100;
 // Selección default (chips = etiquetas): tres de América Latina, dos anclas de
 // Europa, Estados Unidos y dos casos que rompen la diagonal (Corea y Nigeria
 // rechazan poco por raza y muchísimo por orientación sexual).
-const CO_DEFAULT_SELECTED = ['ARG', 'BRA', 'MEX', 'USA', 'ESP', 'SWE', 'KOR', 'NGA'];
+// Los diez del PNG que aprobó Daniel (2026-07-30). Cubren las dos puntas del
+// contraste: el este asiático declara mucho rechazo y ve poco racismo, y en
+// América pasa al revés. OJO: la selección es una sola para las dos vistas, así
+// que en Dispersión estos son además los países etiquetados.
+const CO_DEFAULT_SELECTED = ['MMR', 'VNM', 'JPN', 'KOR', 'URY', 'ARG', 'GBR', 'USA', 'CHL', 'BRA'];
 // Anclas globales: cuando el hover revela una región entera y no entran todas
 // las etiquetas, la anti-colisión sacrifica primero a los chicos (criterio del
 // N°1: subPriority 0 para las anclas, 1 para el resto de la región).
@@ -299,11 +309,37 @@ function co_varTituloCap(k) {
 // Titulo del chart: lo arman las DOS variables elegidas (criterio OWID), asi
 // que no puede salir de una clave fija. Respeta el titulo custom del editor,
 // igual que el subtitulo.
+// ¿Estado por default? El titular editorial afirma algo sobre ESTE cruce: vale
+// mientras no se toque el par, la ola ni la selección de países.
+function co_esDefault() {
+  const s = state[19];
+  if (!s) return false;
+  if (s.x !== CO_DEFAULT_X || s.y !== CO_DEFAULT_Y) return false;
+  const ws = co_waves(s.x, s.y);
+  if (!ws.length || s.wave !== ws[ws.length - 1]) return false;
+  if (co_hidden().size) return false;
+  const sel = (s.selected || []).slice().sort().join(',');
+  return sel === CO_DEFAULT_SELECTED.slice().sort().join(',');
+}
+
 function co_updateTitle() {
   const el = document.querySelector('.chart-block[data-chart="19"] .chart-title');
   if (!el) return;
   if (co_editorCustom('title')) return;
   const s = state[19];
+  // Titular editorial: sólo en el estado por default Y sólo si el dato lo
+  // sostiene. El hallazgo de este cruce es que las dos preguntas NO se
+  // predicen (r = −0,14 sobre 65 países), así que la guarda es un |r| chico:
+  // si algún día el dato se ordena, el titular se va solo en vez de mentir.
+  const ed = co_T('c19-title-editorial');
+  if (ed && ed !== 'c19-title-editorial' && co_esDefault()) {
+    const pts = (s.wave == null) ? [] : co_cross(s.x, s.y, s.wave);
+    const m = (pts.length >= CO_MIN_FIT) ? co_ols(pts) : null;
+    if (m && Math.abs(Math.sqrt(Math.max(0, m.r2)) * (m.b < 0 ? -1 : 1)) < 0.25) {
+      el.textContent = ed;
+      return;
+    }
+  }
   const tpl = co_T(s.vista === 'dumbbell' ? 'c19-title-db-tpl' : 'c19-title-tpl');
   if (!tpl || tpl.indexOf('{X}') < 0) return;
   const txt = tpl.replace('{X}', co_varTitulo(s.x)).replace('{Y}', co_varTitulo(s.y));
@@ -315,7 +351,7 @@ function co_updateSubtitle() {
   if (!el) return;
   if (co_editorCustom('subtitle')) return;   // respetar el subtítulo custom del editor (?nl)
   const s = state[19];
-  const tpl = co_T(s.vista === 'dumbbell' ? 'c19-subtitle-db-tpl' : 'c19-subtitle-tpl');
+  const tpl = co_T('c19-subtitle-tpl');
   if (!tpl) return;
   el.textContent = tpl
     .replace('{X}', co_varLabel(s.x))
@@ -335,9 +371,16 @@ function co_ejeExterno() {
 // La nota de fuentes afirma que los dos ejes salen de la MISMA encuesta y de las
 // mismas personas. Con una variable del World Risk Poll en algún eje eso deja de
 // ser cierto, así que se agrega el párrafo que lo aclara (y se saca al volver).
+// La nota lleva el intervalo de la OLA que se está mirando, no el rango entero
+// del dataset: el gráfico es una foto, no una serie temporal. Y cambia por
+// vista, porque en brechas no hay ejes ni ajuste que explicar.
 function co_updateSources() {
-  const base = co_T('c19-sources');
-  if (base === 'c19-sources') return;
+  const s = state[19];
+  const key = (s && s.vista === 'dumbbell') ? 'c19-sources-db' : 'c19-sources';
+  let base = co_T(key);
+  if (base === key) return;
+  base = base.replace('{PERIODO}', co_waveLabel(s ? s.wave : null));
+  // Con un eje del World Risk Poll la fuente ya no es una sola.
   const ext = co_ejeExterno() ? co_T('c19-sources-wrp') : '';
   const add = (ext && ext !== 'c19-sources-wrp') ? ext : '';
   document.querySelectorAll('[data-i18n="c19-sources"]').forEach(function (el) {
@@ -629,6 +672,12 @@ function drawCorrelaciones() {
   if (_refsGrp && _refsGrp.closest('.m-ctrl-group')) _refsGrp.closest('.m-ctrl-group').style.display = _db ? 'none' : '';
   const _banner = document.getElementById('co-banner');
   if (_banner) _banner.style.display = _db ? 'none' : '';
+  // La pista de la leyenda de regiones habla de algo que en brechas no existe.
+  const _legHint = document.querySelector('.co-legend-hint');
+  if (_legHint) _legHint.style.display = _db ? 'none' : '';
+  // Y los países elegidos no "se etiquetan": son las filas.
+  const _pickHint = document.querySelector('[data-i18n="c19-pick-hint"]');
+  if (_pickHint) _pickHint.textContent = co_T(_db ? 'c19-pick-hint-db' : 'c19-pick-hint');
   if (_db) { co_drawDumbbell(svg); return; }
 
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
@@ -1144,15 +1193,37 @@ function co_drawDumbbell(svg) {
   const W = 1100;
   const legendH = SIZES.legend * 3.4;
   const rowH = Math.max(bigFmt ? 44 : 26, SIZES.name * 2.1);
+
+  // CANALETA entre la columna de nombres y el área de dibujo. El valor de la
+  // punta menor se escribe a la IZQUIERDA de su punto, así que cuando ese valor
+  // está cerca del cero la etiqueta se mete en la zona del nombre y lo pisa
+  // (reporte de Daniel: Uruguay con su 1, Argentina con su 2,7). No es un
+  // problema de anti-colisión: es que no había lugar reservado. Se calcula
+  // midiendo el nombre más largo y el valor más ancho, así que no puede fallar
+  // con ningún dato. Los valores sólo se dibujan en bigFmt; en pantalla la
+  // canaleta vuelve a ser el respiro de siempre.
+  let maxNameW = 0, maxValW = 0;
+  rows.forEach(p => {
+    const w = co_measure(co_name(p.iso), SIZES.name, 600);
+    if (w > maxNameW) maxNameW = w;
+    [p.x, p.y].forEach(v => {
+      const wv = co_measure((typeof fmt === 'function') ? fmt(v, 1) : String(v), SIZES.val, 400);
+      if (wv > maxValW) maxValW = wv;
+    });
+  });
+  const canaleta = bigFmt ? Math.ceil(SIZES.dot + 6 + maxValW + 8) : 10;
+  const bordeVal = Math.ceil(SIZES.dot + 6 + maxValW + 10);   // idem del lado derecho
+
   let H, MARGIN;
   if (editorFormat) {
     const f = PNG_FORMATS[editorFormat] || PNG_FORMATS.square;
     H = f.vbH;
-    MARGIN = { top: 30 + legendH, right: 70, bottom: 78, left: 210 };
+    MARGIN = { top: 30 + legendH, right: Math.max(70, bordeVal), bottom: 78, left: 210 };
   } else {
-    MARGIN = { top: 12 + legendH, right: mobile ? 54 : 60, bottom: mobile ? 84 : 62, left: mobile ? 180 : 150 };
+    MARGIN = { top: 12 + legendH, right: Math.max(mobile ? 54 : 60, bigFmt ? bordeVal : 0), bottom: mobile ? 84 : 62, left: mobile ? 180 : 150 };
     H = MARGIN.top + Math.max(1, rows.length) * rowH + MARGIN.bottom;
   }
+  MARGIN.left = Math.min(Math.round(W * 0.42), Math.max(MARGIN.left, Math.ceil(maxNameW) + canaleta));
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, editorFormat);
 
@@ -1220,7 +1291,7 @@ function co_drawDumbbell(svg) {
     const cy = MARGIN.top + i * rH + rH / 2;
     const x1 = xScale(p.x), x2 = xScale(p.y);
     const name = co_ns('text');
-    name.setAttribute('x', MARGIN.left - 10); name.setAttribute('y', cy);
+    name.setAttribute('x', MARGIN.left - canaleta); name.setAttribute('y', cy);
     name.setAttribute('text-anchor', 'end'); name.setAttribute('dominant-baseline', 'central');
     name.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
     name.style.fontSize = SIZES.name + 'px'; name.setAttribute('font-weight', 600);
@@ -1641,7 +1712,7 @@ function initCorrelaciones() {
   if (s.hoverRegion === undefined) s.hoverRegion = null;
   if (s.showDiag === undefined) s.showDiag = true;
   if (s.showFit === undefined) s.showFit = true;
-  if (s.vista !== 'dumbbell') s.vista = 'scatter';
+  if (s.vista !== 'scatter' && s.vista !== 'dumbbell') s.vista = CO_DEFAULT_VISTA;
   s.playing = false;
   const ws = co_waves(s.x, s.y);
   if (ws.indexOf(s.wave) < 0) s.wave = ws.length ? ws[ws.length - 1] : null;
@@ -1687,23 +1758,15 @@ function initCorrelaciones() {
     if (chartId !== '19') return null;
     // Con un eje de afuera, la plantilla que habla de "la misma encuesta y la
     // misma persona" sería falsa: hay una alternativa para ese caso.
-    const tplKey = co_ejeExterno() ? 'c19-sources-tpl-ext' : 'c19-sources-tpl';
+    // En brechas no hay dos ejes ni ajuste: la nota de la dispersión hablaría
+    // de un eje X, un eje Y y un n que ahí no significan nada.
+    const db = s.vista === 'dumbbell';
+    const tplKey = db ? 'c19-sources-png-db'
+      : (co_ejeExterno() ? 'c19-sources-tpl-ext' : 'c19-sources-tpl');
     let tpl = co_T(tplKey);
     if (tpl === tplKey) tpl = co_T('c19-sources-tpl');
     if (!tpl) return null;
-    // Los mismos países que el gráfico: si el usuario apagó regiones, el n y el
-    // R² de la nota son los del ajuste que se ve, no los del cruce completo.
-    const hid = co_hidden();
-    const pts = (s.wave == null)
-      ? []
-      : co_cross(s.x, s.y, s.wave).filter(p => !hid.has(p.region));
-    const model = (pts.length >= CO_MIN_FIT) ? co_ols(pts) : null;
-    return tpl
-      .replace('{PERIODO}', co_waveLabel(s.wave))
-      .replace('{X}', co_varLabel(s.x))
-      .replace('{Y}', co_varLabel(s.y))
-      .replace('{N}', String(pts.length))
-      .replace('{R2}', model ? co_fmt(model.r2, 2) : '—');
+    return tpl.replace('{PERIODO}', co_waveLabel(s.wave));
   };
 }
 

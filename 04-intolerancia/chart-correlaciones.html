@@ -9,19 +9,19 @@
 <meta property="og:locale" content="es_AR">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/04-intolerancia/chart-correlaciones.html">
 <meta property="og:title" content="¿Las intolerancias van juntas? — El Atlas · N°4">
-<meta property="og:description" content="Cruzá dos preguntas de la Integrated Values Survey y mirá cómo se ordenan los países: ¿el que rechaza a un vecino de otra raza rechaza también a un homosexual?">
+<meta property="og:description" content="Cruzá dos preguntas de la Integrated Values Survey y mirá cómo se ordenan los países: ¿el que dice que no querría un vecino de otra raza es el que ve racismo en su barrio?">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/04-intolerancia/thumbs/chart-correlaciones.png">
 <meta property="og:image:alt" content="Cruce entre dos formas de rechazo">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="¿Las intolerancias van juntas? — El Atlas · N°4">
-<meta name="twitter:description" content="Dos preguntas de la misma encuesta, con recta de ajuste y línea de 45°.">
+<meta name="twitter:description" content="Dos preguntas de la misma encuesta, país por país: la brecha entre ambas y la nube completa.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/04-intolerancia/thumbs/chart-correlaciones.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../lib/style.css?v=34">
-<link rel="stylesheet" href="../lib/editor.css?v=34">
+<link rel="stylesheet" href="../lib/style.css?v=36">
+<link rel="stylesheet" href="../lib/editor.css?v=36">
 <style>
   .wrap-wide { max-width: 1100px; padding: 6px 20px 10px; }
   .wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
@@ -177,11 +177,12 @@
     </div>
   </header>
 
-  <p class="g-lead" data-i18n="c19-lead">Elegí dos preguntas de la encuesta y mirá cómo se ordenan los países. Sobre la diagonal pesa más el eje vertical.</p>
+  <!-- Sin bajada: tres capas de texto, no cuatro (mismo criterio que el resto
+       del número). -->
 
   <section class="chart-block" data-chart="19" data-editor-id="n5-cruces">
     <h2 class="chart-title" data-i18n="c19-title-neutral">Dos preguntas de la encuesta</h2>
-    <p class="chart-subtitle" data-i18n="c19-subtitle">Los dos ejes son porcentajes de la misma encuesta.</p>
+    <p class="chart-subtitle" data-i18n="c19-subtitle">Porcentaje de encuestados que da cada respuesta.</p>
 
     <div class="m-controls">
       <div class="m-ctrl-group">
@@ -259,25 +260,25 @@
 
 </div>
 
-<script src="../lib/regions.js?v=34"></script>
-<script src="../lib/i18n.js?v=34"></script>
-<script src="./i18n-issue.js?v=34"></script>
-<script src="./i18n-correlaciones.js?v=34"></script>
-<script src="../lib/utils.js?v=34"></script>
-<script src="../lib/country-names.js?v=34"></script>
-<script src="../lib/scatter-render.js?v=34"></script>
-<script src="./data-cruces.js?v=34"></script>
-<script src="../lib/editor.js?v=34"></script>
-<script src="./correlaciones.js?v=34"></script>
-<script src="../lib/png-export.js?v=34"></script>
+<script src="../lib/regions.js?v=36"></script>
+<script src="../lib/i18n.js?v=36"></script>
+<script src="./i18n-issue.js?v=36"></script>
+<script src="./i18n-correlaciones.js?v=36"></script>
+<script src="../lib/utils.js?v=36"></script>
+<script src="../lib/country-names.js?v=36"></script>
+<script src="../lib/scatter-render.js?v=36"></script>
+<script src="./data-cruces.js?v=36"></script>
+<script src="../lib/editor.js?v=36"></script>
+<script src="./correlaciones.js?v=36"></script>
+<script src="../lib/png-export.js?v=36"></script>
 <script>
-  window.__N4_V = '34';
+  window.__N4_V = '36';
   initCorrelaciones();
   applyI18n();
   if (window.__atlasRedraw) window.__atlasRedraw();
   setupLangToggle(() => co_onLangChange());
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=34"></script>
+<script src="./nav.js?v=36"></script>
 </body>
 </html>
