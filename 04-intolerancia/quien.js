@@ -34,6 +34,14 @@ const QN_AXIS = '#9C928A';
 // Rampa secuencial del Atlas: la misma del mapa del número (mapa.js), para que
 // "más oscuro = más lo señalan" signifique lo mismo en las dos páginas.
 const QN_HEAT_COLORS = ['#F4E4CE', '#E8B98C', '#D98E5B', '#C0632F', '#8F3F1E', '#5A2412'];
+// Tinta del número de cada celda: la de MÁS contraste contra ese tono, medido
+// (relación WCAG) tono por tono. El corte cae entre el bin 2 y el 3, no entre
+// el 4 y el 5 como estaba: sobre #C0632F —donde caen valores tan comunes como
+// el 12 de Argentina en «raza o etnia»— la tinta oscura da 3,4 y el papel 3,9.
+// Y el gris apagado que usaba antes para los NO líderes daba 1,44 ahí: era
+// ilegible. El apagado ahora es opacidad de esta misma tinta (0,88), que nunca
+// se despega del fondo: el peor caso de la escala pasa de 1,44 a 3,4.
+const QN_HEAT_TINTA = ['#2E2A25', '#2E2A25', '#2E2A25', '#FBF8F1', '#FBF8F1', '#FBF8F1'];
 
 const QN_RK_MARGIN_DESKTOP = { top: 34, right: 88, bottom: 48, left: 132 };
 const QN_RK_MARGIN_MOBILE  = { top: 34, right: 60, bottom: 72, left: 118 };  // bottom holga p/ el título de eje (+64) en mobile
@@ -616,13 +624,10 @@ function qn_drawMatriz() {
         tx.style.fontSize = (esTop ? SIZES.cell * 1.1 : SIZES.cell) + 'px';
         tx.setAttribute('font-variant-numeric', 'tabular-nums');
         tx.setAttribute('font-weight', esTop ? 600 : 400);
-        // Texto claro sobre los dos tonos más oscuros; si no, no se lee.
-        if (bin >= 4) {
-          tx.setAttribute('fill', '#FBF8F1');
-          tx.setAttribute('fill-opacity', esTop ? 1 : 0.74);
-        } else {
-          tx.setAttribute('fill', esTop ? '#2E2A25' : '#6B6257');
-        }
+        // Tinta o papel según el tono de la celda, y el apagado del resto por
+        // OPACIDAD de esa misma tinta (ver QN_HEAT_TINTA).
+        tx.setAttribute('fill', QN_HEAT_TINTA[bin]);
+        tx.setAttribute('fill-opacity', esTop ? 1 : 0.88);
         tx.style.pointerEvents = 'none';
         tx.textContent = qn_fmt(v, 0);
         gCells.appendChild(tx);
