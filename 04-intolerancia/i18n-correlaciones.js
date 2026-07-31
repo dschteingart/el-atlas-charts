@@ -16,6 +16,10 @@
     // no entraba en pantalla sin scrollear.
     'c19-lead':          'Elegí dos preguntas de la encuesta y mirá cómo se ordenan los países. Por encima de la línea de igual valor pesa más el eje vertical.',
 
+    // Titular editorial: sólo con el par por default y sólo si el dato lo
+    // sostiene (|r| < 0,25 — ver co_updateTitle). Puede ser evocativo porque el
+    // subtítulo nombra las dos mediciones con toda precisión.
+    'c19-title-editorial': 'Decimos una cosa, vemos otra',
     'c19-title-neutral': 'Dos preguntas de la encuesta',
     // Titulo dinamico, criterio OWID (decision de Daniel 2026-07-29): el titulo
     // son las DOS mediciones; el conector distingue la vista ("frente a" cruza,
@@ -77,6 +81,11 @@
     'c19-grp-wrp':       'Discriminación vivida (otra encuesta)',
     'c19-sources-wrp':   ' «Sufrió discriminación por su color de piel» es la única variable del menú que no sale de la Integrated Values Survey: viene del World Risk Poll 2023 (Lloyd’s Register Foundation / Gallup, 139 países) y mide experiencia propia, no opinión sobre terceros. Con ella en algún eje, los dos valores salen de encuestas distintas y de personas distintas.',
     'c19-swap':          'Invertir ejes',
+    // En brechas no hay ejes: el botón intercambia cuál de las dos variables va
+    // primera —la naranja— y, como las filas se ordenan por la brecha, invierte
+    // también el orden de los países.
+    'c19-swap-db':       'Intercambiar variables',
+    'c19-swap-aria-db':  'Intercambiar la primera y la segunda variable',
     'c19-refs-label':    'Referencias',
     'c19-ref-diag':      'Igual valor',
     'c19-ref-fit':       'Recta de ajuste',
@@ -123,6 +132,7 @@
   Object.assign(I18N.en, {
     'c19-lead':          'Pick two survey questions and see how countries line up. Above the equal-value line, the vertical axis weighs more.',
 
+    'c19-title-editorial': 'We say one thing and see another',
     'c19-title-neutral': 'Two survey questions',
     'c19-db-axis':       '% of respondents in each country',
     'c19-title-tpl':     '{X} vs. {Y}',
@@ -170,6 +180,8 @@
     'c19-grp-wrp':       'Experienced discrimination (another survey)',
     'c19-sources-wrp':   ' “Has experienced discrimination over skin colour” is the only variable in the menu that does not come from the Integrated Values Survey: it comes from the World Risk Poll 2023 (Lloyd’s Register Foundation / Gallup, 139 countries) and measures first-person experience, not an opinion about others. With it on an axis, the two values come from different surveys and different people.',
     'c19-swap':          'Swap axes',
+    'c19-swap-db':       'Swap variables',
+    'c19-swap-aria-db':  'Swap the first and the second variable',
     'c19-refs-label':    'Reference lines',
     'c19-ref-diag':      'Equal value',
     'c19-ref-fit':       'Fit line',

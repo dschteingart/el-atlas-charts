@@ -677,6 +677,14 @@ function drawCorrelaciones() {
   const _lblY = document.querySelector('[data-i18n="c19-y-label"]');
   if (_lblX) _lblX.textContent = co_T(_db ? 'c19-x-label-db' : 'c19-x-label');
   if (_lblY) _lblY.textContent = co_T(_db ? 'c19-y-label-db' : 'c19-y-label');
+  // Y el botón de intercambio deja de hablar de ejes: en brechas cambia cuál de
+  // las dos variables va primera y, con eso, el orden de las filas.
+  const _swap = document.querySelector('[data-i18n="c19-swap"]');
+  if (_swap) {
+    _swap.textContent = co_T(_db ? 'c19-swap-db' : 'c19-swap');
+    const _btn = _swap.closest('button') || _swap;
+    _btn.setAttribute('aria-label', co_T(_db ? 'c19-swap-aria-db' : 'c19-swap-aria'));
+  }
   const _refsGrp = document.getElementById('co-refs');
   if (_refsGrp && _refsGrp.closest('.m-ctrl-group')) _refsGrp.closest('.m-ctrl-group').style.display = _db ? 'none' : '';
   const _banner = document.getElementById('co-banner');
