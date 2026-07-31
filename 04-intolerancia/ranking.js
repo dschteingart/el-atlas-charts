@@ -181,7 +181,13 @@ function rk_esDefault() {
   if (typeof WV_META !== 'undefined' && WV_META.length) {
     if (s.wave !== WV_META[WV_META.length - 1].w) return false;
   }
-  return true;
+  // Y la selección sin tocar. El titular compara a América Latina con el resto
+  // del mundo, y lo que sostiene esa comparación son las barras que están a la
+  // vista: si el lector saca países, el gráfico ya no es el que se afirmó
+  // (criterio de Daniel, el mismo de los charts 12, 18 y 19).
+  if (s.hiddenRegions && s.hiddenRegions.length) return false;
+  const sel = (s.selected || []).slice().sort().join(',');
+  return sel === RK_DEFAULT_SELECTED.slice().sort().join(',');
 }
 
 //==================================================================
