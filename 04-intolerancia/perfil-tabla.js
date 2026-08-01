@@ -38,10 +38,6 @@ const PF_TINTA  = ['#2E2A25', '#2E2A25', '#2E2A25', '#FBF8F1', '#FBF8F1'];
 const PF_BG = '#FBF8F1';
 const PF_INK = '#3A3530', PF_SOFT = '#7A6E62', PF_RULE = '#E5DDD0';
 
-// n mínimo para que la celda no lleve marca: por debajo, el promedio se apoya
-// en tan pocos países que conviene que el lector lo vea.
-const PF_N_MIN = 5;
-
 // Países por default en la vista de países: los once latinoamericanos que
 // tienen las cinco columnas, más cinco referencias del resto del mundo.
 const PF_DEFAULT_PAISES = ['ARG', 'BRA', 'CHL', 'URY', 'COL', 'MEX',
@@ -280,8 +276,10 @@ function drawPerfilTabla() {
       val.setAttribute('font-variant-numeric', 'tabular-nums');
       val.setAttribute('fill', PF_TINTA[niv]);
       val.style.pointerEvents = 'none';
-      // El asterisco avisa que el promedio se apoya en menos de cinco países.
-      val.textContent = pf_fmt(celda.v, c.dec) + c.uni + (celda.n > 1 && celda.n < PF_N_MIN ? '*' : '');
+      // Sin marca de "pocos países" en la celda: la advertencia vive en el
+      // tooltip, que dice sobre cuántos se calcula ("14 de 19"). Un asterisco
+      // suelto obliga a buscar qué significa (reporte de Daniel 2026-08-01).
+      val.textContent = pf_fmt(celda.v, c.dec) + c.uni;
       svg.appendChild(val);
 
       const niveltx = pf_ns('text');
@@ -408,9 +406,10 @@ function setupPerfilVista() {
   box.querySelectorAll('button[data-vista]').forEach(b => {
     b.addEventListener('click', () => {
       state[26].vista = b.getAttribute('data-vista');
-      // El orden se resetea: ordenar por una columna en regiones no significa
-      // lo mismo que en países, y arrastrarlo confunde más de lo que ayuda.
-      state[26].orden = null;
+      // El orden vuelve al default: ordenar por una columna en regiones no
+      // significa lo mismo que en países, y arrastrarlo confunde más que ayuda.
+      state[26].orden = PF_META.cols[0].k;
+      state[26].ordenAsc = false;
       sync();
       pf_syncPicker();
       pf_renderChips();
@@ -508,7 +507,12 @@ function setupPerfilCSV() {
 //==================================================================
 function initPerfilTabla() {
   if (!state[26]) {
-    state[26] = { vista: 'regiones', selected: PF_DEFAULT_PAISES.slice(), orden: null, ordenAsc: false };
+    // Ordenadas por la PRIMERA columna, de mayor a menor: el orden de la
+    // taxonomía del Atlas no le dice nada al lector, y así la tabla se lee como
+    // un ranking de la primera lente contra el que se comparan las otras
+    // cuatro. Cualquier encabezado la reordena.
+    state[26] = { vista: 'regiones', selected: PF_DEFAULT_PAISES.slice(),
+                  orden: PF_META.cols[0].k, ordenAsc: false };
   }
   setupPerfilVista();
   setupPerfilBuscador();
