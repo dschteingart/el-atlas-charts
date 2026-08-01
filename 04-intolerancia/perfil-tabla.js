@@ -94,20 +94,50 @@ function pf_filas() {
   });
 }
 
-// Nivel de cada celda = percentil de la fila dentro de su columna, entre las
-// filas mostradas. Cortes en 20/40/60/80.
-function pf_niveles(filas) {
-  const out = {};
+// ---------------------------------------------------------------------------
+//  Niveles: cortes FIJOS, los quintiles de la distribución de países
+// ---------------------------------------------------------------------------
+// Antes el percentil se calculaba entre las filas MOSTRADAS, y eso tenía dos
+// problemas (reporte de Daniel 2026-08-01):
+//   1. Con 10 países elegidos el reparto salía siempre 2 de cada nivel por
+//      columna, sin importar los valores: el color era un ranking interno de la
+//      selección disfrazado de nivel. Si elegías los 10 países más racistas del
+//      mundo, dos igual salían "bajo".
+//   2. El nivel cambiaba al agregar o sacar países —34 de 50 celdas de la
+//      selección por default— y las dos vistas medían con varas distintas: el
+//      mismo valor podía dar "bajo" en regiones y "medio" en países.
+// Ahora los cortes se calculan UNA vez sobre todos los países con dato de cada
+// columna y no dependen de lo que se muestre. Un mismo valor cae siempre en el
+// mismo nivel, se mire regiones o países.
+let PF_CORTES = null;
+function pf_cuantil(ordenados, p) {
+  if (!ordenados.length) return null;
+  const i = (ordenados.length - 1) * p, lo = Math.floor(i), hi = Math.ceil(i);
+  return lo === hi ? ordenados[lo] : ordenados[lo] + (ordenados[hi] - ordenados[lo]) * (i - lo);
+}
+function pf_cortes() {
+  if (PF_CORTES) return PF_CORTES;
+  PF_CORTES = {};
+  const isos = Object.keys(PF_PAIS);
   PF_META.cols.forEach(c => {
-    const vs = filas.filter(f => f.celdas[c.k]).map(f => ({ id: f.id, v: f.celdas[c.k].v }));
-    vs.sort((a, b) => a.v - b.v);
-    const n = vs.length;
-    vs.forEach((x, i) => {
-      const p = n > 1 ? (i + 0.5) / n : 0.5;
+    const vs = isos.filter(i => PF_PAIS[i][c.k]).map(i => PF_PAIS[i][c.k][0]).sort((a, b) => a - b);
+    PF_CORTES[c.k] = { n: vs.length, q: [0.2, 0.4, 0.6, 0.8].map(p => pf_cuantil(vs, p)) };
+  });
+  return PF_CORTES;
+}
+function pf_niveles(filas) {
+  const cortes = pf_cortes(), out = {};
+  PF_META.cols.forEach(c => {
+    const q = cortes[c.k].q;
+    if (!q.length || q[0] === null) return;
+    filas.forEach(f => {
+      const celda = f.celdas[c.k];
+      if (!celda) return;
+      let k = 0;
+      while (k < q.length && celda.v >= q[k]) k++;   // 0 = bajo … 4 = alto
       // Si el indicador apunta al revés (más = mejor), el nivel se invierte para
       // que "alto" signifique siempre lo mismo en la lectura del perfil.
-      const q = c.peorEsMas ? p : (1 - p);
-      out[pf_key(x.id, c.k)] = Math.min(4, Math.floor(q * 5));
+      out[pf_key(f.id, c.k)] = c.peorEsMas ? k : 4 - k;
     });
   });
   return out;
