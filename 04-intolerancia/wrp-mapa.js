@@ -276,7 +276,8 @@ function vm_drawLegend(svg, breaks) {
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const big = !!editorFormat || vm_isMobile();
   const sw = big ? 26 : 18, sh = big ? 15 : 11, fs = big ? 21 : 11.5;
-  const x0 = big ? 20 : 18, y0 = VM_H - (big ? 150 : 118);
+  const x0 = big ? 20 : 18;
+  const vm_gapFila = big ? 8 : 5, vm_gapNd = big ? 6 : 4, vm_margenAbajo = big ? 12 : 8;
   // etiquetas adaptativas: "<b1", "b1–b2", ..., "≥bN"
   const labels = [];
   for (let i = 0; i <= breaks.length; i++) {
@@ -291,6 +292,16 @@ function vm_drawLegend(svg, breaks) {
       labels.push((breaks[i - 1] < 0 || breaks[i] < 0) ? (a + ' – ' + b) : (a + '–' + b));
     }
   }
+  // El alto del bloque se CALCULA, no se estima. Con `big` —cualquier formato
+  // de PNG— el `VM_H - 150` fijo dejaba la fila "Sin dato" 15 px POR DEBAJO del
+  // viewBox, así que salía cortada en los cinco formatos (en pantalla entraba
+  // por 4 px y por eso no se veía). Se cuentan las filas reales, las de color
+  // más la de "Sin dato", y esa última se mide por su TEXTO, que baja más que
+  // su cuadradito. En pantalla da 439 contra los 442 de antes: sin cambio
+  // visible. Va acá abajo y no arriba porque necesita `labels` ya armado.
+  const vm_altoLeyenda = labels.length * (sh + vm_gapFila) + vm_gapNd + Math.max(sh, fs * 1.1);
+  const y0 = VM_H - vm_altoLeyenda - vm_margenAbajo;
+
   const g = vm_ns('g'); svg.appendChild(g);
   const title = vm_ns('text');
   title.setAttribute('x', x0); title.setAttribute('y', y0 - (big ? 12 : 8));
@@ -299,14 +310,14 @@ function vm_drawLegend(svg, breaks) {
   title.textContent = (typeof t === 'function') ? t('c25-legend-title') : '% que lo rechaza';
   g.appendChild(title);
   labels.forEach((lab, i) => {
-    const y = y0 + i * (sh + (big ? 8 : 5));
+    const y = y0 + i * (sh + vm_gapFila);
     const r = vm_ns('rect'); r.setAttribute('x', x0); r.setAttribute('y', y); r.setAttribute('width', sw); r.setAttribute('height', sh);
     r.setAttribute('fill', vm_ramp()[Math.min(i, VM_COLORS.length - 1)]); r.setAttribute('stroke', 'rgba(0,0,0,0.12)'); r.setAttribute('stroke-width', 0.5); g.appendChild(r);
     const tx = vm_ns('text'); tx.setAttribute('x', x0 + sw + (big ? 10 : 7)); tx.setAttribute('y', y + sh * 0.82);
     tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif'); tx.style.fontSize = fs + 'px';
     tx.setAttribute('fill', '#3A3530'); tx.setAttribute('font-variant-numeric', 'tabular-nums'); tx.textContent = lab; g.appendChild(tx);
   });
-  const ny = y0 + labels.length * (sh + (big ? 8 : 5)) + (big ? 6 : 4);
+  const ny = y0 + labels.length * (sh + vm_gapFila) + vm_gapNd;
   const nr = vm_ns('rect'); nr.setAttribute('x', x0); nr.setAttribute('y', ny); nr.setAttribute('width', sw); nr.setAttribute('height', sh);
   nr.setAttribute('fill', VM_NODATA); nr.setAttribute('stroke', 'rgba(0,0,0,0.12)'); nr.setAttribute('stroke-width', 0.5); g.appendChild(nr);
   const nt = vm_ns('text'); nt.setAttribute('x', x0 + sw + (big ? 10 : 7)); nt.setAttribute('y', ny + sh * 0.82);
@@ -500,8 +511,4 @@ function initVdemMapa() {
   window.__atlasDefaultPngFormat = 'worldmap';
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initVdemMapa._wired) { initVdemMapa._wired = true; window.addEventListener('atlas-editor-change', () => drawVdemMapa()); }
-  window.onBeforePngExportGetSourceText = function (chartId) {
-    if (chartId !== '25') return null;
-    return (typeof t === 'function') ? t('c25-sources') : null;
-  };
 }

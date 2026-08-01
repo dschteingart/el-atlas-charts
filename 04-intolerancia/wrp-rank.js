@@ -1426,16 +1426,9 @@ function initVdemRank() {
   window.__atlasSupportsFormats = true;
   window.__atlasRedraw = drawVdemRank;
 
-  // Nota "Datos" corta del PNG, con el rango de años realmente mostrado.
-  window.onBeforePngExportGetSourceText = function(chartId) {
-    if (chartId !== '24') return null;
-    const tpl = (typeof t === 'function') ? t('c24-sources-tpl') : '';
-    if (!tpl) return null;
-    const data = vr_computeData();
-    const years = data.map(d => d.year);
-    const y = years.length ? Math.min(...years) + '-' + Math.max(...years) : '2017-2023';
-    return tpl.replace('{Y}', y);
-  };
+  // La nota "Datos" del PNG la pone wrp-adapter.js para las dos vistas: acá
+  // pisaba la del mapa (el hook es un global) y encima cada vista terminaba con
+  // una nota distinta.
 
   // Marimekko: los textos de la tabla regional van al canvas (las webfonts
   // no resuelven bien dentro del <img> SVG rasterizado — port del N°2).

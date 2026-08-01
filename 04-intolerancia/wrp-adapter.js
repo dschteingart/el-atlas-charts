@@ -62,3 +62,26 @@ function vd_dec() { return 1; }
 // Van mas cortos que los valores puntuales: un eje no necesita precision,
 // necesita leerse de un vistazo.
 function vd_decEje() { return 0; }
+
+// ---------------------------------------------------------------------------
+//  Notas del PNG — para las DOS vistas, desde un solo lugar
+// ---------------------------------------------------------------------------
+// onBeforePngExportGetSourceText es UN global, y ranking y mapa viven en la
+// misma pagina: cada motor lo seteaba en su init y el segundo en arrancar
+// pisaba al primero, asi que la vista que se inicializaba antes se quedaba sin
+// su nota corta. Encima el del mapa devolvia 'c25-sources' —la nota larga del
+// HTML, 8 renglones en el PNG— en vez de 'c25-sources-tpl'. Va uno solo aca,
+// que atiende a los dos chartIds y sale del mismo par de strings.
+window.onBeforePngExportGetSourceText = function (chartId) {
+  var k = String(chartId) === '24' ? 'c24-sources-tpl'
+        : String(chartId) === '25' ? 'c25-sources-tpl' : null;
+  return (k && typeof t === 'function') ? t(k) : null;
+};
+
+// Misma caja de nota que el chart 26: mas ancha (hasta donde arranca la firma,
+// que se mide como se dibuja y no como una linea) y un punto mas chica. En el
+// mapa cada renglon de nota le come 24 px de alto al gráfico.
+window.onBeforePngExportGetSourceLayout = function (chartId) {
+  var c = String(chartId);
+  return (c === '24' || c === '25') ? { ratio: 0.82, escala: 0.89 } : null;
+};

@@ -16,7 +16,7 @@
 
     'c24-title': 'Discriminación vivida por color de piel',
     'c24-title-neutral': 'Discriminación vivida por color de piel',
-    'c24-subtitle-tpl': 'Porcentaje que dice haber sufrido alguna vez discriminación por el color de su piel. World Risk Poll, {PERIODO}.',
+    'c24-subtitle-tpl':     'Porcentaje que dice haber sufrido alguna vez discriminación por el color de su piel, en {PERIODO}.',
     'c24-cat-label': 'Indicador',
     'c24-view-label': 'Mostrar',
     'c24-view-sel': 'Mi selección',
@@ -42,20 +42,20 @@
     'c24-tt-n': 'Países con dato',
     'c24-tt-rank': 'Puesto mundial',
     'c24-rank-tpl': '{R}° de {N}',
-    'c24-sources': 'Datos: World Risk Poll 2023 (Lloyd\u2019s Register Foundation / Gallup), 138 países, CC BY 4.0. Pregunta: si la persona sufrió ALGUNA VEZ discriminación por el color de su piel (sí/no/no corresponde/NS/NC), ponderado por el factor de expansión de la encuesta. Es experiencia propia declarada y de por vida, no una opinión sobre terceros: que poca gente lo declare no prueba que el país sea menos racista — puede ser más homogéneo, o tener menos conciencia del problema. La mediana, el promedio y la tabla regional se calculan sobre los 138 países del gráfico, agrupados en diez grandes regiones geográficas (Kosovo queda afuera porque no tiene región asignada).',
-    'c24-sources-tpl': 'Datos: World Risk Poll 2023 (Lloyd\u2019s Register Foundation / Gallup), 138 países. % que dice haber sufrido alguna vez discriminación por el color de su piel. Es experiencia propia declarada, no una opinión sobre terceros.',
+    'c24-sources':          'Datos: World Risk Poll 2023 (Lloyd’s Register Foundation / Gallup), 138 países. Porcentaje que dice haber sufrido alguna vez discriminación por el color de su piel, ponderado por el factor de expansión de la encuesta. Es experiencia propia y de por vida, no una opinión sobre terceros: que poca gente la declare no prueba que el país sea menos racista.',
+    'c24-sources-tpl':      'Datos: World Risk Poll 2023 (Lloyd’s Register Foundation / Gallup), 138 países. % que dice haber sufrido alguna vez discriminación por el color de su piel. Es experiencia propia declarada, no una opinión sobre terceros.',
 
     'c25-title': 'El mapa de la discriminación vivida',
     'c25-title-neutral': 'Discriminación vivida por color de piel en el mundo',
-    'c25-subtitle-tpl': 'Porcentaje que dice haber sufrido alguna vez discriminación por el color de su piel. World Risk Poll, {PERIODO}. El tono más oscuro marca el valor más alto.',
+    'c25-subtitle-tpl':     'Porcentaje que dice haber sufrido alguna vez discriminación por el color de su piel, en {PERIODO}.',
     'c25-legend-title': '% que la sufrió',
     'c25-legend-nodata': 'Sin dato',
     'c25-tt-value': '% que la sufrió',
     'c25-tt-year': 'Año',
     'c25-tt-nodata': 'Sin dato',
     'c25-tt-trend': 'Trayectoria',
-    'c25-sources': 'Datos: World Risk Poll 2023 (Lloyd\u2019s Register Foundation / Gallup), 138 países, CC BY 4.0. Pregunta: si la persona sufrió ALGUNA VEZ discriminación por el color de su piel (sí/no/no corresponde/NS/NC), ponderado por el factor de expansión de la encuesta. Es experiencia propia declarada y de por vida, no una opinión sobre terceros: que poca gente lo declare no prueba que el país sea menos racista — puede ser más homogéneo, o tener menos conciencia del problema. La mediana, el promedio y la tabla regional se calculan sobre los 138 países del gráfico, agrupados en diez grandes regiones geográficas (Kosovo queda afuera porque no tiene región asignada).',
-    'c25-sources-tpl': 'Datos: World Risk Poll 2023 (Lloyd\u2019s Register Foundation / Gallup), 138 países. % que dice haber sufrido alguna vez discriminación por el color de su piel.'
+    'c25-sources':          'Datos: World Risk Poll 2023 (Lloyd’s Register Foundation / Gallup), 138 países. Porcentaje que dice haber sufrido alguna vez discriminación por el color de su piel, ponderado por el factor de expansión de la encuesta. Es experiencia propia y de por vida, no una opinión sobre terceros: que poca gente la declare no prueba que el país sea menos racista.',
+    'c25-sources-tpl':      'Datos: World Risk Poll 2023 (Lloyd’s Register Foundation / Gallup), 138 países. % que dice haber sufrido alguna vez discriminación por el color de su piel. Es experiencia propia declarada, no una opinión sobre terceros.',
   });
   Object.assign(I18N.en, {
     'g-eyebrow': 'Experienced discrimination',
@@ -66,7 +66,7 @@
 
     'c24-title': 'Experienced discrimination over skin colour',
     'c24-title-neutral': 'Experienced discrimination over skin colour',
-    'c24-subtitle-tpl': 'Share who say they have ever experienced discrimination because of the colour of their skin. World Risk Poll, {PERIODO}.',
+    'c24-subtitle-tpl':     'Share who say they have ever experienced discrimination because of the colour of their skin, in {PERIODO}.',
     'c24-cat-label': 'Indicator',
     'c24-view-label': 'Show',
     'c24-view-sel': 'My selection',
@@ -92,19 +92,19 @@
     'c24-tt-n': 'Countries with data',
     'c24-tt-rank': 'World rank',
     'c24-rank-tpl': '#{R} of {N}',
-    'c24-sources': 'Data: World Risk Poll 2023 (Lloyd\u2019s Register Foundation / Gallup), 138 countries, CC BY 4.0. Question: whether the respondent has EVER experienced discrimination because of the colour of their skin (yes/no/does not apply/DK/refused), weighted with the survey\u2019s expansion factor. It is first-person, lifetime experience, not an opinion about others: fewer people reporting it does not prove a country is less racist — it may be more homogeneous, or less aware of the problem. The median, the mean and the regional table are computed over the 138 countries shown, grouped into ten broad geographical regions (Kosovo is left out because it has no region assigned).',
-    'c24-sources-tpl': 'Data: World Risk Poll 2023 (Lloyd\u2019s Register Foundation / Gallup), 138 countries. Share who say they have ever experienced discrimination because of the colour of their skin. First-person, self-reported experience, not an opinion about others.',
+    'c24-sources':          'Data: World Risk Poll 2023 (Lloyd’s Register Foundation / Gallup), 138 countries. Share who say they have ever experienced discrimination because of the colour of their skin, weighted with the survey’s expansion factor. It is first-person, lifetime experience, not an opinion about others: fewer people reporting it does not prove a country is less racist.',
+    'c24-sources-tpl':      'Data: World Risk Poll 2023 (Lloyd’s Register Foundation / Gallup), 138 countries. Share who say they have ever experienced discrimination because of the colour of their skin. First-person, self-reported experience, not an opinion about others.',
 
     'c25-title': 'The map of experienced discrimination',
     'c25-title-neutral': 'Experienced discrimination over skin colour worldwide',
-    'c25-subtitle-tpl': 'Share who say they have ever experienced discrimination because of the colour of their skin. World Risk Poll, {PERIODO}. The darkest shade marks the highest value.',
+    'c25-subtitle-tpl':     'Share who say they have ever experienced discrimination because of the colour of their skin, in {PERIODO}.',
     'c25-legend-title': '% who experienced it',
     'c25-legend-nodata': 'No data',
     'c25-tt-value': '% who experienced it',
     'c25-tt-year': 'Year',
     'c25-tt-nodata': 'No data',
     'c25-tt-trend': 'Trend',
-    'c25-sources': 'Data: World Risk Poll 2023 (Lloyd\u2019s Register Foundation / Gallup), 138 countries, CC BY 4.0. Question: whether the respondent has EVER experienced discrimination because of the colour of their skin (yes/no/does not apply/DK/refused), weighted with the survey\u2019s expansion factor. It is first-person, lifetime experience, not an opinion about others: fewer people reporting it does not prove a country is less racist — it may be more homogeneous, or less aware of the problem. The median, the mean and the regional table are computed over the 138 countries shown, grouped into ten broad geographical regions (Kosovo is left out because it has no region assigned).',
-    'c25-sources-tpl': 'Data: World Risk Poll 2023 (Lloyd\u2019s Register Foundation / Gallup), 138 countries. Share who say they have ever experienced discrimination because of the colour of their skin.'
+    'c25-sources':          'Data: World Risk Poll 2023 (Lloyd’s Register Foundation / Gallup), 138 countries. Share who say they have ever experienced discrimination because of the colour of their skin, weighted with the survey’s expansion factor. It is first-person, lifetime experience, not an opinion about others: fewer people reporting it does not prove a country is less racist.',
+    'c25-sources-tpl':      'Data: World Risk Poll 2023 (Lloyd’s Register Foundation / Gallup), 138 countries. Share who say they have ever experienced discrimination because of the colour of their skin. First-person, self-reported experience, not an opinion about others.',
   });
 })();
