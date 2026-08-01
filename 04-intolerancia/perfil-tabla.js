@@ -95,20 +95,23 @@ function pf_filas() {
 }
 
 // ---------------------------------------------------------------------------
-//  Niveles: cortes FIJOS, los quintiles de la distribución de países
+//  Niveles: una escala por vista, y ninguna depende de lo que se muestre
 // ---------------------------------------------------------------------------
-// Antes el percentil se calculaba entre las filas MOSTRADAS, y eso tenía dos
-// problemas (reporte de Daniel 2026-08-01):
-//   1. Con 10 países elegidos el reparto salía siempre 2 de cada nivel por
-//      columna, sin importar los valores: el color era un ranking interno de la
-//      selección disfrazado de nivel. Si elegías los 10 países más racistas del
-//      mundo, dos igual salían "bajo".
-//   2. El nivel cambiaba al agregar o sacar países —34 de 50 celdas de la
-//      selección por default— y las dos vistas medían con varas distintas: el
-//      mismo valor podía dar "bajo" en regiones y "medio" en países.
-// Ahora los cortes se calculan UNA vez sobre todos los países con dato de cada
-// columna y no dependen de lo que se muestre. Un mismo valor cae siempre en el
-// mismo nivel, se mire regiones o países.
+// PAÍSES → cortes FIJOS: los quintiles de la distribución de todos los países
+// con dato en esa columna. Antes el percentil se calculaba entre las filas
+// mostradas y eso tenía dos problemas (reporte de Daniel 2026-08-01): con 10
+// países elegidos el reparto salía siempre 2 de cada nivel por columna, sin
+// importar los valores —el color era un ranking interno de la selección
+// disfrazado de nivel—, y el nivel de un país cambiaba al agregar o sacar
+// otros (34 de 50 celdas de la selección por default).
+//
+// REGIONES → percentil entre las NUEVE regiones, que es lo que había. Se probó
+// medirlas con la vara de países y no sirve: son promedios, así que se juntan
+// cerca de la mediana mundial y la tabla queda casi toda en "medio" (en Gini,
+// cinco de nueve). Acá el universo son las nueve y siempre se muestran las
+// nueve, así que el percentil ya es estable: no depende de la selección porque
+// no hay selección. La contrapartida —que el nivel es ranking entre regiones y
+// no posición mundial— la dicen la leyenda y la nota de esta vista.
 let PF_CORTES = null;
 function pf_cuantil(ordenados, p) {
   if (!ordenados.length) return null;
@@ -126,18 +129,32 @@ function pf_cortes() {
   return PF_CORTES;
 }
 function pf_niveles(filas) {
-  const cortes = pf_cortes(), out = {};
+  // El nivel se invierte cuando el indicador apunta al revés (más = mejor),
+  // para que "alto" signifique siempre lo mismo en la lectura del perfil.
+  const out = {};
+  if (state[26].vista === 'paises') {
+    const cortes = pf_cortes();
+    PF_META.cols.forEach(c => {
+      const q = cortes[c.k].q;
+      if (!q.length || q[0] === null) return;
+      filas.forEach(f => {
+        const celda = f.celdas[c.k];
+        if (!celda) return;
+        let k = 0;
+        while (k < q.length && celda.v >= q[k]) k++;   // 0 = bajo … 4 = alto
+        out[pf_key(f.id, c.k)] = c.peorEsMas ? k : 4 - k;
+      });
+    });
+    return out;
+  }
   PF_META.cols.forEach(c => {
-    const q = cortes[c.k].q;
-    if (!q.length || q[0] === null) return;
-    filas.forEach(f => {
-      const celda = f.celdas[c.k];
-      if (!celda) return;
-      let k = 0;
-      while (k < q.length && celda.v >= q[k]) k++;   // 0 = bajo … 4 = alto
-      // Si el indicador apunta al revés (más = mejor), el nivel se invierte para
-      // que "alto" signifique siempre lo mismo en la lectura del perfil.
-      out[pf_key(f.id, c.k)] = c.peorEsMas ? k : 4 - k;
+    const vs = filas.filter(f => f.celdas[c.k]).map(f => ({ id: f.id, v: f.celdas[c.k].v }));
+    vs.sort((a, b) => a.v - b.v);
+    const n = vs.length;
+    vs.forEach((x, i) => {
+      const p = n > 1 ? (i + 0.5) / n : 0.5;
+      const q = c.peorEsMas ? p : (1 - p);
+      out[pf_key(x.id, c.k)] = Math.min(4, Math.floor(q * 5));
     });
   });
   return out;
@@ -348,7 +365,9 @@ function pf_leyenda(svg, M, W, y, S, big) {
   tit.setAttribute('x', x0); tit.setAttribute('y', y - (big ? 9 : 7));
   tit.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
   tit.style.fontSize = S.n + 'px'; tit.setAttribute('fill', PF_SOFT); tit.setAttribute('font-weight', 600);
-  tit.textContent = pf_t('c26-legend');
+  // La escala no es la misma en las dos vistas (ver pf_niveles), así que la
+  // leyenda tiene que decir contra qué se compara en cada una.
+  tit.textContent = pf_t(state[26].vista === 'paises' ? 'c26-legend-paises' : 'c26-legend-reg');
   svg.appendChild(tit);
   PF_NIVELES.forEach((nv, i) => {
     const sw = pf_ns('rect');
