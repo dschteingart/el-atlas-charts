@@ -12,7 +12,7 @@ const ISSUE_I18N = {
   es: {
     'issue-num':  'N°4',
     'page-title': '¿El país más racista del mundo?',
-    'page-lede':  '¿Se puede comparar el racismo entre países? Seis gráficos: lo que la gente declara, lo que ve y vive, lo que hacen los Estados y el perfil que queda.',
+    'page-lede':  '¿Se puede comparar el racismo entre países? Siete gráficos: lo que la gente declara, lo que ve y vive, lo que hacen los Estados y el perfil que queda.',
 
     // ---- Chart 1: ranking por categoría (barras)
     // Titulo editorial: vale SOLO en el estado por default (categoria = otra
@@ -160,6 +160,7 @@ const ISSUE_I18N = {
     'c19-card-title':    'Rechazo declarado y racismo observado en el barrio',
     'c12-card-title':    'El grupo considerado más discriminado en cada país de América Latina',
     'gvd-card-title':    'Exclusión por grupo social: ranking, mapa y evolución',
+    'gwrp-card-title':   'Discriminación vivida por color de piel: ranking y mapa',
     // Títulos neutrales de los charts 7-12 (para las tarjetas del index; cada
     // chart además los define en su propio i18n-<slug>.js).
     'c7-title-neutral':  'Quién tiene prioridad cuando escasea el trabajo',
@@ -175,7 +176,7 @@ const ISSUE_I18N = {
   en: {
     'issue-num':  'No. 4',
     'page-title': 'The most racist country in the world?',
-    'page-lede':  'Can racism be compared across countries? Six charts: what people declare, what they see and experience, what states do and the profile that emerges.',
+    'page-lede':  'Can racism be compared across countries? Seven charts: what people declare, what they see and experience, what states do and the profile that emerges.',
 
     'c1-title':          'Latin America reports less rejection of neighbours of another race than the rest of the world',
     'c1-title-neutral':  'The neighbours each society rejects',
@@ -305,6 +306,7 @@ const ISSUE_I18N = {
     'c19-card-title':    'Declared rejection and racism seen in the neighbourhood',
     'c12-card-title':    'The group seen as most discriminated against in each Latin American country',
     'gvd-card-title':    'Exclusion by social group: ranking, map and trend',
+    'gwrp-card-title':   'Experienced discrimination over skin colour: ranking and map',
     // Neutral titles for charts 7-12 (index cards; each chart also defines them
     // in its own i18n-<slug>.js).
     'c7-title-neutral':  'Who gets priority when jobs are scarce',

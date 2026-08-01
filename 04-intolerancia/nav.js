@@ -19,7 +19,8 @@
     'chart-correlaciones.html',
     'chart-quien.html',
     'chart-vdem.html',
-    'chart-perfil.html'
+    'chart-perfil.html',
+    'chart-wrp.html'
   ];
   const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
   const T = {

@@ -269,6 +269,13 @@
           "tipo": "tabla resumen (regiones / países)",
           "tema": "las cinco lentes del número en una tabla: rechazo declarado, racismo visto en el barrio, discriminación vivida, exclusión institucional y Gini; el color marca la posición dentro de cada columna",
           "motor": "perfil-tabla.js sobre data-perfil.js (tools/make_perfil.py)"
+        },
+        {
+          "archivo": "chart-wrp.html",
+          "tipo": "graficador (ranking/marimekko + mapa)",
+          "tema": "discriminación vivida por color de piel (World Risk Poll 2023, 138 países): experiencia propia declarada y de por vida, no opinión sobre terceros",
+          "motor": "lib/grapher.js + clones de vdem-rank.js y vdem-mapa.js",
+          "formatoPng": "worldmap"
         }
       ]
     }
