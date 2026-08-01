@@ -1181,7 +1181,7 @@ function setupRankingRefsStat() {
   if (!box) return;
   const sync = () => {
     box.querySelectorAll('button[data-stat]').forEach(b => {
-      b.classList.toggle('active', b.getAttribute('data-stat') === (state[1].stat || 'median'));
+      b.classList.toggle('active', b.getAttribute('data-stat') === (state[1].stat || 'mean'));
     });
     const grp = box.closest('.m-ctrl-group') || box;
     const hay = (state[1].showMedian !== false) || (state[1].showTable !== false);
@@ -1377,6 +1377,7 @@ function initRanking() {
       view: 'sel',
       wave: lastWave,            // default = ola más reciente (== "último dato >=2017")
       selected: [...RK_DEFAULT_SELECTED],
+      stat: 'mean',              // promedio, no mediana (pedido de Daniel 2026-07-31)
       showMedian: true,
       showTable: true,
       hiddenRegions: [],
