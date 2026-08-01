@@ -9,21 +9,17 @@
 // Autocontenido: lee el idioma del global LANG (fallback a <html lang>), y se
 // re-renderiza al togglear idioma. No depende de i18n-issue.js.
 (function () {
-  // Orden de los gráficos del N°4 (= orden del index). Se amplía a medida
-  // que se agregan charts.
+  // Los SEIS gráficos que publica el número, en el orden del index. Los demás
+  // charts del N°4 siguen en la carpeta y andan si se entra por URL, pero no
+  // se linkean: si estuvieran acá, el "Gráfico 4 / 12" y las flechas mandarían
+  // al lector a páginas que el índice no lista.
   const CHARTS = [
     'chart-vecinos.html',              // graficador: absorbe ranking + evolución + mapa + perfil
-    'chart-latinobarometro.html',
-    'chart-prioridad.html',
-    'chart-barrio.html',
-    'chart-migrantes.html',
-    'chart-discriminado.html',
-    'chart-quien.html',
     'chart-desarrollo.html',
     'chart-correlaciones.html',
-    'chart-vdem-scatter.html',
+    'chart-quien.html',
     'chart-vdem.html',
-    'chart-wrp.html'
+    'chart-perfil.html'
   ];
   const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
   const T = {

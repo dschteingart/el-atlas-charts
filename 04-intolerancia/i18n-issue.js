@@ -147,9 +147,13 @@ const ISSUE_I18N = {
     'footer-download-png': 'Descargar PNG',
     'index-see':           'Ver gráfico →',
     'index-charts-label':  'Gráficos interactivos',
+    'index-chart-word':    'Gráfico',
 
-    // Tarjeta del graficador de la batería de vecinos (index).
+    // Tarjetas de los dos graficadores (index). El de exclusión faltaba: la
+    // tarjeta tenía el data-i18n pero la clave no existía en ningún idioma, así
+    // que en inglés se quedaba con el texto castellano del HTML.
     'gv-card-title':     'La batería de vecinos: ranking, mapa, evolución y perfil',
+    'gvd-card-title':    'La exclusión social en el mundo: comparación, mapa y evolución',
     // Títulos neutrales de los charts 7-12 (para las tarjetas del index; cada
     // chart además los define en su propio i18n-<slug>.js).
     'c7-title-neutral':  'Quién tiene prioridad cuando escasea el trabajo',
@@ -287,9 +291,11 @@ const ISSUE_I18N = {
     'footer-download-png': 'Download PNG',
     'index-see':           'See chart →',
     'index-charts-label':  'Interactive charts',
+    'index-chart-word':    'Chart',
 
     // Neighbours-battery grapher card (index).
     'gv-card-title':     'The neighbours battery: ranking, map, trend and profile',
+    'gvd-card-title':    'Social exclusion around the world: comparison, map and trend',
     // Neutral titles for charts 7-12 (index cards; each chart also defines them
     // in its own i18n-<slug>.js).
     'c7-title-neutral':  'Who gets priority when jobs are scarce',
