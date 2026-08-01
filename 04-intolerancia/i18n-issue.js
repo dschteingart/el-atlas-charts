@@ -12,7 +12,7 @@ const ISSUE_I18N = {
   es: {
     'issue-num':  'N°4',
     'page-title': '¿El país más racista del mundo?',
-    'page-lede':  'Qué declaran las encuestas sobre la intolerancia en Argentina, América Latina y el mundo.',
+    'page-lede':  '¿Se puede comparar el racismo entre países? Seis gráficos: lo que la gente declara, lo que ve y vive, lo que hacen los Estados y el perfil que queda.',
 
     // ---- Chart 1: ranking por categoría (barras)
     // Titulo editorial: vale SOLO en el estado por default (categoria = otra
@@ -175,7 +175,7 @@ const ISSUE_I18N = {
   en: {
     'issue-num':  'No. 4',
     'page-title': 'The most racist country in the world?',
-    'page-lede':  'What surveys say about intolerance in Argentina, Latin America and the world.',
+    'page-lede':  'Can racism be compared across countries? Six charts: what people declare, what they see and experience, what states do and the profile that emerges.',
 
     'c1-title':          'Latin America reports less rejection of neighbours of another race than the rest of the world',
     'c1-title-neutral':  'The neighbours each society rejects',
