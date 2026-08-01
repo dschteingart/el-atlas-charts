@@ -33,7 +33,6 @@ const RK_MARGIN_MOBILE  = { top: 34, right: 60, bottom: 56, left: 110 };
 // que ya usaba rk_regionColor de fallback.
 const RK_BAR_COLOR = '#5E7E96';
 
-const RK_LATAM_REGIONS = new Set(['Latin America', 'Caribbean']);
 // 13 LatAm con dato 2017+ más referencias de cada región del mundo.
 // Set curado inicial (WYSIWYG: son los chips = las etiquetas). La tesis
 // rioplatense + spread LatAm + referencias globales. ~17 entra limpio en el
@@ -98,7 +97,6 @@ function rk_regionLabelColor(reg) {
   return (typeof REGION_LABEL_COLORS !== 'undefined' && REGION_LABEL_COLORS[reg]) || '#555';
 }
 
-function rk_isLatam(iso) { return RK_LATAM_REGIONS.has(VE_REGION[iso]); }
 
 function rk_hidden() { return new Set(state[1].hiddenRegions || []); }
 
@@ -339,7 +337,6 @@ function rk_drawBars() {
   const barsG = rk_ns('g'); svg.appendChild(barsG);
   data.forEach((d, i) => {
     const y = RK_MARGIN.top + i * (RK_BAR_H + RK_BAR_GAP);
-    const latam = rk_isLatam(d.iso);
     const color = RK_BAR_COLOR;
     const barW = xScale(d.pct) - RK_MARGIN.left;
     const dimmed = activeRegion && d.region !== activeRegion;
@@ -351,8 +348,12 @@ function rk_drawBars() {
     nameTxt.setAttribute('dominant-baseline', 'central');
     nameTxt.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
     nameTxt.style.fontSize = SIZES.name + 'px';
-    nameTxt.setAttribute('font-weight', latam ? 600 : 500);
-    nameTxt.setAttribute('fill', latam ? '#8B4220' : '#3A3530');
+    // Todos los nombres iguales: si las barras son de un solo color, destacar a
+    // los latinoamericanos en terracota y negrita deja un realce sin explicación
+    // (Daniel 2026-08-01). Quien quiera aislar una región tiene los chips de
+    // #rk-legend, que atenúan al pasar el mouse y ocultan al hacer clic.
+    nameTxt.setAttribute('font-weight', 500);
+    nameTxt.setAttribute('fill', '#3A3530');
     nameTxt.textContent = rk_displayName(d.iso);
     barsG.appendChild(nameTxt);
 
