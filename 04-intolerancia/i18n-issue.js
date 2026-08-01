@@ -149,11 +149,17 @@ const ISSUE_I18N = {
     'index-charts-label':  'Gráficos interactivos',
     'index-chart-word':    'Gráfico',
 
-    // Tarjetas de los dos graficadores (index). El de exclusión faltaba: la
-    // tarjeta tenía el data-i18n pero la clave no existía en ningún idioma, así
-    // que en inglés se quedaba con el texto castellano del HTML.
-    'gv-card-title':     'La batería de vecinos: ranking, mapa, evolución y perfil',
-    'gvd-card-title':    'La exclusión social en el mundo: comparación, mapa y evolución',
+    // Tarjetas del index, claves PROPIAS (aprobadas por Daniel 2026-08-01).
+    // Criterio: cada título dice qué se mide, con el vocabulario de la nota
+    // ("rechazo a vecinos", "exclusión por grupo social"), para que el índice
+    // se entienda sin haberla leído. NO reusar los c*-title-neutral de los
+    // charts: esos son el estado "customizado" del gráfico y tienen que poder
+    // cambiar sin arrastrar al índice.
+    'gv-card-title':     '¿A quién no querrías de vecino? Ranking, mapa, evolución y perfil',
+    'c18-card-title':    'PIB per cápita y rechazo a vecinos diferentes',
+    'c19-card-title':    'Rechazo declarado y racismo observado en el barrio',
+    'c12-card-title':    'El grupo considerado más discriminado en cada país de América Latina',
+    'gvd-card-title':    'Exclusión por grupo social: ranking, mapa y evolución',
     // Títulos neutrales de los charts 7-12 (para las tarjetas del index; cada
     // chart además los define en su propio i18n-<slug>.js).
     'c7-title-neutral':  'Quién tiene prioridad cuando escasea el trabajo',
@@ -293,9 +299,12 @@ const ISSUE_I18N = {
     'index-charts-label':  'Interactive charts',
     'index-chart-word':    'Chart',
 
-    // Neighbours-battery grapher card (index).
-    'gv-card-title':     'The neighbours battery: ranking, map, trend and profile',
-    'gvd-card-title':    'Social exclusion around the world: comparison, map and trend',
+    // Index cards, own keys — see the ES block for the naming rule.
+    'gv-card-title':     'Who wouldn’t you want as a neighbour? Ranking, map, trend and profile',
+    'c18-card-title':    'GDP per capita and rejection of “different” neighbours',
+    'c19-card-title':    'Declared rejection and racism seen in the neighbourhood',
+    'c12-card-title':    'The group seen as most discriminated against in each Latin American country',
+    'gvd-card-title':    'Exclusion by social group: ranking, map and trend',
     // Neutral titles for charts 7-12 (index cards; each chart also defines them
     // in its own i18n-<slug>.js).
     'c7-title-neutral':  'Who gets priority when jobs are scarce',
