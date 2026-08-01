@@ -23,6 +23,16 @@
 const RK_MARGIN_DESKTOP = { top: 34, right: 88, bottom: 48, left: 132 };
 const RK_MARGIN_MOBILE  = { top: 34, right: 60, bottom: 56, left: 110 };
 
+// Color único de las barras del ranking. Antes se pintaban por región, y eso
+// obligaba a una leyenda que sólo existía en el PNG —en pantalla nunca se
+// dibujó— y que además caía en dos filas cuando en el marco entraba una: la
+// segunda salía cortada en los tres formatos (reporte de Daniel 2026-08-01).
+// La región no se pierde: los países latinoamericanos siguen con el nombre en
+// negrita y terracota, que es el destacado editorial del número, y la vista
+// «Todos los países» es la que cuenta la historia regional. Es el mismo azul
+// que ya usaba rk_regionColor de fallback.
+const RK_BAR_COLOR = '#5E7E96';
+
 const RK_LATAM_REGIONS = new Set(['Latin America', 'Caribbean']);
 // 13 LatAm con dato 2017+ más referencias de cada región del mundo.
 // Set curado inicial (WYSIWYG: son los chips = las etiquetas). La tesis
@@ -330,7 +340,7 @@ function rk_drawBars() {
   data.forEach((d, i) => {
     const y = RK_MARGIN.top + i * (RK_BAR_H + RK_BAR_GAP);
     const latam = rk_isLatam(d.iso);
-    const color = rk_regionColor(d.iso);
+    const color = RK_BAR_COLOR;
     const barW = xScale(d.pct) - RK_MARGIN.left;
     const dimmed = activeRegion && d.region !== activeRegion;
 
@@ -419,52 +429,8 @@ function rk_drawBars() {
   zeroLine.setAttribute('stroke-width', 1);
   svg.appendChild(zeroLine);
 
-  if (editorFormat && SIZES.legend > 0) {
-    rk_drawSvgLegend(svg, data, RK_W, RK_MARGIN.top + plotH + (bigFmt ? 96 : 60), SIZES.legend);
-  }
-}
-
-// Leyenda dentro del SVG para el PNG de la vista barras.
-function rk_drawSvgLegend(svg, data, width, yStart, fontSize) {
-  const order = (typeof REGION_ORDER !== 'undefined') ? REGION_ORDER : [];
-  const seen = new Set(data.map(d => VE_REGION[d.iso]).filter(Boolean));
-  const items = order.filter(r => seen.has(r)).map(r => ({
-    label: (typeof t === 'function') ? t('reg.' + r) : r,
-    color: (typeof REGION_COLORS !== 'undefined' && REGION_COLORS[r]) || '#888'
-  }));
-  if (!items.length) return;
-  const dotR = fontSize * 0.32, gapItem = fontSize * 1.15, gapDot = dotR + fontSize * 0.35;
-  const widths = items.map(it => gapDot + rk_measureText(it.label, fontSize, 500) + gapItem);
-  const rows = [];
-  let cur = [], curW = 0;
-  items.forEach((it, i) => {
-    if (curW + widths[i] > width * 0.94 && cur.length) { rows.push(cur); cur = []; curW = 0; }
-    cur.push(i); curW += widths[i];
-  });
-  if (cur.length) rows.push(cur);
-  const rowH = fontSize * 1.6;
-  rows.forEach((row, ri) => {
-    const rowW = row.reduce((acc, i) => acc + widths[i], 0) - gapItem;
-    let x = (width - rowW) / 2;
-    const y = yStart + ri * rowH;
-    row.forEach(i => {
-      const it = items[i];
-      const dot = rk_ns('circle');
-      dot.setAttribute('cx', x + dotR); dot.setAttribute('cy', y);
-      dot.setAttribute('r', dotR); dot.setAttribute('fill', it.color);
-      svg.appendChild(dot);
-      const txt = rk_ns('text');
-      txt.setAttribute('x', x + gapDot); txt.setAttribute('y', y);
-      txt.setAttribute('dominant-baseline', 'central');
-      txt.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-      txt.style.fontSize = fontSize + 'px';
-      txt.setAttribute('font-weight', 500);
-      txt.setAttribute('fill', '#4A4A4A');
-      txt.textContent = it.label;
-      svg.appendChild(txt);
-      x += widths[i];
-    });
-  });
+  // Sin leyenda de regiones: las barras son de un solo color (ver RK_BAR_COLOR).
+  // La que había vivía sólo en el PNG y se cortaba contra el borde del marco.
 }
 
 //==================================================================
