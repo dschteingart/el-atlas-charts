@@ -43,7 +43,7 @@ function mp_name(iso) {
   return iso;
 }
 function mp_isoOf(f) { return f.id || (f.properties && f.properties.iso) || null; }
-function mp_waves() { return (typeof WV_META !== 'undefined') ? WV_META : [{ w: 7, label: '2017-2022' }]; }
+function mp_waves() { return (typeof WV_META !== 'undefined') ? WV_META : [{ w: 7, label: '2017-2023' }]; }
 function mp_waveLabel(w) { const m = mp_waves().find(x => x.w === w); return m ? m.label : '' + w; }
 
 // ---- Proyección Robinson (tabla estándar por 5° de latitud) ----
@@ -151,9 +151,13 @@ function mp_updateSubtitle() {
 
 function drawMapa() {
   const svg = document.getElementById('chart3');
+  // El subtítulo se arma ANTES de la guarda de la geometría: si el mapa todavía
+  // no tiene el mundo cargado, la función salía por return y la bajada se
+  // quedaba con los marcadores crudos a la vista («…a {CAT}. Encuesta de
+  // {PERIODO}»). No depende del dibujo, así que no tiene por qué esperarlo.
+  mp_updateSubtitle();
   if (!svg || !mp_geo) return;
   svg.innerHTML = '';
-  mp_updateSubtitle();
   if (!mp_proj) mp_fit();
   svg.setAttribute('viewBox', `0 0 ${MP_W} ${MP_H}`);
   if (typeof applyFormatWrapper === 'function' && typeof getActivePngFormat === 'function') applyFormatWrapper(svg, getActivePngFormat());
@@ -344,7 +348,7 @@ function setupMapaCSV() {
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
       let csv = '';
       csv += 'iso3,pais,categoria,ola,periodo,pct,anio,n\n';
-      const waves = (typeof WV_META !== 'undefined') ? WV_META : [{ w: 7, label: '2017-2022' }];
+      const waves = (typeof WV_META !== 'undefined') ? WV_META : [{ w: 7, label: '2017-2023' }];
       (typeof VE_CATS !== 'undefined' ? VE_CATS : Object.keys(VE_FOTO)).forEach(cat => {
         waves.forEach(m => {
           const rows = (typeof WV_FOTO !== 'undefined' && WV_FOTO[cat]) ? WV_FOTO[cat][m.w] : null;

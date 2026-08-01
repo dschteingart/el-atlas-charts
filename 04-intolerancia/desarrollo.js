@@ -236,7 +236,7 @@ function dv_esBateria(v) {
   return !!v && DV_GRP_KEY[v.grupo] === 'c18-grp-vecinos';
 }
 // Rango REAL de años de campo de los puntos dibujados. La etiqueta de la ola
-// ("2017-2022") es el nombre nominal del período; el campo de verdad llega
+// ("2017-2023") es el nombre nominal del período; el campo de verdad llega
 // hasta 2023 (India). Mismo helper que rk_rangoAnios en el chart 1.
 function dv_rangoAnios(pts) {
   const ys = (pts || []).map(p => p.year).filter(y => y);

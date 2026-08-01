@@ -64,8 +64,8 @@ function pf_waveRows(cat) {
   return (typeof VE_FOTO !== 'undefined' ? (VE_FOTO[cat] || []) : []).map(r => [r[0], r[1], r[2], r[4]]);
 }
 function pf_waveLabel() {
-  if (typeof WV_META === 'undefined') return '2017-2022';
-  const m = WV_META.find(x => x.w === state[4].wave); return m ? m.label : '2017-2022';
+  if (typeof WV_META === 'undefined') return '2017-2023';
+  const m = WV_META.find(x => x.w === state[4].wave); return m ? m.label : '2017-2023';
 }
 
 // Mediana de un array de números.

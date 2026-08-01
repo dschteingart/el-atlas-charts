@@ -3,7 +3,7 @@
 // =============================================================
 //
 // Dos vistas sobre el mismo dato (% que no querría de vecinos a [categoría],
-// último dato disponible por país 2017-2022, IVS = EVS+WVS):
+// último dato disponible por país 2017-2023, IVS = EVS+WVS):
 //   - 'sel'  : barras horizontales de la selección (motor 03-futbol/talento.js)
 //   - 'all'  : pared marimekko de ~92 países (motor 02-demasiado-desiguales/
 //              marimekko.js: labels rotadas estilo OWID con callouts, tabla de
@@ -140,11 +140,11 @@ function rk_median() {
   return { value: rk_agg(vals), n: vals.length };
 }
 
-// Label del período de la ola activa (ej. "2017-2022").
+// Label del período de la ola activa (ej. "2017-2023").
 function rk_waveLabel() {
-  if (typeof WV_META === 'undefined') return '2017-2022';
+  if (typeof WV_META === 'undefined') return '2017-2023';
   const m = WV_META.find(x => x.w === state[1].wave);
-  return m ? m.label : '2017-2022';
+  return m ? m.label : '2017-2023';
 }
 
 //==================================================================
@@ -165,7 +165,7 @@ function rk_updateSubtitle() {
 }
 
 // Rango REAL de años de campo de la foto que se está mostrando. La etiqueta de
-// la ola ("2017-2022") es el nombre nominal del período; el campo de verdad
+// la ola ("2017-2023") es el nombre nominal del período; el campo de verdad
 // llega hasta 2023 (India). El subtítulo y la nota muestran el rango real y se
 // corrigen solos cuando cambian los datos.
 function rk_rangoAnios() {
@@ -1338,7 +1338,7 @@ function setupRankingDownloadCSV() {
       // Mismas columnas en castellano que las otras tres vistas del graficador
       // (mapa, pelicula, perfil): un mismo lector baja los cuatro archivos.
       csv += 'iso3,pais,region,categoria,ola,periodo,pct,anio,n,evs,wvs\n';
-      const waves = (typeof WV_META !== 'undefined') ? WV_META : [{ w: 7, label: '2017-2022' }];
+      const waves = (typeof WV_META !== 'undefined') ? WV_META : [{ w: 7, label: '2017-2023' }];
       const src = (typeof WV_FOTO !== 'undefined') ? WV_FOTO : null;
       VE_CATS.forEach(cat => {
         waves.forEach(m => {
@@ -1413,7 +1413,7 @@ function initRanking() {
     if (!tpl) return null;
     const data = rk_computeData();
     const years = data.map(d => d.year);
-    const y = years.length ? Math.min(...years) + '-' + Math.max(...years) : '2017-2022';
+    const y = years.length ? Math.min(...years) + '-' + Math.max(...years) : '2017-2023';
     return tpl.replace('{Y}', y);
   };
 

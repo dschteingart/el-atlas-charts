@@ -17,7 +17,7 @@
 //
 // OLA DE LA ENCUESTA: igual que vecinos (ranking.js) y barrio (barrio-comp.js),
 // la comparación se mira POR OLA, con slider (state[14].wave). Mismo tipo de
-// dato ⇒ mismas features. Default: la ola más reciente (7 = 2017-2022). Un país
+// dato ⇒ mismas features. Default: la ola más reciente (7 = 2017-2023). Un país
 // sin dato en la ola activa simplemente no aparece: no se completa ni se
 // interpola nada.
 //
@@ -164,10 +164,10 @@ function pc_median() {
   return { value: pc_agg(vals), n: vals.length };
 }
 
-// Label del período de la ola activa (ej. "2017-2022").
+// Label del período de la ola activa (ej. "2017-2023").
 function pc_waveLabel() {
   const m = PC_WAVES.find(x => x.w === state[14].wave);
-  return m ? m.label : '2017-2022';
+  return m ? m.label : '2017-2023';
 }
 
 // Universo del puesto mundial: países con dato en el indicador/ola activos.
@@ -1389,7 +1389,7 @@ function initPrioridadComp() {
     state[14] = {
       cat: PC_DEFAULT_CAT,        // el INDICADOR (origen | genero)
       view: 'sel',
-      wave: lastWave,             // default = ola más reciente (7 = 2017-2022)
+      wave: lastWave,             // default = ola más reciente (7 = 2017-2023)
       selected: [...PC_DEFAULT_SELECTED],
       showMedian: true,
       showTable: true,

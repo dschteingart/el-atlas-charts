@@ -1,7 +1,7 @@
 // =============================================================
 //  El Atlas N°4 — Chart 2: la película (líneas temporales)
 // =============================================================
-// Evolución del rechazo declarado a cada tipo de vecino, 1981-2022, por país.
+// Evolución del rechazo declarado a cada tipo de vecino, 1981-2023, por país.
 // Chips=selección (WYSIWYG). Default: homosexuales (derrumbe de la homofobia).
 // Patrón de líneas históricas del Atlas (natividad N°3): slider de período,
 // hover por opacidad (sin redibujar → no se tilda), crosshair que SNAPEA al año

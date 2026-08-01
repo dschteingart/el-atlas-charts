@@ -16,8 +16,11 @@ DATA = os.path.join(HERE, "..", "data")
 
 CATS9 = ["otra_raza","inmigrantes","homosexuales","otra_religion","otro_idioma",
          "parejas_no_casadas","sida","bebedores","drogadictos"]
-WAVE_LABEL = {1:"1981-1984", 2:"1989-1993", 3:"1994-1998", 4:"1999-2004",
-              5:"2005-2010", 6:"2010-2014", 7:"2017-2022"}
+# Etiqueta = rango REAL de anios de campo de cada ola, no el nombre nominal
+# del WVS/EVS: la 7 se llama "2017-2022" pero India midio en 2023, y el
+# grafico dibuja 2023. Cuatro de las siete no coincidian (auditoria pedida
+# por Daniel 2026-07-31); estos rangos salen de los datos.
+WAVE_LABEL = {1: "1981-1984", 2: "1989-1993", 3: "1995-1999", 4: "1999-2004", 5: "2004-2009", 6: "2010-2016", 7: "2017-2023"}
 MIN_COUNTRIES = 8   # olas con muy pocos países no valen para un ranking
 
 largo = pd.read_csv(os.path.join(DATA, "ivs_vecinos_largo.csv"))

@@ -55,7 +55,7 @@ const ISSUE_I18N = {
     'c1-tt-n':           'Muestra',
     'c1-axis-x':         '% que menciona al grupo como vecino no deseado',
     'c1-axis-mk':        '% que no lo querría de vecino',
-    'c1-sources':        'Datos: Integrated Values Survey (WVS/EVS, 1981-2022), pregunta «¿A cuáles de estos grupos no le gustaría tener de vecinos?» (mención espontánea). Último dato disponible por país (2017-2023); % ponderado sobre respuestas válidas, muestras de 1.000-2.000 casos. Mide intolerancia <em>declarada</em> ante un encuestador — diferencias de pocos puntos entre países no son informativas (los países medidos por EVS y WVS a la vez difieren hasta 8-13 puntos).',
+    'c1-sources':        'Datos: Integrated Values Survey (WVS/EVS, 1981-2023), pregunta «¿A cuáles de estos grupos no le gustaría tener de vecinos?» (mención espontánea). Último dato disponible por país (2017-2023); % ponderado sobre respuestas válidas, muestras de 1.000-2.000 casos. Mide intolerancia <em>declarada</em> ante un encuestador — diferencias de pocos puntos entre países no son informativas (los países medidos por EVS y WVS a la vez difieren hasta 8-13 puntos).',
     'c1-sources-tpl':    'Datos: Integrated Values Survey (WVS/EVS). Último dato por país, {Y}.',
 
     // Categorías: forma corta (selector) y forma "a ..." (subtítulo)
@@ -77,7 +77,7 @@ const ISSUE_I18N = {
     'c3-title':          'El sur de Sudamérica, entre los más tolerantes del planeta',
     'c3-title-neutral':  'El mapa mundial de la intolerancia declarada',
     'c3-subtitle-tpl':   'Porcentaje que no querría tener de vecinos a {CAT}. Encuesta de {PERIODO}.',
-    'c3-subtitle-png':   'Porcentaje que no querría de vecino a este grupo. Último dato por país, 2017-2022.',
+    'c3-subtitle-png':   'Porcentaje que no querría de vecino a este grupo. Último dato por país, 2017-2023.',
     'c3-legend-title':   '% que lo rechaza',
     'c3-legend-nodata':  'Sin dato',
     'c3-tt-year':        'Medición',
@@ -89,8 +89,8 @@ const ISSUE_I18N = {
     'c2-title':          'El derrumbe de la homofobia latinoamericana',
     'c2-title-neutral':  'La evolución de la intolerancia declarada',
     'c2-period-label':   'Período',
-    'c2-subtitle-tpl':   'Porcentaje que no querría tener de vecinos a {CAT}, a lo largo del tiempo (Integrated Values Survey, 1981-2022).',
-    'c2-sources':        'Datos: Integrated Values Survey (WVS/EVS, 1981-2022), pregunta de vecinos, mención espontánea, % ponderado. Para cada país se muestra una serie coherente (el estudio con más olas) para evitar saltos por diferencias de instrumento entre EVS y WVS. Los datos son olas de encuesta en años irregulares, que además no coinciden entre países: los puntos marcan las mediciones y las líneas sólo las unen, no representan valores anuales. Mide intolerancia declarada.',
+    'c2-subtitle-tpl':   'Porcentaje que no querría tener de vecinos a {CAT}, a lo largo del tiempo (Integrated Values Survey, 1981-2023).',
+    'c2-sources':        'Datos: Integrated Values Survey (WVS/EVS, 1981-2023), pregunta de vecinos, mención espontánea, % ponderado. Para cada país se muestra una serie coherente (el estudio con más olas) para evitar saltos por diferencias de instrumento entre EVS y WVS. Los datos son olas de encuesta en años irregulares, que además no coinciden entre países: los puntos marcan las mediciones y las líneas sólo las unen, no representan valores anuales. Mide intolerancia declarada.',
 
     // ---- Chart 5: declarado vs implícito (scatter)
     'c5-title':          'Argentina declara poco racismo, pero lo asocia como cualquiera',
@@ -196,7 +196,7 @@ const ISSUE_I18N = {
     'c1-tt-n':           'Sample',
     'c1-axis-x':         '% mentioning the group as unwanted neighbours',
     'c1-axis-mk':        '% who would not want them as neighbours',
-    'c1-sources':        'Data: Integrated Values Survey (WVS/EVS, 1981-2022), question "Which of these groups would you not like to have as neighbours?" (spontaneous mention). Latest available data per country (2017-2023); weighted % over valid responses, samples of 1,000-2,000 cases. Note: this measures intolerance as <em>declared</em> to an interviewer — small gaps between countries are not informative (countries surveyed by both EVS and WVS differ by up to 8-13 points).',
+    'c1-sources':        'Data: Integrated Values Survey (WVS/EVS, 1981-2023), question "Which of these groups would you not like to have as neighbours?" (spontaneous mention). Latest available data per country (2017-2023); weighted % over valid responses, samples of 1,000-2,000 cases. Note: this measures intolerance as <em>declared</em> to an interviewer — small gaps between countries are not informative (countries surveyed by both EVS and WVS differ by up to 8-13 points).',
     'c1-sources-tpl':    'Data: Integrated Values Survey (WVS/EVS). Latest data per country, {Y}.',
 
     'cat-otra_raza':          'People of a different race',
@@ -217,7 +217,7 @@ const ISSUE_I18N = {
     'c3-title':          'Southern South America, among the world’s most tolerant',
     'c3-title-neutral':  'The world map of declared intolerance',
     'c3-subtitle-tpl':   'Share who would not want {CAT} as neighbours. Survey wave {PERIODO}.',
-    'c3-subtitle-png':   'Share who would not want this group as neighbours. Latest data per country, 2017-2022.',
+    'c3-subtitle-png':   'Share who would not want this group as neighbours. Latest data per country, 2017-2023.',
     'c3-legend-title':   '% who reject them',
     'c3-legend-nodata':  'No data',
     'c3-tt-year':        'Measured',
@@ -229,8 +229,8 @@ const ISSUE_I18N = {
     'c2-title':          'The collapse of Latin American homophobia',
     'c2-title-neutral':  'The trend in declared intolerance',
     'c2-period-label':   'Period',
-    'c2-subtitle-tpl':   'Share who would not want {CAT} as neighbours, over time (Integrated Values Survey, 1981-2022).',
-    'c2-sources':        'Data: Integrated Values Survey (WVS/EVS, 1981-2022), neighbours question, spontaneous mention, weighted %. For each country a single consistent series is shown (the study with more waves) to avoid jumps from EVS/WVS instrument differences. The data are survey waves at irregular years that do not line up across countries: the dots mark the actual measurements and the lines merely connect them — they are not annual values. Measures declared intolerance.',
+    'c2-subtitle-tpl':   'Share who would not want {CAT} as neighbours, over time (Integrated Values Survey, 1981-2023).',
+    'c2-sources':        'Data: Integrated Values Survey (WVS/EVS, 1981-2023), neighbours question, spontaneous mention, weighted %. For each country a single consistent series is shown (the study with more waves) to avoid jumps from EVS/WVS instrument differences. The data are survey waves at irregular years that do not line up across countries: the dots mark the actual measurements and the lines merely connect them — they are not annual values. Measures declared intolerance.',
 
     // ---- Chart 5: declared vs implicit (scatter)
     'c5-title':          'Argentina declares little racism, but associates like everyone else',
