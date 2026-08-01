@@ -85,3 +85,24 @@ window.onBeforePngExportGetSourceLayout = function (chartId) {
   var c = String(chartId);
   return (c === '24' || c === '25') ? { ratio: 0.82, escala: 0.89 } : null;
 };
+
+// ---------------------------------------------------------------------------
+//  Titulo y subtitulo del PNG del MAPA
+// ---------------------------------------------------------------------------
+// En la pagina el titulo se puede dar el lujo del "en el mundo" y el subtitulo
+// del "alguna vez": no compiten con nada. En el PNG cada uno cuesta un renglon
+// —64 px el del titulo, 42 el del subtitulo— que sale del alto del mapa, que es
+// el formato mas apretado del numero. Medido: el mapa pasa de 522 a 628 px.
+// El "alguna vez" no se pierde, lo dice la nota.
+window.onBeforePngExportGetTitle = function (chartId) {
+  return (String(chartId) === '25' && typeof t === 'function') ? t('c25-title-png') : null;
+};
+window.onBeforePngExportGetSubtitle = function (chartId) {
+  if (String(chartId) !== '25' || typeof t !== 'function') return null;
+  var tpl = t('c25-subtitle-png');
+  if (!tpl || tpl.indexOf('c25-') === 0) return null;
+  // El {PERIODO} lo resuelve el mismo helper que usa el subtitulo de pantalla.
+  var per = (typeof vm_waveLabel === 'function' && typeof state !== 'undefined' && state[25])
+    ? vm_waveLabel(state[25].wave) : '2023';
+  return tpl.replace('{PERIODO}', per);
+};

@@ -48,6 +48,12 @@
     'c25-title': 'El mapa de la discriminación vivida',
     'c25-title-neutral': 'Discriminación vivida por color de piel en el mundo',
     'c25-subtitle-tpl':     'Porcentaje que dice haber sufrido alguna vez discriminación por el color de su piel, en {PERIODO}.',
+    // Versiones del PNG. En la página el título puede darse el lujo del "en el
+    // mundo" y el subtítulo del "alguna vez"; en el PNG cada uno cuesta un
+    // renglón que sale del alto del mapa. El "alguna vez" no se pierde: está
+    // en la nota, que va en las dos vistas.
+    'c25-title-png':        'Discriminación vivida por color de piel',
+    'c25-subtitle-png':     'Porcentaje que dice haber sufrido discriminación por el color de su piel, en {PERIODO}.',
     'c25-legend-title': '% que la sufrió',
     'c25-legend-nodata': 'Sin dato',
     'c25-tt-value': '% que la sufrió',
@@ -98,6 +104,11 @@
     'c25-title': 'The map of experienced discrimination',
     'c25-title-neutral': 'Experienced discrimination over skin colour worldwide',
     'c25-subtitle-tpl':     'Share who say they have ever experienced discrimination because of the colour of their skin, in {PERIODO}.',
+    // PNG: ver la nota del bloque ES. En inglés el subtítulo además se acorta
+    // con el giro del chart 26 ("faced discrimination over their skin colour"),
+    // porque con la construcción larga seguía cayendo en dos renglones.
+    'c25-title-png':        'Experienced discrimination over skin colour',
+    'c25-subtitle-png':     'Share who say they have faced discrimination over their skin colour, in {PERIODO}.',
     'c25-legend-title': '% who experienced it',
     'c25-legend-nodata': 'No data',
     'c25-tt-value': '% who experienced it',
