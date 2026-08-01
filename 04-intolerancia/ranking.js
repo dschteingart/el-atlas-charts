@@ -28,11 +28,15 @@ const RK_LATAM_REGIONS = new Set(['Latin America', 'Caribbean']);
 // Set curado inicial (WYSIWYG: son los chips = las etiquetas). La tesis
 // rioplatense + spread LatAm + referencias globales. ~17 entra limpio en el
 // marimekko; el usuario agrega/saca a gusto.
-// Los once del PNG que aprobó Daniel (2026-07-29): los dos extremos mundiales,
-// el Río de la Plata, y las referencias europeas y del norte con las que se lo
+// Los catorce del PNG que aprobó Daniel (2026-07-31): los dos extremos
+// mundiales, seis de América Latina —de Guatemala a Uruguay, que es el rango
+// de la región— y las referencias europeas y del norte con las que se la
 // compara en la nota.
+// OJO: esta lista y el defaultSelection de chart-vecinos.html tienen que ser
+// la MISMA. El shell aplica la del HTML y rk_esDefault compara contra ésta:
+// si difieren, el título editorial no aparece nunca.
 const RK_DEFAULT_SELECTED = [
-  'MMR','VNM','ESP','ITA','MEX','FRA','USA','ARG','BRA','SWE','URY'
+  'MMR','VNM','GTM','ESP','ITA','MEX','COL','CHL','FRA','USA','ARG','BRA','SWE','URY'
 ];
 
 const RK_SVG_NS = 'http://www.w3.org/2000/svg';

@@ -21,9 +21,14 @@ const ISSUE_I18N = {
     // verbo DECLARA, que es la advertencia central del numero.
     'c1-title':          'América Latina declara menos rechazo al vecino de otra raza que el resto del mundo',
     'c1-title-neutral':  'Los vecinos que cada sociedad rechaza',
-    // El subtítulo sólo fecha la foto: «último dato por país» es metodología y
-    // ya está en la nota, dos renglones más abajo (pedido de Daniel 2026-07-31).
-    'c1-subtitle-tpl':   'Porcentaje que menciona a {CAT} entre los grupos que no querría de vecinos. {Y}.',
+    // Redacción directa (Daniel 2026-07-31): «a la que le molestaría tener de
+    // vecinos a X» en vez de «que menciona a X entre los grupos que no querría
+    // de vecinos». Que la pregunta sea de mención espontánea sobre una lista
+    // —y que por eso un porcentaje bajo pueda ser falta de saliencia y no
+    // ausencia de rechazo— queda dicho en la nota. El objeto va en PLURAL para
+    // que la plantilla sirva con las 14 etiquetas del menú, que son plurales.
+    // El subtítulo sólo fecha la foto: «último dato por país» está en la nota.
+    'c1-subtitle-tpl':   'Porcentaje de la población a la que le molestaría tener de vecinos a {CAT}. {Y}.',
     'c1-cat-label':      'No querría de vecinos a…',
     'c1-wave-label':     'Ola de la encuesta',
     'c1-tt-both':        '* promedio de EVS y WVS',
@@ -164,7 +169,7 @@ const ISSUE_I18N = {
 
     'c1-title':          'Latin America reports less rejection of neighbours of another race than the rest of the world',
     'c1-title-neutral':  'The neighbours each society rejects',
-    'c1-subtitle-tpl':   'Share who mention {CAT} among the groups they would not want as neighbours. {Y}.',
+    'c1-subtitle-tpl':   'Share of the population who would mind having {CAT} as neighbours. {Y}.',
     'c1-cat-label':      'Would not want as neighbours…',
     'c1-wave-label':     'Survey wave',
     'c1-tt-both':        '* average of EVS and WVS',
