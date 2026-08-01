@@ -14,6 +14,10 @@
     'c26-title':              'El perfil del racismo en cada región',
     'c26-subtitle-reg':       'Distintas formas de medir el racismo y la exclusión. Último dato de cada país, 2010-2023.',
     'c26-subtitle-paises':    'Distintas formas de medir el racismo y la exclusión. Último dato de cada país, 2010-2023.',
+    // En el PNG el subtítulo cuesta dos renglones de 42 px y la primera mitad
+    // repite lo que los encabezados de columna ya dicen. Queda el "cuándo",
+    // que es lo único que la tabla no puede decir por sí sola.
+    'c26-subtitle-png':       'Racismo y exclusión. Último dato de cada país, 2010-2023.',
 
     'c26-view-label':   'Comparar',
     'c26-view-reg':     'Regiones',
@@ -50,6 +54,7 @@
     'c26-title':              'The profile of racism in each region',
     'c26-subtitle-reg':       'Different ways of measuring racism and exclusion. Latest reading per country, 2010-2023.',
     'c26-subtitle-paises':    'Different ways of measuring racism and exclusion. Latest reading per country, 2010-2023.',
+    'c26-subtitle-png':       'Racism and exclusion. Latest reading per country, 2010-2023.',
 
     'c26-view-label':   'Compare',
     'c26-view-reg':     'Regions',

@@ -527,6 +527,22 @@ function initPerfilTabla() {
     if (String(chartId) !== '26') return null;
     return pf_t(state[26].vista === 'paises' ? 'c26-sources-png-paises' : 'c26-sources-png-reg');
   };
+  // La nota de este PNG define las cinco columnas, así que es larga por
+  // necesidad. Con la caja default (70% del ancho) salían ocho renglones que
+  // le comían el alto a la tabla; ensanchada hasta donde arranca la firma y un
+  // punto más chica, son seis. Medido en el cuadrado: la tabla pasa de
+  // 1041×719 a 1116×771 canvas-px.
+  window.onBeforePngExportGetSourceLayout = function (chartId) {
+    if (String(chartId) !== '26') return null;
+    return { ratio: 0.82, escala: 0.89 };
+  };
+  // Subtítulo más corto para el PNG: "distintas formas de medir" es justo lo
+  // que los cinco encabezados de columna ya dicen, y ahí cuesta dos renglones
+  // de 42 px. Lo que no puede decir la tabla —cuándo— se queda.
+  window.onBeforePngExportGetSubtitle = function (chartId) {
+    if (String(chartId) !== '26') return null;
+    return pf_t('c26-subtitle-png');
+  };
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initPerfilTabla._wired) {
     initPerfilTabla._wired = true;
