@@ -239,74 +239,31 @@ function d_placeEndLabels(labels) {
 }
 
 // =================== Render principal ===================
+// drawDeciles quedó como WRAPPER FINO: arma el cfg desde state[3] y delega el
+// dibujo a dl_draw (deciles-lines.js, el fork del motor bueno). Toda la
+// interactividad (tooltip, quitar-país) vive acá y entra al motor por callbacks;
+// el motor no sabe de "país"/"región". El margen derecho dinámico, el eje X
+// D1..D10, la escala log y el anti-colisión backward-sweep los resuelve el motor.
 function drawDeciles() {
   const svg = document.getElementById('chart3');
   if (!svg) return;
-  svg.innerHTML = '';
 
-  // Editor sidebar: leemos config si el panel está activo. Overrides:
-  //   - SIZES desktop (font-sizes).
-  //   - Texts editoriales (título, subtítulo, caption).
-  //   - Countries: la lista del editor SE SINCRONIZA con
-  //     state[3].selectedCountries (son la misma cosa — el editor las
-  //     escribe directamente al togglear el checkbox, y acá las leemos
-  //     de state[3]). Si el editor cargó un config nuevo, ya sincronizó
-  //     state[3] en su init / handler de import.
+  // Config del editor (sizes/textos custom) si el panel está activo.
   const aeCfg = (window.AtlasEditor && window.AtlasEditor.getConfig)
     ? window.AtlasEditor.getConfig() : null;
   const aeSizes = aeCfg?.sizes;
 
-  // Decidir dimensiones según el formato del editor (si está activo) o
-  // según el viewport del browser (sin editor activo). Cuando hay format:
-  // viewBox de PNG_FORMATS[format] + margins de d_getMargins(format). El
-  // PNG export rasteriza exactamente esto. WYSIWYG.
+  // Formato del editor / viewport → SIZES de fuente. (Las dimensiones W/H/M y
+  // el margen derecho dinámico los calcula el motor; acá solo los tamaños, que
+  // en desktop dependen del editor.)
   const editorFormat = typeof getActivePngFormat === 'function'
     ? getActivePngFormat() : null;
   const newsletter = editorFormat === 'newsletter';
   const square     = editorFormat === 'square';
   const mobilePng  = editorFormat === 'mobile';
-  const publicFmt  = editorFormat === 'public';
   const mobile = !editorFormat
     && typeof isMobileViewport === 'function' && isMobileViewport();
-  if (editorFormat) {
-    const f = PNG_FORMATS[editorFormat];
-    D_W = f.vbW; D_H = f.vbH;
-    D_MARGIN = d_getMargins(editorFormat);
-  } else if (mobile) {
-    D_W = D_W_MOBILE; D_H = D_H_MOBILE;
-    D_MARGIN = { ...D_MARGIN_MOBILE };
-  } else {
-    D_W = D_W_DESKTOP; D_H = D_H_DESKTOP;
-    D_MARGIN = { ...D_MARGIN_DESKTOP };
-  }
-  D_PLOT_W = D_W - D_MARGIN.left - D_MARGIN.right;
-  D_PLOT_H = D_H - D_MARGIN.top - D_MARGIN.bottom;
-
-  svg.setAttribute('viewBox', `0 0 ${D_W} ${D_H}`);
-  // Aplicar/quitar wrapper CSS según el formato del editor.
-  if (typeof applyFormatWrapper === 'function') {
-    applyFormatWrapper(svg, editorFormat);
-  }
-
-  // Font sizes en unidades SVG. En mobile interactivo el SVG se renderea
-  // a ~412px de ancho efectivo (factor ≈0.375 sobre viewBox 1100), así
-  // que multiplicamos los tamaños desktop por ~3 para que en pantalla
-  // queden en 9-13px. Aplicados inline (atributo font-size) sobrescriben
-  // los valores de los CSS classes.
-  //
-  // Cuando el editor está activo con un formato, el SVG se ve en pantalla
-  // con el aspect ratio del formato y los sizes son los pineados de
-  // newsletter/square/mobilePng/public. WYSIWYG.
-  //
-  // SIZES base por viewport. En desktop el editor puede sobreescribir cada
-  // bucket; newsletter/square/mobilePng/mobile siguen pinned. El bucket
-  // "special" del editor aplica al endLabel (nombres al final de la línea).
-  // PNG newsletter/square: subidos al estándar mobile-first del Atlas (antes
-  // tick 18 / endLabel 18 → en el PNG a ⅓ en el celu quedaban chicos). El eje
-  // X ya va abreviado "D1..D10" (arriba), así que "tick 22" entra sin pisarse.
-  const SIZES = newsletter
-    ? { tick: 24, tickExtra: 19, axisTitle: 24, endLabel: 22 }
-    : square
+  const SIZES = (newsletter || square)
     ? { tick: 24, tickExtra: 19, axisTitle: 24, endLabel: 22 }
     : mobilePng
     ? { tick: 28, tickExtra: 22, axisTitle: 30, endLabel: 24 }
@@ -320,262 +277,69 @@ function drawDeciles() {
       };
 
   const s3 = state[3];
-  const year = String(s3.year);
-  const yearData = DATA_DECILES.data_by_year[year];
-  if (!yearData) return;
+  const yearData = DATA_DECILES.data_by_year[String(s3.year)];
+  if (!yearData) { svg.innerHTML = ''; return; }
+  const yMode = s3.yMode;      // 'income' | 'percentile'
+  const yScale = s3.yScale;    // 'linear' | 'log' (solo si yMode=income)
 
-  const yMode = s3.yMode;       // 'income' | 'percentile'
-  const yScale = s3.yScale;     // 'linear' | 'log' (solo aplica si yMode=income)
-
-  // Datos de los paises seleccionados (filtrando los que existen en el ano)
-  const selectedCountries = (s3.selectedCountries || []).filter(
-    code => yearData.countries[code]
-  );
-  const countriesData = selectedCountries.map(code => ({
-    code,
-    ...yearData.countries[code],
-  }));
+  // Países del año (filtrando los sin dato) con sus datos por decil.
+  const countriesData = (s3.selectedCountries || [])
+    .filter(code => yearData.countries[code])
+    .map(code => ({ code, ...yearData.countries[code] }));
 
   const yDomain = d_computeYDomain(yMode, yScale, countriesData);
-  const yScaleFn = (v) => d_yScale(v, yMode, yScale, yDomain);
+  const yTicks  = d_yTicks(yMode, yScale, yDomain);
 
-  // === Grid Y + ticks ===
-  const yTicks = d_yTicks(yMode, yScale, yDomain);
-  yTicks.forEach(tv => {
-    const y = yScaleFn(tv);
-    const line = d_ns('line');
-    line.setAttribute('x1', D_MARGIN.left);
-    line.setAttribute('x2', D_MARGIN.left + D_PLOT_W);
-    line.setAttribute('y1', y);
-    line.setAttribute('y2', y);
-    line.setAttribute('class', tv === yDomain.min ? 'd-axis-line' : 'd-grid-line');
-    svg.appendChild(line);
-    const txt = d_ns('text');
-    txt.setAttribute('x', D_MARGIN.left - 8);
-    txt.setAttribute('y', y + 4);
-    txt.setAttribute('text-anchor', 'end');
-    txt.setAttribute('class', 'd-tick');
-    txt.style.fontSize = SIZES.tick + 'px';
-    txt.textContent = d_formatYTick(tv, yMode);
-    svg.appendChild(txt);
-  });
-
-  // Y axis title — el offset depende del margin disponible. En viewports
-  // con margins grandes (mobile / mobilePng) el title se aleja más para no
-  // pisar los ticks Y escalados.
-  const yTitleOffsetX = (mobile || mobilePng) ? D_MARGIN.left - 80 : D_MARGIN.left - 50;
-  const yTitle = d_ns('text');
-  yTitle.setAttribute('class', 'd-axis-title');
-  yTitle.setAttribute('text-anchor', 'middle');
-  yTitle.style.fontSize = SIZES.axisTitle + 'px';
-  yTitle.setAttribute(
-    'transform',
-    `translate(${yTitleOffsetX}, ${D_MARGIN.top + D_PLOT_H / 2}) rotate(-90)`
-  );
-  // Editor: si hay axisY custom no vacío, lo aplicamos; si no, default
-  // según el modo activo (income/percentile + log).
+  // Títulos de eje: el custom del editor manda; si no, el default del modo.
   const customAxisY = (aeCfg?.texts?.[LANG]?.axisY || '').trim();
-  yTitle.textContent = customAxisY || (yMode === 'income'
+  const axisY = customAxisY || (yMode === 'income'
     ? t('c3-axis-y-income') + (yScale === 'log' ? ' (log)' : '')
     : t('c3-axis-y-percentile'));
-  svg.appendChild(yTitle);
-
-  // Editor: axisX. El chart por default NO muestra title del eje X (los
-  // ticks ya dicen "Decil 1"..."Decil 10"). Si el usuario define un axisX
-  // custom no vacío, lo agregamos centrado debajo del eje. Si está vacío
-  // → no se renderea (comportamiento default).
-  const customAxisX = (aeCfg?.texts?.[LANG]?.axisX || '').trim();
-  if (customAxisX) {
-    const xTitle = d_ns('text');
-    xTitle.setAttribute('class', 'd-axis-title');
-    xTitle.setAttribute('text-anchor', 'middle');
-    xTitle.style.fontSize = SIZES.axisTitle + 'px';
-    xTitle.setAttribute('x', D_MARGIN.left + D_PLOT_W / 2);
-    // Position: bajo los ticks "Decil N" + aclaración. Los ticks ocupan
-    // ~xExtraOffset px; el axis-title va ~25px más abajo.
-    const xExtraOffset = mobile ? 88 : mobilePng ? 76 : 36;
-    xTitle.setAttribute('y', D_MARGIN.top + D_PLOT_H + xExtraOffset + 26);
-    xTitle.textContent = customAxisX;
-    svg.appendChild(xTitle);
-  }
-
-  // === Eje X (deciles "Decil 1" ... "Decil 10") ===
-  // Cada tick dice "Decil N" en lugar de "DN" — más explícito, ya no se
-  // necesita un axis-title separado abajo. Los extremos (Decil 1 y Decil 10)
-  // llevan aclaración entre paréntesis en una segunda línea para indicar
-  // la dirección del eje (pobre → rico).
-  D_DECILES.forEach(d => {
-    const x = d_xScale(d);
-    const txt = d_ns('text');
-    txt.setAttribute('x', x);
-    // Las dos líneas (decile prefix + aclaración) necesitan separación
-    // proporcional al font-size del viewport.
-    const xLabelOffset = mobile ? 50 : mobilePng ? 42 : 22;
-    txt.setAttribute('y', D_MARGIN.top + D_PLOT_H + xLabelOffset);
-    txt.setAttribute('text-anchor', 'middle');
-    txt.setAttribute('class', 'd-tick');
-    txt.style.fontSize = SIZES.tick + 'px';
-    // Con fuentes grandes (mobile/PNG) "Decil 1..Decil 10" NO entra en el
-    // ancho → se pisan. Abreviamos a "D1..D10"; en desktop (tick chico) va
-    // el "Decil N" completo. (Bug del eje X pisado en el celu, 2026-07-12.)
-    txt.textContent = (SIZES.tick >= 16 ? 'D' : t('c3-decile-prefix') + ' ') + d;
-    svg.appendChild(txt);
-    // Aclaración para extremos en segunda línea.
-    if (d === 1 || d === 10) {
-      const extra = d_ns('text');
-      extra.setAttribute('x', x);
-      const xExtraOffset = mobile ? 88 : mobilePng ? 76 : 36;
-      extra.setAttribute('y', D_MARGIN.top + D_PLOT_H + xExtraOffset);
-      extra.setAttribute('text-anchor', 'middle');
-      extra.setAttribute('class', 'd-tick-extra');
-      extra.style.fontSize = SIZES.tickExtra + 'px';
-      extra.textContent = d === 1 ? t('c3-decile-poorest') : t('c3-decile-richest');
-      svg.appendChild(extra);
-    }
-    // Vertical guide muy sutil
-    const guide = d_ns('line');
-    guide.setAttribute('x1', x); guide.setAttribute('x2', x);
-    guide.setAttribute('y1', D_MARGIN.top); guide.setAttribute('y2', D_MARGIN.top + D_PLOT_H);
-    guide.setAttribute('class', 'd-vguide');
-    svg.appendChild(guide);
-  });
-
-  // === Lineas (una por pais) ===
-  const linesG = d_ns('g');
-  linesG.setAttribute('id', 'd-lines');
-  svg.appendChild(linesG);
+  const axisX = (aeCfg?.texts?.[LANG]?.axisX || '').trim() || null;
 
   const tooltip = document.getElementById('tooltip3');
+  const valOf = (dd) => yMode === 'income' ? dd.income_daily_ppp : dd.world_percentile;
 
-  countriesData.forEach((country) => {
-    // Color anclado al CÓDIGO del país (no al idx en el array filtrado),
-    // para que el color no cambie durante el play del slider cuando algún
-    // país queda fuera por falta de datos en ese año.
-    const color = d_colorFor(country.code);
-    const points = country.deciles.map(d => {
-      const x = d_xScale(d.decile);
-      const value = yMode === 'income' ? d.income_daily_ppp : d.world_percentile;
-      const y = yScaleFn(value);
-      return { x, y, d };
-    });
+  // Series: una por país (color anclado al código → estable durante el play).
+  const series = countriesData.map(country => ({
+    key: country.code,
+    label: d_displayName(country.code, country.name),
+    color: d_colorFor(country.code),
+    country,   // para el tooltip (región / año-obs)
+    pts: country.deciles.map(dd => [dd.decile, valOf(dd)]),
+    markers: country.deciles.map(dd => ({ decile: dd.decile, value: valOf(dd), data: dd })),
+  }));
 
-    // Path
-    const pathStr = points.map((p, i) =>
-      (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1)
-    ).join(' ');
-    const path = d_ns('path');
-    path.setAttribute('d', pathStr);
-    path.setAttribute('class', 'd-line');
-    path.setAttribute('stroke', color);
-    path.setAttribute('data-code', country.code);
-    linesG.appendChild(path);
-
-    // Markers en cada decil. En mobile el marker visible es más grande (a
-    // r=3.5 en el viewBox 1500 quedaba en ~1px de pantalla → invisible) y,
-    // sobre todo, lleva una ZONA TÁCTIL invisible mucho mayor: sin ella el
-    // tap "no anda" en el celu porque el dedo nunca le pega a un punto de 1px
-    // (receta OWID: hit-area generosa, criterio 3 de la skill).
-    const markerR = mobile ? 8 : 3.5;
-    const hitR    = mobile ? 30 : 0;   // ~9px de radio en pantalla a 360px
-    points.forEach(p => {
-      const c = d_ns('circle');
-      c.setAttribute('cx', p.x);
-      c.setAttribute('cy', p.y);
-      c.setAttribute('r', markerR);
-      c.setAttribute('fill', color);
-      c.setAttribute('class', 'd-marker');
-      c.setAttribute('data-code', country.code);
-      // Tooltip
-      if (HAS_HOVER) {
-        c.addEventListener('mouseenter', (e) =>
-          d_showTooltip(e, country, p.d, tooltip)
-        );
-        c.addEventListener('mouseleave', () => { tooltip.style.opacity = '0'; });
-        c.addEventListener('mousemove', (e) => d_positionTooltip(e, tooltip));
-        // Regla de selección (criterio 11f): en desktop, click en el marcador
-        // saca el país (mismo gesto que en las líneas de los charts hermanos).
-        // En touch no: el tap es del tooltip.
-        c.style.cursor = 'pointer';
-        c.addEventListener('click', () => {
-          tooltip.style.opacity = '0';
-          d_toggleCountrySelection(country.code);
-        });
-        linesG.appendChild(c);
-      } else {
-        // Mobile: tap muestra el tooltip y queda visible hasta que el usuario
-        // haga tap en otro marker (cambia) o en otro lugar (handler global en
-        // document que cierra). stopPropagation evita que el global cierre el
-        // recién abierto. El handler va en el HIT-AREA transparente (grande),
-        // no en el marker visible (chico).
-        linesG.appendChild(c);
-        const hit = d_ns('circle');
-        hit.setAttribute('cx', p.x);
-        hit.setAttribute('cy', p.y);
-        hit.setAttribute('r', hitR);
-        hit.setAttribute('fill', 'transparent');
-        hit.setAttribute('class', 'd-marker-hit');
-        hit.style.cursor = 'pointer';
-        hit.addEventListener('click', (e) => {
-          e.stopPropagation();
-          d_showTooltip(e, country, p.d, tooltip);
-        });
-        linesG.appendChild(hit);
-      }
-    });
-  });
-
-  // === End-labels ===
-  const endLabels = countriesData.map((country) => {
-    const last = country.deciles[country.deciles.length - 1];
-    const value = yMode === 'income' ? last.income_daily_ppp : last.world_percentile;
-    const idealY = yScaleFn(value);
-    // Mismo color que la línea — anclado al código (estable a través del slider).
-    const color = d_colorFor(country.code);
-    const text = d_displayName(country.code, country.name);
-    return {
-      code: country.code,
-      text,
-      color,
-      idealY,
-      lineEndX: d_xScale(10),
-      textW: d_measureText(text, SIZES.endLabel, D_LABEL_FONT_WEIGHT),
-    };
-  });
-  d_placeEndLabels(endLabels);
-
-  const endLabelsG = d_ns('g');
-  endLabelsG.setAttribute('id', 'd-end-labels');
-  svg.appendChild(endLabelsG);
-
-  endLabels.forEach(l => {
-    if (l.shifted) {
-      // Guia corta del end-point al label
-      const guide = d_ns('line');
-      guide.setAttribute('x1', l.lineEndX);
-      guide.setAttribute('y1', l.idealY);
-      guide.setAttribute('x2', l.lineEndX + 6);
-      guide.setAttribute('y2', l.y);
-      guide.setAttribute('stroke', l.color);
-      guide.setAttribute('stroke-width', 0.8);
-      guide.setAttribute('stroke-opacity', 0.5);
-      guide.setAttribute('fill', 'none');
-      endLabelsG.appendChild(guide);
-    }
-    const txt = d_ns('text');
-    txt.setAttribute('x', l.lineEndX + 9);
-    txt.setAttribute('y', l.y + 4);  // baseline offset
-    txt.setAttribute('class', 'd-end-label');
-    txt.setAttribute('fill', l.color);
-    // Font-size inline: mobile escala 3× vs desktop para que en pantalla
-    // queden ~10.5px (legibles). Sin esto los end-labels en mobile salen
-    // a ~4.3px (ilegibles).
-    txt.style.fontSize = SIZES.endLabel + 'px';
-    txt.textContent = l.text;
-    endLabelsG.appendChild(txt);
+  dl_draw({
+    svgId: 'chart3', tooltipId: 'tooltip3', deciles: D_DECILES,
+    decilePrefix: t('c3-decile-prefix'),
+    poorestLabel: t('c3-decile-poorest'),
+    richestLabel: t('c3-decile-richest'),
+    sizes: SIZES,
+    yScaleMode: (yMode === 'income' && yScale === 'log') ? 'log' : 'linear',
+    yDomain, yTicks,
+    yFmt: (v) => d_formatYTick(v, yMode),
+    axisY, axisX, series,
+    onMarkerShow: (ev, s, m) => d_showTooltip(ev, s.country, m.data, tooltip),
+    onMarkerMove: (ev) => d_positionTooltip(ev, tooltip),
+    onMarkerHide: () => { if (tooltip) tooltip.style.opacity = '0'; },
+    onMarkerClick: (s) => d_toggleCountrySelection(s.key),
   });
 
   // Editor: pisamos textos editoriales (título/subtítulo/caption) al final.
   d_applyEditorTexts(aeCfg);
+}
+
+// ¿Estado "de fábrica"? = año default + exactamente los países default (sin
+// importar el orden). Si sí → el título/subtítulo muestran el insight editorial;
+// si el usuario cambió el año o la selección → pasan a neutral.
+function d_pristine() {
+  const s = state[3]; if (!s) return true;
+  if (String(s.year) !== String(DATA_DECILES.latest_year || 2025)) return false;
+  const sel = s.selectedCountries || [];
+  if (sel.length !== D_DEFAULT_COUNTRIES.length) return false;
+  const def = new Set(D_DEFAULT_COUNTRIES);
+  return sel.every(c => def.has(c));
 }
 
 // Caption: si el editor lo dejó vacío (trim) → restauramos el default del
@@ -590,14 +354,20 @@ function d_applyEditorTexts(aeCfg) {
   const customTitle    = (t.title    || '').trim();
   const customSubtitle = (t.subtitle || '').trim();
   const customCaption  = (t.caption  || '').trim();
-  if (customTitle) {
-    const el = block.querySelector('.chart-title');
-    if (el) el.textContent = customTitle;
-  }
-  if (customSubtitle) {
-    const el = block.querySelector('.chart-subtitle');
-    if (el) el.textContent = customSubtitle;
-  }
+  // Título/subtítulo: el custom del editor manda; si no, INSIGHT en el estado de
+  // fábrica (año + países default) y NEUTRAL cuando el usuario cambió algo (año o
+  // selección). Se re-evalúa en cada drawDeciles: tocar el slider/agregar-quitar
+  // país → neutral; volver exactamente al default → vuelve el insight. (Patrón
+  // "insight por default, neutral al customizar".)
+  const pristine = d_pristine();
+  const titleEl = block.querySelector('.chart-title');
+  if (titleEl) titleEl.textContent = customTitle
+    || (I18N[docLang] && I18N[docLang][pristine ? 'c3-title' : 'c3-title-neutral'])
+    || titleEl.textContent;
+  const subEl = block.querySelector('.chart-subtitle');
+  if (subEl) subEl.textContent = customSubtitle
+    || (I18N[docLang] && I18N[docLang][pristine ? 'c3-subtitle' : 'c3-subtitle-neutral'])
+    || subEl.textContent;
   const captionEls = document.querySelectorAll(
     '.footer p[data-i18n="c3-sources"], .footer details[class*="mobile-collapse"] p[data-i18n="c3-sources"]'
   );
@@ -940,30 +710,10 @@ function setupDecilesDownloadCSV() {
 }
 
 // =================== Hook PNG export ===================
-// Las end-labels SVG tienen el problema de que las webfonts en contexto
-// aislado de <img> a veces caen al fallback. Las mandamos a canvasLabels
-// para garantizar la tipografia. Tambien sacamos clase shifted-guide del
-// SVG (las guias quedan en el SVG, pero los textos van a canvas).
-window.onBeforePngExport = (svgClone, chartId) => {
-  if (chartId !== '3') return;
-  const canvasLabels = [];
-  const endLabelsG = svgClone.querySelector('#d-end-labels');
-  if (endLabelsG) {
-    endLabelsG.querySelectorAll('text.d-end-label').forEach(el => {
-      canvasLabels.push({
-        x: parseFloat(el.getAttribute('x')),
-        y: parseFloat(el.getAttribute('y')),
-        text: el.textContent,
-        fill: el.getAttribute('fill') || '#444',
-        weight: D_LABEL_FONT_WEIGHT,
-        size: D_LABEL_FONT_SIZE,
-        textAnchor: 'start',
-      });
-      el.style.display = 'none';
-    });
-  }
-  return { canvasLabels };
-};
+// (El hook onBeforePngExport que mandaba las end-labels a canvasLabels se
+// eliminó: el motor dl_draw las embebe en el SVG con halo (paint-order stroke),
+// y png-export ya embebe las webfonts en el SVG rasterizado (Fase 2), así que
+// se dibujan bien sin el workaround. Dejarlo doblaría las etiquetas.)
 
 // Hook adicional: el caption del PNG depende del modo activo. El
 // interactivo usa el c3-sources general (que menciona ambos modos);

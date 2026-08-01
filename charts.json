@@ -1,6 +1,6 @@
 {
   "descripcion": "Catálogo de los gráficos publicados de El Atlas. Lo usan (a futuro) la galería de revisión y las sesiones de Claude Code como mapa del repo. Actualizar al agregar un chart (parte del checklist de integración).",
-  "actualizado": "2026-07-10",
+  "actualizado": "2026-07-13",
   "numeros": [
     {
       "numero": "1",
@@ -179,13 +179,18 @@
           "archivo": "chart-goles.html",
           "tipo": "líneas + barras",
           "tema": "goles por partido y diferencia de gol en el tiempo"
+        },
+        {
+          "archivo": "chart-instancias.html",
+          "tipo": "lollipop por instancia",
+          "tema": "goles por partido según la instancia del Mundial (octavos, cuartos, final…)"
         }
       ]
     },
     {
-      "numero": "5",
+      "numero": "4",
       "slug": "intolerancia",
-      "carpeta": "05-intolerancia",
+      "carpeta": "04-intolerancia",
       "titulo": "¿El país más racista del mundo?",
       "en": "toggle + ?lang=en (sin páginas EN propias)",
       "charts": [
@@ -251,13 +256,19 @@
           "archivo": "chart-vdem-scatter.html",
           "tipo": "dispersión",
           "tema": "exclusión social por grupo (V-Dem v16: el índice v2xpe_exlsocgr y sus 5 componentes) vs PIB per cápita empalmado Maddison+Banco Mundial; 174 países, 1900-2023, eje X con toggle lineal/log y slider de año",
-          "motor": "clon de 05-intolerancia/desarrollo.js"
+          "motor": "clon de 04-intolerancia/desarrollo.js"
         },
         {
           "archivo": "chart-vdem.html",
           "tipo": "graficador (comparación ranking/marimekko + mapa + líneas)",
           "tema": "exclusión social por grupo (V-Dem v16: índice v2xpe_exlsocgr y sus 5 componentes), 174 países, series anuales desde 1900; el mapa invierte la rampa cuando la variable apunta al revés, para que el tono oscuro sea siempre el peor valor",
           "motor": "lib/grapher.js + clones de ranking.js, mapa.js y pelicula.js"
+        },
+        {
+          "archivo": "chart-perfil.html",
+          "tipo": "tabla resumen (regiones / países)",
+          "tema": "las cinco lentes del número en una tabla: rechazo declarado, racismo visto en el barrio, discriminación vivida, exclusión institucional y Gini; el color marca la posición dentro de cada columna",
+          "motor": "perfil-tabla.js sobre data-perfil.js (tools/make_perfil.py)"
         }
       ]
     }
