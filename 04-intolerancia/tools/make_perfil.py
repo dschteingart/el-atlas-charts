@@ -95,12 +95,15 @@ def gini():
     return {p['code']: (p['gini_adj'], p['year']) for p in ult if p.get('gini_adj') is not None}
 
 # k, etiqueta es/en, decimales, unidad, y si "alto" es peor (para la rampa)
+# EL ORDEN ES EL DEL ARGUMENTO DEL NÚMERO, no el de las fuentes: lo que se
+# declara, lo que se ve alrededor, lo que se vive en carne propia, lo que hace
+# el Estado y, por último, la desigualdad de fondo. Cada columna es una lente.
 COLS = [
-    ('excl',   'Exclusión por grupo social', 'Exclusion by social group', 2, '',  True,  vdem()),
-    ('barrio', 'Ve racismo en su barrio',    'Sees racism in their area', 1, '%', True,  ivs('H002_04')),
     ('raza',   'Rechaza un vecino de otra raza', 'Would reject a neighbour of another race', 1, '%', True, ivs('otra_raza')),
+    ('barrio', 'Ve racismo en su barrio',    'Sees racism in their area', 1, '%', True,  ivs('H002_04')),
     ('piel',   'Sufrió discriminación por su color de piel', 'Has faced discrimination over skin colour', 1, '%', True, ivs('wrp_piel', (7,))),
-    ('gini',   'Desigualdad de ingresos (Gini ajustado)', 'Income inequality (adjusted Gini)', 1, '', True, gini()),
+    ('excl',   'Exclusión institucional', 'Institutional exclusion', 2, '',  True,  vdem()),
+    ('gini',   'Desigualdad de ingresos (Gini)', 'Income inequality (Gini)', 1, '', True, gini()),
 ]
 
 # ------------------------------------------------------------------ agregacion

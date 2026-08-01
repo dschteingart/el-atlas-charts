@@ -44,8 +44,8 @@ const PF_N_MIN = 5;
 
 // Países por default en la vista de países: los once latinoamericanos que
 // tienen las cinco columnas, más cinco referencias del resto del mundo.
-const PF_DEFAULT_PAISES = ['ARG', 'BOL', 'BRA', 'CHL', 'COL', 'ECU', 'GTM', 'MEX', 'NIC', 'PER', 'URY',
-                           'USA', 'ESP', 'SWE', 'ZAF', 'IND'];
+const PF_DEFAULT_PAISES = ['ARG', 'BRA', 'CHL', 'URY', 'COL', 'MEX',
+                           'USA', 'ESP', 'IND', 'ZAF'];
 
 //==================================================================
 //  Helpers
@@ -268,12 +268,15 @@ function drawPerfilTabla() {
       rect.addEventListener('mouseleave', pf_hideTooltip);
       svg.appendChild(rect);
 
+      // Jerarquía de la celda: primero el NIVEL, que es lo que se lee de un
+      // vistazo para armar el perfil de la fila, y debajo el valor en chico,
+      // que es el respaldo (pedido de Daniel 2026-07-31).
       const val = pf_ns('text');
-      val.setAttribute('x', x + cellW / 2); val.setAttribute('y', y + cellH * 0.38);
+      val.setAttribute('x', x + cellW / 2); val.setAttribute('y', y + cellH * 0.71);
       val.setAttribute('text-anchor', 'middle'); val.setAttribute('dominant-baseline', 'central');
       val.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-      val.style.fontSize = S.valor + 'px';
-      val.setAttribute('font-weight', 600);
+      val.style.fontSize = S.nivel + 'px';
+      val.setAttribute('font-weight', 500);
       val.setAttribute('font-variant-numeric', 'tabular-nums');
       val.setAttribute('fill', PF_TINTA[niv]);
       val.style.pointerEvents = 'none';
@@ -282,12 +285,13 @@ function drawPerfilTabla() {
       svg.appendChild(val);
 
       const niveltx = pf_ns('text');
-      niveltx.setAttribute('x', x + cellW / 2); niveltx.setAttribute('y', y + cellH * 0.72);
+      niveltx.setAttribute('x', x + cellW / 2); niveltx.setAttribute('y', y + cellH * 0.37);
       niveltx.setAttribute('text-anchor', 'middle'); niveltx.setAttribute('dominant-baseline', 'central');
       niveltx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
-      niveltx.style.fontSize = S.nivel + 'px';
+      niveltx.style.fontSize = S.valor + 'px';
+      niveltx.setAttribute('font-weight', 600);
       niveltx.setAttribute('fill', PF_TINTA[niv]);
-      niveltx.setAttribute('fill-opacity', 0.86);
+      val.setAttribute('fill-opacity', 0.88);
       niveltx.style.pointerEvents = 'none';
       niveltx.textContent = pf_t('c26-niv-' + PF_NIVELES[niv].replace('-', ''));
       svg.appendChild(niveltx);
@@ -408,13 +412,22 @@ function setupPerfilVista() {
       // lo mismo que en países, y arrastrarlo confunde más de lo que ayuda.
       state[26].orden = null;
       sync();
-      const wrap = document.getElementById('pf-picker');
-      if (wrap) wrap.style.display = state[26].vista === 'paises' ? '' : 'none';
+      pf_syncPicker();
       pf_renderChips();
       drawPerfilTabla();
     });
   });
   sync();
+}
+
+// El buscador y los chips son de la vista de países: en regiones las filas son
+// las nueve regiones y unos chips de países ahí no gobiernan nada.
+function pf_syncPicker() {
+  const esPaises = state[26].vista === 'paises';
+  const wrap = document.getElementById('pf-picker');
+  if (wrap) wrap.style.display = esPaises ? '' : 'none';
+  const chips = document.getElementById('pf-chips');
+  if (chips) chips.style.display = esPaises ? '' : 'none';
 }
 
 function pf_renderChips() {
@@ -501,8 +514,7 @@ function initPerfilTabla() {
   setupPerfilBuscador();
   setupPerfilCSV();
   pf_renderChips();
-  const wrap = document.getElementById('pf-picker');
-  if (wrap) wrap.style.display = state[26].vista === 'paises' ? '' : 'none';
+  pf_syncPicker();
   drawPerfilTabla();
 
   window.__atlasSupportsFormats = true;
