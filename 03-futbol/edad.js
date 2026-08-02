@@ -16,16 +16,21 @@
 //==================================================================
 const ED_REAL = '#BE5D32';            // el «Mundial» (promedio de todos) — terracota Atlas
 const ED_POS_ORDER = ['GK', 'DEF', 'MID', 'FWD'];
-const ED_POS_COL = { GK: '#C9A227', DEF: '#2B5C8A', MID: '#5BA152', FWD: '#9A4FA8' };
+// Colores por puesto: los EXACTOS de la paleta estándar del Atlas (antes eran
+// tonos propios casi iguales pero distintos, que desentonaban con el resto).
+const ED_POS_COL = { GK: '#C9A227', DEF: '#234B85', MID: '#2D6A3D', FWD: '#6B3D8B' };
 const ED_POS_NAME = {
   GK: ['Arqueros', 'Goalkeepers'], DEF: ['Defensores', 'Defenders'],
   MID: ['Mediocampistas', 'Midfielders'], FWD: ['Delanteros', 'Forwards']
 };
-// El Mundial (referencia) es terracota (ED_REAL); la paleta de países EVITA los
-// rojos/terracotas al principio para que el primer país agregado no se confunda.
+// Paleta ESTÁNDAR del Atlas (los mismos 12 colores que usan dts, ligas,
+// orígenes, natividad y trayectoria), pero REORDENADA: el Mundial (referencia)
+// es terracota (ED_REAL), así que los tonos cercanos al terracota —vino,
+// naranja, marrón— se mandan al final para que el primer país agregado no se
+// confunda con la referencia. Antes acá había una paleta propia inventada.
 const ED_PALETTE = [
-  '#2B5C8A', '#5BA152', '#9A4FA8', '#2BA0A8', '#C9A227', '#1B3956',
-  '#386433', '#5F3168', '#1B6368', '#7D6418', '#C0473A', '#772C24'
+  '#234B85', '#2D6A3D', '#6B3D8B', '#2C8484', '#1F8AC0', '#6CB04D',
+  '#C9A227', '#B5639E', '#5A7A4F', '#8A5A35', '#E07A23', '#7A2A3F'
 ];
 // Unidad de edad para tooltips/labels (el eje lleva la unidad por i18n).
 function ed_unit() { return (typeof LANG !== 'undefined' && LANG === 'en') ? 'yrs' : 'años'; }

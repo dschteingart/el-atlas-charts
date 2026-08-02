@@ -72,6 +72,20 @@ const SC_CONF_COLORS = {
   OFC:      '#4A9BA8',
   '':       '#B5AC9A',  // sin confederación
 };
+// Los mismos colores, aclarados lo justo para leerse SOBRE EL TOOLTIP OSCURO
+// (fondo var(--ink) #1A1A1A). Los de arriba están calibrados para el fondo
+// crema: sobre oscuro, UEFA quedaba en 2.4 de contraste (ilegible) y
+// CONMEBOL/CONCACAF flojos. Estos llegan a ≥4.6 manteniendo el mismo tono; los
+// que ya pasaban (CAF, AFC, OFC, sin confederación) quedan idénticos.
+const SC_CONF_COLORS_ON_DARK = {
+  CONMEBOL: '#CC693D',
+  UEFA:     '#628AA6',
+  CONCACAF: '#A474A5',
+  CAF:      '#6B8E5A',
+  AFC:      '#C99A3B',
+  OFC:      '#4A9BA8',
+  '':       '#B5AC9A',
+};
 const SC_CONF_LABEL_COLORS = {
   CONMEBOL: '#8B4220',
   UEFA:     '#26384A',
@@ -719,7 +733,7 @@ function sc_showTooltip(e, d, tooltip) {
   const sharePct = (d.share * 100).toFixed(1) + '%';
   tooltip.innerHTML = `
     <strong>${sc_displayName(d)}</strong>
-    <div class="tt-region" style="color:${SC_CONF_COLORS[d.confed] || '#888'}">${d.confed || '—'}</div>
+    <div class="tt-region" style="color:${SC_CONF_COLORS_ON_DARK[d.confed] || '#C9C2B2'}">${d.confed || '—'}</div>
     <div class="tt-row"><span>${tt('c4-tt-share', 'Fútbol / deportes físicos')}</span><span>${sharePct}</span></div>
     <div class="tt-row"><span>${tt('c4-tt-clubage', 'Año mediano clubes')}</span><span>${d.clubAge}</span></div>
     <div class="tt-row tt-row-sub"><span>${tt('c4-tt-cohort', 'Cohorte (deportistas físicos)')}</span><span>${d.totFut} / ${d.totAll}</span></div>

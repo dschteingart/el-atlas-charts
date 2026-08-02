@@ -18,16 +18,21 @@
 const AL_REAL = '#BE5D32';            // altura real (terracota Atlas)
 const AL_EXP = '#9A8F82';             // altura esperada del país (gris cálido)
 const AL_POS_ORDER = ['GK', 'DEF', 'MID', 'FWD'];
-const AL_POS_COL = { GK: '#C9A227', DEF: '#2B5C8A', MID: '#5BA152', FWD: '#9A4FA8' };
+// Colores por puesto: los EXACTOS de la paleta estándar del Atlas (antes eran
+// tonos propios casi iguales pero distintos, que desentonaban con el resto).
+const AL_POS_COL = { GK: '#C9A227', DEF: '#234B85', MID: '#2D6A3D', FWD: '#6B3D8B' };
 const AL_POS_NAME = {
   GK: ['Arqueros', 'Goalkeepers'], DEF: ['Defensores', 'Defenders'],
   MID: ['Mediocampistas', 'Midfielders'], FWD: ['Delanteros', 'Forwards']
 };
-// El Mundial (referencia) es terracota (AL_REAL); la paleta de países EVITA los
-// rojos/terracotas al principio para que el primer país agregado no se confunda.
+// Paleta ESTÁNDAR del Atlas (los mismos 12 colores que usan dts, ligas,
+// orígenes, natividad y trayectoria), pero REORDENADA: el Mundial (referencia)
+// es terracota (AL_REAL), así que los tonos cercanos al terracota —vino,
+// naranja, marrón— se mandan al final para que el primer país agregado no se
+// confunda con la referencia. Antes acá había una paleta propia inventada.
 const AL_PALETTE = [
-  '#2B5C8A', '#5BA152', '#9A4FA8', '#2BA0A8', '#C9A227', '#1B3956',
-  '#386433', '#5F3168', '#1B6368', '#7D6418', '#C0473A', '#772C24'
+  '#234B85', '#2D6A3D', '#6B3D8B', '#2C8484', '#1F8AC0', '#6CB04D',
+  '#C9A227', '#B5639E', '#5A7A4F', '#8A5A35', '#E07A23', '#7A2A3F'
 ];
 function al_colorForSlot(s) { return AL_PALETTE[s % AL_PALETTE.length]; }
 const AL_BIG = ['ARG', 'BRA', 'DEU', 'NLD', 'ESP'];   // (team_code = ISO3)
