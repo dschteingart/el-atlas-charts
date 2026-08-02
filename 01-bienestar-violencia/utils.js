@@ -162,3 +162,24 @@ function atlasApplyEditorTexts() {
 }
 window.addEventListener('atlas-editor-change', atlasApplyEditorTexts);
 window.addEventListener('load', () => setTimeout(atlasApplyEditorTexts, 0));
+
+// === Scrub táctil (COPIA de lib/utils.js — el N°1 usa su stack local) ========
+// Un evento de mouse trae ev.clientX; uno de dedo lo trae en ev.touches[0].
+// Estos helpers leen la posición de cualquiera de los dos, para que UN MISMO
+// handler sirva para mouse y para dedo.
+function evClientX(ev) { return (ev.touches && ev.touches[0]) ? ev.touches[0].clientX : ev.clientX; }
+function evClientY(ev) { return (ev.touches && ev.touches[0]) ? ev.touches[0].clientY : ev.clientY; }
+
+// Cablea touchstart+touchmove sobre el SVG de un chart de crosshair para que la
+// línea vertical y el tooltip SIGAN al dedo (sin esto, en el celu el tap muestra
+// un valor pero arrastrar no hace nada, porque mousemove no se dispara).
+// `moveH` es el MISMO handler que usa mousemove y debe leer la posición con
+// evClientX/evClientY. preventDefault frena el scroll de la página mientras el
+// dedo se arrastra sobre el gráfico.
+function wireTouchScrub(svg, moveH) {
+  if (!svg) return;
+  const h = (ev) => { moveH(ev); if (ev.cancelable) ev.preventDefault(); };
+  svg.addEventListener('touchstart', h, { passive: false });
+  svg.addEventListener('touchmove', h, { passive: false });
+  svg.__atlasTouchScrub = h;
+}
