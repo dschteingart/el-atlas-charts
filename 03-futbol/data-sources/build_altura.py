@@ -62,10 +62,23 @@ HEIGHT_FIX = {
 
 # --- nombres de país (es/en) para el selector de selecciones --------------------
 def load_country_names():
-    txt = (ROOT / "country-names.js").read_text(encoding="utf-8")
+    # country-names.js se movio a lib/ en la unificacion (Fase 2); se busca ahi
+    # primero y se cae a la ruta vieja por compatibilidad.
+    _cn = ROOT.parent / "lib" / "country-names.js"
+    if not _cn.exists(): _cn = ROOT / "country-names.js"
+    txt = _cn.read_text(encoding="utf-8")
     m = re.search(r"const\s+COUNTRY_NAMES\s*=\s*(\{.*?\})\s*;", txt, re.S)
-    return json.loads(m.group(1)) if m else {}
+    if not m: return {}
+    # la version de lib/ trae comentarios // DENTRO del objeto (seccion de
+    # naciones FIFA); json.loads no los admite, se sacan antes de parsear.
+    body = re.sub(r"^\s*//.*$", "", m.group(1), flags=re.M)
+    return json.loads(body)
 CN = load_country_names()
+
+# --- códigos de selección: canonizar a ISO3 ------------------------------------
+# El master mezcla códigos FIFA e ISO3 para el mismo país. Todo team_code se pasa
+# por acá ANTES de agrupar, así el país no queda partido en dos selecciones.
+TEAM_CODE_CANON = {"ALG": "DZA"}   # Argelia: FIFA usa ALG, ISO3 es DZA
 
 # --- confederación FIFA por team_code (para el scatter altura población vs plantel) -
 # Misma fuente y overrides que build_origenes.py: DATA_CLUBAGE trae confed por iso3;
@@ -135,7 +148,12 @@ team_proxy = defaultdict(set)                              # code -> {iso proxya
 
 for r in rows:
     y = int(r["year"])
-    tc = (r.get("team_code") or "").strip()
+    # El master mezcla códigos FIFA e ISO3 para el MISMO país (Argelia viene como
+    # ALG en 2026 y como DZA en 1982/86/2010/14). Si no se canoniza acá, el país
+    # queda partido en dos selecciones distintas: dos "Argelia" en el buscador,
+    # cada una con media historia. Se normaliza al ISO3, que es lo que usan
+    # country-names.js y el resto del repo.
+    tc = TEAM_CODE_CANON.get((r.get("team_code") or "").strip(), (r.get("team_code") or "").strip())
     if tc:
         team_name[tc] = (r.get("team") or tc).strip()     # se queda el más reciente
     h = (r.get("altura_cm") or "").strip()

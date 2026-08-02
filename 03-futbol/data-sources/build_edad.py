@@ -24,10 +24,23 @@ POS_MAP = {"goal keeper": "GK", "defender": "DEF", "midfielder": "MID", "forward
 
 # --- nombres de país (es/en) para el selector de selecciones --------------------
 def load_country_names():
-    txt = (ROOT / "country-names.js").read_text(encoding="utf-8")
+    # country-names.js se movio a lib/ en la unificacion (Fase 2); se busca ahi
+    # primero y se cae a la ruta vieja por compatibilidad.
+    _cn = ROOT.parent / "lib" / "country-names.js"
+    if not _cn.exists(): _cn = ROOT / "country-names.js"
+    txt = _cn.read_text(encoding="utf-8")
     m = re.search(r"const\s+COUNTRY_NAMES\s*=\s*(\{.*?\})\s*;", txt, re.S)
-    return json.loads(m.group(1)) if m else {}
+    if not m: return {}
+    # la version de lib/ trae comentarios // DENTRO del objeto (seccion de
+    # naciones FIFA); json.loads no los admite, se sacan antes de parsear.
+    body = re.sub(r"^\s*//.*$", "", m.group(1), flags=re.M)
+    return json.loads(body)
 CN = load_country_names()
+
+# --- códigos de selección: canonizar a ISO3 ------------------------------------
+# El master mezcla códigos FIFA e ISO3 para el mismo país. Todo team_code se pasa
+# por acá ANTES de agrupar, así el país no queda partido en dos selecciones.
+TEAM_CODE_CANON = {"ALG": "DZA"}   # Argelia: FIFA usa ALG, ISO3 es DZA
 
 # --- recorrer el master ---------------------------------------------------------
 rows = list(csv.DictReader(open(SRC / "master_consolidado.csv", encoding="utf-8")))
@@ -41,7 +54,10 @@ team_name = {}                                                    # code -> nomb
 
 for r in rows:
     y = int(r["year"])
-    tc = (r.get("team_code") or "").strip()
+    # Canonizar el código ANTES de agrupar (ver TEAM_CODE_CANON): si no, Argelia
+    # queda partida en ALG (2026) y DZA (1982-2014) = dos entradas en el buscador,
+    # cada una con media historia.
+    tc = TEAM_CODE_CANON.get((r.get("team_code") or "").strip(), (r.get("team_code") or "").strip())
     if tc:
         team_name[tc] = (r.get("team") or tc).strip()           # se queda el más reciente
     e = (r.get("edad") or "").strip()

@@ -37,9 +37,17 @@ OUT = ROOT / "data-dts.js"
 
 # --- nombres de país (es/en) — mismo criterio que build_origenes.py -----------
 def load_country_names():
-    txt = (ROOT / "country-names.js").read_text(encoding="utf-8")
+    # country-names.js se movio a lib/ en la unificacion (Fase 2); se busca ahi
+    # primero y se cae a la ruta vieja por compatibilidad.
+    _cn = ROOT.parent / "lib" / "country-names.js"
+    if not _cn.exists(): _cn = ROOT / "country-names.js"
+    txt = _cn.read_text(encoding="utf-8")
     m = re.search(r"const\s+COUNTRY_NAMES\s*=\s*(\{.*?\})\s*;", txt, re.S)
-    return json.loads(m.group(1)) if m else {}
+    if not m: return {}
+    # la version de lib/ trae comentarios // DENTRO del objeto (seccion de
+    # naciones FIFA); json.loads no los admite, se sacan antes de parsear.
+    body = re.sub(r"^\s*//.*$", "", m.group(1), flags=re.M)
+    return json.loads(body)
 CN = load_country_names()
 HIST = {"CSK": ("Checoslovaquia", "Czechoslovakia"), "YUG": ("Yugoslavia", "Yugoslavia"),
         "SUN": ("Unión Soviética", "Soviet Union"), "DDR": ("Alemania Oriental", "East Germany"),
