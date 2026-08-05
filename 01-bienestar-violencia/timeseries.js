@@ -520,7 +520,9 @@ function drawChart3() {
   function getYearAtCursor(ev) {
     const rect = svg.getBoundingClientRect();
     const scale = rect.width / W;
-    const localX = (ev.clientX - rect.left) / scale;
+    // evClientX: sirve para mouse Y para dedo (en touch la posición viene en
+    // ev.touches[0]). Sin esto, con el dedo daba NaN y el crosshair no se movía.
+    const localX = (evClientX(ev) - rect.left) / scale;
     const yearF = yMin + (localX - margin.left) / innerW * (yMax - yMin);
     return Math.round(yearF);
   }
@@ -532,10 +534,10 @@ function drawChart3() {
       return;
     }
     updateHoverLayer(year, state[3].hoverCountry);
-    // Posicionar tooltip cerca del cursor
+    // Posicionar tooltip cerca del cursor (o del dedo)
     const rect = svg.getBoundingClientRect();
-    tooltip.style.left = (ev.clientX - rect.left + 14) + 'px';
-    tooltip.style.top = (ev.clientY - rect.top + 14) + 'px';
+    tooltip.style.left = (evClientX(ev) - rect.left + 14) + 'px';
+    tooltip.style.top = (evClientY(ev) - rect.top + 14) + 'px';
   }
 
   function leaveHandler() {
@@ -545,6 +547,10 @@ function drawChart3() {
   // El svg entero captura mousemove (líneas + rect transparente)
   svg.addEventListener('mousemove', moveHandler);
   svg.addEventListener('mouseleave', leaveHandler);
+  // Touch universal (criterio 3): en el celu el crosshair y el tooltip siguen al
+  // dedo. Mismo handler que el mouse — wireTouchScrub lo cablea a touchstart y
+  // touchmove y frena el scroll de la página mientras se arrastra sobre el chart.
+  if (typeof wireTouchScrub === 'function') wireTouchScrub(svg, moveHandler);
 
   // Click sobre fondo (rect) deselecciona hover (no toca selección)
   captureRect.addEventListener('click', () => {});

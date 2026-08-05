@@ -42,3 +42,18 @@ const REGION_WB_LABEL_COLORS = {
   'Middle East, North Africa, Afghanistan & Pakistan':  '#7A4A5D',
   'North America':                                      '#3A4A5C'
 };
+
+// Variantes ACLARADAS para texto sobre el TOOLTIP OSCURO (fondo var(--ink)
+// #1A1A1A). Las de arriba están calibradas para el fondo crema; sobre oscuro
+// "África Subsahariana" quedaba en 2.2 de contraste y "Europa y Asia Central"
+// en 2.5 — ilegibles. Estas llegan a ≥4.6 manteniendo el mismo tono; las que
+// ya pasaban (Asia Oriental, Asia del Sur, MENA) quedan idénticas.
+const REGION_WB_COLORS_ON_DARK = {
+  'Latin America & Caribbean':                          '#CC693D',
+  'Sub-Saharan Africa':                                 '#AF793E',
+  'Europe & Central Asia':                              '#418DB8',
+  'East Asia & Pacific':                                '#7A9B5E',
+  'South Asia':                                         '#C4A050',
+  'Middle East, North Africa, Afghanistan & Pakistan':  '#A87B8A',
+  'North America':                                      '#74879A'
+};

@@ -328,12 +328,12 @@ function s_updateBanner(model) {
   const regLabel = t('reg.' + reg);
   const regColor = REGION_WB_LABEL_COLORS[reg] || '#444';
   const sign = regPct == null ? '' : (regPct >= 0 ? '+' : '');
-  const pctStr = regPct == null ? '—' : `${sign}${regPct.toFixed(1)}%`;
+  const pctStr = regPct == null ? '—' : `${sign}${fmt(regPct, 1)}%`;
 
   el.innerHTML = `
     <span class="s-banner-item"><span class="s-banner-key">${t('c2-banner-n')}</span><span class="s-banner-val">${model.n}</span></span>
     <span class="s-banner-sep">·</span>
-    <span class="s-banner-item"><span class="s-banner-key">${t('c2-banner-r2')}</span><span class="s-banner-val">${model.r2.toFixed(3)}</span></span>
+    <span class="s-banner-item"><span class="s-banner-key">${t('c2-banner-r2')}</span><span class="s-banner-val">${fmt(model.r2, 3)}</span></span>
     <span class="s-banner-sep">·</span>
     <span class="s-banner-item s-banner-region"><span class="s-banner-key">${t('c2-banner-region')}</span><span class="s-banner-region-name" style="color:${regColor}">${regLabel}</span><span class="s-banner-val">${pctStr}</span></span>
   `;
@@ -951,7 +951,8 @@ function s_showTooltip(e, d, model, tooltip) {
   const residualPct = yPred === 0 ? 0 : (residualPp / yPred) * 100;
 
   const regionLabel = t('reg.' + d.region);
-  const regionColor = REGION_WB_COLORS[d.region] || '#888';
+  // Variante aclarada: este texto va DENTRO del tooltip oscuro.
+  const regionColor = REGION_WB_COLORS_ON_DARK[d.region] || '#C9C2B2';
   const giniRawLabel = t('c2-tt-gini-raw');
   const giniAdjLabel = t('c2-tt-gini-adj');
   const signPp = residualPp >= 0 ? '+' : '';
@@ -962,10 +963,10 @@ function s_showTooltip(e, d, model, tooltip) {
     <div class="tt-region" style="color:${regionColor}">${regionLabel}</div>
     <div class="tt-row"><span>${t('c2-tt-year')}</span><span>${d.year}</span></div>
     <div class="tt-row"><span>${t('c2-tt-gdp')}</span><span>$${fmt(d.gdp_pc, 0)}</span></div>
-    <div class="tt-row"><span>${giniRawLabel}</span><span>${d.gini_raw.toFixed(1)}</span></div>
-    <div class="tt-row"><span>${giniAdjLabel}</span><span>${d.gini_adj.toFixed(1)}</span></div>
-    <div class="tt-row"><span>${t('c2-tt-residual-pp')}</span><span>${signPp}${residualPp.toFixed(1)}</span></div>
-    <div class="tt-row"><span>${t('c2-tt-residual-pct')}</span><span>${signPct}${residualPct.toFixed(1)}%</span></div>
+    <div class="tt-row"><span>${giniRawLabel}</span><span>${fmt(d.gini_raw, 1)}</span></div>
+    <div class="tt-row"><span>${giniAdjLabel}</span><span>${fmt(d.gini_adj, 1)}</span></div>
+    <div class="tt-row"><span>${t('c2-tt-residual-pp')}</span><span>${signPp}${fmt(residualPp, 1)}</span></div>
+    <div class="tt-row"><span>${t('c2-tt-residual-pct')}</span><span>${signPct}${fmt(residualPct, 1)}%</span></div>
   `;
   tooltip.style.display = 'block';
   tooltip.style.opacity = '1';

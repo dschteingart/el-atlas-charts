@@ -1,9 +1,11 @@
 // =============================================================
-//  El Atlas N°3 — navegación entre gráficos (estilo OWID) + CTA Substack
+//  El Atlas · Especial "La geografía de los partidos"
+//  Navegación entre gráficos (estilo OWID) + CTA Substack
 // =============================================================
 // Se autoinyecta en <div id="chart-nav"></div>: flechas ← →, contador
-// "Gráfico N / 8" (linkea al index) y una card de suscripción que cambia de
-// publicación según el idioma activo (ES → El Atlas, EN → The Atlas).
+// "Gráfico N / M" (M = CHARTS.length, hoy 10; linkea al index) y una card de
+// suscripción que cambia de publicación según el idioma activo
+// (ES → El Atlas, EN → The Atlas).
 // Además agrega un link sutil de suscripción en la .top-bar (arriba).
 //
 // Autocontenido: lee el idioma del global LANG (fallback a <html lang>), y se

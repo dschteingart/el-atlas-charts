@@ -137,8 +137,9 @@
     /* Sin altura fija — el aspect ratio del viewBox manda. */
     height: auto;
     display: block;
-    /* Fondo blanco para el área de océano. */
-    background: #FBF8F2;
+    /* Océano: el crema DEL SISTEMA (var(--bg) = #FAF8F3). Antes era un #FBF8F2
+       propio, casi igual pero distinto — desentonaba con el resto del sitio. */
+    background: var(--bg);
     /* CRÍTICO: clipea el contenido cuando el zoom escala los paths más
        allá del viewBox. Sin esto, los países "se escapan" del SVG y
        tapan la leyenda, los botones y el header. */
@@ -147,32 +148,21 @@
   .m-country { transition: stroke 0.12s; }
 
   /* === Tooltip ===
-     Background BLANCO PURO sólido (no var(--bg) — el SVG está pintado de
-     #FBF8F2, sobre el mismo crema el tooltip se vuelve ilegible). Border
-     y sombra más marcadas para que despegue del mapa. */
+     OSCURO estándar de lib/style.css (fondo var(--ink), texto blanco). Antes
+     era blanco propio: se justificaba porque el océano estaba pintado de un
+     crema casi igual al del tooltip, pero el estándar NO es crema sino oscuro
+     —se lee perfecto sobre el mapa— así que la excepción no tenía razón de ser.
+     Acá solo quedan los ajustes propios del mapa (tamaño, z-index sobre los
+     controles) y la estructura de filas; los COLORES los pone lib. */
   .tooltip {
-    position: absolute;
-    pointer-events: none;
-    background: #FFFFFF;
-    border: 1px solid rgba(0, 0, 0, 0.18);
-    border-radius: 5px;
-    padding: 10px 13px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
-    font-family: var(--sans);
-    font-size: 12px;
-    color: var(--ink);
-    opacity: 0;
-    transition: opacity 0.12s;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
     z-index: 40;
     max-width: 260px;
     min-width: 180px;
   }
   .tooltip strong {
-    font-family: var(--serif);
     font-size: 14px;
     font-weight: 700;
-    color: var(--ink);
-    display: block;
     margin-bottom: 6px;
     line-height: 1.15;
   }
@@ -184,9 +174,9 @@
     margin-top: 3px;
     line-height: 1.3;
   }
-  .tooltip .tt-row span:first-child { color: var(--ink-muted); }
-  .tooltip .tt-row span:last-child  { font-weight: 600; color: var(--ink); }
-  .tooltip .tt-muted { color: var(--ink-muted); font-style: italic; margin-top: 2px; font-size: 11.5px; }
+  .tooltip .tt-row span:first-child { color: #C9C2B2; }
+  .tooltip .tt-row span:last-child  { font-weight: 600; color: #FFFFFF; }
+  .tooltip .tt-muted { color: #C9C2B2; font-style: italic; margin-top: 2px; font-size: 11.5px; }
   /* Fila metodológica (ej. "Con fecha de creación identificada"):
      italic + ligeramente más chica + ambos spans en color atenuado.
      Sugiere "esto es info de soporte, no la métrica principal". */
@@ -198,7 +188,7 @@
   }
   .tooltip .tt-row-sub span:first-child,
   .tooltip .tt-row-sub span:last-child {
-    color: var(--ink-muted);
+    color: #C9C2B2;
     font-weight: 500;
   }
 

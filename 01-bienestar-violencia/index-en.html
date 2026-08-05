@@ -1,25 +1,26 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Atlas N°1 — Más feliz de lo que debería, más violenta de lo tolerable</title>
-<meta name="description" content="América Latina se desvía del mundo en dos direcciones a la vez: más satisfecha con la vida y más violenta de lo que su desarrollo predeciría. 3 gráficos interactivos de El Atlas.">
+<title>The Atlas N°1 — Happier than it should be, more violent than tolerable</title>
+<meta name="description" content="Latin America deviates from the world in two directions at once: more satisfied with life and more violent than its development would predict. 3 interactive charts from The Atlas.">
 
 <!-- Open Graph / Twitter: preview del link al compartir (X, WhatsApp, etc.).
-     URLs ABSOLUTAS. Idioma del preview = español (meta estáticas; el crawler no
-     ejecuta JS ni lee ?lang). Imagen = el chart de bienestar (el que abre el tema). -->
+     URLs ABSOLUTAS. Idioma del preview = inglés (meta estáticas; el crawler no
+     ejecuta JS ni lee ?lang).
+     NOTA: og:image usa el thumb ES (el N°1 aún no tiene chart-1.en.png). -->
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
-<meta property="og:locale" content="es_AR">
-<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/01-bienestar-violencia/">
-<meta property="og:title" content="Más feliz de lo que debería, más violenta de lo tolerable — El Atlas N°1">
-<meta property="og:description" content="América Latina se desvía del mundo en dos direcciones a la vez.">
+<meta property="og:site_name" content="The Atlas · Mapping development">
+<meta property="og:locale" content="en_US">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/01-bienestar-violencia/index-en.html">
+<meta property="og:title" content="Happier than it should be, more violent than tolerable — The Atlas N°1">
+<meta property="og:description" content="Latin America deviates from the world in two directions at once.">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/01-bienestar-violencia/thumbs/chart-1.png">
-<meta property="og:image:alt" content="Bienestar subjetivo frente al PIB per cápita, país por país">
+<meta property="og:image:alt" content="Subjective wellbeing against GDP per capita, country by country">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Más feliz de lo que debería, más violenta de lo tolerable — El Atlas N°1">
-<meta name="twitter:description" content="América Latina se desvía del mundo en dos direcciones a la vez.">
+<meta name="twitter:title" content="Happier than it should be, more violent than tolerable — The Atlas N°1">
+<meta name="twitter:description" content="Latin America deviates from the world in two directions at once.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/01-bienestar-violencia/thumbs/chart-1.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -93,45 +94,45 @@
 
   <header>
     <div class="top-bar">
-      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 1</span></div>
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">The Atlas</span> · <span data-i18n="issue-num">No. 1</span></div>
       <div class="lang-toggle">
-        <button data-lang="es" class="active">ES</button>
-        <button data-lang="en">EN</button>
+        <button data-lang="es">ES</button>
+        <button data-lang="en" class="active">EN</button>
       </div>
     </div>
-    <h1 data-i18n="page-title">Más feliz de lo que debería, más violenta de lo tolerable</h1>
-    <p class="lede" data-i18n="page-lede">América Latina se desvía del mundo en dos direcciones a la vez.</p>
+    <h1 data-i18n="page-title">Happier than it should be, more violent than tolerable</h1>
+    <p class="lede" data-i18n="page-lede">Latin America deviates from the world in two directions at once.</p>
     <div class="accent-rule"></div>
   </header>
 
-  <div class="idx-section-label" data-i18n="index-charts-label">Gráficos interactivos</div>
+  <div class="idx-section-label" data-i18n="index-charts-label">Interactive charts</div>
   <div class="idx-grid">
 
-    <a class="idx-card" href="./chart-1.html">
+    <a class="idx-card" href="./chart-1.html?lang=en">
       <img class="idx-thumb" src="./thumbs/chart-1.png" data-thumb-es="./thumbs/chart-1.png" alt="" loading="lazy" onerror="this.remove()">
-      <span class="idx-card-num">Gráfico 1</span>
-      <h2 data-i18n="c1-title">Bienestar subjetivo vs. PIB per cápita</h2>
-      <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
+      <span class="idx-card-num">Chart 1</span>
+      <h2 data-i18n="c1-title">Subjective wellbeing vs. GDP per capita</h2>
+      <span class="idx-card-go" data-i18n="index-see">See chart →</span>
     </a>
 
-    <a class="idx-card" href="./chart-2.html">
+    <a class="idx-card" href="./chart-2.html?lang=en">
       <img class="idx-thumb" src="./thumbs/chart-2.png" data-thumb-es="./thumbs/chart-2.png" alt="" loading="lazy" onerror="this.remove()">
-      <span class="idx-card-num">Gráfico 2</span>
-      <h2 data-i18n="c2-title">Tasa de homicidios vs. PIB per cápita</h2>
-      <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
+      <span class="idx-card-num">Chart 2</span>
+      <h2 data-i18n="c2-title">Homicide rate vs. GDP per capita</h2>
+      <span class="idx-card-go" data-i18n="index-see">See chart →</span>
     </a>
 
-    <a class="idx-card" href="./chart-3.html">
+    <a class="idx-card" href="./chart-3.html?lang=en">
       <img class="idx-thumb" src="./thumbs/chart-3.png" data-thumb-es="./thumbs/chart-3.png" alt="" loading="lazy" onerror="this.remove()">
-      <span class="idx-card-num">Gráfico 3</span>
-      <h2 data-i18n="c3-title">La distancia que no se cierra</h2>
-      <span class="idx-card-go" data-i18n="index-see">Ver gráfico →</span>
+      <span class="idx-card-num">Chart 3</span>
+      <h2 data-i18n="c3-title">A gap that won’t close</h2>
+      <span class="idx-card-go" data-i18n="index-see">See chart →</span>
     </a>
 
   </div>
 
   <div class="idx-footer">
-    <span data-i18n="footer-signature">El Atlas · Daniel Schteingart · 2026</span>
+    <span data-i18n="footer-signature">The Atlas · Daniel Schteingart · 2026</span>
   </div>
 
 </div>
@@ -142,14 +143,12 @@
 <script src="./utils.js?v=22"></script>
 <script>
   // Miniaturas por idioma: cada tarjeta trae data-thumb-es (y data-thumb-en si
-  // existe la versión EN — el N°1 aún no la tiene, así que en inglés se muestra
-  // la ES). THUMB_V: cache-busting; al re-exportar un thumbnail se sobrescribe
-  // el MISMO archivo y bumpear este número fuerza recargarlos.
+  // existe la versión EN — el N°1 aún no la tiene, así que se muestra la ES).
   var THUMB_V = '1';
   function applyThumbLang() {
     var en = (typeof LANG !== 'undefined' && LANG === 'en');
     document.querySelectorAll('.idx-thumb').forEach(function (img) {
-      var want = img.getAttribute(en ? 'data-thumb-en' : 'data-thumb-es');
+      var want = img.getAttribute(en ? 'data-thumb-en' : 'data-thumb-es') || img.getAttribute('data-thumb-es');
       if (!want) return;
       want += '?v=' + THUMB_V;
       if (img.getAttribute('src') !== want) img.src = want;
@@ -163,6 +162,9 @@
       el.textContent = word + (i + 1);
     });
   }
+  // index-en.html: forzar inglés por defecto (no depende de ?lang).
+  try { LANG = 'en'; } catch (e) {}
+  document.documentElement.lang = 'en';
   applyI18n();
   applyThumbLang();
   applyCardNums();

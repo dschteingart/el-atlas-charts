@@ -908,7 +908,7 @@ function drawRegionalAvgTableHTML(rows, activeRegion) {
     return `<div class="${cls}">
       <span class="m-mt-swatch" style="background:${row.color}"></span>
       <span class="m-mt-label">${row.label}</span>
-      <span class="m-mt-value">${row.value.toFixed(1)}</span>
+      <span class="m-mt-value">${fmt(row.value, 1)}</span>
     </div>`;
   }).join('');
   container.innerHTML = html;
@@ -1020,7 +1020,7 @@ function drawRegionalAvgTable(svg, rows, activeRegion, SIZES, mobilePng) {
     valueEl.setAttribute('x', tableX + tableW);
     valueEl.setAttribute('y', y);
     valueEl.setAttribute('text-anchor', 'end');
-    valueEl.textContent = row.value.toFixed(1);
+    valueEl.textContent = fmt(row.value, 1);
     g.appendChild(valueEl);
   });
 }
@@ -1029,14 +1029,15 @@ function drawRegionalAvgTable(svg, rows, activeRegion, SIZES, mobilePng) {
 function m_showTooltip(e, d, tooltip) {
   const welfareLabel = t('c1-tt-welfare-' + d.welfare);
   const regionLabel = t('reg.' + d.region);
-  const regionColor = REGION_WB_COLORS[d.region] || '#888';
+  // Variante aclarada: este texto va DENTRO del tooltip oscuro.
+  const regionColor = REGION_WB_COLORS_ON_DARK[d.region] || '#C9C2B2';
   tooltip.innerHTML = `
     <strong>${m_displayName(d)}</strong>
     <div class="tt-region" style="color:${regionColor}">${regionLabel}</div>
     <div class="tt-row"><span>${t('c1-tt-year')}</span><span>${d.year}</span></div>
     <div class="tt-row"><span>${t('c1-tt-welfare')}</span><span>${welfareLabel}</span></div>
-    <div class="tt-row"><span>${t('c1-tt-gini-raw')}</span><span>${d.gini_raw.toFixed(1)}</span></div>
-    <div class="tt-row"><span>${t('c1-tt-gini-adj')}</span><span>${d.gini_adj.toFixed(1)}</span></div>
+    <div class="tt-row"><span>${t('c1-tt-gini-raw')}</span><span>${fmt(d.gini_raw, 1)}</span></div>
+    <div class="tt-row"><span>${t('c1-tt-gini-adj')}</span><span>${fmt(d.gini_adj, 1)}</span></div>
   `;
   tooltip.style.display = 'block';
   tooltip.style.opacity = '1';
