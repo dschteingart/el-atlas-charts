@@ -389,8 +389,11 @@ function initMapa() {
   window.__atlasDefaultPngFormat = 'worldmap';
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initMapa._wired) { initMapa._wired = true; window.addEventListener('atlas-editor-change', () => drawMapa()); }
+  // El PNG lleva sólo la procedencia del dato. La aclaración de que la escala
+  // se recalcula por categoría es para quien puede cambiar de categoría, y en
+  // una imagen fija no hay selector: ahí sobra.
   window.onBeforePngExportGetSourceText = function (chartId) {
     if (chartId !== '3') return null;
-    return (typeof t === 'function') ? t('c3-sources') : null;
+    return (typeof t === 'function') ? t('c3-sources-png') : null;
   };
 }

@@ -91,6 +91,10 @@ const ISSUE_I18N = {
     // mapa de drogadictos saldría todo oscuro y el de raza todo pálido. Lo que
     // el lector necesita saber es justamente lo contrario de lo que decía.
     'c3-sources':        'Datos: Integrated Values Survey (WVS/EVS), pregunta de vecinos, mención espontánea, % ponderado, último dato por país 2017-2023. La escala de color se recalcula en cada categoría —son sextiles de los países con dato—, así que los tonos se comparan dentro de un mismo mapa y no entre categorías. Mide intolerancia declarada.',
+    // En el PNG queda sólo la procedencia. Lo de la escala por categoría es un
+    // aviso para quien puede cambiar de categoría, y en una imagen fija no hay
+    // selector; y "mide intolerancia declarada" ya lo dice el subtítulo.
+    'c3-sources-png':    'Datos: Integrated Values Survey (WVS/EVS), pregunta de vecinos, mención espontánea, % ponderado, último dato por país 2017-2023.',
 
     // ---- Chart 2: la película (líneas temporales)
     'c2-title':          'El derrumbe de la homofobia latinoamericana',
@@ -242,6 +246,7 @@ const ISSUE_I18N = {
     'c3-tt-trend':       'Trend over time',
     'c3-tt-nodata':      'No survey data',
     'c3-sources':        'Data: Integrated Values Survey (WVS/EVS), neighbours question, spontaneous mention, weighted %, latest data per country 2017-2023. The colour scale is recomputed for each category (sextiles of the countries with data), so shades compare within a single map, not across categories. Measures declared intolerance.',
+    'c3-sources-png':    'Data: Integrated Values Survey (WVS/EVS), neighbours question, spontaneous mention, weighted %, latest data per country 2017-2023.',
 
     // ---- Chart 2: the trend (time series)
     'c2-title':          'The collapse of Latin American homophobia',
