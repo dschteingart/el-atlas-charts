@@ -83,7 +83,14 @@ const ISSUE_I18N = {
     'c3-tt-year':        'Medición',
     'c3-tt-trend':       'Evolución en el tiempo',
     'c3-tt-nodata':      'Sin dato en la encuesta',
-    'c3-sources':        'Datos: Integrated Values Survey (WVS/EVS), pregunta de vecinos, mención espontánea, % ponderado, último dato 2017-2023. Los cortes de color son fijos (en puntos de %) para que el mapa sea comparable entre categorías. A diferencia del mapa viral de 2013, la ventana temporal es única y el año de cada país está en el tooltip. Mide intolerancia declarada.',
+    // OJO con esta nota: decía que los cortes de color eran fijos «para que el
+    // mapa sea comparable entre categorías», y es al revés. mp_breaks() saca
+    // los sextiles de los países con dato de la categoría activa, así que la
+    // escala se rehace en cada una: «otra raza» va de <4% a ≥27% y
+    // «drogadictos» de <67% a ≥94%. Y así debe ser — con una escala única, el
+    // mapa de drogadictos saldría todo oscuro y el de raza todo pálido. Lo que
+    // el lector necesita saber es justamente lo contrario de lo que decía.
+    'c3-sources':        'Datos: Integrated Values Survey (WVS/EVS), pregunta de vecinos, mención espontánea, % ponderado, último dato por país 2017-2023. La escala de color se recalcula en cada categoría —son sextiles de los países con dato—, así que los tonos se comparan dentro de un mismo mapa y no entre categorías. Mide intolerancia declarada.',
 
     // ---- Chart 2: la película (líneas temporales)
     'c2-title':          'El derrumbe de la homofobia latinoamericana',
@@ -234,7 +241,7 @@ const ISSUE_I18N = {
     'c3-tt-year':        'Measured',
     'c3-tt-trend':       'Trend over time',
     'c3-tt-nodata':      'No survey data',
-    'c3-sources':        'Data: Integrated Values Survey (WVS/EVS), neighbours question, spontaneous mention, weighted %, latest data 2017-2023. Colour breaks are fixed (in percentage points) so the map is comparable across categories. Unlike the viral 2013 map, the time window is single and each country’s year is in the tooltip. Measures declared intolerance.',
+    'c3-sources':        'Data: Integrated Values Survey (WVS/EVS), neighbours question, spontaneous mention, weighted %, latest data per country 2017-2023. The colour scale is recomputed for each category (sextiles of the countries with data), so shades compare within a single map, not across categories. Measures declared intolerance.',
 
     // ---- Chart 2: the trend (time series)
     'c2-title':          'The collapse of Latin American homophobia',
