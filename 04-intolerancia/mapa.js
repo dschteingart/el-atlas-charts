@@ -221,7 +221,8 @@ function mp_drawLegend(svg, breaks) {
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const big = !!editorFormat || mp_isMobile();
   const sw = big ? 26 : 18, sh = big ? 15 : 11, fs = big ? 21 : 11.5;
-  const x0 = big ? 20 : 18, y0 = MP_H - (big ? 150 : 118);
+  const x0 = big ? 20 : 18;
+  const mp_gapFila = big ? 8 : 5, mp_gapNd = big ? 6 : 4, mp_margenAbajo = big ? 12 : 8;
   // etiquetas adaptativas: "<b1", "b1–b2", ..., "≥bN"
   const labels = [];
   for (let i = 0; i <= breaks.length; i++) {
@@ -229,6 +230,14 @@ function mp_drawLegend(svg, breaks) {
     else if (i === breaks.length) labels.push('≥' + breaks[breaks.length - 1] + '%');
     else labels.push(breaks[i - 1] + '–' + breaks[i]);
   }
+  // El alto del bloque se CALCULA, no se estima. Con `big` —cualquier formato de
+  // PNG— el `MP_H - 150` fijo dejaba la fila "Sin dato" 14 px POR DEBAJO del
+  // viewBox, así que salía cortada en los cinco formatos. Se cuentan las filas
+  // reales, las de color más la de "Sin dato", y esa última se mide por su
+  // TEXTO, que baja más que su cuadradito. Mismo arreglo que wrp-mapa.js.
+  const mp_altoLeyenda = labels.length * (sh + mp_gapFila) + mp_gapNd + Math.max(sh, fs * 1.1);
+  const y0 = MP_H - mp_altoLeyenda - mp_margenAbajo;
+
   const g = mp_ns('g'); svg.appendChild(g);
   const title = mp_ns('text');
   title.setAttribute('x', x0); title.setAttribute('y', y0 - (big ? 12 : 8));
@@ -237,14 +246,14 @@ function mp_drawLegend(svg, breaks) {
   title.textContent = (typeof t === 'function') ? t('c3-legend-title') : '% que lo rechaza';
   g.appendChild(title);
   labels.forEach((lab, i) => {
-    const y = y0 + i * (sh + (big ? 8 : 5));
+    const y = y0 + i * (sh + mp_gapFila);
     const r = mp_ns('rect'); r.setAttribute('x', x0); r.setAttribute('y', y); r.setAttribute('width', sw); r.setAttribute('height', sh);
     r.setAttribute('fill', MP_COLORS[Math.min(i, MP_COLORS.length - 1)]); r.setAttribute('stroke', 'rgba(0,0,0,0.12)'); r.setAttribute('stroke-width', 0.5); g.appendChild(r);
     const tx = mp_ns('text'); tx.setAttribute('x', x0 + sw + (big ? 10 : 7)); tx.setAttribute('y', y + sh * 0.82);
     tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif'); tx.style.fontSize = fs + 'px';
     tx.setAttribute('fill', '#3A3530'); tx.setAttribute('font-variant-numeric', 'tabular-nums'); tx.textContent = lab; g.appendChild(tx);
   });
-  const ny = y0 + labels.length * (sh + (big ? 8 : 5)) + (big ? 6 : 4);
+  const ny = y0 + labels.length * (sh + mp_gapFila) + mp_gapNd;
   const nr = mp_ns('rect'); nr.setAttribute('x', x0); nr.setAttribute('y', ny); nr.setAttribute('width', sw); nr.setAttribute('height', sh);
   nr.setAttribute('fill', MP_NODATA); nr.setAttribute('stroke', 'rgba(0,0,0,0.12)'); nr.setAttribute('stroke-width', 0.5); g.appendChild(nr);
   const nt = mp_ns('text'); nt.setAttribute('x', x0 + sw + (big ? 10 : 7)); nt.setAttribute('y', ny + sh * 0.82);
