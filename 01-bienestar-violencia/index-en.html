@@ -9,19 +9,19 @@
 <!-- Open Graph / Twitter: preview del link al compartir (X, WhatsApp, etc.).
      URLs ABSOLUTAS. Idioma del preview = inglés (meta estáticas; el crawler no
      ejecuta JS ni lee ?lang).
-     NOTA: og:image usa el thumb ES (el N°1 aún no tiene chart-1.en.png). -->
+ -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="The Atlas · Mapping development">
 <meta property="og:locale" content="en_US">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/01-bienestar-violencia/index-en.html">
 <meta property="og:title" content="Happier than it should be, more violent than tolerable — The Atlas N°1">
 <meta property="og:description" content="Latin America deviates from the world in two directions at once.">
-<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/01-bienestar-violencia/thumbs/chart-1.png">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/01-bienestar-violencia/thumbs/chart-1.en.png">
 <meta property="og:image:alt" content="Subjective wellbeing against GDP per capita, country by country">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Happier than it should be, more violent than tolerable — The Atlas N°1">
 <meta name="twitter:description" content="Latin America deviates from the world in two directions at once.">
-<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/01-bienestar-violencia/thumbs/chart-1.png">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/01-bienestar-violencia/thumbs/chart-1.en.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -109,21 +109,21 @@
   <div class="idx-grid">
 
     <a class="idx-card" href="./chart-1.html?lang=en">
-      <img class="idx-thumb" src="./thumbs/chart-1.png" data-thumb-es="./thumbs/chart-1.png" alt="" loading="lazy" onerror="this.remove()">
+      <img class="idx-thumb" src="./thumbs/chart-1.png" data-thumb-es="./thumbs/chart-1.png" data-thumb-en="./thumbs/chart-1.en.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Chart 1</span>
       <h2 data-i18n="c1-title">Subjective wellbeing vs. GDP per capita</h2>
       <span class="idx-card-go" data-i18n="index-see">See chart →</span>
     </a>
 
     <a class="idx-card" href="./chart-2.html?lang=en">
-      <img class="idx-thumb" src="./thumbs/chart-2.png" data-thumb-es="./thumbs/chart-2.png" alt="" loading="lazy" onerror="this.remove()">
+      <img class="idx-thumb" src="./thumbs/chart-2.png" data-thumb-es="./thumbs/chart-2.png" data-thumb-en="./thumbs/chart-2.en.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Chart 2</span>
       <h2 data-i18n="c2-title">Homicide rate vs. GDP per capita</h2>
       <span class="idx-card-go" data-i18n="index-see">See chart →</span>
     </a>
 
     <a class="idx-card" href="./chart-3.html?lang=en">
-      <img class="idx-thumb" src="./thumbs/chart-3.png" data-thumb-es="./thumbs/chart-3.png" alt="" loading="lazy" onerror="this.remove()">
+      <img class="idx-thumb" src="./thumbs/chart-3.png" data-thumb-es="./thumbs/chart-3.png" data-thumb-en="./thumbs/chart-3.en.png" alt="" loading="lazy" onerror="this.remove()">
       <span class="idx-card-num">Chart 3</span>
       <h2 data-i18n="c3-title">A gap that won’t close</h2>
       <span class="idx-card-go" data-i18n="index-see">See chart →</span>
@@ -139,12 +139,12 @@
 
 <script src="../lib/regions.js"></script>
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=24"></script>
+<script src="./i18n-issue.js?v=25"></script>
 <script src="../lib/utils.js?v=4"></script>
 <script>
   // Miniaturas por idioma: cada tarjeta trae data-thumb-es (y data-thumb-en si
   // existe la versión EN — el N°1 aún no la tiene, así que se muestra la ES).
-  var THUMB_V = '1';
+  var THUMB_V = '2';
   function applyThumbLang() {
     var en = (typeof LANG !== 'undefined' && LANG === 'en');
     document.querySelectorAll('.idx-thumb').forEach(function (img) {
