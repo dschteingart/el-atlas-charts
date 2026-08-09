@@ -35,6 +35,8 @@ function nextFreeColorIndex() {
 }
 
 function drawChart3() {
+  // Insight por default, neutral al customizar (ver n1ApplyHeadings en i18n-issue.js).
+  if (typeof n1ApplyHeadings === 'function') n1ApplyHeadings(3);
   const svg = document.getElementById('chart3');
   const tooltip = document.getElementById('tooltip3');
   if (!svg) return;

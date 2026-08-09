@@ -383,6 +383,10 @@ function setupCountrySearch(chartId) {
 //  DRAW CHART
 //==================================================================
 function drawChart(chartId) {
+  // Insight por default, neutral al customizar: el título/subtítulo se
+  // re-evalúan en cada redraw según el estado (países/regiones) — ver
+  // n1ApplyHeadings en i18n-issue.js.
+  if (typeof n1ApplyHeadings === 'function') n1ApplyHeadings(chartId);
   const yField = chartId === 1 ? 'life_satisfaction' : 'homicide_rate';
   const yYearField = chartId === 1 ? 'year_lifesat' : 'year_homicide';
 
