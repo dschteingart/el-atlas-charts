@@ -9,7 +9,7 @@ const ISSUE_I18N = {
   es: {
     'issue-num':  'N° 3',
     'page-title': 'El Atlas del fútbol',
-    'page-lede':  'Veintidós gráficos interactivos sobre dónde se juega el fútbol, de dónde salen los jugadores y quién gana: la expansión del juego por el planeta, la geografía del talento y el rendimiento de las selecciones.',
+    'page-lede':  'Gráficos interactivos sobre dónde se juega el fútbol, de dónde salen los jugadores y quién gana: la expansión del juego por el planeta, la geografía del talento y el rendimiento de las selecciones.',
 
     // Chart 1 — Scatter ELO vs PIB total
     'c1-title':            'Sudamérica juega en otra liga',
@@ -377,7 +377,7 @@ const ISSUE_I18N = {
   en: {
     'issue-num':  'N° 3',
     'page-title': 'The Atlas of football',
-    'page-lede':  'Twenty-two interactive charts on where football is played, where the players come from and who wins: the spread of the game across the planet, the geography of talent and the performance of national teams.',
+    'page-lede':  'Interactive charts on where football is played, where the players come from and who wins: the spread of the game across the planet, the geography of talent and the performance of national teams.',
 
     // Chart 1 — Scatter ELO vs total GDP
     'c1-title':            'South America plays in a different league',
