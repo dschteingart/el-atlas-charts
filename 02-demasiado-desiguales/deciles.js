@@ -789,9 +789,8 @@ function initDeciles() {
     }
   }
   // Vista compartible: el estado de la URL pisa el default ANTES del primer
-  // render, y el boton "Copiar link" de lib se habilita para esta pagina.
+  // render (el espejo estado->URL corre en cada drawDeciles).
   d_applyUrlState();
-  window.__atlasShareable = true;
   updateScaleToggleVisibility();
   renderDecilesSelectedChips();
   drawDeciles();
