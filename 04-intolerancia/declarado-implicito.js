@@ -131,6 +131,12 @@ function sc_points() {
 function sc_updateSubtitle() {
   const el = document.querySelector('.chart-subtitle[data-i18n="c5-subtitle"]');
   if (!el) return;
+  // El texto custom del editor manda (criterio 5 de la auditoria): si Daniel
+  // escribio un subtitulo en ?nl=1, no se pisa en cada redibujo. (Mismo guard
+  // que wrp-mapa.js / discriminado-comp.js — nunca se habia backporteado aca.)
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const aeLang = (ae && ae.lang) || (typeof LANG !== 'undefined' ? LANG : 'es');
+  if (ae && ae.texts && ae.texts[aeLang] && (ae.texts[aeLang].subtitle || '').trim()) return;
   const key = state[5].dim === 'race' ? 'c5-subtitle-race' : 'c5-subtitle-gay';
   if (typeof t === 'function') el.textContent = t(key);
 }

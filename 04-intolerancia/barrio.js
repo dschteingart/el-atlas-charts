@@ -110,6 +110,12 @@ function ba_computeData(iso) {
 function ba_updateSubtitle(iso) {
   const el = document.querySelector('.chart-subtitle[data-i18n="c8-subtitle-tpl"]');
   if (!el) return;
+  // El texto custom del editor manda (criterio 5 de la auditoria): si Daniel
+  // escribio un subtitulo en ?nl=1, no se pisa en cada redibujo. (Mismo guard
+  // que wrp-mapa.js / discriminado-comp.js — nunca se habia backporteado aca.)
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const aeLang = (ae && ae.lang) || (typeof LANG !== 'undefined' ? LANG : 'es');
+  if (ae && ae.texts && ae.texts[aeLang] && (ae.texts[aeLang].subtitle || '').trim()) return;
   const tpl = (typeof t === 'function') ? t('c8-subtitle-tpl') : '';
   if (tpl) el.textContent = tpl.replace('{PAIS}', ba_name(iso)).replace('{PERIODO}', ba_waveLabel());
 }

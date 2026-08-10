@@ -60,6 +60,12 @@ function pl_color(iso) {
 function pl_updateSubtitle() {
   const el = document.querySelector('.chart-subtitle[data-i18n="c2-subtitle-tpl"]');
   if (!el) return;
+  // El texto custom del editor manda (criterio 5 de la auditoria): si Daniel
+  // escribio un subtitulo en ?nl=1, no se pisa en cada redibujo. (Mismo guard
+  // que wrp-mapa.js / discriminado-comp.js — nunca se habia backporteado aca.)
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const aeLang = (ae && ae.lang) || (typeof LANG !== 'undefined' ? LANG : 'es');
+  if (ae && ae.texts && ae.texts[aeLang] && (ae.texts[aeLang].subtitle || '').trim()) return;
   const catA = (typeof t === 'function') ? t('catA-' + state[2].cat) : state[2].cat;
   const tpl = (typeof t === 'function') ? t('c2-subtitle-tpl') : '';
   if (tpl) el.textContent = tpl.replace('{CAT}', catA);

@@ -63,6 +63,12 @@ function pr_updateSubtitle() {
   const block = document.querySelector('.chart-block[data-chart="7"]');
   const el = block ? block.querySelector('.chart-subtitle') : null;
   if (!el) return;
+  // El texto custom del editor manda (criterio 5 de la auditoria): si Daniel
+  // escribio un subtitulo en ?nl=1, no se pisa en cada redibujo. (Mismo guard
+  // que wrp-mapa.js / discriminado-comp.js — nunca se habia backporteado aca.)
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const aeLang = (ae && ae.lang) || (typeof LANG !== 'undefined' ? LANG : 'es');
+  if (ae && ae.texts && ae.texts[aeLang] && (ae.texts[aeLang].subtitle || '').trim()) return;
   const key = state[7].ind === 'genero' ? 'c7-subtitle-genero' : 'c7-subtitle-origen';
   const txt = (typeof t === 'function') ? t(key) : '';
   if (txt) el.textContent = txt;

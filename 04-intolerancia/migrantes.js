@@ -84,6 +84,12 @@ function mg_computeData(iso, mode) {
 function mg_updateSubtitle(iso, mode) {
   const el = document.querySelector('.chart-subtitle[data-i18n="c9-subtitle"]');
   if (!el) return;
+  // El texto custom del editor manda (criterio 5 de la auditoria): si Daniel
+  // escribio un subtitulo en ?nl=1, no se pisa en cada redibujo. (Mismo guard
+  // que wrp-mapa.js / discriminado-comp.js — nunca se habia backporteado aca.)
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const aeLang = (ae && ae.lang) || (typeof LANG !== 'undefined' ? LANG : 'es');
+  if (ae && ae.texts && ae.texts[aeLang] && (ae.texts[aeLang].subtitle || '').trim()) return;
   const key = mode === 'centrado' ? 'c9-subtitle-centered' : 'c9-subtitle-raw';
   const tpl = (typeof t === 'function') ? t(key) : '';
   if (tpl) el.textContent = tpl.replace('{PAIS}', mg_name(iso));

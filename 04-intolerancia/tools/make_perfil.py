@@ -107,10 +107,18 @@ COLS = [
 ]
 
 # ------------------------------------------------------------------ agregacion
+# Canonizacion de codigos ANTES de agrupar: las fuentes usan convenciones
+# distintas para el mismo pais (la familia IVS/EVS trae Kosovo como XKS; la de
+# V-Dem/Banco Mundial como XKX). Sin este alias, Kosovo quedaba PARTIDO en dos
+# filas de PF_PAIS —una solo con 'piel', otra solo con 'excl'— y la tabla lo
+# listaba dos veces (bug de la auditoria del N°4, 2026-08-09; misma clase que
+# Argelia ALG+DZA en altura/edad del N°3).
+ISO_ALIAS = {'XKS': 'XKX'}
 regiones, paises = {}, {}
 for k, es, en, dec, uni, peor, datos in COLS:
     porreg = defaultdict(list)
     for iso, (v, y) in datos.items():
+        iso = ISO_ALIAS.get(iso, iso)
         r = region_de(iso)
         if r in REGIONES: porreg[r].append((v, y))
         if r in REGIONES:

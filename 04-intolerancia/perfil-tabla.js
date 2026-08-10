@@ -428,10 +428,15 @@ function pf_hideTooltip() { const tt = document.getElementById('tooltip26'); if 
 function pf_updateTextos() {
   const bloque = document.querySelector('.chart-block[data-chart="26"]');
   if (!bloque) return;
+  // El texto custom del editor manda (criterio 5 de la auditoria): el subtitulo
+  // y la nota dinamicos solo se aplican si Daniel NO los customizo en ?nl=1.
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const aeLang = (ae && ae.lang) || (typeof LANG !== 'undefined' ? LANG : 'es');
+  const tx = (ae && ae.texts && ae.texts[aeLang]) || {};
   const sub = bloque.querySelector('.chart-subtitle');
-  if (sub) sub.textContent = pf_t(state[26].vista === 'paises' ? 'c26-subtitle-paises' : 'c26-subtitle-reg');
+  if (sub && !(tx.subtitle || '').trim()) sub.textContent = pf_t(state[26].vista === 'paises' ? 'c26-subtitle-paises' : 'c26-subtitle-reg');
   const nota = pf_t(state[26].vista === 'paises' ? 'c26-sources-paises' : 'c26-sources-reg');
-  if (nota && nota.indexOf('c26-') !== 0) {
+  if (nota && nota.indexOf('c26-') !== 0 && !(tx.caption || '').trim()) {
     document.querySelectorAll('[data-i18n="c26-sources"]').forEach(el => { el.innerHTML = nota; });
   }
 }
@@ -590,6 +595,11 @@ function initPerfilTabla() {
   // de 42 px. Lo que no puede decir la tabla —cuándo— se queda.
   window.onBeforePngExportGetSubtitle = function (chartId) {
     if (String(chartId) !== '26') return null;
+    // Si Daniel customizo el subtitulo en ?nl=1, ese manda tambien en el PNG
+    // (devolver null hace que png-export lea el DOM, donde ya esta el custom).
+    const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+    const aeLang = (ae && ae.lang) || (typeof LANG !== 'undefined' ? LANG : 'es');
+    if (ae && ae.texts && ae.texts[aeLang] && (ae.texts[aeLang].subtitle || '').trim()) return null;
     return pf_t('c26-subtitle-png');
   };
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
