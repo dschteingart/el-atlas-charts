@@ -1,29 +1,57 @@
 // =============================================================
-//  El Atlas · Especial "La geografía de los partidos"
-//  Navegación entre gráficos (estilo OWID) + CTA Substack
+//  El Atlas N°3 — "El Atlas del fútbol"
+//  Navegación entre los 22 gráficos (estilo OWID) + CTA Substack
 // =============================================================
 // Se autoinyecta en <div id="chart-nav"></div>: flechas ← →, contador
-// "Gráfico N / M" (M = CHARTS.length, hoy 10; linkea al index) y una card de
-// suscripción que cambia de publicación según el idioma activo
-// (ES → El Atlas, EN → The Atlas).
+// "Gráfico N / 22" (linkea al índice único) y una card de suscripción que
+// cambia de publicación según el idioma activo (ES → El Atlas, EN → The Atlas).
 // Además agrega un link sutil de suscripción en la .top-bar (arriba).
+//
+// FUSIÓN (2026-08-10): el ex "Especial de partidos" se integró al N°3. Los
+// archivos NO se movieron —mover rompería los links que ya se compartieron y
+// las configuraciones guardadas del editor, que se indexan por el número
+// interno de cada gráfico—, así que la navegación cruza de carpeta: cada
+// entrada dice en qué carpeta vive y el href se arma relativo a la carpeta
+// desde donde se está mirando. Este archivo es IDÉNTICO en las dos carpetas.
 //
 // Autocontenido: lee el idioma del global LANG (fallback a <html lang>), y se
 // re-renderiza al togglear idioma. No depende de i18n-issue.js.
 (function () {
-  // Orden de los 10 gráficos del especial (= orden del index).
+  // Orden temático de los 22 (= orden del índice único, en 03-futbol/index.html):
+  // (1) cuánto y dónde se juega, (2) de dónde salen los jugadores, (3) quién gana.
+  const F3 = '03-futbol', FP = '03b-partidos';
   const CHARTS = [
-    'chart-actividad.html',
-    'chart-amistosos.html',
-    'chart-globalizacion.html',
-    'chart-duelos.html',
-    'chart-flujos.html',
-    'chart-ciudades.html',
-    'chart-neutral.html',
-    'chart-versus.html',
-    'chart-goles.html',
-    'chart-instancias.html'
+    [FP, 'chart-actividad.html'],
+    [F3, 'chart-clubage-map.html'],
+    [FP, 'chart-globalizacion.html'],
+    [FP, 'chart-flujos.html'],
+    [FP, 'chart-duelos.html'],
+    [FP, 'chart-amistosos.html'],
+    [FP, 'chart-neutral.html'],
+    [FP, 'chart-ciudades.html'],
+    [F3, 'chart-birthplace.html'],
+    [F3, 'chart-origenes.html'],
+    [F3, 'chart-natividad.html'],
+    [F3, 'chart-talento.html'],
+    [F3, 'chart-talento-clubes.html'],
+    [F3, 'chart-ligas.html'],
+    [F3, 'chart-altura.html'],
+    [F3, 'chart-edad.html'],
+    [F3, 'chart-dts.html'],
+    [F3, 'chart-elo-pib.html'],
+    [F3, 'chart-elo-trayectoria.html'],
+    [FP, 'chart-versus.html'],
+    [FP, 'chart-goles.html'],
+    [FP, 'chart-instancias.html']
   ];
+  // Carpeta desde la que se está mirando (penúltimo segmento de la ruta).
+  const HERE = (function () {
+    const segs = location.pathname.split('/').filter(Boolean);
+    return segs.length > 1 ? segs[segs.length - 2] : F3;
+  })();
+  // href relativo a HERE: mismo directorio → ./x.html; el otro → ../carpeta/x.html
+  function href(dir, file) { return (dir === HERE) ? ('./' + file) : ('../' + dir + '/' + file); }
+  const INDEX = href(F3, 'index.html');   // el índice único vive en 03-futbol
   const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
   const T = {
     es: { label: 'Gráfico', sub: 'Suscribite gratis', eyebrow: 'El Atlas · Newsletter', pitch: 'Cartografías del desarrollo de América Latina y el mundo, con datos y gráficos interactivos.', prev: 'Gráfico anterior', next: 'Gráfico siguiente', all: 'Ver todos los gráficos' },
@@ -41,21 +69,21 @@
       + `<span class="atlas-cta-pitch">${t.pitch}</span>`
       + `<span class="atlas-cta-go">${t.sub} →</span></a>`;
     const file = (location.pathname.split('/').pop() || '').toLowerCase();
-    const idx = CHARTS.indexOf(file);
+    const idx = CHARTS.findIndex(c => c[1] === file && c[0] === HERE);
     if (idx < 0) { host.innerHTML = cta; return; }   // index / otra página → solo CTA
     const n = CHARTS.length, num = idx + 1;
     const prev = idx > 0 ? CHARTS[idx - 1] : null;
     const next = idx < n - 1 ? CHARTS[idx + 1] : null;
-    const arrow = (file2, glyph, label) => file2
-      ? `<a class="atlas-nav-arrow" href="./${file2}" aria-label="${label}">${glyph}</a>`
+    const arrow = (c, glyph, label) => c
+      ? `<a class="atlas-nav-arrow" href="${href(c[0], c[1])}" aria-label="${label}">${glyph}</a>`
       : `<span class="atlas-nav-arrow is-off" aria-hidden="true">${glyph}</span>`;
     host.innerHTML =
       `<div class="atlas-nav">
          ${arrow(prev, '←', t.prev)}
-         <a class="atlas-nav-count" href="./index.html" title="${t.all}">${t.label} ${num} / ${n}</a>
+         <a class="atlas-nav-count" href="${INDEX}" title="${t.all}">${t.label} ${num} / ${n}</a>
          ${arrow(next, '→', t.next)}
        </div>
-       <a class="atlas-nav-all" href="./index.html">${t.all} →</a>` + cta;
+       <a class="atlas-nav-all" href="${INDEX}">${t.all} →</a>` + cta;
   }
   function injectCss() {
     if (document.getElementById('atlas-nav-css')) return;
@@ -115,12 +143,12 @@
   // entra directo a un gráfico desde un link compartido. Idempotente.
   function mountBrandLink() {
     const file = (location.pathname.split('/').pop() || '').toLowerCase();
-    if (CHARTS.indexOf(file) < 0) return;   // solo en páginas de gráfico
+    if (!CHARTS.some(c => c[1] === file && c[0] === HERE)) return;   // solo en páginas de gráfico
     const brand = document.querySelector('.top-bar .brand');
     if (!brand || brand.querySelector('a.atlas-home')) return;
     const a = document.createElement('a');
     a.className = 'atlas-home';
-    a.href = './index.html';
+    a.href = INDEX;
     a.title = T[lang()].all;
     while (brand.firstChild) a.appendChild(brand.firstChild);
     brand.appendChild(a);

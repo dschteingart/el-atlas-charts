@@ -59,8 +59,8 @@
       "numero": "3",
       "slug": "futbol",
       "carpeta": "03-futbol",
-      "titulo": "La geografía del talento futbolístico",
-      "en": "index-en.html + ?lang=en",
+      "titulo": "El Atlas del fútbol",
+      "en": "index-en.html + ?lang=en (índice único de los 22: los 12 de esta carpeta + los 10 de 03b-partidos)",
       "charts": [
         {
           "archivo": "chart-elo-pib.html",
@@ -124,14 +124,15 @@
           "tipo": "líneas/distribución/barras",
           "tema": "edad de los mundialistas"
         }
-      ]
+      ],
+      "nota": "Fusión 2026-08-10: el ex \"Especial de partidos\" se integró a este número. El índice único (03-futbol/index.html) lista los 22 en orden temático y la navegación cruza de carpeta. Los archivos NO se movieron: mover rompería los links compartidos y las configuraciones del editor, que se indexan por el número interno de cada gráfico (que sigue siendo 1-12 acá y 1-10 en 03b)."
     },
     {
       "numero": "especial",
       "slug": "partidos",
       "carpeta": "03b-partidos",
-      "titulo": "La geografía de los partidos de fútbol",
-      "en": "index-eng.html (index-en.html redirige) + ?lang=en",
+      "titulo": "El Atlas del fútbol — gráficos de partidos (integrados al N° 3)",
+      "en": "sin índice propio: index.html / index-eng.html / index-en.html redirigen al índice único del N° 3",
       "charts": [
         {
           "archivo": "chart-actividad.html",
@@ -185,7 +186,8 @@
           "tipo": "lollipop por instancia",
           "tema": "goles por partido según la instancia del Mundial (octavos, cuartos, final…)"
         }
-      ]
+      ],
+      "nota": "Ya no es un número aparte (fusión 2026-08-10): sus 10 gráficos se listan en el índice del N° 3. La carpeta se mantiene para no romper links ni configuraciones guardadas del editor."
     },
     {
       "numero": "4",

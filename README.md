@@ -4,7 +4,8 @@ Gráficos interactivos de **El Atlas** (newsletter de Daniel Schteingart, [elatl
 
 ## Estructura
 
-- Una carpeta por entrega: `01-bienestar-violencia`, `02-demasiado-desiguales`, `03-futbol`, `03b-partidos` (especial). Cada una tiene sus `chart-*.html`, un renderer JS por gráfico, sus `data-*.js` y sus strings de idioma (`i18n-issue.js`).
+- Una carpeta por entrega: `01-bienestar-violencia`, `02-demasiado-desiguales`, `03-futbol`, `03b-partidos`, `04-intolerancia`. Cada una tiene sus `chart-*.html`, un renderer JS por gráfico, sus `data-*.js` y sus strings de idioma (`i18n-issue.js`).
+- **Ojo con el N°3**: desde la fusión de 2026-08-10 el N°3 es "El Atlas del fútbol" y abarca **dos carpetas** — `03-futbol` (12 gráficos) y `03b-partidos` (10, el ex "Especial de partidos"). Se fusionó lo que ve el lector (un índice único en `03-futbol/index.html`, una navegación de 22 que cruza de carpeta, una sola marca) **sin mover archivos**: mover rompería los links ya compartidos y las configuraciones guardadas del editor, que se indexan por el número interno de cada gráfico (1-12 en `03-futbol`, 1-10 en `03b-partidos`; por eso los números internos siguen chocando y las claves i18n `cN-*` viven separadas por carpeta — en el índice único los 10 del ex especial usan claves `pN-title`). Los índices viejos de `03b-partidos` redirigen al único. `nav.js` es idéntico en las dos carpetas.
 - **`lib/`** — los motores compartidos (unificados en la Fase 2 de la auditoría, jul-2026):
   - `png-export.js` — compone el PNG en canvas (título/subtítulo/gráfico/nota/firma). Detecta el número por globals y elige filenames/formatos.
   - `editor.js` + `editor.css` — el modo edición `?nl=1` (ver abajo).

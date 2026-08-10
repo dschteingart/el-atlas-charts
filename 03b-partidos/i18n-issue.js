@@ -9,8 +9,12 @@
 const ES_ESPECIAL_PARTIDOS = true;  // sentinel para png-export
 const ISSUE_I18N = {
   es: {
-    'issue-num':  'Especial',
-    'page-title': 'La geografía de los partidos de fútbol',
+    // El ex "Especial" quedó integrado al N°3 ("El Atlas del fútbol", 2026-08-10):
+    // los archivos no se movieron (mover rompería los links compartidos y las
+    // configuraciones del editor), pero la marca de arriba y el índice son los
+    // del N°3. Ver 03-futbol/index.html.
+    'issue-num':  'N° 3',
+    'page-title': 'El Atlas del fútbol',
     'page-lede':  'Quién juega contra quién, dónde y cuánto: 49.000 partidos de selecciones desde 1872.',
 
     // ---- Chart 1: actividad (partidos, selecciones activas, debutantes)
@@ -322,8 +326,8 @@ const ISSUE_I18N = {
   },
 
   en: {
-    'issue-num':  'Special',
-    'page-title': 'The geography of football matches',
+    'issue-num':  'N° 3',
+    'page-title': 'The Atlas of football',
     'page-lede':  'Who plays whom, where and how often: 49,000 international matches since 1872.',
 
     'c1-title':            'The planet filled up with football',

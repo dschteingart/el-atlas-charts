@@ -28,8 +28,8 @@ def replace_once(s, old, new, label):
 src = replace_once(src, '<html lang="es">', '<html lang="en">', "html lang")
 
 # 2) bloque <head>: title + description + Open Graph/Twitter, todo en inglés
-ES_HEAD = '''<title>El Atlas N°3 — La geografía del talento futbolístico</title>
-<meta name="description" content="Dónde nacen los jugadores, dónde juegan y por qué algunos países rinden muy por encima del tamaño de su economía. 12 gráficos interactivos de El Atlas.">
+ES_HEAD = '''<title>El Atlas del fútbol — El Atlas N°3</title>
+<meta name="description" content="Veintidós gráficos interactivos sobre dónde se juega el fútbol, de dónde salen los jugadores y quién gana.">
 
 <!-- Open Graph / Twitter: preview del link al compartir (X, WhatsApp, etc.).
      Las URLs deben ser ABSOLUTAS. Idioma del preview = español (las meta tags
@@ -38,17 +38,17 @@ ES_HEAD = '''<title>El Atlas N°3 — La geografía del talento futbolístico</t
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/">
-<meta property="og:title" content="La geografía del talento futbolístico — El Atlas N°3">
-<meta property="og:description" content="Dónde nacen los jugadores, dónde juegan y por qué algunos países rinden muy por encima del tamaño de su economía.">
+<meta property="og:title" content="El Atlas del fútbol — El Atlas N°3">
+<meta property="og:description" content="Veintidós gráficos interactivos sobre dónde se juega el fútbol, de dónde salen los jugadores y quién gana.">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-birthplace.png">
 <meta property="og:image:alt" content="Mapa mundial de las ciudades de nacimiento de los jugadores mundialistas">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="La geografía del talento futbolístico — El Atlas N°3">
-<meta name="twitter:description" content="Dónde nacen los jugadores, dónde juegan y por qué algunos países rinden muy por encima del tamaño de su economía.">
+<meta name="twitter:title" content="El Atlas del fútbol — El Atlas N°3">
+<meta name="twitter:description" content="Veintidós gráficos interactivos sobre dónde se juega el fútbol, de dónde salen los jugadores y quién gana.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-birthplace.png">'''
 
-EN_HEAD = '''<title>The Atlas N°3 — The geography of football talent</title>
-<meta name="description" content="Where players are born, where they play, and why some countries punch far above the size of their economy. 12 interactive charts from The Atlas.">
+EN_HEAD = '''<title>The Atlas of football — The Atlas No. 3</title>
+<meta name="description" content="Twenty-two interactive charts on where football is played, where the players come from and who wins.">
 
 <!-- Open Graph / Twitter (INGLÉS). Generado por data-sources/build_index_en.py
      desde index.html — NO editar a mano. Página completa (no redirección) para
@@ -57,22 +57,24 @@ EN_HEAD = '''<title>The Atlas N°3 — The geography of football talent</title>
 <meta property="og:site_name" content="The Atlas · Mapping development">
 <meta property="og:locale" content="en_US">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/index-en.html">
-<meta property="og:title" content="The geography of football talent — The Atlas N°3">
-<meta property="og:description" content="Where players are born, where they play, and why some countries punch far above the size of their economy.">
+<meta property="og:title" content="The Atlas of football — The Atlas No. 3">
+<meta property="og:description" content="Twenty-two interactive charts on where football is played, where the players come from and who wins.">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-birthplace.en.png">
 <meta property="og:image:alt" content="World map of the birthplaces of World Cup players">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="The geography of football talent — The Atlas N°3">
-<meta name="twitter:description" content="Where players are born, where they play, and why some countries punch far above the size of their economy.">
+<meta name="twitter:title" content="The Atlas of football — The Atlas No. 3">
+<meta name="twitter:description" content="Twenty-two interactive charts on where football is played, where the players come from and who wins.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-birthplace.en.png">'''
 
 src = replace_once(src, ES_HEAD, EN_HEAD, "head meta block")
 
-# 3) miniaturas: el src por defecto pasa a la versión .en (data-thumb-* intacto)
-src, n = re.subn(r'(<img class="idx-thumb" src="\./thumbs/chart-[a-z0-9-]+)\.png"',
+# 3) miniaturas: el src por defecto pasa a la versión .en (data-thumb-* intacto).
+# Desde la fusión (2026-08-10) el índice lista 22: 12 con miniatura en esta
+# carpeta (./thumbs/) y 10 en la del ex especial (../03b-partidos/thumbs/).
+src, n = re.subn(r'(<img class="idx-thumb" src="(?:\./|\.\./03b-partidos/)thumbs/chart-[a-z0-9-]+)\.png"',
                  r'\1.en.png"', src)
-if n != 12:
-    sys.exit("ERROR: esperaba 12 miniaturas, cambié %d." % n)
+if n != 22:
+    sys.exit("ERROR: esperaba 22 miniaturas, cambié %d." % n)
 
 # 4) toggle: marcar EN como activo (evita el flash de ES antes de que corra el JS)
 src = replace_once(src,

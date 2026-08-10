@@ -8,8 +8,8 @@
 const ISSUE_I18N = {
   es: {
     'issue-num':  'N° 3',
-    'page-title': 'La geografía del talento futbolístico',
-    'page-lede':  'Dónde nacen los jugadores, dónde juegan y por qué algunos países rinden muy por encima del tamaño de su economía.',
+    'page-title': 'El Atlas del fútbol',
+    'page-lede':  'Veintidós gráficos interactivos sobre dónde se juega el fútbol, de dónde salen los jugadores y quién gana: la expansión del juego por el planeta, la geografía del talento y el rendimiento de las selecciones.',
 
     // Chart 1 — Scatter ELO vs PIB total
     'c1-title':            'Sudamérica juega en otra liga',
@@ -163,6 +163,22 @@ const ISSUE_I18N = {
 
     // Index del número (landing)
     'index-see':             'Ver gráfico →',
+    'index-charts-label':    'Gráficos interactivos',
+    // Títulos de los 10 gráficos que viven en 03b-partidos (el ex "Especial",
+    // hoy integrado en este mismo índice). Van con prefijo p* porque las claves
+    // c1..c10 ya están tomadas por los gráficos de esta carpeta: los números
+    // internos de cada gráfico NO se tocaron (si se renumeraran, se perderían
+    // las configuraciones guardadas del editor, que se indexan por ese número).
+    'p1-title':  'El planeta se llenó de fútbol',
+    'p2-title':  'El amistoso pierde terreno',
+    'p3-title':  'El fútbol que no se globalizó',
+    'p4-title':  'El fútbol se juega entre vecinos',
+    'p5-title':  'El 86% del fútbol se juega puertas adentro',
+    'p6-title':  'Las sedes del fútbol internacional',
+    'p7-title':  'El fútbol se muda a canchas neutrales',
+    'p8-title':  'Solo dos confederaciones ganan fuera de su región',
+    'p9-title':  'Los goles del fútbol internacional',
+    'p10-title': 'Los goles según la instancia del Mundial',
     'index-paper-kicker':    'Nota técnica',
     'index-paper-title':     'La excepcionalidad futbolística sudamericana: antigüedad, monopolio del talento y un residuo persistente',
     'index-paper-go':        'Leer la nota →',
@@ -360,8 +376,8 @@ const ISSUE_I18N = {
   },
   en: {
     'issue-num':  'N° 3',
-    'page-title': 'The geography of football talent',
-    'page-lede':  'Where players are born, where they play, and why some countries punch far above the size of their economy.',
+    'page-title': 'The Atlas of football',
+    'page-lede':  'Twenty-two interactive charts on where football is played, where the players come from and who wins: the spread of the game across the planet, the geography of talent and the performance of national teams.',
 
     // Chart 1 — Scatter ELO vs total GDP
     'c1-title':            'South America plays in a different league',
@@ -489,6 +505,19 @@ const ISSUE_I18N = {
 
     // Issue index (landing)
     'index-see':             'View chart →',
+    'index-charts-label':    'Interactive charts',
+    // Titles of the 10 charts living in 03b-partidos (the former "Special", now
+    // folded into this same index). Prefixed p* because c1..c10 are taken.
+    'p1-title':  'The planet filled up with football',
+    'p2-title':  'The friendly is losing ground',
+    'p3-title':  'The football that never globalized',
+    'p4-title':  'Football is played among neighbors',
+    'p5-title':  '86% of football is played within one confederation',
+    'p6-title':  'The venues of international football',
+    'p7-title':  'Football is moving to neutral grounds',
+    'p8-title':  'Only two confederations win outside their region',
+    'p9-title':  'Goals in international football',
+    'p10-title': 'Goals by stage of the World Cup',
     'index-paper-kicker':    'Technical note',
     'index-paper-title':     'South American footballing exceptionalism: club age, talent monopoly and a persistent residual',
     'index-paper-go':        'Read the note →',
