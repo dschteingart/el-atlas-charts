@@ -247,6 +247,9 @@ function d_placeEndLabels(labels) {
 function drawDeciles() {
   const svg = document.getElementById('chart3');
   if (!svg) return;
+  // Vista compartible: la URL refleja el estado en cada redibujo (todas las
+  // mutaciones de seleccion/anio/toggles pasan por aca).
+  d_syncUrl();
 
   // Config del editor (sizes/textos custom) si el panel está activo.
   const aeCfg = (window.AtlasEditor && window.AtlasEditor.getConfig)
@@ -733,6 +736,43 @@ window.onBeforePngExportGetSourceText = (chartId) => {
 };
 
 // =================== Init ===================
+// Vista compartible: aplica el estado que venga en la URL (?paises=NOR~ARG,
+// &anio=, &modo=percentile, &esc=linear) ANTES del primer render, validando
+// contra el dataset. Escribe el espejo drawDeciles→d_syncUrl. Convenciones del
+// grapher del N°4: 'paises' con separador ~, y la vista default = URL limpia.
+function d_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const s = state[3];
+  const p = atlasUrlParam('paises');
+  if (p) {
+    const latest = DATA_DECILES.data_by_year[String(DATA_DECILES.latest_year)] || {};
+    const validos = p.split('~').filter(iso => /^[A-Z]{3}$/.test(iso) &&
+      Object.keys(DATA_DECILES.data_by_year).some(y => DATA_DECILES.data_by_year[y].countries[iso]));
+    if (validos.length) s.selectedCountries = validos;
+  }
+  const y = parseInt(atlasUrlParam('anio'), 10);
+  if (y && DATA_DECILES.data_by_year[String(y)]) s.year = y;
+  const modo = atlasUrlParam('modo');
+  if (modo === 'percentile' || modo === 'income') s.yMode = modo;
+  const esc = atlasUrlParam('esc');
+  if (esc === 'linear' || esc === 'log') s.yScale = esc;
+}
+
+// El espejo: estado → URL. Solo lo NO-default viaja (regla de atlasSyncUrl).
+function d_syncUrl() {
+  if (typeof atlasSyncUrl !== 'function') return;
+  const s = state[3];
+  const def = new Set(D_DEFAULT_COUNTRIES);
+  const sel = s.selectedCountries || [];
+  const selEsDefault = sel.length === D_DEFAULT_COUNTRIES.length && sel.every(c => def.has(c));
+  atlasSyncUrl({
+    paises: selEsDefault ? null : sel.join('~'),
+    anio: String(s.year) === String(DATA_DECILES.latest_year || 2025) ? null : s.year,
+    modo: s.yMode === 'income' ? null : s.yMode,
+    esc: s.yScale === 'log' ? null : s.yScale
+  });
+}
+
 function initDeciles() {
   if (!state[3]) {
     state[3] = {
@@ -748,6 +788,10 @@ function initDeciles() {
       state[3].selectedCountries = [...D_DEFAULT_COUNTRIES];
     }
   }
+  // Vista compartible: el estado de la URL pisa el default ANTES del primer
+  // render, y el boton "Copiar link" de lib se habilita para esta pagina.
+  d_applyUrlState();
+  window.__atlasShareable = true;
   updateScaleToggleVisibility();
   renderDecilesSelectedChips();
   drawDeciles();
