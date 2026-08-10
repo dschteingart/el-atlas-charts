@@ -324,6 +324,7 @@ function s_yTicks(yDomain, target=6) {
 function drawScatter() {
   const svg = document.getElementById('chart1');
   if (!svg) return;
+  ep_syncUrl();
   svg.innerHTML = '';
 
   // Editor sidebar: leemos config si está activo. Mismo patrón que N°2.
@@ -1287,6 +1288,63 @@ function setupScatterDownloadCSV() {
 }
 
 // =================== Init ===================
+// Vista compartible (?paises=&ocultas=&periodo=) — lib/utils.js.
+// `ocultas` lleva las confederaciones apagadas por su nombre FIFA (legible y
+// estable); `stickyConf` (el banner de la última conf hovereada) es transitorio
+// y NO viaja en el link. El período se aplica manejando el slider real.
+// El gate evita que el primer draw del init (default) borre los params de la
+// URL antes de que ep_applyUrlState los lea.
+let ep_urlWired = false;
+function ep_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const s = state[1];
+  let redraw = false;
+  const p = atlasUrlParam('paises');
+  if (p) {
+    const en = new Set();
+    DATA_ELO_PIB.forEach(d => en.add(d.iso3));
+    const validos = p.split('~').filter(iso => en.has(iso));
+    if (validos.length) { s.selectedCountries = new Set(validos); redraw = true; }
+  }
+  const oc = atlasUrlParam('ocultas');
+  if (oc) {
+    const validas = oc.split('~').filter(c => CONF_FIFA_ORDER.includes(c));
+    // nunca aceptar TODAS apagadas (quedaría el chart vacío)
+    if (validas.length && validas.length < CONF_FIFA_ORDER.length) { s.hiddenConfs = new Set(validas); redraw = true; }
+  }
+  if (redraw) {
+    renderScatterLegend();
+    renderScatterSelectedChips();
+    drawScatter();
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    const f = document.getElementById('s-slider-from'), t = document.getElementById('s-slider-to');
+    if (a && b && a < b && f && t) {
+      const fire = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+      if (a < s.period[0]) { fire(f, a); fire(t, b); } else { fire(t, b); fire(f, a); }
+    }
+  }
+  ep_urlWired = true;
+  ep_syncUrl();   // normaliza la URL al estado realmente aplicado
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10): vista de
+// fábrica = URL limpia; cualquier desvío = estado COMPLETO en la URL.
+function ep_syncUrl() {
+  if (!ep_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = state[1];
+  if (!s || !(s.selectedCountries instanceof Set) || !s.period) return;
+  const sel = Array.from(s.selectedCountries);
+  const oc = CONF_FIFA_ORDER.filter(c => s.hiddenConfs && s.hiddenConfs.has(c));
+  const todoDefault = sel.length === 0 && oc.length === 0
+    && s.period[0] === S_PERIOD_DEFAULT[0] && s.period[1] === S_PERIOD_DEFAULT[1];
+  atlasSyncUrl(todoDefault
+    ? { paises: null, ocultas: null, periodo: null }
+    : { paises: sel.join('~') || null, ocultas: oc.join('~') || null, periodo: s.period[0] + '~' + s.period[1] });
+}
+
 function initScatter() {
   // selectedCountries arranca VACÍO — los CONMEBOL se etiquetan por la lógica
   // intrínseca del chart (confed === 'CONMEBOL'), no por estado pre-cargado.
@@ -1332,6 +1390,8 @@ function initScatter() {
   setupScatterSearch();
   setupScatterDownloadCSV();
   renderScatterSelectedChips();
+  // Vista compartible: aplicar el estado de la URL con los controles ya cableados.
+  ep_applyUrlState();
 
   // Editor sidebar: re-render cuando el usuario edita.
   if (!initScatter._editorWired) {

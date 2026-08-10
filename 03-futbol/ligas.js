@@ -134,6 +134,7 @@ function lg_niceScale(maxVal) {
 function drawLigas() {
   const svg = document.getElementById('chart7');
   if (!svg) return;
+  lg_syncUrl();
   svg.innerHTML = '';
   lg_initData();
 
@@ -509,6 +510,66 @@ function setupLigasSlider() {
   });
 }
 
+// Vista compartible (?modo=&europa=&paises=&periodo=) — lib/utils.js.
+// Aplica manejando los controles reales; el período usa el slider de lib
+// (estado + atlasResyncRangeSliders, que reposiciona los thumbs).
+// El gate evita que el primer draw del init (default) borre los params de la
+// URL antes de que lg_applyUrlState los lea.
+let lg_urlWired = false;
+function lg_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const s = state[7];
+  const modo = atlasUrlParam('modo');
+  if ((modo === 'line' || modo === 'stack') && s.mode !== modo) {
+    const b = document.getElementById(modo === 'stack' ? 'lg-mode-stack' : 'lg-mode-line');
+    if (b) b.click();
+  }
+  if (atlasUrlParam('europa') === '1' && !s.showEuropa) {
+    const b = document.getElementById('lg-europa-toggle');
+    if (b) b.click();
+  }
+  let redraw = false;
+  const p = atlasUrlParam('paises');
+  if (p) {
+    const validos = p.split('~').filter(iso => lg_byIso && lg_byIso[iso]);
+    if (validos.length) {
+      const m = new Map();
+      validos.forEach((iso, i) => m.set(iso, i));
+      s.selectedCountries = m;
+      lg_renderChips();
+      redraw = true;
+    }
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    // el slider salta de Mundial en Mundial: solo años que existen en lg_years
+    if (lg_years && lg_years.includes(a) && lg_years.includes(b) && a < b) {
+      s.period = [a, b];
+      if (typeof atlasResyncRangeSliders === 'function') atlasResyncRangeSliders();
+      redraw = true;
+    }
+  }
+  if (redraw) drawLigas();
+  lg_urlWired = true;
+  lg_syncUrl();   // normaliza la URL al estado realmente aplicado
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10): vista de
+// fábrica = URL limpia; cualquier desvío = estado COMPLETO en la URL.
+function lg_syncUrl() {
+  if (!lg_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = state[7];
+  if (!s || !(s.selectedCountries instanceof Map) || !s.period) return;
+  const sel = Array.from(s.selectedCountries.keys());
+  const selDef = sel.length === LG_BIG5.length && LG_BIG5.every(iso => s.selectedCountries.has(iso));
+  const todoDefault = selDef && s.mode === 'line' && !s.showEuropa
+    && s.period[0] === LG_YEAR_MIN && s.period[1] === LG_YEAR_MAX;
+  atlasSyncUrl(todoDefault
+    ? { modo: null, europa: null, paises: null, periodo: null }
+    : { modo: s.mode, europa: s.showEuropa ? '1' : null, paises: sel.join('~'), periodo: s.period[0] + '~' + s.period[1] });
+}
+
 function initLigas() {
   lg_initData();
   if (!state[7]) state[7] = {};
@@ -527,6 +588,8 @@ function initLigas() {
   setupLigasEuropaToggle();
   setupLigasCSV();
   lg_renderChips();
+  // Vista compartible: aplicar el estado de la URL con los controles ya cableados.
+  lg_applyUrlState();
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initLigas._wired) { initLigas._wired = true; window.addEventListener('atlas-editor-change', () => drawLigas()); }
 

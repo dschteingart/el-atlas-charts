@@ -249,6 +249,7 @@ function tl_niceTicks(min, max, target) {
 function drawLines() {
   const svg = document.getElementById('chart5');
   if (!svg) return;
+  tl_syncUrl();
   svg.innerHTML = '';
   // Token de render: los listeners de hover se pegan al <svg> (no a sus hijos), asi
   // que innerHTML='' NO los borra y sobreviven entre renders. En vez de removerlos
@@ -1093,6 +1094,69 @@ function setupLinesDownloadCSV() {
 }
 
 //==================================================================
+//  Vista compartible (?modo=&vista=&paises=&periodo=) — lib/utils.js.
+//  Aplica el estado MANEJANDO los controles reales (clicks e inputs con
+//  dispatch): así el botón y el slider quedan sincronizados con lo aplicado
+//  (si se pisara el state a mano, el dato queda bien pero el control muestra
+//  el default — lección del slider de olas del N°4).
+//==================================================================
+// El gate evita que el PRIMER draw del init (estado default) borre los params
+// de la URL antes de que tl_applyUrlState los lea: el espejo recién corre
+// cuando la URL entrante ya fue aplicada.
+let tl_urlWired = false;
+function tl_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const click = (sel) => { const b = document.querySelector(sel); if (b) b.click(); };
+  const modo = atlasUrlParam('modo');
+  if ((modo === 'rank' || modo === 'elo') && state[5].mode !== modo)
+    click(`.toggle[data-target="tl-mode"] button[data-mode="${modo}"]`);
+  const vista = atlasUrlParam('vista');
+  if ((vista === 'overlay' || vista === 'multiples') && (state[5].layout || 'overlay') !== vista)
+    click(`.toggle[data-target="tl-layout"] button[data-layout="${vista}"]`);
+  const p = atlasUrlParam('paises');
+  if (p) {
+    const validos = p.split('~').filter(iso => tl_byIso && tl_byIso[iso]);
+    if (validos.length) {
+      const m = new Map();
+      validos.forEach(iso => m.set(iso, tl_nextFreeColorIndexFrom(m)));
+      state[5].selectedCountries = m;
+      tl_renderChips();
+      drawLines();
+    }
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    const f = document.getElementById('tl-slider-from'), t = document.getElementById('tl-slider-to');
+    if (a && b && a < b && f && t) {
+      const fire = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+      // primero el thumb que se ALEJA del otro, para no chocar con el clamp de ventana mínima
+      if (a < state[5].period[0]) { fire(f, a); fire(t, b); } else { fire(t, b); fire(f, a); }
+    }
+  }
+  tl_urlWired = true;
+  tl_syncUrl();   // normaliza la URL al estado realmente aplicado
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10): la vista
+// de fábrica viaja como URL LIMPIA (link evergreen); apenas el lector toca
+// CUALQUIER cosa, la URL lleva el estado COMPLETO (foto fiel de lo que veía).
+// Corre al tope de drawLines: toda mutación pasa por ahí.
+function tl_syncUrl() {
+  if (!tl_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = state[5];
+  if (!s || !(s.selectedCountries instanceof Map) || !s.period) return;
+  const sel = Array.from(s.selectedCountries.keys());
+  const selDef = sel.length === TL_DEFAULT_SELECTION.length && TL_DEFAULT_SELECTION.every(iso => s.selectedCountries.has(iso));
+  const todoDefault = selDef && (s.mode || TL_MODE_DEFAULT) === TL_MODE_DEFAULT
+    && (s.layout || 'overlay') === 'overlay'
+    && s.period[0] === TL_PERIOD_DEFAULT[0] && s.period[1] === TL_PERIOD_DEFAULT[1];
+  atlasSyncUrl(todoDefault
+    ? { modo: null, vista: null, paises: null, periodo: null }
+    : { modo: s.mode, vista: s.layout || 'overlay', paises: sel.join('~'), periodo: s.period[0] + '~' + s.period[1] });
+}
+
+//==================================================================
 //  Init + registro PNG
 //==================================================================
 function initLines() {
@@ -1117,6 +1181,8 @@ function initLines() {
   setupLinesSearch();
   setupLinesDownloadCSV();
   tl_renderChips();
+  // Vista compartible: aplicar el estado de la URL con los controles ya cableados.
+  tl_applyUrlState();
 
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initLines._editorWired) {

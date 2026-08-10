@@ -211,6 +211,7 @@ function vs_ticks(lo, hi, target) {
 // ---- DRAW: router -----------------------------------------------------------
 function drawVersus() {
   if (typeof DATA_VERSUS === 'undefined') return;
+  vs_syncUrl();
   const s = vs_state();
   if (s.view === 'rank') vs_drawBars();
   else if (s.view === 'matrix') vs_drawMatrix();
@@ -1085,6 +1086,69 @@ function vs_setupCSV() {
   }));
 }
 
+// Vista compartible (?vista=&cat=&medida=&ma=&matriz=&periodo=) — lib/utils.js.
+// Las TRES selecciones custom (teamsSel del scatter, teamRows de la matriz,
+// lineSel de la evolución) NO viajan en el link por ahora: son null-o-array con
+// semántica propia por vista; si un lector las personalizó, el link igual abre
+// la misma pestaña con su set default. Queda para una v2 si Daniel lo pide.
+// El gate evita que el primer draw del init (default) borre los params de la
+// URL antes de que vs_applyUrlState los lea.
+let vs_urlWired = false;
+function vs_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const click = (q) => { const b = document.querySelector(q); if (b) b.click(); };
+  // la matriz primero: si el link trae vista=matrix + matriz=teams, el tab ya
+  // abre con el modo correcto (y dispara la carga lazy de selecciones).
+  const matriz = atlasUrlParam('matriz');
+  if (matriz === 'conf' || matriz === 'teams') click(`#vs-matrix-mode button[data-mm="${matriz}"]`);
+  const vista = atlasUrlParam('vista');
+  const tabId = { rank: 'vs-tab-rank', matrix: 'vs-tab-matrix', lines: 'vs-tab-evo', scatter: 'vs-tab-scatter' }[vista];
+  if (tabId) click('#' + tabId);
+  const cat = atlasUrlParam('cat');
+  const catSel = document.getElementById('vs-cat-select');
+  if (cat && catSel) {
+    const opt = catSel.querySelector(`option[value="${cat}"]`);
+    // las competencias sin cruces están ocultas del select: no aplicarlas
+    if (opt && opt.style.display !== 'none' && catSel.value !== cat) {
+      catSel.value = cat;
+      catSel.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  }
+  const medida = atlasUrlParam('medida');
+  if (medida === 'eff' || medida === 'gd') click(`#vs-metric button[data-metric="${medida}"]`);
+  const ma = parseInt(atlasUrlParam('ma'), 10);
+  const maEl = document.getElementById('vs-ma');
+  if (ma && maEl && +maEl.value !== ma && ma >= +maEl.min && ma <= +maEl.max) {
+    maEl.value = ma;
+    maEl.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    const f = document.getElementById('vs-slider-from'), t = document.getElementById('vs-slider-to');
+    if (a && b && a <= b && f && t) {   // a===b permitido: un Mundial solo (MINW=0)
+      const fire = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+      if (a < vs_state().period[0]) { fire(f, a); fire(t, b); } else { fire(t, b); fire(f, a); }
+    }
+  }
+  vs_urlWired = true;
+  vs_syncUrl();   // normaliza la URL al estado realmente aplicado
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10): vista de
+// fábrica = URL limpia; cualquier desvío = estado COMPLETO en la URL. Como en
+// goles, `periodo` solo viaja cuando el lector movió el slider (periodAuto).
+function vs_syncUrl() {
+  if (!vs_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = vs_state();
+  const todoDefault = s.view === 'rank' && String(s.cat) === 'ALL' && s.metric === 'eff'
+    && s.maYears === 8 && s.matrixMode === 'conf' && s.periodAuto !== false;
+  atlasSyncUrl(todoDefault
+    ? { vista: null, cat: null, medida: null, ma: null, matriz: null, periodo: null }
+    : { vista: s.view, cat: String(s.cat), medida: s.metric, ma: String(s.maYears), matriz: s.matrixMode,
+        periodo: s.periodAuto === false ? (s.period[0] + '~' + s.period[1]) : null });
+}
+
 function initVersus() {
   if (typeof DATA_VERSUS === 'undefined') return;
   vs_state();
@@ -1097,6 +1161,8 @@ function initVersus() {
   vs_syncCtx();
   vs_autofitPeriod();
   drawVersus();
+  // Vista compartible: aplicar el estado de la URL con los controles ya cableados.
+  vs_applyUrlState();
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initVersus._wired) { initVersus._wired = true; window.addEventListener('atlas-editor-change', () => drawVersus()); window.addEventListener('resize', () => { clearTimeout(initVersus._rz); initVersus._rz = setTimeout(() => drawVersus(), 160); }); }
 }

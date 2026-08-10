@@ -392,6 +392,7 @@ function in_tipHide() { const tt = document.getElementById('tooltip' + IN_N); if
 // --- draw -------------------------------------------------------------------
 function drawInstancias() {
   const svg = document.getElementById('chart' + IN_N); if (!svg) return;
+  in_syncUrl();
   svg.innerHTML = '';
   in_tipHide();
   const rows = in_rows();
@@ -490,6 +491,53 @@ function in_setupCSV() {
     document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
   }));
 }
+// Vista compartible (?medida=&ventana=&ref=&hist=&periodo=) — lib/utils.js.
+// `periodo` lleva AÑOS de Mundial (legibles), aunque el slider interno se mueva
+// por índices de DATA_INST.eds: acá se traducen. Los toggles se aplican con
+// clicks reales (in_wireToggle delega en el contenedor, y un .click() burbujea).
+// El gate evita que el primer draw del init (default) borre los params de la
+// URL antes de que in_applyUrlState los lea.
+let in_urlWired = false;
+function in_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const click = (boxId, attr, v) => {
+    const b = document.querySelector(`#${boxId} button[data-${attr}="${v}"]`);
+    if (b) b.click();
+  };
+  const medida = atlasUrlParam('medida');
+  if (medida === 'goles' || medida === 'ig90') click('in-metric', 'metric', medida);
+  const ventana = atlasUrlParam('ventana');
+  if (ventana === '90' || ventana === 'full') click('in-win', 'win', ventana);
+  const ref = atlasUrlParam('ref');
+  if (ref === 'bruto' || ref === 'cent') click('in-ref', 'ref', ref);
+  if (atlasUrlParam('hist') === '1') click('in-hist', 'hist', 'true');
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const eds = DATA_INST.eds;
+    const [a, b] = per.split('~').map(Number);
+    const i = eds.indexOf(a), j = eds.indexOf(b);
+    const f = document.getElementById('in-slider-from'), t = document.getElementById('in-slider-to');
+    if (i >= 0 && j >= 0 && i < j && f && t) {
+      const fire = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+      if (i < +f.value) { fire(f, i); fire(t, j); } else { fire(t, j); fire(f, i); }
+    }
+  }
+  in_urlWired = true;
+  in_syncUrl();   // normaliza la URL al estado realmente aplicado
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10): vista de
+// fábrica = URL limpia; cualquier desvío = estado COMPLETO en la URL.
+function in_syncUrl() {
+  if (!in_urlWired || typeof atlasSyncUrl !== 'function' || typeof DATA_INST === 'undefined') return;
+  const s = in_state(), eds = DATA_INST.eds;
+  const perDef = s.from === eds[0] && s.to === eds[eds.length - 1];
+  const todoDefault = s.metric === 'goles' && s.win === '90' && s.ref === 'bruto' && !s.hist && perDef;
+  atlasSyncUrl(todoDefault
+    ? { medida: null, ventana: null, ref: null, hist: null, periodo: null }
+    : { medida: s.metric, ventana: s.win, ref: s.ref, hist: s.hist ? '1' : null, periodo: s.from + '~' + s.to });
+}
+
 function initInstancias() {
   if (typeof DATA_INST === 'undefined') { console.error('DATA_INST no cargado'); return; }
   in_state();
@@ -505,4 +553,6 @@ function initInstancias() {
   in_setupCSV();
   in_syncCtrls();
   drawInstancias();
+  // Vista compartible: aplicar el estado de la URL con los controles ya cableados.
+  in_applyUrlState();
 }

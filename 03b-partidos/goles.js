@@ -148,6 +148,7 @@ function gl_barData() {
 
 // ---- DRAW -------------------------------------------------------------------
 function drawGoles() {
+  gl_syncUrl();
   const s = gl_state(), lang = gl_lang();
   if (lang !== gl_lastLang) { gl_lastLang = lang; if (gl_renderChips) gl_renderChips(); }
   if (s.view === 'bars') gl_drawBars(); else gl_drawLines();
@@ -502,6 +503,80 @@ function gl_setupCSV() {
   }));
 }
 
+// Vista compartible (?vista=&medida=&cat=&suav=&ma=&barras=&sel=&periodo=) —
+// lib/utils.js. Aplica manejando los controles reales (los clicks validan solos:
+// si el botón no existe, el parámetro se ignora). `sel` lleva Mundo ('W'),
+// confederaciones o selecciones (lazy: si el link trae una selección, se
+// dispara la carga de DATA_GOLES_TEAMS y se redibuja al llegar). `periodo`
+// solo viaja cuando el lector movió el slider (periodAuto=false); mientras es
+// automático, el rango se deriva de sel/cat y no hace falta compartirlo.
+// El gate evita que el primer draw del init (default) borre los params de la
+// URL antes de que gl_applyUrlState los lea.
+let gl_urlWired = false;
+function gl_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const click = (q) => { const b = document.querySelector(q); if (b) b.click(); };
+  const vista = atlasUrlParam('vista');
+  if (vista === 'lines' || vista === 'bars') click('#gl-tab-' + vista);
+  const medida = atlasUrlParam('medida');
+  if (medida) click(`#gl-metric button[data-metric="${medida}"]`);
+  const cat = atlasUrlParam('cat');
+  const catSel = document.getElementById('gl-cat-select');
+  if (cat && catSel && catSel.querySelector(`option[value="${cat}"]`) && catSel.value !== cat) {
+    catSel.value = cat;
+    catSel.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  const suav = atlasUrlParam('suav');
+  if (suav) click(`#gl-smooth button[data-smooth="${suav}"]`);
+  const ma = parseInt(atlasUrlParam('ma'), 10);
+  const maEl = document.getElementById('gl-ma');
+  if (ma && maEl && +maEl.value !== ma && ma >= +maEl.min && ma <= +maEl.max) {
+    maEl.value = ma;
+    maEl.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  const barras = atlasUrlParam('barras');
+  if (barras) click(`#gl-barsby button[data-by="${barras}"]`);
+  const selP = atlasUrlParam('sel');
+  if (selP) {
+    const keys = selP.split('~').filter(k => k === 'W' || CONF_FIFA_ORDER.includes(k) || /^[A-Z]{3}$/.test(k));
+    if (keys.length) {
+      const s = gl_state();
+      s.sel = keys;
+      if (gl_renderChips) gl_renderChips();
+      if (keys.some(k => k !== 'W' && !CONF_FIFA_ORDER.includes(k)))
+        gl_ensureTeams(() => { if (gl_renderChips) gl_renderChips(); gl_autofitPeriod(); drawGoles(); });
+      gl_autofitPeriod();
+      drawGoles();
+    }
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    const f = document.getElementById('gl-slider-from'), t = document.getElementById('gl-slider-to');
+    if (a && b && a < b && f && t) {
+      const fire = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+      if (a < gl_state().period[0]) { fire(f, a); fire(t, b); } else { fire(t, b); fire(f, a); }
+    }
+  }
+  gl_urlWired = true;
+  gl_syncUrl();   // normaliza la URL al estado realmente aplicado
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10): vista de
+// fábrica = URL limpia; cualquier desvío = estado COMPLETO en la URL.
+function gl_syncUrl() {
+  if (!gl_urlWired || typeof atlasSyncUrl !== 'function' || typeof DATA_GOLES === 'undefined') return;
+  const s = gl_state();
+  const selDef = s.sel.length === 1 && s.sel[0] === 'W';
+  const todoDefault = s.view === 'lines' && s.metric === 'goles' && String(s.cat) === 'ALL'
+    && s.smooth === 'ma' && s.maYears === 4 && s.barsBy === 'cat' && selDef && s.periodAuto !== false;
+  atlasSyncUrl(todoDefault
+    ? { vista: null, medida: null, cat: null, suav: null, ma: null, barras: null, sel: null, periodo: null }
+    : { vista: s.view, medida: s.metric, cat: String(s.cat), suav: s.smooth, ma: String(s.maYears),
+        barras: s.barsBy, sel: s.sel.join('~'),
+        periodo: s.periodAuto === false ? (s.period[0] + '~' + s.period[1]) : null });
+}
+
 function initGoles() {
   gl_state();
   window.__atlasSupportsFormats = true;
@@ -519,6 +594,8 @@ function initGoles() {
   gl_setupCSV();
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initGoles._wired) { initGoles._wired = true; window.addEventListener('atlas-editor-change', () => drawGoles()); }
+  // Vista compartible: aplicar el estado de la URL con los controles ya cableados.
+  gl_applyUrlState();
   document.getElementById('chart' + GL_N)?.addEventListener('mousemove', (e) => { gl_tipMove._e = e; });
   setTimeout(() => gl_ensureTeams(), 400);   // precargar selecciones para el buscador
 }
