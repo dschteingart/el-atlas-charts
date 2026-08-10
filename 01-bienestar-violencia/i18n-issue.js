@@ -3,7 +3,7 @@
 // state global declarado acá; cada HTML populates state[N] según los charts que tenga.
 
 // Sentinel del número: lib/png-export.js detecta el N°1 por esta constante
-// (mismo patrón que ES_ESPECIAL_PARTIDOS / ES_N5_INTOLERANCIA) y elige
+// (mismo patrón que ES_ESPECIAL_PARTIDOS / ES_N4_INTOLERANCIA) y elige
 // FILENAMES, leyenda de regiones propias y prefijo de fallback acordes.
 const ES_N1_BIENESTAR = true;
 

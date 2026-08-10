@@ -6,7 +6,7 @@
 //   1 ranking (barras por categoría) · 2 evolución (líneas) · 3 mapa
 //   4 perfil país · 5 scatter declarado vs implícito · 6 latinobarómetro
 
-const ES_N5_INTOLERANCIA = true;  // sentinel para png-export (FILENAMES del N°4)
+const ES_N4_INTOLERANCIA = true;  // sentinel para png-export (FILENAMES del N°4)
 
 const ISSUE_I18N = {
   es: {

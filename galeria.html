@@ -6,7 +6,7 @@
 <title>El Atlas — Galería de revisión (interna)</title>
 <meta name="robots" content="noindex, nofollow">
 <!-- Herramienta INTERNA de control de calidad (Fase 4 de la auditoría,
-     jul-2026). No está linkeada desde el sitio público. Muestra los 27
+     jul-2026). No está linkeada desde el sitio público. Muestra todos los
      charts en iframes de 360px de ancho — el ancho de un celular — para
      detectar roturas de un vistazo después de tocar un motor o antes de
      publicar un número. Se alimenta de charts.json (el catálogo). -->
@@ -36,7 +36,7 @@
 </head>
 <body>
 <h1>Galería de revisión</h1>
-<p class="g-sub">Los 27 gráficos a 360px de ancho (vista celular). Herramienta interna — una pasada visual antes de publicar o después de tocar un motor.</p>
+<p class="g-sub">Todos los gráficos del catálogo a 360px de ancho (vista celular). Herramienta interna — una pasada visual antes de publicar o después de tocar un motor.</p>
 <div class="g-controls">
   <button id="g-load-all" type="button">Cargar todos los gráficos</button>
   <span id="g-status" style="margin-left:10px; color:var(--ink-muted);"></span>
@@ -75,7 +75,7 @@
     });
     root.appendChild(grid);
   });
-  // Carga bajo demanda: 27 iframes de una es pesado; el botón los carga en
+  // Carga bajo demanda: decenas de iframes de una es pesado; el botón los carga en
   // tandas de 4 para no ahogar al server (los data files son grandes).
   const status = document.getElementById('g-status');
   document.getElementById('g-load-all').addEventListener('click', async () => {

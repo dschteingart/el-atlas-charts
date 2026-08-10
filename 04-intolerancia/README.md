@@ -1,4 +1,4 @@
-# N°5 (tentativo) — ¿Qué tan intolerante es América Latina?
+# N°4 — ¿Qué tan intolerante es América Latina?
 
 Datos de intolerancia declarada por país: la batería "no querría tener de vecinos a..."
 de la **Integrated Values Survey** (IVS = EVS Trend 1981-2017 + WVS Trend 1981-2022).
@@ -164,7 +164,7 @@ Gancho editorial: el Mundial 2026 y las acusaciones de racismo sobre Argentina.
   cuando el hueco está libre (otra_raza, inmigrantes, homosexuales, sida…); cuando
   todas las barras son altas y la taparía (drogadictos, bebedores) baja como
   bloque debajo del gráfico. Tooltip con encuesta/año/n. Título neutral. CSV. ES/EN.
-  `lib/png-export.js` ganó la rama N°5 (sentinel `ES_N5_INTOLERANCIA` + FILENAMES).
+  `lib/png-export.js` ganó la rama N°4 (sentinel `ES_N4_INTOLERANCIA` + FILENAMES).
   - **Placement de etiquetas del marimekko:** port del algoritmo OWID del N°2
     con un fix propio — el chequeo de colisión valida el callout COMPLETO (V
     inicial + H + V final + palitos rectos), no solo la H+Vfinal como el N°2

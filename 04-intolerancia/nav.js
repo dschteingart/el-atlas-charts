@@ -9,7 +9,7 @@
 // Autocontenido: lee el idioma del global LANG (fallback a <html lang>), y se
 // re-renderiza al togglear idioma. No depende de i18n-issue.js.
 (function () {
-  // Los SEIS gráficos que publica el número, en el orden del index. Los demás
+  // Los gráficos que publica el número (hoy 7), en el orden del index. Los demás
   // charts del N°4 siguen en la carpeta y andan si se entra por URL, pero no
   // se linkean: si estuvieran acá, el "Gráfico 4 / 12" y las flechas mandarían
   // al lector a páginas que el índice no lista.

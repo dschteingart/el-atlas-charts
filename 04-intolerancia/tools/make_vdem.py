@@ -31,13 +31,13 @@ SALIDA (data-vdem.js)
 import csv, io, json, os, collections
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-N5 = os.path.dirname(HERE)
+N4 = os.path.dirname(HERE)
 BASES = r"C:\Users\FUNDAR\Documents\MEGAsync\FUNDAR\Argentina en datos\Bases"
 
 VDEM_CSV = os.path.join(BASES, "V-Dem", "vdem_exclusion_social.csv")
-MADD_CSV = os.path.join(N5, "data", "maddison_gdppc.csv")
-WB_CSV   = os.path.join(N5, "data", "worldbank_gdppc.csv")
-OUT      = os.path.join(N5, "data-vdem.js")
+MADD_CSV = os.path.join(N4, "data", "maddison_gdppc.csv")
+WB_CSV   = os.path.join(N4, "data", "worldbank_gdppc.csv")
+OUT      = os.path.join(N4, "data-vdem.js")
 
 YEAR_MIN = 1900          # el índice arranca en 1900; recortamos ahí para no inflar el archivo
 
@@ -95,7 +95,7 @@ def load_regions():
     out = {}
     for f, n in [("data-cruces.js", "CR_REGION"), ("data-waves.js", "VE_REGION"),
                  ("data-prioridad.js", "PRIO_REGION"), ("data-quien.js", "QUIEN_REGION")]:
-        p = os.path.join(N5, f)
+        p = os.path.join(N4, f)
         if not os.path.exists(p):
             continue
         txt = io.open(p, encoding="utf-8").read()
@@ -320,7 +320,7 @@ with io.open(OUT, "w", encoding="utf-8") as f:
 
 escritos = [(os.path.basename(OUT), os.path.getsize(OUT))]
 for k in KEYS:
-    p = os.path.join(N5, "data-vdem-%s.js" % k)
+    p = os.path.join(N4, "data-vdem-%s.js" % k)
     with io.open(p, "w", encoding="utf-8") as f:
         f.write("// GENERADO por tools/make_vdem.py — serie de %s. Cargar DESPUÉS de data-vdem.js.\n" % k)
         f.write("VD_SERIES[%s] = %s;\n"

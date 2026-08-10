@@ -1,4 +1,4 @@
-# Investigación de fuentes y contexto — N°5 intolerancia
+# Investigación de fuentes y contexto — N°4 intolerancia
 
 > Anexo de investigación (jul 2026). Cuatro frentes: contexto Mundial 2026, fuentes de
 > datos comparadas, críticas al mapa viral 2013, y literatura. Ver README.md para los
