@@ -758,19 +758,27 @@ function d_applyUrlState() {
   if (esc === 'linear' || esc === 'log') s.yScale = esc;
 }
 
-// El espejo: estado → URL. Solo lo NO-default viaja (regla de atlasSyncUrl).
+// El espejo: estado → URL, TODO-O-NADA (criterio de Daniel, 2026-08-10).
+// La vista de fábrica viaja como URL LIMPIA (link "oficial", evergreen: si
+// mañana cambia el default editorial, le llega a quien lo tenga). Apenas el
+// lector toca CUALQUIER cosa, la URL lleva el estado COMPLETO —países, año,
+// modo y escala— aunque algunas dimensiones sigan en su valor de fábrica: así
+// el link es una foto fiel de lo que el lector veía. Sin esto, un link con
+// países cambiados pero año default se "movía" solo cuando cambiaba el default
+// del año, y el destinatario veía algo distinto de quien lo compartió.
 function d_syncUrl() {
   if (typeof atlasSyncUrl !== 'function') return;
   const s = state[3];
   const def = new Set(D_DEFAULT_COUNTRIES);
   const sel = s.selectedCountries || [];
-  const selEsDefault = sel.length === D_DEFAULT_COUNTRIES.length && sel.every(c => def.has(c));
-  atlasSyncUrl({
-    paises: selEsDefault ? null : sel.join('~'),
-    anio: String(s.year) === String(DATA_DECILES.latest_year || 2025) ? null : s.year,
-    modo: s.yMode === 'income' ? null : s.yMode,
-    esc: s.yScale === 'log' ? null : s.yScale
-  });
+  const selDef  = sel.length === D_DEFAULT_COUNTRIES.length && sel.every(c => def.has(c));
+  const anioDef = String(s.year) === String(DATA_DECILES.latest_year || 2025);
+  const modoDef = s.yMode === 'income';
+  const escDef  = s.yScale === 'log';
+  const todoDefault = selDef && anioDef && modoDef && escDef;
+  atlasSyncUrl(todoDefault
+    ? { paises: null, anio: null, modo: null, esc: null }
+    : { paises: sel.join('~'), anio: s.year, modo: s.yMode, esc: s.yScale });
 }
 
 function initDeciles() {
