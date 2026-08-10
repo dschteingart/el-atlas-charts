@@ -1169,7 +1169,7 @@ function dv_showTooltip(e, p) {
     : '';
   tt.innerHTML =
       `<strong>${dv_name(p.iso)}</strong>`
-    + `<div class="tt-region" style="color:${dv_regionColor(p.region)}">${dv_regionLabel(p.region)}</div>`
+    + `<div class="tt-region" style="color:${(typeof REGION_COLORS_ON_DARK !== 'undefined' && REGION_COLORS_ON_DARK[p.region]) || '#C9C2B2'}">${dv_regionLabel(p.region)}</div>`
     + `<div class="tt-row"><span>${dv_varLabel(v)}</span><span>${dv_num(p.pct, 1)}%</span></div>`
     + `<div class="tt-row tt-row-sub"><span>${dv_t('c18-tt-year')}</span><span>${p.year}</span></div>`
     + `<div class="tt-row"><span>${dv_t('c18-tt-gdp')}</span><span>$${dv_num(p.gdp, 0)} (${p.gdpYear})</span></div>`

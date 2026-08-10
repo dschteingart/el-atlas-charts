@@ -250,7 +250,7 @@ function drawScatter() {
     tx.setAttribute('text-anchor', 'end'); tx.setAttribute('dominant-baseline', 'central');
     tx.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
     tx.style.fontSize = SIZES.tick + 'px'; tx.setAttribute('fill', '#7A6E62'); tx.setAttribute('font-variant-numeric', 'tabular-nums');
-    tx.textContent = v.toFixed(2); gridG.appendChild(tx);
+    tx.textContent = fmt(v, 2); gridG.appendChild(tx);   // locale: '0,41' en ES, '0.41' en EN
   });
 
   // títulos de eje
@@ -517,9 +517,9 @@ function sc_applyRegionFocus() {
 function sc_showTooltip(e, p) {
   const tt = document.getElementById('tooltip5'); if (!tt) return;
   tt.innerHTML = `<strong>${sc_name(p.iso)}</strong>`
-    + `<div class="tt-region" style="color:${sc_regionColor(p.region)}">${sc_regionLabel(p.region)}</div>`
+    + `<div class="tt-region" style="color:${(typeof REGION_COLORS_ON_DARK !== 'undefined' && REGION_COLORS_ON_DARK[p.region]) || '#C9C2B2'}">${sc_regionLabel(p.region)}</div>`
     + `<div class="tt-row"><span>${sc_t('c5-tt-declared')}</span><span>${(typeof fmt === 'function') ? fmt(p.x, 1) : p.x}%</span></div>`
-    + `<div class="tt-row"><span>${sc_t('c5-tt-implicit')}</span><span>${p.y.toFixed(2)}</span></div>`;
+    + `<div class="tt-row"><span>${sc_t('c5-tt-implicit')}</span><span>${fmt(p.y, 2)}</span></div>`;
   tt.style.display = 'block'; tt.style.opacity = '1';
   sc_posTooltip(e);
 }

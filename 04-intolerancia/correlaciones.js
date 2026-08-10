@@ -1386,7 +1386,9 @@ function co_showTooltip(e, p) {
   if (!tt) return;
   const s = state[19];
   const regLabel = p.region ? co_T('reg.' + p.region) : '';
-  const regColor = co_regionColor(p.region);
+  // Variante aclarada: este texto va DENTRO del tooltip oscuro (los colores de
+  // región calibrados para crema quedan bajo 4.5:1 sobre var(--ink)).
+  const regColor = (typeof REGION_COLORS_ON_DARK !== 'undefined' && REGION_COLORS_ON_DARK[p.region]) || '#C9C2B2';
   const yearTpl = co_T('c19-tt-year');
   let html = '<strong>' + co_name(p.iso) + '</strong>';
   if (regLabel) html += '<div class="tt-region" style="color:' + regColor + '">' + regLabel + '</div>';

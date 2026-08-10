@@ -1111,7 +1111,7 @@ function ve_showTooltip(e, p) {
     : '';
   tt.innerHTML =
       `<strong>${ve_name(p.iso)}</strong>`
-    + `<div class="tt-region" style="color:${ve_regionColor(p.region)}">${ve_regionLabel(p.region)}</div>`
+    + `<div class="tt-region" style="color:${(typeof REGION_COLORS_ON_DARK !== 'undefined' && REGION_COLORS_ON_DARK[p.region]) || '#C9C2B2'}">${ve_regionLabel(p.region)}</div>`
     + `<div class="tt-row"><span>${ve_varLabel(v)}</span><span>${ve_num(p.pct, 1)}%</span></div>`
     + `<div class="tt-row tt-row-sub"><span>${ve_t('c20-tt-year')}</span><span>${p.year}</span></div>`
     + `<div class="tt-row"><span>${ve_t('c20-tt-gdp')}</span><span>$${ve_num(p.gdp, 0)} (${p.gdpYear})</span></div>`
@@ -1403,6 +1403,17 @@ function ve_setupCSV() {
 }
 
 // =================== Init ===================
+// Callback del toggle ES/EN (espejo de dv_onLangChange en desarrollo.js).
+// OJO: chart-vdem-scatter.html llamaba setupLangToggle(dv_onLangChange) —
+// función de OTRA página que acá no existe → ReferenceError y los botones
+// de idioma nunca quedaban cableados (bug de la auditoría del N°4, 2026-08-09).
+function ve_onLangChange() {
+  ve_buildVarSelect();
+  ve_renderChips();
+  ve_syncWave();
+  drawVdemScatter();
+}
+
 function initVdemScatter() {
   if (!state[20]) {
     state[20] = {
