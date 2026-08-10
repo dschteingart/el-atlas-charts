@@ -371,6 +371,8 @@ function s_makeScales(scaleX) {
 
 // =================== Render principal ===================
 function drawScatter() {
+  // Vista compartible: la URL refleja el estado en cada redibujo.
+  sc2_syncUrl();
   const svg = document.getElementById('chart2');
   if (!svg) return;
   svg.innerHTML = '';
@@ -1381,4 +1383,62 @@ function initScatter() {
   // Mobile (≤768px): botones tuerca + "Seleccionar". Singleton — si ya
   // lo llamó otro init en el index.html, no hace nada.
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
+}
+
+// =============================================================
+//  Vista compartible (Fase 5) — chart 2 (scatter Gini vs PIB)
+// =============================================================
+// Estado del lector en la URL con el criterio TODO-O-NADA (lib/utils.js):
+// países, modo (Gini original/ajustado), regresión, escala X, año y regiones
+// apagadas (por ÍNDICE en REGION_WB_ORDER: los nombres son largos).
+function sc2_ocultasStr() {
+  const act = state[2].activeRegions, out = [];
+  REGION_WB_ORDER.forEach((r, i) => { if (!act.has(r)) out.push(i); });
+  return out.join('~');
+}
+function sc2_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function' || !state[2]) return;
+  const s = state[2];
+  const p = atlasUrlParam('paises');
+  if (p) {
+    const validos = p.split('~').filter(c => /^[A-Z]{3}$/.test(c));
+    if (validos.length) s.selectedCountries = validos;
+  }
+  const modo = atlasUrlParam('modo');
+  if (modo === 'raw' || modo === 'adj') {
+    s.mode = modo;
+    if (typeof atlasSyncActiveBtn === 'function') atlasSyncActiveBtn('mode', modo);
+  }
+  const reg = atlasUrlParam('reg');
+  if (reg === 'linear' || reg === 'quadratic') {
+    s.regression = reg;
+    if (typeof atlasSyncActiveBtn === 'function') atlasSyncActiveBtn('model', reg);
+  }
+  const ex = atlasUrlParam('escx');
+  if (ex === 'log' || ex === 'linear') {
+    s.scaleX = ex;
+    // este chart usa .m-mode-toggle[data-toggle="scaleX"] con botones data-scale
+    document.querySelectorAll('[data-toggle="scaleX"] button').forEach(b =>
+      b.classList.toggle('active', b.dataset.scale === ex));
+  }
+  const y = parseInt(atlasUrlParam('anio'), 10);
+  if (y && DATA_SCATTER && DATA_SCATTER.data_by_year && DATA_SCATTER.data_by_year[String(y)]) s.year = y;
+  const oc = atlasUrlParam('ocultas');
+  if (oc) {
+    const idx = oc.split('~').map(n => parseInt(n, 10))
+                 .filter(n => !isNaN(n) && n >= 0 && n < REGION_WB_ORDER.length);
+    if (idx.length && idx.length < REGION_WB_ORDER.length) {
+      s.activeRegions = new Set(REGION_WB_ORDER.filter((r, i) => idx.indexOf(i) < 0));
+    }
+  }
+}
+function sc2_syncUrl() {
+  if (typeof atlasSyncUrlTodoONada !== 'function' || !state[2]) return;
+  const s = state[2];
+  atlasSyncUrlTodoONada(
+    { paises: (s.selectedCountries || []).join('~'), modo: s.mode, reg: s.regression,
+      escx: s.scaleX, anio: s.year, ocultas: sc2_ocultasStr() },
+    { paises: '', modo: 'adj', reg: 'linear', escx: 'log',
+      anio: (DATA_SCATTER && DATA_SCATTER.latest_year) || 2025, ocultas: '' }
+  );
 }

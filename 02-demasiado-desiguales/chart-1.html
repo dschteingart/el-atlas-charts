@@ -625,15 +625,18 @@
 <script src="../lib/i18n.js"></script>
 <script src="./regions-wb.js?v=2"></script>
 <script src="./i18n-issue.js"></script>
-<script src="../lib/utils.js?v=9"></script>
+<script src="../lib/utils.js?v=13"></script>
 <script src="../lib/country-names.js?v=2"></script>
 <script src="./data-marimekko.js"></script>
 <script src="../lib/editor.js?v=2"></script>
-<script src="./marimekko.js?v=2"></script>
+<script src="./marimekko.js?v=3"></script>
 <script src="../lib/svg-export.js?v=1"></script>
 <script src="../lib/png-export.js?v=3"></script>
 <script>
 state[1] = { mode: 'raw', year: 2024, activeRegion: null, playing: false };
+// Vista compartible: el estado del link pisa el default ANTES de inicializar
+// (los chips, toggles y filtros se pintan a partir de ahi).
+m_applyUrlState();
 initMarimekko();
 applyI18n();
 setupLangToggle(() => {

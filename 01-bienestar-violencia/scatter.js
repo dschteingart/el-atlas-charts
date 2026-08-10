@@ -387,6 +387,8 @@ function drawChart(chartId) {
   // re-evalúan en cada redraw según el estado (países/regiones) — ver
   // n1ApplyHeadings en i18n-issue.js.
   if (typeof n1ApplyHeadings === 'function') n1ApplyHeadings(chartId);
+  // Vista compartible: la URL refleja el estado en cada redibujo.
+  s_syncUrl(chartId);
   const yField = chartId === 1 ? 'life_satisfaction' : 'homicide_rate';
   const yYearField = chartId === 1 ? 'year_lifesat' : 'year_homicide';
 
@@ -1065,3 +1067,52 @@ window.__atlasRedrawFns.push(function () {
   });
 });
 window.__atlasRedraw = function () { window.__atlasRedrawFns.forEach(fn => fn()); };
+
+// =============================================================
+//  Vista compartible (Fase 5) — charts 1 y 2
+// =============================================================
+// El estado del lector viaja en la URL: países, escalas y regiones apagadas.
+// Criterio TODO-O-NADA (atlasSyncUrlTodoONada, lib/utils.js): la vista de
+// fábrica va con URL LIMPIA (link "oficial", evergreen) y, apenas el lector
+// cambia algo, la URL lleva el estado COMPLETO — así el link es una foto fiel.
+// Las regiones apagadas viajan por su ÍNDICE en REGION_ORDER: los nombres son
+// largos y con espacios, y el orden es una constante nuestra.
+function s_ocultasStr(chartId) {
+  const act = state[chartId].activeRegions;
+  const out = [];
+  REGION_ORDER.forEach((r, i) => { if (!act.has(r)) out.push(i); });
+  return out.join('~');
+}
+function s_applyUrlState(chartId) {
+  if (typeof atlasUrlParam !== 'function' || !state[chartId]) return;
+  const s = state[chartId];
+  const p = atlasUrlParam('paises');
+  if (p) {
+    const validos = p.split('~').filter(c => DATA.some(d => d.iso3 === c));
+    if (validos.length) s.selectedCountries = validos;
+  }
+  const ex = atlasUrlParam('escx'); if (ex === 'log' || ex === 'linear') s.scaleX = ex;
+  const ey = atlasUrlParam('escy'); if (ey === 'log' || ey === 'linear') s.scaleY = ey;
+  const oc = atlasUrlParam('ocultas');
+  if (oc) {
+    const idx = oc.split('~').map(n => parseInt(n, 10))
+                 .filter(n => !isNaN(n) && n >= 0 && n < REGION_ORDER.length);
+    // nunca dejar el gráfico sin ninguna región
+    if (idx.length && idx.length < REGION_ORDER.length) {
+      s.activeRegions = new Set(REGION_ORDER.filter((r, i) => idx.indexOf(i) < 0));
+    }
+  }
+  // los toggles traen el activo hardcodeado en el HTML: sincronizarlos
+  if (typeof atlasSyncToggleUI === 'function') {
+    atlasSyncToggleUI('scaleX' + chartId, s.scaleX);
+    atlasSyncToggleUI('scaleY' + chartId, s.scaleY);
+  }
+}
+function s_syncUrl(chartId) {
+  if (typeof atlasSyncUrlTodoONada !== 'function' || !state[chartId]) return;
+  const s = state[chartId];
+  atlasSyncUrlTodoONada(
+    { paises: (s.selectedCountries || []).join('~'), escx: s.scaleX, escy: s.scaleY, ocultas: s_ocultasStr(chartId) },
+    { paises: '', escx: 'log', escy: 'linear', ocultas: '' }
+  );
+}

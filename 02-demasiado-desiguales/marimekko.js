@@ -448,6 +448,8 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
 
 // =================== Render principal ===================
 function drawMarimekko() {
+  // Vista compartible: la URL refleja el estado en cada redibujo.
+  m_syncUrl();
   const svg = document.getElementById('chart1');
   if (!svg) return;
   svg.innerHTML = '';
@@ -1530,4 +1532,28 @@ function setupMarimekkoDownloadCSV() {
       URL.revokeObjectURL(url);
     });
   });
+}
+
+// =============================================================
+//  Vista compartible (Fase 5) — chart 1 (marimekko)
+// =============================================================
+// Estado del lector en la URL con el criterio TODO-O-NADA (lib/utils.js):
+// modo (Gini original/ajustado) y año.
+function m_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function' || !state[1]) return;
+  const s = state[1];
+  const modo = atlasUrlParam('modo');
+  if (modo === 'raw' || modo === 'adj') {
+    s.mode = modo;
+    if (typeof atlasSyncActiveBtn === 'function') atlasSyncActiveBtn('mode', modo);
+  }
+  const y = parseInt(atlasUrlParam('anio'), 10);
+  if (y && DATA_MARIMEKKO && DATA_MARIMEKKO.data_by_year && DATA_MARIMEKKO.data_by_year[String(y)]) s.year = y;
+}
+function m_syncUrl() {
+  if (typeof atlasSyncUrlTodoONada !== 'function' || !state[1]) return;
+  atlasSyncUrlTodoONada(
+    { modo: state[1].mode, anio: state[1].year },
+    { modo: 'raw',         anio: 2024 }
+  );
 }

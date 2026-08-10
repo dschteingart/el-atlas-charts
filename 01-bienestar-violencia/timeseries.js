@@ -37,6 +37,8 @@ function nextFreeColorIndex() {
 function drawChart3() {
   // Insight por default, neutral al customizar (ver n1ApplyHeadings en i18n-issue.js).
   if (typeof n1ApplyHeadings === 'function') n1ApplyHeadings(3);
+  // Vista compartible: la URL refleja el estado en cada redibujo.
+  ts_syncUrl();
   const svg = document.getElementById('chart3');
   const tooltip = document.getElementById('tooltip3');
   if (!svg) return;
@@ -746,3 +748,45 @@ document.querySelectorAll('button[data-chart="3"]').forEach(btn => {
 window.__atlasSupportsFormats = true;
 window.__atlasRedraw = drawChart3;
 window.__atlasDefaultPngFormat = 'square';
+
+// =============================================================
+//  Vista compartible (Fase 5) — chart 3
+// =============================================================
+// Países y escala del lector en la URL, con el criterio TODO-O-NADA de
+// lib/utils.js. El estado guarda los países por NOMBRE (clave del Map), pero en
+// la URL viajan por iso3, que es corto y estable; la traducción va por
+// TIMESERIES.countries.
+function ts_isoOf(country) {
+  const c = TIMESERIES.countries.find(x => x.country === country);
+  return c ? c.iso3 : null;
+}
+function ts_selIsos() {
+  const out = [];
+  state[3].selectedCountries.forEach((_v, country) => { const i = ts_isoOf(country); if (i) out.push(i); });
+  return out.join('~');
+}
+function ts_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function' || !state[3]) return;
+  const s = state[3];
+  const p = atlasUrlParam('paises');
+  if (p) {
+    const nuevos = new Map();
+    p.split('~').forEach(iso => {
+      const c = TIMESERIES.countries.find(x => x.iso3 === iso);
+      if (c && !nuevos.has(c.country)) nuevos.set(c.country, nuevos.size);
+    });
+    if (nuevos.size) s.selectedCountries = nuevos;
+  }
+  const e = atlasUrlParam('esc');
+  if (e === 'log' || e === 'linear') {
+    s.scaleY = e;
+    if (typeof atlasSyncToggleUI === 'function') atlasSyncToggleUI('scaleY3', e);
+  }
+}
+function ts_syncUrl() {
+  if (typeof atlasSyncUrlTodoONada !== 'function' || !state[3]) return;
+  atlasSyncUrlTodoONada(
+    { paises: ts_selIsos(), esc: state[3].scaleY },
+    { paises: '',           esc: 'log' }
+  );
+}

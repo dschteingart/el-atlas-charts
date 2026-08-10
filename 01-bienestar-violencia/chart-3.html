@@ -88,13 +88,16 @@
 <script src="../lib/regions.js"></script>
 <script src="../lib/i18n.js"></script>
 <script src="./i18n-issue.js?v=25"></script>
-<script src="../lib/utils.js?v=4"></script>
+<script src="../lib/utils.js?v=13"></script>
 <script src="../lib/editor.js?v=2"></script>
-<script src="./data-timeseries.js?v=22"></script>
+<script src="./data-timeseries.js?v=23"></script>
 <script src="./timeseries.js?v=23"></script>
 <script src="../lib/png-export.js?v=3"></script>
 <script>
 state[3] = { scaleY: 'log', selectedCountries: new Map(), hoverCountry: null };
+// Vista compartible: el estado del link pisa el default ANTES de dibujar
+// (y antes de los chips/filtros, que se renderizan abajo).
+ts_applyUrlState();
 drawChart3();
 renderChipsTS();
 applyI18n();
@@ -104,6 +107,6 @@ setupLangToggle(() => {
 });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=22"></script>
+<script src="./nav.js?v=23"></script>
 </body>
 </html>

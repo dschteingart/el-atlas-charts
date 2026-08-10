@@ -244,14 +244,14 @@
 <script src="../lib/i18n.js"></script>
 <script src="./regions-wb.js"></script>
 <script src="./i18n-issue.js?v=rk15"></script>
-<script src="../lib/utils.js?v=9"></script>
+<script src="../lib/utils.js?v=13"></script>
 <script src="../lib/country-names.js?v=2"></script>
 <script src="./data-deciles.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
 <script src="./data-country-geo.js?v=rk1"></script>
 <script src="../lib/editor.js?v=2"></script>
-<script src="./ranking.js?v=rk42"></script>
+<script src="./ranking.js?v=rk43"></script>
 <script src="../lib/svg-export.js?v=1"></script>
 <script src="../lib/png-export.js?v=3"></script>
 <script>
@@ -261,6 +261,9 @@
     selectedCountries: ['ARG', 'BRA', 'MEX', 'CHL', 'USA', 'DEU', 'CHN', 'JPN'],
     period: [1990, 2025], benchmark: 'USA', continent: 'all'
   };
+  // Vista compartible: el estado del link pisa el default ANTES de inicializar
+  // (los chips, toggles y filtros se pintan a partir de ahi).
+  rk_applyUrlState();
   initRanking();
   applyI18n();
   setupLangToggle(() => { rk_renderChips(); drawRanking(); });

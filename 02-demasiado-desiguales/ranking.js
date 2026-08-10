@@ -178,6 +178,8 @@ function rk_continentName() {
 
 // =================== Render principal ===================
 function drawRanking() {
+  // Vista compartible: la URL refleja el estado en cada redibujo.
+  rk_syncUrl();
   const svg = document.getElementById('chart4'); if (!svg) return;
   svg.innerHTML = '';
   const tt = document.getElementById('tooltip4'); if (tt) { tt.style.opacity = '0'; tt.style.display = 'none'; }
@@ -1236,4 +1238,68 @@ function initRanking() {
   window.onAfterPngExportRestore = function () {
     if (rk_pngExporting) { rk_pngExporting = false; drawRanking(); }
   };
+}
+
+// =============================================================
+//  Vista compartible (Fase 5) — chart 4 (ranking / mapa / líneas)
+// =============================================================
+// El estado más rico del número viaja entero en la URL, con el criterio
+// TODO-O-NADA (lib/utils.js): vista, deciles, unidad, año, países, período,
+// país de comparación del mapa y zoom por continente.
+function rk_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function' || !state[4]) return;
+  const s = state[4];
+  const v = atlasUrlParam('vista');
+  if (v === 'bars' || v === 'map' || v === 'lines') {
+    s.view = v;
+    if (typeof atlasSyncActiveBtn === 'function') atlasSyncActiveBtn('rk-view', v);
+  }
+  const dec = atlasUrlParam('deciles');
+  if (dec) {
+    const ds = dec.split('~').map(n => parseInt(n, 10)).filter(n => n >= 1 && n <= 10);
+    if (ds.length) s.deciles = ds;   // los botones los repinta rk_renderDecileButtons
+  }
+  const u = atlasUrlParam('unidad');
+  if (u === 'day' || u === 'month' || u === 'year') {
+    s.unit = u;
+    if (typeof atlasSyncActiveBtn === 'function') atlasSyncActiveBtn('rk-unit', u);
+  }
+  const esc = atlasUrlParam('esc');
+  if (esc === 'log' || esc === 'linear') {
+    s.yScale = esc;
+    if (typeof atlasSyncActiveBtn === 'function') atlasSyncActiveBtn('rk-scale', esc);
+  }
+  const y = parseInt(atlasUrlParam('anio'), 10);
+  if (y && DATA_DECILES.data_by_year[String(y)]) s.year = y;
+  const p = atlasUrlParam('paises');
+  if (p) {
+    const validos = p.split('~').filter(c => /^[A-Z]{3}$/.test(c));
+    if (validos.length) s.selectedCountries = validos;
+  }
+  const per = atlasUrlParam('periodo');
+  if (per) {
+    const m = per.split('~').map(n => parseInt(n, 10));
+    if (m.length === 2 && !m.some(isNaN) && m[0] <= m[1]) s.period = m;
+  }
+  const b = atlasUrlParam('comparar');
+  if (b && /^[A-Z]{3}$/.test(b)) { s.benchmark = b; s.mapMode = 'bench'; }
+  const c = atlasUrlParam('zoom');
+  if (c && RK_CONT_VIEW[c]) {
+    s.continent = c;
+    if (typeof atlasSyncActiveBtn === 'function') atlasSyncActiveBtn('rk-cont', c);
+  }
+}
+function rk_syncUrl() {
+  if (typeof atlasSyncUrlTodoONada !== 'function' || !state[4]) return;
+  const s = state[4];
+  const DEF_PAISES = ['ARG', 'BRA', 'MEX', 'CHL', 'USA', 'DEU', 'CHN', 'JPN'];
+  atlasSyncUrlTodoONada(
+    { vista: s.view, deciles: (s.deciles || []).join('~'), unidad: s.unit, esc: s.yScale,
+      anio: s.year, paises: (s.selectedCountries || []).join('~'),
+      periodo: (s.period || []).join('~'), comparar: s.mapMode === 'bench' ? s.benchmark : '',
+      zoom: s.continent },
+    { vista: 'bars', deciles: '1', unidad: 'day', esc: 'log',
+      anio: DATA_DECILES.latest_year || 2025, paises: DEF_PAISES.join('~'),
+      periodo: '1990~2025', comparar: '', zoom: 'all' }
+  );
 }
