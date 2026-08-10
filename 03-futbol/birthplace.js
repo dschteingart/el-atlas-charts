@@ -48,6 +48,7 @@ const BP_GLOW_MAX = 2500;           // puntos máx. en el estilo "iluminación"
 // Redibujo coalescido por frame: el slider dispara muchos 'input' por segundo;
 // sin esto, cada uno reconstruye el mapa entero (lento al arrastrar).
 function bp_scheduleDraw() {
+  bp_syncUrl();   // el link no espera al frame: refleja ya lo que el lector tocó
   if (bp_rafPending) return;
   bp_rafPending = true;
   requestAnimationFrame(() => { bp_rafPending = false; drawBirthplace(); });
@@ -173,6 +174,7 @@ function bp_hexRefFrame() {
 function drawBirthplace() {
   const svg = d3.select('#chart8');
   if (svg.empty()) return;
+  bp_syncUrl();
   svg.selectAll('*').remove();
   bp_loadGeo();
 
@@ -580,6 +582,46 @@ function setupBirthplaceCSV() {
 //==================================================================
 //  Init + PNG
 //==================================================================
+// ============ Vista compartible ==============================================
+// (?vista=&unidad=&calor=&periodo=) — lib/utils.js. El zoom/paneo del mapa NO
+// viaja: es encuadre del lector, no estado del gráfico (mismo criterio que los
+// mapas de OWID). `heatStyle` tampoco, porque esta página no tiene su control.
+let bp_urlWired = false;
+function bp_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const click = (id) => { const b = document.getElementById(id); if (b) b.click(); };
+  const vista = atlasUrlParam('vista');
+  if ((vista === 'map' || vista === 'bars') && state[8].view !== vista) click('bp-tab-' + vista);
+  const unidad = atlasUrlParam('unidad');
+  if ((unidad === 'uniq' || unidad === 'apps') && state[8].unit !== unidad) click('bp-unit-' + unidad);
+  const calor = atlasUrlParam('calor');
+  if ((calor === '0' || calor === '1') && !!state[8].heat !== (calor === '1')) click('bp-heat-toggle');
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    // el slider salta de Mundial en Mundial: solo años que existen en BIRTH.years
+    if (BIRTH.years.includes(a) && BIRTH.years.includes(b) && a < b) {
+      state[8].period = [a, b];
+      if (typeof atlasResyncRangeSliders === 'function') atlasResyncRangeSliders();
+    }
+  }
+  bp_urlWired = true;
+  drawBirthplace();
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10).
+function bp_syncUrl() {
+  if (!bp_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = state[8];
+  if (!s || !s.period) return;
+  const y0 = BIRTH.years[0], y1 = BIRTH.years[BIRTH.years.length - 1];
+  const todoDefault = s.view === 'map' && s.unit === 'uniq' && !s.heat
+    && s.period[0] === y0 && s.period[1] === y1;
+  atlasSyncUrl(todoDefault
+    ? { vista: null, unidad: null, calor: null, periodo: null }
+    : { vista: s.view, unidad: s.unit, calor: s.heat ? '1' : '0', periodo: s.period[0] + '~' + s.period[1] });
+}
+
 function initBirthplace() {
   if (!state[8]) state[8] = {};
   if (!state[8].view) state[8].view = 'map';
@@ -608,6 +650,7 @@ function initBirthplace() {
   setupBirthplaceHeatStyle();
   setupBirthplaceZoomReset();
   setupBirthplaceCSV();
+  bp_applyUrlState();   // vista compartible: con los controles ya cableados
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initBirthplace._wired) { initBirthplace._wired = true; window.addEventListener('atlas-editor-change', () => drawBirthplace()); }
   document.getElementById('chart8')?.addEventListener('mousemove', (e) => { bp_tipMove._e = e; });

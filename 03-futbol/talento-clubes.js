@@ -326,6 +326,7 @@ function sc_relaxLabels(placed, labelH, plotBox, passes, obstacles) {
 function drawTalentoClubes() {
   const svg = document.getElementById('chart1');
   if (!svg) return;
+  sc_syncUrl();
   svg.innerHTML = '';
   sc_initDataFromGlobal();
 
@@ -1029,6 +1030,77 @@ function setupTalentoClubesCsv() {
 //==================================================================
 //  Init
 //==================================================================
+// ============ Vista compartible ==============================================
+// (?paises=&ocultas=&min=&vistas=&periodo=) — lib/utils.js. Se aplica manejando
+// los controles reales; el gate frena el espejo hasta leer la URL entrante.
+// `ocultas` lleva las confederaciones apagadas por su nombre FIFA (igual que en
+// el scatter Elo-PIB); stickyConf/hoverConf son transitorios y no viajan.
+let sc_urlWired = false;
+function sc_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const s = state[4];
+  let redraw = false;
+  const p = atlasUrlParam('paises');
+  if (p) {
+    const elegibles = new Set((sc_data || []).filter(d => d.clubAge != null).map(d => d.iso3));
+    const validos = p.split('~').filter(iso => elegibles.has(iso));
+    if (validos.length) { s.selectedCountries = new Set(validos); renderTalentoClubesChips(); redraw = true; }
+  }
+  const oc = atlasUrlParam('ocultas');
+  if (oc) {
+    const validas = oc.split('~').filter(c => CONF_FIFA_ORDER.includes(c));
+    // nunca aceptar TODAS apagadas (quedaría el chart vacío)
+    if (validas.length && validas.length < CONF_FIFA_ORDER.length) {
+      s.hiddenConfs = new Set(validas);
+      renderTalentoClubesLegend();
+      redraw = true;
+    }
+  }
+  const min = parseInt(atlasUrlParam('min'), 10);
+  const minEl = document.getElementById('sc-min-n');
+  if (min && minEl && min >= 3 && min <= 200 && min !== s.minN) {
+    minEl.value = min;
+    minEl.dispatchEvent(new Event('input', { bubbles: true }));
+    redraw = false;   // el propio evento ya redibuja
+  }
+  const vistas = atlasUrlParam('vistas');
+  const hiCb = document.getElementById('sc-hi-views');
+  if ((vistas === '0' || vistas === '1') && hiCb && hiCb.checked !== (vistas === '1')) {
+    hiCb.checked = (vistas === '1');
+    hiCb.dispatchEvent(new Event('change', { bubbles: true }));
+    redraw = false;
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    const f = document.getElementById('sc-slider-from'), t = document.getElementById('sc-slider-to');
+    if (a && b && a < b && f && t) {
+      const fire = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+      if (a < s.period[0]) { fire(f, a); fire(t, b); } else { fire(t, b); fire(f, a); }
+      redraw = false;
+    }
+  }
+  sc_urlWired = true;
+  if (redraw) drawTalentoClubes(); else sc_syncUrl();
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10).
+function sc_syncUrl() {
+  if (!sc_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = state[4];
+  if (!s || !s.period) return;
+  const sel = Array.from(s.selectedCountries || []);
+  const oc = CONF_FIFA_ORDER.filter(c => s.hiddenConfs && s.hiddenConfs.has(c));
+  const todoDefault = sel.length === 0 && oc.length === 0
+    && s.minN === SC_MIN_N_DEFAULT && s.hiViews === SC_HI_VIEWS_DEFAULT
+    && s.period[0] === SC_PERIOD_DEFAULT[0] && s.period[1] === SC_PERIOD_DEFAULT[1];
+  atlasSyncUrl(todoDefault
+    ? { paises: null, ocultas: null, min: null, vistas: null, periodo: null }
+    : { paises: sel.join('~') || null, ocultas: oc.join('~') || null,
+        min: String(s.minN), vistas: s.hiViews ? '1' : '0',
+        periodo: s.period[0] + '~' + s.period[1] });
+}
+
 function initTalentoClubes() {
   if (!state[4]) {
     state[4] = {
@@ -1057,6 +1129,7 @@ function initTalentoClubes() {
   setupTalentoClubesCsv();
   renderTalentoClubesChips();
   drawTalentoClubes();
+  sc_applyUrlState();   // vista compartible: con los controles ya cableados
 
   if (!initTalentoClubes._editorWired) {
     initTalentoClubes._editorWired = true;

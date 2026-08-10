@@ -217,6 +217,7 @@ function al_barDefault(wc, pos) {
 //==================================================================
 function drawAltura() {
   const svg = document.getElementById('chart10'); if (!svg) return;
+  al_syncUrl();
   svg.innerHTML = ''; al_clearHover(svg); al_initData();
 
   // visibilidad de controles
@@ -821,6 +822,70 @@ function setupAlturaCSV() {
 //==================================================================
 //  Init + PNG
 //==================================================================
+// ============ Vista compartible ==============================================
+// (?forma=&desglose=&vspais=&puesto=&puestobar=&paises=&periodo=) — lib/utils.js.
+// Se aplica MANEJANDO los controles reales (.click()), nunca pisando el state:
+// así el botón queda pintado igual que el dato. El gate frena el espejo hasta
+// que la URL entrante fue leída (si no, el primer draw del init la borraría).
+// El sentinel del agregado (AL_WORLD) viaja como 'MUNDO', más legible en el link.
+let al_urlWired = false;
+function al_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const click = (id) => { const b = document.getElementById(id); if (b) b.click(); };
+  const forma = atlasUrlParam('forma');
+  if (['line', 'box', 'bar', 'scatter'].includes(forma) && al_mode() !== forma) click('al-mode-' + forma);
+  const desglose = atlasUrlParam('desglose');
+  if ((desglose === 'sel' || desglose === 'pos') && (al_byPos() ? 'pos' : 'sel') !== desglose) click('al-view-' + desglose);
+  const vspais = atlasUrlParam('vspais');
+  if ((vspais === '0' || vspais === '1') && al_vsCountry() !== (vspais === '1')) click('al-vscountry');
+  const puesto = atlasUrlParam('puesto');
+  if (['GK', 'DEF', 'MID', 'FWD'].includes(puesto) && al_boxPos() !== puesto) click('al-boxpos-' + puesto);
+  const puestobar = atlasUrlParam('puestobar');
+  if (['all', 'GK', 'DEF', 'MID', 'FWD'].includes(puestobar) && al_barPos() !== puestobar) click('al-barpos-' + puestobar);
+  // La selección va DESPUÉS de los toggles: pasar a distribución o a "por
+  // puesto" colapsa la selección a un solo equipo (side-effect del click).
+  const p = atlasUrlParam('paises');
+  if (p) {
+    const validos = p.split('~').map(k => (k === 'MUNDO' ? AL_WORLD : k)).filter(k => k === AL_WORLD || (al_teams && al_teams[k]));
+    if (validos.length) {
+      const m = new Map();
+      validos.forEach((k, i) => m.set(k, i));
+      state[10].selectedTeams = m;
+      al_renderChips();
+    }
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    // el slider salta de Mundial en Mundial: solo años que existen en al_years
+    if (al_years && al_years.includes(a) && al_years.includes(b) && a < b) {
+      state[10].period = [a, b];
+      if (typeof atlasResyncRangeSliders === 'function') atlasResyncRangeSliders();
+    }
+  }
+  al_urlWired = true;
+  drawAltura();   // dibuja lo aplicado y, de paso, normaliza la URL
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10): la vista de
+// fábrica viaja como URL limpia; cualquier desvío lleva el estado COMPLETO.
+function al_syncUrl() {
+  if (!al_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = state[10];
+  if (!s || !s.period) return;
+  const sel = al_selTeams();
+  const selDef = sel.length === 1 && sel[0] === AL_WORLD;
+  const todoDefault = selDef && al_mode() === 'line' && !al_byPos() && al_vsCountry()
+    && al_boxPos() === 'DEF' && al_barPos() === 'all'
+    && s.period[0] === AL_YEAR_MIN && s.period[1] === AL_YEAR_MAX;
+  atlasSyncUrl(todoDefault
+    ? { forma: null, desglose: null, vspais: null, puesto: null, puestobar: null, paises: null, periodo: null }
+    : { forma: al_mode(), desglose: al_byPos() ? 'pos' : 'sel', vspais: al_vsCountry() ? '1' : '0',
+        puesto: al_boxPos(), puestobar: al_barPos(),
+        paises: sel.map(k => (k === AL_WORLD ? 'MUNDO' : k)).join('~'),
+        periodo: s.period[0] + '~' + s.period[1] });
+}
+
 function initAltura() {
   al_initData();
   if (!state[10]) state[10] = {};
@@ -839,6 +904,7 @@ function initAltura() {
   setupAlturaToggles();
   setupAlturaCSV();
   al_renderChips();
+  al_applyUrlState();   // vista compartible: con los controles ya cableados
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initAltura._wired) { initAltura._wired = true; window.addEventListener('atlas-editor-change', () => drawAltura()); }
 

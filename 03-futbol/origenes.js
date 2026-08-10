@@ -208,6 +208,7 @@ const og_tt = (k, fb) => ((typeof t === 'function' ? t(k) : '') || fb);
 function drawOrigenes() {
   const svg = document.getElementById('chart9');
   if (!svg) return;
+  og_syncUrl();
   svg.innerHTML = '';
   og_clearHover(svg);   // matar el hover del render anterior (si no, en barras/flujos sale un tooltip fantasma del modo líneas)
   og_project();
@@ -858,6 +859,67 @@ function setupOrigenesSlider() {
     }
   });
 }
+// ============ Vista compartible ==============================================
+// (?modo=&universo=&grupo=&medida=&unidad=&paises=&periodo=) — lib/utils.js.
+// Orden obligado: PRIMERO los toggles (sus handlers resetean la selección como
+// efecto colateral) y RECIÉN DESPUÉS los países y el período. El gate frena el
+// espejo hasta leer la URL entrante.
+let og_urlWired = false;
+function og_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const click = (id) => { const b = document.getElementById(id); if (b) b.click(); };
+  const modo = atlasUrlParam('modo');
+  if (['line', 'stack', 'bar', 'sankey'].includes(modo) && state[9].mode !== modo) click('og-mode-' + modo);
+  const universo = atlasUrlParam('universo');
+  if ((universo === 'all' || universo === 'exp') && state[9].universe !== universo) click('og-univ-' + universo);
+  const grupo = atlasUrlParam('grupo');
+  if ((grupo === 'pais' || grupo === 'region') && og_group() !== grupo) click('og-group-' + grupo);
+  const medida = atlasUrlParam('medida');
+  if ((medida === 'pct' || medida === 'abs') && state[9].metric !== medida) click('og-metric-' + medida);
+  const unidad = atlasUrlParam('unidad');
+  if ((unidad === 'uniq' || unidad === 'apps') && state[9].unit !== unidad) click('og-unit-' + unidad);
+  const p = atlasUrlParam('paises');
+  if (p) {
+    // en modo región las claves son las 6 regiones; en modo país, ISO3
+    const validos = p.split('~').filter(k => (og_group() === 'region')
+      ? OG_REGION_ORDER.includes(k)
+      : (og_names && og_names[k]));
+    if (validos.length) {
+      const m = new Map();
+      validos.forEach((k, i) => m.set(k, i));
+      state[9].selectedCountries = m;
+      state[9].barCustom = true;   // selección explícita: no la pisa el default de barras
+      og_renderChips();
+    }
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    if (og_years && og_years.includes(a) && og_years.includes(b) && a <= b) {
+      state[9].period = [a, b];
+      if (typeof atlasResyncRangeSliders === 'function') atlasResyncRangeSliders();
+    }
+  }
+  og_urlWired = true;
+  drawOrigenes();
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10).
+function og_syncUrl() {
+  if (!og_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = state[9];
+  if (!s || !s.period || !(s.selectedCountries instanceof Map)) return;
+  const sel = Array.from(s.selectedCountries.keys());
+  const selDef = og_group() === 'pais' && sel.length === OG_BIG.length && OG_BIG.every(iso => s.selectedCountries.has(iso));
+  const todoDefault = selDef && s.mode === 'sankey' && s.universe === 'all'
+    && og_group() === 'pais' && s.metric === 'pct' && s.unit === 'uniq'
+    && s.period[0] === OG_YEAR_MIN && s.period[1] === OG_YEAR_MAX;
+  atlasSyncUrl(todoDefault
+    ? { modo: null, universo: null, grupo: null, medida: null, unidad: null, paises: null, periodo: null }
+    : { modo: s.mode, universo: s.universe, grupo: og_group(), medida: s.metric, unidad: s.unit,
+        paises: sel.join('~') || null, periodo: s.period[0] + '~' + s.period[1] });
+}
+
 function initOrigenes() {
   og_initData();
   if (!state[9]) state[9] = {};
@@ -882,6 +944,7 @@ function initOrigenes() {
   setupOrigenesMetricToggle();
   setupOrigenesCSV();
   og_renderChips();
+  og_applyUrlState();   // vista compartible: con los controles ya cableados
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initOrigenes._wired) { initOrigenes._wired = true; window.addEventListener('atlas-editor-change', () => drawOrigenes()); }
 

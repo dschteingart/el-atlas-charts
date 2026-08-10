@@ -205,6 +205,7 @@ function ta_updateSubtitle() {
 function drawTalento() {
   const svg = document.getElementById('chart1');
   if (!svg) return;
+  ta_syncUrl();
   svg.innerHTML = '';
   ta_updateSubtitle();
 
@@ -793,6 +794,55 @@ function setupTalentoDownloadCSV() {
 //==================================================================
 //  Init
 //==================================================================
+// ============ Vista compartible ==============================================
+// (?grupo=&top=&paises=&periodo=) — lib/utils.js. Se aplica manejando los
+// controles reales; el gate frena el espejo hasta leer la URL entrante.
+// El slider es propio (no el de lib), así que el período se aplica moviendo
+// los <input> con un evento 'input' real, como en los charts del Elo.
+let ta_urlWired = false;
+function ta_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const click = (q) => { const b = document.querySelector(q); if (b) b.click(); };
+  const grupo = atlasUrlParam('grupo');
+  if ((grupo === 'pais' || grupo === 'region') && state[2].group !== grupo)
+    click(`.m-mode-toggle[data-toggle="group"] button[data-group="${grupo}"]`);
+  const top = parseInt(atlasUrlParam('top'), 10);
+  if (TA_TOP_N_OPTIONS.includes(top) && state[2].topN !== top)
+    click(`.m-mode-toggle[data-toggle="topn"] button[data-topn="${top}"]`);
+  const p = atlasUrlParam('paises');
+  if (p) {
+    const validos = p.split('~').filter(iso => POP_TALENTO && POP_TALENTO[iso]);
+    if (validos.length) { state[2].selected = validos; renderTalentoChips(); }
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    const f = document.getElementById('ta-slider-from'), t = document.getElementById('ta-slider-to');
+    if (a && b && a < b && f && t) {
+      const fire = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+      // primero el thumb que se aleja del otro, para no chocar con la ventana mínima
+      if (a < state[2].period[0]) { fire(f, a); fire(t, b); } else { fire(t, b); fire(f, a); }
+    }
+  }
+  ta_urlWired = true;
+  drawTalento();
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10).
+function ta_syncUrl() {
+  if (!ta_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = state[2];
+  if (!s || !s.period) return;
+  const sel = s.selected || [];
+  const def = new Set(TA_DEFAULT_SELECTED);
+  const selDef = sel.length === TA_DEFAULT_SELECTED.length && sel.every(iso => def.has(iso));
+  const todoDefault = selDef && s.group === 'pais' && s.topN === 1000
+    && s.period[0] === TA_PERIOD_DEFAULT[0] && s.period[1] === TA_PERIOD_DEFAULT[1];
+  atlasSyncUrl(todoDefault
+    ? { grupo: null, top: null, paises: null, periodo: null }
+    : { grupo: s.group, top: String(s.topN), paises: sel.join('~'), periodo: s.period[0] + '~' + s.period[1] });
+}
+
 function initTalento() {
   if (!state[2]) {
     state[2] = {
@@ -815,6 +865,7 @@ function initTalento() {
   setupTalentoDownloadCSV();
   renderTalentoChips();
   drawTalento();
+  ta_applyUrlState();   // vista compartible: con los controles ya cableados
 
   // Editor sidebar: re-render cuando el editor cambia algo.
   if (!initTalento._editorWired) {

@@ -117,6 +117,7 @@ function ac_series() {
 //  Draw
 //==================================================================
 function drawActividad() {
+  ac_syncUrl();
   const s = ac_state();
   ac_initData();
   const axisKey = s.metric === 'partidos' ? 'c1-axis-partidos'
@@ -328,6 +329,71 @@ function setupActividadCSV() {
   }));
 }
 
+// ============ Vista compartible ==============================================
+// (?medida=&mundo=&confdebut=&equipos=&confs=&periodo=) — lib/utils.js.
+// Las selecciones se guardan por NOMBRE en inglés (así las indexa ac_byName),
+// igual que en el chart de goles; las confederaciones, por su sigla FIFA.
+// El gate frena el espejo hasta leer la URL entrante.
+let ac_urlWired = false;
+function ac_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const s = ac_state();
+  const click = (q) => { const b = document.querySelector(q); if (b) b.click(); };
+  const medida = atlasUrlParam('medida');
+  if (['partidos', 'activas', 'debut'].includes(medida) && s.metric !== medida)
+    click(`#ac-metric button[data-metric="${medida}"]`);
+  const confdebut = atlasUrlParam('confdebut');
+  if (confdebut && (confdebut === 'ALL' || CONF_FIFA_ORDER.includes(confdebut)) && s.debConf !== confdebut)
+    click(`#ac-debut button[data-conf="${confdebut}"]`);
+  let redraw = false;
+  const mundo = atlasUrlParam('mundo');
+  if ((mundo === '0' || mundo === '1') && s.mundo !== (mundo === '1')) { s.mundo = (mundo === '1'); redraw = true; }
+  const eq = atlasUrlParam('equipos');
+  if (eq) {
+    const validos = eq.split('~').filter(n => ac_byName && ac_byName[n]);
+    const m = new Map();
+    validos.forEach((n, i) => m.set(n, i));
+    s.teams = m; redraw = true;
+  }
+  const cf = atlasUrlParam('confs');
+  if (cf) {
+    const validas = cf.split('~').filter(c => CONF_FIFA_ORDER.includes(c));
+    const m = new Map();
+    validas.forEach((c, i) => m.set(c, i));
+    s.confs = m; redraw = true;
+  }
+  if (redraw) ac_renderChips();
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    const f = document.getElementById('ac-slider-from'), t = document.getElementById('ac-slider-to');
+    if (a && b && a < b && f && t) {
+      const fire = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+      if (a < s.period[0]) { fire(f, a); fire(t, b); } else { fire(t, b); fire(f, a); }
+      redraw = true;
+    }
+  }
+  ac_urlWired = true;
+  drawActividad();
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10).
+function ac_syncUrl() {
+  if (!ac_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = ac_state();
+  if (!s || !s.period) return;
+  const eq = (s.teams instanceof Map) ? Array.from(s.teams.keys()) : [];
+  const cf = (s.confs instanceof Map) ? Array.from(s.confs.keys()) : [];
+  const todoDefault = s.metric === 'partidos' && s.mundo === true && s.debConf === 'ALL'
+    && eq.length === 0 && cf.length === 0
+    && s.period[0] === AC_PERIOD_DEFAULT[0] && s.period[1] === AC_PERIOD_DEFAULT[1];
+  atlasSyncUrl(todoDefault
+    ? { medida: null, mundo: null, confdebut: null, equipos: null, confs: null, periodo: null }
+    : { medida: s.metric, mundo: s.mundo ? '1' : '0', confdebut: s.debConf,
+        equipos: eq.join('~') || null, confs: cf.join('~') || null,
+        periodo: s.period[0] + '~' + s.period[1] });
+}
+
 function initActividad() {
   const s = ac_state();
   ac_initData();
@@ -347,6 +413,7 @@ function initActividad() {
   ac_renderChips();
   drawActividad();
   setupActividadCSV();
+  ac_applyUrlState();   // vista compartible: con los controles ya cableados
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initActividad._wired) {
     initActividad._wired = true;

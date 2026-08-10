@@ -194,7 +194,7 @@ function du_refreshFocus() {
   du_updateLabels(src);
 }
 
-function du_requestPaint() { if (du_rafId) return; du_rafId = requestAnimationFrame(() => { du_rafId = 0; du_paint(); }); }
+function du_requestPaint() { du_syncUrl(); if (du_rafId) return; du_rafId = requestAnimationFrame(() => { du_rafId = 0; du_paint(); }); }
 
 // relocaliza según el período (cachea) y repinta. Snap directo (sin animar) por
 // robustez: con umbral bajo hay miles de líneas y transicionarlas todas trabaría.
@@ -289,6 +289,7 @@ function du_applyHeadings() {
 function drawDuelos() {
   const svg = document.getElementById('chart4');
   if (!svg || typeof d3 === 'undefined') return;
+  du_syncUrl();
   const editorFormat = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const mobile = !editorFormat && (typeof isMobileViewport === 'function') && isMobileViewport();
   let W = DU_W_DESKTOP, H = DU_H_DESKTOP;
@@ -383,6 +384,55 @@ function du_updateSlider() {
   if (tr) { const mn = +f.min, mx = +f.max, sp = mx - mn; if (sp > 0) { tr.style.left = ((s.period[0] - mn) / sp * 100) + '%'; tr.style.right = ((mx - s.period[1]) / sp * 100) + '%'; } }
 }
 
+// ============ Vista compartible ==============================================
+// (?periodo=&umbral=&destacado=) — lib/utils.js. El destacado viaja por NOMBRE
+// en inglés (el id de nodo del dataset), no por sigla. El slider de período
+// necesita además el evento 'change' (el 'input' solo repinta; el relayout de
+// las burbujas se dispara al soltar).
+let du_urlWired = false;
+function du_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const s = du_state();
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    const f = document.getElementById('du-slider-from'), t = document.getElementById('du-slider-to');
+    if (a && b && a < b && f && t) {
+      const fire = (el, v) => {
+        el.value = v;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+      };
+      if (a < s.period[0]) { fire(f, a); fire(t, b); } else { fire(t, b); fire(f, a); }
+    }
+  }
+  const umbral = parseInt(atlasUrlParam('umbral'), 10);
+  const minEl = document.getElementById('du-min');
+  if (umbral && minEl && umbral >= +minEl.min && umbral <= +minEl.max && umbral !== s.minP) {
+    minEl.value = umbral;
+    minEl.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  const dest = atlasUrlParam('destacado');
+  if (dest && DATA_DUELOS.nodes.some(n => n.id === dest)) {
+    s.highlight = dest;
+    if (du_setupSearch._renderChip) du_setupSearch._renderChip();
+  }
+  du_urlWired = true;
+  drawDuelos();
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10).
+function du_syncUrl() {
+  if (!du_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = du_state();
+  if (!s || !s.period) return;
+  const todoDefault = !s.highlight && s.minP === 25
+    && s.period[0] === DU_PERIOD_FULL[0] && s.period[1] === DU_PERIOD_FULL[1];
+  atlasSyncUrl(todoDefault
+    ? { periodo: null, umbral: null, destacado: null }
+    : { periodo: s.period[0] + '~' + s.period[1], umbral: String(s.minP), destacado: s.highlight || null });
+}
+
 function initDuelos() {
   const s = du_state();
   const f = document.getElementById('du-slider-from'), tt = document.getElementById('du-slider-to');
@@ -406,6 +456,7 @@ function initDuelos() {
   drawDuelos();
   du_setupSearch();
   setupDuelosCSV();
+  du_applyUrlState();   // vista compartible: con los controles ya cableados
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initDuelos._wired) {
     initDuelos._wired = true;

@@ -538,13 +538,24 @@ function gl_applyUrlState() {
   if (barras) click(`#gl-barsby button[data-by="${barras}"]`);
   const selP = atlasUrlParam('sel');
   if (selP) {
-    const keys = selP.split('~').filter(k => k === 'W' || CONF_FIFA_ORDER.includes(k) || /^[A-Z]{3}$/.test(k));
+    // OJO: las selecciones se identifican por su NOMBRE en inglés ("Sweden"),
+    // no por sigla — así las guarda el buscador. Como el dataset de selecciones
+    // llega lazy, acá no se puede validar todavía: se aceptan las claves tal
+    // cual y se descartan las inexistentes cuando el dataset aterriza.
+    const keys = selP.split('~').filter(Boolean);
     if (keys.length) {
       const s = gl_state();
       s.sel = keys;
       if (gl_renderChips) gl_renderChips();
-      if (keys.some(k => k !== 'W' && !CONF_FIFA_ORDER.includes(k)))
-        gl_ensureTeams(() => { if (gl_renderChips) gl_renderChips(); gl_autofitPeriod(); drawGoles(); });
+      if (keys.some(k => k !== 'W' && !CONF_FIFA_ORDER.includes(k))) {
+        gl_ensureTeams(() => {
+          const existe = new Set(DATA_GOLES_TEAMS.map(o => o.n));
+          s.sel = s.sel.filter(k => k === 'W' || CONF_FIFA_ORDER.includes(k) || existe.has(k));
+          if (!s.sel.length) s.sel = ['W'];
+          if (gl_renderChips) gl_renderChips();
+          gl_autofitPeriod(); drawGoles();
+        });
+      }
       gl_autofitPeriod();
       drawGoles();
     }

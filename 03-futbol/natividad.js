@@ -122,6 +122,7 @@ function nv_xTicks(y0, y1, plotW, minGapPx) {
 function drawNatividad() {
   const svg = document.getElementById('chart6');
   if (!svg) return;
+  nv_syncUrl();
   svg.innerHTML = '';
   nv_initData();
 
@@ -427,6 +428,48 @@ function setupNatividadSlider() {
   });
 }
 
+// ============ Vista compartible ==============================================
+// (?paises=&periodo=) — lib/utils.js. El chart más simple de la serie: sin
+// toggles, solo selección y período. El gate frena el espejo hasta leer la URL.
+let nv_urlWired = false;
+function nv_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const p = atlasUrlParam('paises');
+  if (p) {
+    const validos = p.split('~').filter(iso => nv_byIso && nv_byIso[iso]);
+    if (validos.length) {
+      const m = new Map();
+      validos.forEach((iso, i) => m.set(iso, i));
+      state[6].selectedCountries = m;
+      nv_renderChips();
+    }
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    // el slider salta de Mundial en Mundial: solo años que existen en nv_years
+    if (nv_years && nv_years.includes(a) && nv_years.includes(b) && a < b) {
+      state[6].period = [a, b];
+      if (typeof atlasResyncRangeSliders === 'function') atlasResyncRangeSliders();
+    }
+  }
+  nv_urlWired = true;
+  drawNatividad();
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10).
+function nv_syncUrl() {
+  if (!nv_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = state[6];
+  if (!s || !s.period || !(s.selectedCountries instanceof Map)) return;
+  const sel = Array.from(s.selectedCountries.keys());
+  const todoDefault = sel.length === 0
+    && s.period[0] === NV_YEAR_MIN && s.period[1] === NV_YEAR_MAX;
+  atlasSyncUrl(todoDefault
+    ? { paises: null, periodo: null }
+    : { paises: sel.join('~') || null, periodo: s.period[0] + '~' + s.period[1] });
+}
+
 function initNatividad() {
   nv_initData();
   if (!state[6]) state[6] = {};
@@ -437,6 +480,7 @@ function initNatividad() {
   setupNatividadSearch();
   setupNatividadCSV();
   nv_renderChips();
+  nv_applyUrlState();   // vista compartible: con los controles ya cableados
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initNatividad._wired) { initNatividad._wired = true; window.addEventListener('atlas-editor-change', () => drawNatividad()); }
 

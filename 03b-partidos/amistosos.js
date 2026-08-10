@@ -118,6 +118,7 @@ function am_ma(arr, w) {
 }
 
 function drawAmistosos() {
+  am_syncUrl();
   const s = am_state();
   const { anios, counts } = am_scopeCounts();
   const w = s.smooth === 'ma' ? s.maYears : 1;
@@ -336,6 +337,72 @@ function setupAmistososCSV() {
   }));
 }
 
+// ============ Vista compartible ==============================================
+// (?modo=&suav=&ma=&ambito=&periodo=) — lib/utils.js. El ámbito viaja como
+// 'mundo', 'conf:UEFA' o 'equipo:Sweden' (nombre en inglés, que es como lo
+// indexa am_byName). Se aplica ANTES que el período porque am_setScope lo
+// resetea. Las selecciones llegan lazy: si el link trae un equipo, se pide el
+// dataset y recién ahí se fija el ámbito.
+let am_urlWired = false;
+function am_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const s = am_state();
+  const click = (q) => { const b = document.querySelector(q); if (b) b.click(); };
+  const modo = atlasUrlParam('modo');
+  if ((modo === 'share' || modo === 'count') && s.mode !== modo) click(`#am-mode button[data-mode="${modo}"]`);
+  const suav = atlasUrlParam('suav');
+  if ((suav === 'raw' || suav === 'ma') && s.smooth !== suav) click(`#am-smooth button[data-smooth="${suav}"]`);
+  const ma = parseInt(atlasUrlParam('ma'), 10);
+  const maEl = document.getElementById('am-ma');
+  if (ma && maEl && +maEl.value !== ma && ma >= +maEl.min && ma <= +maEl.max) {
+    maEl.value = ma;
+    maEl.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  const aplicarPeriodo = () => {
+    const per = atlasUrlParam('periodo');
+    if (!per || per.indexOf('~') < 0) return;
+    const [a, b] = per.split('~').map(Number);
+    const f = document.getElementById('am-slider-from'), t = document.getElementById('am-slider-to');
+    if (a && b && a < b && f && t) {
+      const fire = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+      if (a < am_state().period[0]) { fire(f, a); fire(t, b); } else { fire(t, b); fire(f, a); }
+    }
+  };
+  const amb = atlasUrlParam('ambito');
+  if (amb && amb !== 'mundo') {
+    const [kind, id] = amb.split(':');
+    if (kind === 'conf' && CONF_FIFA_ORDER.includes(id)) {
+      am_setScope({ kind: 'conf', id });
+    } else if (kind === 'equipo' && id) {
+      am_ensureTeams(() => {
+        if (am_byName && am_byName[id]) am_setScope({ kind: 'team', id });
+        aplicarPeriodo();   // am_setScope pisa el período: reaplicar el del link
+        am_urlWired = true;
+        drawAmistosos();
+      });
+      return;   // el resto sigue dentro del callback
+    }
+  }
+  aplicarPeriodo();
+  am_urlWired = true;
+  drawAmistosos();
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10).
+function am_syncUrl() {
+  if (!am_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = am_state();
+  if (!s || !s.period || !s.scope) return;
+  const amb = s.scope.kind === 'mundo' ? 'mundo'
+    : (s.scope.kind === 'conf' ? 'conf:' : 'equipo:') + s.scope.id;
+  const todoDefault = s.mode === 'share' && s.smooth === 'ma' && s.maYears === 4 && amb === 'mundo'
+    && s.period[0] === AM_PERIOD_DEF[0] && s.period[1] === AM_PERIOD_DEF[1];
+  atlasSyncUrl(todoDefault
+    ? { modo: null, suav: null, ma: null, ambito: null, periodo: null }
+    : { modo: s.mode, suav: s.smooth, ma: String(s.maYears), ambito: amb,
+        periodo: s.period[0] + '~' + s.period[1] });
+}
+
 function initAmistosos() {
   am_state();
   am_initData();
@@ -361,6 +428,7 @@ function initAmistosos() {
   am_renderChip();
   drawAmistosos();
   setupAmistososCSV();
+  am_applyUrlState();   // vista compartible: con los controles ya cableados
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initAmistosos._wired) {
     initAmistosos._wired = true;

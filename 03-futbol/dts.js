@@ -193,6 +193,7 @@ const dt_tt = (k, fb) => ((typeof t === 'function' ? t(k) : '') || fb);
 function drawDts() {
   const svg = document.getElementById('chart11');
   if (!svg) return;
+  dt_syncUrl();
   svg.innerHTML = '';
   dt_clearHover(svg);   // matar el hover del render anterior (si no, en barras/flujos sale un tooltip fantasma del modo líneas)
   dt_project();
@@ -941,6 +942,66 @@ function setupDtsSlider() {
     }
   });
 }
+// ============ Vista compartible ==============================================
+// (?modo=&universo=&grupo=&medida=&criterio=&paises=&periodo=) — lib/utils.js.
+// Hermano del de orígenes, con una dimensión más (criterio: nacimiento vs.
+// nacionalidad, que además reconstruye el índice de equipos). Mismo orden
+// obligado: toggles primero, países y período después.
+let dt_urlWired = false;
+function dt_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const click = (id) => { const b = document.getElementById(id); if (b) b.click(); };
+  const criterio = atlasUrlParam('criterio');
+  if ((criterio === 'birth' || criterio === 'nat') && state[11].criterion !== criterio) click('dt-crit-' + criterio);
+  const modo = atlasUrlParam('modo');
+  if (['trend', 'line', 'stack', 'bar', 'sankey'].includes(modo) && state[11].mode !== modo) click('dt-mode-' + modo);
+  const universo = atlasUrlParam('universo');
+  if ((universo === 'all' || universo === 'exp') && state[11].universe !== universo) click('dt-univ-' + universo);
+  const grupo = atlasUrlParam('grupo');
+  if ((grupo === 'pais' || grupo === 'region') && state[11].group !== grupo) click('dt-group-' + grupo);
+  const medida = atlasUrlParam('medida');
+  if ((medida === 'pct' || medida === 'abs') && state[11].metric !== medida) click('dt-metric-' + medida);
+  const p = atlasUrlParam('paises');
+  if (p) {
+    const validos = p.split('~').filter(k => (state[11].group === 'region')
+      ? DT_REGION_ORDER.includes(k)
+      : (dt_names && dt_names[k]));
+    if (validos.length) {
+      const m = new Map();
+      validos.forEach((k, i) => m.set(k, i));
+      state[11].selectedCountries = m;
+      state[11].barCustom = true;
+      dt_renderChips();
+    }
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    if (dt_years && dt_years.includes(a) && dt_years.includes(b) && a <= b) {
+      state[11].period = [a, b];
+      if (typeof atlasResyncRangeSliders === 'function') atlasResyncRangeSliders();
+    }
+  }
+  dt_urlWired = true;
+  drawDts();
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10).
+function dt_syncUrl() {
+  if (!dt_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = state[11];
+  if (!s || !s.period || !(s.selectedCountries instanceof Map)) return;
+  const sel = Array.from(s.selectedCountries.keys());
+  const selDef = s.group === 'pais' && sel.length === DT_BIG.length && DT_BIG.every(iso => s.selectedCountries.has(iso));
+  const todoDefault = selDef && s.mode === 'trend' && s.universe === 'all'
+    && s.group === 'pais' && s.metric === 'pct' && s.criterion === 'nat'
+    && s.period[0] === DT_YEAR_MIN && s.period[1] === DT_YEAR_MAX;
+  atlasSyncUrl(todoDefault
+    ? { modo: null, universo: null, grupo: null, medida: null, criterio: null, paises: null, periodo: null }
+    : { modo: s.mode, universo: s.universe, grupo: s.group, medida: s.metric, criterio: s.criterion,
+        paises: sel.join('~') || null, periodo: s.period[0] + '~' + s.period[1] });
+}
+
 function initDts() {
   dt_initData();
   if (!state[11]) state[11] = {};
@@ -965,6 +1026,7 @@ function initDts() {
   setupDtsCriterionToggle();
   setupDtsCSV();
   dt_renderChips();
+  dt_applyUrlState();   // vista compartible: con los controles ya cableados
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initDts._wired) { initDts._wired = true; window.addEventListener('atlas-editor-change', () => drawDts()); }
 

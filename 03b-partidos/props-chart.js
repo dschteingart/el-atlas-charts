@@ -163,6 +163,7 @@ function pc_barData() {
 // ---- DRAW -------------------------------------------------------------------
 let pc_lastLang = null;
 function drawPropsChart() {
+  pc_syncUrl();
   const s = pc_state();
   // al cambiar de idioma, refrescar las etiquetas de los chips del ámbito (el
   // handler de idioma solo redibuja el SVG). Se hace solo cuando cambió el idioma,
@@ -504,6 +505,81 @@ function setupPropsCSV() {
   }));
 }
 
+// ============ Vista compartible ==============================================
+// (?vista=&sel=&cat=&suav=&ma=&barras=&periodo=) — lib/utils.js. Este motor lo
+// comparten dos páginas (neutral y globalización): cada una vive en su propia
+// URL, así que los mismos nombres de parámetro no chocan.
+// Igual que en goles: las selecciones se identifican por NOMBRE en inglés
+// ("Sweden"), llegan lazy, y `periodo` solo viaja si el lector movió el slider
+// (mientras periodAuto sigue activo, el rango se deriva solo de sel/cat).
+let pc_urlWired = false;
+function pc_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const s = pc_state();
+  const click = (q) => { const b = document.querySelector(q); if (b) b.click(); };
+  const vista = atlasUrlParam('vista');
+  if ((vista === 'lines' || vista === 'bars') && s.view !== vista) click('#pc-tab-' + vista);
+  const cat = atlasUrlParam('cat');
+  const catSel = document.getElementById('pc-cat-select');
+  if (cat && catSel && catSel.querySelector(`option[value="${cat}"]`) && catSel.value !== cat) {
+    catSel.value = cat;
+    catSel.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  const suav = atlasUrlParam('suav');
+  if ((suav === 'raw' || suav === 'ma') && s.smooth !== suav) click(`#pc-smooth button[data-smooth="${suav}"]`);
+  const ma = parseInt(atlasUrlParam('ma'), 10);
+  const maEl = document.getElementById('pc-ma');
+  if (ma && maEl && +maEl.value !== ma && ma >= +maEl.min && ma <= +maEl.max) {
+    maEl.value = ma;
+    maEl.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  const barras = atlasUrlParam('barras');
+  if ((barras === 'cat' || barras === 'conf') && s.barsBy !== barras) click(`#pc-barsby button[data-by="${barras}"]`);
+  const selP = atlasUrlParam('sel');
+  if (selP) {
+    const keys = selP.split('~').filter(Boolean);
+    if (keys.length) {
+      s.sel = keys;
+      if (typeof pc_renderTeamChips === 'function') pc_renderTeamChips();
+      if (keys.some(k => k !== 'W' && !pc_isConf(k))) {
+        pc_ensureTeams(() => {
+          const existe = new Set(DATA_PROPS_TEAMS.map(o => o.n));
+          s.sel = s.sel.filter(k => k === 'W' || pc_isConf(k) || existe.has(k));
+          if (!s.sel.length) s.sel = ['W'];
+          if (typeof pc_renderTeamChips === 'function') pc_renderTeamChips();
+          drawPropsChart();
+        });
+      }
+    }
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    const f = document.getElementById('pc-slider-from'), t = document.getElementById('pc-slider-to');
+    if (a && b && a < b && f && t) {
+      const fire = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+      if (a < s.period[0]) { fire(f, a); fire(t, b); } else { fire(t, b); fire(f, a); }
+    }
+  }
+  pc_urlWired = true;
+  drawPropsChart();
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10).
+function pc_syncUrl() {
+  if (!pc_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = pc_state();
+  if (!s || !s.period) return;
+  const selDef = (s.sel || []).length === 1 && s.sel[0] === 'W';
+  const todoDefault = s.view === 'lines' && selDef && String(s.cat) === 'ALL'
+    && s.smooth === 'ma' && s.maYears === 4 && s.barsBy === 'cat' && s.periodAuto !== false;
+  atlasSyncUrl(todoDefault
+    ? { vista: null, sel: null, cat: null, suav: null, ma: null, barras: null, periodo: null }
+    : { vista: s.view, sel: (s.sel || []).join('~'), cat: String(s.cat), suav: s.smooth,
+        ma: String(s.maYears), barras: s.barsBy,
+        periodo: s.periodAuto === false ? (s.period[0] + '~' + s.period[1]) : null });
+}
+
 function initPropsChart(cfg) {
   pc_cfg = cfg;
   pc_state();
@@ -523,6 +599,7 @@ function initPropsChart(cfg) {
   setupPropsSlider();
   setupPropsAmbito();
   setupPropsCSV();
+  pc_applyUrlState();   // vista compartible: con los controles ya cableados
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initPropsChart._wired) { initPropsChart._wired = true; window.addEventListener('atlas-editor-change', () => drawPropsChart()); }
   document.getElementById(cfg.svgId)?.addEventListener('mousemove', (e) => { pc_tipMove._e = e; });

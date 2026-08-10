@@ -79,6 +79,7 @@ function fl_dims(svg) {
 function drawFlujos() {
   const svg = document.getElementById('chart5');
   if (!svg || typeof d3 === 'undefined') return;
+  fl_syncUrl();
   svg.innerHTML = '';
   const s = fl_state();
   const d = fl_dims(svg);
@@ -356,11 +357,55 @@ function setupFlujosCSV() {
   }));
 }
 
+// ============ Vista compartible ==============================================
+// (?vista=&cat=&periodo=) — lib/utils.js. El chart más simple del especial:
+// pestaña, competencia y período. El gate frena el espejo hasta leer la URL.
+let fl_urlWired = false;
+function fl_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const s = fl_state();
+  const vista = atlasUrlParam('vista');
+  if (vista === 'chord' || vista === 'matrix') {
+    const b = document.getElementById(vista === 'matrix' ? 'fl-tab-matrix' : 'fl-tab-chord');
+    if (b && s.view !== vista) b.click();
+  }
+  const cat = atlasUrlParam('cat');
+  const catSel = document.getElementById('fl-cat-select');
+  if (cat && catSel && catSel.querySelector(`option[value="${cat}"]`) && catSel.value !== cat) {
+    catSel.value = cat;
+    catSel.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    const f = document.getElementById('fl-slider-from'), t = document.getElementById('fl-slider-to');
+    if (a && b && a < b && f && t) {
+      const fire = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+      if (a < s.period[0]) { fire(f, a); fire(t, b); } else { fire(t, b); fire(f, a); }
+    }
+  }
+  fl_urlWired = true;
+  drawFlujos();
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10).
+function fl_syncUrl() {
+  if (!fl_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = fl_state();
+  if (!s || !s.period) return;
+  const todoDefault = s.view === 'chord' && String(s.cat) === 'ALL'
+    && s.period[0] === DATA_CHORD.y0 && s.period[1] === 2025;
+  atlasSyncUrl(todoDefault
+    ? { vista: null, cat: null, periodo: null }
+    : { vista: s.view, cat: String(s.cat), periodo: s.period[0] + '~' + s.period[1] });
+}
+
 function initFlujos() {
   fl_state();
   fl_setupTabs(); fl_setupCat(); fl_setupSlider();
   drawFlujos();
   setupFlujosCSV();
+  fl_applyUrlState();   // vista compartible: con los controles ya cableados
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initFlujos._wired) {
     initFlujos._wired = true;

@@ -69,6 +69,7 @@ let ci_recomputeTimer = null, ci_lastRenderT = null, ci_lastT = null;
 let ci_detLoading = false;
 let ci_ytCache = {};              // totales por año (denominador del share), por cat|neutral
 let ci_renderCityChips = null;    // ref para refrescar chips al cambiar de pestaña
+let ci_renderGeoChip = null;      // ídem para el chip de sede (lo usa ?sede= del link)
 let ci_everTouched = false;       // una vez que el usuario toca algo, el título queda neutral
 // Timelapse: anima el mapa año a año (acumulado o ventana móvil de 4 años)
 let ci_tlPlaying = false, ci_tlTimer = null, ci_tlMode = 'ma', ci_tlWinYears = 8;
@@ -360,6 +361,10 @@ function ci_points() {
 
 // Redibujo coalescido por frame (el slider dispara muchos input por segundo)
 function ci_scheduleDraw() {
+  // La URL se actualiza YA, sin esperar el frame: el dibujo se puede diferir
+  // (es caro), pero el link de la barra tiene que reflejar lo que el lector
+  // acaba de tocar aunque el redibujo llegue un instante después.
+  ci_syncUrl();
   if (ci_rafPending) return;
   ci_rafPending = true;
   requestAnimationFrame(() => { ci_rafPending = false; drawCiudades(); });
@@ -418,6 +423,7 @@ function ci_hexRefFrame() {
 function drawCiudades() {
   const svg = d3.select('#chart6');
   if (svg.empty() || typeof d3 === 'undefined') return;
+  ci_syncUrl();
   if (ci_tlPlaying) ci_tlStop(false);   // cualquier redibujo normal corta el timelapse
   svg.selectAll('*').remove();
   ci_loadGeo();
@@ -1446,6 +1452,7 @@ function setupCiudadesGeo() {
   input.addEventListener('focus', render);
   input.addEventListener('input', render);
   input.addEventListener('blur', () => setTimeout(() => results.classList.remove('open'), 130));
+  ci_renderGeoChip = renderChip;   // lo usa la vista compartible al aplicar ?sede=
   renderChip();
 }
 // Buscador para la vista línea (multi-selección hasta 6). Según la unidad,
@@ -1662,6 +1669,88 @@ function setupCiudadesCSV() {
 //==================================================================
 //  Init + PNG
 //==================================================================
+// ============ Vista compartible ==============================================
+// (?vista=&cat=&neutral=&sede=&calor=&estilo=&unidad=&apilado=&suav=&ma=&modo=&periodo=)
+// — lib/utils.js. La sede viaja como 'conf:UEFA' o 'pais:Brazil'.
+// NO viajan: la selección de ciudades/países de la vista línea (las ciudades se
+// guardan como índices del dataset, que cambian si se regenera el dato: un link
+// viejo mostraría otras ciudades sin avisar), ni el zoom del mapa ni el
+// timelapse (encuadre y animación del lector, no estado del gráfico).
+// `periodo` solo viaja si el lector movió el slider (periodTouched).
+let ci_urlWired = false;
+function ci_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const s = ci_state();
+  const click = (q) => { const b = document.querySelector(q); if (b) b.click(); };
+  const vista = atlasUrlParam('vista');
+  if (['map', 'bars', 'line'].includes(vista) && s.view !== vista) click('#ci-tab-' + vista);
+  const cat = atlasUrlParam('cat');
+  const catSel = document.getElementById('ci-cat-select');
+  if (cat && catSel && catSel.querySelector(`option[value="${cat}"]`) && catSel.value !== cat) {
+    catSel.value = cat;
+    catSel.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+  const neutral = atlasUrlParam('neutral');
+  if ((neutral === '0' || neutral === '1') && !!s.neutral !== (neutral === '1')) click(`#ci-neutral button[data-neu="${neutral}"]`);
+  const unidad = atlasUrlParam('unidad');
+  if ((unidad === 'city' || unidad === 'country') && s.unit !== unidad) click(`#ci-unit button[data-unit="${unidad}"]`);
+  const apilado = atlasUrlParam('apilado');
+  if ((apilado === '0' || apilado === '1') && !!s.stacked !== (apilado === '1')) click(`#ci-stacked button[data-stk="${apilado}"]`);
+  const suav = atlasUrlParam('suav');
+  if ((suav === 'raw' || suav === 'ma') && s.smooth !== suav) click(`#ci-smooth button[data-smooth="${suav}"]`);
+  const modo = atlasUrlParam('modo');
+  if ((modo === 'abs' || modo === 'share') && s.lineMode !== modo) click(`#ci-line-mode button[data-mode="${modo}"]`);
+  const calor = atlasUrlParam('calor');
+  if ((calor === '0' || calor === '1') && !!s.heat !== (calor === '1')) click('#ci-heat-toggle');
+  const estilo = atlasUrlParam('estilo');
+  if ((estilo === 'glow' || estilo === 'hexsmall') && s.heatStyle !== estilo) click(`#ci-heatstyle button[data-style="${estilo}"]`);
+  const ma = parseInt(atlasUrlParam('ma'), 10);
+  const maEl = document.getElementById('ci-ma');
+  if (ma && maEl && +maEl.value !== ma && ma >= +maEl.min && ma <= +maEl.max) {
+    maEl.value = ma;
+    maEl.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  const sede = atlasUrlParam('sede');
+  if (sede && sede.indexOf(':') > 0) {
+    const [kind, key] = sede.split(':');
+    const ok = (kind === 'conf' && CI_CONF_ORDER.includes(key))
+      || (kind === 'pais' && DATA_CIUDADES.cities.some(c => c.pais === key));
+    if (ok) {
+      s.geo = { type: (kind === 'pais' ? 'country' : 'conf'), key };
+      if (typeof ci_renderGeoChip === 'function') ci_renderGeoChip();
+    }
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    const f = document.getElementById('ci-slider-from'), t = document.getElementById('ci-slider-to');
+    if (a && b && a < b && f && t) {
+      const fire = (el, v) => { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); };
+      if (a < s.period[0]) { fire(f, a); fire(t, b); } else { fire(t, b); fire(f, a); }
+    }
+  }
+  ci_urlWired = true;
+  drawCiudades();
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10).
+function ci_syncUrl() {
+  if (!ci_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = ci_state();
+  if (!s || !s.period) return;
+  const todoDefault = s.view === 'map' && String(s.cat) === 'ALL' && !s.neutral && !s.geo
+    && !s.heat && s.heatStyle === 'glow' && s.unit === 'city' && !s.stacked
+    && s.smooth === 'ma' && s.maYears === 4 && s.lineMode === 'abs' && !s.periodTouched;
+  const sede = s.geo ? ((s.geo.type === 'country' ? 'pais:' : 'conf:') + s.geo.key) : null;
+  atlasSyncUrl(todoDefault
+    ? { vista: null, cat: null, neutral: null, sede: null, calor: null, estilo: null,
+        unidad: null, apilado: null, suav: null, ma: null, modo: null, periodo: null }
+    : { vista: s.view, cat: String(s.cat), neutral: s.neutral ? '1' : '0', sede,
+        calor: s.heat ? '1' : '0', estilo: s.heatStyle, unidad: s.unit,
+        apilado: s.stacked ? '1' : '0', suav: s.smooth, ma: String(s.maYears), modo: s.lineMode,
+        periodo: s.periodTouched ? (s.period[0] + '~' + s.period[1]) : null });
+}
+
 function initCiudades() {
   ci_state();
   ci_loadGeo();
@@ -1696,6 +1785,7 @@ function initCiudades() {
   setupCiudadesVideoDownload();
   setupCiudadesZoomReset();
   setupCiudadesCSV();
+  ci_applyUrlState();   // vista compartible: con los controles ya cableados
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initCiudades._wired) {
     initCiudades._wired = true;

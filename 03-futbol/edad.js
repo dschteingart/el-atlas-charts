@@ -210,6 +210,7 @@ function ed_barDefault(wc, pos) {
 //==================================================================
 function drawEdad() {
   const svg = document.getElementById('chart12'); if (!svg) return;
+  ed_syncUrl();
   svg.innerHTML = ''; ed_clearHover(svg); ed_initData();
 
   // visibilidad de controles
@@ -616,6 +617,63 @@ function setupEdadCSV() {
 //==================================================================
 //  Init + PNG
 //==================================================================
+// ============ Vista compartible ==============================================
+// (?forma=&desglose=&puesto=&puestobar=&paises=&periodo=) — lib/utils.js.
+// Gemelo del de altura (sin "vs país", que acá no existe): se aplica manejando
+// los controles reales y el gate frena el espejo hasta leer la URL entrante.
+let ed_urlWired = false;
+function ed_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const click = (id) => { const b = document.getElementById(id); if (b) b.click(); };
+  const forma = atlasUrlParam('forma');
+  if (['line', 'box', 'bar'].includes(forma) && ed_mode() !== forma) click('ed-mode-' + forma);
+  const desglose = atlasUrlParam('desglose');
+  if ((desglose === 'sel' || desglose === 'pos') && (ed_byPos() ? 'pos' : 'sel') !== desglose) click('ed-view-' + desglose);
+  const puesto = atlasUrlParam('puesto');
+  if (['GK', 'DEF', 'MID', 'FWD'].includes(puesto) && ed_boxPos() !== puesto) click('ed-boxpos-' + puesto);
+  const puestobar = atlasUrlParam('puestobar');
+  if (['all', 'GK', 'DEF', 'MID', 'FWD'].includes(puestobar) && ed_barPos() !== puestobar) click('ed-barpos-' + puestobar);
+  // La selección va DESPUÉS de los toggles (pasar a distribución/por puesto la colapsa).
+  const p = atlasUrlParam('paises');
+  if (p) {
+    const validos = p.split('~').map(k => (k === 'MUNDO' ? ED_WORLD : k)).filter(k => k === ED_WORLD || (ed_teams && ed_teams[k]));
+    if (validos.length) {
+      const m = new Map();
+      validos.forEach((k, i) => m.set(k, i));
+      state[12].selectedTeams = m;
+      ed_renderChips();
+    }
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    if (ed_years && ed_years.includes(a) && ed_years.includes(b) && a < b) {
+      state[12].period = [a, b];
+      if (typeof atlasResyncRangeSliders === 'function') atlasResyncRangeSliders();
+    }
+  }
+  ed_urlWired = true;
+  drawEdad();
+}
+
+// Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10).
+function ed_syncUrl() {
+  if (!ed_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = state[12];
+  if (!s || !s.period) return;
+  const sel = ed_selTeams();
+  const selDef = sel.length === 1 && sel[0] === ED_WORLD;
+  const todoDefault = selDef && ed_mode() === 'line' && !ed_byPos()
+    && ed_boxPos() === 'DEF' && ed_barPos() === 'all'
+    && s.period[0] === ED_YEAR_MIN && s.period[1] === ED_YEAR_MAX;
+  atlasSyncUrl(todoDefault
+    ? { forma: null, desglose: null, puesto: null, puestobar: null, paises: null, periodo: null }
+    : { forma: ed_mode(), desglose: ed_byPos() ? 'pos' : 'sel',
+        puesto: ed_boxPos(), puestobar: ed_barPos(),
+        paises: sel.map(k => (k === ED_WORLD ? 'MUNDO' : k)).join('~'),
+        periodo: s.period[0] + '~' + s.period[1] });
+}
+
 function initEdad() {
   ed_initData();
   if (!state[12]) state[12] = {};
@@ -633,6 +691,7 @@ function initEdad() {
   setupEdadToggles();
   setupEdadCSV();
   ed_renderChips();
+  ed_applyUrlState();   // vista compartible: con los controles ya cableados
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initEdad._wired) { initEdad._wired = true; window.addEventListener('atlas-editor-change', () => drawEdad()); }
 
