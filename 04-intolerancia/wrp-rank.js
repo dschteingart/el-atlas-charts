@@ -643,7 +643,11 @@ function vr_drawMarimekko() {
   const s1 = state[24];
   // WYSIWYG: las etiquetas del marimekko SON los chips (state.selected), igual
   // que el N°2 tras la auditoría. Si el editor está activo, su lista manda.
-  const labelCodes = (aeCfg && Array.isArray(aeCountries)) ? aeCountries : (s1.selected || []);
+  // La lista del editor pisa la selección del gráfico SOLO si tiene algo. Con
+  // el editor recién abierto está vacía, y antes eso borraba las etiquetas de
+  // los países que el lector había elegido (lo reportó Daniel, 2026-08-11).
+  const labelCodes = (aeCfg && Array.isArray(aeCountries) && aeCountries.length)
+    ? aeCountries : (s1.selected || []);
   // Mayor rechazo a la izquierda; las barras bajas (tolerantes) quedan a la
   // derecha, dejando el hueco arriba-derecha para la tabla regional.
   // El PEOR valor siempre a la izquierda (item 8 de Daniel, 2026-07-28): el
@@ -654,6 +658,10 @@ function vr_drawMarimekko() {
   // la rampa con el mismo criterio (vd_peorEsMas).
   const data = vr_computeData().slice().sort((a, b) =>
     vd_peorEsMas(state[24].cat) ? (b.pct - a.pct) : (a.pct - b.pct));
+  // Universo de países para el panel del editor (sección "Países
+  // etiquetados"): sin esto la sección no aparece, aunque el chart sí
+  // consuma la lista. Ver buildCountryUniverse en lib/editor.js.
+  window.__atlasCountryUniverse = data.map(d => d.iso);
   const n = data.length;
   const med = s1.showMedian ? vr_median() : null;
 
