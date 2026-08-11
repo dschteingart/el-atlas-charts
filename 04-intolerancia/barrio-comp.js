@@ -657,7 +657,7 @@ function bc_drawMarimekko() {
     const sin45 = Math.SQRT1_2;
     const fmtLabelDefault = newsletter ? 16 : square ? 17 : mobilePng ? 26
       : mobile ? BCM_LABEL_FONT_SIZE_MOBILE : BCM_LABEL_FONT_SIZE;
-    const labelFontSize = (aeSizes && aeSizes.labels != null) ? aeSizes.labels : fmtLabelDefault;
+    const labelFontSize = atlasEditorSize(aeSizes, 'labels', fmtLabelDefault);
     const aOff = (mobile || mobilePng) ? BCM_LABEL_ANCHOR_Y_OFFSET_MOBILE : BCM_LABEL_ANCHOR_Y_OFFSET;
     const present0 = new Set(data.map(d => d.iso));
     const codesToShow0 = new Set((labelCodes || []).filter(c => present0.has(c)));
@@ -690,11 +690,11 @@ function bc_drawMarimekko() {
     : { tick: 11, axisLabel: 10.5, label: BCM_LABEL_FONT_SIZE, tableTitle: 10, tableLabel: 11 };
   const bc_pick = (v, fb) => (v != null ? v : fb);   // sin nullish coalescing (esprima no parsea ES2020)
   const SIZES = {
-    tick:       bc_pick(aeSizes && aeSizes.ticks,     FMT_SIZES.tick),
-    axisLabel:  bc_pick(aeSizes && aeSizes.axisTitle, FMT_SIZES.axisLabel),
-    label:      bc_pick(aeSizes && aeSizes.labels,    FMT_SIZES.label),
-    tableTitle: bc_pick(aeSizes && aeSizes.special,   FMT_SIZES.tableTitle),
-    tableLabel: bc_pick(aeSizes && aeSizes.special,   FMT_SIZES.tableLabel)
+    tick:       atlasEditorSize(aeSizes, 'ticks', FMT_SIZES.tick),
+    axisLabel:  atlasEditorSize(aeSizes, 'axisTitle', FMT_SIZES.axisLabel),
+    label:      atlasEditorSize(aeSizes, 'labels', FMT_SIZES.label),
+    tableTitle: atlasEditorSize(aeSizes, 'special', FMT_SIZES.tableTitle),
+    tableLabel: atlasEditorSize(aeSizes, 'special', FMT_SIZES.tableLabel)
   };
 
   const yScale = (v) => MARGIN.top + PLOT_H - (v / yMax) * PLOT_H;

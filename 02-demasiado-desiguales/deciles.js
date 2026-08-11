@@ -266,18 +266,27 @@ function drawDeciles() {
   const mobilePng  = editorFormat === 'mobile';
   const mobile = !editorFormat
     && typeof isMobileViewport === 'function' && isMobileViewport();
-  const SIZES = (newsletter || square)
+  const FMT_SIZES = (newsletter || square)
     ? { tick: 24, tickExtra: 19, axisTitle: 24, endLabel: 22 }
     : mobilePng
     ? { tick: 28, tickExtra: 22, axisTitle: 30, endLabel: 24 }
     : mobile
     ? { tick: 32, tickExtra: 26, axisTitle: 34, endLabel: 28 }
-    : {
-        tick:      aeSizes?.ticks     ?? 11,
-        tickExtra: aeSizes?.ticks ? Math.max(8, aeSizes.ticks - 1.5) : 9.5,
-        axisTitle: aeSizes?.axisTitle ?? 11.5,
-        endLabel:  aeSizes?.special   ?? D_LABEL_FONT_SIZE
-      };
+    : { tick: 11, tickExtra: 9.5, axisTitle: 11.5, endLabel: D_LABEL_FONT_SIZE };
+  // Los sliders de tamaño del editor pisan el preset del formato, igual que en
+  // el marimekko y en los charts del N°4: con el editor abierto, lo que se ve
+  // es lo que sale en el PNG. Antes solo se leían en la rama SIN formato — o
+  // sea nunca, porque abrir el editor ya fija 'newsletter': mover los sliders
+  // no hacía nada (lo reportó Daniel, 2026-08-11).
+  const tickSize = atlasEditorSize(aeSizes, 'ticks', FMT_SIZES.tick);
+  const SIZES = {
+    tick:      tickSize,
+    // el tick chico (el "$" de los extremos) sigue al grande: si el lector no
+    // movió el slider, va el del formato; si lo movió, 1.5 abajo del elegido
+    tickExtra: (tickSize === FMT_SIZES.tick) ? FMT_SIZES.tickExtra : Math.max(8, tickSize - 1.5),
+    axisTitle: atlasEditorSize(aeSizes, 'axisTitle', FMT_SIZES.axisTitle),
+    endLabel:  atlasEditorSize(aeSizes, 'special', FMT_SIZES.endLabel)
+  };
 
   const s3 = state[3];
   const yearData = DATA_DECILES.data_by_year[String(s3.year)];

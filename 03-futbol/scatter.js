@@ -372,7 +372,7 @@ function drawScatter() {
   // se encimaban (ticks del eje X) y rebalsaban (títulos de eje, labels de
   // país). 26/30/32 quedan legibles en el celu (÷~3) sin pisarse. El eje X
   // además se ralea a potencias de 10 en estos formatos (ver xTicksRaw).
-  const SIZES = newsletter
+  const FMT_SIZES = newsletter
     ? { tick: 22, axisTitle: 26, label: 26 }
     : square
     ? { tick: 22, axisTitle: 26, label: 26 }
@@ -380,11 +380,15 @@ function drawScatter() {
     ? { tick: 22, axisTitle: 26, label: 26 }
     : mobile
     ? { tick: 22, axisTitle: 26, label: 22 }
-    : {
-        tick:      aeSizes?.ticks     ?? 11,
-        axisTitle: aeSizes?.axisTitle ?? 11.5,
-        label:     aeSizes?.labels    ?? 10.5
-      };
+    : { tick: 11, axisTitle: 11.5, label: 10.5 };
+  // Los sliders de tamaño del editor pisan el preset del formato (mismo
+  // criterio que el marimekko y el N°4). Antes solo se leían sin formato
+  // activo, o sea nunca con el editor abierto: no hacían nada.
+  const SIZES = {
+    tick:      atlasEditorSize(aeSizes, 'ticks', FMT_SIZES.tick),
+    axisTitle: atlasEditorSize(aeSizes, 'axisTitle', FMT_SIZES.axisTitle),
+    label:     atlasEditorSize(aeSizes, 'labels', FMT_SIZES.label)
+  };
 
   // Escala de los radios de punto según formato. En mobile-first los
   // puntos chicos (3.5 units) desaparecen al reducir a celu; los

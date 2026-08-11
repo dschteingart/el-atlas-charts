@@ -434,7 +434,7 @@ function drawScatter() {
   // El bucket "special" del editor en este chart aplica al BANNER (cifras
   // N / R² / Residuo). El banner es HTML, así que su font-size se aplica
   // en s_applyEditorOverrides via inline style — no en SIZES (que es SVG).
-  const SIZES = newsletter
+  const FMT_SIZES = newsletter
     ? { tick: 18, axisTitle: 19, label: 17 }
     : square
     ? { tick: 22, axisTitle: 26, label: 26 }
@@ -442,11 +442,15 @@ function drawScatter() {
     ? { tick: 28, axisTitle: 30, label: 24 }
     : mobile
     ? { tick: 32, axisTitle: 34, label: 28 }
-    : {
-        tick:      aeSizes?.ticks     ?? 11,
-        axisTitle: aeSizes?.axisTitle ?? 11.5,
-        label:     aeSizes?.labels    ?? 10.5
-      };
+    : { tick: 11, axisTitle: 11.5, label: 10.5 };
+  // Los sliders de tamaño del editor pisan el preset del formato (mismo
+  // criterio que el marimekko y el N°4). Antes solo se leían sin formato
+  // activo, o sea nunca con el editor abierto: no hacían nada.
+  const SIZES = {
+    tick:      atlasEditorSize(aeSizes, 'ticks', FMT_SIZES.tick),
+    axisTitle: atlasEditorSize(aeSizes, 'axisTitle', FMT_SIZES.axisTitle),
+    label:     atlasEditorSize(aeSizes, 'labels', FMT_SIZES.label)
+  };
 
     // Mobile-first: agrandar los puntos en los formatos PNG (×1.8 en cuadrado,
     // ×2 en mobile), igual que N°3 — si no, quedan diminutos al verse a ⅓.
@@ -622,6 +626,7 @@ function drawScatter() {
   // === Puntos ===
   const hoverReg = s2.hoverRegion;
   const selectedSet = new Set(s2.selectedCountries || []);
+  const hasSelection = selectedSet.size > 0;
   // activeRegions: filtro visual. Por default contiene TODAS las regiones.
   // El click en chip toggle pertenencia. NO recalcula regresión/residuos
   // (esos son sobre el dataset completo del año).
@@ -670,7 +675,11 @@ function drawScatter() {
     } else if (isHovered) {
       // Hover sobre chip de región: los puntos de esa región se agrandan.
       r = 6;                  fillOp = 0.95; stroke = '#1A1A1A'; strokeW = 0.9;
-    } else if (isLatam) {
+    } else if (isLatam && !hasSelection) {
+      // El realce de Latam es la TESIS del chart, pero se desinfla apenas el
+      // lector elige países: a partir de ahí el gráfico es suyo y el énfasis
+      // editorial compite con su selección. Es la misma válvula que ya tenía
+      // el scatter del N°1 (criterio 11); acá faltaba (lo notó Daniel, 2026-08-11).
       r = S_POINT_R_LATAM * ptScale;    fillOp = 0.92; stroke = '#1A1A1A'; strokeW = 0.7;
     } else {
       r = S_POINT_R_OTHER * ptScale;    fillOp = 0.7;  stroke = 'white';   strokeW = 0.5;
@@ -787,8 +796,14 @@ function drawScatter() {
     if (d) addLabelItem(d, true, 0);
   });
   // Extremos del año (sobre puntos visibles).
-  if (extremeMax) addLabelItem(extremeMax, true, 0);
-  if (extremeMin) addLabelItem(extremeMin, true, 0);
+  // Los extremos (el país más y el menos desigual) son un ancla editorial:
+  // van solos mientras el lector no elige nada. Con selección se apagan, para
+  // que queden etiquetados SOLO los países que pidió — mismo criterio que el
+  // scatter del N°1.
+  if (!hasSelection) {
+    if (extremeMax) addLabelItem(extremeMax, true, 0);
+    if (extremeMin) addLabelItem(extremeMin, true, 0);
+  }
 
   // Editor: lista explícita de iso3 a etiquetar (en addition a selección y
   // extremos). Cuando el editor define countries, REEMPLAZAMOS la lógica
@@ -799,6 +814,15 @@ function drawScatter() {
       const d = pts.find(p => p.code === code);
       if (d) addLabelItem(d, true, 0);
     });
+  } else if (hasSelection) {
+    // Con selección explícita no se agregan etiquetas editoriales: quedan
+    // solo los países que el lector eligió (ya agregados arriba como forced)
+    // y, si hovereó una región, los de esa región. Sin esto convivían sus 2
+    // países con los 20 de Latam y no se distinguía qué había pedido.
+    // Es la misma regla del scatter del N°1 (criterio 11).
+    if (hoverReg) {
+      labelPool.filter(p => p.region === hoverReg).forEach(p => addLabelItem(p, false, 1));
+    }
   } else if (hoverReg) {
     // Modo hover-región: etiquetar países de ESA región. Dentro de la
     // región, las anclas globales hardcoded (USA, DEU, etc.) son Tier 0;

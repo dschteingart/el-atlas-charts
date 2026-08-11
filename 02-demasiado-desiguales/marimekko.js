@@ -540,7 +540,7 @@ function drawMarimekko() {
       : publicFmt ? 11
       : mobile ? M_LABEL_FONT_SIZE_MOBILE
       : M_LABEL_FONT_SIZE;
-    const labelFontSize = aeSizes?.labels ?? fmtLabelDefault;
+    const labelFontSize = atlasEditorSize(aeSizes, 'labels', fmtLabelDefault);
     const aOff = (mobile || mobilePng)
       ? M_LABEL_ANCHOR_Y_OFFSET_MOBILE
       : M_LABEL_ANCHOR_Y_OFFSET;
@@ -634,11 +634,11 @@ function drawMarimekko() {
     ? { tick: 32, axisLabel: 28, label: 28, tableTitle: 28, tableLabel: 30 }
     : { tick: 11, axisLabel: 10.5, label: M_LABEL_FONT_SIZE, tableTitle: 10, tableLabel: 11 };
   const SIZES = {
-    tick:        aeSizes?.ticks     ?? FMT_SIZES.tick,
-    axisLabel:   aeSizes?.axisTitle ?? FMT_SIZES.axisLabel,
-    label:       aeSizes?.labels    ?? FMT_SIZES.label,
-    tableTitle:  aeSizes?.special   ?? FMT_SIZES.tableTitle,
-    tableLabel:  aeSizes?.special   ?? FMT_SIZES.tableLabel
+    tick:        atlasEditorSize(aeSizes, 'ticks', FMT_SIZES.tick),
+    axisLabel:   atlasEditorSize(aeSizes, 'axisTitle', FMT_SIZES.axisLabel),
+    label:       atlasEditorSize(aeSizes, 'labels', FMT_SIZES.label),
+    tableTitle:  atlasEditorSize(aeSizes, 'special', FMT_SIZES.tableTitle),
+    tableLabel:  atlasEditorSize(aeSizes, 'special', FMT_SIZES.tableLabel)
   };
 
   const s1 = state[1];
