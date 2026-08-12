@@ -457,13 +457,12 @@ function mcm_layoutCountryLabels(sortedData, barWidth, plotArea, labelCodes) {
   const cos = Math.cos(angle), sin = Math.sin(angle);
   const aeCfg2 = (window.AtlasEditor && window.AtlasEditor.getConfig)
     ? window.AtlasEditor.getConfig() : null;
-  const aeLabelSize = (aeCfg2 && aeCfg2.sizes) ? aeCfg2.sizes.labels : null;
   const fmtDefaultFontSize = newsletter ? 16
     : square ? 17
     : mobilePng ? 26
     : mobile ? MCM_LABEL_FONT_SIZE_MOBILE
     : MCM_LABEL_FONT_SIZE;
-  const fontSize = (aeLabelSize != null) ? aeLabelSize : fmtDefaultFontSize;
+  const fontSize = atlasEditorSize(aeCfg2 && aeCfg2.sizes, 'labels', fmtDefaultFontSize);
   const anchorYOffset = (mobile || mobilePng)
     ? MCM_LABEL_ANCHOR_Y_OFFSET_MOBILE
     : MCM_LABEL_ANCHOR_Y_OFFSET;

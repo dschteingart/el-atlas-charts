@@ -257,13 +257,12 @@ function m_layoutCountryLabels(sortedData, barWidth, plotArea, selectedCodes, ed
   // de las etiquetas de país sin importar el formato elegido.
   const aeCfg2 = (window.AtlasEditor && window.AtlasEditor.getConfig)
     ? window.AtlasEditor.getConfig() : null;
-  const aeLabelSize = aeCfg2?.sizes?.labels;
   const fmtDefaultFontSize = newsletter ? 16
     : square ? 17
     : mobilePng ? 26
     : mobile ? M_LABEL_FONT_SIZE_MOBILE
     : M_LABEL_FONT_SIZE;
-  const fontSize = aeLabelSize ?? fmtDefaultFontSize;
+  const fontSize = atlasEditorSize(aeCfg2 && aeCfg2.sizes, 'labels', fmtDefaultFontSize);
   // anchorYOffset: distancia eje X → fin de línea guía. En viewports altos
   // (mobile/mobilePng) más espacio para que las labels respiren.
   const anchorYOffset = (mobile || mobilePng)
