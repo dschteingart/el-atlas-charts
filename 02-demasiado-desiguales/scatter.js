@@ -939,9 +939,12 @@ function drawScatter() {
 function s_applyEditorOverrides(aeCfg, aeSizes) {
   // Font del banner (HTML): bucket "special" del editor. Aplicado inline
   // para sobreescribir el CSS class .s-banner (font-size: 13px).
+  // Solo si el lector movió ese slider: si no, manda el CSS (13px). Pasa por
+  // atlasEditorSize con preset null para respetar la misma regla que el resto.
   const banner = document.getElementById('s-banner');
-  if (banner && aeSizes && typeof aeSizes.special === 'number') {
-    banner.style.fontSize = aeSizes.special + 'px';
+  if (banner) {
+    const v = atlasEditorSize(aeSizes, 'special', null);
+    banner.style.fontSize = (typeof v === 'number') ? (v + 'px') : '';
   }
   const docLang = typeof LANG !== 'undefined' ? LANG : 'es';
   const lang = aeCfg?.lang || docLang;

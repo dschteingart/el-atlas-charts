@@ -994,8 +994,17 @@ function rk_subtitle() {
 }
 function rk_applyHeadings() {
   const block = document.querySelector('.chart-block[data-chart="4"]') || document;
-  const tEl = block.querySelector('.chart-title'); if (tEl) tEl.textContent = rk_title();
-  const sEl = block.querySelector('.chart-subtitle'); if (sEl) sEl.textContent = rk_subtitle();
+  // El texto escrito en el editor GANA: este chart arma título y subtítulo
+  // dinámicos (según decil, unidad, año y vista) y los reescribía en cada
+  // redibujo, pisando lo que el lector hubiera puesto en el panel — era el
+  // único de los cuatro números que no cedía (lo reportó Daniel, 2026-08-12).
+  const cfg = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const lang = (cfg && cfg.lang) || (typeof LANG !== 'undefined' ? LANG : 'es');
+  const tx = (cfg && cfg.texts && cfg.texts[lang]) || {};
+  const tEl = block.querySelector('.chart-title');
+  if (tEl && !(tx.title || '').trim()) tEl.textContent = rk_title();
+  const sEl = block.querySelector('.chart-subtitle');
+  if (sEl && !(tx.subtitle || '').trim()) sEl.textContent = rk_subtitle();
 }
 
 // =================== Controles: deciles, unidad, vista, año, buscador ===================
