@@ -202,7 +202,13 @@ function n1ApplyHeadings(chartId) {
 }
 // Tras un cambio del editor, lib/utils re-aplica custom||default editorial a
 // TODOS los headings; re-corremos nuestra pasada después para restaurar la
-// variante neutral si la vista está customizada.
+// variante neutral si la vista está customizada. Además REDIBUJAMOS los charts
+// de la página: sin esto, mover un slider de tamaño guardaba el valor pero el
+// gráfico recién lo tomaba al recargar (los otros números ya redibujaban).
 window.addEventListener('atlas-editor-change', () => setTimeout(() => {
   (n1ApplyHeadings._charts || []).forEach(id => n1ApplyHeadings(id));
+  [1, 2].forEach(id => {
+    if (typeof drawChart === 'function' && state[id] && document.getElementById('chart' + id)) drawChart(id);
+  });
+  if (typeof drawChart3 === 'function' && state[3] && document.getElementById('chart3')) drawChart3();
 }, 0));

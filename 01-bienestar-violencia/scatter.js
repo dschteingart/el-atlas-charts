@@ -444,9 +444,19 @@ function drawChart(chartId) {
   // desktop se aplican como inline (igual a la clase CSS) para no alterar la
   // vista. Trampa #1: font-size va por el.style.fontSize (inline), nunca
   // setAttribute (la clase CSS le ganaría). Ver skill graficos-atlas.
-  const SIZES = big
+  const FMT_SIZES = big
     ? { tick: 22, axisTitle: 26, label: 26, halo: 6, weight: 700 }
     : { tick: 12, axisTitle: 12.5, label: 10.5, halo: 0, weight: null };
+  // Sliders del editor (?nl=1): pisan el preset del formato solo si el lector
+  // los movió (atlasEditorSize, lib/utils.js). halo/weight no son tamaños.
+  const sAeSizes = (window.AtlasEditor && window.AtlasEditor.getConfig)
+    ? (window.AtlasEditor.getConfig() || {}).sizes : null;
+  const SIZES = {
+    tick:      atlasEditorSize(sAeSizes, 'ticks', FMT_SIZES.tick),
+    axisTitle: atlasEditorSize(sAeSizes, 'axisTitle', FMT_SIZES.axisTitle),
+    label:     atlasEditorSize(sAeSizes, 'labels', FMT_SIZES.label),
+    halo: FMT_SIZES.halo, weight: FMT_SIZES.weight
+  };
   // Los puntos se agrandan cuando el gráfico se ve a ~⅓ (PNG o celu).
   const ptScale = big ? 1.8 : 1;
   // Escala de offsets/dims de labels para placeLabels (≈ ratio de fuente).
@@ -523,7 +533,7 @@ function drawChart(chartId) {
     lbl.setAttribute('x', x);
     lbl.setAttribute('y', margin.top + innerH + (big ? 32 : 16));
     lbl.setAttribute('text-anchor', 'middle');
-    if (big) lbl.style.fontSize = SIZES.tick + 'px';
+    lbl.style.fontSize = SIZES.tick + 'px';
     lbl.textContent = fmtTickGDP(v);
     axisG.appendChild(lbl);
   });
@@ -542,7 +552,7 @@ function drawChart(chartId) {
     lbl.setAttribute('x', margin.left - (big ? 14 : 8));
     lbl.setAttribute('y', y + (big ? 8 : 4));
     lbl.setAttribute('text-anchor', 'end');
-    if (big) lbl.style.fontSize = SIZES.tick + 'px';
+    lbl.style.fontSize = SIZES.tick + 'px';
     // Formateo del eje Y. Para chart 1: enteros. Para chart 2 lineal: enteros.
     // Para chart 2 en log: si v<1 con suficiente precisión (0.05 → "0.05", 0.1 → "0.1", 0.2 → "0.2")
     let label;
@@ -573,7 +583,7 @@ function drawChart(chartId) {
   xT.setAttribute('x', margin.left + innerW / 2);
   xT.setAttribute('y', H - (big ? 22 : 12));
   xT.setAttribute('text-anchor', 'middle');
-  if (big) xT.style.fontSize = SIZES.axisTitle + 'px';
+  xT.style.fontSize = SIZES.axisTitle + 'px';
   xT.textContent = t('axis-x') + (scaleX === 'log' ? t('log-suffix') : '');
   svg.appendChild(xT);
 
@@ -584,7 +594,7 @@ function drawChart(chartId) {
   yT.setAttribute('y', big ? 28 : 16);
   yT.setAttribute('transform', 'rotate(-90)');
   yT.setAttribute('text-anchor', 'middle');
-  if (big) yT.style.fontSize = SIZES.axisTitle + 'px';
+  yT.style.fontSize = SIZES.axisTitle + 'px';
   yT.textContent = yLabel + (scaleY === 'log' ? t('log-suffix-y') : '');
   svg.appendChild(yT);
 
@@ -979,8 +989,10 @@ function drawChart(chartId) {
     t_el.setAttribute('y', lbl.y);
     t_el.setAttribute('text-anchor', lbl.anchor);
     t_el.setAttribute('fill', REGION_LABEL_COLORS[lbl.region] || '#1A1A1A');
+    // El tamaño va SIEMPRE inline (el default de pantalla, 10.5, coincide con
+    // el CSS): así el slider "Etiquetas" del editor también responde en vivo.
+    t_el.style.fontSize = SIZES.label + 'px';
     if (big) {
-      t_el.style.fontSize = SIZES.label + 'px';
       // Halo crema para legibilidad sobre puntos del mismo color. stroke usa
       // var(--bg): png-export lo resuelve a rgb al rasterizar (trampa #2).
       t_el.style.stroke = 'var(--bg)';

@@ -86,6 +86,12 @@ function rk_region(iso) { const c = rk_country(iso, state[4].year) || rk_country
 
 const rk_tt = (k, fb) => ((typeof t === 'function' ? t(k) : '') || fb);
 function rk_isMobile() { return (typeof isMobileViewport === 'function') ? isMobileViewport() : false; }
+// Sliders de tamaño del editor (?nl=1). Cada vista los resuelve vía
+// atlasEditorSize: el slider pisa el preset solo si el lector lo movió.
+function rk_aeSizes() {
+  const cfg = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  return cfg ? cfg.sizes : null;
+}
 function rk_measure(text, size, weight) {
   if (!rk_measure._c) rk_measure._c = document.createElement('canvas').getContext('2d');
   rk_measure._c.font = `${weight || 400} ${size}px "Source Sans 3", system-ui, sans-serif`;
@@ -284,7 +290,9 @@ function rk_drawBars(svg, ctx) {
   if (!rows.length) {
     const m = rk_el('text'); m.setAttribute('x', RK_W / 2); m.setAttribute('y', RK_H / 2); m.setAttribute('text-anchor', 'middle'); m.style.fontFamily = 'var(--sans)'; m.style.fontSize = (bigFmt ? 22 : 14) + 'px'; m.setAttribute('fill', 'var(--ink-muted)'); m.textContent = rk_tt('c4-empty', 'Sin datos para este año.'); svg.appendChild(m); return;
   }
-  const fs = bigFmt ? 22 : 13;
+  // Sliders del editor: nombres y valores de las barras = "Etiquetas". El
+  // layout se adapta solo (nameW/valW se miden con este fs).
+  const fs = atlasEditorSize(rk_aeSizes(), 'labels', bigFmt ? 22 : 13);
   const top = RK_MARGIN.top + (bigFmt ? 8 : 4), bottom = bigFmt ? 16 : 10;
   let nameW = 0; rows.forEach(r => { const w = rk_measure(rk_name(r.iso), fs, 600); if (w > nameW) nameW = w; });
   const valW = rk_measure(rk_fmt(rows[0].v, unit) + '0', fs, 700);
@@ -353,7 +361,10 @@ function rk_drawLines(svg, ctx) {
   let vmin = Infinity, vmax = -Infinity;
   series.forEach(s => s.pts.forEach(p => { if (p[1] < vmin) vmin = p[1]; if (p[1] > vmax) vmax = p[1]; }));
   if (!isFinite(vmin)) { vmin = 1; vmax = 10; }
-  const fs = bigFmt ? 22 : 11.5, labelFs = bigFmt ? 22 : 12;
+  // Sliders del editor: ticks = "Ticks"; los nombres al final de cada línea =
+  // "End-labels" (mismo reparto que el chart de deciles).
+  const fs = atlasEditorSize(rk_aeSizes(), 'ticks', bigFmt ? 22 : 11.5),
+        labelFs = atlasEditorSize(rk_aeSizes(), 'special', bigFmt ? 22 : 12);
   // margen derecho dinámico para los end-labels (nombre + valor en PNG)
   let nameW = 0; series.forEach(s => { const w = rk_measure(s.name + (isPngFormat ? '  ' + rk_fmt(s.pts[s.pts.length - 1][1], unit) : ''), labelFs, 600); if (w > nameW) nameW = w; });
   const M = { top: RK_MARGIN.top, bottom: bigFmt ? 56 : 40, left: bigFmt ? 96 : 64, right: Math.min(Math.round(RK_W * 0.34), (bigFmt ? 22 : 12) + nameW + (bigFmt ? 16 : 10)) };
@@ -381,7 +392,7 @@ function rk_drawLines(svg, ctx) {
   });
   // título eje Y
   const en = (typeof LANG !== 'undefined' && LANG === 'en');
-  const yT = rk_el('text'); yT.setAttribute('class', 's-axis-title'); yT.setAttribute('text-anchor', 'middle'); yT.setAttribute('transform', `translate(${M.left - (bigFmt ? 74 : 46)}, ${M.top + PH / 2}) rotate(-90)`); yT.style.fontSize = (bigFmt ? 22 : 11.5) + 'px'; yT.textContent = (en ? 'US$ PPP' : 'US$ PPA') + ' ' + rk_unitSuffix(); svg.appendChild(yT);
+  const yT = rk_el('text'); yT.setAttribute('class', 's-axis-title'); yT.setAttribute('text-anchor', 'middle'); yT.setAttribute('transform', `translate(${M.left - (bigFmt ? 74 : 46)}, ${M.top + PH / 2}) rotate(-90)`); yT.style.fontSize = atlasEditorSize(rk_aeSizes(), 'axisTitle', bigFmt ? 22 : 11.5) + 'px'; yT.textContent = (en ? 'US$ PPP' : 'US$ PPA') + ' ' + rk_unitSuffix(); svg.appendChild(yT);
 
   // líneas + halos + dots + áreas de hover (resalte)
   const lineW = bigFmt ? 3.2 : 2, haloW = lineW + (bigFmt ? 5 : 3), dotR = bigFmt ? 4 : 2.4;
@@ -676,7 +687,8 @@ function rk_drawMapLabels(svg, o) {
   // MISMO px final (~38) en todos los mapas: fs = 38·vbW/nW. (En mobile el SVG no se rasteriza
   // a un canvas fijo —escala al ancho del teléfono—, así que ahí mantenemos 32.)
   const cv = RK_CONT_VIEW[state[4].continent] || RK_CONT_VIEW.all;
-  const fs = !bigFmt ? 10 : (rk_pngExporting ? Math.round(38 * cv.vbW / cv.nW) : 32), fw = bigFmt ? 700 : 600;
+  const fs = atlasEditorSize(rk_aeSizes(), 'labels',
+    !bigFmt ? 10 : (rk_pngExporting ? Math.round(38 * cv.vbW / cv.nW) : 32)), fw = bigFmt ? 700 : 600;
   const placed = [], leaderSegs = [], g = rk_el('g'); svg.appendChild(g);
   const land = svg.querySelector('path.rk-landmask');
   const sp = svg.createSVGPoint();

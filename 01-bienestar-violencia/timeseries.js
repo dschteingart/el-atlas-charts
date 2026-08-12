@@ -55,9 +55,19 @@ function drawChart3() {
   const square = fmt === 'square';
   const mobile = !fmt && typeof isMobileViewport === 'function' && isMobileViewport();
   const big = square || mobile;
-  const SZ = big
+  const FMT_SZ = big
     ? { tick: 22, axisTitle: 24, endLabel: 19, hover: 22 }
     : { tick: 12, axisTitle: 12.5, endLabel: 11.5, hover: 12 };
+  // Sliders del editor (?nl=1): pisan el preset del formato solo si el lector
+  // los movió (atlasEditorSize, lib/utils.js). endLabel = "End-labels".
+  const tsAeSizes = (window.AtlasEditor && window.AtlasEditor.getConfig)
+    ? (window.AtlasEditor.getConfig() || {}).sizes : null;
+  const SZ = {
+    tick:      atlasEditorSize(tsAeSizes, 'ticks', FMT_SZ.tick),
+    axisTitle: atlasEditorSize(tsAeSizes, 'axisTitle', FMT_SZ.axisTitle),
+    endLabel:  atlasEditorSize(tsAeSizes, 'special', FMT_SZ.endLabel),
+    hover: FMT_SZ.hover
+  };
   // Square 1100×780: con 760 el PNG quedaba con espacio vacío ABAJO (el
   // chart no dibuja leyenda en canvas como los scatters); con 910 quedó
   // height-limited y el export lo achicó/centró dejando aire a la DERECHA
@@ -130,7 +140,7 @@ function drawChart3() {
     lbl.setAttribute('x', x); lbl.setAttribute('y', margin.top + innerH + (big ? 30 : 18));
     lbl.setAttribute('text-anchor', 'middle');
     lbl.setAttribute('class', 'axis');
-    if (big) lbl.style.fontSize = SZ.tick + 'px';
+    lbl.style.fontSize = SZ.tick + 'px';
     lbl.textContent = yr;
     svg.appendChild(lbl);
   });
@@ -152,7 +162,7 @@ function drawChart3() {
     lbl.setAttribute('x', margin.left - (big ? 12 : 8)); lbl.setAttribute('y', y + 4);
     lbl.setAttribute('text-anchor', 'end');
     lbl.setAttribute('class', 'axis');
-    if (big) lbl.style.fontSize = SZ.tick + 'px';
+    lbl.style.fontSize = SZ.tick + 'px';
     lbl.textContent = v;
     svg.appendChild(lbl);
   });
@@ -161,7 +171,7 @@ function drawChart3() {
   const yTitle = document.createElementNS(ns, 'text');
   yTitle.setAttribute('class', 'axis-title');
   yTitle.setAttribute('text-anchor', 'middle');
-  if (big) yTitle.style.fontSize = SZ.axisTitle + 'px';
+  yTitle.style.fontSize = SZ.axisTitle + 'px';
   yTitle.setAttribute('transform', `translate(${margin.left - (big ? 64 : 42)}, ${margin.top + innerH/2}) rotate(-90)`);
   // En big (mobile/square) el título completo rotado desbordaba el alto del
   // plot (Daniel, 12/7) → versión corta.
@@ -319,7 +329,7 @@ function drawChart3() {
     lbl.setAttribute('x', l.lineEndX + 6);
     lbl.setAttribute('y', l.y + 4);  // baseline offset
     lbl.setAttribute('class', l.cssClass);
-    if (big) lbl.style.fontSize = SZ.endLabel + 'px';
+    lbl.style.fontSize = SZ.endLabel + 'px';
     if (l.fill) lbl.setAttribute('fill', l.fill);
     lbl.textContent = l.text;
     endLabelsGroup.appendChild(lbl);
