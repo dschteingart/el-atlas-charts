@@ -388,6 +388,10 @@ function drawScatter() {
   const aeSizes = aeCfg?.sizes;
   const aeCountries = (aeCfg?.countries && aeCfg.countries.length > 0)
     ? new Set(aeCfg.countries) : null;
+  // "Alguien pidió países": vale tanto la selección hecha en el gráfico como la
+  // lista del editor. Las dos apagan lo automático (el realce de Latam y las
+  // anclas del máximo/mínimo), así el gráfico muestra solo lo pedido.
+  const listaDelEditor = !!(aeCountries && aeCountries.size > 0);
 
   // Decidir dimensiones según el formato del editor (si está activo) o
   // según el viewport del browser (sin editor activo). Cuando hay format:
@@ -675,11 +679,13 @@ function drawScatter() {
     } else if (isHovered) {
       // Hover sobre chip de región: los puntos de esa región se agrandan.
       r = 6;                  fillOp = 0.95; stroke = '#1A1A1A'; strokeW = 0.9;
-    } else if (isLatam && !hasSelection) {
-      // El realce de Latam es la TESIS del chart, pero se desinfla apenas el
-      // lector elige países: a partir de ahí el gráfico es suyo y el énfasis
-      // editorial compite con su selección. Es la misma válvula que ya tenía
-      // el scatter del N°1 (criterio 11); acá faltaba (lo notó Daniel, 2026-08-11).
+    } else if (isLatam && !hasSelection && !listaDelEditor) {
+      // El realce de Latam es la TESIS del chart, pero se desinfla apenas
+      // alguien elige países —desde el gráfico o desde el editor—: a partir de
+      // ahí el énfasis editorial compite con lo pedido. Es la misma válvula que
+      // ya tenía el scatter del N°1 (criterio 11). Faltaba la válvula entera
+      // (2026-08-11) y después faltaba el caso del editor (2026-08-12), las dos
+      // veces las notó Daniel.
       r = S_POINT_R_LATAM * ptScale;    fillOp = 0.92; stroke = '#1A1A1A'; strokeW = 0.7;
     } else {
       r = S_POINT_R_OTHER * ptScale;    fillOp = 0.7;  stroke = 'white';   strokeW = 0.5;
@@ -802,7 +808,6 @@ function drawScatter() {
   // (ahí el panel manda: el criterio es que queden SOLO los pedidos). Sin esto,
   // tildar un país en el editor dejaba su etiqueta conviviendo con el máximo y
   // el mínimo — lo reportó Daniel, 2026-08-12.
-  const listaDelEditor = !!(aeCountries && aeCountries.size > 0);
   if (!hasSelection && !listaDelEditor) {
     if (extremeMax) addLabelItem(extremeMax, true, 0);
     if (extremeMin) addLabelItem(extremeMin, true, 0);
