@@ -797,10 +797,13 @@ function drawScatter() {
   });
   // Extremos del año (sobre puntos visibles).
   // Los extremos (el país más y el menos desigual) son un ancla editorial:
-  // van solos mientras el lector no elige nada. Con selección se apagan, para
-  // que queden etiquetados SOLO los países que pidió — mismo criterio que el
-  // scatter del N°1.
-  if (!hasSelection) {
+  // van solos mientras nadie eligió nada. Se apagan si el lector seleccionó
+  // países en el gráfico O si el editor definió su propia lista de etiquetados
+  // (ahí el panel manda: el criterio es que queden SOLO los pedidos). Sin esto,
+  // tildar un país en el editor dejaba su etiqueta conviviendo con el máximo y
+  // el mínimo — lo reportó Daniel, 2026-08-12.
+  const listaDelEditor = !!(aeCountries && aeCountries.size > 0);
+  if (!hasSelection && !listaDelEditor) {
     if (extremeMax) addLabelItem(extremeMax, true, 0);
     if (extremeMin) addLabelItem(extremeMin, true, 0);
   }

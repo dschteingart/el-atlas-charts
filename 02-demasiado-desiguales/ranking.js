@@ -188,6 +188,9 @@ function drawRanking() {
   rk_syncUrl();
   const svg = document.getElementById('chart4'); if (!svg) return;
   svg.innerHTML = '';
+  // El hover de la vista Líneas vive en el <svg> y sobrevive al innerHTML='':
+  // hay que sacarlo a mano o sigue disparando en las otras vistas.
+  rk_removeLinesHover();
   const tt = document.getElementById('tooltip4'); if (tt) { tt.style.opacity = '0'; tt.style.display = 'none'; }
 
   // visibilidad de controles por vista
@@ -449,7 +452,24 @@ function rk_linesHover(svg, c) {
     tooltip.innerHTML = html; tooltip.style.display = 'block'; tooltip.style.opacity = '1';
   };
   const moveH = (ev) => { const rc = svg.getBoundingClientRect(); const sc = rc.width / RK_W; const lx = (ev.clientX - rc.left) / sc; if (lx < c.M.left || lx > c.M.left + c.PW) { update(null); return; } update(nearest(lx)); rk_placeTip(tooltip, ev, svg); };
-  svg.addEventListener('mousemove', moveH); svg.addEventListener('mouseleave', () => update(null));
+  const leaveH = () => update(null);
+  // Estos dos listeners van en el <svg>, NO en sus hijos: innerHTML='' del
+  // redibujo los deja vivos. Sin removerlos, al pasar de Líneas a Mapa seguía
+  // apareciendo el tooltip de líneas (varios países y un año) sobre el mapa
+  // — lo reportó Daniel, 2026-08-12. Guardamos las referencias para poder
+  // sacarlos en el próximo dibujo.
+  rk_removeLinesHover();
+  svg.addEventListener('mousemove', moveH);
+  svg.addEventListener('mouseleave', leaveH);
+  rk_linesHandlers = { svg, moveH, leaveH };
+}
+let rk_linesHandlers = null;
+function rk_removeLinesHover() {
+  if (!rk_linesHandlers) return;
+  const { svg, moveH, leaveH } = rk_linesHandlers;
+  svg.removeEventListener('mousemove', moveH);
+  svg.removeEventListener('mouseleave', leaveH);
+  rk_linesHandlers = null;
 }
 
 // =================== Vista MAPA ===================
