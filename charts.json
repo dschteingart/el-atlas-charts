@@ -60,7 +60,7 @@
       "slug": "futbol",
       "carpeta": "03-futbol",
       "titulo": "El Atlas del fútbol",
-      "en": "index-en.html + ?lang=en (índice único de los 22: los 12 de esta carpeta + los 10 de 03b-partidos)",
+      "en": "index-en.html + ?lang=en (indice unico de los 22). Para COMPARTIR en ingles, landings chart-<slug>-en.html en las dos carpetas: la barra del grafico ya las muestra al leer en ingles.",
       "charts": [
         {
           "archivo": "chart-elo-pib.html",
@@ -132,7 +132,7 @@
       "slug": "partidos",
       "carpeta": "03b-partidos",
       "titulo": "El Atlas del fútbol — gráficos de partidos (integrados al N° 3)",
-      "en": "sin índice propio: index.html / index-eng.html / index-en.html redirigen al índice único del N° 3",
+      "en": "sin indice propio (redirige al del N° 3). Para compartir en ingles, landings chart-<slug>-en.html.",
       "charts": [
         {
           "archivo": "chart-actividad.html",
