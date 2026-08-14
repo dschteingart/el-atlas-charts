@@ -10,7 +10,7 @@ const ES_N4_INTOLERANCIA = true;  // sentinel para png-export (FILENAMES del N°
 
 const ISSUE_I18N = {
   es: {
-    'issue-num':  'N°4',
+    'brand-topic': 'Discriminación',
     'page-title': '¿El país más racista del mundo?',
     'page-lede':  '¿Se puede comparar el racismo entre países? Siete gráficos: lo que la gente declara, lo que ve y vive, lo que hacen los Estados y el perfil que queda.',
 
@@ -185,7 +185,7 @@ const ISSUE_I18N = {
     'c20-title-neutral': 'Exclusión social y PIB per cápita'
   },
   en: {
-    'issue-num':  'No. 4',
+    'brand-topic': 'Discrimination',
     'page-title': 'The most racist country in the world?',
     'page-lede':  'Can racism be compared across countries? Seven charts: what people declare, what they see and experience, what states do and the profile that emerges.',
 

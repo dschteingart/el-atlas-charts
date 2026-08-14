@@ -14,7 +14,7 @@ const ES_N1_BIENESTAR = true;
 // and is merged below.
 const ISSUE_I18N = {
   es: {
-    'issue-num':  'N° 1',
+    'brand-topic': 'Bienestar y violencia',
     'page-title': 'Más feliz de lo que debería, más violenta de lo tolerable',
     'page-lede':  'América Latina se desvía del mundo en dos direcciones a la vez.',
     'index-charts-label': 'Gráficos interactivos',
@@ -62,7 +62,7 @@ const ISSUE_I18N = {
     'tt-year-hom':  'Homicidios',
   },
   en: {
-    'issue-num':  'No. 1',
+    'brand-topic': 'Wellbeing and violence',
     'page-title': 'Happier than it should be, more violent than tolerable',
     'page-lede':  'Latin America deviates from the world in two directions at once.',
     'index-charts-label': 'Interactive charts',

@@ -22,10 +22,12 @@
     'chart-perfil.html',
     'chart-wrp.html'
   ];
+  const INDEX = './index.html';       // índice de esta entrega
+  const SITE_HOME = '../index.html';   // inicio del sitio (las 4 entregas)
   const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
   const T = {
-    es: { label: 'Gráfico', sub: 'Suscribite gratis', eyebrow: 'El Atlas · Newsletter', pitch: 'Cartografías del desarrollo de América Latina y el mundo, con datos y gráficos interactivos.', prev: 'Gráfico anterior', next: 'Gráfico siguiente', all: 'Ver todos los gráficos' },
-    en: { label: 'Chart', sub: 'Subscribe for free', eyebrow: 'The Atlas · Newsletter', pitch: 'Mapping development in Latin America and the world, with data and interactive charts.', prev: 'Previous chart', next: 'Next chart', all: 'See all charts' }
+    es: { label: 'Gráfico', sub: 'Suscribite gratis', eyebrow: 'El Atlas · Newsletter', pitch: 'Cartografías del desarrollo de América Latina y el mundo, con datos y gráficos interactivos.', prev: 'Gráfico anterior', next: 'Gráfico siguiente', all: 'Ver todos los gráficos', home: 'Ir al inicio de El Atlas' },
+    en: { label: 'Chart', sub: 'Subscribe for free', eyebrow: 'The Atlas · Newsletter', pitch: 'Mapping development in Latin America and the world, with data and interactive charts.', prev: 'Previous chart', next: 'Next chart', all: 'See all charts', home: 'Go to The Atlas home' }
   };
   function lang() {
     if (typeof LANG !== 'undefined' && LANG) return LANG;
@@ -67,8 +69,8 @@
       .atlas-nav-count:hover { color: var(--accent); }
       .atlas-nav-all { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; }
       .atlas-nav-all:hover { text-decoration: underline; text-underline-offset: 3px; }
-      .brand a.atlas-home { color: inherit; text-decoration: none; }
-      .brand a.atlas-home:hover { color: var(--accent); }
+      .brand a.atlas-home, .brand a.atlas-section { color: inherit; text-decoration: none; }
+      .brand a.atlas-home:hover, .brand a.atlas-section:hover { color: var(--accent); }
       .atlas-cta { display: flex; flex-direction: column; align-items: center; gap: 9px; max-width: 460px; text-align: center; text-decoration: none; background: var(--bg); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 24px 16px; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
       .atlas-cta:hover { border-color: var(--accent); box-shadow: 0 6px 20px rgba(190,93,50,.13); transform: translateY(-1px); }
       .atlas-cta-eyebrow { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
@@ -104,17 +106,34 @@
     a.textContent = T[L].sub + ' →';
     a.setAttribute('href', SUBS[L]);
   }
+  // La barra de arriba tiene DOS destinos, cada uno donde dice (decisión con
+  // Daniel, 2026-08-14): la marca lleva al inicio del sitio y el tópico al
+  // índice de esta entrega. Antes todo el bloque era un solo link al índice:
+  // decía "El Atlas" pero no llevaba a El Atlas, y al sacar el número de
+  // entrega el desajuste quedó a la vista. Idempotente.
   function mountBrandLink() {
-    const file = (location.pathname.split('/').pop() || '').toLowerCase();
-    if (CHARTS.indexOf(file) < 0) return;   // solo en páginas de gráfico
     const brand = document.querySelector('.top-bar .brand');
     if (!brand || brand.querySelector('a.atlas-home')) return;
-    const a = document.createElement('a');
-    a.className = 'atlas-home';
-    a.href = './index.html';
-    a.title = T[lang()].all;
-    while (brand.firstChild) a.appendChild(brand.firstChild);
-    brand.appendChild(a);
+    const marca = brand.querySelector('.brand-em');
+    if (marca && !marca.closest('a')) {
+      const a = document.createElement('a');
+      a.className = 'atlas-home';
+      a.href = SITE_HOME;
+      a.title = T[lang()].home;
+      marca.parentNode.insertBefore(a, marca);
+      a.appendChild(marca);
+    }
+    const topico = brand.querySelector('.brand-topic');
+    // En el propio índice el tópico no linkea (ya estás ahí).
+    const enElIndice = INDEX.split('/').pop() === (location.pathname.split('/').pop() || 'index.html');
+    if (topico && !topico.closest('a') && !enElIndice) {
+      const a2 = document.createElement('a');
+      a2.className = 'atlas-section';
+      a2.href = INDEX;
+      a2.title = T[lang()].all;
+      topico.parentNode.insertBefore(a2, topico);
+      a2.appendChild(topico);
+    }
   }
   function init() {
     injectCss();

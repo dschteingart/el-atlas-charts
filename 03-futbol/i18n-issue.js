@@ -7,7 +7,7 @@
 //==================================================================
 const ISSUE_I18N = {
   es: {
-    'issue-num':  'N° 3',
+    'brand-topic': 'Fútbol',
     'page-title': 'El Atlas del fútbol',
     'page-lede':  'Gráficos interactivos sobre dónde se juega el fútbol, de dónde salen los jugadores y quién gana: la expansión del juego por el planeta, la geografía del talento y el rendimiento de las selecciones.',
 
@@ -375,7 +375,7 @@ const ISSUE_I18N = {
     'c8-sources-tpl':        'Datos: jfjelstul/worldcup + FC Maps (2026); lugar de nacimiento de Wikidata/Pantheon.',
   },
   en: {
-    'issue-num':  'N° 3',
+    'brand-topic': 'Football',
     'page-title': 'The Atlas of football',
     'page-lede':  'Interactive charts on where football is played, where the players come from and who wins: the spread of the game across the planet, the geography of talent and the performance of national teams.',
 

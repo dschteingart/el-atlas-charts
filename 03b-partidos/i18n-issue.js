@@ -13,7 +13,7 @@ const ISSUE_I18N = {
     // los archivos no se movieron (mover rompería los links compartidos y las
     // configuraciones del editor), pero la marca de arriba y el índice son los
     // del N°3. Ver 03-futbol/index.html.
-    'issue-num':  'N° 3',
+    'brand-topic': 'Fútbol',
     'page-title': 'El Atlas del fútbol',
     'page-lede':  'Quién juega contra quién, dónde y cuánto: 49.000 partidos de selecciones desde 1872.',
 
@@ -326,7 +326,7 @@ const ISSUE_I18N = {
   },
 
   en: {
-    'issue-num':  'N° 3',
+    'brand-topic': 'Football',
     'page-title': 'The Atlas of football',
     'page-lede':  'Who plays whom, where and how often: 49,000 international matches since 1872.',
 

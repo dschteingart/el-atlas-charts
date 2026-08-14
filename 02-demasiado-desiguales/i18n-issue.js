@@ -7,7 +7,7 @@
 //==================================================================
 const ISSUE_I18N = {
   es: {
-    'issue-num':  'N° 2',
+    'brand-topic': 'Desigualdad',
     'page-title': '¿Es América Latina realmente la región más desigual del mundo?',
     'page-lede':  'La excepcionalidad latinoamericana en desigualdad existe, pero no donde solemos creer.',
     'index-charts-label': 'Gráficos interactivos',
@@ -179,7 +179,7 @@ const ISSUE_I18N = {
     'footer-signature': 'El Atlas · Daniel Schteingart · 2026',
   },
   en: {
-    'issue-num':  'No. 2',
+    'brand-topic': 'Inequality',
     'page-title': "Is Latin America really the world's most unequal region?",
     'page-lede':  "Latin America's inequality exception is real — but not in the way we usually think.",
     'index-charts-label': 'Interactive charts',
