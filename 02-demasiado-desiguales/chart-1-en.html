@@ -25,7 +25,15 @@
 
 <!-- Redirección SOLO por JS: los crawlers (Twitterbot, facebookexternalhit, Slackbot, Substack)
      leen el <head> estático y NO ejecutan esto → ven el card en inglés. Un humano va al gráfico. -->
-<script>location.replace('./chart-1.html?lang=en' + location.hash);</script>
+<script>
+  // Conserva los parámetros del link compartido (año, países, vista, escala…) y
+  // fuerza el inglés. Antes redirigía a "?lang=en" pelado y se perdía TODO el
+  // estado: compartir una vista en inglés te llevaba al gráfico por default
+  // (roto desde que el estado viaja en la URL, Fase 5).
+  var p = new URLSearchParams(location.search);
+  p.set('lang', 'en');
+  location.replace('./chart-1.html?' + p.toString() + location.hash);
+</script>
 <style>body{font-family:'Source Sans 3',system-ui,sans-serif;background:#FAF8F3;color:#1A1A1A;padding:40px;line-height:1.5}a{color:#BE5D32}</style>
 </head>
 <body>

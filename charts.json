@@ -194,7 +194,7 @@
       "slug": "intolerancia",
       "carpeta": "04-intolerancia",
       "titulo": "¿El país más racista del mundo?",
-      "en": "toggle + ?lang=en (sin páginas EN propias)",
+      "en": "toggle + ?lang=en; para COMPARTIR en ingles, landings chart-<slug>-en.html (OG en ingles + redirect que conserva los parametros del link)",
       "charts": [
         {
           "archivo": "chart-vecinos.html",
