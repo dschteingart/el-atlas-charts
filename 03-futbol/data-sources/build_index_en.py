@@ -28,7 +28,7 @@ def replace_once(s, old, new, label):
 src = replace_once(src, '<html lang="es">', '<html lang="en">', "html lang")
 
 # 2) bloque <head>: title + description + Open Graph/Twitter, todo en inglés
-ES_HEAD = '''<title>El Atlas del fútbol — El Atlas N°3</title>
+ES_HEAD = '''<title>El Atlas del fútbol</title>
 <meta name="description" content="Gráficos interactivos sobre dónde se juega el fútbol, de dónde salen los jugadores y quién gana.">
 
 <!-- Open Graph / Twitter: preview del link al compartir (X, WhatsApp, etc.).
@@ -38,16 +38,16 @@ ES_HEAD = '''<title>El Atlas del fútbol — El Atlas N°3</title>
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/">
-<meta property="og:title" content="El Atlas del fútbol — El Atlas N°3">
+<meta property="og:title" content="El Atlas del fútbol">
 <meta property="og:description" content="Gráficos interactivos sobre dónde se juega el fútbol, de dónde salen los jugadores y quién gana.">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-birthplace.png">
 <meta property="og:image:alt" content="Mapa mundial de las ciudades de nacimiento de los jugadores mundialistas">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="El Atlas del fútbol — El Atlas N°3">
+<meta name="twitter:title" content="El Atlas del fútbol">
 <meta name="twitter:description" content="Gráficos interactivos sobre dónde se juega el fútbol, de dónde salen los jugadores y quién gana.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-birthplace.png">'''
 
-EN_HEAD = '''<title>The Atlas of football — The Atlas No. 3</title>
+EN_HEAD = '''<title>The Atlas of football</title>
 <meta name="description" content="Interactive charts on where football is played, where the players come from and who wins.">
 
 <!-- Open Graph / Twitter (INGLÉS). Generado por data-sources/build_index_en.py
@@ -57,12 +57,12 @@ EN_HEAD = '''<title>The Atlas of football — The Atlas No. 3</title>
 <meta property="og:site_name" content="The Atlas · Mapping development">
 <meta property="og:locale" content="en_US">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/index-en.html">
-<meta property="og:title" content="The Atlas of football — The Atlas No. 3">
+<meta property="og:title" content="The Atlas of football">
 <meta property="og:description" content="Interactive charts on where football is played, where the players come from and who wins.">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-birthplace.en.png">
 <meta property="og:image:alt" content="World map of the birthplaces of World Cup players">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="The Atlas of football — The Atlas No. 3">
+<meta name="twitter:title" content="The Atlas of football">
 <meta name="twitter:description" content="Interactive charts on where football is played, where the players come from and who wins.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-birthplace.en.png">'''
 
