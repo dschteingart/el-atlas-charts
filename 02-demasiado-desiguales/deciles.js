@@ -377,9 +377,18 @@ function d_applyEditorTexts(aeCfg) {
     || (I18N[docLang] && I18N[docLang][pristine ? 'c3-title' : 'c3-title-neutral'])
     || titleEl.textContent;
   const subEl = block.querySelector('.chart-subtitle');
-  if (subEl) subEl.textContent = customSubtitle
-    || (I18N[docLang] && I18N[docLang][pristine ? 'c3-subtitle' : 'c3-subtitle-neutral'])
-    || subEl.textContent;
+  if (subEl) {
+    // El neutral dice unidad y año (el año lo tiene el slider, así que {Y} se
+    // reemplaza acá) y cambia de frase en modo percentil, donde el dato no es
+    // una moneda sino una posición. Criterio OWID pedido por Daniel, 2026-08-15.
+    let neutral = (I18N[docLang] && I18N[docLang][
+      (state[3] && state[3].yMode === 'percentile') ? 'c3-subtitle-neutral-pct' : 'c3-subtitle-neutral'
+    ]) || '';
+    neutral = neutral.replace('{Y}', (state[3] && state[3].year) || '');
+    subEl.textContent = customSubtitle
+      || (pristine ? ((I18N[docLang] && I18N[docLang]['c3-subtitle']) || subEl.textContent)
+                   : (neutral || subEl.textContent));
+  }
   const captionEls = document.querySelectorAll(
     '.footer p[data-i18n="c3-sources"], .footer details[class*="mobile-collapse"] p[data-i18n="c3-sources"]'
   );

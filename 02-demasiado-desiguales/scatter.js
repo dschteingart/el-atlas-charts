@@ -302,9 +302,32 @@ function s_buildModel(year, mode, regression) {
 // Latam residuo % positivo → "más desigual"; negativo → "menos desigual".
 // El residuo se reporta como entero (sin decimales) — el lector no precisa
 // 17,3% vs 17%; el % es de por sí ruidoso entre años.
+// ¿La vista está como sale de fábrica? Mismos gatillos que el resto del sitio
+// (criterio 11): elegir países o apagar regiones. Los toggles de escala/modelo
+// no cuentan — cambian cómo se mira lo mismo, no de qué habla el gráfico.
+function s_pristine() {
+  const s2 = state[2] || {};
+  const sinSeleccion = !(s2.selectedCountries || []).length;
+  const todasLasRegiones = !s2.activeRegions || (typeof REGION_WB_ORDER === 'undefined')
+    || s2.activeRegions.size === REGION_WB_ORDER.length;
+  return sinSeleccion && todasLasRegiones;
+}
+
 function s_updateSubtitle(model) {
   const el = document.querySelector('.chart-block[data-chart="2"] .chart-subtitle');
   if (!el || !model) return;
+  const titleEl = document.querySelector('.chart-block[data-chart="2"] .chart-title');
+  // Insight por default, neutral al customizar. Era el único de los cuatro
+  // charts del número sin esta variante: seguía afirmando la tesis de América
+  // Latina aunque el lector hubiera elegido otros países o apagado su región
+  // (pedido de Daniel, 2026-08-15).
+  if (!s_pristine()) {
+    const dict = (typeof I18N !== 'undefined' && I18N[LANG]) || {};
+    if (titleEl && dict['c2-title-neutral']) titleEl.textContent = dict['c2-title-neutral'];
+    el.textContent = (dict['c2-subtitle-neutral'] || '').replace('{Y}', (state[2] && state[2].year) || '');
+    return;
+  }
+  if (titleEl && I18N[LANG] && I18N[LANG]['c2-title']) titleEl.textContent = I18N[LANG]['c2-title'];
   const latamPct = model.residuals_pct?.['Latin America & Caribbean'];
   if (latamPct == null) {
     el.textContent = '';

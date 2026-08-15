@@ -168,12 +168,36 @@ function rk_decileLabel() {
   return en ? ('average of deciles ' + list) : ('promedio de los deciles ' + list);
 }
 function rk_cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+// La misma etiqueta pero como COMPLEMENTO ("del 10% más pobre", "de toda la
+// población"), para que el subtítulo pueda empezar diciendo qué se mide en vez
+// de arrancar por el decil. Resuelve la contracción de+el y, cuando hay varios
+// deciles, no repite "promedio" (ya lo dice el arranque del subtítulo).
+function rk_decileComplement() {
+  const en = (typeof LANG !== 'undefined' && LANG === 'en'), d = rk_deciles();
+  if (d.length === 10) return en ? 'of the whole population' : 'de toda la población';
+  if (d.length === 1) {
+    if (d[0] === 1) return en ? 'of the poorest 10%' : 'del 10% más pobre';
+    if (d[0] === 10) return en ? 'of the richest 10%' : 'del 10% más rico';
+    return en ? ('of decile ' + d[0]) : ('del decil ' + d[0]);
+  }
+  const contiguous = d.every((v, i) => i === 0 || v === d[i - 1] + 1);
+  const list = contiguous ? (en ? (d[0] + '–' + d[d.length - 1]) : (d[0] + ' a ' + d[d.length - 1])) : d.join(', ');
+  return en ? ('of deciles ' + list) : ('de los deciles ' + list);
+}
 // Unidad como palabra suelta ("día"/"mes"/"año") para "en US$ PPA por día".
 function rk_unitWord() {
   const u = state[4].unit, en = (typeof LANG !== 'undefined' && LANG === 'en');
   if (u === 'month') return en ? 'month' : 'mes';
   if (u === 'year') return en ? 'year' : 'año';
   return en ? 'day' : 'día';
+}
+// La unidad como ADVERBIO ("diario"/"mensual"/"anual"), para "Ingreso promedio
+// diario del 10% más pobre" — más natural que "en US$ PPA por día".
+function rk_unitAdverb() {
+  const u = state[4].unit, en = (typeof LANG !== 'undefined' && LANG === 'en');
+  if (u === 'month') return en ? 'monthly' : 'mensual';
+  if (u === 'year') return en ? 'annual' : 'anual';
+  return en ? 'daily' : 'diario';
 }
 // Nombre del continente activo para el subtítulo (vacío si es Mundo).
 function rk_continentName() {
@@ -999,18 +1023,29 @@ function rk_title() {
 // comparación es un % → sin unidad.
 function rk_subtitle() {
   const en = (typeof LANG !== 'undefined' && LANG === 'en');
-  const lead = rk_cap(rk_decileLabel()), ccy = en ? 'PPP US$' : 'US$ PPA', uw = rk_unitWord();
+  // Arranca diciendo QUÉ se mide y con qué unidad, y recién después de quién:
+  // "Ingreso promedio diario del 10% más pobre, en US$ ajustados por poder
+  // adquisitivo. 1990–2025." Antes encabezaba con el decil y daba la unidad
+  // como "en US$ PPA por día", que se apoyaba en el título para entenderse:
+  // servía dentro de la página, no cuando el texto viaja solo (al PNG o a una
+  // tarjeta). Criterio OWID pedido por Daniel (2026-08-15): la sigla se
+  // deletrea, y la unidad va como adverbio.
+  const quien = rk_decileComplement(), adv = rk_unitAdverb();
+  const moneda = en ? 'in PPP-adjusted US$' : 'en US$ ajustados por poder adquisitivo';
+  const cabeza = en ? `Average ${adv} income ${quien}` : `Ingreso promedio ${adv} ${quien}`;
   if (rk_view() === 'lines') {
     const p = (state[4].period) || [rk_yearMin(), rk_yearMax()];
-    return en ? `${lead}, in ${ccy} per ${uw}. ${p[0]}–${p[1]}.` : `${lead}, en ${ccy} por ${uw}. ${p[0]}–${p[1]}.`;
+    return `${cabeza}, ${moneda}. ${p[0]}–${p[1]}.`;
   }
   const cont = (rk_view() === 'map') ? rk_continentName() : '';
   const when = (cont ? cont + ', ' : '') + state[4].year;   // "Europa, 2025" o "2025"
   if (rk_view() === 'map' && state[4].mapMode === 'bench') {
+    // Comparando contra un país el dato es un %, así que no lleva unidad.
     const b = rk_name(state[4].benchmark);
-    return en ? `${lead}, relative to ${b}. ${when}.` : `${lead}, en relación con ${b}. ${when}.`;
+    return en ? `Average income ${quien}, relative to ${b}. ${when}.`
+              : `Ingreso promedio ${quien}, en relación con ${b}. ${when}.`;
   }
-  return en ? `${lead}, in ${ccy} per ${uw}. ${when}.` : `${lead}, en ${ccy} por ${uw}. ${when}.`;
+  return `${cabeza}, ${moneda}. ${when}.`;
 }
 function rk_applyHeadings() {
   const block = document.querySelector('.chart-block[data-chart="4"]') || document;

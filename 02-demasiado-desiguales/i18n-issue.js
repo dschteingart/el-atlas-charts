@@ -36,6 +36,8 @@ const ISSUE_I18N = {
     // residuo positivo (Latam más desigual de lo esperado) o negativo
     // (improbable, pero por las dudas).
     'c2-title':              'América Latina es demasiado desigual para su nivel de desarrollo',
+    'c2-title-neutral':          'Desigualdad y nivel de desarrollo',
+    'c2-subtitle-neutral':       'El coeficiente de Gini frente al PIB per cápita, con la recta que resume la relación. {Y}.',
     'c2-subtitle-tpl-more':  'América Latina es {N}% más desigual de lo esperado para su nivel de desarrollo.',
     'c2-subtitle-tpl-less':  'América Latina es {N}% menos desigual de lo esperado para su nivel de desarrollo.',
     'c2-toggle-model-label': 'Modelo',
@@ -108,7 +110,8 @@ const ISSUE_I18N = {
     'c3-title':                  'Las élites cerca, los pobres lejos',
     'c3-subtitle':               'El ingreso de los hogares ricos de América Latina se acerca al de Europa. El de los hogares pobres, no.',
     'c3-title-neutral':          'Distribución del ingreso por decil',
-    'c3-subtitle-neutral':       'Ingreso per cápita familiar de cada decil de la población, por país.',
+    'c3-subtitle-neutral':       'Ingreso promedio por persona de cada decil, en US$ ajustados por poder adquisitivo. {Y}.',
+    'c3-subtitle-neutral-pct':   'Posición de cada decil en la distribución mundial del ingreso. {Y}.',
     'c3-toggle-y-label':         'Eje Y',
     'c3-toggle-income':          'Ingreso PPP/día',
     'c3-toggle-percentile':      'Percentil mundial',
@@ -204,6 +207,8 @@ const ISSUE_I18N = {
 
     // Chart 2
     'c2-title':              'Latin America is too unequal for its level of development',
+    'c2-title-neutral':          'Inequality and level of development',
+    'c2-subtitle-neutral':       'The Gini coefficient against GDP per capita, with the line that summarises the relationship. {Y}.',
     'c2-subtitle-tpl-more':  'Latin America is {N}% more unequal than expected for its level of development.',
     'c2-subtitle-tpl-less':  'Latin America is {N}% less unequal than expected for its level of development.',
     'c2-toggle-model-label': 'Model',
@@ -276,7 +281,8 @@ const ISSUE_I18N = {
     'c3-title':                  'Elites close, poor far',
     'c3-subtitle':               'Rich households in Latin America are close to European ones in income. Poor households are not.',
     'c3-title-neutral':          'Income distribution by decile',
-    'c3-subtitle-neutral':       'Household income per capita of each population decile, by country.',
+    'c3-subtitle-neutral':       'Average income per person of each decile, in PPP-adjusted US$. {Y}.',
+    'c3-subtitle-neutral-pct':   'Where each decile sits in the world income distribution. {Y}.',
     'c3-toggle-y-label':         'Y axis',
     'c3-toggle-income':          'Income PPP/day',
     'c3-toggle-percentile':      'World percentile',
