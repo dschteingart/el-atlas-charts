@@ -37,7 +37,8 @@ const ISSUE_I18N = {
     // (improbable, pero por las dudas).
     'c2-title':              'América Latina es demasiado desigual para su nivel de desarrollo',
     'c2-title-neutral':          'Desigualdad y nivel de desarrollo',
-    'c2-subtitle-neutral':       'El coeficiente de Gini frente al PIB per cápita, con la recta que resume la relación. {Y}.',
+    'c2-subtitle-neutral':       'Coeficiente de Gini frente al PIB per cápita, en US$ ajustados por poder adquisitivo. {Y}.',
+    'c2-subtitle-neutral-adj':   'Coeficiente de Gini ajustado para comparar encuestas de ingreso y de consumo, frente al PIB per cápita en US$ ajustados por poder adquisitivo. {Y}.',
     'c2-subtitle-tpl-more':  'América Latina es {N}% más desigual de lo esperado para su nivel de desarrollo.',
     'c2-subtitle-tpl-less':  'América Latina es {N}% menos desigual de lo esperado para su nivel de desarrollo.',
     'c2-toggle-model-label': 'Modelo',
@@ -208,7 +209,8 @@ const ISSUE_I18N = {
     // Chart 2
     'c2-title':              'Latin America is too unequal for its level of development',
     'c2-title-neutral':          'Inequality and level of development',
-    'c2-subtitle-neutral':       'The Gini coefficient against GDP per capita, with the line that summarises the relationship. {Y}.',
+    'c2-subtitle-neutral':       'Gini coefficient against GDP per capita, in PPP-adjusted US$. {Y}.',
+    'c2-subtitle-neutral-adj':   'Gini coefficient, adjusted to make income and consumption surveys comparable, against GDP per capita in PPP-adjusted US$. {Y}.',
     'c2-subtitle-tpl-more':  'Latin America is {N}% more unequal than expected for its level of development.',
     'c2-subtitle-tpl-less':  'Latin America is {N}% less unequal than expected for its level of development.',
     'c2-toggle-model-label': 'Model',

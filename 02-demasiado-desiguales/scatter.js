@@ -324,7 +324,12 @@ function s_updateSubtitle(model) {
   if (!s_pristine()) {
     const dict = (typeof I18N !== 'undefined' && I18N[LANG]) || {};
     if (titleEl && dict['c2-title-neutral']) titleEl.textContent = dict['c2-title-neutral'];
-    el.textContent = (dict['c2-subtitle-neutral'] || '').replace('{Y}', (state[2] && state[2].year) || '');
+    // El subtítulo nombra QUÉ Gini se está mirando: el toggle original/ajustado
+    // cambia el dato, y el ajuste (hacer comparables las encuestas de ingreso y
+    // de consumo) es la decisión metodológica del número.
+    const clave = (state[2] && state[2].mode === 'adj') ? 'c2-subtitle-neutral-adj' : 'c2-subtitle-neutral';
+    el.textContent = (dict[clave] || dict['c2-subtitle-neutral'] || '')
+      .replace('{Y}', (state[2] && state[2].year) || '');
     return;
   }
   if (titleEl && I18N[LANG] && I18N[LANG]['c2-title']) titleEl.textContent = I18N[LANG]['c2-title'];
