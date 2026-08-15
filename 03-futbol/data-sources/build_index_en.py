@@ -28,7 +28,8 @@ def replace_once(s, old, new, label):
 src = replace_once(src, '<html lang="es">', '<html lang="en">', "html lang")
 
 # 2) bloque <head>: title + description + Open Graph/Twitter, todo en inglés
-ES_HEAD = '''<title>El Atlas del fútbol</title>
+ES_HEAD = '''<title data-title-en="The Atlas of football">El Atlas del fútbol</title>
+<link rel="alternate" hreflang="en" href="./index-en.html">
 <meta name="description" content="Gráficos interactivos sobre dónde se juega el fútbol, de dónde salen los jugadores y quién gana.">
 
 <!-- Open Graph / Twitter: preview del link al compartir (X, WhatsApp, etc.).
@@ -47,7 +48,8 @@ ES_HEAD = '''<title>El Atlas del fútbol</title>
 <meta name="twitter:description" content="Gráficos interactivos sobre dónde se juega el fútbol, de dónde salen los jugadores y quién gana.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/03-futbol/thumbs/chart-birthplace.png">'''
 
-EN_HEAD = '''<title>The Atlas of football</title>
+EN_HEAD = '''<title data-title-es="El Atlas del fútbol">The Atlas of football</title>
+<link rel="alternate" hreflang="es" href="./index.html">
 <meta name="description" content="Interactive charts on where football is played, where the players come from and who wins.">
 
 <!-- Open Graph / Twitter (INGLÉS). Generado por data-sources/build_index_en.py
@@ -75,6 +77,15 @@ src, n = re.subn(r'(<img class="idx-thumb" src="(?:\./|\.\./03b-partidos/)thumbs
                  r'\1.en.png"', src)
 if n != 22:
     sys.exit("ERROR: esperaba 22 miniaturas, cambié %d." % n)
+
+# 3b) las tarjetas abren el gráfico EN INGLÉS y lo dicen en el link, como las
+# portadas de los otros números. Antes solo funcionaba porque la página deja
+# 'en' en localStorage: con el almacenamiento bloqueado, o si alguien copia el
+# link de una tarjeta, el gráfico abría en español. atlasSyncLangLinks (lib/
+# utils.js) le saca el parámetro si se pasa la portada a español.
+src, n = re.subn(r'(<a class="idx-card" href="[^"]+\.html)"', r'\1?lang=en"', src)
+if n != 22:
+    sys.exit("ERROR: esperaba 22 tarjetas, cambié %d." % n)
 
 # 4) toggle: marcar EN como activo (evita el flash de ES antes de que corra el JS)
 src = replace_once(src,
