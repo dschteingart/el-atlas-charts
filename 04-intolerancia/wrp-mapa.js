@@ -496,8 +496,10 @@ function setupMapaCSV() {
 
 function initVdemMapa() {
   vd_fillVarSelect('vm-cat-select', VM_DEFAULT_CAT);
-  if (typeof GEO_COUNTRIES === 'undefined') { console.error('[mapa] GEO_COUNTRIES no cargado'); return; }
-  vm_geo = GEO_COUNTRIES;
+  // El mapa mundial (2 MB) se pide recién acá, al abrir esta vista. El init
+  // sigue de largo (estado y controles quedan listos) y solo el DIBUJO espera.
+  if (typeof GEO_COUNTRIES === 'undefined') atlasEnsureGeo(function () { vm_geo = GEO_COUNTRIES; drawVdemMapa(); });
+  else vm_geo = GEO_COUNTRIES;
   // V-Dem es anual: último año con dato de la variable por defecto.
   const _yrs = vd_years(VM_DEFAULT_CAT);
   const lastWave = _yrs[_yrs.length - 1];

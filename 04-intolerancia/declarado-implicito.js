@@ -300,7 +300,7 @@ function drawScatter() {
     // hit-area invisible más grande (touch). TAP = tooltip, nada más: el
     // gráfico no tiene chips que togglear.
     const hit = sc_ns('circle');
-    hit.setAttribute('cx', cx); hit.setAttribute('cy', cy); hit.setAttribute('r', Math.max(14, SIZES.dot * 2));
+    hit.setAttribute('cx', cx); hit.setAttribute('cy', cy); hit.setAttribute('r', Math.max(30, SIZES.dot * 2));   // 30 = área de toque canónica
     hit.setAttribute('fill', 'transparent'); hit.style.cursor = 'pointer';
     hit.addEventListener('mouseenter', (e) => sc_showTooltip(e, p));
     hit.addEventListener('mousemove', (e) => sc_posTooltip(e));

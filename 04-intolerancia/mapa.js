@@ -382,8 +382,10 @@ function setupMapaCSV() {
 }
 
 function initMapa() {
-  if (typeof GEO_COUNTRIES === 'undefined') { console.error('[mapa] GEO_COUNTRIES no cargado'); return; }
-  mp_geo = GEO_COUNTRIES;
+  // El mapa mundial (2 MB) se pide recién acá, al abrir esta vista. El init
+  // sigue de largo (estado y controles quedan listos) y solo el DIBUJO espera.
+  if (typeof GEO_COUNTRIES === 'undefined') atlasEnsureGeo(function () { mp_geo = GEO_COUNTRIES; drawMapa(); });
+  else mp_geo = GEO_COUNTRIES;
   const lastWave = (typeof WV_META !== 'undefined' && WV_META.length) ? WV_META[WV_META.length - 1].w : 7;
   if (!state[3]) state[3] = { cat: MP_DEFAULT_CAT, wave: lastWave };
   if (state[3].wave == null) state[3].wave = lastWave;

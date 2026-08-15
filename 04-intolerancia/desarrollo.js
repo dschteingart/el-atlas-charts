@@ -767,7 +767,7 @@ function drawDesarrollo() {
     // imposible sin ella.
     const hit = dv_ns('circle');
     hit.setAttribute('cx', cx); hit.setAttribute('cy', cy);
-    hit.setAttribute('r', Math.max(15, r * 2.4));
+    hit.setAttribute('r', Math.max(30, r * 2.4));   // 30 = área de toque canónica
     hit.setAttribute('fill', 'transparent');
     hit.style.cursor = 'pointer';
     hit.addEventListener('mouseenter', (e) => dv_showTooltip(e, p));

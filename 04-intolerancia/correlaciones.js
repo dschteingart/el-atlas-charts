@@ -958,7 +958,7 @@ function drawCorrelaciones() {
     c.style.cursor = 'pointer';
     const hit = co_ns('circle');
     hit.setAttribute('cx', cx); hit.setAttribute('cy', cy);
-    hit.setAttribute('r', Math.max(bigFmt ? 22 : 13, r * 2));
+    hit.setAttribute('r', Math.max(bigFmt ? 22 : 30, r * 2));   // 30 = área de toque canónica
     hit.setAttribute('fill', 'transparent');
     hit.style.cursor = 'pointer';
     const enter = (e) => { co_emph(p.iso); co_showTooltip(e, p); };
