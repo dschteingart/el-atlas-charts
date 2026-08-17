@@ -1120,6 +1120,22 @@ function vs_applyUrlState() {
   const lineas = vsParseSel('lineas');
   if (lineas !== undefined) { s0.lineSel = lineas; selAplicada = true; if (vs_renderLineChips) vs_renderLineChips(); }
   if (selAplicada) vs_touched = true;
+  // Toda SELECCIÓN (país) sale del dataset diferido, y el click de pestaña solo
+  // lo pide para el scatter y la matriz-teams. En la EVOLUCIÓN, donde los países
+  // conviven con las confederaciones, un link con países dibujaba las confeds y
+  // se comía los países EN SILENCIO: el chip estaba, la línea no. (En el uso
+  // interactivo no se notaba porque el buscador de la evolución solo ofrece
+  // países si el dataset ya está, o sea después de pasar por el scatter.)
+  const pidePaises = (equipos !== undefined) || (filas !== undefined)
+    || (lineas || []).some(k => !vs_isConf(k));
+  if (pidePaises && !vs_hasTeams()) {
+    vs_ensureTeams(() => {
+      if (vs_renderTeamChips) vs_renderTeamChips();
+      if (vs_renderMatrixChips) vs_renderMatrixChips();
+      if (vs_renderLineChips) vs_renderLineChips();
+      drawVersus();
+    });
+  }
   // la matriz primero: si el link trae vista=matrix + matriz=teams, el tab ya
   // abre con el modo correcto (y dispara la carga lazy de selecciones).
   const matriz = atlasUrlParam('matriz');
