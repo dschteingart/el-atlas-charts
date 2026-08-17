@@ -1,10 +1,22 @@
 // =============================================================
 //  El Atlas N°4 — Adaptador del World Risk Poll para los motores de V-Dem
 // =============================================================
-// Esta pagina REUSA los motores del graficador de V-Dem (wrp-rank.js y
-// wrp-mapa.js son clones con ids renumerados) sin tocar su logica: este
+// Esta pagina REUSA los motores del graficador de V-Dem: la vista MAPA carga el
+// MISMO vdem-mapa.js que la pagina de V-Dem (parametrizado con VM_PAGE, abajo);
+// wrp-rank.js sigue siendo un clon con ids renumerados porque el ranking de las
+// dos paginas divergio de verdad (titulo, fila del promedio mundial). Este
 // adaptador les sirve la MISMA API vd_* sobre los datos del World Risk Poll.
 // Un solo indicador (wrp_piel) y un solo anio (2023).
+
+// Config del motor de mapa compartido. Tiene que estar declarada ANTES de que
+// cargue vdem-mapa.js (este archivo va primero en el HTML).
+const VM_PAGE = {
+  n: 25,                       // state[25], chart25, tooltip25, claves c25-*
+  defaultCat: 'wrp_piel',
+  csvEs: 'el-atlas-04-discriminacion-color-piel-mapa.csv',
+  csvEn: 'the-atlas-04-skin-colour-discrimination-map.csv',
+  notaPng: false               // la nota "Datos" del PNG la pone ESTE archivo, para las dos vistas
+};
 const VD_VARS = [{
   k: 'wrp_piel', grupo: 'Discriminación vivida', grupo_en: 'Experienced discrimination',
   es: 'Sufrió discriminación por su color de piel',

@@ -1528,20 +1528,27 @@ function initVdemRank() {
   window.__atlasRedraw = drawVdemRank;
 
   // Nota "Datos" corta del PNG, con el rango de años realmente mostrado.
-  window.onBeforePngExportGetSourceText = function(chartId) {
-    if (chartId !== '21') return null;
-    // OJO: la plantilla decía "año {R}" y acá se reemplazaba {Y}, así que el PNG
-    // salía con el "{R}" literal impreso (reporte de Daniel 2026-07-31).
-    const esIndice = !vd_peorEsMas || vd_peorEsMas(state[21].cat);
-    const tpl = (typeof t === 'function') ? t(esIndice ? 'c21-png-idx' : 'c21-png-comp') : '';
-    if (!tpl) return null;
-    const data = vr_computeData();
-    const years = data.map(d => d.year);
-    const y0 = years.length ? Math.min(...years) : state[21].wave;
-    const y1 = years.length ? Math.max(...years) : state[21].wave;
-    const y = (y0 === y1) ? String(y0) : (y0 + '-' + y1);
-    return tpl.replace('{PERIODO}', y);
-  };
+  // ENCADENA con el hook que ya hubiera en vez de reemplazarlo: el global es uno
+  // solo y las tres vistas de esta página instalan el suyo en su init — la vista
+  // abierta última se quedaba con el hook y las otras exportaban sin su nota.
+  if (!initVdemRank._notaPng) {
+    initVdemRank._notaPng = true;
+    const vrPrevNota = window.onBeforePngExportGetSourceText;
+    window.onBeforePngExportGetSourceText = function(chartId) {
+      if (chartId !== '21') return (typeof vrPrevNota === 'function') ? vrPrevNota(chartId) : null;
+      // OJO: la plantilla decía "año {R}" y acá se reemplazaba {Y}, así que el PNG
+      // salía con el "{R}" literal impreso (reporte de Daniel 2026-07-31).
+      const esIndice = !vd_peorEsMas || vd_peorEsMas(state[21].cat);
+      const tpl = (typeof t === 'function') ? t(esIndice ? 'c21-png-idx' : 'c21-png-comp') : '';
+      if (!tpl) return null;
+      const data = vr_computeData();
+      const years = data.map(d => d.year);
+      const y0 = years.length ? Math.min(...years) : state[21].wave;
+      const y1 = years.length ? Math.max(...years) : state[21].wave;
+      const y = (y0 === y1) ? String(y0) : (y0 + '-' + y1);
+      return tpl.replace('{PERIODO}', y);
+    };
+  }
 
   // Marimekko: los textos de la tabla regional van al canvas (las webfonts
   // no resuelven bien dentro del <img> SVG rasterizado — port del N°2).

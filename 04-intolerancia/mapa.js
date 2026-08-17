@@ -240,7 +240,7 @@ function mp_drawLegend(svg, breaks) {
   // PNG— el `MP_H - 150` fijo dejaba la fila "Sin dato" 14 px POR DEBAJO del
   // viewBox, así que salía cortada en los cinco formatos. Se cuentan las filas
   // reales, las de color más la de "Sin dato", y esa última se mide por su
-  // TEXTO, que baja más que su cuadradito. Mismo arreglo que wrp-mapa.js.
+  // TEXTO, que baja más que su cuadradito. Mismo arreglo que vdem-mapa.js.
   const mp_altoLeyenda = labels.length * (sh + mp_gapFila) + mp_gapNd + Math.max(sh, fs * 1.1);
   const y0 = MP_H - mp_altoLeyenda - mp_margenAbajo;
 

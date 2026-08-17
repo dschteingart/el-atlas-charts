@@ -1,5 +1,12 @@
-// El Atlas N°4 — Graficador V-Dem, vista MAPA (chart 22).
-// CLON de mapa.js (Robinson vanilla, sin D3). Datos anuales de V-Dem.
+// El Atlas N°4 — MOTOR de la vista MAPA de los graficadores sobre la API vd_*:
+// lo comparten la página de V-Dem (chart 22) y la del WRP (chart 25). Derivado
+// de mapa.js (Robinson vanilla, sin D3).
+//
+// UN SOLO ARCHIVO para las dos páginas. Antes wrp-mapa.js era un "CLON VERBATIM
+// con ids renumerados" y cada arreglo había que hacerlo dos veces (la fila "Sin
+// dato" cortada se arregló dos veces, con comentarios que ya divergían). La
+// página del V-Dem no declara nada: los defaults de abajo son los suyos. La del
+// WRP declara VM_PAGE en wrp-adapter.js, ANTES de cargar este archivo.
 
 
 // =============================================================
@@ -18,7 +25,16 @@
 const VM_SVG_NS = 'http://www.w3.org/2000/svg';
 const vm_ns = (t) => document.createElementNS(VM_SVG_NS, t);
 const VM_W = 1100, VM_H = 560, VM_PAD = 10;
-const VM_DEFAULT_CAT = 'v2xpe_exlsocgr';
+// Config por página. Todo lo que difiere entre los dos usos vive acá arriba:
+// el número de chart (ids del DOM, state[], claves cN-*), el indicador con el
+// que abre, el nombre del CSV y quién pone la nota "Datos" del PNG.
+const VM_PAGE_CFG = (typeof VM_PAGE !== 'undefined') ? VM_PAGE : {};
+const VM_N = VM_PAGE_CFG.n || 22;
+const VM_K = 'c' + VM_N + '-';                             // prefijo i18n: c22- / c25-
+const VM_SVG_ID = 'chart' + VM_N, VM_TT_ID = 'tooltip' + VM_N;
+const VM_DEFAULT_CAT = VM_PAGE_CFG.defaultCat || 'v2xpe_exlsocgr';
+const VM_CSV_ES = VM_PAGE_CFG.csvEs || 'el-atlas-04-vdem-mapa.csv';
+const VM_CSV_EN = VM_PAGE_CFG.csvEn || 'the-atlas-04-vdem-map.csv';
 const VM_NODATA = '#DAD5C8';
 const VM_EXCLUDE = new Set(['ATA']);   // Antártida fuera
 const VM_NBINS = 6;
@@ -51,7 +67,7 @@ function vm_name(iso) {
   return iso;
 }
 function vm_isoOf(f) { return f.id || (f.properties && f.properties.iso) || null; }
-function vm_waves() { return vd_yearList(state[22].cat); }
+function vm_waves() { return vd_yearList(state[VM_N].cat); }
 function vm_waveLabel(w) { const m = vm_waves().find(x => x.w === w); return m ? m.label : '' + w; }
 
 // ---- Proyección Robinson (tabla estándar por 5° de latitud) ----
@@ -178,7 +194,7 @@ function vm_dropAntarctic(geom) {
 // Si la variable apunta al revés (componentes: más = mejor), se invierte la
 // rampa para que el color oscuro signifique SIEMPRE lo peor.
 function vm_ramp() {
-  return vd_peorEsMas(state[22].cat) ? VM_COLORS : VM_COLORS.slice().reverse();
+  return vd_peorEsMas(state[VM_N].cat) ? VM_COLORS : VM_COLORS.slice().reverse();
 }
 function vm_colorFor(pct, breaks) {
   if (pct == null) return VM_NODATA;
@@ -187,7 +203,7 @@ function vm_colorFor(pct, breaks) {
 }
 
 function vm_updateSubtitle() {
-  const el = document.querySelector('.chart-subtitle[data-i18n="c22-subtitle-tpl"]');
+  const el = document.querySelector('.chart-subtitle[data-i18n="' + VM_K + 'subtitle-tpl"]');
   if (!el) return;
   // El texto custom del editor manda (criterio 5 de la auditoria): si Daniel
   // escribio un subtitulo en ?nl=1, no se pisa en cada redibujo. Las otras dos
@@ -197,13 +213,13 @@ function vm_updateSubtitle() {
   if (ae && ae.texts && ae.texts[lang] && (ae.texts[lang].subtitle || '').trim()) return;
   // El nombre del indicador sale de VD_VARS: 'catA-'+cat es una clave de la
   // batería del barrio y acá se imprimía cruda ("catA-v2xpe_exlsocgr").
-  const catA = vd_varLabelOf(state[22].cat);
-  const tpl = (typeof t === 'function') ? t('c22-subtitle-tpl') : '';
-  if (tpl) el.textContent = tpl.replace('{CAT}', catA).replace('{PERIODO}', vm_waveLabel(state[22].wave));
+  const catA = vd_varLabelOf(state[VM_N].cat);
+  const tpl = (typeof t === 'function') ? t(VM_K + 'subtitle-tpl') : '';
+  if (tpl) el.textContent = tpl.replace('{CAT}', catA).replace('{PERIODO}', vm_waveLabel(state[VM_N].wave));
 }
 
 function drawVdemMapa() {
-  const svg = document.getElementById('chart22');
+  const svg = document.getElementById(VM_SVG_ID);
   if (!svg || !vm_geo) return;
   svg.innerHTML = '';
   vm_updateSubtitle();
@@ -211,7 +227,7 @@ function drawVdemMapa() {
   svg.setAttribute('viewBox', `0 0 ${VM_W} ${VM_H}`);
   if (typeof applyFormatWrapper === 'function' && typeof getActivePngFormat === 'function') applyFormatWrapper(svg, getActivePngFormat());
 
-  const cat = state[22].cat, wave = state[22].wave;
+  const cat = state[VM_N].cat, wave = state[VM_N].wave;
   const data = vm_dataFor(cat, wave);
   const breaks = vm_breaksFor(cat);
 
@@ -255,11 +271,11 @@ function drawVdemMapa() {
     path.style.cursor = 'pointer';
     // El dato se lee del estado en el momento del hover, no del cierre: durante
     // la animacion los rellenos cambian sin redibujar y el cierre quedaria viejo.
-    const datoAhora = () => vm_dataFor(state[22].cat, state[22].wave)[iso];
-    path.addEventListener('mouseenter', (e) => { vm_setHover(d); vm_showTooltip(e, iso, datoAhora(), state[22].cat); });
+    const datoAhora = () => vm_dataFor(state[VM_N].cat, state[VM_N].wave)[iso];
+    path.addEventListener('mouseenter', (e) => { vm_setHover(d); vm_showTooltip(e, iso, datoAhora(), state[VM_N].cat); });
     path.addEventListener('mousemove', (e) => vm_posTooltip(e));
     path.addEventListener('mouseleave', () => { vm_setHover(''); vm_hideTooltip(); });
-    path.addEventListener('click', (e) => { vm_setHover(d); vm_showTooltip(e, iso, datoAhora(), state[22].cat); });
+    path.addEventListener('click', (e) => { vm_setHover(d); vm_showTooltip(e, iso, datoAhora(), state[VM_N].cat); });
     g.appendChild(path);
   });
   svg.appendChild(hoverHalo);
@@ -267,7 +283,7 @@ function drawVdemMapa() {
 
   vm_drawLegend(svg, breaks);
 
-  if (typeof atlasSetHeading === 'function') atlasSetHeading('22', false, { title: 'c22-title', titleNeutral: 'c22-title-neutral' });
+  if (typeof atlasSetHeading === 'function') atlasSetHeading('' + VM_N, false, { title: VM_K + 'title', titleNeutral: VM_K + 'title-neutral' });
 }
 
 function vm_drawLegend(svg, breaks) {
@@ -294,7 +310,8 @@ function vm_drawLegend(svg, breaks) {
   // PNG— el `VM_H - 150` fijo dejaba la fila "Sin dato" 14 px POR DEBAJO del
   // viewBox, así que salía cortada en los cinco formatos. Se cuentan las filas
   // reales, las de color más la de "Sin dato", y esa última se mide por su
-  // TEXTO, que baja más que su cuadradito. Mismo arreglo que wrp-mapa.js.
+  // TEXTO, que baja más que su cuadradito. (Este arreglo se hizo DOS veces, acá
+  // y en el clon del WRP — el motivo por el que ahora el motor es uno solo.)
   const vm_altoLeyenda = labels.length * (sh + vm_gapFila) + vm_gapNd + Math.max(sh, fs * 1.1);
   const y0 = VM_H - vm_altoLeyenda - vm_margenAbajo;
 
@@ -303,7 +320,7 @@ function vm_drawLegend(svg, breaks) {
   title.setAttribute('x', x0); title.setAttribute('y', y0 - (big ? 12 : 8));
   title.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif');
   title.style.fontSize = fs + 'px'; title.setAttribute('font-weight', 600); title.setAttribute('fill', '#3A3530');
-  title.textContent = (typeof t === 'function') ? t('c22-legend-title') : '% que lo rechaza';
+  title.textContent = (typeof t === 'function') ? t(VM_K + 'legend-title') : '% que lo rechaza';
   g.appendChild(title);
   labels.forEach((lab, i) => {
     const y = y0 + i * (sh + vm_gapFila);
@@ -318,7 +335,7 @@ function vm_drawLegend(svg, breaks) {
   nr.setAttribute('fill', VM_NODATA); nr.setAttribute('stroke', 'rgba(0,0,0,0.12)'); nr.setAttribute('stroke-width', 0.5); g.appendChild(nr);
   const nt = vm_ns('text'); nt.setAttribute('x', x0 + sw + (big ? 10 : 7)); nt.setAttribute('y', ny + sh * 0.82);
   nt.setAttribute('font-family', '"Source Sans 3", system-ui, sans-serif'); nt.style.fontSize = fs + 'px'; nt.setAttribute('fill', '#3A3530');
-  nt.textContent = (typeof t === 'function') ? t('c22-legend-nodata') : 'Sin dato'; g.appendChild(nt);
+  nt.textContent = (typeof t === 'function') ? t(VM_K + 'legend-nodata') : 'Sin dato'; g.appendChild(nt);
 }
 
 // Sparkline (OWID): mini serie de la trayectoria del país a lo largo de las olas.
@@ -355,22 +372,22 @@ function vm_sparkline(traj, curYear) {
 }
 
 function vm_showTooltip(e, iso, v, cat) {
-  const tt = document.getElementById('tooltip22'); if (!tt) return;
+  const tt = document.getElementById(VM_TT_ID); if (!tt) return;
   const L = (typeof t === 'function') ? t : (k) => k;
   if (!v) {
-    tt.innerHTML = `<strong>${vm_name(iso)}</strong><div class="tt-row tt-muted">${L('c22-tt-nodata')}</div>`;
+    tt.innerHTML = `<strong>${vm_name(iso)}</strong><div class="tt-row tt-muted">${L(VM_K + 'tt-nodata')}</div>`;
   } else {
     const traj = vm_trajectory(iso, cat);
     tt.innerHTML = `<strong>${vm_name(iso)}</strong>`
-      + `<div class="tt-row"><span>${L('c22-tt-value')}</span><span>${vd_fmtVal(v.pct, vd_dec())}</span></div>`
-      + `<div class="tt-row tt-row-sub"><span>${L('c22-tt-year')}</span><span>${v.year}</span></div>`
-      + (traj.length >= 2 ? `<div class="tt-sub" style="margin-top:4px;">${L('c22-tt-trend')}</div>` + vm_sparkline(traj, v.year) : '');
+      + `<div class="tt-row"><span>${L(VM_K + 'tt-value')}</span><span>${vd_fmtVal(v.pct, vd_dec())}</span></div>`
+      + `<div class="tt-row tt-row-sub"><span>${L(VM_K + 'tt-year')}</span><span>${v.year}</span></div>`
+      + (traj.length >= 2 ? `<div class="tt-sub" style="margin-top:4px;">${L(VM_K + 'tt-trend')}</div>` + vm_sparkline(traj, v.year) : '');
   }
   tt.style.display = 'block'; tt.style.opacity = '1';
   vm_posTooltip(e);
 }
 function vm_posTooltip(e) {
-  const tt = document.getElementById('tooltip22'); if (!tt || !tt.parentElement) return;
+  const tt = document.getElementById(VM_TT_ID); if (!tt || !tt.parentElement) return;
   const wrap = tt.parentElement.getBoundingClientRect();
   const x = (typeof evClientX === 'function' ? evClientX(e) : e.clientX) - wrap.left;
   const y = (typeof evClientY === 'function' ? evClientY(e) : e.clientY) - wrap.top;
@@ -379,7 +396,7 @@ function vm_posTooltip(e) {
   if (py < 0) py = y + 18;
   tt.style.left = px + 'px'; tt.style.top = py + 'px';
 }
-function vm_hideTooltip() { const tt = document.getElementById('tooltip22'); if (tt) tt.style.opacity = '0'; }
+function vm_hideTooltip() { const tt = document.getElementById(VM_TT_ID); if (tt) tt.style.opacity = '0'; }
 
 function setupMapaCat() {
   const sel = document.getElementById('vm-cat-select'); if (!sel) return;
@@ -389,18 +406,18 @@ function setupMapaCat() {
     // indicador del mapa no hacia absolutamente nada.
     if (typeof VD_SERIES === 'undefined' || !VD_SERIES[sel.value]) return;
     vm_stopPlay();
-    state[22].cat = sel.value;
+    state[VM_N].cat = sel.value;
     // El anio elegido puede caer fuera del rango de la variable nueva.
-    const ys = vd_years(state[22].cat);
+    const ys = vd_years(state[VM_N].cat);
     if (ys.length) {
-      state[22].wave = Math.min(Math.max(state[22].wave, ys[0]), ys[ys.length - 1]);
+      state[VM_N].wave = Math.min(Math.max(state[VM_N].wave, ys[0]), ys[ys.length - 1]);
       const input = document.getElementById('vm-wave-slider');
       const disp = document.getElementById('vm-wave-display');
       if (input) {
         input.max = ys.length - 1;
-        input.value = Math.max(0, ys.indexOf(state[22].wave));
+        input.value = Math.max(0, ys.indexOf(state[VM_N].wave));
       }
-      if (disp) disp.textContent = vm_waveLabel(state[22].wave);
+      if (disp) disp.textContent = vm_waveLabel(state[VM_N].wave);
     }
     drawVdemMapa();
   });
@@ -412,31 +429,31 @@ function setupMapaWave() {
   const disp = document.getElementById('vm-wave-display');
   const playBtn = document.getElementById('vm-play');
   // Un solo anio en el dataset -> ni slider ni play: se esconde el grupo.
-  if (!input || vd_yearList(state[22].cat).length < 2) {
+  if (!input || vd_yearList(state[VM_N].cat).length < 2) {
     const grp = document.getElementById('vm-wave-group'); if (grp) grp.style.display = 'none';
     return;
   }
-  const waves = vd_yearList(state[22].cat);
+  const waves = vd_yearList(state[VM_N].cat);
   input.min = 0; input.max = waves.length - 1; input.step = 1;
   const idxOf = (w) => Math.max(0, waves.findIndex(x => x.w === w));
-  const sync = () => { input.value = idxOf(state[22].wave); if (disp) disp.textContent = vm_waveLabel(state[22].wave); };
+  const sync = () => { input.value = idxOf(state[VM_N].wave); if (disp) disp.textContent = vm_waveLabel(state[VM_N].wave); };
   input.addEventListener('input', () => {
     vm_stopPlay();
-    state[22].wave = waves[+input.value].w;
-    if (disp) disp.textContent = vm_waveLabel(state[22].wave);
+    state[VM_N].wave = waves[+input.value].w;
+    if (disp) disp.textContent = vm_waveLabel(state[VM_N].wave);
     drawVdemMapa();
   });
   if (playBtn) playBtn.addEventListener('click', () => {
     if (vm_playTimer) { vm_stopPlay(); return; }
     playBtn.classList.add('playing'); playBtn.textContent = '❚❚';
     // arrancar desde la 1ra ola
-    state[22].wave = waves[0].w; sync(); drawVdemMapa();
+    state[VM_N].wave = waves[0].w; sync(); drawVdemMapa();
     // Recorrer toda la serie en ~10 segundos (mismo criterio que el resto del
     // numero). Con 124 anios son ~81 ms por cuadro; el piso de 40 ms evita pedir
     // mas de 25 cuadros por segundo si alguna vez la serie es mas corta.
     const paso = Math.max(VM_PLAY_MS_MIN, Math.round(VM_PLAY_TOTAL_MS / Math.max(1, waves.length - 1)));
     vm_playTimer = setInterval(() => {
-      const cur = idxOf(state[22].wave);
+      const cur = idxOf(state[VM_N].wave);
       if (cur >= waves.length - 1) { vm_stopPlay(); return; }
       vm_paintYear(waves[cur + 1].w); sync();
     }, paso);
@@ -448,10 +465,10 @@ function setupMapaWave() {
 // completo cuesta ~73 ms, que no entra en los ~81 ms por anio que pide recorrer
 // el siglo en 10 segundos.
 function vm_paintYear(year) {
-  const svg = document.getElementById('chart22');
+  const svg = document.getElementById(VM_SVG_ID);
   if (!svg) return;
-  state[22].wave = year;
-  const cat = state[22].cat;
+  state[VM_N].wave = year;
+  const cat = state[VM_N].cat;
   const data = vm_dataFor(cat, year);
   const breaks = vm_breaksFor(cat);
   svg.querySelectorAll('path[data-iso]').forEach(p => {
@@ -468,12 +485,12 @@ function vm_stopPlay() {
 }
 
 function setupMapaCSV() {
-  document.querySelectorAll('button.download[data-chart="22-csv"]').forEach(btn => {
+  document.querySelectorAll('button.download[data-chart="' + VM_N + '-csv"]').forEach(btn => {
     btn.addEventListener('click', () => {
       // El clon recorria las olas de la bateria de vecinos, que en V-Dem no
       // existen: el archivo salia vacio. Ahora es la foto del anio mostrado.
       const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
-      const cat = state[22].cat, year = state[22].wave;
+      const cat = state[VM_N].cat, year = state[VM_N].wave;
       let csv = '';
       csv += 'iso3,pais,variable,variable_label_en,anio,valor,puesto\n';
       const labQ = '"' + (vd_varMetaOf(cat).en || cat) + '"';
@@ -484,7 +501,7 @@ function setupMapaCSV() {
       });
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
       const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-      a.download = lang === 'en' ? 'the-atlas-04-vdem-map.csv' : 'el-atlas-04-vdem-mapa.csv';
+      a.download = lang === 'en' ? VM_CSV_EN : VM_CSV_ES;
       document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
     });
   });
@@ -499,9 +516,9 @@ function initVdemMapa() {
   // V-Dem es anual: último año con dato de la variable por defecto.
   const _yrs = vd_years(VM_DEFAULT_CAT);
   const lastWave = _yrs[_yrs.length - 1];
-  if (!state[22]) state[22] = { cat: VM_DEFAULT_CAT, wave: lastWave };
-  if (state[22].wave == null) state[22].wave = lastWave;
-  const sel = document.getElementById('vm-cat-select'); if (sel) sel.value = state[22].cat;
+  if (!state[VM_N]) state[VM_N] = { cat: VM_DEFAULT_CAT, wave: lastWave };
+  if (state[VM_N].wave == null) state[VM_N].wave = lastWave;
+  const sel = document.getElementById('vm-cat-select'); if (sel) sel.value = state[VM_N].cat;
   setupMapaCat(); setupMapaWave(); setupMapaCSV();
   drawVdemMapa();
   window.__atlasSupportsFormats = true;
@@ -509,8 +526,24 @@ function initVdemMapa() {
   window.__atlasDefaultPngFormat = 'worldmap';
   if (typeof setupMobileControlToggles === 'function') setupMobileControlToggles();
   if (!initVdemMapa._wired) { initVdemMapa._wired = true; window.addEventListener('atlas-editor-change', () => drawVdemMapa()); }
-  window.onBeforePngExportGetSourceText = function (chartId) {
-    if (chartId !== '22') return null;
-    return (typeof t === 'function') ? t('c22-sources') : null;
-  };
+  // Nota "Datos" corta del PNG. Tres decisiones acá:
+  // (1) ENCADENA con el hook que ya hubiera en vez de reemplazarlo: el global es
+  //     uno solo y las tres vistas de la página del V-Dem instalaban el suyo en
+  //     su init — la vista abierta última se quedaba con el hook y las otras
+  //     exportaban el PNG sin su nota.
+  // (2) Usa la nota CORTA ('cN-sources-tpl', con el año en {R}): devolver
+  //     'cN-sources' metía la nota larga del HTML —8 renglones— en el PNG. Es el
+  //     mismo arreglo que la página del WRP ya se había hecho a sí misma.
+  // (3) La página del WRP lo apaga (notaPng:false): ahí wrp-adapter.js pone la
+  //     nota de las dos vistas desde un solo lugar.
+  if (VM_PAGE_CFG.notaPng !== false && !initVdemMapa._notaPng) {
+    initVdemMapa._notaPng = true;
+    const prev = window.onBeforePngExportGetSourceText;
+    window.onBeforePngExportGetSourceText = function (chartId) {
+      if (chartId !== '' + VM_N) return (typeof prev === 'function') ? prev(chartId) : null;
+      const tpl = (typeof t === 'function') ? t(VM_K + 'sources-tpl') : '';
+      if (!tpl || tpl.indexOf(VM_K) === 0) return null;
+      return tpl.replace('{R}', vm_waveLabel(state[VM_N].wave));
+    };
+  }
 }

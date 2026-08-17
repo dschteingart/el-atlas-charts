@@ -523,12 +523,19 @@ function initVdemLineas() {
     window.addEventListener('atlas-editor-change', () => drawVdemLineas());
   }
   // Nota "Datos" corta del PNG, con el ítem realmente mostrado.
-  window.onBeforePngExportGetSourceText = function (chartId) {
-    if (chartId !== '23') return null;
-    const tpl = (typeof t === 'function') ? t('c23-sources-tpl') : '';
-    if (!tpl) return null;
-    return tpl.replace('{ITEM}', vl_itemLabel());
-  };
+  // ENCADENA con el hook que ya hubiera en vez de reemplazarlo: el global es uno
+  // solo y las tres vistas de esta página instalan el suyo en su init — la vista
+  // abierta última se quedaba con el hook y las otras exportaban sin su nota.
+  if (!initVdemLineas._notaPng) {
+    initVdemLineas._notaPng = true;
+    const vlPrevNota = window.onBeforePngExportGetSourceText;
+    window.onBeforePngExportGetSourceText = function (chartId) {
+      if (chartId !== '23') return (typeof vlPrevNota === 'function') ? vlPrevNota(chartId) : null;
+      const tpl = (typeof t === 'function') ? t('c23-sources-tpl') : '';
+      if (!tpl) return null;
+      return tpl.replace('{ITEM}', vl_itemLabel());
+    };
+  }
 }
 
 // Slider de período de dos manijas (setupWcRangeSlider de lib/utils.js), el mismo
