@@ -1086,17 +1086,40 @@ function vs_setupCSV() {
   }));
 }
 
-// Vista compartible (?vista=&cat=&medida=&ma=&matriz=&periodo=) — lib/utils.js.
-// Las TRES selecciones custom (teamsSel del scatter, teamRows de la matriz,
-// lineSel de la evolución) NO viajan en el link por ahora: son null-o-array con
-// semántica propia por vista; si un lector las personalizó, el link igual abre
-// la misma pestaña con su set default. Queda para una v2 si Daniel lo pide.
+// Vista compartible (?vista=&cat=&medida=&ma=&matriz=&periodo=&equipos=&filas=
+// &lineas=) — lib/utils.js. Las tres selecciones custom viajan con la misma
+// convención que goles: las claves son el NOMBRE en inglés de la selección
+// ("Sweden"), que es como las guarda el buscador; como el dataset de
+// selecciones llega lazy, acá no se valida — lo inexistente simplemente no se
+// dibuja. Ausente = null (el set default de la vista); presente = custom; el
+// centinela '-' = custom VACÍO, que el criterio 11 permite (vaciar es legítimo
+// y los defaults no resucitan solos).
+//   equipos → teamsSel (destacados del scatter)
+//   filas   → teamRows (filas del head-to-head modo Selecciones)
+//   lineas  → lineSel  (evolución: confederaciones y/o países)
 // El gate evita que el primer draw del init (default) borre los params de la
 // URL antes de que vs_applyUrlState los lea.
 let vs_urlWired = false;
 function vs_applyUrlState() {
   if (typeof atlasUrlParam !== 'function') return;
   const click = (q) => { const b = document.querySelector(q); if (b) b.click(); };
+  // Las selecciones van ANTES del click de vista: así el primer dibujo de la
+  // pestaña destino ya sale con ellas. Aplicarlas es marcar personalización
+  // (vs_touched deflacta el titular editorial, criterio 11) + repintar chips.
+  const vsParseSel = (param) => {
+    const v = atlasUrlParam(param);
+    if (v == null) return undefined;                    // no viajó: no tocar
+    return v === '-' ? [] : v.split('~').filter(Boolean);
+  };
+  const s0 = vs_state();
+  let selAplicada = false;
+  const equipos = vsParseSel('equipos');
+  if (equipos !== undefined) { s0.teamsSel = equipos; selAplicada = true; if (vs_renderTeamChips) vs_renderTeamChips(); }
+  const filas = vsParseSel('filas');
+  if (filas !== undefined) { s0.teamRows = filas; selAplicada = true; if (vs_renderMatrixChips) vs_renderMatrixChips(); }
+  const lineas = vsParseSel('lineas');
+  if (lineas !== undefined) { s0.lineSel = lineas; selAplicada = true; if (vs_renderLineChips) vs_renderLineChips(); }
+  if (selAplicada) vs_touched = true;
   // la matriz primero: si el link trae vista=matrix + matriz=teams, el tab ya
   // abre con el modo correcto (y dispara la carga lazy de selecciones).
   const matriz = atlasUrlParam('matriz');
@@ -1132,21 +1155,33 @@ function vs_applyUrlState() {
     }
   }
   vs_urlWired = true;
-  vs_syncUrl();   // normaliza la URL al estado realmente aplicado
+  // Si entraron selecciones, un redraw: los eventos de los otros controles ya
+  // repintan solos, pero una URL con SOLO selecciones (p.ej. vista=rank con
+  // equipos custom de otra pestaña) no dispara ninguno, y el titular editorial
+  // tiene que deflactarse. drawVersus() también normaliza la URL.
+  if (selAplicada) drawVersus();
+  else vs_syncUrl();   // normaliza la URL al estado realmente aplicado
 }
 
 // Espejo estado→URL, TODO-O-NADA (criterio de Daniel, 2026-08-10): vista de
 // fábrica = URL limpia; cualquier desvío = estado COMPLETO en la URL. Como en
 // goles, `periodo` solo viaja cuando el lector movió el slider (periodAuto).
+// Las selecciones: null (default de la vista) no viaja; array viaja entero; el
+// array vacío viaja como '-' (sin centinela, el link "todo vaciado" abriría con
+// los defaults y mentiría).
 function vs_syncUrl() {
   if (!vs_urlWired || typeof atlasSyncUrl !== 'function') return;
   const s = vs_state();
+  const sel = (arr) => arr === null ? null : (arr.join('~') || '-');
   const todoDefault = s.view === 'rank' && String(s.cat) === 'ALL' && s.metric === 'eff'
-    && s.maYears === 8 && s.matrixMode === 'conf' && s.periodAuto !== false;
+    && s.maYears === 8 && s.matrixMode === 'conf' && s.periodAuto !== false
+    && s.teamsSel === null && s.teamRows === null && s.lineSel === null;
   atlasSyncUrl(todoDefault
-    ? { vista: null, cat: null, medida: null, ma: null, matriz: null, periodo: null }
+    ? { vista: null, cat: null, medida: null, ma: null, matriz: null, periodo: null,
+        equipos: null, filas: null, lineas: null }
     : { vista: s.view, cat: String(s.cat), medida: s.metric, ma: String(s.maYears), matriz: s.matrixMode,
-        periodo: s.periodAuto === false ? (s.period[0] + '~' + s.period[1]) : null });
+        periodo: s.periodAuto === false ? (s.period[0] + '~' + s.period[1]) : null,
+        equipos: sel(s.teamsSel), filas: sel(s.teamRows), lineas: sel(s.lineSel) });
 }
 
 function initVersus() {
