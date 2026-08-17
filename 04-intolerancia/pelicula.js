@@ -334,7 +334,7 @@ function pl_toggle(iso) {
   renderPeliculaChips(); drawPelicula();
 }
 function renderPeliculaChips() {
-  const cont = document.getElementById('pl-chips'); if (!cont) return;
+  const cont = document.getElementById('pl-selected-chips'); if (!cont) return;
   cont.innerHTML = '';
   state[2].selected.slice().sort((a, b) => pl_name(a).localeCompare(pl_name(b), 'es')).forEach(iso => {
     const chip = document.createElement('span'); chip.className = 'm-selected-chip';

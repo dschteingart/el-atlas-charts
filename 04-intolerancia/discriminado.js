@@ -355,7 +355,7 @@ function dc_toggle(key) {
   renderDiscriminadoChips(); drawDiscriminado();
 }
 function renderDiscriminadoChips() {
-  const cont = document.getElementById('dc-chips'); if (!cont) return;
+  const cont = document.getElementById('dc-selected-chips'); if (!cont) return;
   const univ = state[11].univ;
   cont.innerHTML = '';
   (state[11].sel[univ] || []).slice().sort((a, b) => dc_name(univ, a).localeCompare(dc_name(univ, b), 'es')).forEach(key => {

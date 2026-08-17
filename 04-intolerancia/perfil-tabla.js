@@ -479,12 +479,12 @@ function pf_syncPicker() {
   const esPaises = state[26].vista === 'paises';
   const wrap = document.getElementById('pf-picker');
   if (wrap) wrap.style.display = esPaises ? '' : 'none';
-  const chips = document.getElementById('pf-chips');
+  const chips = document.getElementById('pf-selected-chips');
   if (chips) chips.style.display = esPaises ? '' : 'none';
 }
 
 function pf_renderChips() {
-  const cont = document.getElementById('pf-chips');
+  const cont = document.getElementById('pf-selected-chips');
   if (!cont) return;
   cont.innerHTML = '';
   (state[26].selected || []).forEach(iso => {

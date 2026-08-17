@@ -137,6 +137,7 @@
 
     // ---- chart 23: evolución ----
     'c23-title':          'Un siglo de exclusión social',
+    'c23-period-label':   'Período',
     'c23-title-neutral':  'La evolución de la exclusión por grupo social',
     'c23-subtitle-tpl':   '{CAT}, a lo largo del tiempo. V-Dem, desde 1900.',
     'c23-axis-y':         'Valor del indicador',
@@ -208,6 +209,7 @@
     'c22-sources-tpl':    'Data: V-Dem v16 (University of Gothenburg), year {R}. Darker always means worse: the ramp flips when the variable points the other way.',
 
     'c23-title':          'A century of social exclusion',
+    'c23-period-label':   'Period',
     'c23-title-neutral':  'The trend in exclusion by social group',
     'c23-subtitle-tpl':   '{CAT}, over time. V-Dem, from 1900 on.',
     'c23-axis-y':         'Indicator value',

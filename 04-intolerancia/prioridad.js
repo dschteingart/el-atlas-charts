@@ -332,7 +332,7 @@ function pr_toggle(iso) {
   renderPrioridadChips(); drawPrioridad();
 }
 function renderPrioridadChips() {
-  const cont = document.getElementById('pr-chips'); if (!cont) return;
+  const cont = document.getElementById('pr-selected-chips'); if (!cont) return;
   cont.innerHTML = '';
   state[7].selected.slice().sort((a, b) => pr_name(a).localeCompare(pr_name(b), 'es')).forEach(iso => {
     const chip = document.createElement('span'); chip.className = 'm-selected-chip';

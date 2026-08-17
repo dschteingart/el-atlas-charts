@@ -405,10 +405,11 @@ function vl_toggleSelect(iso) {
 }
 
 function renderVdemLineasChips() {
-  // El contenedor del panel es #vl-chips (el clon buscaba #vl-selected-chips,
+  // El contenedor del panel es #vl-selected-chips (renombrado 2026-08-17 a la
+  // convencion *-selected-chips: asi lo engancha el boton Limpiar universal,
   // que es el id de la vista de comparación: por eso no aparecía ningún chip y
   // no había forma de sacar países de la vista).
-  const cont = document.getElementById('vl-chips'); if (!cont) return;
+  const cont = document.getElementById('vl-selected-chips'); if (!cont) return;
   cont.innerHTML = '';
   (state[23].selected || []).slice().sort((a, b) => vl_name(a).localeCompare(vl_name(b), 'es')).forEach(iso => {
     const chip = document.createElement('span'); chip.className = 'm-selected-chip';

@@ -319,7 +319,7 @@ function setupLatinoSlider() {
 }
 function lb_toggle(iso) { const a = state[6].selected; const i = a.indexOf(iso); if (i >= 0) a.splice(i, 1); else a.push(iso); renderLatinoChips(); drawLatino(); }
 function renderLatinoChips() {
-  const cont = document.getElementById('lb-chips'); if (!cont) return; cont.innerHTML = '';
+  const cont = document.getElementById('lb-selected-chips'); if (!cont) return; cont.innerHTML = '';
   state[6].selected.slice().sort((a, b) => lb_name(a).localeCompare(lb_name(b), 'es')).forEach(iso => {
     const chip = document.createElement('span'); chip.className = 'm-selected-chip';
     const dot = document.createElement('span'); dot.className = 'm-chip-dot'; dot.style.background = lb_color(iso); chip.appendChild(dot);
