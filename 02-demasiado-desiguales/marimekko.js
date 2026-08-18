@@ -607,9 +607,25 @@ function drawMarimekko() {
   // mobilePng: las coords de la tabla son distintas (más a la izquierda y
   // más alta verticalmente) — usamos las mismas que drawRegionalAvgTable
   // calcula para mobilePng (tableX=520, top=80-10=70, bottom=110+7*56=502).
-  const tableTopY = mobilePng ? 70 : (M_TABLE_Y_TITLE - 10);
-  const tableBottomY = mobilePng ? 502 : (M_TABLE_Y_FIRST + 7 * M_TABLE_ROW_H);
-  const tableLeftX = mobilePng ? 520 : M_TABLE_X;
+  // Las filas de la tabla se arman ACA (no mas abajo, donde se dibuja) porque
+  // el recorte de la grilla necesita saber que alto va a tener la tabla.
+  const regAvg = DATA_MARIMEKKO.regional_avg[year]?.[mode] || {};
+  const tableRows = REGION_WB_ORDER
+    .filter(reg => regAvg[reg] !== undefined)
+    .map(reg => ({
+      region: reg,
+      color: REGION_WB_COLORS[reg],
+      label: t('reg.' + reg),
+      value: regAvg[reg]
+    }))
+    .sort((a, b) => b.value - a.value);
+
+  // Misma caja que dibuja la tabla, no numeros fijos: si no, al agrandar la
+  // fuente las lineas de grilla terminaban cruzando la tabla por el medio.
+  const cajaTabla = m_tableBox(tableRows, SIZES, mobilePng);
+  const tableTopY = cajaTabla.top - 6;
+  const tableBottomY = cajaTabla.bottom;
+  const tableLeftX = cajaTabla.x;
   // En viewports altos (mobile / mobilePng) usamos un subset reducido
   // de ticks Y para que la grilla no se vea apretada.
   const yTicksToRender = (mobile || mobilePng) ? M_Y_TICKS_MOBILE : M_Y_TICKS;
@@ -693,15 +709,19 @@ function drawMarimekko() {
       rect.addEventListener('mousemove', (e) => m_positionTooltip(e, tooltip));
       rect.addEventListener('click', () => m_toggleCountrySelection(d.code));
     } else {
-      // Mobile: tap muestra el tooltip Y toggle la selección. El tooltip
-      // queda visible hasta que el usuario haga tap en otra barra (cambia
-      // de tooltip) o en cualquier otro lugar (handler global en document).
-      // El stopPropagation evita que el handler global cierre el recién
-      // abierto.
+      // Mobile: el tap muestra SOLO el tooltip, no selecciona (criterio del
+      // N°4, portado 2026-08-18 a pedido de Daniel). Antes tambien alternaba
+      // la seleccion: con 166 barras finitas, explorar con el dedo agregaba
+      // chips sin querer y, como la seleccion desinfla el titular editorial,
+      // te cambiaba el titulo del grafico de casualidad. Para elegir paises
+      // en el celular esta el buscador, que es deliberado.
+      // El tooltip queda visible hasta que el usuario haga tap en otra barra
+      // (cambia de tooltip) o en cualquier otro lugar (handler global en
+      // document). El stopPropagation evita que el handler global cierre el
+      // recien abierto.
       rect.addEventListener('click', (e) => {
         e.stopPropagation();
         m_showTooltip(e, d, tooltip);
-        m_toggleCountrySelection(d.code);
       });
     }
     barsG.appendChild(rect);
@@ -777,17 +797,6 @@ function drawMarimekko() {
   // de cada región intercalados en el ranking. Ubicada en la zona vacía
   // sobre las barras de la derecha (las de Gini más bajo). Filas ordenadas
   // por promedio descendente. Hover sobre chip de región → fila en bold.
-  const regAvg = DATA_MARIMEKKO.regional_avg[year]?.[mode] || {};
-  const tableRows = REGION_WB_ORDER
-    .filter(reg => regAvg[reg] !== undefined)
-    .map(reg => ({
-      region: reg,
-      color: REGION_WB_COLORS[reg],
-      label: t('reg.' + reg),
-      value: regAvg[reg]
-    }))
-    .sort((a, b) => b.value - a.value);
-
   // Desktop / public / newsletter / square / mobilePng: tabla en SVG.
   // Mobile interactivo (≤768px sin editor): NO en SVG; va como HTML
   // colapsable abajo del chart.
@@ -877,60 +886,72 @@ const M_TABLE_ROW_H  = 16;
 const M_TABLE_SWATCH = 9;
 const M_TABLE_SWATCH_GAP = 7;
 
+// Caja REAL de la tabla de promedios regionales, calculada con la fuente que
+// esta dibujando (la del slider "Tabla regional"). Antes la geometria estaba
+// clavada (x=720, ancho=348, primera fila en y=84) y al subir la fuente pasaban
+// tres cosas, todas visibles en el PNG: el primer cuadradito se trepaba al
+// titulo, los nombres de region se montaban sobre los numeros, y el bloque se
+// salia por la derecha y caia sobre las barras. La usan el renderer de la tabla
+// Y el recorte de las lineas de grilla, que antes tambien iba con numeros fijos
+// y por eso las lineas cruzaban la tabla.
+function m_tableBox(rows, SIZES, mobilePng) {
+  const base = (SIZES && SIZES.tableLabel) || (M_TABLE_ROW_H / 1.45);
+  const titleSize = (SIZES && SIZES.tableTitle) || base;
+  const rowH = base * 1.45;
+  const swatchSize = base * 0.82;
+  const swatchGap = base * 0.64;
+  // Aire bajo el titulo proporcional a la fuente (criterio del N°4): con un
+  // valor fijo, al agrandar la letra el cuadradito de la primera fila se
+  // superponia con el titulo y se perdia de vista.
+  const yTitle = mobilePng ? 80 : M_TABLE_Y_TITLE;
+  const ruleY = yTitle + base * 0.7;
+  const yFirst = yTitle + base * 2.4;
+  const anchoDe = (txts, fs) => txts.reduce((max, s) => Math.max(max, m_measureText(s, fs)), 0);
+  const nombres = anchoDe(rows.map(r => r.label), base);
+  const valores = anchoDe(rows.map(r => fmt(r.value, 1)), base);
+  const titulo = m_measureText(t('c1-avg-table-title'), titleSize);
+  // Ancho necesario: cuadradito + aire + nombre mas largo + separacion + valor.
+  // Nunca menos que el ancho historico, para que la vista de fabrica no cambie.
+  const necesario = Math.max(swatchSize + swatchGap + nombres + base * 1.4 + valores, titulo);
+  const w = Math.max(mobilePng ? 540 : M_TABLE_W, necesario);
+  // Anclada a la DERECHA: al crecer se estira hacia la izquierda, que es donde
+  // estan las barras bajas. Si ni asi entra, se frena en el borde del lienzo.
+  const bordeDerecho = mobilePng ? 1060 : (M_MARGIN.left + M_PLOT_W);
+  const x = Math.max(8, bordeDerecho - w);
+  const n = Math.max(rows.length, 1);
+  return {
+    x, w, base, titleSize, rowH, swatchSize, swatchGap, yTitle, ruleY, yFirst,
+    top: yTitle - titleSize,
+    bottom: yFirst + (n - 1) * rowH + base * 0.35
+  };
+}
+
 function drawRegionalAvgTable(svg, rows, activeRegion, SIZES, mobilePng) {
-  // mobilePng: el viewBox es portrait alto (1100×1650) y la tabla va arriba-
-  // derecha, sobre las barras de Gini bajo (que en el ranking del 2024 ocupan
-  // la mitad derecha del plot, con tops a y≥620 cuando M_Y_MAX=65). Para
-  // que los nombres regionales a 28pt entren sin pisar las barras altas
-  // (que están a la izquierda), ampliamos M_TABLE_W y desplazamos el TABLE_X
-  // a la izquierda para tener más ancho horizontal. Row height más grande
-  // para que el font 28 respire.
-  const titleSize = SIZES?.tableTitle;
-  const labelSize = SIZES?.tableLabel;
-  // Escala TODO proporcionalmente al font de las filas (lo que controla el
-  // slider "Tabla regional" en el editor). A labelSize=11 (default) los
-  // valores coinciden con los antiguos hardcoded (rowH 16, swatch 9, gap 7).
-  // A labelSize=28 (slider al máximo), rowH=40.6 → filas no se encimean.
-  // Aplica a TODOS los formatos: pantalla y PNG quedan sincronizados.
-  const rowFactor    = 1.45;
-  const swatchFactor = 0.82;
-  const gapFactor    = 0.64;
-  const base = labelSize ?? M_TABLE_ROW_H / rowFactor;  // ~11 si no hay SIZES
-  const rowH       = base * rowFactor;
-  const swatchSize = base * swatchFactor;
-  const swatchGap  = base * gapFactor;
-  const yFirst = mobilePng ? 110
-               : M_TABLE_Y_FIRST;
-  // Posición horizontal/vertical del header de la tabla.
-  // mobilePng usa coords propias: arriba-derecha del plot, ancho 540 SVG
-  // units (vs 348 default) para alojar "Latinoamérica y el Caribe" a 28pt.
-  // tableX=520 deja desde x=520 hasta x=1060, dentro del plot (left=100,
-  // right=30) y por encima de las barras de Gini medio-alto (que llegan a
-  // y≈620 en x=600 para Gini 36). Sin pisar las barras altas (izquierda).
-  const tableX = mobilePng ? 520 : M_TABLE_X;
-  const tableW = mobilePng ? 540 : M_TABLE_W;
-  const tableYTitle = mobilePng ? 80 : M_TABLE_Y_TITLE;
-  const ruleY = mobilePng ? tableYTitle + 12 : M_TABLE_Y_TITLE + 6;
+  const caja = m_tableBox(rows, SIZES, mobilePng);
+  const { rowH, swatchSize, swatchGap } = caja;
+  const titleSize = SIZES && SIZES.tableTitle;
+  const labelSize = SIZES && SIZES.tableLabel;
+  const tableX = caja.x, tableW = caja.w, yFirst = caja.yFirst;
   const g = m_ns('g');
   g.setAttribute('id', 'm-avg-table');
   svg.appendChild(g);
 
-  // Título
+  // Titulo
   const title = m_ns('text');
   title.setAttribute('class', 'm-table-title');
   title.setAttribute('x', tableX);
-  title.setAttribute('y', tableYTitle);
+  title.setAttribute('y', caja.yTitle);
   if (titleSize) title.style.fontSize = titleSize + 'px';
   title.textContent = t('c1-avg-table-title');
   g.appendChild(title);
 
-  // Línea sutil bajo el título
+  // Linea sutil bajo el titulo
   const rule = m_ns('line');
   rule.setAttribute('class', 'm-table-rule');
   rule.setAttribute('x1', tableX);
   rule.setAttribute('x2', tableX + tableW);
-  rule.setAttribute('y1', ruleY);
-  rule.setAttribute('y2', ruleY);
+  rule.setAttribute('y1', caja.ruleY);
+  rule.setAttribute('y2', caja.ruleY);
   g.appendChild(rule);
 
   rows.forEach((row, i) => {
