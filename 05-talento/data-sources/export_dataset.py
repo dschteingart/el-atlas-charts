@@ -3,8 +3,11 @@
 import pandas as pd, numpy as np, json, sys, warnings
 warnings.filterwarnings('ignore'); sys.stdout.reconfigure(encoding='utf-8')
 
-# === KNOBS ACTUALES (de la pantalla de Daniel) ===
-T=50.0; PISO=0.5; wA=1.0; wRec=1.0; GEOM=True; REF=2025
+# === KNOBS PUBLICADOS ===
+# T = umbral de edad: por debajo de T anios desde el nacimiento la figura se
+# penaliza por reciente. Mueve mucho a los vivos (Messi #141 con T=40, #384 con
+# T=50, #1231 con T=70) y casi nada a los agregados por pais/region.
+T=40.0; PISO=0.5; wA=1.0; wRec=1.0; GEOM=True; REF=2025
 
 F=pd.read_csv('fame_pantheon.csv',on_bad_lines='skip'); F=F[F.n_langs>=0].copy()
 PE=pd.read_csv('person_2025_update.csv',low_memory=False)[['id','occupation','birthyear','bplace_country','l_','coefficient_of_variation','non_en_page_views','hpi']].drop_duplicates('id')
@@ -79,7 +82,7 @@ s=base*sc.EdadMult; sc['score']=s/s.max()*100
 sc['rank_score']=sc.score.rank(ascending=False,method='min').astype(int)
 d=d.merge(sc[['id','Lenguas','Vistas','EdadMult','score','rank_score']],on='id',how='left')
 
-# === sanity check vs el lab (T=50) ===
+# === sanity check vs el lab (preset Publicado) ===
 print('\nTOP 15 (debe coincidir con la pantalla):')
 for _,x in d.sort_values('score',ascending=False).head(15).iterrows():
     print('  %2d. %-22s %-18s score=%.1f'%(x.rank_score,str(x['name'])[:22],str(x.dominio)[:18],x.score))
@@ -95,9 +98,17 @@ out=d[['id','name','occupation','dominio','region','bplace_country','birthyear',
        'multi_idioma','Lenguas','Vistas','EdadMult','score','rank_score','hpi']].copy()
 out=out.rename(columns={'langs1k':'idiomas_1k_anio','langs10k':'idiomas_10k_anio','l1k_all':'idiomas_1k_desde2015',
     'total12_noen':'vistas_12m_noen','total_all_noen':'vistas_total_noen','medianMonthly_noen':'mediana_mensual_noen',
-    'pctMonths_o100k':'pct_meses_100k','pctMonths_o300k':'pct_meses_300k','score':'score_T50','hpi':'hpi_archivo','bplace_country':'pais'})
+    'pctMonths_o100k':'pct_meses_100k','pctMonths_o300k':'pct_meses_300k','hpi':'hpi_archivo','bplace_country':'pais'})
 out=out.sort_values('rank_score',na_position='last')
 out.to_csv('pantheon_corregido.csv',index=False,encoding='utf-8-sig',float_format='%.4f')
+# los knobs al lado del dataset, para no tener que adivinar despues con cuales se genero
+json.dump({'T':T,'piso':PISO,'wA':wA,'wRec':wRec,'geometrica':GEOM,'anio_ref':REF,
+           'gate':'>=2 idiomas con >=1000 vistas acumuladas desde 2015',
+           'lenguas':'media aritmetica de n_langs e idiomas_10k_anio (log1p, normalizados)',
+           'vistas':'media geometrica de vistas 12m, total y mediana mensual, todas sin ingles',
+           'filas':len(out),'pasan_gate':int((out.multi_idioma==1).sum()),
+           'con_score':int(out.score.notna().sum())},
+          open('pantheon_corregido.params.json','w',encoding='utf-8'),ensure_ascii=False,indent=1)
 import os
 print('\n=> pantheon_corregido.csv | %d filas | %.1f MB'%(len(out),os.path.getsize('pantheon_corregido.csv')/1e6))
 print('   no pasan el filtro (multi_idioma=0):',int((out.multi_idioma==0).sum()))

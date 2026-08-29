@@ -9,7 +9,7 @@ Dos formas de usarlo:
 
   1. Como archivo. `python corregido.py` escribe master_corregido.csv, que es un
      reemplazo drop-in de persons_enriched.csv (mismas columnas y orden, filtrado
-     por el gate, con hpi := score_T50). Los scripts que leian persons_enriched
+     por el gate, con hpi := score). Los scripts que leian persons_enriched
      solo cambian el nombre del archivo.
 
   2. Como modulo. `import corregido; df = corregido.aplicar(df)` hace lo mismo
@@ -30,17 +30,17 @@ _tabla = None
 
 
 def tabla():
-    """id -> multi_idioma, score_T50, rank_score (una fila por id)."""
+    """id -> multi_idioma, score, rank_score (una fila por id)."""
     global _tabla
     if _tabla is None:
-        t = pd.read_csv(CORR, usecols=['id', 'multi_idioma', 'score_T50', 'rank_score'], low_memory=False)
+        t = pd.read_csv(CORR, usecols=['id', 'multi_idioma', 'score', 'rank_score'], low_memory=False)
         assert t.id.is_unique, 'pantheon_corregido.csv tiene ids repetidos'
         _tabla = t
     return _tabla
 
 
 def aplicar(df, gate=True, verbose=True, etiqueta=''):
-    """Suma el score nuevo y aplica el gate. `hpi` pasa a ser score_T50 (0-100)."""
+    """Suma el score nuevo y aplica el gate. `hpi` pasa a ser score (0-100)."""
     if 'id' not in df.columns:
         raise KeyError('el DataFrame no tiene columna `id`; no se puede cruzar con el corregido')
     n0 = len(df)
@@ -49,8 +49,8 @@ def aplicar(df, gate=True, verbose=True, etiqueta=''):
         out = out.rename(columns={'hpi': 'hpi_pantheon'})
     if gate:
         out = out[out.multi_idioma == 1]
-    out = out[out.score_T50.notna()]
-    out['hpi'] = out.score_T50
+    out = out[out.score.notna()]
+    out['hpi'] = out.score
     out = out.reset_index(drop=True)
     if verbose:
         print('[corregido]%s %d -> %d figuras (gate multi-idioma + score reconstruido)'

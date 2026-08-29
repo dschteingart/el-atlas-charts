@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 """Datos del MAPA (percap-map) desde el dataset CORREGIDO (pantheon_corregido.csv).
 A diferencia de data-percap-figs.js (que alimenta el tablero de barras y NO se
-toca), este archivo agrega por figura: multi_idioma (gate) y score_T50 (HPI
+toca), este archivo agrega por figura: multi_idioma (gate) y score (HPI
 recalculado). Salidas:
   - data-percap-map.js  (window.PCMAP): isoMeta + domains + subMeta + F por-figura
     6 bytes = iso 1B, subId 1B, [year(13b)+multi(bit15)] 2B LE, score*100 2B LE.
   - data-percap-topfig.js (window.PCTOP): top figura por país×sub = [nombre,
-    score_T50, rank_score] (ranking global de la NUEVA metodología).
+    score, rank_score] (ranking global de la NUEVA metodología).
 iso3 por figura: join por id con persons_enriched (96%) + fallback nombre→iso.
 """
 import csv, json, base64, os
@@ -147,7 +147,7 @@ with open(CORR, encoding='utf-8-sig') as f:
         y = max(YMIN, min(YMAX, y))
         sub = sub_of((r.get('occupation') or '').strip().upper())
         multi = 1 if r.get('multi_idioma') == '1' else 0
-        try: sc = float(r.get('score_T50') or 0)
+        try: sc = float(r.get('score') or 0)
         except ValueError: sc = 0.0
         s16 = max(0, min(65535, int(round(sc * 100))))
         yw = (y + YOFF) | (multi << 15)
@@ -157,7 +157,7 @@ with open(CORR, encoding='utf-8-sig') as f:
 mp = {'isoMeta': isoMeta, 'domains': domains_out, 'subMeta': subMeta, 'yearMin': minY, 'yearMax': maxY, 'F': {'b64': base64.b64encode(bytes(buf)).decode(), 'n': n}}
 open(OUT_M, 'w', encoding='utf-8').write('// Mapa (dataset corregido). F=6 bytes (iso, subId, year13b+multi-bit15, score*100 uint16).\nwindow.PCMAP=' + json.dumps(mp, separators=(',', ':'), ensure_ascii=False) + ';\n')
 
-# TOP figuras por país×sub = [nombre, año, score_T50, rank_score] — SOLO multiidioma.
+# TOP figuras por país×sub = [nombre, año, score, rank_score] — SOLO multiidioma.
 # Para que el tooltip muestre la mejor figura DEL PERÍODO elegido (no solo de hoy),
 # guardo por (país,sub): top-4 por score UNIÓN el campeón (máx score) de cada
 # bucket temporal → así cualquier período (incluso antiguo y angosto) tiene candidato.
@@ -173,7 +173,7 @@ with open(CORR, encoding='utf-8-sig') as f:
         iso = iso_of(r['id'], r.get('pais'))
         if not iso: continue
         name = (r.get('name') or '').strip()
-        try: sc = float(r.get('score_T50') or 0); rk = int(float(r.get('rank_score') or 0)); yr = int(round(float(r['birthyear'])))
+        try: sc = float(r.get('score') or 0); rk = int(float(r.get('rank_score') or 0)); yr = int(round(float(r['birthyear'])))
         except (ValueError, TypeError): continue
         if not name or rk <= 0: continue
         sub = str(sub_of((r.get('occupation') or '').strip().upper()))
@@ -192,7 +192,7 @@ for iso, subs in allf.items():
             if id(e) not in seen: keep.append(e); seen.add(id(e))
         d[sub] = [[e[0], e[1], round(e[2], 1), e[3]] for e in keep]
     topfig[iso] = d
-open(OUT_T, 'w', encoding='utf-8').write('// Top figuras por país×sub (corregido, multiidioma): [nombre, año, score_T50, rank_score]. top-4 por score + campeón por era.\nwindow.PCTOP=' + json.dumps(topfig, separators=(',', ':'), ensure_ascii=False) + ';\n')
+open(OUT_T, 'w', encoding='utf-8').write('// Top figuras por país×sub (corregido, multiidioma): [nombre, año, score, rank_score]. top-4 por score + campeón por era.\nwindow.PCTOP=' + json.dumps(topfig, separators=(',', ':'), ensure_ascii=False) + ';\n')
 
 print('isoMeta:', len(isoMeta), '(+%d)' % len(added), '| figuras F:', n, '| multi=1:', multi1, '| dropped(sin iso):', dropped)
 print('rango años:', minY, '->', maxY)

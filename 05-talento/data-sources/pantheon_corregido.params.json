@@ -1,0 +1,14 @@
+{
+ "T": 40.0,
+ "piso": 0.5,
+ "wA": 1.0,
+ "wRec": 1.0,
+ "geometrica": true,
+ "anio_ref": 2025,
+ "gate": ">=2 idiomas con >=1000 vistas acumuladas desde 2015",
+ "lenguas": "media aritmetica de n_langs e idiomas_10k_anio (log1p, normalizados)",
+ "vistas": "media geometrica de vistas 12m, total y mediana mensual, todas sin ingles",
+ "filas": 126582,
+ "pasan_gate": 117269,
+ "con_score": 124967
+}

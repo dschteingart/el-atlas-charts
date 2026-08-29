@@ -29,14 +29,20 @@ idioma y por mes) y aplicamos un filtro de entrada:
   Score   = Base × Edad×,  reescalado a 100
   ```
 
-  Publicado con `T=50, piso=0,5, wA=1, wRec=1`, media geométrica, año ref. 2025.
+  Publicado con `T=40, piso=0,5, wA=1, wRec=1`, media geométrica, año ref. 2025.
+  Los knobs quedan escritos en `pantheon_corregido.params.json`, al lado del dataset.
+
+  `T` es el umbral de edad: por debajo de T años desde el nacimiento la figura se
+  penaliza por reciente. Mueve mucho a los vivos (Messi es #141 con T=40, #384 con
+  T=50 y #1231 con T=70) y casi nada a los agregados por país o región (América
+  Latina queda en 5,9% de la fama mundial con cualquiera de los tres).
 
   **Lenguas usa media aritmética, no geométrica.** El 58,9% de la base tiene 0 idiomas
   con ≥10k vistas; con media geométrica ese cero anulaba el score entero y dejaba a
   más de la mitad de las figuras pegada en ~0,3 con un acantilado a 42. La geométrica
   se conserva donde no hay ceros: dentro de Vistas y entre Lenguas y Vistas.
 
-`fame-lab.html` deja mover todas las perillas en vivo; el preset **Publicado (T50)**
+`fame-lab.html` deja mover todas las perillas en vivo; el preset **Publicado (T40)**
 reproduce exactamente `pantheon_corregido.csv`.
 
 `hpi-lab.html` es el laboratorio anterior — recalcula el HPI desde las columnas crudas

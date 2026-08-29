@@ -56,7 +56,7 @@
     <div class="panel">
       <h2>Presets</h2>
       <div class="presets" id="presets">
-        <button data-p="pub" class="on">Publicado (T50) ★</button><button data-p="rec">Recomendado (T40)</button>
+        <button data-p="pub" class="on">Publicado (T40) ★</button>
         <button data-p="hpi">Estilo HPI (T70)</button>
         <button data-p="noage">Sin edad</button>
         <button data-p="simple">Media simple</button>
@@ -111,7 +111,7 @@ const KNOBS=[
   {k:'wA',lbl:'Peso bono antigüedad',hint:'cuánto premia ser viejo (×log₄A)',min:0,max:2,step:.1},
   {k:'wRec',lbl:'Peso penalidad recencia',hint:'cuánto castiga ser joven',min:0,max:2,step:.1},
 ];
-const PRESETS={pub:{T:50,piso:.5,wA:1,wRec:1,geom:true},rec:{T:40,piso:.5,wA:1,wRec:1,geom:true},hpi:{T:70,piso:.5,wA:1,wRec:1,geom:true},noage:{T:40,piso:1,wA:1,wRec:1,geom:true},simple:{T:40,piso:.5,wA:1,wRec:1,geom:false}};
+const PRESETS={pub:{T:40,piso:.5,wA:1,wRec:1,geom:true},hpi:{T:70,piso:.5,wA:1,wRec:1,geom:true},noage:{T:40,piso:1,wA:1,wRec:1,geom:true},simple:{T:40,piso:.5,wA:1,wRec:1,geom:false}};
 let W=Object.assign({},PRESETS.pub), mode='pub';
 const kc=document.getElementById('knobs');
 KNOBS.forEach(kn=>{const d=document.createElement('div');d.className='knob';
