@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lab de Fama Reconstruida — El Atlas N°5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<style>
+  .wrap-lab { max-width: 1180px; margin: 0 auto; padding: 16px 20px 40px; }
+  h1 { font-size: 22px; margin: 0 0 2px; }
+  .lab-sub { font-family: var(--sans); font-size: 13px; color: var(--ink-muted); margin: 0 0 16px; }
+  .lab-grid { display: grid; grid-template-columns: 330px 1fr; gap: 22px; align-items: start; }
+  @media (max-width: 880px) { .lab-grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--bg); border: 1px solid var(--rule); border-radius: 12px; padding: 14px 16px; }
+  .panel h2 { font-family: var(--sans); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--ink-muted); margin: 0 0 10px; }
+  .panel h2:not(:first-child) { margin-top: 16px; }
+  .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+  .presets button { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 11px; border: 1px solid var(--rule); border-radius: 20px; background: var(--bg-soft); color: var(--ink); cursor: pointer; }
+  .presets button:hover { border-color: var(--accent); color: var(--accent); }
+  .presets button.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .knob { margin-bottom: 11px; }
+  .knob-top { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--sans); }
+  .knob-top label { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+  .knob-top .v { font-size: 12px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .knob-top .hint { font-size: 10.5px; color: var(--ink-muted); font-weight: 400; }
+  .knob input[type=range] { width: 100%; margin: 4px 0 0; accent-color: var(--accent); }
+  .filters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+  .filters .full { grid-column: 1 / -1; }
+  .filters label { display: block; font-family: var(--sans); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); margin-bottom: 3px; }
+  .filters select, .filters input { width: 100%; font-family: var(--sans); font-size: 13px; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 7px; background: var(--bg-soft); color: var(--ink); box-sizing: border-box; }
+  .period { display: flex; gap: 8px; align-items: center; }
+  .formula { font-family: var(--sans); font-size: 11.5px; color: var(--ink-muted); margin: 10px 0 0; line-height: 1.5; background: var(--bg-soft); padding: 9px 11px; border-radius: 8px; }
+  .sentinels { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
+  .sent { font-family: var(--sans); font-size: 12px; padding: 5px 10px; border-radius: 8px; background: var(--bg-soft); border: 1px solid var(--rule); }
+  .sent b { color: var(--accent); font-variant-numeric: tabular-nums; }
+  .sent .nm { color: var(--ink); font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-family: var(--sans); }
+  th, td { text-align: left; padding: 6px 8px; font-size: 13px; border-bottom: 1px solid var(--rule); }
+  th { font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-muted); font-weight: 700; }
+  th.s { cursor: pointer; } th.s:hover { color: var(--ink); }
+  th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .rk { color: var(--ink-muted); font-weight: 700; width: 34px; }
+  td.sc { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+  tr.hl td { background: rgba(190,93,50,.09); }
+  .arr { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap-lab">
+  <h1>Lab de Fama Reconstruida</h1>
+  <p class="lab-sub">Score armado desde las vistas por idioma/mes de Pantheon (API). Dimensiones: <b>Lenguas</b> (traducciones + traducciones con ≥10k vistas) × <b>Vistas</b> (12m + histórico + mediana) × <b>Edad</b>. Mové las perillas. Datos: <code>data-fame-lab.js</code> (top ~13k por vistas).</p>
+  <div class="lab-grid">
+    <div class="panel">
+      <h2>Presets</h2>
+      <div class="presets" id="presets">
+        <button data-p="rec" class="on">Recomendado (T40)</button>
+        <button data-p="hpi">Estilo HPI (T70)</button>
+        <button data-p="noage">Sin edad</button>
+        <button data-p="simple">Media simple</button>
+      </div>
+      <h2>Perillas</h2>
+      <div id="knobs"></div>
+      <div style="font-family:var(--sans);font-size:12px;margin:6px 0 2px;"><label style="font-weight:600;cursor:pointer;"><input type="checkbox" id="geom" checked> Media geométrica (si no, simple)</label></div>
+      <div class="formula" id="formula"></div>
+      <h2>Filtros</h2>
+      <div class="filters">
+        <div><label>Dominio</label><select id="f-dom"><option value="-1">Todos</option></select></div>
+        <div><label>Ocupación</label><select id="f-occ"><option value="-1">Todas</option></select></div>
+        <div><label>Región</label><select id="f-reg"><option value="-1">Todas</option></select></div>
+        <div><label>País</label><select id="f-cty"><option value="-1">Todos</option></select></div>
+        <div class="full"><label>Período de nacimiento</label><div class="period"><input type="number" id="f-y0" step="10"> <span style="color:var(--ink-muted)">→</span> <input type="number" id="f-y1" step="10"></div></div>
+        <div class="full"><label style="text-transform:none;letter-spacing:0;font-weight:600;color:var(--ink);cursor:pointer;display:flex;gap:7px;align-items:baseline;"><input type="checkbox" id="f-multi" style="width:auto;"> Solo multi-idioma <span style="color:var(--ink-muted);font-weight:400;font-size:10.5px;">(≥2 idiomas con ≥1000 vistas desde 2015 — saca la inflación de una sola wiki, ej. J-League)</span></label></div>
+      </div>
+    </div>
+    <div>
+      <div class="sentinels" id="sentinels"></div>
+      <div class="panel" style="padding:6px 14px;">
+        <div id="count" style="font-family:var(--sans);font-size:12px;color:var(--ink-muted);margin:8px 2px;"></div>
+        <table><thead><tr>
+          <th class="rk">#</th><th>Figura</th><th>Ocupación</th><th class="num">Nac.</th>
+          <th class="num s" data-c="Lenguas" title="√(idiomas_norm × idiomas≥10k_norm). 0–1.">Lenguas</th>
+          <th class="num s" data-c="Vistas" title="geomean(vis12, vis histórico, mediana mensual) normalizadas. 0–1.">Vistas</th>
+          <th class="num s" data-c="ageMult" title="multiplicador de edad [piso–1]: log₄(A) − penalidad(<T), normalizado.">Edad×</th>
+          <th class="num s" data-c="score" title="Base × Edad, reescalado a 100.">Score</th>
+        </tr></thead><tbody id="rows"></tbody></table>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="./data-fame-lab.js?v=4"></script>
+<script>
+const D=window.FAMELAB, N=D.figs.length, LN4=Math.log(4), REF=D.refYear;
+const C={}; D.cols.forEach((c,i)=>C[c]=i);
+const nm=[],occ=new Int16Array(N),by=new Int16Array(N),cty=new Int16Array(N),dom=new Int8Array(N),multi=new Int8Array(N);
+const lnNL=new Float64Array(N),lnL10=new Float64Array(N),lnV12=new Float64Array(N),lnVA=new Float64Array(N),lnMed=new Float64Array(N);
+for(let i=0;i<N;i++){const f=D.figs[i]; nm[i]=f[C.name]; occ[i]=f[C.occIdx]; by[i]=f[C.birthyear]; cty[i]=f[C.ctyIdx]; dom[i]=D.occDom[f[C.occIdx]];
+  lnNL[i]=Math.log1p(f[C.n_langs]); lnL10[i]=Math.log1p(f[C.langs10k]); lnV12[i]=Math.log1p(f[C.total12]); lnVA[i]=Math.log1p(f[C.total_all]); lnMed[i]=Math.log1p(f[C.median]); multi[i]=C.multi==null?1:f[C.multi]; }
+const mx=a=>{let m=0;for(let i=0;i<N;i++)if(a[i]>m)m=a[i];return m||1;};
+const MNL=mx(lnNL),ML10=mx(lnL10),MV12=mx(lnV12),MVA=mx(lnVA),MMED=mx(lnMed);
+// normalizados [0,1] (constantes)
+const nNL=new Float64Array(N),nL10=new Float64Array(N),nV12=new Float64Array(N),nVA=new Float64Array(N),nMed=new Float64Array(N);
+for(let i=0;i<N;i++){nNL[i]=lnNL[i]/MNL;nL10[i]=lnL10[i]/ML10;nV12[i]=lnV12[i]/MV12;nVA[i]=lnVA[i]/MVA;nMed[i]=lnMed[i]/MMED;}
+const nameIdx={};for(let i=0;i<N;i++)if(!(nm[i] in nameIdx))nameIdx[nm[i]]=i;  // primera aparición (mayor vistas) por nombre
+
+const KNOBS=[
+  {k:'T',lbl:'Umbral de edad (años)',hint:'debajo de T se penaliza (HPI usa 70)',min:0,max:100,step:5},
+  {k:'piso',lbl:'Piso de edad',hint:'cuánto conserva el más joven (0,5 = la mitad)',min:0,max:1,step:.05},
+  {k:'wA',lbl:'Peso bono antigüedad',hint:'cuánto premia ser viejo (×log₄A)',min:0,max:2,step:.1},
+  {k:'wRec',lbl:'Peso penalidad recencia',hint:'cuánto castiga ser joven',min:0,max:2,step:.1},
+];
+const PRESETS={rec:{T:40,piso:.5,wA:1,wRec:1,geom:true},hpi:{T:70,piso:.5,wA:1,wRec:1,geom:true},noage:{T:40,piso:1,wA:1,wRec:1,geom:true},simple:{T:40,piso:.5,wA:1,wRec:1,geom:false}};
+let W=Object.assign({},PRESETS.rec), mode='rec';
+const kc=document.getElementById('knobs');
+KNOBS.forEach(kn=>{const d=document.createElement('div');d.className='knob';
+  d.innerHTML=`<div class="knob-top"><label>${kn.lbl} <span class="hint">· ${kn.hint}</span></label><span class="v" id="v-${kn.k}"></span></div><input type="range" id="i-${kn.k}" min="${kn.min}" max="${kn.max}" step="${kn.step}">`;
+  kc.appendChild(d); d.querySelector('input').addEventListener('input',e=>{W[kn.k]=+e.target.value;mode='custom';syncP();render();});});
+function syncK(){KNOBS.forEach(kn=>{document.getElementById('i-'+kn.k).value=W[kn.k];document.getElementById('v-'+kn.k).textContent=kn.step>=1?Math.round(W[kn.k]):(+W[kn.k]).toFixed(2);});document.getElementById('geom').checked=W.geom;}
+function syncP(){document.querySelectorAll('#presets button').forEach(b=>b.classList.toggle('on',b.dataset.p===mode));}
+document.querySelectorAll('#presets button').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.p;W=Object.assign({},PRESETS[mode]);syncK();syncP();render();}));
+document.getElementById('geom').addEventListener('change',e=>{W.geom=e.target.checked;mode='custom';syncP();render();});
+
+const fdom=document.getElementById('f-dom'),focc=document.getElementById('f-occ'),freg=document.getElementById('f-reg'),fcty=document.getElementById('f-cty'),fy0=document.getElementById('f-y0'),fy1=document.getElementById('f-y1'),fmulti=document.getElementById('f-multi');
+D.doms.forEach((x,i)=>fdom.add(new Option(x,i)));
+(D.regs||[]).forEach((x,i)=>freg.add(new Option(x,i)));
+function fillOcc(){const dv=+fdom.value;focc.innerHTML='<option value="-1">Todas</option>';D.occs.map((o,i)=>[o,i]).filter(([o,i])=>dv<0||D.occDom[i]===dv).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([o,i])=>focc.add(new Option(o,i)));}
+function fillCty(){const rv=+freg.value,CR=D.ctyReg||[];fcty.innerHTML='<option value="-1">Todos</option>';(D.ctys||[]).map((c,i)=>[c,i]).filter(([c,i])=>rv<0||CR[i]===rv).sort((a,b)=>a[0].localeCompare(b[0],'es')).forEach(([c,i])=>fcty.add(new Option(c,i)));}
+fillOcc();fillCty();
+let minB=9999,maxB=-9999;for(let i=0;i<N;i++){if(by[i]<minB)minB=by[i];if(by[i]>maxB)maxB=by[i];}
+fy0.value=minB;fy1.value=maxB;
+[fdom,focc,freg,fcty,fy0,fy1,fmulti].forEach(el=>el.addEventListener('input',()=>{if(el===fdom)fillOcc();if(el===freg)fillCty();render();}));
+
+let sortC='score',sortDir=-1;
+document.querySelectorAll('th.s').forEach(th=>th.addEventListener('click',()=>{const c=th.dataset.c;if(sortC===c)sortDir=-sortDir;else{sortC=c;sortDir=-1;}render();}));
+
+const SENT=['Lionel Messi','Cristiano Ronaldo','Lamine Yamal','Albert Einstein','Aristotle','Frida Kahlo','Pelé','Donald Trump'];
+function geomean(v){let p=1;for(const x of v)p*=Math.max(x,1e-9);return Math.pow(p,1/v.length);}
+function comb(v){return W.geom?geomean(v):v.reduce((a,b)=>a+b,0)/v.length;}
+
+function compute(){
+  // edad: min/max de ageRaw sobre TODA la base (estable)
+  const ar=new Float64Array(N);let amn=1e9,amx=-1e9;
+  const T=W.T,wA=W.wA,wRec=W.wRec;
+  for(let i=0;i<N;i++){const A=Math.max(1,REF-by[i]);const v=wA*Math.log(A)/LN4 - wRec*Math.max(0,(T-A)/7);ar[i]=v;if(v<amn)amn=v;if(v>amx)amx=v;}
+  const rng=(amx-amn)||1, piso=W.piso, kAge=(1-piso)/rng, geom=W.geom;
+  const Leng=new Float64Array(N),Vis=new Float64Array(N),age=new Float64Array(N),sc=new Float64Array(N);
+  let smax=0;
+  for(let i=0;i<N;i++){
+    const ag=piso+kAge*(ar[i]-amn); age[i]=ag;
+    let L,V,base;
+    if(geom){
+      L=Math.sqrt(Math.max(nNL[i],1e-9)*Math.max(nL10[i],1e-9));
+      V=Math.cbrt(Math.max(nV12[i],1e-9)*Math.max(nVA[i],1e-9)*Math.max(nMed[i],1e-9));
+      base=Math.sqrt(Math.max(L,1e-9)*Math.max(V,1e-9));
+    }else{
+      L=(nNL[i]+nL10[i])/2; V=(nV12[i]+nVA[i]+nMed[i])/3; base=(L+V)/2;
+    }
+    Leng[i]=L; Vis[i]=V;
+    const s=base*ag; sc[i]=s; if(s>smax)smax=s;
+  }
+  // score 0–100 normalizado por el MÁXIMO GLOBAL → depende solo de las perillas, nunca del filtro
+  smax=smax||1;const f=100/smax;for(let i=0;i<N;i++)sc[i]*=f;
+  return {Leng,Vis,age,sc};
+}
+function render(){
+  syncK();
+  document.getElementById('formula').innerHTML=`Score = ${W.geom?'geom':'media'}(Lenguas, Vistas) × Edad · <b>edad</b>: ${W.wA}·log₄A − ${W.wRec}·pen(T=${Math.round(W.T)}), piso ${(+W.piso).toFixed(2)}`;
+  const M=compute();
+  const key={Lenguas:M.Leng,Vistas:M.Vis,ageMult:M.age,score:M.sc}[sortC];
+  // rango GLOBAL en la dimensión de orden (1 = mayor), contado sólo para las filas visibles (evita ordenar 123k). El filtro solo oculta filas.
+  const grankOf=i=>{const ki=key[i];let r=1;for(let j=0;j<N;j++)if(key[j]>ki)r++;return r;};
+  const dv=+fdom.value,ov=+focc.value,rv=+freg.value,cv=+fcty.value,y0=+fy0.value,y1=+fy1.value,mu=fmulti.checked,CR=D.ctyReg||[];
+  const idx=[];
+  for(let i=0;i<N;i++){if(mu&&!multi[i])continue; if(ov>=0){if(occ[i]!==ov)continue;}else if(dv>=0&&dom[i]!==dv)continue;
+    if(cv>=0){if(cty[i]!==cv)continue;}else if(rv>=0){const cr=cty[i]>=0?CR[cty[i]]:-1;if(cr!==rv)continue;}
+    if(by[i]<y0||by[i]>y1)continue; idx.push(i);}
+  idx.sort((a,b)=>sortDir*(key[a]-key[b]));
+  document.getElementById('count').textContent=idx.length.toLocaleString('es-AR')+' figuras en la vista · rango y score globales (el filtro solo recorta, no recalcula)';
+  const tb=document.getElementById('rows');tb.innerHTML='';
+  idx.slice(0,40).forEach(i=>{const tr=document.createElement('tr');if(SENT.includes(nm[i]))tr.className='hl';
+    tr.innerHTML=`<td class="rk">${grankOf(i)}</td><td>${nm[i]}</td><td style="color:var(--ink-soft)">${D.occs[occ[i]]}</td>`+
+      `<td class="num">${by[i]<0?Math.abs(by[i])+' aC':by[i]}</td><td class="num">${M.Leng[i].toFixed(2)}</td><td class="num">${M.Vis[i].toFixed(2)}</td>`+
+      `<td class="num">${M.age[i].toFixed(2)}</td><td class="num sc">${M.sc[i].toFixed(1)}</td>`;
+    tb.appendChild(tr);});
+  // sentinels: rango global por SCORE (contado, sin sort completo)
+  const sc2=document.getElementById('sentinels');sc2.innerHTML='';
+  SENT.forEach(name=>{const fi=nameIdx[name];let rk='—';
+    if(fi!=null){const si=M.sc[fi];let r=1;for(let j=0;j<N;j++)if(M.sc[j]>si)r++;rk='#'+r;}
+    const d=document.createElement('div');d.className='sent';
+    d.innerHTML=`<span class="nm">${name.split(' ').slice(-1)[0]}</span> <b>${rk}</b>`;sc2.appendChild(d);});
+}
+syncK();render();
+</script>
+</body>
+</html>

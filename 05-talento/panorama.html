@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panorama del talento — El Atlas N°5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<style>
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 16px 20px 56px; }
+  h1 { font-size: 22px; margin: 0 0 2px; }
+  .sub { font-family: var(--sans); font-size: 13px; color: var(--ink-muted); margin: 0 0 16px; max-width: 880px; line-height: 1.5; }
+  .controls { display: flex; flex-wrap: wrap; gap: 18px 22px; align-items: flex-end; background: var(--bg-soft); border: 1px solid var(--rule); border-radius: 10px; padding: 13px 16px; margin-bottom: 14px; }
+  .ctl { display: flex; flex-direction: column; gap: 4px; font-family: var(--sans); }
+  .ctl label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); }
+  .ctl select { font-family: var(--sans); font-size: 13px; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 7px; background: var(--bg); color: var(--ink); }
+  .ctl .v { font-size: 12px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .period { display: flex; align-items: center; gap: 8px; }
+  .period input[type=range] { width: 120px; accent-color: var(--accent); }
+  .row { display: flex; align-items: center; gap: 7px; }
+  .count { font-family: var(--sans); font-size: 12px; color: var(--ink-muted); margin: 0 0 8px; }
+
+  .tblwrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-family: var(--sans); }
+  th, td { text-align: left; padding: 7px 9px; font-size: 13px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+  th { font-size: 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-muted); font-weight: 700; position: sticky; top: 0; background: var(--bg); z-index: 2; }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { color: var(--accent); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tbody tr:hover td { background: rgba(0,0,0,.035); }
+  td.disc { font-weight: 600; }
+  .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 7px; vertical-align: middle; }
+  .domtag { font-family: var(--sans); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; margin-left: 8px; opacity: .8; }
+  .iso { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .cv { color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+  .fg { font-weight: 600; }
+  .hp { color: var(--ink-muted); font-variant-numeric: tabular-nums; font-size: 11.5px; }
+  td.num.pos { color: #2D6A3D; font-weight: 600; }
+  td.num.neg { color: #BE5D32; font-weight: 600; }
+  .note { font-family: var(--sans); font-size: 11.5px; color: var(--ink-muted); line-height: 1.55; margin-top: 18px; max-width: 880px; }
+  .note b { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Panorama del talento</h1>
+  <p class="sub">Para cada disciplina (o dominio), entre los nacidos entre 1850 y 2010: la asociación con el ingreso (R²), los países líderes en figuras célebres en absoluto y per cápita —global y en América Latina—, las figuras más importantes por fama (HPI) y cuánto sobre/sub-produce la región respecto de lo esperado para su PIB. <span style="opacity:.8">Misma metodología que el explorador (chart-5).</span></p>
+
+  <div class="controls">
+    <div class="ctl">
+      <label>Nivel</label>
+      <select id="c-level">
+        <option value="sub">Disciplinas</option>
+        <option value="dom">Dominios</option>
+      </select>
+    </div>
+    <div class="ctl" id="domwrap">
+      <label>Dominio</label>
+      <select id="c-dom"></select>
+    </div>
+    <div class="ctl">
+      <label>Región (residuo)</label>
+      <select id="c-region"></select>
+    </div>
+    <div class="ctl">
+      <label>Fama (HPI)</label>
+      <select id="c-top">
+        <option value="100">Todas</option>
+        <option value="50">Top 50%</option>
+        <option value="25">Top 25%</option>
+        <option value="10">Top 10%</option>
+      </select>
+    </div>
+    <div class="ctl">
+      <label>Período (nacimiento)</label>
+      <div class="period">
+        <span class="v" id="c-from-v">1850</span>
+        <input type="range" id="c-from">
+        <input type="range" id="c-to">
+        <span class="v" id="c-to-v">2010</span>
+      </div>
+    </div>
+    <div class="ctl">
+      <label>Pob. mínima</label>
+      <div class="row">
+        <input type="range" id="c-pop" min="0" max="20" step="1" style="width:120px;accent-color:var(--accent)">
+        <span class="v" id="c-pop-v">1M</span>
+      </div>
+    </div>
+  </div>
+
+  <p class="count" id="count"></p>
+  <div class="tblwrap"><div id="tbl"></div></div>
+
+  <p class="note">
+    <b>Cómo leer.</b> <b>R²</b>: qué tanto explica el PIB per cápita la producción de figuras por millón entre países (OLS log-log, sin ponderar, +0,5 de continuidad para incluir países con 0). <b>Pob. mínima</b>: filtra TODO el modelo (regresión, R², residuo, conteo y líderes) a los países por encima de ese umbral — igual que el explorador. <b>Fama (HPI)</b>: top-X% por HPI dentro de cada rubro+período. <b>Per cápita</b>: figuras ÷ población promedio del período (figuras por millón). <b>Región</b>: las 4 columnas regionales (top país abs/per cáp, figura y residuo) se calculan para la región elegida (10 regiones del N°1; LatAm por default — que acá ≡ Cuba/RD/Haití incluidos, Caribe anglo aparte). <b>Residuo</b>: media geométrica de observado/esperado − 1 sobre los países de esa región (+ = sobre-produce). Para ver el perfil de una región por dominio, poné Nivel = <i>Dominios</i> y ordená por Residuo. <b>HPI</b>: índice de fama tal como viene del archivo Pantheon 2025. <span style="opacity:.8">Defaults (top 50% · pob ≥1M · 1850-2010) = el cut de la planilla.</span>
+    <br><br>
+    <b>Caveat.</b> Pantheon mide fama/notabilidad vía Wikipedia (sesgo era-internet); leer como "figuras célebres", no "talento" a secas. Los nombres de figuras cubren las ~26k más famosas: en disciplinas muy de nicho la celda puede caer a fallback (país).
+  </p>
+</div>
+
+<script src="./data-explora.js?v=14"></script>
+<script src="./panorama.js?v=4"></script>
+</body>
+</html>

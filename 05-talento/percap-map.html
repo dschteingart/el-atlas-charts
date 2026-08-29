@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa de figuras célebres — El Atlas N°5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<style>
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 16px 20px 56px; }
+  h1 { font-size: 22px; margin: 0 0 2px; }
+  #mSub { font-family: var(--sans); font-size: 13px; color: var(--ink-muted); margin: 0 0 14px; max-width: 880px; line-height: 1.5; }
+  .controls { display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: flex-end; background: var(--bg-soft); border: 1px solid var(--rule); border-radius: 10px; padding: 13px 16px; margin-bottom: 12px; }
+  .ctl { display: flex; flex-direction: column; gap: 5px; font-family: var(--sans); }
+  .ctl > label { font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); }
+  .ctl select { font-family: var(--sans); font-size: 13px; padding: 6px 8px; border: 1px solid var(--rule); border-radius: 7px; background: var(--bg); color: var(--ink); }
+  .ctl .v { font-size: 12px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
+  .seg button { font-family: var(--sans); font-size: 12.5px; font-weight: 600; padding: 6px 12px; border: none; background: var(--bg); color: var(--ink-soft); cursor: pointer; border-left: 1px solid var(--rule); }
+  .seg button:first-child { border-left: none; }
+  .seg button.on { background: var(--accent); color: #fff; }
+  .period { display: flex; align-items: center; gap: 8px; }
+  .period input[type=range] { width: 120px; accent-color: var(--accent); }
+  .yrbox { width: 62px; font-family: var(--sans); font-size: 12.5px; font-weight: 700; color: var(--accent); padding: 5px 6px; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg); text-align: center; font-variant-numeric: tabular-nums; }
+  .yrbox:focus { outline: none; border-color: var(--accent); }
+  .yrhint { font-family: var(--sans); font-size: 10px; color: var(--ink-muted); margin-top: 3px; }
+  .chk { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer; padding: 6px 0; }
+  .chk input { accent-color: var(--accent); width: 15px; height: 15px; }
+  .reset-btn { font-family: var(--sans); font-size: 12px; padding: 6px 11px; border: 1px solid var(--rule); border-radius: 7px; background: var(--bg); color: var(--ink); cursor: pointer; }
+  .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .maprow { position: relative; }
+  #mapSvg { width: 100%; height: auto; display: block; background: var(--bg); border: 1px solid var(--rule); border-radius: 10px; }
+  #m-legend { display: block; max-width: 380px; height: 32px; margin: 10px 0 0; }
+  #mTip { position: absolute; display: none; z-index: 40; min-width: 150px; background: var(--bg); border: 1px solid var(--rule); border-radius: 9px; padding: 8px 11px; font-family: var(--sans); font-size: 12px; box-shadow: 0 8px 28px rgba(0,0,0,.16); pointer-events: none; }
+  #mTip strong { display: block; font-size: 13px; }
+  #mTip .tt-period { color: var(--ink-muted); font-size: 10.5px; margin-bottom: 5px; }
+  #mTip .tt-row { display: flex; justify-content: space-between; gap: 14px; color: var(--ink-muted); }
+  #mTip .tt-row span:last-child { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  #mTip .tt-fig { margin-top: 6px; padding-top: 5px; border-top: 1px solid var(--rule); }
+  #mTip .tt-fig-name { display: block; font-weight: 700; color: var(--ink); }
+  #mTip .tt-fig-meta { display: block; color: var(--ink-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+  .m-country { transition: fill .15s; }
+  .note { font-family: var(--sans); font-size: 11.5px; color: var(--ink-muted); line-height: 1.55; margin-top: 18px; max-width: 880px; }
+  .note b { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Mapa de figuras célebres</h1>
+  <p id="mSub"></p>
+
+  <div class="controls">
+    <div class="ctl">
+      <label>Vista</label>
+      <div class="seg" id="m-view"><button data-val="country">País</button><button data-val="region">Región</button></div>
+    </div>
+    <div class="ctl">
+      <label>Medida</label>
+      <div class="seg" id="m-measure"><button data-val="abs">Absoluto</button><button data-val="percap">Per cápita</button><button data-val="share" title="% que representa el rubro en el total del propio país">Share</button><button data-val="hpishare" title="Participación del país en el total mundial, pero ponderando cada figura por su HPI (fama). Premia tener figuras muy famosas, no solo muchas.">Share HPI</button></div>
+    </div>
+    <div class="ctl" id="m-mapmode-wrap">
+      <label>Mapa</label>
+      <div class="seg" id="m-mapmode"><button data-val="choro">Coroplético</button><button data-val="dorling">Cartograma ●</button></div>
+    </div>
+    <div class="ctl">
+      <label>Dominio / ocupación</label>
+      <select id="m-filter"></select>
+    </div>
+    <div class="ctl">
+      <label>Período (nacimiento)</label>
+      <div class="period"><input type="number" class="yrbox" id="m-from-v"><input type="range" id="m-from"><input type="range" id="m-to"><input type="number" class="yrbox" id="m-to-v"></div>
+      <div class="yrhint">Años negativos = a.C. Podés escribir el año en las cajitas.</div>
+    </div>
+    <div class="ctl">
+      <label>&nbsp;</label>
+      <button class="reset-btn" id="m-reset">↺ Zoom</button>
+    </div>
+  </div>
+
+  <div class="maprow">
+    <svg id="mapSvg" viewBox="0 0 1100 580" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="mTip"></div>
+  </div>
+  <svg id="m-legend" xmlns="http://www.w3.org/2000/svg"></svg>
+
+  <p class="note">
+    <b>Qué muestra.</b> Para los nacidos en el período, por país (o región): <b>Absoluto</b> = cantidad de figuras del rubro elegido; <b>Per cápita</b> = ÷ población promedio histórica del período (× millón); <b>Share</b> = % que representa ese rubro en el total del país. <b>Share HPI</b> = qué porción de la fama mundial concentra cada país/región. En vez de contar figuras (cada una = 1), pondera cada figura por su <b>HPI</b> (índice de fama del proyecto Pantheon, recalculado acá): un país con pocas figuras pero muy célebres puede pesar más que uno con muchas figuras menores. Suma el HPI de las figuras del país y lo divide por el HPI total del mundo. (Para comparar, <b>Share</b> es otra cosa: el % que un rubro representa dentro del propio país.) En <b>Absoluto</b> (solo por país) podés pasar a <b>cartograma ● Dorling</b>. El tooltip muestra el valor, el % del total mundial, y la <b>figura de mayor HPI del período elegido</b> en ese país/rubro (con su año, ranking global y score, metodología recalculada). El mapa usa solo figuras <b>multiidioma</b> (notables en ≥2 idiomas; saca stubs/single-language). <b>Fuentes:</b> Pantheon corregido (multiidioma + HPI reconstruido) + OWID población; geometría del N°3. Rango: ~3500 a.C.–2021 (default 1800–2021). Puerto Rico y algunos territorios chicos pueden no tener forma propia en el mapa.
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
+<script src="./country-names.js?v=1"></script>
+<script src="./data-country-geo-mini.js?v=2"></script>
+<script src="./data-percap-map.js?v=1"></script>
+<script src="./data-percap-pop.js?v=4"></script>
+<script src="./data-percap-topfig.js?v=4"></script>
+<script src="./percap-map.js?v=15"></script>
+</body>
+</html>

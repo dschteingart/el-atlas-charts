@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — El talento per cápita, disciplina por disciplina</title>
+<meta name="description" content="Explorá el talento per cápita por rubro y período: figuras célebres por millón vs PIB per cápita, país por país, coloreado por región. Gráfico interactivo de El Atlas.">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-talento/chart-5.html">
+<meta property="og:title" content="El talento per cápita, disciplina por disciplina — El Atlas N°5">
+<meta property="og:description" content="Figuras célebres por millón vs PIB per cápita, por rubro y período, país por país.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-talento/thumbs/chart-5.png">
+<meta property="og:image:alt" content="Scatter de figuras célebres por millón vs PIB per cápita, coloreado por región">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="El talento per cápita, disciplina por disciplina — El Atlas N°5">
+<meta name="twitter:description" content="Figuras célebres por millón vs PIB per cápita, por rubro y período, país por país.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-talento/thumbs/chart-5.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<link rel="stylesheet" href="./editor.css">
+<style>
+  .wrap-wide { max-width: 1100px; padding: 10px 20px 16px; }
+  .wrap-wide header { padding-bottom: 8px; margin-bottom: 10px; }
+  .wrap-wide .chart-block { margin: 10px 0 4px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; }
+  .wrap-wide .chart-subtitle { margin: 0 0 8px; font-size: 13.5px; }
+
+  /* === Controles del explorador === */
+  .ex-controls { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin: 4px 0 8px; }
+  .ex-ctrl { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .ex-ctrl label { font-family: var(--sans); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-muted); font-weight: 600; }
+  #ex-rubro, #ex-pop, #ex-top { font-family: var(--sans); font-size: 13px; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); border-radius: 6px; padding: 6px 26px 6px 10px; cursor: pointer; }
+  #ex-rubro:focus, #ex-pop:focus, #ex-top:focus { outline: none; border-color: var(--accent); }
+  .m-mode-toggle { display: inline-flex; gap: 4px; padding: 3px; background: var(--bg-soft); border-radius: 7px; }
+  .m-mode-toggle button { background: transparent; border: none; padding: 5px 11px; font-family: var(--sans); font-size: 12px; color: var(--ink-soft); cursor: pointer; border-radius: 5px; font-weight: 500; transition: all .15s ease; }
+  .m-mode-toggle button:hover { color: var(--ink); }
+  .m-mode-toggle button.active { background: var(--bg); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .ex-slider-block { display: inline-flex; align-items: center; gap: 8px; flex: 1; min-width: 260px; }
+  .ex-range { -webkit-appearance: none; appearance: none; height: 4px; background: var(--grid); border-radius: 2px; outline: none; flex: 1; min-width: 80px; }
+  .ex-range::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+  .ex-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 2px solid var(--bg); }
+  .ex-yr { font-family: var(--sans); font-size: 14px; font-weight: 700; color: var(--ink); min-width: 38px; font-variant-numeric: tabular-nums; text-align: center; }
+
+  /* === SVG, ejes, grid, puntos (idéntico al N°2) === */
+  .s-grid-line { stroke: var(--grid); stroke-width: 1; opacity: 0.55; }
+  .s-axis-line { stroke: var(--ink-muted); stroke-width: 1; fill: none; }
+  .s-tick { font-family: var(--sans); font-size: 11px; fill: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .s-axis-title { font-family: var(--sans); font-size: 11.5px; fill: var(--ink-soft); font-weight: 500; }
+  .s-point { transition: opacity 0.2s, r 0.15s; cursor: pointer; }
+  .s-point.s-dim { opacity: 0.18; }
+  .s-country-label { font-family: var(--sans); font-size: 10.5px; font-weight: 500; pointer-events: none; paint-order: stroke; stroke: var(--bg); stroke-width: 2.5px; stroke-linejoin: round; }
+  .s-country-label.s-selected-label { font-weight: 600; }
+  .s-regression { pointer-events: none; }
+
+  /* === Leyenda de regiones (chips, prende-apaga + hover) === */
+  .m-legend { display: flex; flex-wrap: wrap; gap: 10px 14px; margin-top: 4px; padding: 0 4px; }
+  .m-legend-chip { display: flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 12px; color: var(--ink-soft); cursor: pointer; user-select: none; transition: opacity 0.15s; }
+  .m-legend-chip.inactive { opacity: 0.55; text-decoration: line-through; text-decoration-color: var(--ink-muted); text-decoration-thickness: 1px; color: var(--ink-muted); }
+  .m-legend-chip.inactive .m-legend-swatch { opacity: 0.45; }
+  .m-legend-swatch { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+
+  /* === Buscador de países + chips de selección === */
+  .m-search-wrap { position: relative; margin: 8px 0 4px; max-width: 340px; }
+  .m-search-input { width: 100%; padding: 7px 10px; border: 1px solid var(--rule); border-radius: 5px; background: var(--bg); font-family: var(--sans); font-size: 13px; color: var(--ink); outline: none; }
+  .m-search-input:focus { border-color: var(--accent); }
+  .m-search-results { position: absolute; top: calc(100% + 2px); left: 0; right: 0; background: var(--bg); border: 1px solid var(--rule); border-radius: 5px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); max-height: 240px; overflow-y: auto; z-index: 30; display: none; }
+  .m-search-results.open { display: block; }
+  .m-search-result { padding: 7px 10px; font-family: var(--sans); font-size: 13px; cursor: pointer; display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--grid); }
+  .m-search-result:last-child { border-bottom: none; }
+  .m-search-result:hover, .m-search-result.m-active { background: var(--bg-soft); }
+  .m-search-result.m-already { opacity: 0.5; font-style: italic; }
+  .m-search-region { color: var(--ink-muted); font-size: 11.5px; flex-shrink: 0; }
+  .m-selected-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 6px; }
+  .m-selected-chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 10px; border-radius: 12px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: white; }
+  .m-chip-x { width: 18px; height: 18px; border-radius: 50%; border: none; background: rgba(255,255,255,0.25); color: white; font-size: 13px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+  .m-chip-x:hover { background: rgba(255,255,255,0.45); }
+
+  /* === Banner: Países · R² · Residuo de la región activa === */
+  .s-banner { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 14px; margin: 8px 0 0; padding: 8px 12px; background: var(--bg-soft); border-radius: 6px; font-family: var(--sans); font-size: 13px; color: var(--ink); }
+  .s-banner-item { display: inline-flex; align-items: baseline; gap: 6px; }
+  .s-banner-key { font-size: 11px; color: var(--ink-muted); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
+  .s-banner-val { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .s-banner-region-name { font-weight: 500; }
+  .s-banner-sep { color: var(--ink-muted); opacity: 0.6; }
+
+  @media (max-width: 600px) { .s-country-label { font-size: 9px; } .s-banner { font-size: 12px; } }
+  @media (max-width: 768px) {
+    .wrap-wide .chart-title { font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 4px; }
+    .wrap-wide .chart-subtitle { font-size: 12px; font-weight: 400; color: var(--ink-muted); line-height: 1.4; margin: 0 0 8px; }
+    .ex-controls { gap: 10px; }
+    .ex-slider-block { min-width: 100%; }
+    .m-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 12px; }
+    .m-legend-chip { font-size: 10px; gap: 5px; line-height: 1.2; }
+    .m-legend-swatch { width: 8px; height: 8px; }
+    .chart-svg-wrap svg { width: 100%; height: min(66vh, 540px); display: block; }
+    .footer .sources, .footer .attribution { font-size: 10.5px; }
+    .footer .download { font-size: 11px; padding: 6px 10px; }
+    .m-desktop-only { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 5</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="5" data-editor-id="explora-talento">
+    <h2 class="chart-title" data-i18n="c5-title">El talento per cápita, disciplina por disciplina</h2>
+    <p class="chart-subtitle">Elegí un rubro y un período de nacimiento: cada punto es un país.</p>
+
+    <div class="ex-controls">
+      <div class="ex-ctrl">
+        <label id="ex-lbl-rubro" for="ex-rubro">Rubro</label>
+        <select id="ex-rubro"></select>
+      </div>
+      <div class="ex-ctrl">
+        <label id="ex-lbl-pop" for="ex-pop">Pob. mín.</label>
+        <select id="ex-pop"></select>
+      </div>
+      <div class="ex-ctrl">
+        <label id="ex-lbl-weight">Medir</label>
+        <div class="m-mode-toggle" id="ex-weight">
+          <button class="active" data-w="count">Cantidad</button>
+          <button data-w="hpi">Fama (HPI)</button>
+          <button data-w="hpi2">Fama²</button>
+        </div>
+      </div>
+      <div class="ex-ctrl">
+        <label id="ex-lbl-top" for="ex-top">Por HPI</label>
+        <select id="ex-top"></select>
+      </div>
+      <div class="ex-slider-block">
+        <label id="ex-lbl-from" for="ex-from">Desde</label>
+        <input type="range" id="ex-from" class="ex-range">
+        <span class="ex-yr" id="ex-from-v">1900</span>
+        <label id="ex-lbl-to" for="ex-to">hasta</label>
+        <input type="range" id="ex-to" class="ex-range">
+        <span class="ex-yr" id="ex-to-v">2000</span>
+      </div>
+    </div>
+
+    <div class="m-legend" data-chart="5"></div>
+
+    <div class="m-search-wrap">
+      <input type="text" id="s-search" class="m-search-input" placeholder="Buscar país…" autocomplete="off">
+      <div id="s-search-results" class="m-search-results"></div>
+    </div>
+    <div class="m-selected-chips" id="s-selected-chips"></div>
+
+    <div class="chart-svg-wrap">
+      <svg id="chart5" viewBox="0 0 1100 540" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip5"></div>
+    </div>
+
+    <div class="s-banner" id="s-banner"></div>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" data-png="5" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources m-desktop-only" data-i18n="c5-sources">Datos: Pantheon (Datawheel), Maddison Project y OWID.</p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="../lib/regions.js"></script>
+<script src="../lib/i18n.js"></script>
+<script src="./i18n-issue.js"></script>
+<script src="./utils.js"></script>
+<script src="./data-explora.js?v=14"></script>
+<script src="./explora.js?v=14"></script>
+<script src="./png-export.js?v=2"></script>
+<script>
+  initScatter();
+  applyI18n();
+  setupLangToggle(() => { renderScatterLegend(); exSyncControlLabels(); s_updateSubtitle(s_buildModel()); drawScatter(); });
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — En qué es talentosa América Latina</title>
+<meta name="description" content="Para su peso poblacional, América Latina produce el doble de figuras célebres del deporte y una fracción de las de la ciencia. Gráfico interactivo de El Atlas.">
+
+<!-- Open Graph / Twitter — preview al pegar el link directo del gráfico. OG en ES; el card EN se comparte vía chart-1-en.html. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-talento/chart-1.html">
+<meta property="og:title" content="Mucha cancha, poco laboratorio — El Atlas N°5">
+<meta property="og:description" content="Para su peso poblacional, América Latina produce el doble de figuras célebres del deporte y una fracción de las de la ciencia.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-talento/thumbs/chart-1.png">
+<meta property="og:image:alt" content="Abanico de especialización del talento latinoamericano por disciplina">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Mucha cancha, poco laboratorio — El Atlas N°5">
+<meta name="twitter:description" content="Para su peso poblacional, América Latina produce el doble de figuras célebres del deporte y una fracción de las de la ciencia.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-talento/thumbs/chart-1.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<link rel="stylesheet" href="./editor.css">
+<style>
+  .wrap-wide { max-width: 1100px; padding: 10px 20px 16px; }
+  .wrap-wide header { padding-bottom: 8px; margin-bottom: 10px; }
+  .wrap-wide .chart-block { margin: 10px 0 4px; }
+  .chart-svg-wrap svg { width: 100%; height: auto; display: block; }
+  @media (max-width: 768px) {
+    .wrap-wide .chart-title { font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 4px; }
+    .wrap-wide .chart-subtitle { font-size: 12.5px; font-weight: 400; color: var(--ink-muted); line-height: 1.4; margin: 0 0 8px; }
+    .chart-svg-wrap svg { height: min(78vh, 620px); }
+    .footer .sources, .footer .attribution { font-size: 10.5px; }
+    .footer .download { font-size: 11px; padding: 6px 10px; }
+    .m-desktop-only { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 5</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="1" data-editor-id="abanico-talento">
+    <h2 class="chart-title" data-i18n="c1-title">Mucha cancha, poco laboratorio</h2>
+    <p class="chart-subtitle" data-i18n="c1-subtitle">Para su peso en la población mundial (8%), América Latina produce el doble de figuras célebres del deporte —y apenas una fracción de las de la ciencia. Cada barra es una disciplina; el color, el área.</p>
+
+    <div class="chart-svg-wrap">
+      <svg id="chart1" viewBox="0 0 1100 640" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip1"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" data-png="1" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources m-desktop-only" data-i18n="c1-sources">Datos: Pantheon (Datawheel).</p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="../lib/i18n.js"></script>
+<script src="./i18n-issue.js"></script>
+<script src="./utils.js"></script>
+<script src="./data-abanico.js?v=1"></script>
+<script src="./abanico.js?v=1"></script>
+<script src="./png-export.js?v=1"></script>
+<script>
+  state[1] = {};
+  initAbanico();
+  applyI18n();
+  setupLangToggle(() => drawAbanico());
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=1"></script>
+</body>
+</html>

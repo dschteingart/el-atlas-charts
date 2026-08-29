@@ -1,0 +1,407 @@
+/* =============================================================
+ *  editor.css — sidebar editorial para los charts del N°2
+ * =============================================================
+ *
+ * Panel fijo a la derecha (300px) que aparece solo en chart-1/2/3.html
+ * cuando el editor está activado (?nl=1 o Ctrl/Cmd+Shift+E). Permite a
+ * Daniel editar textos, font-sizes, qué países etiquetar y formato del
+ * PNG, todo con preview en vivo y persistencia en localStorage.
+ *
+ * Prefijo .ae- (atlas editor) para no chocar con .m-* / .s-* / .d-*.
+ * Variables CSS internas con --ae- por la misma razón. */
+
+:root {
+  --ae-w: 300px;
+  --ae-header-h: 40px;
+  --ae-footer-h: 50px;
+  --ae-bg: #ffffff;
+  --ae-bg-soft: #f7f6f3;
+  --ae-rule: #e3e0d8;
+  --ae-rule-strong: #ccc7bb;
+  --ae-ink: #1a1a1a;
+  --ae-ink-soft: #555;
+  --ae-ink-muted: #8a8579;
+  --ae-accent: #BE5D32;
+}
+
+/* Cuando el panel está abierto, empujamos el body para que el chart se
+ * reflowee y no quede tapado por la sidebar. */
+body.ae-open {
+  margin-right: var(--ae-w);
+  transition: margin-right 0.18s ease;
+}
+
+/* ===== Sidebar principal ===== */
+.ae-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: var(--ae-w);
+  background: var(--ae-bg);
+  border-left: 0.5px solid var(--ae-rule-strong);
+  z-index: 1000;
+  overflow-y: auto;
+  font-family: "Source Sans 3", -apple-system, sans-serif;
+  color: var(--ae-ink);
+  display: none;       /* arranca oculto; se enciende con .ae-open */
+  flex-direction: column;
+  box-shadow: -2px 0 12px rgba(0,0,0,0.04);
+}
+.ae-panel.ae-open {
+  display: flex;
+}
+
+/* ===== Header ===== */
+.ae-header {
+  height: var(--ae-header-h);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border-bottom: 0.5px solid var(--ae-rule);
+  background: var(--ae-bg-soft);
+}
+.ae-header-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ae-ink);
+}
+.ae-header-title::before {
+  content: "✏";
+  font-size: 14px;
+  color: var(--ae-accent);
+}
+.ae-lang-toggle {
+  display: inline-flex;
+  background: var(--ae-bg);
+  border: 1px solid var(--ae-rule);
+  border-radius: 4px;
+  padding: 1px;
+}
+.ae-lang-toggle button {
+  background: transparent;
+  border: none;
+  padding: 3px 9px;
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--ae-ink-soft);
+  cursor: pointer;
+  border-radius: 3px;
+}
+.ae-lang-toggle button.active {
+  background: var(--ae-accent);
+  color: white;
+  font-weight: 600;
+}
+
+/* ===== Body (scrollable) ===== */
+.ae-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 14px 16px;
+}
+.ae-section {
+  margin-bottom: 18px;
+}
+.ae-section-title {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ae-ink-muted);
+  margin: 0 0 8px;
+}
+
+/* ===== Inputs de texto ===== */
+.ae-field {
+  margin-bottom: 8px;
+}
+.ae-field label {
+  display: block;
+  font-size: 11px;
+  color: var(--ae-ink-soft);
+  margin-bottom: 3px;
+}
+.ae-field input[type="text"],
+.ae-field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--ae-rule);
+  border-radius: 4px;
+  padding: 5px 7px;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--ae-ink);
+  background: var(--ae-bg);
+  outline: none;
+  resize: vertical;
+}
+.ae-field input[type="text"]:focus,
+.ae-field textarea:focus {
+  border-color: var(--ae-accent);
+}
+.ae-field textarea {
+  min-height: 56px;
+  line-height: 1.35;
+}
+
+/* ===== Buscador + lista de países ===== */
+.ae-country-search {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--ae-rule);
+  border-radius: 4px;
+  padding: 5px 7px;
+  font-family: inherit;
+  font-size: 12px;
+  margin-bottom: 6px;
+  outline: none;
+}
+.ae-country-search:focus { border-color: var(--ae-accent); }
+.ae-country-list {
+  border: 1px solid var(--ae-rule);
+  border-radius: 4px;
+  max-height: 160px;
+  overflow-y: auto;
+  background: var(--ae-bg);
+  padding: 2px 0;
+}
+.ae-country-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 3px 8px;
+  font-size: 12px;
+  color: var(--ae-ink);
+  cursor: pointer;
+  user-select: none;
+}
+.ae-country-item:hover {
+  background: var(--ae-bg-soft);
+}
+.ae-country-item input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--ae-accent);
+}
+.ae-country-empty {
+  padding: 8px;
+  font-size: 11px;
+  color: var(--ae-ink-muted);
+  font-style: italic;
+}
+
+/* ===== Sliders ===== */
+.ae-slider-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 32px;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 7px;
+}
+.ae-slider-row label {
+  font-size: 11px;
+  color: var(--ae-ink-soft);
+}
+.ae-slider-row input[type="range"] {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--ae-accent);
+}
+.ae-slider-row .ae-slider-val {
+  font-size: 11px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--ae-ink);
+}
+
+/* ===== Dropdown formato PNG ===== */
+.ae-select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--ae-rule);
+  border-radius: 4px;
+  padding: 5px 7px;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--ae-ink);
+  background: var(--ae-bg);
+  outline: none;
+  cursor: pointer;
+}
+.ae-select:focus { border-color: var(--ae-accent); }
+
+/* Hint del formato seleccionado al lado del botón PNG */
+.ae-png-hint {
+  display: inline-block;
+  margin-left: 8px;
+  font-family: "Source Sans 3", -apple-system, sans-serif;
+  font-size: 11px;
+  color: var(--ae-ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Wrapper WYSIWYG: cuando el editor tiene un formato seleccionado, el
+ * .chart-svg-wrap adopta el aspect ratio nominal del formato (via
+ * --ae-aspect que setea applyFormatWrapper(svg, format) en utils.js).
+ * El SVG se renderea con preserveAspectRatio="xMidYMid meet" así que
+ * encaja sin distorsión. Esto garantiza que lo que ve el usuario en
+ * pantalla es exactamente lo que el PNG export rasterizará — sin
+ * forzar re-render con flags FORCE_*. */
+.chart-svg-wrap.ae-format-wrapper {
+  width: 100%;
+  /* max-width DOBLE: hard cap a 1100px (el viewBox base) Y cap por altura
+     usable. Cuando el viewport es bajo y el formato es vertical (ej. mobile
+     800×1200, aspect-ratio 0.667), la altura del wrapper sería width×0.667.
+     Si esa altura supera 75vh, el max-width derivado de 75vh*aspect achica
+     el ancho proporcionalmente y el aspect-ratio se preserva, sin distorsión.
+     Esto evita que el chart desborde la pantalla en formatos portrait. */
+  max-width: min(1100px, calc(75vh * var(--ae-aspect, 1.78)));
+  aspect-ratio: var(--ae-aspect, 1.78);
+  margin: 0 auto;
+  /* !important para ganar sobre el min(65vh, 540px) mobile y cualquier
+     altura inline que el chart pueda haber seteado. El editor pisa todo
+     cuando hay un formato activo. */
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: 75vh;
+}
+.chart-svg-wrap.ae-format-wrapper > svg {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+/* En mobile interactivo (sin editor), el wrapper queda como hoy. La regla
+ * .ae-format-wrapper solo aplica cuando el editor explícitamente activa el
+ * formato, así que la versión pública del chart no se ve afectada. */
+
+/* Controles arriba de la lista de países: botones "Limpiar todo" /
+ * "Seleccionar todo" en text-only terracotta, separados por · */
+.ae-country-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--ae-accent);
+  margin: 0 0 6px;
+  line-height: 1.2;
+}
+.ae-country-actions button {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 11px;
+  color: var(--ae-accent);
+  cursor: pointer;
+  text-decoration: none;
+}
+.ae-country-actions button:hover {
+  text-decoration: underline;
+}
+.ae-country-actions .ae-sep {
+  color: var(--ae-ink-muted);
+  user-select: none;
+}
+
+/* ===== Avanzado (details) ===== */
+.ae-advanced {
+  margin-top: 4px;
+}
+.ae-advanced > summary {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ae-accent);
+  cursor: pointer;
+  list-style: none;
+  padding: 4px 0;
+}
+.ae-advanced > summary::-webkit-details-marker { display: none; }
+.ae-advanced > summary::before { content: "▸ "; }
+.ae-advanced[open] > summary::before { content: "▾ "; }
+.ae-advanced-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+/* ===== Botones ===== */
+.ae-btn {
+  background: var(--ae-bg);
+  border: 1px solid var(--ae-rule-strong);
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--ae-ink);
+  cursor: pointer;
+  text-align: center;
+}
+.ae-btn:hover {
+  background: var(--ae-bg-soft);
+  border-color: var(--ae-accent);
+  color: var(--ae-accent);
+}
+
+/* ===== Footer ===== */
+.ae-footer {
+  flex-shrink: 0;
+  height: var(--ae-footer-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 12px;
+  border-top: 0.5px solid var(--ae-rule);
+  background: var(--ae-bg-soft);
+}
+.ae-footer .ae-btn { flex: 1; }
+
+/* ===== Pestaña colapsada (lado derecho) =====
+ * Aparece tras la primera activación: si el usuario "Oculta editor",
+ * queda esta tab vertical para volver a abrir. Visible solo cuando
+ * body.ae-ever-activated y NO body.ae-open. */
+.ae-tab {
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%) rotate(180deg);
+  writing-mode: vertical-rl;
+  background: var(--ae-accent);
+  color: white;
+  font-family: "Source Sans 3", -apple-system, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  padding: 14px 5px;
+  border-radius: 4px 0 0 4px;
+  cursor: pointer;
+  user-select: none;
+  z-index: 999;
+  display: none;
+  box-shadow: -2px 0 6px rgba(0,0,0,0.12);
+}
+body.ae-ever-activated:not(.ae-open) .ae-tab {
+  display: block;
+}
+.ae-tab:hover {
+  background: #a64d28;
+}
+
+/* En mobile (≤ 768px) el sidebar ocupa más ancho y el body NO se desplaza
+ * (sería ilegible). Daniel edita el chart desde desktop, no esperamos uso
+ * mobile del editor, pero al menos no quede roto si lo abre. */
+@media (max-width: 768px) {
+  :root { --ae-w: 86vw; }
+  body.ae-open { margin-right: 0; }
+  .ae-panel { box-shadow: -4px 0 16px rgba(0,0,0,0.18); }
+}
