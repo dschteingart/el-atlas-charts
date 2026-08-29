@@ -51,12 +51,12 @@
 <body>
 <div class="wrap-lab">
   <h1>Lab de Fama Reconstruida</h1>
-  <p class="lab-sub">Score armado desde las vistas por idioma/mes de Pantheon (API). Dimensiones: <b>Lenguas</b> (traducciones + traducciones con ≥10k vistas) × <b>Vistas</b> (12m + histórico + mediana) × <b>Edad</b>. Mové las perillas. Datos: <code>data-fame-lab.js</code> (top ~13k por vistas).</p>
+  <p class="lab-sub">Score armado desde las vistas por idioma/mes de Pantheon (API). Dimensiones: <b>Lenguas</b> (media de traducciones y traducciones con ≥10k vistas) × <b>Vistas</b> (geom. de 12m, histórico y mediana) × <b>Edad</b>. Mové las perillas. El preset <b>Publicado</b> reproduce <code>pantheon_corregido.csv</code>. Datos: <code>data-fame-lab.js</code> (124.967 figuras).</p>
   <div class="lab-grid">
     <div class="panel">
       <h2>Presets</h2>
       <div class="presets" id="presets">
-        <button data-p="rec" class="on">Recomendado (T40)</button>
+        <button data-p="pub" class="on">Publicado (T50) ★</button><button data-p="rec">Recomendado (T40)</button>
         <button data-p="hpi">Estilo HPI (T70)</button>
         <button data-p="noage">Sin edad</button>
         <button data-p="simple">Media simple</button>
@@ -81,7 +81,7 @@
         <div id="count" style="font-family:var(--sans);font-size:12px;color:var(--ink-muted);margin:8px 2px;"></div>
         <table><thead><tr>
           <th class="rk">#</th><th>Figura</th><th>Ocupación</th><th class="num">Nac.</th>
-          <th class="num s" data-c="Lenguas" title="√(idiomas_norm × idiomas≥10k_norm). 0–1.">Lenguas</th>
+          <th class="num s" data-c="Lenguas" title="media de idiomas_norm e idiomas≥10k_norm. 0–1.">Lenguas</th>
           <th class="num s" data-c="Vistas" title="geomean(vis12, vis histórico, mediana mensual) normalizadas. 0–1.">Vistas</th>
           <th class="num s" data-c="ageMult" title="multiplicador de edad [piso–1]: log₄(A) − penalidad(<T), normalizado.">Edad×</th>
           <th class="num s" data-c="score" title="Base × Edad, reescalado a 100.">Score</th>
@@ -111,8 +111,8 @@ const KNOBS=[
   {k:'wA',lbl:'Peso bono antigüedad',hint:'cuánto premia ser viejo (×log₄A)',min:0,max:2,step:.1},
   {k:'wRec',lbl:'Peso penalidad recencia',hint:'cuánto castiga ser joven',min:0,max:2,step:.1},
 ];
-const PRESETS={rec:{T:40,piso:.5,wA:1,wRec:1,geom:true},hpi:{T:70,piso:.5,wA:1,wRec:1,geom:true},noage:{T:40,piso:1,wA:1,wRec:1,geom:true},simple:{T:40,piso:.5,wA:1,wRec:1,geom:false}};
-let W=Object.assign({},PRESETS.rec), mode='rec';
+const PRESETS={pub:{T:50,piso:.5,wA:1,wRec:1,geom:true},rec:{T:40,piso:.5,wA:1,wRec:1,geom:true},hpi:{T:70,piso:.5,wA:1,wRec:1,geom:true},noage:{T:40,piso:1,wA:1,wRec:1,geom:true},simple:{T:40,piso:.5,wA:1,wRec:1,geom:false}};
+let W=Object.assign({},PRESETS.pub), mode='pub';
 const kc=document.getElementById('knobs');
 KNOBS.forEach(kn=>{const d=document.createElement('div');d.className='knob';
   d.innerHTML=`<div class="knob-top"><label>${kn.lbl} <span class="hint">· ${kn.hint}</span></label><span class="v" id="v-${kn.k}"></span></div><input type="range" id="i-${kn.k}" min="${kn.min}" max="${kn.max}" step="${kn.step}">`;
@@ -150,12 +150,15 @@ function compute(){
   for(let i=0;i<N;i++){
     const ag=piso+kAge*(ar[i]-amn); age[i]=ag;
     let L,V,base;
+    // Lenguas: media ARITMETICA siempre. El 58,9% de la base tiene 0 idiomas con
+    // >=10k vistas; con geometrica ese cero anulaba el score y dejaba a media base
+    // pegada a ~0,3 con un acantilado a 42. Ver export_dataset.py.
+    L=(nNL[i]+nL10[i])/2;
     if(geom){
-      L=Math.sqrt(Math.max(nNL[i],1e-9)*Math.max(nL10[i],1e-9));
       V=Math.cbrt(Math.max(nV12[i],1e-9)*Math.max(nVA[i],1e-9)*Math.max(nMed[i],1e-9));
       base=Math.sqrt(Math.max(L,1e-9)*Math.max(V,1e-9));
     }else{
-      L=(nNL[i]+nL10[i])/2; V=(nV12[i]+nVA[i]+nMed[i])/3; base=(L+V)/2;
+      V=(nV12[i]+nVA[i]+nMed[i])/3; base=(L+V)/2;
     }
     Leng[i]=L; Vis[i]=V;
     const s=base*ag; sc[i]=s; if(s>smax)smax=s;
@@ -166,7 +169,7 @@ function compute(){
 }
 function render(){
   syncK();
-  document.getElementById('formula').innerHTML=`Score = ${W.geom?'geom':'media'}(Lenguas, Vistas) × Edad · <b>edad</b>: ${W.wA}·log₄A − ${W.wRec}·pen(T=${Math.round(W.T)}), piso ${(+W.piso).toFixed(2)}`;
+  document.getElementById('formula').innerHTML=`Score = ${W.geom?'geom':'media'}(Lenguas, Vistas) × Edad · <b>Lenguas</b>: media(idiomas, idiomas≥10k) · <b>edad</b>: ${W.wA}·log₄A − ${W.wRec}·pen(T=${Math.round(W.T)}), piso ${(+W.piso).toFixed(2)}`;
   const M=compute();
   const key={Lenguas:M.Leng,Vistas:M.Vis,ageMult:M.age,score:M.sc}[sortC];
   // rango GLOBAL en la dimensión de orden (1 = mayor), contado sólo para las filas visibles (evita ordenar 123k). El filtro solo oculta filas.
