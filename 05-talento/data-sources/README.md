@@ -56,7 +56,8 @@ gráfico publicado**.
 | 1 | `fame_pantheon.py` | `fame_pantheon.csv` | Baja `/pageviews` de la API para las 126.582 figuras (1 query por persona, concurrente y resumible). Lento: horas. |
 | 2 | `fame_border.py` | `fame_border.csv` | Re-baja sólo las figuras del borde (`langs1k<=1`) para contarlas con umbrales más blandos. |
 | 3 | `merge_gate.py` | `gate_result.csv` | Define y valida el gate multi-idioma. Diagnóstico, no lo consume nadie. |
-| 4 | `export_dataset.py` | **`pantheon_corregido.csv`** | Aplica el gate y calcula el score. Es la fuente de verdad. |
+| 3b | `recuperar_lugar.py` | `lugares_recuperados.csv` | Completa el lugar de nacimiento de las figuras que Pantheon deja en blanco (David, Salomón, Pedro, faraones). Por coordenada contra la geometría del N°3, o por Wikidata (P19 → P625/P17 → P131, y P27 como último recurso). |
+| 4 | `export_dataset.py` | **`pantheon_corregido.csv`** | Aplica el gate, calcula el score y completa los lugares recuperados. Es la fuente de verdad. |
 | 5 | `corregido.py` | **`master_corregido.csv`** | Reemplazo drop-in de `persons_enriched.csv`: filtrado por el gate y con `hpi := score`. También se importa como módulo (`corregido.aplicar(df)`). |
 | 6 | `build_subnac_corregido.py` | `talento_ALL_abs_adm1_corregido.csv` | Rehace el agregado subnacional del chart 8 con el gate, desde el assignment persona→unidad del N°3. |
 | 7 | `export_data.py` | `data-abanico/huella/ciencia/genero.js` | Charts 1–4. |
@@ -69,6 +70,26 @@ gráfico publicado**.
 
 Los labs (`fame_lab_data.py`, `hpi_lab_data.py`) son independientes; sólo hace falta
 correrlos si cambian los insumos crudos, porque el score lo calcula el JS en vivo.
+
+## Lugares de nacimiento recuperados
+
+Pantheon deja sin país a 4.983 figuras de la base depurada: casi todas antiguas,
+bíblicas o de polities que ya no existen. `recuperar_lugar.py` las resuelve y escribe
+`lugares_recuperados.csv`, que consumen `export_dataset.py` (columnas `pais`/`region`)
+y `corregido.py` (columna `iso3` del master, que es por donde los gráficos agrupan).
+La columna `lugar_fuente` del dataset dice de dónde salió cada dato recuperado.
+
+Hay una dependencia circular suave: `recuperar_lugar.py` lee `pantheon_corregido.csv`
+para saber a quién le falta el dato, y `export_dataset.py` lee el resultado. En la
+práctica se corre una vez y listo; si se vuelve a correr, encuentra menos faltantes
+porque ya están completos, y eso no rompe nada.
+
+**Levante.** Pantheon geocodifica toda la zona como Israel (así están Jesús, María e
+Isaac, con coordenadas de Jerusalén). Nuestra geometría tiene polígono de Palestina y
+partiría la zona en dos, dejando a David (Belén) en Palestina y a Jesús, a 8 km, en
+Israel. Se alinea con la convención de la fuente para no partir el mismo pueblo en dos
+países; la columna `iso3_geometria` del CSV guarda lo que decía el polígono. Si el
+script se corre sobre figuras contemporáneas, revisar ese alineamiento (`ALINEAR`).
 
 ## Al tocar cualquier `data-*.js`
 

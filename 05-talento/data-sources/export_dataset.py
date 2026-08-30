@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Dataset Pantheon corregido (126.582, dedup por id) + marca del gate multi-idioma + score reconstruido con los knobs actuales.
-import pandas as pd, numpy as np, json, sys, warnings
+import pandas as pd, numpy as np, json, os, sys, warnings
 warnings.filterwarnings('ignore'); sys.stdout.reconfigure(encoding='utf-8')
 
 # === KNOBS PUBLICADOS ===
@@ -54,6 +54,22 @@ def reg_of(c):
     return REG_ES.get(r) if r else None
 d['region']=d.bplace_country.map(reg_of)
 
+# === lugares de nacimiento recuperados (ver recuperar_lugar.py) ===
+# Pantheon deja sin pais a figuras antiguas y biblicas (David, Salomon, Pedro...).
+# recuperar_lugar.py los resuelve por coordenada o por Wikidata; aca se completan.
+d['lugar_fuente']=None
+if os.path.exists('lugares_recuperados.csv'):
+    _rec=pd.read_csv('lugares_recuperados.csv')[['id','pais','region','fuente']]
+    _rec=_rec[_rec.region.notna()].rename(columns={'pais':'_p','region':'_r','fuente':'_f'})
+    d=d.merge(_rec,on='id',how='left')
+    _fp=d.bplace_country.isna()&d._p.notna(); _fr=d.region.isna()&d._r.notna()
+    d.loc[_fp,'bplace_country']=d.loc[_fp,'_p']; d.loc[_fr,'region']=d.loc[_fr,'_r']
+    d.loc[_fp|_fr,'lugar_fuente']=d.loc[_fp|_fr,'_f']
+    print('lugares recuperados: %d con pais, %d con region'%(int(_fp.sum()),int(_fr.sum())))
+    d=d.drop(columns=['_p','_r','_f'])
+else:
+    print('(sin lugares_recuperados.csv: no se completa nada)')
+
 # === SCORE reconstruido con los knobs (replica exacta del compute() del lab) ===
 # universo del score = igual que el lab: con ocupacion+birthyear+dominio mapeado
 m=d.occupation.notna()&d.birthyear.notna()&d.dominio.notna()
@@ -95,7 +111,7 @@ for n in ['Lionel Messi','Cristiano Ronaldo','Lamine Yamal','Albert Einstein','A
 def occ_es(o): return str(o)
 out=d[['id','name','occupation','dominio','region','bplace_country','birthyear',
        'n_langs','langs1k','langs10k','l1k_all','total12_noen','total_all_noen','medianMonthly_noen','pctMonths_o100k','pctMonths_o300k',
-       'multi_idioma','Lenguas','Vistas','EdadMult','score','rank_score','hpi']].copy()
+       'multi_idioma','Lenguas','Vistas','EdadMult','score','rank_score','hpi','lugar_fuente']].copy()
 out=out.rename(columns={'langs1k':'idiomas_1k_anio','langs10k':'idiomas_10k_anio','l1k_all':'idiomas_1k_desde2015',
     'total12_noen':'vistas_12m_noen','total_all_noen':'vistas_total_noen','medianMonthly_noen':'mediana_mensual_noen',
     'pctMonths_o100k':'pct_meses_100k','pctMonths_o300k':'pct_meses_300k','hpi':'hpi_archivo','bplace_country':'pais'})

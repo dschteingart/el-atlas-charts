@@ -1,0 +1,22 @@
+﻿id,name,rank,ocupacion,lugar,lon,lat,fuente,iso3,iso3_geometria,pais,region
+8551,David,35,POLITICIAN,Bethlehem,35.20638889,31.70444444,coordenada Pantheon + alineado a Pantheon,ISR,PSE,Israel,Medio Oriente/N. Africa
+28329,Solomon,36,RELIGIOUS FIGURE,Palestine (region),35.1453,31.6253,coordenada Pantheon + alineado a Pantheon,ISR,PSE,Israel,Medio Oriente/N. Africa
+31665644,Saint Peter,39,RELIGIOUS FIGURE,Bethsaida,35.63055556,32.91,coordenada Pantheon,ISR,ISR,Israel,Medio Oriente/N. Africa
+16118,Jacob,59,RELIGIOUS FIGURE,Canaan,35.0,32.0,coordenada Pantheon,ISR,ISR,Israel,Medio Oriente/N. Africa
+357200,Queen of Sheba,178,RELIGIOUS FIGURE,,,,sin dato en Wikidata,,,,
+53617,Methuselah,242,RELIGIOUS FIGURE,Antiguo Oriente Próximo,,,entidad historica (mapeo manual),,,,Medio Oriente/N. Africa
+31663669,Andrew the Apostle,255,RELIGIOUS FIGURE,Bethsaida,35.63055556,32.91,coordenada Pantheon,ISR,ISR,Israel,Medio Oriente/N. Africa
+38938,John the Apostle,321,RELIGIOUS FIGURE,Bethsaida,35.63055556,32.91,coordenada Pantheon,ISR,ISR,Israel,Medio Oriente/N. Africa
+28354,Samuel,351,RELIGIOUS FIGURE,Ramathaim-Zophim,35.181,31.833,coordenada Pantheon + alineado a Pantheon,ISR,PSE,Israel,Medio Oriente/N. Africa
+171625,"James, son of Zebedee",356,RELIGIOUS FIGURE,Bethsaida,35.63055556,32.91,coordenada Pantheon,ISR,ISR,Israel,Medio Oriente/N. Africa
+6860726,Jack the Ripper,375,EXTREMIST,Reino Unido,-2.0,54.6,coordenada Wikidata,GBR,GBR,United Kingdom,Europa Occidental
+45597,Henry V of England,401,POLITICIAN,Castillo de Monmouth,-2.716677,51.812455,coordenada Wikidata,GBR,GBR,United Kingdom,Europa Occidental
+143102,Saint Anne,426,RELIGIOUS FIGURE,Bethlehem,35.20638889,31.70444444,coordenada Pantheon + alineado a Pantheon,ISR,PSE,Israel,Medio Oriente/N. Africa
+75143,Jeremiah,473,RELIGIOUS FIGURE,Anathoth,35.2647,31.8141,coordenada Pantheon + alineado a Pantheon,ISR,PSE,Israel,Medio Oriente/N. Africa
+155730,Thutmose III,605,POLITICIAN,Antiguo Egipto,,,ciudadania (Wikidata),EGY,EGY,Egypt,Medio Oriente/N. Africa
+32802,Vercingetorix,639,MILITARY PERSONNEL,Gergovia,3.1255,45.71266,coordenada Wikidata,FRA,FRA,France,Europa Occidental
+3587416,Lazarus of Bethany,670,RELIGIOUS FIGURE,Bethany,35.26444444,31.77,coordenada Pantheon + alineado a Pantheon,ISR,PSE,Israel,Medio Oriente/N. Africa
+411551,Narmer,782,POLITICIAN,Antiguo Egipto,,,ciudadania (Wikidata),EGY,EGY,Egypt,Medio Oriente/N. Africa
+18390,Lavrentiy Beria,821,POLITICIAN,Merkheuli,41.164296,42.991825,coordenada Pantheon,GEO,GEO,Georgia,Europa del Este/Asia Central
+739857,Ögedei Khan,870,POLITICIAN,Khamag Mongol,,,entidad historica (mapeo manual),,,,Asia Oriental
+245437,Saint Christopher,906,RELIGIOUS FIGURE,Canaan,35.0,32.0,coordenada Pantheon,ISR,ISR,Israel,Medio Oriente/N. Africa

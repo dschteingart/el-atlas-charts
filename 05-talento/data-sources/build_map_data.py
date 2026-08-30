@@ -17,6 +17,7 @@ EXPLORA = ROOT + r'\05-talento\data-explora.js'
 N1 = ROOT + r'\01-bienestar-violencia\data-scatter.js'
 CNAMES = ROOT + r'\05-talento\country-names.js'
 PERSONS = r'C:\Users\FUNDAR\Downloads\_talento_work\persons_enriched.csv'
+RECUP = r'C:\Users\FUNDAR\Downloads\_talento_work\lugares_recuperados.csv'   # iso3 recuperado; ver recuperar_lugar.py
 CORR = r'C:\Users\FUNDAR\Downloads\_talento_work\pantheon_corregido.csv'
 POPCSV = r'C:\Users\FUNDAR\Downloads\_pop_upload\population.csv'
 OUT_M = ROOT + r'\05-talento\data-percap-map.js'
@@ -74,12 +75,20 @@ for iso, nm in NAMES.items():
 for m in EXP['isoMeta']:
     name2iso.setdefault(m['en'], m['iso']); name2iso.setdefault(m['es'], m['iso'])
 
-# id → iso3 desde persons_enriched
+# id → iso3 desde persons_enriched (cobertura completa, sin filtrar por el gate)
+# + los lugares recuperados, que persons_enriched deja en blanco
 id2iso = {}
 with open(PERSONS, encoding='utf-8') as f:
     for r in csv.DictReader(f):
         iso = (r.get('iso3') or '').strip()
         if iso: id2iso[r['id']] = iso
+_rec = 0
+if os.path.exists(RECUP):
+    with open(RECUP, encoding='utf-8-sig') as f:
+        for r in csv.DictReader(f):
+            iso = (r.get('iso3') or '').strip()
+            if iso and r['id'] not in id2iso: id2iso[r['id']] = iso; _rec += 1
+print('id->iso3: %d figuras (+%d recuperadas)' % (len(id2iso), _rec))
 def iso_of(idv, pais):
     return id2iso.get(idv) or name2iso.get(pais)
 

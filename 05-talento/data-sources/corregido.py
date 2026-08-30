@@ -62,6 +62,18 @@ def construir_master():
     """persons_enriched.csv -> master_corregido.csv (drop-in, mismas columnas)."""
     PE = pd.read_csv(PERSONS, low_memory=False)
     cols = list(PE.columns)
+    # iso3 recuperado (ver recuperar_lugar.py). persons_enriched deja sin pais a las
+    # figuras antiguas; sin esto la recuperacion no llega a ningun grafico, porque
+    # todos agrupan por iso3 y no por la columna pais del dataset.
+    rec = os.path.join(DIR, 'lugares_recuperados.csv')
+    if os.path.exists(rec):
+        r = pd.read_csv(rec)[['id', 'iso3']].dropna(subset=['iso3'])
+        r = r.rename(columns={'iso3': '_iso'})
+        PE = PE.merge(r, on='id', how='left')
+        falta = PE.iso3.isna() & PE._iso.notna()
+        PE.loc[falta, 'iso3'] = PE.loc[falta, '_iso']
+        PE = PE.drop(columns=['_iso'])
+        print('[corregido] iso3 recuperado en %d figuras' % int(falta.sum()))
     out = aplicar(PE, etiqueta='master')
     out = out[cols + ['hpi_pantheon', 'multi_idioma', 'rank_score']]
     out.to_csv(MASTER, index=False, encoding='utf-8', float_format='%.4f')
