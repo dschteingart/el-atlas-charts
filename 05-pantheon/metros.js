@@ -101,7 +101,7 @@ function drawMetros() {
     });
   }
 
-  if (!isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) mt_wireHover(svg, rows);
+  if (!isPng /* tooltips tambien en touch (criterio 6e) */) mt_wireHover(svg, rows);
 }
 
 function mt_emph(svg, k) { svg.querySelectorAll('[data-mt]').forEach(el => { el.style.opacity = (k == null || el.getAttribute('data-mt') === k) ? '' : '0.2'; }); }

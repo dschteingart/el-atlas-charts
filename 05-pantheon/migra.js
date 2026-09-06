@@ -108,7 +108,7 @@ function drawMigra() {
     : (en ? 'Net balance (figures who died there − who were born there)' : 'Saldo neto (figuras que murieron ahí − que nacieron ahí)');
   svg.appendChild(axt);
 
-  if (!isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) mg_wireHover(svg, rows, metric);
+  if (!isPng /* tooltips tambien en touch (criterio 6e) */) mg_wireHover(svg, rows, metric);
 }
 
 function mg_emph(svg, iso) { svg.querySelectorAll('[data-mg]').forEach(el => { el.style.opacity = (iso == null || el.getAttribute('data-mg') === iso) ? '' : '0.2'; }); }

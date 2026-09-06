@@ -146,7 +146,7 @@ function drawHuella() {
   lgt.style.fontSize = fsNote + 'px'; lgt.style.fontFamily = 'var(--sans)'; lgt.style.fontWeight = '600'; lgt.style.fill = 'var(--ink-soft)';
   lgt.textContent = en ? 'Over-representation vs the world (×)' : 'Sobre-representación vs el mundo (×)'; svg.appendChild(lgt);
 
-  const interactive = !isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  const interactive = !isPng /* tooltips tambien en touch (criterio 6e) */;
   if (interactive) hu_wireHover(svg, rows, cols);
 }
 

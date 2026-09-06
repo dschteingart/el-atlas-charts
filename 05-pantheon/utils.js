@@ -217,3 +217,31 @@ function setupMobileControlToggles() {
     });
   });
 }
+
+
+// ===== Editor manual (?nl=1) — pasada central portada de lib/utils.js =====
+// Aplica titulo/subtitulo/caption custom del editor al DOM. Sin esto, editar
+// con ?nl=1 no se ve ni en pantalla ni en el PNG (png-export lee el DOM).
+function atlasApplyEditorTexts() {
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig)
+    ? window.AtlasEditor.getConfig() : null;
+  if (!ae) return;
+  const lang = ae.lang || (typeof LANG !== 'undefined' ? LANG : 'es');
+  const tx = (ae.texts && ae.texts[lang]) || {};
+  const dict = (typeof I18N !== 'undefined' && I18N[lang]) || {};
+  const apply = (el, custom) => {
+    const c = (custom || '').trim();
+    if (c) el.textContent = c;
+    else if (el.dataset.i18n && dict[el.dataset.i18n]) el.innerHTML = dict[el.dataset.i18n];
+  };
+  document.querySelectorAll('.chart-title').forEach(el => apply(el, tx.title));
+  document.querySelectorAll('.chart-subtitle').forEach(el => apply(el, tx.subtitle));
+  document.querySelectorAll('.footer p[data-i18n$="sources"]').forEach(el => apply(el, tx.caption));
+}
+window.addEventListener('atlas-editor-change', atlasApplyEditorTexts);
+window.addEventListener('load', () => setTimeout(atlasApplyEditorTexts, 0));
+// el toggle de idioma re-aplica el i18n y pisaria el custom: envolvemos applyI18n
+if (typeof applyI18n === 'function') {
+  const _applyI18n_orig = applyI18n;
+  applyI18n = function () { _applyI18n_orig(); try { atlasApplyEditorTexts(); } catch (e) {} };
+}

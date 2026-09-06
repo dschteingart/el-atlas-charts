@@ -97,7 +97,7 @@ function drawSubnac() {
     cx += it.w + gapItem;
   });
 
-  if (!isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) sb_wireHover(svg, rows);
+  if (!isPng /* tooltips tambien en touch (criterio 6e) */) sb_wireHover(svg, rows);
 }
 
 function sb_emph(svg, iso) { svg.querySelectorAll('[data-sb]').forEach(el => { el.style.opacity = (iso == null || el.getAttribute('data-sb') === iso) ? '' : '0.2'; }); }

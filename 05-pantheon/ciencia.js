@@ -119,7 +119,7 @@ function drawCiencia() {
     if (Math.abs(l.ly - l.y) > 2) { const gl = ci_el('line'); gl.setAttribute('x1', l.x); gl.setAttribute('y1', l.y); gl.setAttribute('x2', anchorRight ? l.x - l.r : l.x + l.r); gl.setAttribute('y2', l.ly - fsLab * 0.2); gl.style.stroke = l.latam ? CI_LATAM : 'var(--ink-muted)'; gl.setAttribute('stroke-width', bigFmt ? 1.2 : 0.8); gl.setAttribute('opacity', 0.45); labG.insertBefore(gl, labG.firstChild); }
   });
 
-  const interactive = !isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  const interactive = !isPng /* tooltips tambien en touch (criterio 6e) */;
   if (interactive) ci_wireHover(svg, pts, xS, yS);
 }
 

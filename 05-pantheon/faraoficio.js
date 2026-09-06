@@ -84,7 +84,7 @@ function drawFama() {
     tx.style.fontSize = fsLbl + 'px'; tx.style.fontFamily = 'var(--sans)'; tx.style.fontWeight = '700'; tx.style.fill = FO_COLORS[l.dm.key];
     tx.textContent = l.dm[en ? 'en' : 'es']; svg.appendChild(tx);
   });
-  if (!isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER)) fo_hover(svg, { decs, doms, shares, totals, M, PW, PH, xS, yS });
+  if (!isPng /* tooltips tambien en touch (criterio 6e) */) fo_hover(svg, { decs, doms, shares, totals, M, PW, PH, xS, yS });
 }
 
 function fo_hover(svg, c) {

@@ -1,5 +1,5 @@
 // =============================================================
-//  El Atlas N°2 — navegación entre gráficos (estilo OWID) + CTA Substack
+//  El Atlas N°5 — navegación entre gráficos (estilo OWID) + CTA Substack
 // =============================================================
 // Se autoinyecta en <div id="chart-nav"></div>: flechas ← →, contador
 // "Gráfico N / 4" (linkea al index) y una card de suscripción que cambia de

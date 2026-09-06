@@ -159,7 +159,7 @@ function drawAbanico() {
   });
 
   // hover
-  const interactive = !isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  const interactive = !isPng /* tooltips tambien en touch (criterio 6e) */;
   if (interactive) ab_wireHover(svg, rows);
 }
 

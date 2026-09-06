@@ -106,7 +106,7 @@ function drawGenero() {
     cx += widths[i] + gapItem;
   });
 
-  const interactive = !isPng && (typeof HAS_HOVER === 'undefined' || HAS_HOVER);
+  const interactive = !isPng /* tooltips tambien en touch (criterio 6e) */;
   if (interactive) gn_wireHover(svg, rows);
 }
 
