@@ -158,3 +158,32 @@ window.addEventListener('resize', () => {
   if (!document.getElementById('chart3')) return;
   const now = ci_isMobile(); if (now === _ciMob) return; _ciMob = now; drawCiencia();
 });
+
+
+// ===== Descarga de datos (CSV) — botón estándar del footer =====
+(function () {
+  const btn = document.querySelector('button.download[data-chart="3-csv"]');
+  if (!btn) return;
+  const cell = v => {
+    if (v === null || v === undefined) return '';
+    if (typeof v === 'string' && (v.includes(',') || v.includes('"'))) return '"' + v.replace(/"/g, '""') + '"';
+    return v;
+  };
+  btn.addEventListener('click', () => {
+
+    const D = window.CIENCIA;
+    const cols = ['block', 'iso3', 'label_es', 'label_en', 'gdp_pc', 'scientists_per_million', 'n_scientists', 'latam', 'resid_sport', 'resid_science'];
+    const rows = [];
+    D.points.forEach(p => rows.push(['scatter', p.iso, p.es, p.en, p.gdp, p.pm, p.n, p.latam ? 1 : 0, null, null]));
+    (D.dumbbell || []).forEach(p => rows.push(['dumbbell_residuals', p.iso, p.es, p.en, null, null, null, null, p.sport, p.sci]));
+    let csv = cols.join(',') + '\n';
+    rows.forEach(r => { csv += r.map(cell).join(',') + '\n'; });
+    // BOM para que Excel abra bien las tildes
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (typeof LANG !== 'undefined' && LANG === 'en') ? 'the-atlas-05-scientists-vs-gdp.csv' : 'el-atlas-05-cientificos-vs-pib.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  });
+})();

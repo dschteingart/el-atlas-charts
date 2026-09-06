@@ -205,3 +205,30 @@ window.addEventListener('resize', () => {
   if (!document.getElementById('chart1')) return;
   const now = ab_isMobile(); if (now === _abMob) return; _abMob = now; drawAbanico();
 });
+
+
+// ===== Descarga de datos (CSV) — botón estándar del footer =====
+(function () {
+  const btn = document.querySelector('button.download[data-chart="1-csv"]');
+  if (!btn) return;
+  const cell = v => {
+    if (v === null || v === undefined) return '';
+    if (typeof v === 'string' && (v.includes(',') || v.includes('"'))) return '"' + v.replace(/"/g, '""') + '"';
+    return v;
+  };
+  btn.addEventListener('click', () => {
+
+    const D = window.ABANICO;
+    const cols = ['discipline_key', 'discipline_es', 'discipline_en', 'group', 'latam_share_pct', 'latam_share_hpi_pct', 'n_world', 'n_latam', 'latam_pop_share_pct', 'latam_gdp_share_pct'];
+    const rows = D.disciplines.map(d => [d.key, d.es, d.en, d.group, d.share, d.share_hpi, d.n_world, d.n_latam, D.pop_share, D.gdp_share]);
+    let csv = cols.join(',') + '\n';
+    rows.forEach(r => { csv += r.map(cell).join(',') + '\n'; });
+    // BOM para que Excel abra bien las tildes
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (typeof LANG !== 'undefined' && LANG === 'en') ? 'the-atlas-05-latam-specialization.csv' : 'el-atlas-05-especializacion-latam.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  });
+})();

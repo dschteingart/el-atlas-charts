@@ -136,3 +136,30 @@ function mt_wireToggle() {
 }
 let _mtMob = mt_isMobile();
 window.addEventListener('resize', () => { if (!document.getElementById('chart9')) return; const n = mt_isMobile(); if (n === _mtMob) return; _mtMob = n; drawMetros(); });
+
+
+// ===== Descarga de datos (CSV) — botón estándar del footer =====
+(function () {
+  const btn = document.querySelector('button.download[data-chart="9-csv"]');
+  if (!btn) return;
+  const cell = v => {
+    if (v === null || v === undefined) return '';
+    if (typeof v === 'string' && (v.includes(',') || v.includes('"'))) return '"' + v.replace(/"/g, '""') + '"';
+    return v;
+  };
+  btn.addEventListener('click', () => {
+
+    const D = window.METROS;
+    const cols = ['city', 'country', 'n_figures', 'latam', 'top_figure', 'satellite_towns'].concat(D.doms.map(d => 'n_' + d));
+    const rows = D.metros.map(m => [m.city, m.country, m.n, m.lat_am ? 1 : 0, m.top, (m.parts || []).join(' / ')].concat(m.dom));
+    let csv = cols.join(',') + '\n';
+    rows.forEach(r => { csv += r.map(cell).join(',') + '\n'; });
+    // BOM para que Excel abra bien las tildes
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (typeof LANG !== 'undefined' && LANG === 'en') ? 'the-atlas-05-fame-cities.csv' : 'el-atlas-05-ciudades-de-la-fama.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  });
+})();

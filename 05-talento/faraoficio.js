@@ -119,3 +119,32 @@ function fo_syncSubtitle() {
 }
 let _foMob = fo_isMobile();
 window.addEventListener('resize', () => { if (!document.getElementById('chart6')) return; const n = fo_isMobile(); if (n === _foMob) return; _foMob = n; drawFama(); });
+
+
+// ===== Descarga de datos (CSV) — botón estándar del footer =====
+(function () {
+  const btn = document.querySelector('button.download[data-chart="6-csv"]');
+  if (!btn) return;
+  const cell = v => {
+    if (v === null || v === undefined) return '';
+    if (typeof v === 'string' && (v.includes(',') || v.includes('"'))) return '"' + v.replace(/"/g, '""') + '"';
+    return v;
+  };
+  btn.addEventListener('click', () => {
+
+    const D = window.FAMAOFICIO;
+    const cols = ['decade', 'domain_key', 'domain_es', 'domain_en', 'n_world', 'n_latam'];
+    const rows = [];
+    // world/latam son dicts por decada (clave string), no arrays posicionales
+    D.decades.forEach(dec => D.domains.forEach((d, k) => rows.push([dec, d.key, d.es, d.en, (D.world[String(dec)] || [])[k], (D.latam[String(dec)] || [])[k]])));
+    let csv = cols.join(',') + '\n';
+    rows.forEach(r => { csv += r.map(cell).join(',') + '\n'; });
+    // BOM para que Excel abra bien las tildes
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (typeof LANG !== 'undefined' && LANG === 'en') ? 'the-atlas-05-fame-by-decade.csv' : 'el-atlas-05-fama-por-decada.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  });
+})();

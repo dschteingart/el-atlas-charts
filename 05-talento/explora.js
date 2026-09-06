@@ -1436,73 +1436,6 @@ function setupScatterSearch() {
   });
 }
 
-// =================== Download CSV ===================
-// Dataset completo: todas las observaciones (país × año del slider).
-// Cada fila es la observación que el snapshot del año t usaría para
-// representar al país (last-observed Gini dentro de los 15 años previos).
-// Hay duplicados de (iso3, year_dato) cuando un mismo punto se usa en
-// múltiples años del slider; los preservamos porque cada uno tiene
-// residuos calculados contra una regresión distinta (la del año del
-// slider). Si Daniel quiere "observaciones únicas", filtraría en post.
-function setupScatterDownloadCSV() {
-  document.querySelectorAll('button.download[data-chart="5-csv"]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const rows = [];
-      Object.entries(DATA_SCATTER.data_by_year).forEach(([yearSlider, snap]) => {
-        snap.points.forEach(d => {
-          rows.push({ ...d, year_slider: parseInt(yearSlider, 10) });
-        });
-      });
-      // Orden estable: por iso3, después por año del slider.
-      rows.sort((a, b) =>
-        a.code.localeCompare(b.code) || a.year_slider - b.year_slider
-      );
-
-      const cols = [
-        'iso3', 'country', 'region',
-        'year_slider', 'year',
-        'welfare', 'gini_raw', 'gini_adj',
-        'gdp_pc', 'residual_linear', 'residual_quadratic'
-      ];
-      let csv = cols.join(',') + '\n';
-      rows.forEach(d => {
-        const row = [
-          d.code,
-          (COUNTRY_NAMES[d.code]?.en) || d.name,
-          d.region,
-          d.year_slider,
-          d.year,
-          d.welfare,
-          d.gini_raw,
-          d.gini_adj,
-          d.gdp_pc,
-          d.residual_linear,
-          d.residual_quadratic
-        ];
-        csv += row.map(v => {
-          if (v === null || v === undefined) return '';
-          if (typeof v === 'string' && (v.includes(',') || v.includes('"'))) {
-            return '"' + v.replace(/"/g, '""') + '"';
-          }
-          return v;
-        }).join(',') + '\n';
-      });
-
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = LANG === 'en'
-        ? 'the-atlas-02-gini-vs-gdp-observations.csv'
-        : 'el-atlas-02-gini-vs-pib-observaciones.csv';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    });
-  });
-}
-
 // =================== Hook PNG export ===================
 // El png-export.js llama esto antes de rasterizar. Para el chart 2:
 //   - Limpiamos cualquier hoverRegion del state visual (no se renderiza
@@ -1660,3 +1593,37 @@ function exSyncControlLabels() {
   const ff = document.getElementById('ex-from-v'), tv = document.getElementById('ex-to-v');
   if (ff) ff.textContent = s.period[0]; if (tv) tv.textContent = s.period[1];
 }
+
+
+// ===== Descarga de datos (CSV) — botón estándar del footer =====
+(function () {
+  const btn = document.querySelector('button.download[data-chart="5-csv"]');
+  if (!btn) return;
+  const cell = v => {
+    if (v === null || v === undefined) return '';
+    if (typeof v === 'string' && (v.includes(',') || v.includes('"'))) return '"' + v.replace(/"/g, '""') + '"';
+    return v;
+  };
+  btn.addEventListener('click', () => {
+
+    // dump por figura del buffer del explorador (4 bytes: iso, occ, año-y0, score)
+    const D = window.EXPLORA;
+    const bin = atob(D.F.b64), n = D.F.n, y0 = D.y0, names = D.F.name || {};
+    const cols = ['iso3', 'country_en', 'region', 'occupation_es', 'occupation_en', 'domain_es', 'birthyear', 'score_0_100', 'name'];
+    const rows = new Array(n);
+    for (let i = 0; i < n; i++) {
+      const o = i * 4;
+      const m = D.isoMeta[bin.charCodeAt(o)], oc = D.occMeta[bin.charCodeAt(o + 1)];
+      rows[i] = [m.iso, m.en, m.reg, oc.es, oc.en, oc.dom, y0 + bin.charCodeAt(o + 2), bin.charCodeAt(o + 3), names[String(i)] || ''];
+    }
+    let csv = cols.join(',') + '\n';
+    rows.forEach(r => { csv += r.map(cell).join(',') + '\n'; });
+    // BOM para que Excel abra bien las tildes
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (typeof LANG !== 'undefined' && LANG === 'en') ? 'the-atlas-05-figures-observations.csv' : 'el-atlas-05-figuras-observaciones.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  });
+})();

@@ -143,3 +143,30 @@ window.addEventListener('resize', () => {
   if (!document.getElementById('chart4')) return;
   const now = gn_isMobile(); if (now === _gnMob) return; _gnMob = now; drawGenero();
 });
+
+
+// ===== Descarga de datos (CSV) — botón estándar del footer =====
+(function () {
+  const btn = document.querySelector('button.download[data-chart="4-csv"]');
+  if (!btn) return;
+  const cell = v => {
+    if (v === null || v === undefined) return '';
+    if (typeof v === 'string' && (v.includes(',') || v.includes('"'))) return '"' + v.replace(/"/g, '""') + '"';
+    return v;
+  };
+  btn.addEventListener('click', () => {
+
+    const D = window.GENERO;
+    const cols = ['domain_key', 'domain_es', 'domain_en', 'women_latam_pct', 'women_world_pct', 'n_latam', 'n_world'];
+    const rows = D.domains.map(d => [d.key, d.es, d.en, d.latam_fem, d.world_fem, d.n_latam, d.n_world]);
+    let csv = cols.join(',') + '\n';
+    rows.forEach(r => { csv += r.map(cell).join(',') + '\n'; });
+    // BOM para que Excel abra bien las tildes
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (typeof LANG !== 'undefined' && LANG === 'en') ? 'the-atlas-05-women-by-domain.csv' : 'el-atlas-05-mujeres-por-dominio.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  });
+})();

@@ -186,3 +186,34 @@ window.addEventListener('resize', () => {
   if (!document.getElementById('chart2')) return;
   const now = hu_isMobile(); if (now === _huMob) return; _huMob = now; drawHuella();
 });
+
+
+// ===== Descarga de datos (CSV) — botón estándar del footer =====
+(function () {
+  const btn = document.querySelector('button.download[data-chart="2-csv"]');
+  if (!btn) return;
+  const cell = v => {
+    if (v === null || v === undefined) return '';
+    if (typeof v === 'string' && (v.includes(',') || v.includes('"'))) return '"' + v.replace(/"/g, '""') + '"';
+    return v;
+  };
+  btn.addEventListener('click', () => {
+
+    const D = window.HUELLA;
+    const cols = ['iso3', 'country_es', 'country_en', 'n_country', 'discipline_key', 'discipline_es', 'discipline_en', 'lift', 'n', 'pct_of_country'];
+    const rows = [];
+    D.rows.forEach(r => D.cols.forEach(c => {
+      const x = r.cells[c.key] || {};
+      rows.push([r.iso, r.es, r.en, r.n, c.key, c.es, c.en, x.lift, x.n, x.pct]);
+    }));
+    let csv = cols.join(',') + '\n';
+    rows.forEach(r => { csv += r.map(cell).join(',') + '\n'; });
+    // BOM para que Excel abra bien las tildes
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (typeof LANG !== 'undefined' && LANG === 'en') ? 'the-atlas-05-country-specialties.csv' : 'el-atlas-05-especialidad-por-pais.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  });
+})();

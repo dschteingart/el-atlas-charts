@@ -130,3 +130,30 @@ function sb_wireToggle() {
 }
 let _sbMob = sb_isMobile();
 window.addEventListener('resize', () => { if (!document.getElementById('chart8')) return; const n = sb_isMobile(); if (n === _sbMob) return; _sbMob = n; drawSubnac(); });
+
+
+// ===== Descarga de datos (CSV) — botón estándar del footer =====
+(function () {
+  const btn = document.querySelector('button.download[data-chart="8-csv"]');
+  if (!btn) return;
+  const cell = v => {
+    if (v === null || v === undefined) return '';
+    if (typeof v === 'string' && (v.includes(',') || v.includes('"'))) return '"' + v.replace(/"/g, '""') + '"';
+    return v;
+  };
+  btn.addEventListener('click', () => {
+
+    const D = window.SUBNAC;
+    const cols = ['iso3', 'country_es', 'country_en', 'region', 'figures_total', 'subregions_n', 'top_region_share_pct', 'top_region', 'top_region_pop'];
+    const rows = D.rows.map(r => [r.iso, r.es, r.en, r.region, r.total, r.nreg, r.topShare, r.topName, r.topPop]);
+    let csv = cols.join(',') + '\n';
+    rows.forEach(r => { csv += r.map(cell).join(',') + '\n'; });
+    // BOM para que Excel abra bien las tildes
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (typeof LANG !== 'undefined' && LANG === 'en') ? 'the-atlas-05-subnational-concentration.csv' : 'el-atlas-05-concentracion-subnacional.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  });
+})();
