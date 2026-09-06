@@ -23,6 +23,7 @@
   th { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); font-weight: 700; }
   td.rk, th.rk { text-align: right; color: var(--ink-muted); font-variant-numeric: tabular-nums; width: 52px; }
   td.nm { font-weight: 600; color: var(--ink); }
+  td.nm .ph { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; object-position: top; vertical-align: middle; margin-right: 9px; background: var(--bg-soft); border: 1px solid var(--rule); }
   td.sc, th.sc { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent); }
   td.mut { color: var(--ink-soft); }
   #aviso { font-family: var(--sans); font-size: 12px; color: var(--ink-muted); margin: 8px 0 0; }
@@ -87,9 +88,9 @@
 </div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=9"></script>
+<script src="./i18n-issue.js?v=10"></script>
 <script src="./utils.js?v=3"></script>
-<script src="./data-top.js?v=1"></script>
+<script src="./data-top.js?v=2"></script>
 <script>
 const D = window.TOPFIGS;
 const REG_LABEL = {
@@ -138,6 +139,9 @@ function fillSelects() {
 function nombre(r) {
   return en() ? r[1] : (r[2] || r[1]);
 }
+function fotoUrl(r, w) {
+  return r[7] ? 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(r[7]) + '?width=' + w : null;
+}
 function filtrar() {
   const out = [];
   for (const r of D.rows) {
@@ -161,8 +165,9 @@ function render() {
     const m = r[3] >= 0 ? D.isoMeta[r[3]] : null;
     const o = D.occs[r[4]];
     const tr = document.createElement('tr');
+    const ph = fotoUrl(r, 72);
     tr.innerHTML = '<td class="rk">' + r[0].toLocaleString(loc()) + '</td>' +
-      '<td class="nm">' + nombre(r) + '</td>' +
+      '<td class="nm">' + (ph ? '<img class="ph" loading="lazy" referrerpolicy="no-referrer" src="' + ph + '" alt="" onerror="this.remove()">' : '') + nombre(r) + '</td>' +
       '<td class="mut">' + (m ? (en() ? m.en : m.es) : '—') + '</td>' +
       '<td class="mut">' + (m ? regLabel(m.reg) : '—') + '</td>' +
       '<td class="mut">' + (en() ? o.en : o.es) + '</td>' +
@@ -179,7 +184,7 @@ function render() {
 function csvActual() {
   const rows = filtrar();
   const q = s => '"' + String(s).replace(/"/g, '""') + '"';
-  const head = ['rank', 'name_en', 'name_es', 'iso3', 'country', 'region', 'occupation', 'domain', 'birthyear', 'score_0_100'];
+  const head = ['rank', 'name_en', 'name_es', 'iso3', 'country', 'region', 'occupation', 'domain', 'birthyear', 'hpi_0_100'];
   const lines = [head.join(',')];
   rows.forEach(r => {
     const m = r[3] >= 0 ? D.isoMeta[r[3]] : null;
@@ -213,9 +218,21 @@ const fitText = (ctx, s, maxW) => {
   while (s.length > 2 && ctx.measureText(s + '…').width > maxW) s = s.slice(0, -1);
   return s + '…';
 };
+function cargarFoto(url) {
+  return new Promise(res => {
+    if (!url) return res(null);
+    const im = new Image();
+    im.crossOrigin = 'anonymous';                 // Commons manda CORS abierto: el canvas no se ensucia
+    const to = setTimeout(() => res(null), 3500);
+    im.onload = () => { clearTimeout(to); res(im); };
+    im.onerror = () => { clearTimeout(to); res(null); };
+    im.src = url;
+  });
+}
 async function exportPng() {
   try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
   const all = filtrar(), shown = all.slice(0, 15);
+  const fotos = await Promise.all(shown.map(r => cargarFoto(fotoUrl(r, 120))));
   const cv = document.createElement('canvas'); cv.width = PNG.W; cv.height = PNG.H;
   const ctx = cv.getContext('2d');
   ctx.fillStyle = PNG.bg; ctx.fillRect(0, 0, PNG.W, PNG.H);
@@ -234,31 +251,39 @@ async function exportPng() {
     ctx.fillText(partes.join(' · '), PAD, y); y += 40;
   }
   y += 16;
-  const colRk = 86, colSc = 130;
-  const colNm = Math.round((W - colRk - colSc) * 0.52);
+  const colRk = 86, colPh = 62, colSc = 130;
+  const colNm = Math.round((W - colRk - colPh - colSc) * 0.52);
   const colOc = W - colRk - colSc - colNm;
   const bottom = PNG.H - 148;
   const rowH = Math.max(50, Math.min(66, Math.floor((bottom - y - 44) / Math.max(shown.length, 1))));
   ctx.font = '700 23px ' + SANS; ctx.fillStyle = PNG.muted; ctx.textAlign = 'left';
   ctx.fillText('#', PAD, y + 28);
-  ctx.fillText(t('top-col-nombre').toUpperCase(), PAD + colRk, y + 28);
-  ctx.fillText((t('top-col-pais') + ' · ' + t('top-col-occ')).toUpperCase(), PAD + colRk + colNm, y + 28);
+  ctx.fillText(t('top-col-nombre').toUpperCase(), PAD + colRk + colPh, y + 28);
+  ctx.fillText((t('top-col-pais') + ' · ' + t('top-col-occ')).toUpperCase(), PAD + colRk + colPh + colNm, y + 28);
   ctx.textAlign = 'right'; ctx.fillText(t('top-col-score').toUpperCase(), PAD + W, y + 28);
   y += 44;
   ctx.strokeStyle = PNG.ink; ctx.lineWidth = 2.5;
   ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(PAD + W, y); ctx.stroke();
-  shown.forEach(r => {
+  shown.forEach((r, ri) => {
     const m = r[3] >= 0 ? D.isoMeta[r[3]] : null;
     const o = D.occs[r[4]];
     const ty = y + rowH / 2 + 11;
+    // retrato circular (como en Pantheon); sin foto queda un circulo neutro
+    const im = fotos[ri], dph = Math.min(rowH - 10, 48), pcx = PAD + colRk + dph / 2, pcy = y + rowH / 2;
+    ctx.save(); ctx.beginPath(); ctx.arc(pcx, pcy, dph / 2, 0, Math.PI * 2); ctx.clip();
+    if (im) {
+      const s0 = Math.min(im.width, im.height);
+      ctx.drawImage(im, (im.width - s0) / 2, Math.max(0, (im.height - s0) / 6), s0, s0, pcx - dph / 2, pcy - dph / 2, dph, dph);
+    } else { ctx.fillStyle = '#ECE7D8'; ctx.fillRect(pcx - dph / 2, pcy - dph / 2, dph, dph); }
+    ctx.restore();
     ctx.textAlign = 'left';
     ctx.fillStyle = PNG.muted; ctx.font = '600 28px ' + SANS;
     ctx.fillText(String(r[0]), PAD, ty);
     ctx.fillStyle = PNG.ink; ctx.font = '600 31px ' + SANS;
-    ctx.fillText(fitText(ctx, nombre(r), colNm - 16), PAD + colRk, ty);
+    ctx.fillText(fitText(ctx, nombre(r), colNm - 16), PAD + colRk + colPh, ty);
     ctx.fillStyle = PNG.soft; ctx.font = '400 27px ' + SANS;
     const meta = (m ? (en() ? m.en : m.es) : '—') + ' · ' + (en() ? o.en : o.es);
-    ctx.fillText(fitText(ctx, meta, colOc - 16), PAD + colRk + colNm, ty);
+    ctx.fillText(fitText(ctx, meta, colOc - 16), PAD + colRk + colPh + colNm, ty);
     ctx.fillStyle = PNG.accent; ctx.font = '700 31px ' + SANS; ctx.textAlign = 'right';
     ctx.fillText(r[5].toLocaleString(loc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }), PAD + W, ty);
     y += rowH;
@@ -268,13 +293,36 @@ async function exportPng() {
   // caption mínimo + firma (el custom del editor manda)
   const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
   const tx = (ae && ae.texts && ae.texts[en() ? 'en' : 'es']) || {};
-  let nota = (tx.caption || '').trim() || t('top-sources');
+  let nota = (tx.caption || '').trim() || t('top-png-note');
   if (all.length > shown.length) nota += ' ' + tpl('top-png-top', { n: shown.length });
   ctx.textAlign = 'left'; ctx.fillStyle = PNG.muted; ctx.font = '400 22px ' + SANS;
   let ny = PNG.H - 88;
   wrapText(ctx, nota, W).slice(0, 2).forEach(l => { ctx.fillText(l, PAD, ny); ny += 29; });
-  ctx.fillStyle = PNG.ink; ctx.font = '700 27px ' + SERIF; ctx.textAlign = 'right';
-  ctx.fillText(t('attribution-text'), PNG.W - PAD, PNG.H - 30);
+  // firma de la casa: dos lineas, Source Sans, terracota, bloque a la derecha
+  (function () {
+    const partes = t('attribution-text').split('\u00b7').map(x => x.trim()).filter(Boolean);
+    const size1 = 34, size2 = Math.round(34 * 0.78), lineH = Math.round(34 * 1.15);
+    const cyF = PNG.H - 64;
+    ctx.fillStyle = PNG.accent;
+    ctx.textBaseline = 'middle';
+    if (partes.length >= 2) {
+      ctx.font = '700 ' + size1 + 'px ' + SANS;
+      const w1 = ctx.measureText(partes[0]).width;
+      ctx.font = '600 ' + size2 + 'px ' + SANS;
+      const w2 = ctx.measureText(partes.slice(1).join(' \u00b7 ')).width;
+      const cx = PNG.W - PAD - Math.max(w1, w2) / 2;
+      ctx.textAlign = 'center';
+      ctx.font = '700 ' + size1 + 'px ' + SANS;
+      ctx.fillText(partes[0], cx, cyF - lineH * 0.42);
+      ctx.font = '600 ' + size2 + 'px ' + SANS;
+      ctx.fillText(partes.slice(1).join(' \u00b7 '), cx, cyF + lineH * 0.42);
+    } else {
+      ctx.textAlign = 'right';
+      ctx.font = '600 ' + size1 + 'px ' + SANS;
+      ctx.fillText(partes[0] || '', PNG.W - PAD, cyF);
+    }
+    ctx.textBaseline = 'alphabetic';
+  })();
   return new Promise(res => cv.toBlob(b => {
     if (b) {
       const a = document.createElement('a');

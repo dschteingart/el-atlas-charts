@@ -103,7 +103,7 @@
 </div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=9"></script>
+<script src="./i18n-issue.js?v=10"></script>
 <script src="./utils.js?v=3"></script>
 <script src="./data-percap-map.js?v=6"></script>
 <script>
@@ -349,8 +349,31 @@ async function exportPng() {
   if (st.vista === 'pais') notaTxt += ' ' + tpl('rep-png-note-pais', { n: shown.length });
   let ny = PNG.H - 96;
   wrapText(ctx, notaTxt, W).slice(0, 2).forEach(l => { ctx.fillText(l, PAD, ny); ny += 29; });
-  ctx.fillStyle = PNG.ink; ctx.font = '700 27px ' + SERIF; ctx.textAlign = 'right';
-  ctx.fillText(t('attribution-text'), PNG.W - PAD, PNG.H - 30);
+  // firma de la casa: dos lineas, Source Sans, terracota, bloque a la derecha
+  (function () {
+    const partes = t('attribution-text').split('\u00b7').map(x => x.trim()).filter(Boolean);
+    const size1 = 34, size2 = Math.round(34 * 0.78), lineH = Math.round(34 * 1.15);
+    const cyF = PNG.H - 64;
+    ctx.fillStyle = PNG.accent;
+    ctx.textBaseline = 'middle';
+    if (partes.length >= 2) {
+      ctx.font = '700 ' + size1 + 'px ' + SANS;
+      const w1 = ctx.measureText(partes[0]).width;
+      ctx.font = '600 ' + size2 + 'px ' + SANS;
+      const w2 = ctx.measureText(partes.slice(1).join(' \u00b7 ')).width;
+      const cx = PNG.W - PAD - Math.max(w1, w2) / 2;
+      ctx.textAlign = 'center';
+      ctx.font = '700 ' + size1 + 'px ' + SANS;
+      ctx.fillText(partes[0], cx, cyF - lineH * 0.42);
+      ctx.font = '600 ' + size2 + 'px ' + SANS;
+      ctx.fillText(partes.slice(1).join(' \u00b7 '), cx, cyF + lineH * 0.42);
+    } else {
+      ctx.textAlign = 'right';
+      ctx.font = '600 ' + size1 + 'px ' + SANS;
+      ctx.fillText(partes[0] || '', PNG.W - PAD, cyF);
+    }
+    ctx.textBaseline = 'alphabetic';
+  })();
 
   return new Promise(res => cv.toBlob(b => {
     if (b) {

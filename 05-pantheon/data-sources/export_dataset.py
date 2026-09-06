@@ -47,10 +47,14 @@ for _i,_ch in enumerate(_s):
 iso2region={x['iso3']:x['region'] for x in json.loads(_s[:_end])}
 ROV={'PRI':'Latin America','CUB':'Latin America','TWN':'East Asia','HKG':'East Asia','MAC':'East Asia','PSE':'Middle East & North Africa','PRK':'East Asia','VEN':'Latin America','GUF':'Latin America','MMR':'Southeast Asia','YEM':'Middle East & North Africa','COD':'Sub-Saharan Africa','ERI':'Sub-Saharan Africa','MCO':'Western Europe','XKX':'Eastern Europe & Central Asia','GRL':'Western Europe','BMU':'Caribbean','GLP':'Caribbean','MTQ':'Caribbean'}
 REG_ES={'Latin America':'América Latina','Caribbean':'Caribe','North America, Australia & New Zealand':'Norteamérica/Aus/NZ','Western Europe':'Europa Occidental','Eastern Europe & Central Asia':'Europa del Este/Asia Central','East Asia':'Asia Oriental','Southeast Asia':'Sudeste Asiático','South Asia':'Asia del Sur','Middle East & North Africa':'Medio Oriente/N. África','Sub-Saharan Africa':'África Subsahariana'}
+# La decision editorial de Daniel (junio 2026) le gana a la taxonomia del N°1:
+# Puerto Rico cuenta como America Latina; Guayana Francesa como Caribe. El mapa
+# ya lo forzaba asi (FORCE de build_map_data); esto alinea el dataset y el CSV.
+FORCE_REG={'PRI':'Latin America','GUF':'Caribbean'}
 def reg_of(c):
     i=n2iso(c)
     if not i: return None
-    r=iso2region.get(i) or ROV.get(i)
+    r=FORCE_REG.get(i) or iso2region.get(i) or ROV.get(i)
     return REG_ES.get(r) if r else None
 d['region']=d.bplace_country.map(reg_of)
 

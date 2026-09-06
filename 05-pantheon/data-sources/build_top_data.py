@@ -19,6 +19,9 @@ d = d.merge(M, on='id', how='left')
 N = pd.read_csv(os.path.join(DIR, 'nombres_es.csv'), encoding='utf-8-sig')[['id', 'name_es']]
 d = d.merge(N, on='id', how='left')
 d['name_es'] = d.name_es.fillna('')
+F = pd.read_csv(os.path.join(DIR, 'fotos.csv'), encoding='utf-8-sig')
+d = d.merge(F, on='id', how='left')
+d['img'] = d.img.fillna('')
 print('top: %d | con iso3: %d | con nombre es: %d'
       % (len(d), int(d.iso3.notna().sum()), int((d.name_es != '').sum())))
 
@@ -57,14 +60,15 @@ for _, x in d.sort_values('rank_score').iterrows():
                  iso_idx.get(x.iso3, -1),
                  occ_idx[x.occupation],
                  round(float(x.score), 1),
-                 int(x.birthyear) if pd.notna(x.birthyear) else None])
+                 int(x.birthyear) if pd.notna(x.birthyear) else None,
+                 x.img])
 
 out = {'isoMeta': isoMeta, 'occs': occMeta,
        'doms': [{'es': a, 'en': b} for a, b in DOMS],
        'rows': rows}
 dest = os.path.join(CHARTS, 'data-top.js')
 io.open(dest, 'w', encoding='utf-8', newline='').write(
-    '// Tabla quien-es-quien: top %d figuras por score (multiidioma). rows=[rank,name_en,name_es(si difiere),isoIdx,occIdx,score,birthyear]\n' % TOP
+    '// Tabla quien-es-quien: top %d figuras por score (multiidioma). rows=[rank,name_en,name_es(si difiere),isoIdx,occIdx,hpi,birthyear,img(P18 Commons)]\n' % TOP
     + 'window.TOPFIGS=' + json.dumps(out, ensure_ascii=False, separators=(',', ':')) + ';\n')
 print('=> data-top.js | %d filas | %.0f KB' % (len(rows), os.path.getsize(dest) / 1024))
 print('   top 3:', [r[1] for r in rows[:3]])
