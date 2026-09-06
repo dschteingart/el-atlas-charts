@@ -10,11 +10,14 @@
 <link rel="stylesheet" href="../lib/style.css">
 <link rel="stylesheet" href="../lib/editor.css?v=1">
 <style>
+  .wrap-wide { max-width: 1100px; padding: 10px 20px 16px; }
+  .wrap-wide header { padding-bottom: 8px; margin-bottom: 10px; }
   .controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: flex-end; margin: 14px 0; }
   .ctl label { display: block; font-family: var(--sans); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); margin-bottom: 5px; }
   select { font-family: var(--sans); font-size: 13.5px; padding: 7px 9px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink); max-width: 210px; }
   .tblbox { max-height: 680px; overflow: auto; border: 1px solid var(--rule); border-radius: 10px; }
-  table { border-collapse: collapse; font-family: var(--sans); width: 100%; min-width: 700px; }
+  table { border-collapse: collapse; font-family: var(--sans); width: 100%; }
+  @media (max-width: 760px) { table { min-width: 700px; } }
   thead th { position: sticky; top: 0; background: var(--bg); z-index: 2; }
   th, td { padding: 7px 11px; font-size: 13.5px; border-bottom: 1px solid var(--rule); text-align: left; white-space: nowrap; }
   th { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); font-weight: 700; }
@@ -26,7 +29,7 @@
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap wrap-wide">
 
   <header>
     <div class="top-bar">
