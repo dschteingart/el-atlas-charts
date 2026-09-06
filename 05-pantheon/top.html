@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — Quién es quién en la fama mundial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<link rel="stylesheet" href="../lib/editor.css?v=1">
+<style>
+  .controls { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: flex-end; margin: 14px 0; }
+  .ctl label { display: block; font-family: var(--sans); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); margin-bottom: 5px; }
+  select { font-family: var(--sans); font-size: 13.5px; padding: 7px 9px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink); max-width: 210px; }
+  .tblbox { max-height: 680px; overflow: auto; border: 1px solid var(--rule); border-radius: 10px; }
+  table { border-collapse: collapse; font-family: var(--sans); width: 100%; min-width: 700px; }
+  thead th { position: sticky; top: 0; background: var(--bg); z-index: 2; }
+  th, td { padding: 7px 11px; font-size: 13.5px; border-bottom: 1px solid var(--rule); text-align: left; white-space: nowrap; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); font-weight: 700; }
+  td.rk, th.rk { text-align: right; color: var(--ink-muted); font-variant-numeric: tabular-nums; width: 52px; }
+  td.nm { font-weight: 600; color: var(--ink); }
+  td.sc, th.sc { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent); }
+  td.mut { color: var(--ink-soft); }
+  #aviso { font-family: var(--sans); font-size: 12px; color: var(--ink-muted); margin: 8px 0 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 5</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="top" data-editor-id="top-figuras">
+    <h2 class="chart-title" data-i18n="top-title">Quién es quién en la fama mundial</h2>
+    <p class="chart-subtitle" data-i18n="top-subtitle">Las figuras más célebres de la historia según el índice de fama de El Atlas. Elegí cuántas ver y filtrá por región, país, dominio u ocupación.</p>
+
+    <div class="controls">
+      <div class="ctl"><label data-i18n="top-lbl-n">Mostrar</label>
+        <select id="c-n"><option>10</option><option>20</option><option>50</option><option>100</option><option>250</option><option>500</option></select>
+      </div>
+      <div class="ctl"><label data-i18n="top-lbl-region">Región</label><select id="c-reg"></select></div>
+      <div class="ctl"><label data-i18n="top-lbl-pais">País</label><select id="c-cty"></select></div>
+      <div class="ctl"><label data-i18n="top-lbl-dom">Dominio</label><select id="c-dom"></select></div>
+      <div class="ctl"><label data-i18n="top-lbl-occ">Ocupación</label><select id="c-occ"></select></div>
+    </div>
+
+    <div class="tblbox"><table>
+      <thead><tr>
+        <th class="rk">#</th>
+        <th id="h-nombre">Figura</th>
+        <th id="h-pais">País</th>
+        <th id="h-region">Región</th>
+        <th id="h-occ">Ocupación</th>
+        <th id="h-dom">Dominio</th>
+        <th class="sc" id="h-score">Fama</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+    <p id="aviso" hidden></p>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" id="btn-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" id="btn-png" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources" data-i18n="top-note">…</p>
+    </div>
+    <div class="footer-row">
+      <p class="sources" data-i18n="top-sources">Datos: Pantheon (Datawheel), índice de fama de El Atlas.</p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="../lib/i18n.js"></script>
+<script src="./i18n-issue.js?v=9"></script>
+<script src="./utils.js?v=3"></script>
+<script src="./data-top.js?v=1"></script>
+<script>
+const D = window.TOPFIGS;
+const REG_LABEL = {
+  'Latin America': ['América Latina', 'Latin America'], 'Caribbean': ['Caribe', 'Caribbean'],
+  'Western Europe': ['Europa Occidental', 'Western Europe'],
+  'Eastern Europe & Central Asia': ['Europa del Este y Asia Central', 'Eastern Europe & C. Asia'],
+  'North America, Australia & New Zealand': ['Norteamérica, Australia y N.Z.', 'N. America, Aus. & N.Z.'],
+  'East Asia': ['Asia Oriental', 'East Asia'], 'Southeast Asia': ['Sudeste Asiático', 'Southeast Asia'],
+  'South Asia': ['Asia del Sur', 'South Asia'], 'Middle East & North Africa': ['Medio Oriente y N. de África', 'Middle East & N. Africa'],
+  'Sub-Saharan Africa': ['África Subsahariana', 'Sub-Saharan Africa']
+};
+const en = () => (typeof LANG !== 'undefined' && LANG === 'en');
+const loc = () => en() ? 'en-US' : 'es-AR';
+const regLabel = r => REG_LABEL[r] ? REG_LABEL[r][en() ? 1 : 0] : (r || '—');
+const tpl = (k, vars) => Object.entries(vars).reduce((a, [b, c]) => a.split('{' + b + '}').join(c), t(k));
+const REGS = [...new Set(D.isoMeta.map(m => m.reg).filter(Boolean))];
+
+const st = { n: 10, reg: -1, cty: -1, dom: -1, occ: -1 };
+
+function fillSelects() {
+  const sr = document.getElementById('c-reg'), sc = document.getElementById('c-cty');
+  const sd = document.getElementById('c-dom'), so = document.getElementById('c-occ');
+  sr.innerHTML = ''; sr.add(new Option(t('top-todas'), -1));
+  REGS.map((r, i) => [r, i]).sort((a, b) => regLabel(a[0]).localeCompare(regLabel(b[0]), loc()))
+      .forEach(([r, i]) => sr.add(new Option(regLabel(r), i)));
+  sr.value = String(st.reg);
+  sc.innerHTML = ''; sc.add(new Option(t('top-todos'), -1));
+  D.isoMeta.map((m, i) => [m, i])
+    .filter(([m]) => st.reg < 0 || m.reg === REGS[st.reg])
+    .sort((a, b) => (en() ? a[0].en : a[0].es).localeCompare(en() ? b[0].en : b[0].es, loc()))
+    .forEach(([m, i]) => sc.add(new Option(en() ? m.en : m.es, i)));
+  sc.value = String(st.cty);
+  if (sc.value === '') { st.cty = -1; sc.value = '-1'; }
+  sd.innerHTML = ''; sd.add(new Option(t('top-todos'), -1));
+  D.doms.forEach((d, i) => sd.add(new Option(en() ? d.en : d.es, i)));
+  sd.value = String(st.dom);
+  so.innerHTML = ''; so.add(new Option(t('top-todas'), -1));
+  D.occs.map((o, i) => [o, i])
+    .filter(([o]) => st.dom < 0 || o.dom === st.dom)
+    .sort((a, b) => (en() ? a[0].en : a[0].es).localeCompare(en() ? b[0].en : b[0].es, loc()))
+    .forEach(([o, i]) => so.add(new Option(en() ? o.en : o.es, i)));
+  so.value = String(st.occ);
+  if (so.value === '') { st.occ = -1; so.value = '-1'; }
+}
+
+function nombre(r) {
+  return en() ? r[1] : (r[2] || r[1]);
+}
+function filtrar() {
+  const out = [];
+  for (const r of D.rows) {
+    const m = r[3] >= 0 ? D.isoMeta[r[3]] : null;
+    const o = D.occs[r[4]];
+    if (st.cty >= 0) { if (r[3] !== st.cty) continue; }
+    else if (st.reg >= 0) { if (!m || m.reg !== REGS[st.reg]) continue; }
+    if (st.occ >= 0) { if (r[4] !== st.occ) continue; }
+    else if (st.dom >= 0 && o.dom !== st.dom) continue;
+    out.push(r);
+    if (out.length >= st.n) break;
+  }
+  return out;
+}
+function render() {
+  const H = { 'h-nombre': 'top-col-nombre', 'h-pais': 'top-col-pais', 'h-region': 'top-col-region', 'h-occ': 'top-col-occ', 'h-dom': 'top-col-dom', 'h-score': 'top-col-score' };
+  Object.entries(H).forEach(([id, k]) => { document.getElementById(id).textContent = t(k); });
+  const rows = filtrar();
+  const tb = document.getElementById('rows'); tb.innerHTML = '';
+  rows.forEach(r => {
+    const m = r[3] >= 0 ? D.isoMeta[r[3]] : null;
+    const o = D.occs[r[4]];
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td class="rk">' + r[0].toLocaleString(loc()) + '</td>' +
+      '<td class="nm">' + nombre(r) + '</td>' +
+      '<td class="mut">' + (m ? (en() ? m.en : m.es) : '—') + '</td>' +
+      '<td class="mut">' + (m ? regLabel(m.reg) : '—') + '</td>' +
+      '<td class="mut">' + (en() ? o.en : o.es) + '</td>' +
+      '<td class="mut">' + (en() ? D.doms[o.dom].en : D.doms[o.dom].es) + '</td>' +
+      '<td class="sc">' + r[5].toLocaleString(loc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '</td>';
+    tb.appendChild(tr);
+  });
+  const av = document.getElementById('aviso');
+  if (rows.length < st.n) { av.hidden = false; av.textContent = tpl('top-aviso-corte', { n: rows.length.toLocaleString(loc()) }); }
+  else av.hidden = true;
+}
+
+// ===== CSV =====
+function csvActual() {
+  const rows = filtrar();
+  const q = s => '"' + String(s).replace(/"/g, '""') + '"';
+  const head = ['rank', 'name_en', 'name_es', 'iso3', 'country', 'region', 'occupation', 'domain', 'birthyear', 'score_0_100'];
+  const lines = [head.join(',')];
+  rows.forEach(r => {
+    const m = r[3] >= 0 ? D.isoMeta[r[3]] : null;
+    const o = D.occs[r[4]];
+    lines.push([r[0], q(r[1]), q(r[2] || r[1]), m ? m.iso : '', q(m ? (en() ? m.en : m.es) : ''),
+                q(m ? regLabel(m.reg) : ''), q(en() ? o.en : o.es), q(en() ? D.doms[o.dom].en : D.doms[o.dom].es),
+                r[6] == null ? '' : r[6], r[5].toFixed(1)].join(','));
+  });
+  return '﻿' + lines.join('\n');
+}
+document.getElementById('btn-csv').addEventListener('click', () => {
+  const blob = new Blob([csvActual()], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = en() ? 'the-atlas-05-whos-who.csv' : 'el-atlas-05-quien-es-quien.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+});
+
+// ===== PNG (cuadrado 1200, mobile-first, minimalista) =====
+const PNG = { W: 1200, H: 1200, bg: '#FAF8F3', ink: '#1A1A1A', soft: '#4A4A4A', muted: '#8A8579', rule: '#E0DCC8', accent: '#BE5D32' };
+const SERIF = '"Source Serif 4", Georgia, serif';
+const SANS = '"Source Sans 3", Arial, sans-serif';
+function wrapText(ctx, text, maxW) {
+  const w = String(text).split(' '), out = []; let cur = '';
+  w.forEach(x => { const p = cur ? cur + ' ' + x : x; if (ctx.measureText(p).width > maxW && cur) { out.push(cur); cur = x; } else cur = p; });
+  if (cur) out.push(cur); return out;
+}
+const fitText = (ctx, s, maxW) => {
+  s = String(s); if (ctx.measureText(s).width <= maxW) return s;
+  while (s.length > 2 && ctx.measureText(s + '…').width > maxW) s = s.slice(0, -1);
+  return s + '…';
+};
+async function exportPng() {
+  try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
+  const all = filtrar(), shown = all.slice(0, 15);
+  const cv = document.createElement('canvas'); cv.width = PNG.W; cv.height = PNG.H;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = PNG.bg; ctx.fillRect(0, 0, PNG.W, PNG.H);
+  const PAD = 56, W = PNG.W - PAD * 2;
+  let y = 96;
+  ctx.fillStyle = PNG.ink; ctx.font = '700 52px ' + SERIF;
+  wrapText(ctx, document.querySelector('.chart-title').textContent, W).forEach(l => { ctx.fillText(l, PAD, y); y += 60; });
+  // subtítulo del PNG: solo los filtros activos (minimalista); sin filtros, nada
+  const partes = [];
+  if (st.cty >= 0) partes.push(en() ? D.isoMeta[st.cty].en : D.isoMeta[st.cty].es);
+  else if (st.reg >= 0) partes.push(regLabel(REGS[st.reg]));
+  if (st.occ >= 0) partes.push(en() ? D.occs[st.occ].en : D.occs[st.occ].es);
+  else if (st.dom >= 0) partes.push(en() ? D.doms[st.dom].en : D.doms[st.dom].es);
+  if (partes.length) {
+    y += 2; ctx.fillStyle = PNG.soft; ctx.font = 'italic 400 32px ' + SANS;
+    ctx.fillText(partes.join(' · '), PAD, y); y += 40;
+  }
+  y += 16;
+  const colRk = 86, colSc = 130;
+  const colNm = Math.round((W - colRk - colSc) * 0.52);
+  const colOc = W - colRk - colSc - colNm;
+  const bottom = PNG.H - 148;
+  const rowH = Math.max(50, Math.min(66, Math.floor((bottom - y - 44) / Math.max(shown.length, 1))));
+  ctx.font = '700 23px ' + SANS; ctx.fillStyle = PNG.muted; ctx.textAlign = 'left';
+  ctx.fillText('#', PAD, y + 28);
+  ctx.fillText(t('top-col-nombre').toUpperCase(), PAD + colRk, y + 28);
+  ctx.fillText((t('top-col-pais') + ' · ' + t('top-col-occ')).toUpperCase(), PAD + colRk + colNm, y + 28);
+  ctx.textAlign = 'right'; ctx.fillText(t('top-col-score').toUpperCase(), PAD + W, y + 28);
+  y += 44;
+  ctx.strokeStyle = PNG.ink; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(PAD + W, y); ctx.stroke();
+  shown.forEach(r => {
+    const m = r[3] >= 0 ? D.isoMeta[r[3]] : null;
+    const o = D.occs[r[4]];
+    const ty = y + rowH / 2 + 11;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = PNG.muted; ctx.font = '600 28px ' + SANS;
+    ctx.fillText(String(r[0]), PAD, ty);
+    ctx.fillStyle = PNG.ink; ctx.font = '600 31px ' + SANS;
+    ctx.fillText(fitText(ctx, nombre(r), colNm - 16), PAD + colRk, ty);
+    ctx.fillStyle = PNG.soft; ctx.font = '400 27px ' + SANS;
+    const meta = (m ? (en() ? m.en : m.es) : '—') + ' · ' + (en() ? o.en : o.es);
+    ctx.fillText(fitText(ctx, meta, colOc - 16), PAD + colRk + colNm, ty);
+    ctx.fillStyle = PNG.accent; ctx.font = '700 31px ' + SANS; ctx.textAlign = 'right';
+    ctx.fillText(r[5].toLocaleString(loc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }), PAD + W, ty);
+    y += rowH;
+    ctx.strokeStyle = PNG.rule; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(PAD + W, y); ctx.stroke();
+  });
+  // caption mínimo + firma (el custom del editor manda)
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const tx = (ae && ae.texts && ae.texts[en() ? 'en' : 'es']) || {};
+  let nota = (tx.caption || '').trim() || t('top-sources');
+  if (all.length > shown.length) nota += ' ' + tpl('top-png-top', { n: shown.length });
+  ctx.textAlign = 'left'; ctx.fillStyle = PNG.muted; ctx.font = '400 22px ' + SANS;
+  let ny = PNG.H - 88;
+  wrapText(ctx, nota, W).slice(0, 2).forEach(l => { ctx.fillText(l, PAD, ny); ny += 29; });
+  ctx.fillStyle = PNG.ink; ctx.font = '700 27px ' + SERIF; ctx.textAlign = 'right';
+  ctx.fillText(t('attribution-text'), PNG.W - PAD, PNG.H - 30);
+  return new Promise(res => cv.toBlob(b => {
+    if (b) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = en() ? 'the-atlas-05-whos-who.png' : 'el-atlas-05-quien-es-quien.png';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+    }
+    res(b ? b.size : 0);
+  }, 'image/png'));
+}
+document.getElementById('btn-png').addEventListener('click', exportPng);
+window.__topExportPng = exportPng;
+
+// ===== controles =====
+document.getElementById('c-n').addEventListener('input', e => { st.n = +e.target.value; render(); });
+document.getElementById('c-reg').addEventListener('input', e => { st.reg = +e.target.value; st.cty = -1; fillSelects(); render(); });
+document.getElementById('c-cty').addEventListener('input', e => { st.cty = +e.target.value; render(); });
+document.getElementById('c-dom').addEventListener('input', e => { st.dom = +e.target.value; st.occ = -1; fillSelects(); render(); });
+document.getElementById('c-occ').addEventListener('input', e => { st.occ = +e.target.value; render(); });
+
+applyI18n();
+fillSelects();
+render();
+if (typeof setupLangToggle === 'function') setupLangToggle(() => { applyI18n(); fillSelects(); render(); });
+</script>
+<script src="../lib/editor.js?v=8"></script>
+</body>
+</html>

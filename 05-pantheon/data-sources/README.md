@@ -84,6 +84,8 @@ sobre las ocupaciones de Pantheon", nunca "dominios de Pantheon".
 | 9 | `export_more.py` | `data-fama-oficio/migracion/subnacional.js` | Charts 6–8. |
 | 10 | `merge_metros.py` | `data-metros.js` | Chart 9. |
 | 11 | `build_percap_data.py` | `data-percap-figs/pop/topfig.js` | Tablero `percap.html`. |
+| 11b | `build_top_names.py` | `nombres_es.csv` | Baja de Wikidata el nombre en español del top 5.000 (la tabla quién-es-quién los necesita; Pantheon solo trae inglés). Acumulativo, reintentable. |
+| 11c | `build_top_data.py` | `data-top.js` | Dataset de `top.html`: top 5.000 figuras con nombre es/en, país, región, ocupación y dominio en ambos idiomas. |
 | 12 | `build_geo_mini.py` | `data-country-geo-mini.js` | Geometría liviana del mapa (no depende del talento). |
 | 13 | `build_map_data.py` | `data-percap-map.js`, `data-percap-topfig.js` | Mapa `percap-map.html`. **Va último**: pisa el `topfig` del paso 11. |
 
