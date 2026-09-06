@@ -86,7 +86,7 @@ for m in sorted(glob + latam, key=lambda r: -r['n']):
     if k in seen: continue
     seen.add(k); merged.append(m)
 out = {'doms': DOMS, 'metros': merged}
-OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-talento'
+OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-pantheon'
 open(OUT + r'\data-metros.js', 'w', encoding='utf-8').write('// Chart 9 — metros de la fama (clustering 35km + backfill Wikidata).\nwindow.METROS=' + json.dumps(out, ensure_ascii=False, separators=(',', ':')) + ';\n')
 print('data-metros.js:', len(rows[:60]), 'metros')
 print('\nTOP 20 mundial:')

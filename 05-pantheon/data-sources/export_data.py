@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Genera los 4 data-*.js para 05-talento. Corre desde _talento_work."""
+"""Genera los 4 data-*.js para 05-pantheon. Corre desde _talento_work."""
 import pandas as pd, numpy as np, json, warnings
 warnings.filterwarnings('ignore')
-OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-talento'
+OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-pantheon'
 
 P = pd.read_csv('master_corregido.csv')   # metodologia corregida (gate multi-idioma + score reconstruido); ver corregido.py
 M = pd.read_csv('gdp-per-capita-maddison-project-database.csv')

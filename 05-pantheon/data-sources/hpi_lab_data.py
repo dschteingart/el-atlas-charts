@@ -72,7 +72,7 @@ for _,x in d.iterrows():
 out = {'occs':[occ_lbl(o) for o in occs], 'occDom':[dom_idx[o2d[o]] for o in occs], 'doms':DOMS,
        'ctys':[cty_lbl(c) for c in ctys], 'ctyReg':ctyReg, 'regs':[REG_ES[r] for r in REGION_ORDER],
        'domMeanLnV':[dom_mean[dm] for dm in DOMS], 'globMeanLnV':glob_mean, 'refYear':2025, 'figs':figs}
-OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-talento'
+OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-pantheon'
 open(OUT+r'\data-hpi-lab.js','w',encoding='utf-8').write('// Laboratorio HPI — columnas crudas del archivo Pantheon 2025 (top 40k por hpi).\n// figs: [name, occIdx, birthyear, L, Lstar, V_noEN, CV, hpi_archivo, ctyIdx]\nwindow.HPILAB='+json.dumps(out,ensure_ascii=False,separators=(',',':'))+';\n')
 import os
 print('data-hpi-lab.js:', len(figs),'figuras |', round(os.path.getsize(OUT+r'\data-hpi-lab.js')/1e6,2),'MB')

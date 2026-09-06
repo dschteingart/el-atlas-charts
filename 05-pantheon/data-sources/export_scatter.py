@@ -3,7 +3,7 @@
 destacada) + series PIB/población por país (universo completo de ~162)."""
 import pandas as pd, numpy as np, json, os
 import warnings; warnings.filterwarnings('ignore')
-OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-talento\data-explora.js'
+OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-pantheon\data-explora.js'
 N1  = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\01-bienestar-violencia\data-scatter.js'
 
 P   = pd.read_csv('master_corregido.csv')   # metodologia corregida; ver corregido.py

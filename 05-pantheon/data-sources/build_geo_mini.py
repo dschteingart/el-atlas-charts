@@ -7,7 +7,7 @@ import json, os
 from shapely.geometry import shape, mapping, MultiPolygon
 
 SRC = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\03-futbol\data-country-geo.js'
-OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-talento\data-country-geo-mini.js'
+OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-pantheon\data-country-geo-mini.js'
 TOL = 0.10          # tolerancia de simplificación en grados (~10 km)
 ABS_MIN = 0.02      # área mínima ABSOLUTA de una isla para mantenerla (~250 km²);
                     # se mantiene SIEMPRE el polígono mayor del país. (Umbral

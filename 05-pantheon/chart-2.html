@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Atlas — La ciencia, la gran ausente</title>
-<meta name="description" content="América Latina aporta apenas el 1% de los científicos célebres del mundo: para su nivel de desarrollo, produce muy poca ciencia. Gráfico interactivo de El Atlas.">
+<title>El Atlas — La huella de cada país</title>
+<meta name="description" content="Béisbol en el Caribe, boxeo en Cuba, ciclismo en Colombia: en qué disciplina se especializa el talento de cada país latinoamericano. Gráfico interactivo de El Atlas.">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
-<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-talento/chart-3.html">
-<meta property="og:title" content="La ciencia, la gran ausente — El Atlas N°5">
-<meta property="og:description" content="América Latina aporta apenas el 1% de los científicos célebres del mundo: para su desarrollo, produce muy poca ciencia.">
-<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-talento/thumbs/chart-3.png">
-<meta property="og:image:alt" content="Scatter de PIB per cápita vs científicos célebres por millón, América Latina debajo de la línea">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/chart-2.html">
+<meta property="og:title" content="Cada país tiene su especialidad — El Atlas N°5">
+<meta property="og:description" content="Béisbol en el Caribe, boxeo en Cuba, ciclismo en Colombia: la huella del talento de cada país latinoamericano.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/chart-2.png">
+<meta property="og:image:alt" content="Heatmap de especialización del talento por país y disciplina">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="La ciencia, la gran ausente — El Atlas N°5">
-<meta name="twitter:description" content="América Latina aporta apenas el 1% de los científicos célebres del mundo: para su desarrollo, produce muy poca ciencia.">
-<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-talento/thumbs/chart-3.png">
+<meta name="twitter:title" content="Cada país tiene su especialidad — El Atlas N°5">
+<meta name="twitter:description" content="Béisbol en el Caribe, boxeo en Cuba, ciclismo en Colombia: la huella del talento de cada país latinoamericano.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/chart-2.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,7 +32,7 @@
   @media (max-width: 768px) {
     .wrap-wide .chart-title { font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 4px; }
     .wrap-wide .chart-subtitle { font-size: 12.5px; font-weight: 400; color: var(--ink-muted); line-height: 1.4; margin: 0 0 8px; }
-    .chart-svg-wrap svg { height: min(74vh, 600px); }
+    .chart-svg-wrap svg { height: min(80vh, 640px); }
     .footer .sources, .footer .attribution { font-size: 10.5px; }
     .footer .download { font-size: 11px; padding: 6px 10px; }
     .m-desktop-only { display: none; }
@@ -52,22 +52,22 @@
     </div>
   </header>
 
-  <section class="chart-block" data-chart="3" data-editor-id="ciencia-talento">
-    <h2 class="chart-title" data-i18n="c3-title">La ciencia, la gran ausente</h2>
-    <p class="chart-subtitle" data-i18n="c3-subtitle">América Latina aporta apenas el 1% de los científicos célebres del mundo. Cada punto es un país; la línea marca lo esperado para cada nivel de PIB.</p>
+  <section class="chart-block" data-chart="2" data-editor-id="huella-talento">
+    <h2 class="chart-title" data-i18n="c2-title">Cada país tiene su especialidad</h2>
+    <p class="chart-subtitle" data-i18n="c2-subtitle">Béisbol en el Caribe, boxeo en Cuba, ciclismo en Colombia: cuántas veces más célebres produce cada país en cada disciplina respecto del promedio mundial.</p>
 
     <div class="chart-svg-wrap">
-      <svg id="chart3" viewBox="0 0 1100 680" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="tooltip" id="tooltip3"></div>
+      <svg id="chart2" viewBox="0 0 1100 720" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip2"></div>
     </div>
   </section>
 
   <div class="footer">
     <p>
-      <button class="download" data-chart="3-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="3" data-i18n="footer-download-png">Descargar PNG</button>
+      <button class="download" data-chart="2-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="2" data-i18n="footer-download-png">Descargar PNG</button>
     </p>
     <div class="footer-row">
-      <p class="sources m-desktop-only" data-i18n="c3-sources">Datos: Pantheon (Datawheel) y Maddison Project.</p>
+      <p class="sources m-desktop-only" data-i18n="c2-sources">Datos: Pantheon (Datawheel).</p>
       <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
     </div>
   </div>
@@ -77,14 +77,14 @@
 <script src="../lib/i18n.js"></script>
 <script src="./i18n-issue.js?v=7"></script>
 <script src="./utils.js"></script>
-<script src="./data-ciencia.js?v=7"></script>
-<script src="./ciencia.js?v=2"></script>
+<script src="./data-huella.js?v=7"></script>
+<script src="./huella.js?v=2"></script>
 <script src="./png-export.js?v=1"></script>
 <script>
-  state[3] = {};
-  initCiencia();
+  state[2] = {};
+  initHuella();
   applyI18n();
-  setupLangToggle(() => drawCiencia());
+  setupLangToggle(() => drawHuella());
 </script>
 <div id="chart-nav"></div>
 <script src="./nav.js?v=1"></script>

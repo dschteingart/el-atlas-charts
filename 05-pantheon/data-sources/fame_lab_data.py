@@ -63,7 +63,7 @@ for _,x in d.iterrows():
 out={'occs':[occ_lbl(o) for o in occs],'occDom':[dom_idx[o2d[o]] for o in occs],'doms':DOMS,
      'ctys':[cty_lbl(c) for c in ctys],'ctyReg':ctyReg,'regs':[REG_ES[r] for r in REG],'refYear':2025,
      'cols':['name','occIdx','birthyear','ctyIdx','n_langs','langs1k','langs10k','total12','total_all','median','pctM100','pctM300','multi'],'figs':figs}
-OUT=r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-talento'
+OUT=r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-pantheon'
 open(OUT+r'\data-fame-lab.js','w',encoding='utf-8').write('// Lab de fama reconstruida (Pantheon API /pageviews). figs cols: name,occ,by,cty,n_langs,langs1k,langs10k,total12,total_all,median,pctM100,pctM300\nwindow.FAMELAB='+json.dumps(out,ensure_ascii=False,separators=(',',':'))+';\n')
 import os
 print('data-fame-lab.js:',len(figs),'figuras |',round(os.path.getsize(OUT+r'\data-fame-lab.js')/1e6,2),'MB | occs',len(occs),'| paises',len(ctys))

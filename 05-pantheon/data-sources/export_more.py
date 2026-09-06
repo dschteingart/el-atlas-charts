@@ -2,7 +2,7 @@
 """Genera data para 3 charts nuevos del N°4: fama-oficio, migración, subnacional."""
 import pandas as pd, numpy as np, json, pycountry, warnings, corregido
 warnings.filterwarnings('ignore')
-OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-talento'
+OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-pantheon'
 RAW = corregido.aplicar(pd.read_csv('person_2025_update.csv', low_memory=False), etiqueta='RAW')
 PE  = pd.read_csv('master_corregido.csv')   # metodologia corregida; ver corregido.py
 ADM1= pd.read_csv('talento_ALL_abs_adm1_corregido.csv')   # agregado subnacional con el gate aplicado; ver build_subnac_corregido.py

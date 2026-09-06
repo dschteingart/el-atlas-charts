@@ -3,12 +3,12 @@
 CSV de OWID que subió Daniel, para el chart de figuras célebres per cápita
 (promedio de tasas anuales). Anual sin huecos desde 1800 → interpola interior
 si hubiera huecos y extrapola plano en los extremos (país que arranca tarde).
-Incluye la serie mundial (OWID_WRL). Salida: 05-talento/data-percap-pop.js
+Incluye la serie mundial (OWID_WRL). Salida: 05-pantheon/data-percap-pop.js
 (pob en MILES, redondeada, para achicar el archivo)."""
 import csv, json, os
 
 SRC = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\insumos\#5 - Talento\pop_owid\population.csv'
-OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-talento\data-percap-pop.js'
+OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-pantheon\data-percap-pop.js'
 Y0, Y1 = 1850, 2010
 
 raw = {}  # code -> {year: pop}

@@ -13,15 +13,15 @@ import csv, json, base64, os
 from collections import Counter
 
 ROOT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts'
-EXPLORA = ROOT + r'\05-talento\data-explora.js'
+EXPLORA = ROOT + r'\05-pantheon\data-explora.js'
 N1 = ROOT + r'\01-bienestar-violencia\data-scatter.js'
-CNAMES = ROOT + r'\05-talento\country-names.js'
+CNAMES = ROOT + r'\05-pantheon\country-names.js'
 PERSONS = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\insumos\#5 - Talento\persons_enriched.csv'
 RECUP = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\insumos\#5 - Talento\lugares_recuperados.csv'   # iso3 recuperado; ver recuperar_lugar.py
 CORR = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\insumos\#5 - Talento\pantheon_corregido.csv'
 POPCSV = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\insumos\#5 - Talento\pop_owid\population.csv'
-OUT_M = ROOT + r'\05-talento\data-percap-map.js'
-OUT_T = ROOT + r'\05-talento\data-percap-topfig.js'
+OUT_M = ROOT + r'\05-pantheon\data-percap-map.js'
+OUT_T = ROOT + r'\05-pantheon\data-percap-topfig.js'
 YMIN, YMAX, YOFF = -4000, 2021, 4000
 
 def load_js_obj(path, opener):
