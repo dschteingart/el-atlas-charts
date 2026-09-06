@@ -233,6 +233,9 @@ async function exportPng() {
   try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
   const all = filtrar(), shown = all.slice(0, 15);
   const fotos = await Promise.all(shown.map(r => cargarFoto(fotoUrl(r, 120))));
+  // en file:// Chrome bloquea el CORS de las imagenes: si no cargo ninguna,
+  // mejor sin columna de retratos que quince circulos vacios
+  const hayFotos = fotos.some(Boolean);
   const cv = document.createElement('canvas'); cv.width = PNG.W; cv.height = PNG.H;
   const ctx = cv.getContext('2d');
   ctx.fillStyle = PNG.bg; ctx.fillRect(0, 0, PNG.W, PNG.H);
@@ -240,18 +243,24 @@ async function exportPng() {
   let y = 96;
   ctx.fillStyle = PNG.ink; ctx.font = '700 52px ' + SERIF;
   wrapText(ctx, document.querySelector('.chart-title').textContent, W).forEach(l => { ctx.fillText(l, PAD, y); y += 60; });
-  // subtítulo del PNG: solo los filtros activos (minimalista); sin filtros, nada
+  // subtitulo del PNG: el custom del editor manda; si no, el de la pagina
+  const aeS = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const txS = (aeS && aeS.texts && aeS.texts[en() ? 'en' : 'es']) || {};
+  const subPng = (txS.subtitle || '').trim() || t('top-subtitle');
+  y += 2; ctx.fillStyle = PNG.soft; ctx.font = 'italic 400 30px ' + SANS;
+  wrapText(ctx, subPng, W).slice(0, 2).forEach(l => { ctx.fillText(l, PAD, y); y += 40; });
+  // filtros activos, en una linea mas chica
   const partes = [];
   if (st.cty >= 0) partes.push(en() ? D.isoMeta[st.cty].en : D.isoMeta[st.cty].es);
   else if (st.reg >= 0) partes.push(regLabel(REGS[st.reg]));
   if (st.occ >= 0) partes.push(en() ? D.occs[st.occ].en : D.occs[st.occ].es);
   else if (st.dom >= 0) partes.push(en() ? D.doms[st.dom].en : D.doms[st.dom].es);
   if (partes.length) {
-    y += 2; ctx.fillStyle = PNG.soft; ctx.font = 'italic 400 32px ' + SANS;
-    ctx.fillText(partes.join(' · '), PAD, y); y += 40;
+    y += 2; ctx.fillStyle = PNG.muted; ctx.font = '600 27px ' + SANS;
+    ctx.fillText(partes.join(' · '), PAD, y); y += 36;
   }
-  y += 16;
-  const colRk = 86, colPh = 62, colSc = 130;
+  y += 14;
+  const colRk = 86, colPh = hayFotos ? 62 : 0, colSc = 130;
   const colNm = Math.round((W - colRk - colPh - colSc) * 0.52);
   const colOc = W - colRk - colSc - colNm;
   const bottom = PNG.H - 148;
@@ -269,13 +278,15 @@ async function exportPng() {
     const o = D.occs[r[4]];
     const ty = y + rowH / 2 + 11;
     // retrato circular (como en Pantheon); sin foto queda un circulo neutro
-    const im = fotos[ri], dph = Math.min(rowH - 10, 48), pcx = PAD + colRk + dph / 2, pcy = y + rowH / 2;
-    ctx.save(); ctx.beginPath(); ctx.arc(pcx, pcy, dph / 2, 0, Math.PI * 2); ctx.clip();
-    if (im) {
-      const s0 = Math.min(im.width, im.height);
-      ctx.drawImage(im, (im.width - s0) / 2, Math.max(0, (im.height - s0) / 6), s0, s0, pcx - dph / 2, pcy - dph / 2, dph, dph);
-    } else { ctx.fillStyle = '#ECE7D8'; ctx.fillRect(pcx - dph / 2, pcy - dph / 2, dph, dph); }
-    ctx.restore();
+    if (hayFotos) {
+      const im = fotos[ri], dph = Math.min(rowH - 10, 48), pcx = PAD + colRk + dph / 2, pcy = y + rowH / 2;
+      ctx.save(); ctx.beginPath(); ctx.arc(pcx, pcy, dph / 2, 0, Math.PI * 2); ctx.clip();
+      if (im) {
+        const s0 = Math.min(im.width, im.height);
+        ctx.drawImage(im, (im.width - s0) / 2, Math.max(0, (im.height - s0) / 6), s0, s0, pcx - dph / 2, pcy - dph / 2, dph, dph);
+      } else { ctx.fillStyle = '#ECE7D8'; ctx.fillRect(pcx - dph / 2, pcy - dph / 2, dph, dph); }
+      ctx.restore();
+    }
     ctx.textAlign = 'left';
     ctx.fillStyle = PNG.muted; ctx.font = '600 28px ' + SANS;
     ctx.fillText(String(r[0]), PAD, ty);
@@ -295,14 +306,21 @@ async function exportPng() {
   const tx = (ae && ae.texts && ae.texts[en() ? 'en' : 'es']) || {};
   let nota = (tx.caption || '').trim() || t('top-png-note');
   if (all.length > shown.length) nota += ' ' + tpl('top-png-top', { n: shown.length });
+  // el caption NO pasa por debajo de la firma: se le reserva el ancho del bloque
+  ctx.font = '700 34px ' + SANS;
+  const firmaW = Math.max(ctx.measureText('El Atlas').width, (() => { ctx.font = '600 27px ' + SANS; return ctx.measureText('Daniel Schteingart').width; })());
   ctx.textAlign = 'left'; ctx.fillStyle = PNG.muted; ctx.font = '400 22px ' + SANS;
-  let ny = PNG.H - 88;
-  wrapText(ctx, nota, W).slice(0, 2).forEach(l => { ctx.fillText(l, PAD, ny); ny += 29; });
+  const notaMaxW = W - firmaW - 46;
+  const notaLineas = wrapText(ctx, nota, notaMaxW).slice(0, 3);
+  const notaLineH = 29;
+  let ny = PNG.H - 46 - (notaLineas.length - 1) * notaLineH;
+  const notaCentroY = ny + ((notaLineas.length - 1) * notaLineH) / 2 - 8;
+  notaLineas.forEach(l => { ctx.fillText(l, PAD, ny); ny += notaLineH; });
   // firma de la casa: dos lineas, Source Sans, terracota, bloque a la derecha
   (function () {
     const partes = t('attribution-text').split('\u00b7').map(x => x.trim()).filter(Boolean);
     const size1 = 34, size2 = Math.round(34 * 0.78), lineH = Math.round(34 * 1.15);
-    const cyF = PNG.H - 64;
+    const cyF = notaCentroY;   // centrada en el bloque del caption, como png-export
     ctx.fillStyle = PNG.accent;
     ctx.textBaseline = 'middle';
     if (partes.length >= 2) {

@@ -347,13 +347,21 @@ async function exportPng() {
   const domTxt = st.dom >= 0 ? (en() ? E.domains[st.dom].en : E.domains[st.dom].es) : null;
   if (domTxt) notaTxt = (en() ? 'Domain: ' : 'Dominio: ') + domTxt + '. ' + notaTxt;
   if (st.vista === 'pais') notaTxt += ' ' + tpl('rep-png-note-pais', { n: shown.length });
-  let ny = PNG.H - 96;
-  wrapText(ctx, notaTxt, W).slice(0, 2).forEach(l => { ctx.fillText(l, PAD, ny); ny += 29; });
+  // el caption no pasa por debajo de la firma: ancho reservado + firma centrada
+  ctx.font = '700 34px ' + SANS;
+  const firmaW = Math.max(ctx.measureText('El Atlas').width, (() => { ctx.font = '600 27px ' + SANS; return ctx.measureText('Daniel Schteingart').width; })());
+  ctx.fillStyle = PNG.muted; ctx.font = '400 22px ' + SANS; ctx.textAlign = 'left';
+  const notaMaxW = W - firmaW - 46;
+  const notaLineas = wrapText(ctx, notaTxt, notaMaxW).slice(0, 3);
+  const notaLineH = 29;
+  let ny = PNG.H - 46 - (notaLineas.length - 1) * notaLineH;
+  const notaCentroY = ny + ((notaLineas.length - 1) * notaLineH) / 2 - 8;
+  notaLineas.forEach(l => { ctx.fillText(l, PAD, ny); ny += notaLineH; });
   // firma de la casa: dos lineas, Source Sans, terracota, bloque a la derecha
   (function () {
     const partes = t('attribution-text').split('\u00b7').map(x => x.trim()).filter(Boolean);
     const size1 = 34, size2 = Math.round(34 * 0.78), lineH = Math.round(34 * 1.15);
-    const cyF = PNG.H - 64;
+    const cyF = notaCentroY;
     ctx.fillStyle = PNG.accent;
     ctx.textBaseline = 'middle';
     if (partes.length >= 2) {
