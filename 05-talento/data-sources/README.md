@@ -51,6 +51,23 @@ reproduce exactamente `pantheon_corregido.csv`.
 del archivo Pantheon. Quedó como registro del camino recorrido; **no alimenta ningún
 gráfico publicado**.
 
+## Dominios: reagrupamiento propio, no el de Pantheon
+
+Los 6 dominios de El Atlas no son los 8 oficiales de Pantheon. No quedaba otra: el
+archivo 2025 no trae la columna `domain`, la taxonomía oficial (1.0, 2014) no cubre 20
+ocupaciones nuevas (4.972 figuras), y los dominios oficiales dejan astillas ilegibles
+(Exploration 0,9%, Business & Law 1,0%, Public Figure 2,5%). El mapeo completo —cada
+ocupación, su dominio Atlas y su dominio Pantheon 1.0— está en
+`taxonomia_dominios.csv` (lo genera `taxonomia_dominios.py`). Hay 17 ocupaciones que
+cruzan de dominio (3.112 figuras, 2,7%): ciencias sociales a Humanidades, farándula a
+Arte y espectáculo, astronautas a Ciencia, periodistas y abogados a Poder. Decisión
+ratificada por Daniel el 6/9/2026.
+
+Chequeo de robustez que blinda el chart 3: el share de América Latina en la ciencia
+mundial da **1,0% con nuestro criterio y 1,0% con el de Pantheon** (sociales
+incluidas). El hallazgo no depende de la taxonomía. Al citar: "reagrupamiento propio
+sobre las ocupaciones de Pantheon", nunca "dominios de Pantheon".
+
 ## Orden de ejecución
 
 | # | Script | Escribe | Qué hace |

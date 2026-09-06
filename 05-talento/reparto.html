@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El reparto de la fama — El Atlas N°5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<style>
+  .wrap { max-width: 980px; margin: 0 auto; padding: 16px 20px 40px; }
+  h1 { font-size: 24px; margin: 0 0 2px; }
+  .sub { font-family: var(--sans); font-size: 13.5px; color: var(--ink-muted); margin: 0 0 14px; max-width: 760px; line-height: 1.5; }
+  .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; margin-bottom: 14px; }
+  .ctl label { display: block; font-family: var(--sans); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); margin-bottom: 5px; }
+  .seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 9px; overflow: hidden; }
+  .seg button { font-family: var(--sans); font-size: 13px; font-weight: 600; padding: 7px 14px; border: none; background: var(--bg); color: var(--ink-soft); cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--rule); }
+  .seg button.on { background: var(--accent); color: #fff; }
+  select, input[type=number] { font-family: var(--sans); font-size: 13.5px; padding: 7px 9px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink); }
+  input[type=number] { width: 86px; }
+  .corte-row { display: flex; gap: 10px; align-items: center; }
+  .corte-row input[type=range] { width: 200px; accent-color: var(--accent); }
+  table { border-collapse: collapse; font-family: var(--sans); width: 100%; max-width: 860px; }
+  thead th { position: sticky; top: 0; background: var(--bg); z-index: 2; }
+  th, td { padding: 7px 11px; font-size: 13.5px; border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); font-weight: 700; cursor: pointer; user-select: none; }
+  th:hover { color: var(--ink); }
+  th .arr { color: var(--accent); }
+  th.name, td.name { text-align: left; }
+  td.name { font-weight: 600; color: var(--ink); }
+  td { font-variant-numeric: tabular-nums; }
+  td.n { color: var(--ink-muted); font-size: 12.5px; }
+  tbody tr:hover td { filter: brightness(0.96); }
+  .tblbox { max-height: 640px; overflow: auto; border: 1px solid var(--rule); border-radius: 10px; }
+  .note { font-family: var(--sans); font-size: 11.5px; color: var(--ink-muted); line-height: 1.55; margin-top: 16px; max-width: 860px; }
+  .note b { color: var(--ink); }
+  #resumen { font-family: var(--sans); font-size: 12px; color: var(--ink-muted); margin: 0 0 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>El reparto de la fama</h1>
+  <p class="sub">Qué parte de las figuras célebres del mundo aporta cada región (o país), separando a los nacidos <b>antes</b> y <b>después</b> de un año de corte. Cada celda: % del total mundial de esa era.</p>
+
+  <div class="controls">
+    <div class="ctl"><label>Vista</label>
+      <div class="seg" id="c-vista"><button data-v="region" class="on">Región</button><button data-v="pais">País</button></div>
+    </div>
+    <div class="ctl"><label>Dominio</label>
+      <select id="c-dom"><option value="-1">Todos</option></select>
+    </div>
+    <div class="ctl"><label>Año de corte</label>
+      <div class="corte-row">
+        <input type="number" id="c-corte-v" step="10" min="-3500" max="2021" value="1900">
+        <input type="range" id="c-corte" min="-600" max="2000" step="25" value="1900">
+      </div>
+    </div>
+    <div class="ctl" id="c-min-wrap" style="display:none;"><label>Mín. figuras</label>
+      <select id="c-min"><option>10</option><option selected>25</option><option>50</option><option>100</option></select>
+    </div>
+  </div>
+
+  <p id="resumen"></p>
+  <div class="tblbox"><table>
+    <thead><tr>
+      <th class="name" data-c="name">Región</th>
+      <th data-c="pre" id="h-pre">Hasta 1900</th>
+      <th data-c="post" id="h-post">Desde 1900</th>
+      <th data-c="tot">Total</th>
+      <th data-c="dif" title="Desde − Hasta, en puntos porcentuales">Δ (pp)</th>
+      <th data-c="n" title="Figuras totales del grupo en la selección">n</th>
+    </tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+
+  <p class="note">
+    <b>Cómo leerlo.</b> "Hasta" = figuras nacidas <b>antes</b> del año de corte; "Desde" = nacidas en ese año o después. Cada columna suma ~100% sobre el total mundial de figuras de esa era con país de nacimiento conocido. <b>Δ</b> = cuántos puntos porcentuales ganó (terracota) o perdió (azul) el grupo entre las dos eras. Universo: base depurada del N°5 (solo figuras multiidioma), la misma del mapa; nacimientos de −3500 a 2021. Dominios: reagrupamiento propio sobre las ocupaciones de Pantheon (ver <code>data-sources/taxonomia_dominios.csv</code>). <b>Fuentes:</b> Pantheon (Datawheel), fama reconstruida por El Atlas.
+  </p>
+</div>
+
+<script src="./data-percap-map.js?v=6"></script>
+<script>
+const E = window.PCMAP;
+const REG_LABEL = {
+  'Latin America': 'América Latina', 'Caribbean': 'Caribe', 'Western Europe': 'Europa Occidental',
+  'Eastern Europe & Central Asia': 'Europa del Este y Asia Central',
+  'North America, Australia & New Zealand': 'Norteamérica, Australia y N.Z.',
+  'East Asia': 'Asia Oriental', 'Southeast Asia': 'Sudeste Asiático', 'South Asia': 'Asia del Sur',
+  'Middle East & North Africa': 'Medio Oriente y N. de África', 'Sub-Saharan Africa': 'África Subsahariana'
+};
+// decode del buffer del mapa: 6 bytes/figura (iso, subId, year13b+multi bit15, score*100)
+(function decodeF() {
+  const F = E.F, bin = atob(F.b64), n = F.n;
+  const iso = new Uint8Array(n), sub = new Uint8Array(n), year = new Int16Array(n), multi = new Uint8Array(n);
+  for (let i = 0; i < n; i++) {
+    const o = i * 6; iso[i] = bin.charCodeAt(o); sub[i] = bin.charCodeAt(o + 1);
+    const yw = bin.charCodeAt(o + 2) | (bin.charCodeAt(o + 3) << 8);
+    year[i] = (yw & 0x7FFF) - 4000; multi[i] = (yw >> 15) & 1;
+  }
+  F.iso = iso; F.sub = sub; F.year = year; F.multi = multi;
+})();
+const SUBDOM = E.subMeta.map(s => s.dom);
+const NI = E.isoMeta.length;
+
+const st = { vista: 'region', dom: -1, corte: 1900, min: 25, sortC: 'tot', sortDir: -1 };
+const fmt = v => v == null ? '—' : v.toLocaleString('es-AR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+
+E.domains.forEach((d, i) => document.getElementById('c-dom').add(new Option(d.es, i)));
+
+function compute() {
+  const pre = new Float64Array(NI), post = new Float64Array(NI);
+  const F = E.F, n = F.n, dv = st.dom, corte = st.corte;
+  for (let i = 0; i < n; i++) {
+    if (!F.multi[i]) continue;
+    if (dv >= 0 && SUBDOM[F.sub[i]] !== dv) continue;
+    if (F.year[i] < corte) pre[F.iso[i]]++; else post[F.iso[i]]++;
+  }
+  let sumPre = 0, sumPost = 0;
+  for (let k = 0; k < NI; k++) { sumPre += pre[k]; sumPost += post[k]; }
+  const sumTot = sumPre + sumPost;
+
+  let rows = [];
+  if (st.vista === 'region') {
+    const acc = {};
+    for (let k = 0; k < NI; k++) {
+      const r = E.isoMeta[k].reg; if (!r) continue;
+      const a = acc[r] || (acc[r] = { pre: 0, post: 0 });
+      a.pre += pre[k]; a.post += post[k];
+    }
+    rows = Object.keys(acc).map(r => ({ name: REG_LABEL[r] || r, pre: acc[r].pre, post: acc[r].post }));
+  } else {
+    for (let k = 0; k < NI; k++) {
+      const t = pre[k] + post[k];
+      if (t >= st.min) rows.push({ name: E.isoMeta[k].es, pre: pre[k], post: post[k] });
+    }
+  }
+  rows.forEach(r => {
+    r.n = r.pre + r.post;
+    r.pre = sumPre ? r.pre / sumPre * 100 : null;
+    r.post = sumPost ? r.post / sumPost * 100 : null;
+    r.tot = sumTot ? r.n / sumTot * 100 : null;
+    r.dif = (r.pre != null && r.post != null) ? r.post - r.pre : null;
+  });
+  return { rows, sumPre, sumPost };
+}
+
+function render() {
+  document.getElementById('h-pre').firstChild && 0;
+  const { rows, sumPre, sumPost } = compute();
+  const c = st.sortC, dir = st.sortDir;
+  rows.sort((a, b) => c === 'name' ? dir * String(a.name).localeCompare(b.name, 'es') : dir * ((a[c] ?? -1e9) - (b[c] ?? -1e9)));
+  document.querySelectorAll('thead th').forEach(th => {
+    th.innerHTML = th.innerHTML.replace(/ <span class="arr">.*<\/span>/, '');
+    if (th.dataset.c === c) th.innerHTML += ' <span class="arr">' + (dir < 0 ? '↓' : '↑') + '</span>';
+  });
+  document.getElementById('h-pre').childNodes[0].nodeValue = 'Hasta ' + st.corte;
+  document.getElementById('h-post').childNodes[0].nodeValue = 'Desde ' + st.corte;
+  document.querySelector('th.name').childNodes[0].nodeValue = st.vista === 'region' ? 'Región' : 'País';
+  document.getElementById('resumen').textContent =
+    'Figuras en la selección: ' + sumPre.toLocaleString('es-AR') + ' nacidas antes de ' + st.corte +
+    ' · ' + sumPost.toLocaleString('es-AR') + ' desde ' + st.corte + '.';
+
+  const mx = { pre: 0, post: 0, tot: 0, dif: 0 };
+  rows.forEach(r => { ['pre', 'post', 'tot'].forEach(k => { if (r[k] > mx[k]) mx[k] = r[k]; }); if (Math.abs(r.dif) > mx.dif) mx.dif = Math.abs(r.dif); });
+  const heat = (v, m) => 'background:rgba(190,93,50,' + (m ? (v / m * .5).toFixed(3) : 0) + ')';
+  const heatD = (v, m) => 'background:rgba(' + (v >= 0 ? '190,93,50' : '74,111,143') + ',' + (m ? (Math.abs(v) / m * .5).toFixed(3) : 0) + ')';
+
+  const tb = document.getElementById('rows'); tb.innerHTML = '';
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td class="name">' + r.name + '</td>' +
+      '<td style="' + heat(r.pre, mx.pre) + '">' + fmt(r.pre) + '</td>' +
+      '<td style="' + heat(r.post, mx.post) + '">' + fmt(r.post) + '</td>' +
+      '<td style="' + heat(r.tot, mx.tot) + '">' + fmt(r.tot) + '</td>' +
+      '<td style="' + heatD(r.dif, mx.dif) + '">' + (r.dif == null ? '—' : (r.dif >= 0 ? '+' : '−') + fmt(Math.abs(r.dif))) + '</td>' +
+      '<td class="n">' + r.n.toLocaleString('es-AR') + '</td>';
+    tb.appendChild(tr);
+  });
+}
+
+document.querySelectorAll('#c-vista button').forEach(b => b.addEventListener('click', () => {
+  st.vista = b.dataset.v;
+  document.querySelectorAll('#c-vista button').forEach(x => x.classList.toggle('on', x === b));
+  document.getElementById('c-min-wrap').style.display = st.vista === 'pais' ? '' : 'none';
+  render();
+}));
+document.getElementById('c-dom').addEventListener('input', e => { st.dom = +e.target.value; render(); });
+const cv = document.getElementById('c-corte-v'), cr = document.getElementById('c-corte');
+cv.addEventListener('input', e => { const y = +e.target.value; if (!isNaN(y)) { st.corte = y; cr.value = y; render(); } });
+cr.addEventListener('input', e => { st.corte = +e.target.value; cv.value = st.corte; render(); });
+document.getElementById('c-min').addEventListener('input', e => { st.min = +e.target.value; render(); });
+document.querySelectorAll('thead th').forEach(th => th.addEventListener('click', () => {
+  const c = th.dataset.c;
+  if (st.sortC === c) st.sortDir = -st.sortDir; else { st.sortC = c; st.sortDir = c === 'name' ? 1 : -1; }
+  render();
+}));
+render();
+</script>
+</body>
+</html>
