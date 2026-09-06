@@ -7,7 +7,7 @@ Incluye la serie mundial (OWID_WRL). Salida: 05-talento/data-percap-pop.js
 (pob en MILES, redondeada, para achicar el archivo)."""
 import csv, json, os
 
-SRC = r'C:\Users\FUNDAR\Downloads\_pop_upload\population.csv'
+SRC = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\insumos\#5 - Talento\pop_owid\population.csv'
 OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-talento\data-percap-pop.js'
 Y0, Y1 = 1850, 2010
 

@@ -67,6 +67,11 @@ if os.path.exists('lugares_recuperados.csv'):
     d.loc[_fp|_fr,'lugar_fuente']=d.loc[_fp|_fr,'_f']
     print('lugares recuperados: %d con pais, %d con region'%(int(_fp.sum()),int(_fr.sum())))
     d=d.drop(columns=['_p','_r','_f'])
+    # guardia anti-duplicados: toda region debe estar en el canon de REG_ES.
+    # (la primera version de recuperar_lugar.py escribia 'America Latina' sin tilde
+    # y la base quedo con regiones duplicadas)
+    _canon=set(REG_ES.values()); _mal=set(d.region.dropna().unique())-_canon
+    assert not _mal, 'regiones fuera del canon: %r' % _mal
 else:
     print('(sin lugares_recuperados.csv: no se completa nada)')
 

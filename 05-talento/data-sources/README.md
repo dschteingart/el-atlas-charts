@@ -1,8 +1,10 @@
 # N°5 — ¿En qué es talentosa América Latina? · pipeline de datos
 
-Los scripts corren desde `C:\Users\FUNDAR\Downloads\_talento_work\`, que es donde
-viven los insumos pesados (no están en el repo porque se redescargan). Esta carpeta
-guarda la copia versionada; si editás uno, copialo de vuelta a `_talento_work`.
+Los scripts corren desde `el-atlas\insumos\#5 - Talento\` (fuera del repo de charts,
+sincronizada por MEGAsync), que es donde viven los insumos pesados. Hasta el 30/8/2026
+esa cocina estaba en `Downloads\_talento_work`, herencia de la sesión de junio; se mudó
+entera y se reescribieron las rutas de los scripts. Esta carpeta guarda la copia
+versionada; si editás un script, copialo de vuelta a `insumos\#5 - Talento`.
 
 ## Metodología: el HPI del archivo no se usa
 
@@ -112,12 +114,13 @@ script se corre sobre figuras contemporáneas, revisar ese alineamiento (`ALINEA
 Subí el `?v=N` de ese archivo en los HTML que lo cargan, o el caché del navegador y
 de GitHub Pages sigue sirviendo el viejo.
 
-## Insumos pesados (en `_talento_work`, fuera del repo)
+## Insumos pesados (en `insumos\#5 - Talento`, fuera del repo de charts)
 
 `person_2025_update.csv` (archivo Pantheon 2025, 39 MB) · `fame_pantheon.csv` (8,8 MB)
 · `pantheon_corregido.csv` (23 MB) · `master_corregido.csv` (11 MB) ·
-`gdp-per-capita-maddison-project-database.csv` · `pop3/population.csv` (OWID) ·
-`geo_backfill.csv`, `geo_upgrade.csv`, `geonameid_to_metro.csv`.
+`base_depurada.csv` (22 MB) · `gdp-per-capita-maddison-project-database.csv` ·
+`pop3/population.csv` y `pop_owid/population.csv` (OWID) · `talento_ALL_abs_adm1_all.csv`
+· `geo_backfill.csv`, `geo_upgrade.csv`, `geonameid_to_metro.csv`.
 
 El assignment subnacional sale de `insumos/#3 - Futbol/talento/out/` (`pantheon_admin1.csv`,
 `admin1_meta.csv`), producto del pipeline GADM del N°3.

@@ -19,7 +19,7 @@ TAL = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\insumos\#3 - Futbol
 ASSIGN = os.path.join(TAL, 'pantheon_admin1.csv')
 META = os.path.join(TAL, 'admin1_meta.csv')
 PAISES = os.path.join(TAL, 'talento_por_admin1.csv')
-ORIG = r'C:\Users\FUNDAR\Downloads\talento_ALL_abs_adm1_all.csv'
+ORIG = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\insumos\#5 - Talento\talento_ALL_abs_adm1_all.csv'
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'talento_ALL_abs_adm1_corregido.csv')
 
 A = pd.read_csv(ASSIGN, low_memory=False, usecols=['id', 'adm1_uid', 'adm1_iso3'])

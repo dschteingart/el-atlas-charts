@@ -91,13 +91,17 @@ ROV = {'PRI': 'Latin America', 'CUB': 'Latin America', 'TWN': 'East Asia', 'HKG'
        'YEM': 'Middle East & North Africa', 'COD': 'Sub-Saharan Africa', 'ERI': 'Sub-Saharan Africa',
        'MCO': 'Western Europe', 'XKX': 'Eastern Europe & Central Asia', 'GRL': 'Western Europe',
        'BMU': 'Caribbean', 'GLP': 'Caribbean', 'MTQ': 'Caribbean'}
-REG_ES = {'Latin America': 'America Latina', 'Caribbean': 'Caribe',
-          'North America, Australia & New Zealand': 'Norteamerica/Aus/NZ',
+# OJO: estos nombres tienen que ser IDENTICOS a los de REG_ES en export_dataset.py
+# (con tildes). En la primera version estaban sin tilde y la base quedo con regiones
+# duplicadas ('America Latina' y 'América Latina' conviviendo). export_dataset.py
+# ahora corta la corrida si aparece una region fuera del canon.
+REG_ES = {'Latin America': 'América Latina', 'Caribbean': 'Caribe',
+          'North America, Australia & New Zealand': 'Norteamérica/Aus/NZ',
           'Western Europe': 'Europa Occidental',
           'Eastern Europe & Central Asia': 'Europa del Este/Asia Central',
-          'East Asia': 'Asia Oriental', 'Southeast Asia': 'Sudeste Asiatico',
-          'South Asia': 'Asia del Sur', 'Middle East & North Africa': 'Medio Oriente/N. Africa',
-          'Sub-Saharan Africa': 'Africa Subsahariana'}
+          'East Asia': 'Asia Oriental', 'Southeast Asia': 'Sudeste Asiático',
+          'South Asia': 'Asia del Sur', 'Middle East & North Africa': 'Medio Oriente/N. África',
+          'Sub-Saharan Africa': 'África Subsahariana'}
 
 
 def region_de(iso):
@@ -205,7 +209,7 @@ def iso_de_entidad(e):
 # tienen coordenada, ni pais, ni jerarquia administrativa: la cadena muere ahi.
 # Mapeo manual y explicito, para que quede auditable en vez de perderse el dato.
 HISTORICO = {
-    'Q269678': ('Medio Oriente/N. Africa', 'Antiguo Oriente Proximo'),
+    'Q269678': ('Medio Oriente/N. África', 'Antiguo Oriente Proximo'),
     'Q3875016': ('Asia Oriental', 'Khamag Mongol, en la actual Mongolia'),
 }
 

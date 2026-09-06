@@ -6,7 +6,7 @@ OUT = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-
 
 P = pd.read_csv('master_corregido.csv')   # metodologia corregida (gate multi-idioma + score reconstruido); ver corregido.py
 M = pd.read_csv('gdp-per-capita-maddison-project-database.csv')
-POP = pd.read_csv('../talento_ALL_abs_adm1_all.csv')
+POP = pd.read_csv('talento_ALL_abs_adm1_all.csv')
 
 DOM = {
  'Deportes':['SOCCER PLAYER','ATHLETE','BASKETBALL PLAYER','CYCLIST','TENNIS PLAYER','SWIMMER','WRESTLER','RACING DRIVER','SKIER','HOCKEY PLAYER','BOXER','GYMNAST','HANDBALL PLAYER','SKATER','COACH','CHESS PLAYER','FENCER','VOLLEYBALL PLAYER','BADMINTON PLAYER','MARTIAL ARTS','REFEREE','RUGBY PLAYER','CRICKETER','TABLE TENNIS PLAYER','BASEBALL PLAYER','GOLFER','SNOOKER','AMERICAN FOOTBALL PLAYER','MOUNTAINEER','POKER PLAYER','BULLFIGHTER','GO PLAYER'],
