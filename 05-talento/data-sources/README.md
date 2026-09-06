@@ -56,7 +56,7 @@ gráfico publicado**.
 | 1 | `fame_pantheon.py` | `fame_pantheon.csv` | Baja `/pageviews` de la API para las 126.582 figuras (1 query por persona, concurrente y resumible). Lento: horas. |
 | 2 | `fame_border.py` | `fame_border.csv` | Re-baja sólo las figuras del borde (`langs1k<=1`) para contarlas con umbrales más blandos. |
 | 3 | `merge_gate.py` | `gate_result.csv` | Define y valida el gate multi-idioma. Diagnóstico, no lo consume nadie. |
-| 3b | `recuperar_lugar.py` | `lugares_recuperados.csv` | Completa el lugar de nacimiento de las figuras que Pantheon deja en blanco (David, Salomón, Pedro, faraones). Por coordenada contra la geometría del N°3, o por Wikidata (P19 → P625/P17 → P131, y P27 como último recurso). |
+| 3b | `recuperar_lugar.py` | `lugares_recuperados.csv` | Completa el lugar de nacimiento de las figuras que Pantheon deja en blanco (David, Salomón, Pedro, faraones). Por coordenada contra la geometría del N°3, o por Wikidata (P19 → P625/P17 → P131, y P27 como último recurso). `python recuperar_lugar.py 0 8` corre toda la base con 8 hilos; el CSV se acumula, así que volver a correrlo sólo agrega lo que falte. |
 | 4 | `export_dataset.py` | **`pantheon_corregido.csv`** | Aplica el gate, calcula el score y completa los lugares recuperados. Es la fuente de verdad. |
 | 5 | `corregido.py` | **`master_corregido.csv`** | Reemplazo drop-in de `persons_enriched.csv`: filtrado por el gate y con `hpi := score`. También se importa como módulo (`corregido.aplicar(df)`). |
 | 6 | `build_subnac_corregido.py` | `talento_ALL_abs_adm1_corregido.csv` | Rehace el agregado subnacional del chart 8 con el gate, desde el assignment persona→unidad del N°3. |
@@ -74,15 +74,31 @@ correrlos si cambian los insumos crudos, porque el score lo calcula el JS en viv
 ## Lugares de nacimiento recuperados
 
 Pantheon deja sin país a 4.983 figuras de la base depurada: casi todas antiguas,
-bíblicas o de polities que ya no existen. `recuperar_lugar.py` las resuelve y escribe
+bíblicas o de polities que ya no existen. Se recuperan 2.735 (55%). De las que quedan,
+la mayoría no tiene el dato en Wikidata; unas 90 tienen coordenada que no cae en ningún
+país porque son territorios disputados que la geometría no representa (Chipre del Norte,
+Cachemira) o gente nacida en altamar —Itamar Franco nació en el Atlántico, en un barco—. `recuperar_lugar.py` las resuelve y escribe
 `lugares_recuperados.csv`, que consumen `export_dataset.py` (columnas `pais`/`region`)
 y `corregido.py` (columna `iso3` del master, que es por donde los gráficos agrupan).
 La columna `lugar_fuente` del dataset dice de dónde salió cada dato recuperado.
 
-Hay una dependencia circular suave: `recuperar_lugar.py` lee `pantheon_corregido.csv`
-para saber a quién le falta el dato, y `export_dataset.py` lee el resultado. En la
-práctica se corre una vez y listo; si se vuelve a correr, encuentra menos faltantes
-porque ya están completos, y eso no rompe nada.
+Dos detalles que hacen que esto sea idempotente y conviene no romper:
+
+- **Los faltantes se calculan contra la fuente** (`bplace_country` de
+  `person_2025_update.csv`), no contra `pantheon_corregido.csv`. Mirar el dataset ya
+  parcheado hacía que las figuras recuperadas dejaran de aparecer como faltantes, así
+  que invalidar una fila para rehacerla la borraba en vez de reprocesarla.
+- **El CSV se acumula.** Se dan por cerradas las filas que ya tienen región y las que
+  Wikidata contestó que no sabe; las demás —wd_id que no resolvió, red caída— se
+  reintentan en cada corrida. Eso importa: en la primera pasada 255 figuras quedaron
+  como "wd_id inexistente" y al reintentar resultó que 237 eran caídas de red. Sólo 10
+  son ids realmente rotos en el archivo de Pantheon. Conviene correrlo dos o tres veces
+  hasta que el número se estabilice.
+
+**Prioridad: `P17` antes que la coordenada.** Lo que Wikidata afirma sobre el país del
+lugar le gana a nuestro point-in-polygon, que en la frontera se equivoca: El Carmelo,
+cuna de Richard Carapaz, cae del lado colombiano por unos metros y lo volvía colombiano
+en vez de ecuatoriano.
 
 **Levante.** Pantheon geocodifica toda la zona como Israel (así están Jesús, María e
 Isaac, con coordenadas de Jerusalén). Nuestra geometría tiene polígono de Palestina y

@@ -7,11 +7,21 @@ Dos vias, ninguna inventa el dato:
   2. Las que no tienen ni coordenada: se consulta Wikidata por el wd_id (P19 lugar de
      nacimiento -> P625 coordenada y P17 pais), y con la coordenada se repite el paso 1.
 
-Salida: lugares_recuperados.csv (id, name, fuente, iso3, pais, region).
+Salida: lugares_recuperados.csv (id, name, fuente, iso3, iso3_geometria, pais, region).
+Lo consumen export_dataset.py (columnas pais/region) y corregido.py (iso3 del master,
+que es por donde agrupan los graficos).
 
-Uso: python recuperar_lugar.py [TOP]     (TOP = hasta que puesto mirar, default 1000)
+El CSV se ACUMULA, no se sobreescribe: export_dataset.py completa el dataset con este
+archivo, asi que en la corrida siguiente esas figuras ya no figuran como faltantes. Si
+se sobreescribiera, se perderian. Correrlo de nuevo solo agrega lo que falte.
+
+Uso: python recuperar_lugar.py [TOP] [WORKERS]
+       TOP     hasta que puesto mirar. 0 = toda la base depurada. Default 1000.
+       WORKERS hilos contra la API de Wikidata. Default 8.
 """
 import json, io, os, sys, ssl, time, warnings, urllib.request, urllib.parse
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import threading
 import pandas as pd
 warnings.filterwarnings('ignore')
 sys.stdout.reconfigure(encoding='utf-8')
@@ -20,7 +30,8 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 BASE = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas'
 GEO = os.path.join(BASE, 'insumos', '#3 - Futbol', 'talento', 'out', 'country.geo.json')
 N1 = os.path.join(BASE, 'el-atlas-charts', '01-bienestar-violencia', 'data-scatter.js')
-TOP = int(sys.argv[1]) if len(sys.argv) > 1 else 1000
+TOP = int(sys.argv[1]) if len(sys.argv) > 1 else 1000   # 0 = toda la base depurada
+WORKERS = int(sys.argv[2]) if len(sys.argv) > 2 else 8
 
 # ---------- geometria de paises ----------
 G = json.load(io.open(GEO, encoding='utf-8'))
@@ -119,21 +130,25 @@ ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 UA = {'User-Agent': 'ElAtlas-research/1.0 (dschteingart@gmail.com)'}
 _wd = {}
+_lock = threading.Lock()
 
 
 def entidad(qid):
-    if qid in _wd:
-        return _wd[qid]
+    with _lock:
+        if qid in _wd:
+            return _wd[qid]
     url = 'https://www.wikidata.org/wiki/Special:EntityData/%s.json' % qid
     for intento in range(3):
         try:
             req = urllib.request.Request(url, headers=UA)
             j = json.load(urllib.request.urlopen(req, context=ctx, timeout=45))
-            _wd[qid] = j['entities'][qid]
+            with _lock:
+                _wd[qid] = j['entities'][qid]
             return _wd[qid]
         except Exception:
             time.sleep(1.5 + intento * 2)
-    _wd[qid] = None
+    with _lock:
+        _wd[qid] = None
     return None
 
 
@@ -224,14 +239,18 @@ def resolver(qid, nombre):
                 break
             if nombre_lugar is None:
                 nombre_lugar = etiqueta(L)
-            c = claim(L, 'P625')
-            if isinstance(c, dict):
-                return nombre_lugar, c.get('longitude'), c.get('latitude'), None, None, 'coordenada Wikidata'
+            # P17 ANTES que la coordenada: lo que Wikidata afirma sobre el pais del
+            # lugar le gana a nuestro point-in-polygon, que en la frontera se
+            # equivoca (El Carmelo, cuna de Richard Carapaz, cae del lado
+            # colombiano por unos metros y lo volvia colombiano en vez de ecuatoriano).
             p17 = claim(L, 'P17')
             if isinstance(p17, dict) and 'id' in p17:
                 iso = iso_de_entidad(entidad(p17['id']))
                 if iso:
                     return nombre_lugar, None, None, iso, None, 'pais del lugar (Wikidata)'
+            c = claim(L, 'P625')
+            if isinstance(c, dict):
+                return nombre_lugar, c.get('longitude'), c.get('latitude'), None, None, 'coordenada Wikidata'
             if actual in HISTORICO:
                 reg, nota = HISTORICO[actual]
                 return nombre_lugar or nota, None, None, None, reg, 'entidad historica (mapeo manual)'
@@ -250,19 +269,45 @@ def resolver(qid, nombre):
 # ---------- que figuras arreglar ----------
 C = pd.read_csv(os.path.join(DIR, 'pantheon_corregido.csv'), low_memory=False)
 d = C[(C.multi_idioma == 1) & C.score.notna()].sort_values('rank_score')
-top = d.head(TOP)
-faltan = top[top.pais.isna()]
-print('top %d: %d figuras sin lugar de nacimiento' % (TOP, len(faltan)))
-print('(en toda la base depurada son %d de %d)' % (int(d.pais.isna().sum()), len(d)))
+top = d if TOP <= 0 else d.head(TOP)
 
 R = pd.read_csv(os.path.join(DIR, 'person_2025_update.csv'), low_memory=False)
 R = R.drop_duplicates('id').set_index('id')
+
+# Quien no tiene lugar SEGUN LA FUENTE, no segun el dataset. Es importante: como
+# export_dataset.py completa pais/region con este mismo CSV, mirar el dataset haria
+# que las ya recuperadas dejaran de figurar como faltantes, y al invalidar una fila
+# para reprocesarla se perderia en vez de rehacerse.
+_sin_lugar = set(R.index[R.bplace_country.isna()])
+faltan = top[top.id.isin(_sin_lugar)]
+print('universo: %s | %d figuras sin lugar en la fuente' % (('toda la base' if TOP <= 0 else 'top %d' % TOP), len(faltan)))
 NOMBRE_PAIS = nombres_de_pais()
 print('nombres de pais derivados de la base: %d iso3' % len(NOMBRE_PAIS))
 
-filas = []
-for _, x in faltan.iterrows():
-    r = R.loc[x.id] if x.id in R.index else None
+# Lo ya resuelto en corridas anteriores. IMPORTANTE: el script se lee a si mismo de
+# rebote — export_dataset.py completa pais/region con este CSV, asi que en la corrida
+# siguiente esas figuras ya no aparecen como faltantes. Si sobreescribieramos, se
+# perderian. Por eso se acumula: lo viejo se conserva y solo se procesa lo nuevo.
+SALIDA = os.path.join(DIR, 'lugares_recuperados.csv')
+ya = pd.read_csv(SALIDA, encoding='utf-8-sig') if os.path.exists(SALIDA) else pd.DataFrame()
+# Se dan por cerradas las que tienen region y las que Wikidata contesto que no sabe
+# (la entidad resolvio, simplemente no tiene P19 ni P27: reintentar no cambia nada).
+# Las demas —wd_id que no resolvio, red caida— pueden ser fallos transitorios, asi
+# que se reintentan en cada corrida.
+DEFINITIVAS = {'sin dato en Wikidata'}
+if len(ya):
+    cerrada = ya.region.notna() | ya.fuente.isin(DEFINITIVAS)
+    print('cerradas: %d (con region %d, sin dato confirmado %d) | se reintentan %d'
+          % (int(cerrada.sum()), int(ya.region.notna().sum()),
+             int(ya.fuente.isin(DEFINITIVAS).sum()), int((~cerrada).sum())))
+    ya = ya[cerrada]
+resueltos = set(ya.id) if len(ya) else set()
+pendientes = faltan[~faltan.id.isin(resueltos)]
+print('ya resueltas en corridas anteriores: %d | a procesar ahora: %d' % (len(resueltos), len(pendientes)))
+
+
+def procesar(x):
+    r = R.loc[x['id']] if x['id'] in R.index else None
     lon = lat = None
     fuente = None
     lugar = None
@@ -285,21 +330,48 @@ for _, x in faltan.iterrows():
     if iso in ALINEAR:
         iso = ALINEAR[iso]
         fuente = (fuente or '') + ' + alineado a Pantheon'
-    filas.append({'id': x.id, 'name': x['name'], 'rank': int(x.rank_score),
-                  'ocupacion': x.occupation, 'lugar': lugar, 'lon': lon, 'lat': lat,
-                  'fuente': fuente, 'iso3': iso, 'iso3_geometria': iso_geo,
-                  'pais': NOMBRE_PAIS.get(iso),
-                  'region': region if region else (region_de(iso) if iso else None)})
+    return {'id': x['id'], 'name': x['name'], 'rank': int(x['rank_score']),
+            'ocupacion': x['occupation'], 'lugar': lugar, 'lon': lon, 'lat': lat,
+            'fuente': fuente, 'iso3': iso, 'iso3_geometria': iso_geo,
+            'pais': NOMBRE_PAIS.get(iso),
+            'region': region if region else (region_de(iso) if iso else None)}
 
-out = pd.DataFrame(filas).sort_values('rank')
-print()
-print('%-5s %-24s %-24s %-13s %-13s %s' % ('#', 'figura', 'lugar', 'pais', 'geometria', 'region'))
-for _, x in out.iterrows():
-    geo = x.iso3_geometria if x.iso3_geometria and x.iso3_geometria != x.iso3 else ''
-    print('%-5d %-24s %-24s %-13s %-13s %s' % (x['rank'], str(x['name'])[:24], str(x.lugar)[:24],
-                                               str(x.pais or '-')[:13], geo or '=', x.region or '-'))
+
+filas = []
+if len(pendientes):
+    tareas = pendientes.to_dict('records')
+    t0 = time.time()
+    with ThreadPoolExecutor(max_workers=WORKERS) as ex:
+        futs = {ex.submit(procesar, t): t for t in tareas}
+        for i, fut in enumerate(as_completed(futs), 1):
+            try:
+                filas.append(fut.result())
+            except Exception as e:
+                t = futs[fut]
+                print('  error en %s: %s' % (t['name'], e))
+            if i % 200 == 0 or i == len(tareas):
+                hechas = sum(1 for f in filas if f['region'])
+                vel = i / max(time.time() - t0, 1e-9)
+                falta_seg = (len(tareas) - i) / max(vel, 1e-9)
+                print('  %d/%d  (%d con region)  %.1f/s  faltan ~%d min'
+                      % (i, len(tareas), hechas, vel, falta_seg / 60), flush=True)
+
+out = pd.concat([ya, pd.DataFrame(filas)], ignore_index=True) if len(filas) else ya
+out = out.drop_duplicates('id').sort_values('rank')
+out.to_csv(SALIDA, index=False, encoding='utf-8-sig')
+
 print()
 ok = int(out.region.notna().sum())
-print('RECUPERADOS: %d de %d  (%d quedan sin dato)' % (ok, len(out), len(out) - ok))
-out.to_csv(os.path.join(DIR, 'lugares_recuperados.csv'), index=False, encoding='utf-8-sig')
+print('=== TOTAL ACUMULADO ===')
+print('  filas en el CSV      : %d' % len(out))
+print('  con region           : %d (%.1f%%)' % (ok, ok / max(len(out), 1) * 100))
+print('  con pais             : %d' % int(out.pais.notna().sum()))
+print('  sin dato             : %d' % (len(out) - ok))
+if len(out):
+    print()
+    print('  por fuente:')
+    print(out.fuente.fillna('(sin dato)').value_counts().head(10).to_string())
+    print()
+    print('  regiones recuperadas:')
+    print(out.region.value_counts().to_string())
 print('=> lugares_recuperados.csv')
