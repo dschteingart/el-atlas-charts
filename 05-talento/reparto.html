@@ -3,16 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El reparto de la fama — El Atlas N°5</title>
+<title>El Atlas — El reparto de la fama</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../lib/style.css">
 <style>
-  .wrap { max-width: 980px; margin: 0 auto; padding: 16px 20px 40px; }
-  h1 { font-size: 24px; margin: 0 0 2px; }
-  .sub { font-family: var(--sans); font-size: 13.5px; color: var(--ink-muted); margin: 0 0 14px; max-width: 760px; line-height: 1.5; }
-  .controls { display: flex; flex-wrap: wrap; gap: 14px 22px; align-items: flex-end; margin-bottom: 14px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: flex-end; margin: 14px 0; }
   .ctl label { display: block; font-family: var(--sans); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); margin-bottom: 5px; }
   .seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 9px; overflow: hidden; }
   .seg button { font-family: var(--sans); font-size: 13px; font-weight: 600; padding: 7px 14px; border: none; background: var(--bg); color: var(--ink-soft); cursor: pointer; }
@@ -20,9 +17,11 @@
   .seg button.on { background: var(--accent); color: #fff; }
   select, input[type=number] { font-family: var(--sans); font-size: 13.5px; padding: 7px 9px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink); }
   input[type=number] { width: 86px; }
-  .corte-row { display: flex; gap: 10px; align-items: center; }
-  .corte-row input[type=range] { width: 200px; accent-color: var(--accent); }
-  table { border-collapse: collapse; font-family: var(--sans); width: 100%; max-width: 860px; }
+  .corte-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .corte-row input[type=range] { width: 180px; accent-color: var(--accent); }
+  #resumen { font-family: var(--sans); font-size: 12px; color: var(--ink-muted); margin: 0 0 8px; }
+  .tblbox { max-height: 640px; overflow: auto; border: 1px solid var(--rule); border-radius: 10px; }
+  table { border-collapse: collapse; font-family: var(--sans); width: 100%; min-width: 560px; }
   thead th { position: sticky; top: 0; background: var(--bg); z-index: 2; }
   th, td { padding: 7px 11px; font-size: 13.5px; border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap; }
   th { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); font-weight: 700; cursor: pointer; user-select: none; }
@@ -32,63 +31,87 @@
   td.name { font-weight: 600; color: var(--ink); }
   td { font-variant-numeric: tabular-nums; }
   td.n { color: var(--ink-muted); font-size: 12.5px; }
-  tbody tr:hover td { filter: brightness(0.96); }
-  .tblbox { max-height: 640px; overflow: auto; border: 1px solid var(--rule); border-radius: 10px; }
-  .note { font-family: var(--sans); font-size: 11.5px; color: var(--ink-muted); line-height: 1.55; margin-top: 16px; max-width: 860px; }
-  .note b { color: var(--ink); }
-  #resumen { font-family: var(--sans); font-size: 12px; color: var(--ink-muted); margin: 0 0 8px; }
+  @media (max-width: 600px) { .corte-row input[type=range] { width: 130px; } }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>El reparto de la fama</h1>
-  <p class="sub">Qué parte de las figuras célebres del mundo aporta cada región (o país), separando a los nacidos <b>antes</b> y <b>después</b> de un año de corte. Cada celda: % del total mundial de esa era.</p>
 
-  <div class="controls">
-    <div class="ctl"><label>Vista</label>
-      <div class="seg" id="c-vista"><button data-v="region" class="on">Región</button><button data-v="pais">País</button></div>
-    </div>
-    <div class="ctl"><label>Dominio</label>
-      <select id="c-dom"><option value="-1">Todos</option></select>
-    </div>
-    <div class="ctl"><label>Año de corte</label>
-      <div class="corte-row">
-        <input type="number" id="c-corte-v" step="10" min="-3500" max="2021" value="1900">
-        <input type="range" id="c-corte" min="-600" max="2000" step="25" value="1900">
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 5</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
       </div>
     </div>
-    <div class="ctl" id="c-min-wrap" style="display:none;"><label>Mín. figuras</label>
-      <select id="c-min"><option>10</option><option selected>25</option><option>50</option><option>100</option></select>
+  </header>
+
+  <section class="chart-block" data-chart="reparto">
+    <h2 class="chart-title" id="rep-title">El monopolio europeo de la fama se terminó</h2>
+    <p class="chart-subtitle" id="rep-subtitle">Europa Occidental concentraba el 57% de las figuras célebres del mundo nacidas antes de 1900; entre las nacidas después, un tercio. América Latina más que triplicó su parte.</p>
+
+    <div class="controls">
+      <div class="ctl"><label data-i18n="rep-lbl-vista">Vista</label>
+        <div class="seg" id="c-vista"><button data-v="region" class="on" data-i18n="rep-vista-region">Región</button><button data-v="pais" data-i18n="rep-vista-pais">País</button></div>
+      </div>
+      <div class="ctl"><label data-i18n="rep-lbl-dom">Dominio</label>
+        <select id="c-dom"></select>
+      </div>
+      <div class="ctl"><label data-i18n="rep-lbl-corte">Año de corte</label>
+        <div class="corte-row">
+          <input type="number" id="c-corte-v" step="10" min="-3500" max="2021" value="1900">
+          <input type="range" id="c-corte" min="-600" max="2000" step="25" value="1900">
+        </div>
+      </div>
+      <div class="ctl" id="c-min-wrap" style="display:none;"><label data-i18n="rep-lbl-min">Mín. figuras</label>
+        <select id="c-min"><option>10</option><option selected>25</option><option>50</option><option>100</option></select>
+      </div>
+    </div>
+
+    <p id="resumen"></p>
+    <div class="tblbox"><table>
+      <thead><tr>
+        <th class="name" data-c="name" id="h-name">Región</th>
+        <th data-c="pre" id="h-pre">Hasta 1900</th>
+        <th data-c="post" id="h-post">Desde 1900</th>
+        <th data-c="tot" id="h-tot">Total</th>
+        <th data-c="dif" id="h-dif">Δ (pp)</th>
+        <th data-c="n" id="h-n">n</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" id="btn-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" id="btn-png" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources" data-i18n="rep-note">…</p>
+    </div>
+    <div class="footer-row">
+      <p class="sources" data-i18n="rep-sources">Datos: Pantheon (Datawheel), fama reconstruida por El Atlas.</p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
     </div>
   </div>
 
-  <p id="resumen"></p>
-  <div class="tblbox"><table>
-    <thead><tr>
-      <th class="name" data-c="name">Región</th>
-      <th data-c="pre" id="h-pre">Hasta 1900</th>
-      <th data-c="post" id="h-post">Desde 1900</th>
-      <th data-c="tot">Total</th>
-      <th data-c="dif" title="Desde − Hasta, en puntos porcentuales">Δ (pp)</th>
-      <th data-c="n" title="Figuras totales del grupo en la selección">n</th>
-    </tr></thead>
-    <tbody id="rows"></tbody>
-  </table></div>
-
-  <p class="note">
-    <b>Cómo leerlo.</b> "Hasta" = figuras nacidas <b>antes</b> del año de corte; "Desde" = nacidas en ese año o después. Cada columna suma ~100% sobre el total mundial de figuras de esa era con país de nacimiento conocido. <b>Δ</b> = cuántos puntos porcentuales ganó (terracota) o perdió (azul) el grupo entre las dos eras. Universo: base depurada del N°5 (solo figuras multiidioma), la misma del mapa; nacimientos de −3500 a 2021. Dominios: reagrupamiento propio sobre las ocupaciones de Pantheon (ver <code>data-sources/taxonomia_dominios.csv</code>). <b>Fuentes:</b> Pantheon (Datawheel), fama reconstruida por El Atlas.
-  </p>
 </div>
 
+<script src="../lib/i18n.js"></script>
+<script src="./i18n-issue.js?v=7"></script>
 <script src="./data-percap-map.js?v=6"></script>
 <script>
 const E = window.PCMAP;
 const REG_LABEL = {
-  'Latin America': 'América Latina', 'Caribbean': 'Caribe', 'Western Europe': 'Europa Occidental',
-  'Eastern Europe & Central Asia': 'Europa del Este y Asia Central',
-  'North America, Australia & New Zealand': 'Norteamérica, Australia y N.Z.',
-  'East Asia': 'Asia Oriental', 'Southeast Asia': 'Sudeste Asiático', 'South Asia': 'Asia del Sur',
-  'Middle East & North Africa': 'Medio Oriente y N. de África', 'Sub-Saharan Africa': 'África Subsahariana'
+  'Latin America': ['América Latina', 'Latin America'], 'Caribbean': ['Caribe', 'Caribbean'],
+  'Western Europe': ['Europa Occidental', 'Western Europe'],
+  'Eastern Europe & Central Asia': ['Europa del Este y Asia Central', 'Eastern Europe & C. Asia'],
+  'North America, Australia & New Zealand': ['Norteamérica, Australia y N.Z.', 'N. America, Aus. & N.Z.'],
+  'East Asia': ['Asia Oriental', 'East Asia'], 'Southeast Asia': ['Sudeste Asiático', 'Southeast Asia'],
+  'South Asia': ['Asia del Sur', 'South Asia'], 'Middle East & North Africa': ['Medio Oriente y N. de África', 'Middle East & N. Africa'],
+  'Sub-Saharan Africa': ['África Subsahariana', 'Sub-Saharan Africa']
 };
 // decode del buffer del mapa: 6 bytes/figura (iso, subId, year13b+multi bit15, score*100)
 (function decodeF() {
@@ -105,9 +128,20 @@ const SUBDOM = E.subMeta.map(s => s.dom);
 const NI = E.isoMeta.length;
 
 const st = { vista: 'region', dom: -1, corte: 1900, min: 25, sortC: 'tot', sortDir: -1 };
-const fmt = v => v == null ? '—' : v.toLocaleString('es-AR', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const en = () => (typeof LANG !== 'undefined' && LANG === 'en');
+const loc = () => en() ? 'en-US' : 'es-AR';
+const fmt1 = v => v == null ? '—' : v.toLocaleString(loc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const regLabel = r => REG_LABEL[r] ? REG_LABEL[r][en() ? 1 : 0] : r;
+const isoLabel = m => en() ? (m.en || m.es) : (m.es || m.en);
+const tpl = (k, vars) => Object.entries(vars).reduce((s, [a, b]) => s.split('{' + a + '}').join(b), t(k));
 
-E.domains.forEach((d, i) => document.getElementById('c-dom').add(new Option(d.es, i)));
+function fillDomSelect() {
+  const sel = document.getElementById('c-dom'), cur = st.dom;
+  sel.innerHTML = '';
+  sel.add(new Option(t('rep-dom-all'), -1));
+  E.domains.forEach((d, i) => sel.add(new Option(en() ? d.en : d.es, i)));
+  sel.value = String(cur);
+}
 
 function compute() {
   const pre = new Float64Array(NI), post = new Float64Array(NI);
@@ -120,7 +154,6 @@ function compute() {
   let sumPre = 0, sumPost = 0;
   for (let k = 0; k < NI; k++) { sumPre += pre[k]; sumPost += post[k]; }
   const sumTot = sumPre + sumPost;
-
   let rows = [];
   if (st.vista === 'region') {
     const acc = {};
@@ -129,11 +162,11 @@ function compute() {
       const a = acc[r] || (acc[r] = { pre: 0, post: 0 });
       a.pre += pre[k]; a.post += post[k];
     }
-    rows = Object.keys(acc).map(r => ({ name: REG_LABEL[r] || r, pre: acc[r].pre, post: acc[r].post }));
+    rows = Object.keys(acc).map(r => ({ name: regLabel(r), pre: acc[r].pre, post: acc[r].post }));
   } else {
     for (let k = 0; k < NI; k++) {
-      const t = pre[k] + post[k];
-      if (t >= st.min) rows.push({ name: E.isoMeta[k].es, pre: pre[k], post: post[k] });
+      const tt = pre[k] + post[k];
+      if (tt >= st.min) rows.push({ name: isoLabel(E.isoMeta[k]), pre: pre[k], post: post[k] });
     }
   }
   rows.forEach(r => {
@@ -143,43 +176,194 @@ function compute() {
     r.tot = sumTot ? r.n / sumTot * 100 : null;
     r.dif = (r.pre != null && r.post != null) ? r.post - r.pre : null;
   });
+  const c = st.sortC, dir = st.sortDir;
+  rows.sort((a, b) => c === 'name' ? dir * String(a.name).localeCompare(b.name, loc()) : dir * ((a[c] ?? -1e9) - (b[c] ?? -1e9)));
   return { rows, sumPre, sumPost };
 }
 
-function render() {
-  document.getElementById('h-pre').firstChild && 0;
-  const { rows, sumPre, sumPost } = compute();
-  const c = st.sortC, dir = st.sortDir;
-  rows.sort((a, b) => c === 'name' ? dir * String(a.name).localeCompare(b.name, 'es') : dir * ((a[c] ?? -1e9) - (b[c] ?? -1e9)));
-  document.querySelectorAll('thead th').forEach(th => {
-    th.innerHTML = th.innerHTML.replace(/ <span class="arr">.*<\/span>/, '');
-    if (th.dataset.c === c) th.innerHTML += ' <span class="arr">' + (dir < 0 ? '↓' : '↑') + '</span>';
-  });
-  document.getElementById('h-pre').childNodes[0].nodeValue = 'Hasta ' + st.corte;
-  document.getElementById('h-post').childNodes[0].nodeValue = 'Desde ' + st.corte;
-  document.querySelector('th.name').childNodes[0].nodeValue = st.vista === 'region' ? 'Región' : 'País';
-  document.getElementById('resumen').textContent =
-    'Figuras en la selección: ' + sumPre.toLocaleString('es-AR') + ' nacidas antes de ' + st.corte +
-    ' · ' + sumPost.toLocaleString('es-AR') + ' desde ' + st.corte + '.';
+// título: insight en el estado por default, neutral apenas se customiza algo persistente
+function esDefault() { return st.vista === 'region' && st.dom === -1 && st.corte === 1900 && st.sortC === 'tot' && st.sortDir === -1; }
+function syncTitulo() {
+  const k = esDefault() ? 'insight' : 'neutral';
+  document.getElementById('rep-title').textContent = t('rep-title-' + k);
+  document.getElementById('rep-subtitle').textContent = t('rep-subtitle-' + k);
+}
 
+const heat = (v, m) => 'background:rgba(190,93,50,' + (m && v != null ? (v / m * .5).toFixed(3) : 0) + ')';
+const heatD = (v, m) => v == null ? '' : 'background:rgba(' + (v >= 0 ? '190,93,50' : '74,111,143') + ',' + (m ? (Math.abs(v) / m * .5).toFixed(3) : 0) + ')';
+const maxes = rows => {
   const mx = { pre: 0, post: 0, tot: 0, dif: 0 };
   rows.forEach(r => { ['pre', 'post', 'tot'].forEach(k => { if (r[k] > mx[k]) mx[k] = r[k]; }); if (Math.abs(r.dif) > mx.dif) mx.dif = Math.abs(r.dif); });
-  const heat = (v, m) => 'background:rgba(190,93,50,' + (m ? (v / m * .5).toFixed(3) : 0) + ')';
-  const heatD = (v, m) => 'background:rgba(' + (v >= 0 ? '190,93,50' : '74,111,143') + ',' + (m ? (Math.abs(v) / m * .5).toFixed(3) : 0) + ')';
+  return mx;
+};
 
+function render() {
+  const { rows, sumPre, sumPost } = compute();
+  document.getElementById('h-name').childNodes[0].nodeValue = t(st.vista === 'region' ? 'rep-vista-region' : 'rep-vista-pais');
+  document.getElementById('h-pre').childNodes[0].nodeValue = t('rep-col-hasta') + ' ' + st.corte;
+  document.getElementById('h-post').childNodes[0].nodeValue = t('rep-col-desde') + ' ' + st.corte;
+  document.getElementById('h-tot').childNodes[0].nodeValue = t('rep-col-total');
+  document.getElementById('h-dif').childNodes[0].nodeValue = t('rep-col-delta');
+  document.getElementById('h-n').childNodes[0].nodeValue = t('rep-col-n');
+  document.querySelectorAll('thead th').forEach(th => {
+    const old = th.querySelector('.arr'); if (old) old.remove();
+    if (th.dataset.c === st.sortC) {
+      const sp = document.createElement('span'); sp.className = 'arr'; sp.textContent = ' ' + (st.sortDir < 0 ? '↓' : '↑');
+      th.appendChild(sp);
+    }
+  });
+  document.getElementById('resumen').textContent =
+    tpl('rep-resumen', { pre: sumPre.toLocaleString(loc()), post: sumPost.toLocaleString(loc()), corte: st.corte });
+  const mx = maxes(rows);
   const tb = document.getElementById('rows'); tb.innerHTML = '';
   rows.forEach(r => {
     const tr = document.createElement('tr');
     tr.innerHTML = '<td class="name">' + r.name + '</td>' +
-      '<td style="' + heat(r.pre, mx.pre) + '">' + fmt(r.pre) + '</td>' +
-      '<td style="' + heat(r.post, mx.post) + '">' + fmt(r.post) + '</td>' +
-      '<td style="' + heat(r.tot, mx.tot) + '">' + fmt(r.tot) + '</td>' +
-      '<td style="' + heatD(r.dif, mx.dif) + '">' + (r.dif == null ? '—' : (r.dif >= 0 ? '+' : '−') + fmt(Math.abs(r.dif))) + '</td>' +
-      '<td class="n">' + r.n.toLocaleString('es-AR') + '</td>';
+      '<td style="' + heat(r.pre, mx.pre) + '">' + fmt1(r.pre) + '</td>' +
+      '<td style="' + heat(r.post, mx.post) + '">' + fmt1(r.post) + '</td>' +
+      '<td style="' + heat(r.tot, mx.tot) + '">' + fmt1(r.tot) + '</td>' +
+      '<td style="' + heatD(r.dif, mx.dif) + '">' + (r.dif == null ? '—' : (r.dif >= 0 ? '+' : '−') + fmt1(Math.abs(r.dif))) + '</td>' +
+      '<td class="n">' + r.n.toLocaleString(loc()) + '</td>';
     tb.appendChild(tr);
   });
+  syncTitulo();
 }
 
+// ===================== CSV =====================
+function csvActual() {
+  const { rows } = compute();
+  const q = s => '"' + String(s).replace(/"/g, '""') + '"';
+  const head = [t(st.vista === 'region' ? 'rep-vista-region' : 'rep-vista-pais'),
+                t('rep-col-hasta') + ' ' + st.corte + ' (%)', t('rep-col-desde') + ' ' + st.corte + ' (%)',
+                t('rep-col-total') + ' (%)', 'delta_pp', 'n'];
+  const num = v => v == null ? '' : v.toFixed(1);
+  const lines = [head.map(q).join(',')];
+  rows.forEach(r => lines.push([q(r.name), num(r.pre), num(r.post), num(r.tot), num(r.dif), r.n].join(',')));
+  return '﻿' + lines.join('\n');
+}
+document.getElementById('btn-csv').addEventListener('click', () => {
+  const blob = new Blob([csvActual()], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = en() ? 'the-atlas-05-fame-shares.csv' : 'el-atlas-05-reparto-de-la-fama.csv';
+  a.click(); URL.revokeObjectURL(a.href);
+});
+
+// ===================== PNG (mobile-first, cuadrado 1200) =====================
+// Colores hardcodeados: el canvas no resuelve var() de CSS.
+const PNG = { W: 1200, H: 1200, bg: '#FAF8F3', ink: '#1A1A1A', soft: '#4A4A4A', muted: '#8A8579', rule: '#E0DCC8', accent: '#BE5D32' };
+const SERIF = '"Source Serif 4", Georgia, serif';
+const SANS = '"Source Sans 3", Arial, sans-serif';
+
+function wrapText(ctx, text, maxW) {
+  const words = String(text).split(' '), lines = []; let cur = '';
+  words.forEach(w => {
+    const probe = cur ? cur + ' ' + w : w;
+    if (ctx.measureText(probe).width > maxW && cur) { lines.push(cur); cur = w; } else cur = probe;
+  });
+  if (cur) lines.push(cur);
+  return lines;
+}
+
+async function exportPng() {
+  try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
+  const { rows, sumPre, sumPost } = compute();
+  const shown = st.vista === 'pais' ? rows.slice(0, 12) : rows;
+  const mx = maxes(shown);
+  const cv = document.createElement('canvas'); cv.width = PNG.W; cv.height = PNG.H;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = PNG.bg; ctx.fillRect(0, 0, PNG.W, PNG.H);
+  const PAD = 56, W = PNG.W - PAD * 2;
+  let y = 96;
+
+  ctx.fillStyle = PNG.ink; ctx.font = '700 52px ' + SERIF; ctx.textBaseline = 'alphabetic';
+  wrapText(ctx, document.getElementById('rep-title').textContent, W).forEach(l => { ctx.fillText(l, PAD, y); y += 60; });
+  y += 4;
+  ctx.fillStyle = PNG.soft; ctx.font = 'italic 400 30px ' + SANS;
+  wrapText(ctx, document.getElementById('rep-subtitle').textContent, W).slice(0, 3).forEach(l => { ctx.fillText(l, PAD, y); y += 40; });
+  y += 18;
+
+  // geometría de la tabla
+  const colName = Math.round(W * 0.34);
+  const colNum = Math.round((W - colName) / 5);
+  const xs = [PAD, PAD + colName];
+  for (let i = 1; i <= 5; i++) xs.push(PAD + colName + colNum * i);
+  const bottom = PNG.H - 158;
+  const headH = 46;
+  const rowH = Math.max(46, Math.min(68, Math.floor((bottom - y - headH) / Math.max(shown.length, 1))));
+
+  // encabezados
+  ctx.font = '700 23px ' + SANS; ctx.fillStyle = PNG.muted;
+  const heads = [t(st.vista === 'region' ? 'rep-vista-region' : 'rep-vista-pais').toUpperCase(),
+                 (t('rep-col-hasta') + ' ' + st.corte).toUpperCase(), (t('rep-col-desde') + ' ' + st.corte).toUpperCase(),
+                 t('rep-col-total').toUpperCase(), t('rep-col-delta').toUpperCase(), 'N'];
+  heads.forEach((h, i) => {
+    if (i === 0) { ctx.textAlign = 'left'; ctx.fillText(h, xs[0], y + 30); }
+    else { ctx.textAlign = 'right'; ctx.fillText(h, xs[i] + colNum - 14, y + 30); }
+  });
+  y += headH;
+  ctx.strokeStyle = PNG.ink; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(PAD + W, y); ctx.stroke();
+
+  // filas
+  shown.forEach(r => {
+    const cells = [[r.pre, heatA(r.pre, mx.pre)], [r.post, heatA(r.post, mx.post)], [r.tot, heatA(r.tot, mx.tot)]];
+    cells.forEach(([v, a], i) => {
+      ctx.fillStyle = 'rgba(190,93,50,' + a + ')';
+      ctx.fillRect(xs[i + 1], y, colNum, rowH);
+    });
+    const dA = r.dif == null ? 0 : (mx.dif ? Math.abs(r.dif) / mx.dif * .5 : 0);
+    ctx.fillStyle = (r.dif != null && r.dif < 0) ? 'rgba(74,111,143,' + dA.toFixed(3) + ')' : 'rgba(190,93,50,' + dA.toFixed(3) + ')';
+    ctx.fillRect(xs[4], y, colNum, rowH);
+
+    const ty = y + rowH / 2 + 11;
+    ctx.fillStyle = PNG.ink; ctx.font = '600 30px ' + SANS; ctx.textAlign = 'left';
+    ctx.fillText(fitText(ctx, r.name, colName - 16), xs[0], ty);
+    ctx.font = '400 30px ' + SANS; ctx.textAlign = 'right';
+    ctx.fillText(fmt1(r.pre), xs[1] + colNum - 14, ty);
+    ctx.fillText(fmt1(r.post), xs[2] + colNum - 14, ty);
+    ctx.font = '600 30px ' + SANS;
+    ctx.fillText(fmt1(r.tot), xs[3] + colNum - 14, ty);
+    ctx.font = '400 30px ' + SANS;
+    ctx.fillText(r.dif == null ? '—' : (r.dif >= 0 ? '+' : '−') + fmt1(Math.abs(r.dif)), xs[4] + colNum - 14, ty);
+    ctx.fillStyle = PNG.muted; ctx.font = '400 26px ' + SANS;
+    ctx.fillText(r.n.toLocaleString(loc()), xs[5] + colNum - 14, ty);
+    y += rowH;
+    ctx.strokeStyle = PNG.rule; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(PAD + W, y); ctx.stroke();
+  });
+
+  // nota + firma
+  ctx.textAlign = 'left'; ctx.fillStyle = PNG.muted; ctx.font = '400 22px ' + SANS;
+  let notaTxt = t('rep-sources') + ' ' + tpl('rep-resumen', { pre: sumPre.toLocaleString(loc()), post: sumPost.toLocaleString(loc()), corte: st.corte });
+  const domTxt = st.dom >= 0 ? (en() ? E.domains[st.dom].en : E.domains[st.dom].es) : null;
+  if (domTxt) notaTxt = (en() ? 'Domain: ' : 'Dominio: ') + domTxt + '. ' + notaTxt;
+  if (st.vista === 'pais') notaTxt += ' ' + tpl('rep-png-note-pais', { n: shown.length });
+  let ny = PNG.H - 96;
+  wrapText(ctx, notaTxt, W).slice(0, 2).forEach(l => { ctx.fillText(l, PAD, ny); ny += 29; });
+  ctx.fillStyle = PNG.ink; ctx.font = '700 27px ' + SERIF; ctx.textAlign = 'right';
+  ctx.fillText(t('attribution-text'), PNG.W - PAD, PNG.H - 30);
+
+  return new Promise(res => cv.toBlob(b => {
+    if (b) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = en() ? 'the-atlas-05-fame-shares.png' : 'el-atlas-05-reparto-de-la-fama.png';
+      a.click(); URL.revokeObjectURL(a.href);
+    }
+    res(b ? b.size : 0);
+  }, 'image/png'));
+}
+const heatA = (v, m) => (m && v != null ? (v / m * .5) : 0).toFixed(3);
+const fitText = (ctx, s, maxW) => {
+  s = String(s); if (ctx.measureText(s).width <= maxW) return s;
+  while (s.length > 2 && ctx.measureText(s + '…').width > maxW) s = s.slice(0, -1);
+  return s + '…';
+};
+document.getElementById('btn-png').addEventListener('click', exportPng);
+window.__repExportPng = exportPng;   // para verificación programática
+
+// ===================== controles =====================
 document.querySelectorAll('#c-vista button').forEach(b => b.addEventListener('click', () => {
   st.vista = b.dataset.v;
   document.querySelectorAll('#c-vista button').forEach(x => x.classList.toggle('on', x === b));
@@ -187,16 +371,20 @@ document.querySelectorAll('#c-vista button').forEach(b => b.addEventListener('cl
   render();
 }));
 document.getElementById('c-dom').addEventListener('input', e => { st.dom = +e.target.value; render(); });
-const cv = document.getElementById('c-corte-v'), cr = document.getElementById('c-corte');
-cv.addEventListener('input', e => { const y = +e.target.value; if (!isNaN(y)) { st.corte = y; cr.value = y; render(); } });
-cr.addEventListener('input', e => { st.corte = +e.target.value; cv.value = st.corte; render(); });
+const cvIn = document.getElementById('c-corte-v'), crIn = document.getElementById('c-corte');
+cvIn.addEventListener('input', e => { const yy = +e.target.value; if (!isNaN(yy)) { st.corte = yy; crIn.value = yy; render(); } });
+crIn.addEventListener('input', e => { st.corte = +e.target.value; cvIn.value = st.corte; render(); });
 document.getElementById('c-min').addEventListener('input', e => { st.min = +e.target.value; render(); });
 document.querySelectorAll('thead th').forEach(th => th.addEventListener('click', () => {
   const c = th.dataset.c;
   if (st.sortC === c) st.sortDir = -st.sortDir; else { st.sortC = c; st.sortDir = c === 'name' ? 1 : -1; }
   render();
 }));
+
+applyI18n();
+fillDomSelect();
 render();
+if (typeof setupLangToggle === 'function') setupLangToggle(() => { applyI18n(); fillDomSelect(); render(); });
 </script>
 </body>
 </html>
