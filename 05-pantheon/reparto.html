@@ -49,7 +49,7 @@
   </header>
 
   <section class="chart-block" data-chart="reparto" data-editor-id="reparto-fama">
-    <h2 class="chart-title" id="rep-title">El monopolio europeo de la fama se terminó</h2>
+    <h2 class="chart-title" id="rep-title">La fama ya no es monopolio europeo</h2>
     <p class="chart-subtitle" id="rep-subtitle">Europa Occidental concentraba el 57% de las figuras célebres del mundo nacidas antes de 1900; entre las nacidas después, un tercio. América Latina más que triplicó su parte.</p>
 
     <div class="controls">
@@ -101,8 +101,8 @@
 </div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=7"></script>
-<script src="./utils.js?v=2"></script>
+<script src="./i18n-issue.js?v=8"></script>
+<script src="./utils.js?v=3"></script>
 <script src="./data-percap-map.js?v=6"></script>
 <script>
 const E = window.PCMAP;
@@ -340,7 +340,8 @@ async function exportPng() {
 
   // nota + firma
   ctx.textAlign = 'left'; ctx.fillStyle = PNG.muted; ctx.font = '400 22px ' + SANS;
-  let notaTxt = t('rep-sources') + ' ' + tpl('rep-resumen', { pre: sumPre.toLocaleString(loc()), post: sumPost.toLocaleString(loc()), corte: st.corte });
+  // caption minimalista en el PNG: fuente + solo el estado que cambia la lectura
+  let notaTxt = t('rep-sources');
   const domTxt = st.dom >= 0 ? (en() ? E.domains[st.dom].en : E.domains[st.dom].es) : null;
   if (domTxt) notaTxt = (en() ? 'Domain: ' : 'Dominio: ') + domTxt + '. ' + notaTxt;
   if (st.vista === 'pais') notaTxt += ' ' + tpl('rep-png-note-pais', { n: shown.length });

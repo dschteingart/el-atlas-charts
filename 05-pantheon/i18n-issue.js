@@ -26,12 +26,12 @@ const ISSUE_I18N = {
     'c3-sources':  'Datos: Pantheon (Datawheel, base 2025) y Maddison Project (PIB per cápita). Científicos célebres = biólogos, físicos, químicos, matemáticos, médicos, ingenieros e inventores con biografía notable en Wikipedia, por millón de habitantes. Escala log-log. Se cuentan sólo figuras multiidioma (biografía leída en al menos 2 idiomas desde 2015): quedan afuera los perfiles inflados por una sola Wikipedia.',
 
     // Chart 4 — Género
-    'c4-title':    'Ellas rompen el techo en el arte y la ciencia',
+    'c4-title':    'Las mujeres pesan donde la región pesa poco',
     'c4-subtitle': 'Entre las figuras célebres latinoamericanas, las mujeres pesan más que en el mundo justo donde la región produce poco —arte, humanidades, ciencia— y menos donde más brilla: el deporte y el poder.',
     'c4-sources':  'Datos: Pantheon (Datawheel, base 2025). % de mujeres entre las figuras célebres de cada dominio, América Latina vs el total mundial. La identidad de género proviene de Wikidata. Se cuentan sólo figuras multiidioma (biografía leída en al menos 2 idiomas desde 2015): quedan afuera los perfiles inflados por una sola Wikipedia.',
 
     // Chart 5 — Explorador
-    'c5-title':    'El talento per cápita, disciplina por disciplina',
+    'c5-title':    'Figuras célebres per cápita, disciplina por disciplina',
     'c5-subtitle': 'Elegí un rubro y un período de nacimiento: cada punto es un país. Eje vertical, figuras célebres por millón; eje horizontal, su PIB per cápita.',
     'c5-sources':  'Datos: Pantheon (Datawheel, base 2025), Maddison Project (PIB per cápita) y OWID (población). Figuras por millón = nacidas en el período ÷ población promedio del período. PIB pc = promedio ponderado por el año de nacimiento de las figuras. Escala log-log. Regiones: taxonomía de El Atlas. Se cuentan sólo figuras multiidioma (biografía leída en al menos 2 idiomas desde 2015): quedan afuera los perfiles inflados por una sola Wikipedia. La fama no es el HPI del archivo de Pantheon: es un índice reconstruido desde las vistas de Wikipedia por idioma y por mes.',
     'c5-lbl-rubro': 'Rubro', 'c5-lbl-from': 'Desde', 'c5-lbl-to': 'hasta',
@@ -42,13 +42,13 @@ const ISSUE_I18N = {
     'c6-sources':  'Datos: Pantheon (Datawheel, base 2025). Cada columna es una década de nacimiento; las bandas, el % de figuras célebres de cada dominio. El nivel del deporte está inflado por el sesgo de Wikipedia a la era de internet, pero la dirección del cambio es robusta. Se cuentan sólo figuras multiidioma (biografía leída en al menos 2 idiomas desde 2015): quedan afuera los perfiles inflados por una sola Wikipedia.',
 
     // Chart 7 — Migración de la fama
-    'c7-title':    'La fama también emigra',
+    'c7-title':    'La fama emigra',
     'c7-subtitle': 'Saldo entre figuras célebres que un país pierde (nacieron ahí pero murieron afuera) y gana (nacieron afuera, murieron ahí). Positivo = imán; negativo = exporta su fama.',
     'c7-sources':  'Datos: Pantheon (Datawheel, base 2025), por lugar de nacimiento y de muerte. Solo personas con ambos datos y nacidas desde 1700; países con ≥25 figuras nacidas. Se cuentan sólo figuras multiidioma (biografía leída en al menos 2 idiomas desde 2015): quedan afuera los perfiles inflados por una sola Wikipedia.',
     'c7-lbl-metric': 'Medida',
 
     // Chart 8 — Concentración subnacional
-    'c8-title':    'El talento se hace en la capital',
+    'c8-title':    'La fama se hace en la capital',
     'c8-subtitle': '% de las figuras célebres de cada país que nacieron en su región líder. Cuanto más alto, más concentrado el talento en un solo lugar.',
     'c8-sources':  'Datos: Pantheon (Datawheel) por lugar de nacimiento, agregado a regiones subnacionales (adm1). Solo países con ≥50 figuras y ≥10 regiones (comparación justa). Se cuentan sólo figuras multiidioma (biografía leída en al menos 2 idiomas desde 2015): quedan afuera los perfiles inflados por una sola Wikipedia.',
     'c8-lbl-view': 'Mostrar',
@@ -59,8 +59,19 @@ const ISSUE_I18N = {
     'c9-sources':  'Datos: Pantheon (Datawheel, base 2025) por lugar de nacimiento. Áreas metropolitanas armadas agrupando ciudades a ≤35 km (más backfill de Wikidata para figuras sin ciudad en Pantheon). Solo metros con ≥30 figuras. Se cuentan sólo figuras multiidioma (biografía leída en al menos 2 idiomas desde 2015): quedan afuera los perfiles inflados por una sola Wikipedia. La fama no es el HPI del archivo de Pantheon: es un índice reconstruido desde las vistas de Wikipedia por idioma y por mes.',
     'c9-lbl-scope': 'Mostrar',
 
+
+    // Captions cortos SOLO para el PNG (la nota completa queda en la página)
+    'c1-png-note': 'Datos: Pantheon (Datawheel) y OWID (población).',
+    'c2-png-note': 'Datos: Pantheon (Datawheel).',
+    'c3-png-note': 'Datos: Pantheon (Datawheel) y Maddison Project.',
+    'c4-png-note': 'Datos: Pantheon (Datawheel).',
+    'c5-png-note': 'Datos: Pantheon (Datawheel), Maddison y OWID.',
+    'c6-png-note': 'Datos: Pantheon (Datawheel).',
+    'c7-png-note': 'Datos: Pantheon (Datawheel).',
+    'c8-png-note': 'Datos: Pantheon (Datawheel).',
+    'c9-png-note': 'Datos: Pantheon (Datawheel).',
     // Reparto de la fama (reparto.html)
-    'rep-title-insight': 'El monopolio europeo de la fama se terminó',
+    'rep-title-insight': 'La fama ya no es monopolio europeo',
     'rep-subtitle-insight': 'Europa Occidental concentraba el 57% de las figuras célebres del mundo nacidas antes de 1900; entre las nacidas después, un tercio. América Latina más que triplicó su parte.',
     'rep-title-neutral': 'El reparto de la fama',
     'rep-subtitle-neutral': 'Participación de cada región (o país) en las figuras célebres del mundo, separando a los nacidos antes y después del año de corte.',
@@ -105,12 +116,12 @@ const ISSUE_I18N = {
     'c3-sources':  'Data: Pantheon (Datawheel, 2025 release) and the Maddison Project (GDP per capita). Notable scientists = biologists, physicists, chemists, mathematicians, physicians, engineers and inventors with a notable Wikipedia biography, per million inhabitants. Log-log scale. Only multilingual figures are counted (biography read in at least 2 languages since 2015), which drops profiles inflated by a single Wikipedia.',
 
     // Chart 4 — Gender
-    'c4-title':    'Women break through in arts and science',
+    'c4-title':    'Women weigh most where the region weighs least',
     'c4-subtitle': 'Among Latin America’s notable figures, women weigh more than in the world precisely where the region produces little — arts, humanities, science — and less where it shines brightest: sport and power.',
     'c4-sources':  'Data: Pantheon (Datawheel, 2025 release). Share of women among the notable figures in each domain, Latin America vs the world total. Gender identity from Wikidata. Only multilingual figures are counted (biography read in at least 2 languages since 2015), which drops profiles inflated by a single Wikipedia.',
 
     // Chart 5 — Explorer
-    'c5-title':    'Talent per capita, field by field',
+    'c5-title':    'Notable figures per capita, field by field',
     'c5-subtitle': 'Pick a field and a birth period: each dot is a country. Vertical axis, notable figures per million; horizontal axis, GDP per capita.',
     'c5-sources':  'Data: Pantheon (Datawheel, 2025), Maddison Project (GDP per capita) and OWID (population). Figures per million = born in the period ÷ average population over the period. GDP pc = weighted by the figures’ birth years. Log-log scale. Regions: The Atlas taxonomy. Only multilingual figures are counted (biography read in at least 2 languages since 2015), which drops profiles inflated by a single Wikipedia. Fame is not the HPI from the Pantheon file: it is an index rebuilt from Wikipedia pageviews by language and month.',
     'c5-lbl-rubro': 'Field', 'c5-lbl-from': 'From', 'c5-lbl-to': 'to',
@@ -121,13 +132,13 @@ const ISSUE_I18N = {
     'c6-sources':  'Data: Pantheon (Datawheel, 2025 release). Each column is a birth decade; bands are the % of notable people in each domain. Sport’s level is inflated by Wikipedia’s internet-era bias, but the direction of change is robust. Only multilingual figures are counted (biography read in at least 2 languages since 2015), which drops profiles inflated by a single Wikipedia.',
 
     // Chart 7 — Fame migrates
-    'c7-title':    'Fame migrates too',
+    'c7-title':    'Fame migrates',
     'c7-subtitle': 'Balance between notable people a country loses (born there, died abroad) and gains (born abroad, died there). Positive = magnet; negative = exports its fame.',
     'c7-sources':  'Data: Pantheon (Datawheel, 2025 release), by birthplace and place of death. Only people with both and born since 1700; countries with ≥25 born figures. Only multilingual figures are counted (biography read in at least 2 languages since 2015), which drops profiles inflated by a single Wikipedia.',
     'c7-lbl-metric': 'Measure',
 
     // Chart 8 — Subnational concentration
-    'c8-title':    'Talent is made in the capital',
+    'c8-title':    'Fame is made in the capital',
     'c8-subtitle': '% of each country’s notable people born in its leading region. The higher, the more talent is concentrated in one place.',
     'c8-sources':  'Data: Pantheon (Datawheel) by birthplace, aggregated to subnational regions (adm1). Only countries with ≥50 figures and ≥10 regions (fair comparison). Only multilingual figures are counted (biography read in at least 2 languages since 2015), which drops profiles inflated by a single Wikipedia.',
     'c8-lbl-view': 'Show',
@@ -138,8 +149,19 @@ const ISSUE_I18N = {
     'c9-sources':  'Data: Pantheon (Datawheel, 2025 release) by birthplace. Metro areas built by clustering cities within 35 km (plus Wikidata backfill for figures missing a city in Pantheon). Only metros with ≥30 figures. Only multilingual figures are counted (biography read in at least 2 languages since 2015), which drops profiles inflated by a single Wikipedia. Fame is not the HPI from the Pantheon file: it is an index rebuilt from Wikipedia pageviews by language and month.',
     'c9-lbl-scope': 'Show',
 
+
+    // Short PNG-only captions
+    'c1-png-note': 'Data: Pantheon (Datawheel) and OWID (population).',
+    'c2-png-note': 'Data: Pantheon (Datawheel).',
+    'c3-png-note': 'Data: Pantheon (Datawheel) and Maddison Project.',
+    'c4-png-note': 'Data: Pantheon (Datawheel).',
+    'c5-png-note': 'Data: Pantheon (Datawheel), Maddison and OWID.',
+    'c6-png-note': 'Data: Pantheon (Datawheel).',
+    'c7-png-note': 'Data: Pantheon (Datawheel).',
+    'c8-png-note': 'Data: Pantheon (Datawheel).',
+    'c9-png-note': 'Data: Pantheon (Datawheel).',
     // Fame shares (reparto.html)
-    'rep-title-insight': "Europe's monopoly on fame is over",
+    'rep-title-insight': "Fame is no longer a European monopoly",
     "rep-subtitle-insight": "Western Europe accounted for 57% of the world’s famous figures born before 1900; among those born since, one third. Latin America more than tripled its share.",
     'rep-title-neutral': 'How fame is shared out',
     'rep-subtitle-neutral': "Each region's (or country's) share of the world's famous figures, splitting those born before and after a cutoff year.",

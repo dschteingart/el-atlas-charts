@@ -245,3 +245,19 @@ if (typeof applyI18n === 'function') {
   const _applyI18n_orig = applyI18n;
   applyI18n = function () { _applyI18n_orig(); try { atlasApplyEditorTexts(); } catch (e) {} };
 }
+
+
+// ===== Caption minimalista en el PNG (regla editorial) =====
+// El PNG usa la clave cN-png-note (una linea) en vez de la nota completa de la
+// pagina. Si el editor (?nl=1) tiene un caption custom, ese manda y no pisamos.
+window.onBeforePngExportGetSourceText = function (chartId) {
+  try {
+    const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+    const lang = (typeof LANG !== 'undefined') ? LANG : 'es';
+    const tx = (ae && ae.texts && ae.texts[lang]) || {};
+    if ((tx.caption || '').trim()) return null;
+    const key = 'c' + chartId + '-png-note';
+    const short = (typeof t === 'function') ? t(key) : key;
+    return short !== key ? short : null;
+  } catch (e) { return null; }
+};
