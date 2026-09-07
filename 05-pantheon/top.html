@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Atlas — Quién es quién en la fama mundial</title>
+<title>El Atlas — El ranking de la fama mundial</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -43,7 +43,7 @@
   </header>
 
   <section class="chart-block" data-chart="top" data-editor-id="top-figuras">
-    <h2 class="chart-title" data-i18n="top-title">Quién es quién en la fama mundial</h2>
+    <h2 class="chart-title" data-i18n="top-title">El ranking de la fama mundial</h2>
     <p class="chart-subtitle" data-i18n="top-subtitle">Las figuras más célebres de la historia según el índice de fama de El Atlas. Elegí cuántas ver y filtrá por región, país, dominio u ocupación.</p>
 
     <div class="controls">
@@ -88,9 +88,9 @@
 </div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=10"></script>
+<script src="./i18n-issue.js?v=11"></script>
 <script src="./utils.js?v=3"></script>
-<script src="./data-top.js?v=4"></script>
+<script src="./data-top.js?v=5"></script>
 <script>
 const D = window.TOPFIGS;
 const REG_LABEL = {
@@ -139,6 +139,29 @@ function fillSelects() {
 function nombre(r) {
   return en() ? r[1] : (r[2] || r[1]);
 }
+function occLabel(r) {
+  const o = D.occs[r[4]];
+  if (en()) return o.en;
+  return r[8] === 'F' ? (o.es_f || o.es) : r[8] === 'M' ? (o.es_m || o.es) : o.es;
+}
+function filtrosStr() {
+  const partes = [];
+  if (st.occ >= 0) partes.push(en() ? D.occs[st.occ].en : D.occs[st.occ].es);
+  else if (st.dom >= 0) partes.push(en() ? D.doms[st.dom].en : D.doms[st.dom].es);
+  if (st.cty >= 0) partes.push(en() ? D.isoMeta[st.cty].en : D.isoMeta[st.cty].es);
+  else if (st.reg >= 0) partes.push(regLabel(REGS[st.reg]));
+  return partes.join(' · ');
+}
+function subActual() {
+  const f = filtrosStr();
+  return f ? tpl('top-sub-filtrado', { f }) : t('top-subtitle');
+}
+function syncSub() {
+  // el custom del editor manda (criterio 5)
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const tx = (ae && ae.texts && ae.texts[en() ? 'en' : 'es']) || {};
+  if (!(tx.subtitle || '').trim()) document.querySelector('.chart-subtitle').textContent = subActual();
+}
 function fotoUrl(r) {
   return r[7] ? './fotos/' + r[7] : null;   // servidas por nosotros: mismo origen, sin CORS
 }
@@ -170,7 +193,7 @@ function render() {
       '<td class="nm">' + (ph ? '<img class="ph" loading="lazy" referrerpolicy="no-referrer" src="' + ph + '" alt="" onerror="this.remove()">' : '') + nombre(r) + '</td>' +
       '<td class="mut">' + (m ? (en() ? m.en : m.es) : '—') + '</td>' +
       '<td class="mut">' + (m ? regLabel(m.reg) : '—') + '</td>' +
-      '<td class="mut">' + (en() ? o.en : o.es) + '</td>' +
+      '<td class="mut">' + occLabel(r) + '</td>' +
       '<td class="mut">' + (en() ? D.doms[o.dom].en : D.doms[o.dom].es) + '</td>' +
       '<td class="sc">' + r[5].toLocaleString(loc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '</td>';
     tb.appendChild(tr);
@@ -178,6 +201,7 @@ function render() {
   const av = document.getElementById('aviso');
   if (rows.length < st.n) { av.hidden = false; av.textContent = tpl('top-aviso-corte', { n: rows.length.toLocaleString(loc()) }); }
   else av.hidden = true;
+  syncSub();
 }
 
 // ===== CSV =====
@@ -190,7 +214,7 @@ function csvActual() {
     const m = r[3] >= 0 ? D.isoMeta[r[3]] : null;
     const o = D.occs[r[4]];
     lines.push([r[0], q(r[1]), q(r[2] || r[1]), m ? m.iso : '', q(m ? (en() ? m.en : m.es) : ''),
-                q(m ? regLabel(m.reg) : ''), q(en() ? o.en : o.es), q(en() ? D.doms[o.dom].en : D.doms[o.dom].es),
+                q(m ? regLabel(m.reg) : ''), q(occLabel(r)), q(en() ? D.doms[o.dom].en : D.doms[o.dom].es),
                 r[6] == null ? '' : r[6], r[5].toFixed(1)].join(','));
   });
   return '﻿' + lines.join('\n');
@@ -230,7 +254,8 @@ function cargarFoto(url) {
 }
 async function dibujarYExportar(usarFotos) {
   try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
-  const all = filtrar(), shown = all.slice(0, 15);
+  const all = filtrar();
+  let shown = all.slice(0, 15);
   const fotos = usarFotos ? await Promise.all(shown.map(r => cargarFoto(fotoUrl(r)))) : shown.map(() => null);
   // en file:// Chrome bloquea el CORS de las imagenes: si no cargo ninguna,
   // mejor sin columna de retratos que quince circulos vacios
@@ -245,24 +270,18 @@ async function dibujarYExportar(usarFotos) {
   // subtitulo del PNG: el custom del editor manda; si no, el de la pagina
   const aeS = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
   const txS = (aeS && aeS.texts && aeS.texts[en() ? 'en' : 'es']) || {};
-  const subPng = (txS.subtitle || '').trim() || t('top-subtitle');
-  y += 2; ctx.fillStyle = PNG.soft; ctx.font = 'italic 32px ' + SERIF;   // subtitulo de la casa: Source Serif 4 italica
+  // subtitulo dinamico: el filtro va ADENTRO de la frase, no en linea aparte
+  const subPng = (txS.subtitle || '').trim() || subActual();
+  y += 2; ctx.fillStyle = PNG.soft; ctx.font = 'italic 32px ' + SERIF;   // Source Serif 4 italica de la casa
   wrapText(ctx, subPng, W).slice(0, 2).forEach(l => { ctx.fillText(l, PAD, y); y += 42; });
-  // filtros activos, en una linea mas chica
-  const partes = [];
-  if (st.cty >= 0) partes.push(en() ? D.isoMeta[st.cty].en : D.isoMeta[st.cty].es);
-  else if (st.reg >= 0) partes.push(regLabel(REGS[st.reg]));
-  if (st.occ >= 0) partes.push(en() ? D.occs[st.occ].en : D.occs[st.occ].es);
-  else if (st.dom >= 0) partes.push(en() ? D.doms[st.dom].en : D.doms[st.dom].es);
-  if (partes.length) {
-    y += 2; ctx.fillStyle = PNG.muted; ctx.font = '600 27px ' + SANS;
-    ctx.fillText(partes.join(' · '), PAD, y); y += 36;
-  }
   y += 14;
   const colRk = 86, colPh = hayFotos ? 62 : 0, colSc = 130;
   const colNm = Math.round((W - colRk - colPh - colSc) * 0.52);
   const colOc = W - colRk - colSc - colNm;
   const bottom = PNG.H - 148;
+  // tope automatico: nunca mas filas de las que entran sin pisar el caption
+  const nCaben = Math.floor((bottom - y - 44) / 50);
+  if (shown.length > nCaben) shown = shown.slice(0, Math.max(nCaben, 5));
   const rowH = Math.max(50, Math.min(66, Math.floor((bottom - y - 44) / Math.max(shown.length, 1))));
   ctx.font = '700 23px ' + SANS; ctx.fillStyle = PNG.muted; ctx.textAlign = 'left';
   ctx.fillText('#', PAD, y + 28);
@@ -292,7 +311,7 @@ async function dibujarYExportar(usarFotos) {
     ctx.fillStyle = PNG.ink; ctx.font = '600 31px ' + SANS;
     ctx.fillText(fitText(ctx, nombre(r), colNm - 16), PAD + colRk + colPh, ty);
     ctx.fillStyle = PNG.soft; ctx.font = '400 27px ' + SANS;
-    const meta = (m ? (en() ? m.en : m.es) : '—') + ' · ' + (en() ? o.en : o.es);
+    const meta = (m ? (en() ? m.en : m.es) : '—') + ' · ' + occLabel(r);
     ctx.fillText(fitText(ctx, meta, colOc - 16), PAD + colRk + colPh + colNm, ty);
     ctx.fillStyle = PNG.accent; ctx.font = '700 31px ' + SANS; ctx.textAlign = 'right';
     ctx.fillText(r[5].toLocaleString(loc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }), PAD + W, ty);
@@ -365,7 +384,7 @@ document.getElementById('btn-png').addEventListener('click', exportPng);
 window.__topExportPng = exportPng;
 
 // ===== controles =====
-document.getElementById('c-n').addEventListener('input', e => { st.n = +e.target.value; render(); });
+document.getElementById('c-n').addEventListener('input', e => { st.n = Math.max(1, +e.target.value || 10); render(); });
 document.getElementById('c-reg').addEventListener('input', e => { st.reg = +e.target.value; st.cty = -1; fillSelects(); render(); });
 document.getElementById('c-cty').addEventListener('input', e => { st.cty = +e.target.value; render(); });
 document.getElementById('c-dom').addEventListener('input', e => { st.dom = +e.target.value; st.occ = -1; fillSelects(); render(); });

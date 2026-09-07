@@ -14,7 +14,7 @@ TOP = 5000
 
 C = pd.read_csv(os.path.join(DIR, 'pantheon_corregido.csv'), low_memory=False)
 d = C[(C.multi_idioma == 1) & C.score.notna()].nsmallest(TOP, 'rank_score').copy()
-M = pd.read_csv(os.path.join(DIR, 'master_corregido.csv'), low_memory=False)[['id', 'iso3']]
+M = pd.read_csv(os.path.join(DIR, 'master_corregido.csv'), low_memory=False)[['id', 'iso3', 'gender']]
 d = d.merge(M, on='id', how='left')
 N = pd.read_csv(os.path.join(DIR, 'nombres_es.csv'), encoding='utf-8-sig')[['id', 'name_es']]
 d = d.merge(N, on='id', how='left')
@@ -49,10 +49,25 @@ DOMS = [('Deporte', 'Sport'), ('Arte y espectáculo', 'Arts & entertainment'),
         ('Ciencia y tecnología', 'Science & tech'), ('Humanidades', 'Humanities'),
         ('Poder y figuras públicas', 'Power & public life'), ('Negocios y exploración', 'Business & exploration')]
 dom_idx = {es: k for k, (es, en) in enumerate(DOMS)}
+# formas por genero del label ES ("Politico/a" -> "Politico" / "Politica")
+def formas(es):
+    if es == 'Actor/Actriz': return 'Actor', 'Actriz'
+    if es == 'Actor/actriz porno': return 'Actor porno', 'Actriz porno'
+    if '/a' not in es: return es, es
+    masc = es.replace('/a', '', 1)
+    tok = [pz for pz in es.split(' ') if '/a' in pz][0].replace('/a', '')
+    if tok.endswith('or'): fem_tok = tok + 'a'
+    elif tok.endswith('ín'): fem_tok = tok[:-2] + 'ina'
+    elif tok.endswith('o'): fem_tok = tok[:-1] + 'a'
+    else: fem_tok = tok + 'a'
+    return masc, es.replace(tok + '/a', fem_tok)
+
 occMeta = []
 occ2dom = d.groupby('occupation').dominio.agg(lambda s2: s2.mode()[0]).to_dict()
 for o in occs_raw:
-    occMeta.append({'es': OCC_ES.get(o, o.title()), 'en': o.title(), 'dom': dom_idx[occ2dom[o]]})
+    es = OCC_ES.get(o, o.title())
+    m_, f_ = formas(es)
+    occMeta.append({'es': es, 'es_m': m_, 'es_f': f_, 'en': o.title(), 'dom': dom_idx[occ2dom[o]]})
 
 rows = []
 for _, x in d.sort_values('rank_score').iterrows():
@@ -63,14 +78,15 @@ for _, x in d.sort_values('rank_score').iterrows():
                  occ_idx[x.occupation],
                  round(float(x.score), 1),
                  int(x.birthyear) if pd.notna(x.birthyear) else None,
-                 x.img])
+                 x.img,
+                 x.gender if x.gender in ('M', 'F') else ''])
 
 out = {'isoMeta': isoMeta, 'occs': occMeta,
        'doms': [{'es': a, 'en': b} for a, b in DOMS],
        'rows': rows}
 dest = os.path.join(CHARTS, 'data-top.js')
 io.open(dest, 'w', encoding='utf-8', newline='').write(
-    '// Tabla quien-es-quien: top %d figuras por score (multiidioma). rows=[rank,name_en,name_es(si difiere),isoIdx,occIdx,hpi,birthyear,img(archivo local en fotos/)]\n' % TOP
+    '// Tabla quien-es-quien: top %d figuras por score (multiidioma). rows=[rank,name_en,name_es(si difiere),isoIdx,occIdx,hpi,birthyear,img(archivo local en fotos/),genero M/F]\n' % TOP
     + 'window.TOPFIGS=' + json.dumps(out, ensure_ascii=False, separators=(',', ':')) + ';\n')
 print('=> data-top.js | %d filas | %.0f KB' % (len(rows), os.path.getsize(dest) / 1024))
 print('   top 3:', [r[1] for r in rows[:3]])

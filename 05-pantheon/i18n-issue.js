@@ -71,8 +71,9 @@ const ISSUE_I18N = {
     'c8-png-note': 'Datos: Pantheon (Datawheel).',
     'c9-png-note': 'Datos: Pantheon (Datawheel).',
     // Quien es quien (top.html)
-    'top-title': 'Quién es quién en la fama mundial',
+    'top-title': 'El ranking de la fama mundial',
     'top-subtitle': 'Las figuras más célebres de la historia según el índice de popularidad histórica (HPI).',
+    'top-sub-filtrado': '{f}: las figuras más célebres según el índice de popularidad histórica (HPI).',
     'top-lbl-n': 'Mostrar',
     'top-lbl-region': 'Región',
     'top-lbl-pais': 'País',
@@ -182,8 +183,9 @@ const ISSUE_I18N = {
     'c8-png-note': 'Data: Pantheon (Datawheel).',
     'c9-png-note': 'Data: Pantheon (Datawheel).',
     // Who's who (top.html)
-    'top-title': "Who's who in world fame",
+    'top-title': 'The global fame ranking',
     'top-subtitle': "History's most famous figures according to the Historical Popularity Index (HPI).",
+    'top-sub-filtrado': '{f}: the most famous figures by Historical Popularity Index (HPI).',
     'top-lbl-n': 'Show',
     'top-lbl-region': 'Region',
     'top-lbl-pais': 'Country',
