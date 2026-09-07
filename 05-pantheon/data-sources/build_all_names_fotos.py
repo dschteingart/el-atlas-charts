@@ -40,6 +40,8 @@ def lote(recs):
             out = {}
             for q, e in (j.get('entities') or {}).items():
                 lab = ((e.get('labels') or {}).get('es') or {}).get('value') or ''
+                lab2 = __import__('re').sub(r'\s*\([^)]*\)\s*$', '', lab).strip()
+                if lab2: lab = lab2   # sin el desambiguador "(...)" de Wikidata
                 try:
                     img = e['claims']['P18'][0]['mainsnak']['datavalue']['value']
                 except (KeyError, IndexError, TypeError):

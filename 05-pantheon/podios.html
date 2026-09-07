@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — El podio de cada país</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<link rel="stylesheet" href="../lib/editor.css?v=1">
+<style>
+  .wrap-wide { max-width: 1100px; padding: 10px 20px 16px; }
+  .wrap-wide header { padding-bottom: 8px; margin-bottom: 10px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: flex-end; margin: 14px 0 10px; }
+  .ctl label { display: block; font-family: var(--sans); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); margin-bottom: 5px; }
+  select { font-family: var(--sans); font-size: 13.5px; padding: 7px 9px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink); max-width: 210px; }
+  /* chips de paises (criterio 11: removibles, Limpiar, buscador) */
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; font-family: var(--sans); font-size: 12.5px; background: var(--bg-soft); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 7px 3px 10px; color: var(--ink); }
+  .chip button { border: none; background: none; cursor: pointer; color: var(--ink-muted); font-size: 13px; padding: 0 2px; line-height: 1; }
+  .chip button:hover { color: var(--accent); }
+  #buscador { font-family: var(--sans); font-size: 13px; padding: 5px 8px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink); width: 160px; }
+  .mini { font-family: var(--sans); font-size: 12px; padding: 5px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink-soft); cursor: pointer; }
+  .mini:hover { border-color: var(--accent); color: var(--accent); }
+  /* doble slider de periodo */
+  .anios { display: flex; align-items: center; gap: 8px; }
+  .anios input[type=number] { font-family: var(--sans); font-size: 13px; width: 72px; padding: 5px 6px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink); }
+  .dual { position: relative; width: 220px; height: 26px; }
+  .dual .track { position: absolute; top: 11.5px; left: 0; right: 0; height: 3px; background: var(--rule); border-radius: 2px; }
+  .dual .fill { position: absolute; top: 11.5px; height: 3px; background: var(--accent); border-radius: 2px; }
+  .dual input[type=range] { position: absolute; left: 0; top: 0; width: 100%; height: 26px; margin: 0; background: none; pointer-events: none; -webkit-appearance: none; appearance: none; }
+  .dual input[type=range]::-webkit-slider-runnable-track { height: 3px; background: transparent; }
+  .dual input[type=range]::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--rule); cursor: pointer; margin-top: -6.5px; }
+  .dual input[type=range]::-moz-range-track { height: 3px; background: transparent; }
+  .dual input[type=range]::-moz-range-thumb { pointer-events: auto; width: 13px; height: 13px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--rule); cursor: pointer; }
+  /* tabla de podios */
+  .tblbox { max-height: 680px; overflow: auto; border: 1px solid var(--rule); border-radius: 10px; }
+  table { border-collapse: collapse; font-family: var(--sans); width: 100%; min-width: 880px; }
+  thead th { position: sticky; top: 0; background: var(--bg); z-index: 2; }
+  th, td { padding: 8px 12px; font-size: 13.5px; border-bottom: 1px solid var(--rule); text-align: left; }
+  th { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); font-weight: 700; white-space: nowrap; }
+  td.pais { font-weight: 700; color: var(--ink); white-space: nowrap; }
+  td.fig .fw { display: flex; align-items: center; gap: 9px; }
+  td.fig .ph { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; object-position: top; background: var(--bg-soft); border: 1px solid var(--rule); flex: 0 0 auto; }
+  td.fig .fn { font-weight: 600; color: var(--ink); font-size: 13.5px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  td.fig .fm { font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
+  td.fig .fm b { color: var(--accent); font-variant-numeric: tabular-nums; }
+  td.vac { color: var(--ink-muted); }
+  td.vacio { color: var(--ink-muted); font-style: italic; }
+  #aviso { font-family: var(--sans); font-size: 12px; color: var(--ink-muted); margin: 8px 0 0; }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 5</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" class="active">ES</button>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="podios" data-editor-id="podios-pais">
+    <h2 class="chart-title" data-i18n="pod-title">El podio de cada país</h2>
+    <p class="chart-subtitle" data-i18n="pod-subtitle">…</p>
+
+    <div class="controls">
+      <div class="ctl" style="flex:1 1 100%">
+        <label data-i18n="pod-lbl-paises">Países</label>
+        <div class="chips" id="chips"></div>
+        <datalist id="dl-paises"></datalist>
+      </div>
+      <div class="ctl">
+        <label data-i18n="pod-lbl-periodo">Nacidos entre</label>
+        <div class="anios">
+          <input type="number" id="n-y0" min="-4000" max="2025" step="1">
+          <div class="dual">
+            <div class="track"></div><div class="fill" id="fill"></div>
+            <input type="range" id="r-y0" min="0" max="1000" step="1">
+            <input type="range" id="r-y1" min="0" max="1000" step="1">
+          </div>
+          <input type="number" id="n-y1" min="-4000" max="2025" step="1">
+        </div>
+      </div>
+      <div class="ctl"><label data-i18n="pod-lbl-dom">Dominio</label><select id="c-dom"></select></div>
+      <div class="ctl"><label data-i18n="pod-lbl-occ">Ocupación</label><select id="c-occ"></select></div>
+    </div>
+
+    <div class="tblbox"><table>
+      <thead><tr>
+        <th id="h-pais">País</th>
+        <th id="h-p1">1°</th>
+        <th id="h-p2">2°</th>
+        <th id="h-p3">3°</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+    <p id="aviso" hidden></p>
+  </section>
+
+  <div class="footer">
+    <p>
+      <button class="download" id="btn-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
+      <button class="download" id="btn-png" data-i18n="footer-download-png">Descargar PNG</button>
+    </p>
+    <div class="footer-row">
+      <p class="sources" data-i18n="pod-note">…</p>
+    </div>
+    <div class="footer-row">
+      <p class="sources" data-i18n="pod-sources">Datos: Pantheon (Datawheel).</p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="../lib/i18n.js"></script>
+<script src="./i18n-issue.js?v=13"></script>
+<script src="./utils.js?v=3"></script>
+<script src="./data-top.js?v=7"></script>
+<script>
+const D = window.TOPFIGS;
+const en = () => (typeof LANG !== 'undefined' && LANG === 'en');
+const loc = () => en() ? 'en-US' : 'es-AR';
+const tpl = (k, vars) => Object.entries(vars).reduce((a, [b, c]) => a.split('{' + b + '}').join(c), t(k));
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const fmtAnio = y => y < 0 ? (-y).toLocaleString(loc()) + (en() ? ' BC' : ' a.C.') : String(y);
+const fmtHpi = v => v.toLocaleString(loc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+const paisLabel = i => en() ? D.isoMeta[i].en : D.isoMeta[i].es;
+const LATAM = D.isoMeta.map((m, i) => [m, i]).filter(([m]) => m.reg === 'Latin America').map(([, i]) => i);
+
+const st = { sel: LATAM.slice(), y0: 1900, y1: 2025, dom: -1, occ: -1 };
+
+// ===== periodo: doble slider con escala por tramos (lo moderno con mas lugar) =====
+const ANC = [[0, -4000], [250, 0], [500, 1500], [1000, 2025]];
+function s2y(s) {
+  s = +s;
+  for (let k = 1; k < ANC.length; k++) if (s <= ANC[k][0]) {
+    const s0 = ANC[k - 1][0], y0 = ANC[k - 1][1], s1 = ANC[k][0], y1 = ANC[k][1];
+    return Math.round(y0 + (s - s0) * (y1 - y0) / (s1 - s0));
+  }
+  return ANC[ANC.length - 1][1];
+}
+function y2s(y) {
+  y = Math.max(-4000, Math.min(2025, +y));
+  for (let k = 1; k < ANC.length; k++) if (y <= ANC[k][1]) {
+    const s0 = ANC[k - 1][0], y0 = ANC[k - 1][1], s1 = ANC[k][0], y1 = ANC[k][1];
+    return s0 + (y - y0) * (s1 - s0) / (y1 - y0);
+  }
+  return ANC[ANC.length - 1][0];
+}
+function syncPeriodo() {
+  document.getElementById('n-y0').value = st.y0;
+  document.getElementById('n-y1').value = st.y1;
+  const s0 = y2s(st.y0), s1 = y2s(st.y1);
+  document.getElementById('r-y0').value = s0;
+  document.getElementById('r-y1').value = s1;
+  const f = document.getElementById('fill');
+  f.style.left = (s0 / 10) + '%';
+  f.style.width = Math.max(0, (s1 - s0) / 10) + '%';
+}
+
+// ===== selects dominio -> ocupacion (dependientes, como en el ranking) =====
+function fillSelects() {
+  const sd = document.getElementById('c-dom'), so = document.getElementById('c-occ');
+  sd.innerHTML = ''; sd.add(new Option(t('pod-todos'), -1));
+  D.doms.forEach((d, i) => sd.add(new Option(en() ? d.en : d.es, i)));
+  sd.value = String(st.dom);
+  so.innerHTML = ''; so.add(new Option(t('pod-todas'), -1));
+  D.occs.map((o, i) => [o, i])
+    .filter(([o]) => st.dom < 0 || o.dom === st.dom)
+    .sort((a, b) => (en() ? a[0].en : a[0].es).localeCompare(en() ? b[0].en : b[0].es, loc()))
+    .forEach(([o, i]) => so.add(new Option(en() ? o.en : o.es, i)));
+  so.value = String(st.occ);
+  if (so.value === '') { st.occ = -1; so.value = '-1'; }
+}
+
+// ===== chips de paises =====
+function renderChips() {
+  const box = document.getElementById('chips'); box.innerHTML = '';
+  st.sel.forEach(i => {
+    const ch = document.createElement('span'); ch.className = 'chip';
+    ch.innerHTML = esc(paisLabel(i)) + '<button data-i="' + i + '" aria-label="quitar">✕</button>';
+    box.appendChild(ch);
+  });
+  const inp = document.createElement('input');
+  inp.id = 'buscador'; inp.setAttribute('list', 'dl-paises');
+  inp.placeholder = t('pod-buscar'); inp.autocomplete = 'off';
+  box.appendChild(inp);
+  const bL = document.createElement('button'); bL.className = 'mini'; bL.textContent = t('pod-latam');
+  const bC = document.createElement('button'); bC.className = 'mini'; bC.textContent = t('pod-limpiar');
+  box.appendChild(bL); box.appendChild(bC);
+  const dl = document.getElementById('dl-paises'); dl.innerHTML = '';
+  const enSel = new Set(st.sel);
+  D.isoMeta.map((m, i) => [m, i]).filter(x => !enSel.has(x[1]))
+    .sort((a, b) => paisLabel(a[1]).localeCompare(paisLabel(b[1]), loc()))
+    .forEach(x => dl.appendChild(new Option(paisLabel(x[1]))));
+  inp.addEventListener('change', () => {
+    const q = inp.value.trim().toLowerCase();
+    if (!q) return;
+    let hit = -1;
+    D.isoMeta.forEach((m, i) => {
+      if (hit >= 0 || enSel.has(i)) return;
+      if (m.es.toLowerCase() === q || m.en.toLowerCase() === q || m.iso.toLowerCase() === q) hit = i;
+    });
+    if (hit < 0) D.isoMeta.forEach((m, i) => {
+      if (hit >= 0 || enSel.has(i)) return;
+      if (m.es.toLowerCase().startsWith(q) || m.en.toLowerCase().startsWith(q)) hit = i;
+    });
+    if (hit >= 0) { st.sel.push(hit); renderChips(); render(); }
+    else inp.value = '';
+  });
+  bL.addEventListener('click', () => { st.sel = LATAM.slice(); renderChips(); render(); });
+  bC.addEventListener('click', () => { st.sel = []; renderChips(); render(); });
+}
+document.getElementById('chips').addEventListener('click', e => {
+  const b = e.target.closest('button[data-i]');
+  if (!b) return;
+  st.sel = st.sel.filter(x => x !== +b.dataset.i);
+  renderChips(); render();
+});
+
+// ===== podios =====
+function nombre(r) { return en() ? r[1] : (r[2] || r[1]); }
+function occLabel(r) {
+  const o = D.occs[r[4]];
+  if (en()) return o.en;
+  return r[8] === 'F' ? (o.es_f || o.es) : r[8] === 'M' ? (o.es_m || o.es) : o.es;
+}
+function fotoUrl(r) {
+  if (!r[7]) return null;
+  if (/^\d+\.(jpg|png)$/.test(r[7])) return './fotos/' + r[7];
+  return 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(r[7]) + '?width=96';
+}
+function calc() {
+  const setSel = new Set(st.sel);
+  const top = new Map();
+  for (const r of D.rows) {                     // ya vienen ordenadas por rank
+    if (r[3] < 0 || !setSel.has(r[3])) continue;
+    if (r[6] == null || r[6] < st.y0 || r[6] > st.y1) continue;
+    if (st.occ >= 0) { if (r[4] !== st.occ) continue; }
+    else if (st.dom >= 0 && D.occs[r[4]].dom !== st.dom) continue;
+    let a = top.get(r[3]);
+    if (!a) top.set(r[3], a = []);
+    if (a.length < 3) a.push(r);
+  }
+  const out = st.sel.map(i => ({ i, figs: top.get(i) || [] }));
+  out.sort((a, b) => ((b.figs[0] ? b.figs[0][5] : -1) - (a.figs[0] ? a.figs[0][5] : -1))
+    || paisLabel(a.i).localeCompare(paisLabel(b.i), loc()));
+  return out;
+}
+function filtroDomStr() {
+  if (st.occ >= 0) return en() ? D.occs[st.occ].en : D.occs[st.occ].es;
+  if (st.dom >= 0) return en() ? D.doms[st.dom].en : D.doms[st.dom].es;
+  return '';
+}
+function subActual() {
+  const f = filtroDomStr();
+  const v = { y0: fmtAnio(st.y0), y1: fmtAnio(st.y1), f: f };
+  return f ? tpl('pod-subtitle-dom', v) : tpl('pod-subtitle', v);
+}
+function syncSub() {
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const tx = (ae && ae.texts && ae.texts[en() ? 'en' : 'es']) || {};
+  if (!(tx.subtitle || '').trim()) document.querySelector('.chart-subtitle').textContent = subActual();
+}
+function celda(r) {
+  if (!r) return '<td class="fig vac">—</td>';
+  const ph = fotoUrl(r);
+  return '<td class="fig"><div class="fw">' +
+    (ph ? '<img class="ph" loading="lazy" referrerpolicy="no-referrer" src="' + ph + '" alt="" onerror="this.remove()">' : '') +
+    '<div class="ft"><div class="fn">' + esc(nombre(r)) + '</div>' +
+    '<div class="fm">' + esc(occLabel(r)) + ' · <b>' + fmtHpi(r[5]) + '</b></div></div></div></td>';
+}
+function render() {
+  document.getElementById('h-pais').textContent = t('pod-col-pais');
+  const ord = en() ? ['1st', '2nd', '3rd'] : ['1°', '2°', '3°'];
+  ['h-p1', 'h-p2', 'h-p3'].forEach((id, k) => { document.getElementById(id).textContent = ord[k]; });
+  const tb = document.getElementById('rows'); tb.innerHTML = '';
+  if (!st.sel.length) {
+    tb.innerHTML = '<tr><td class="vacio" colspan="4">' + esc(t('pod-vacio')) + '</td></tr>';
+  } else {
+    calc().forEach(p => {
+      const tr = document.createElement('tr');
+      if (!p.figs.length) {
+        tr.innerHTML = '<td class="pais">' + esc(paisLabel(p.i)) + '</td>' +
+          '<td class="vacio" colspan="3">' + esc(t('pod-sin-figuras')) + '</td>';
+      } else {
+        tr.innerHTML = '<td class="pais">' + esc(paisLabel(p.i)) + '</td>' +
+          celda(p.figs[0]) + celda(p.figs[1]) + celda(p.figs[2]);
+      }
+      tb.appendChild(tr);
+    });
+  }
+  const av = document.getElementById('aviso');
+  if (!window.__full) { av.hidden = false; av.textContent = t('pod-cargando'); }
+  else av.hidden = true;
+  syncSub();
+}
+
+// ===== CSV =====
+function csvActual() {
+  const q = s => '"' + String(s).replace(/"/g, '""') + '"';
+  const head = ['country', 'iso3', 'position', 'rank_global', 'name_en', 'name_es', 'occupation', 'domain', 'birthyear', 'hpi_0_100'];
+  const lines = [head.join(',')];
+  calc().forEach(p => {
+    const m = D.isoMeta[p.i];
+    p.figs.forEach((r, k) => {
+      const o = D.occs[r[4]];
+      lines.push([q(en() ? m.en : m.es), m.iso, k + 1, r[0], q(r[1]), q(r[2] || r[1]),
+                  q(occLabel(r)), q(en() ? D.doms[o.dom].en : D.doms[o.dom].es),
+                  r[6] == null ? '' : r[6], r[5].toFixed(1)].join(','));
+    });
+  });
+  return '﻿' + lines.join('\n');
+}
+document.getElementById('btn-csv').addEventListener('click', () => {
+  const blob = new Blob([csvActual()], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = en() ? 'the-atlas-05-podium-countries.csv' : 'el-atlas-05-podio-paises.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+});
+
+// ===== PNG (cuadrado 1200, mobile-first, minimalista) =====
+const PNG = { W: 1200, H: 1200, bg: '#FAF8F3', ink: '#1A1A1A', soft: '#4A4A4A', muted: '#8A8579', rule: '#E0DCC8', accent: '#BE5D32' };
+const SERIF = '"Source Serif 4", Georgia, serif';
+const SANS = '"Source Sans 3", Arial, sans-serif';
+function wrapText(ctx, text, maxW) {
+  const w = String(text).split(' '), out = []; let cur = '';
+  w.forEach(x => { const p = cur ? cur + ' ' + x : x; if (ctx.measureText(p).width > maxW && cur) { out.push(cur); cur = x; } else cur = p; });
+  if (cur) out.push(cur); return out;
+}
+const fitText = (ctx, s, maxW) => {
+  s = String(s); if (ctx.measureText(s).width <= maxW) return s;
+  while (s.length > 2 && ctx.measureText(s + '…').width > maxW) s = s.slice(0, -1);
+  return s + '…';
+};
+function cargarFoto(url) {
+  return new Promise(res => {
+    if (!url) return res(null);
+    const im = new Image();
+    if (/^https?:/.test(url)) im.crossOrigin = 'anonymous';
+    const to = setTimeout(() => res(null), 3500);
+    im.onload = () => { clearTimeout(to); res(im); };
+    im.onerror = () => { clearTimeout(to); res(null); };
+    im.src = url;
+  });
+}
+async function dibujarYExportar(usarFotos) {
+  try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
+  const all = calc().filter(p => p.figs.length);
+  const cv = document.createElement('canvas'); cv.width = PNG.W; cv.height = PNG.H;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = PNG.bg; ctx.fillRect(0, 0, PNG.W, PNG.H);
+  const PAD = 56, W = PNG.W - PAD * 2;
+  let y = 96;
+  ctx.fillStyle = PNG.ink; ctx.font = '700 52px ' + SERIF;
+  wrapText(ctx, document.querySelector('.chart-title').textContent, W).forEach(l => { ctx.fillText(l, PAD, y); y += 60; });
+  const aeS = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const txS = (aeS && aeS.texts && aeS.texts[en() ? 'en' : 'es']) || {};
+  const subPng = (txS.subtitle || '').trim() || subActual();
+  y += 2; ctx.fillStyle = PNG.soft; ctx.font = 'italic 32px ' + SERIF;   // Source Serif 4 italica de la casa
+  wrapText(ctx, subPng, W).slice(0, 2).forEach(l => { ctx.fillText(l, PAD, y); y += 42; });
+  y += 12;
+  const colP = 200, colF = Math.floor((W - colP) / 3);
+  const bottom = PNG.H - 148;
+  // encabezado de columnas + regla gruesa
+  ctx.font = '700 23px ' + SANS; ctx.fillStyle = PNG.muted; ctx.textAlign = 'left';
+  ctx.fillText(t('pod-col-pais').toUpperCase(), PAD, y + 28);
+  (en() ? ['1st', '2nd', '3rd'] : ['1°', '2°', '3°']).forEach((s, k) => {
+    ctx.fillText(s, PAD + colP + k * colF + 4, y + 28);
+  });
+  y += 44;
+  ctx.strokeStyle = PNG.ink; ctx.lineWidth = 2.5;
+  ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(PAD + W, y); ctx.stroke();
+  // tope automatico de filas: nunca pisar el caption; las que entran se
+  // estiran para llenar el alto (sin aire muerto antes de la nota)
+  const nCaben = Math.max(3, Math.floor((bottom - y) / 84));
+  const shown = all.slice(0, nCaben);
+  const rowH = Math.min(104, Math.floor((bottom - y) / Math.max(shown.length, 1)));
+  const fotos = [];
+  if (usarFotos) {
+    const urls = [];
+    shown.forEach(p => p.figs.forEach(r => urls.push(fotoUrl(r))));
+    const ims = await Promise.all(urls.map(cargarFoto));
+    let k = 0; shown.forEach(p => { fotos.push(p.figs.map(() => ims[k++])); });
+  } else shown.forEach(p => fotos.push(p.figs.map(() => null)));
+  const hayFotos = fotos.some(a => a.some(Boolean));
+  shown.forEach((p, pi) => {
+    const cy = y + rowH / 2;
+    ctx.textAlign = 'left';
+    ctx.fillStyle = PNG.ink; ctx.font = '700 27px ' + SANS;
+    ctx.fillText(fitText(ctx, paisLabel(p.i), colP - 18), PAD, cy + 9);
+    p.figs.forEach((r, k) => {
+      const x0 = PAD + colP + k * colF + 4;
+      let tx = x0;
+      if (hayFotos) {
+        const dph = Math.min(rowH - 34, 54), im = fotos[pi][k], pcx = x0 + dph / 2, pcy = cy;
+        ctx.save(); ctx.beginPath(); ctx.arc(pcx, pcy, dph / 2, 0, Math.PI * 2); ctx.clip();
+        if (im) {
+          const s0 = Math.min(im.width, im.height);
+          ctx.drawImage(im, (im.width - s0) / 2, Math.max(0, (im.height - s0) / 6), s0, s0, pcx - dph / 2, pcy - dph / 2, dph, dph);
+        } else { ctx.fillStyle = '#ECE7D8'; ctx.fillRect(pcx - dph / 2, pcy - dph / 2, dph, dph); }
+        ctx.restore();
+        tx = x0 + dph + 10;
+      }
+      const maxW = x0 + colF - 16 - tx;
+      ctx.fillStyle = PNG.ink; ctx.font = '600 25px ' + SANS;
+      ctx.fillText(fitText(ctx, nombre(r), maxW), tx, cy - 3);
+      ctx.font = '700 20px ' + SANS;
+      const hpiTxt = fmtHpi(r[5]);
+      const hpiW = ctx.measureText(hpiTxt).width;
+      ctx.fillStyle = PNG.soft; ctx.font = '400 20px ' + SANS;
+      ctx.fillText(fitText(ctx, occLabel(r), maxW - hpiW - 14), tx, cy + 23);
+      ctx.fillStyle = PNG.accent; ctx.font = '700 20px ' + SANS; ctx.textAlign = 'right';
+      ctx.fillText(hpiTxt, x0 + colF - 16, cy + 23);
+      ctx.textAlign = 'left';
+    });
+    y += rowH;
+    ctx.strokeStyle = PNG.rule; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(PAD + W, y); ctx.stroke();
+  });
+  // caption minimo + firma (el custom del editor manda)
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const tx = (ae && ae.texts && ae.texts[en() ? 'en' : 'es']) || {};
+  let nota = (tx.caption || '').trim() || t('pod-png-note');
+  if (all.length > shown.length) nota += ' ' + tpl('pod-png-top', { n: shown.length });
+  ctx.font = '700 34px ' + SANS;
+  const firmaW = Math.max(ctx.measureText('El Atlas').width, (() => { ctx.font = '600 27px ' + SANS; return ctx.measureText('Daniel Schteingart').width; })());
+  ctx.textAlign = 'left'; ctx.fillStyle = PNG.muted; ctx.font = '400 22px ' + SANS;
+  const notaMaxW = W - firmaW - 46;
+  const notaLineas = wrapText(ctx, nota, notaMaxW).slice(0, 3);
+  const notaLineH = 29;
+  let ny = PNG.H - 46 - (notaLineas.length - 1) * notaLineH;
+  const notaCentroY = ny + ((notaLineas.length - 1) * notaLineH) / 2 - 8;
+  notaLineas.forEach(l => { ctx.fillText(l, PAD, ny); ny += notaLineH; });
+  (function () {
+    const partes = t('attribution-text').split('·').map(x => x.trim()).filter(Boolean);
+    const size1 = 34, size2 = Math.round(34 * 0.78), lineH = Math.round(34 * 1.15);
+    const cyF = notaCentroY;
+    ctx.fillStyle = PNG.accent;
+    ctx.textBaseline = 'middle';
+    if (partes.length >= 2) {
+      ctx.font = '700 ' + size1 + 'px ' + SANS;
+      const w1 = ctx.measureText(partes[0]).width;
+      ctx.font = '600 ' + size2 + 'px ' + SANS;
+      const w2 = ctx.measureText(partes.slice(1).join(' · ')).width;
+      const cx = PNG.W - PAD - Math.max(w1, w2) / 2;
+      ctx.textAlign = 'center';
+      ctx.font = '700 ' + size1 + 'px ' + SANS;
+      ctx.fillText(partes[0], cx, cyF - lineH * 0.42);
+      ctx.font = '600 ' + size2 + 'px ' + SANS;
+      ctx.fillText(partes.slice(1).join(' · '), cx, cyF + lineH * 0.42);
+    } else {
+      ctx.textAlign = 'right';
+      ctx.font = '600 ' + size1 + 'px ' + SANS;
+      ctx.fillText(partes[0] || '', PNG.W - PAD, cyF);
+    }
+    ctx.textBaseline = 'alphabetic';
+  })();
+  return new Promise(res => cv.toBlob(b => {
+    if (b) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = en() ? 'the-atlas-05-podium-countries.png' : 'el-atlas-05-podio-paises.png';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+    }
+    res(b ? b.size : 0);
+  }, 'image/png'));
+}
+async function exportPng() {
+  // en file:// las fotos locales ensucian el canvas (SecurityError en toBlob):
+  // si pasa, se redibuja sin retratos y el PNG sale igual.
+  try { return await dibujarYExportar(true); }
+  catch (e) { console.error('export con retratos falló; reintento sin', e); }
+  try { return await dibujarYExportar(false); }
+  catch (e) { alert('No se pudo generar el PNG: ' + e); return 0; }
+}
+document.getElementById('btn-png').addEventListener('click', exportPng);
+window.__podExportPng = exportPng;
+
+// ===== controles =====
+document.getElementById('r-y0').addEventListener('input', e => { st.y0 = Math.min(s2y(e.target.value), st.y1); syncPeriodo(); render(); });
+document.getElementById('r-y1').addEventListener('input', e => { st.y1 = Math.max(s2y(e.target.value), st.y0); syncPeriodo(); render(); });
+document.getElementById('n-y0').addEventListener('change', e => {
+  st.y0 = Math.max(-4000, Math.min(Math.round(+e.target.value || 0), st.y1)); syncPeriodo(); render();
+});
+document.getElementById('n-y1').addEventListener('change', e => {
+  st.y1 = Math.min(2025, Math.max(Math.round(+e.target.value || 0), st.y0)); syncPeriodo(); render();
+});
+document.getElementById('c-dom').addEventListener('input', e => { st.dom = +e.target.value; st.occ = -1; fillSelects(); render(); });
+document.getElementById('c-occ').addEventListener('input', e => { st.occ = +e.target.value; render(); });
+
+// La base completa se carga ya mismo: los podios de paises chicos suelen estar
+// fuera del top 5.000 y sin ella quedarian incompletos.
+function cargarBaseCompleta() {
+  if (window.__fullReq) return; window.__fullReq = true;
+  const sc = document.createElement('script');
+  sc.src = './data-top-full.js?v=2';
+  sc.onload = () => {
+    if (window.TOPFIGS_REST) { D.rows = D.rows.concat(window.TOPFIGS_REST); window.__full = true; render(); }
+  };
+  sc.onerror = () => { window.__fullReq = false; };
+  document.body.appendChild(sc);
+}
+applyI18n();
+fillSelects();
+renderChips();
+syncPeriodo();
+render();
+cargarBaseCompleta();
+if (typeof setupLangToggle === 'function') setupLangToggle(() => { applyI18n(); fillSelects(); renderChips(); render(); });
+</script>
+<script src="../lib/editor.js?v=8"></script>
+</body>
+</html>

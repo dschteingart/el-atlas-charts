@@ -27,6 +27,10 @@ d = d.merge(M, on='id', how='left')
 N = pd.read_csv(os.path.join(DIR, 'nombres_es.csv'), encoding='utf-8-sig')[['id', 'name_es']]
 d = d.merge(N, on='id', how='left')
 d['name_es'] = d.name_es.fillna('')
+# labels de Wikidata traen desambiguadores "(1496-1533)" o basura "(bachi)":
+# se quita el parentesis final (el nombre nunca vive ahi)
+_sin = d.name_es.str.replace(r'\s*\([^)]*\)\s*$', '', regex=True).str.strip()
+d['name_es'] = _sin.where(_sin != '', d.name_es)
 F = pd.read_csv(os.path.join(DIR, 'fotos.csv'), encoding='utf-8-sig').rename(columns={'img': 'img_commons'})
 d = d.merge(F, on='id', how='left')
 d['img_commons'] = d.img_commons.fillna('')

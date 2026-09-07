@@ -88,9 +88,9 @@
 </div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=12"></script>
+<script src="./i18n-issue.js?v=13"></script>
 <script src="./utils.js?v=3"></script>
-<script src="./data-top.js?v=6"></script>
+<script src="./data-top.js?v=7"></script>
 <script>
 const D = window.TOPFIGS;
 const REG_LABEL = {
@@ -402,7 +402,7 @@ document.getElementById('c-occ').addEventListener('input', e => { st.occ = +e.ta
 function cargarBaseCompleta() {
   if (window.__fullReq) return; window.__fullReq = true;
   const sc = document.createElement('script');
-  sc.src = './data-top-full.js?v=1';
+  sc.src = './data-top-full.js?v=2';
   sc.onload = () => {
     if (window.TOPFIGS_REST) { D.rows = D.rows.concat(window.TOPFIGS_REST); window.__full = true; render(); }
   };
