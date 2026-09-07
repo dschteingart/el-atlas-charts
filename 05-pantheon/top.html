@@ -90,7 +90,7 @@
 <script src="../lib/i18n.js"></script>
 <script src="./i18n-issue.js?v=10"></script>
 <script src="./utils.js?v=3"></script>
-<script src="./data-top.js?v=2"></script>
+<script src="./data-top.js?v=4"></script>
 <script>
 const D = window.TOPFIGS;
 const REG_LABEL = {
@@ -139,8 +139,8 @@ function fillSelects() {
 function nombre(r) {
   return en() ? r[1] : (r[2] || r[1]);
 }
-function fotoUrl(r, w) {
-  return r[7] ? 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(r[7]) + '?width=' + w : null;
+function fotoUrl(r) {
+  return r[7] ? './fotos/' + r[7] : null;   // servidas por nosotros: mismo origen, sin CORS
 }
 function filtrar() {
   const out = [];
@@ -165,7 +165,7 @@ function render() {
     const m = r[3] >= 0 ? D.isoMeta[r[3]] : null;
     const o = D.occs[r[4]];
     const tr = document.createElement('tr');
-    const ph = fotoUrl(r, 72);
+    const ph = fotoUrl(r);
     tr.innerHTML = '<td class="rk">' + r[0].toLocaleString(loc()) + '</td>' +
       '<td class="nm">' + (ph ? '<img class="ph" loading="lazy" referrerpolicy="no-referrer" src="' + ph + '" alt="" onerror="this.remove()">' : '') + nombre(r) + '</td>' +
       '<td class="mut">' + (m ? (en() ? m.en : m.es) : '—') + '</td>' +
@@ -221,8 +221,7 @@ const fitText = (ctx, s, maxW) => {
 function cargarFoto(url) {
   return new Promise(res => {
     if (!url) return res(null);
-    const im = new Image();
-    im.crossOrigin = 'anonymous';                 // Commons manda CORS abierto: el canvas no se ensucia
+    const im = new Image();                       // mismo origen: no hace falta CORS
     const to = setTimeout(() => res(null), 3500);
     im.onload = () => { clearTimeout(to); res(im); };
     im.onerror = () => { clearTimeout(to); res(null); };
@@ -232,7 +231,7 @@ function cargarFoto(url) {
 async function exportPng() {
   try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
   const all = filtrar(), shown = all.slice(0, 15);
-  const fotos = await Promise.all(shown.map(r => cargarFoto(fotoUrl(r, 120))));
+  const fotos = await Promise.all(shown.map(r => cargarFoto(fotoUrl(r))));
   // en file:// Chrome bloquea el CORS de las imagenes: si no cargo ninguna,
   // mejor sin columna de retratos que quince circulos vacios
   const hayFotos = fotos.some(Boolean);
@@ -247,8 +246,8 @@ async function exportPng() {
   const aeS = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
   const txS = (aeS && aeS.texts && aeS.texts[en() ? 'en' : 'es']) || {};
   const subPng = (txS.subtitle || '').trim() || t('top-subtitle');
-  y += 2; ctx.fillStyle = PNG.soft; ctx.font = 'italic 400 30px ' + SANS;
-  wrapText(ctx, subPng, W).slice(0, 2).forEach(l => { ctx.fillText(l, PAD, y); y += 40; });
+  y += 2; ctx.fillStyle = PNG.soft; ctx.font = 'italic 32px ' + SERIF;   // subtitulo de la casa: Source Serif 4 italica
+  wrapText(ctx, subPng, W).slice(0, 2).forEach(l => { ctx.fillText(l, PAD, y); y += 42; });
   // filtros activos, en una linea mas chica
   const partes = [];
   if (st.cty >= 0) partes.push(en() ? D.isoMeta[st.cty].en : D.isoMeta[st.cty].es);

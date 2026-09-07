@@ -286,8 +286,8 @@ async function exportPng() {
   ctx.fillStyle = PNG.ink; ctx.font = '700 52px ' + SERIF; ctx.textBaseline = 'alphabetic';
   wrapText(ctx, document.getElementById('rep-title').textContent, W).forEach(l => { ctx.fillText(l, PAD, y); y += 60; });
   y += 4;
-  ctx.fillStyle = PNG.soft; ctx.font = 'italic 400 30px ' + SANS;
-  wrapText(ctx, document.getElementById('rep-subtitle').textContent, W).slice(0, 3).forEach(l => { ctx.fillText(l, PAD, y); y += 40; });
+  ctx.fillStyle = PNG.soft; ctx.font = 'italic 32px ' + SERIF;   // subtitulo de la casa: Source Serif 4 italica
+  wrapText(ctx, document.getElementById('rep-subtitle').textContent, W).slice(0, 3).forEach(l => { ctx.fillText(l, PAD, y); y += 42; });
   y += 18;
 
   // geometría de la tabla
