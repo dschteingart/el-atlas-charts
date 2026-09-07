@@ -12,10 +12,17 @@ DIR = os.path.dirname(os.path.abspath(__file__))
 C = pd.read_csv(os.path.join(DIR, 'pantheon_corregido.csv'), low_memory=False)
 
 d = C[(C.multi_idioma == 1) & C.score.notna()].copy()
+# nombre en espanol (Wikidata), ya bajado para toda la base
+try:
+    N = pd.read_csv(os.path.join(DIR, 'nombres_es.csv'), encoding='utf-8-sig')[['id', 'name_es']]
+    d = d.merge(N, on='id', how='left')
+    d['name_es'] = d.name_es.fillna('')
+except FileNotFoundError:
+    d['name_es'] = ''
 d = d.sort_values('rank_score')
 d['rank_depurado'] = range(1, len(d) + 1)
 
-COLS = ['rank_depurado', 'rank_score', 'score', 'name', 'occupation', 'dominio', 'pais', 'region', 'birthyear',
+COLS = ['rank_depurado', 'rank_score', 'score', 'name', 'name_es', 'occupation', 'dominio', 'pais', 'region', 'birthyear',
         'Lenguas', 'Vistas', 'EdadMult',
         'n_langs', 'idiomas_10k_anio', 'idiomas_1k_anio', 'idiomas_1k_desde2015',
         'vistas_12m_noen', 'vistas_total_noen', 'mediana_mensual_noen', 'pct_meses_100k', 'pct_meses_300k',
