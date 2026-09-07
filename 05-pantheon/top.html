@@ -88,9 +88,9 @@
 </div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=11"></script>
+<script src="./i18n-issue.js?v=12"></script>
 <script src="./utils.js?v=3"></script>
-<script src="./data-top.js?v=5"></script>
+<script src="./data-top.js?v=6"></script>
 <script>
 const D = window.TOPFIGS;
 const REG_LABEL = {
@@ -163,7 +163,10 @@ function syncSub() {
   if (!(tx.subtitle || '').trim()) document.querySelector('.chart-subtitle').textContent = subActual();
 }
 function fotoUrl(r) {
-  return r[7] ? './fotos/' + r[7] : null;   // servidas por nosotros: mismo origen, sin CORS
+  if (!r[7]) return null;
+  // "id.jpg" = retrato local (top 5.000); si no, archivo de Commons (hotlink)
+  if (/^\d+\.(jpg|png)$/.test(r[7])) return './fotos/' + r[7];
+  return 'https://commons.wikimedia.org/wiki/Special:FilePath/' + encodeURIComponent(r[7]) + '?width=96';
 }
 function filtrar() {
   const out = [];
@@ -199,8 +202,11 @@ function render() {
     tb.appendChild(tr);
   });
   const av = document.getElementById('aviso');
-  if (rows.length < st.n) { av.hidden = false; av.textContent = tpl('top-aviso-corte', { n: rows.length.toLocaleString(loc()) }); }
-  else av.hidden = true;
+  if (rows.length < st.n) {
+    av.hidden = false;
+    if (window.__full) av.textContent = tpl('top-aviso-fin', { n: rows.length.toLocaleString(loc()) });
+    else { av.textContent = t('top-aviso-cargando'); cargarBaseCompleta(); }
+  } else av.hidden = true;
   syncSub();
 }
 
@@ -245,7 +251,8 @@ const fitText = (ctx, s, maxW) => {
 function cargarFoto(url) {
   return new Promise(res => {
     if (!url) return res(null);
-    const im = new Image();                       // mismo origen: no hace falta CORS
+    const im = new Image();
+    if (/^https?:/.test(url)) im.crossOrigin = 'anonymous';   // remotas: CORS para el canvas
     const to = setTimeout(() => res(null), 3500);
     im.onload = () => { clearTimeout(to); res(im); };
     im.onerror = () => { clearTimeout(to); res(null); };
@@ -390,9 +397,22 @@ document.getElementById('c-cty').addEventListener('input', e => { st.cty = +e.ta
 document.getElementById('c-dom').addEventListener('input', e => { st.dom = +e.target.value; st.occ = -1; fillSelects(); render(); });
 document.getElementById('c-occ').addEventListener('input', e => { st.occ = +e.target.value; render(); });
 
+// La base completa (111 mil filas mas) se carga en diferido para no frenar el
+// primer render; cualquier filtro que agote el top la reclama al instante.
+function cargarBaseCompleta() {
+  if (window.__fullReq) return; window.__fullReq = true;
+  const sc = document.createElement('script');
+  sc.src = './data-top-full.js?v=1';
+  sc.onload = () => {
+    if (window.TOPFIGS_REST) { D.rows = D.rows.concat(window.TOPFIGS_REST); window.__full = true; render(); }
+  };
+  sc.onerror = () => { window.__fullReq = false; };
+  document.body.appendChild(sc);
+}
 applyI18n();
 fillSelects();
 render();
+setTimeout(cargarBaseCompleta, 1200);
 if (typeof setupLangToggle === 'function') setupLangToggle(() => { applyI18n(); fillSelects(); render(); });
 </script>
 <script src="../lib/editor.js?v=8"></script>
