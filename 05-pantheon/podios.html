@@ -44,7 +44,8 @@
   th { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); font-weight: 700; white-space: nowrap; }
   td.pais { font-weight: 700; color: var(--ink); white-space: nowrap; }
   td.fig .fw { display: flex; align-items: center; gap: 9px; }
-  td.fig .ph { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; object-position: top; background: var(--bg-soft); border: 1px solid var(--rule); flex: 0 0 auto; }
+  td.fig .ph { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; object-position: top; background: var(--grid); border: 1px solid var(--rule); flex: 0 0 auto; }
+  .ph-off { display: inline-block; }   /* placeholder cuando no hay retrato */
   td.fig .fn { font-weight: 600; color: var(--ink); font-size: 13.5px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   td.fig .fm { font-size: 12px; color: var(--ink-soft); white-space: nowrap; }
   td.fig .fm b { color: var(--accent); font-variant-numeric: tabular-nums; }
@@ -131,7 +132,7 @@
 <script src="../lib/regions.js"></script>
 <script src="./i18n-issue.js?v=15"></script>
 <script src="./utils.js?v=3"></script>
-<script src="./data-top.js?v=7"></script>
+<script src="./data-top.js?v=8"></script>
 <script>
 const D = window.TOPFIGS;
 const en = () => (typeof LANG !== 'undefined' && LANG === 'en');
@@ -326,11 +327,15 @@ function syncSub() {
   const tx = (ae && ae.texts && ae.texts[en() ? 'en' : 'es']) || {};
   if (!(tx.subtitle || '').trim()) document.querySelector('.chart-subtitle').textContent = subActual();
 }
+function phOff(img) {   // criterio comun: sin retrato queda el circulo neutro
+  const sp = document.createElement('span'); sp.className = 'ph ph-off'; img.replaceWith(sp);
+}
 function celda(r) {
   if (!r) return '<td class="fig vac">—</td>';
   const ph = fotoUrl(r);
   return '<td class="fig"><div class="fw">' +
-    (ph ? '<img class="ph" loading="lazy" referrerpolicy="no-referrer" src="' + ph + '" alt="" onerror="this.remove()">' : '') +
+    (ph ? '<img class="ph" loading="lazy" referrerpolicy="no-referrer" src="' + ph + '" alt="" onerror="phOff(this)">'
+        : '<span class="ph ph-off"></span>') +
     '<div class="ft"><div class="fn">' + esc(nombre(r)) + '</div>' +
     '<div class="fm">' + esc(occLabel(r)) + ' · <b>' + fmtHpi(r[5]) + '</b></div></div></div></td>';
 }
@@ -461,10 +466,11 @@ async function dibujarYExportar(usarFotos) {
       if (hayFotos) {
         const dph = Math.min(rowH - 34, 54), im = fotos[pi][k], pcx = x0 + dph / 2, pcy = cy;
         ctx.save(); ctx.beginPath(); ctx.arc(pcx, pcy, dph / 2, 0, Math.PI * 2); ctx.clip();
+        ctx.fillStyle = '#ECE7D8'; ctx.fillRect(pcx - dph / 2, pcy - dph / 2, dph, dph);
         if (im) {
           const s0 = Math.min(im.width, im.height);
           ctx.drawImage(im, (im.width - s0) / 2, Math.max(0, (im.height - s0) / 6), s0, s0, pcx - dph / 2, pcy - dph / 2, dph, dph);
-        } else { ctx.fillStyle = '#ECE7D8'; ctx.fillRect(pcx - dph / 2, pcy - dph / 2, dph, dph); }
+        }
         ctx.restore();
         tx = x0 + dph + 10;
       }

@@ -23,7 +23,8 @@
   th { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); font-weight: 700; }
   td.rk, th.rk { text-align: right; color: var(--ink-muted); font-variant-numeric: tabular-nums; width: 52px; }
   td.nm { font-weight: 600; color: var(--ink); }
-  td.nm .ph { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; object-position: top; vertical-align: middle; margin-right: 9px; background: var(--bg-soft); border: 1px solid var(--rule); }
+  td.nm .ph { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; object-position: top; vertical-align: middle; margin-right: 9px; background: var(--grid); border: 1px solid var(--rule); }
+  .ph-off { display: inline-block; }   /* placeholder cuando no hay retrato */
   td.sc, th.sc { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent); }
   td.mut { color: var(--ink-soft); }
   #aviso { font-family: var(--sans); font-size: 12px; color: var(--ink-muted); margin: 8px 0 0; }
@@ -90,14 +91,14 @@
 <script src="../lib/i18n.js"></script>
 <script src="./i18n-issue.js?v=15"></script>
 <script src="./utils.js?v=3"></script>
-<script src="./data-top.js?v=7"></script>
+<script src="./data-top.js?v=8"></script>
 <script>
 const D = window.TOPFIGS;
 const REG_LABEL = {
   'Latin America': ['América Latina', 'Latin America'], 'Caribbean': ['Caribe', 'Caribbean'],
   'Western Europe': ['Europa Occidental', 'Western Europe'],
   'Eastern Europe & Central Asia': ['Europa del Este y Asia Central', 'Eastern Europe & C. Asia'],
-  'North America, Australia & New Zealand': ['Norteamérica, Australia y N.Z.', 'N. America, Aus. & N.Z.'],
+  'North America, Australia & New Zealand': ['Norteamérica y Oceanía', 'N. America & Oceania'],
   'East Asia': ['Asia Oriental', 'East Asia'], 'Southeast Asia': ['Sudeste Asiático', 'Southeast Asia'],
   'South Asia': ['Asia del Sur', 'South Asia'], 'Middle East & North Africa': ['Medio Oriente y N. de África', 'Middle East & N. Africa'],
   'Sub-Saharan Africa': ['África Subsahariana', 'Sub-Saharan Africa']
@@ -182,6 +183,9 @@ function filtrar() {
   }
   return out;
 }
+function phOff(img) {   // criterio comun: sin retrato queda el circulo neutro
+  const sp = document.createElement('span'); sp.className = 'ph ph-off'; img.replaceWith(sp);
+}
 function render() {
   const H = { 'h-nombre': 'top-col-nombre', 'h-pais': 'top-col-pais', 'h-region': 'top-col-region', 'h-occ': 'top-col-occ', 'h-dom': 'top-col-dom', 'h-score': 'top-col-score' };
   Object.entries(H).forEach(([id, k]) => { document.getElementById(id).textContent = t(k); });
@@ -193,7 +197,7 @@ function render() {
     const tr = document.createElement('tr');
     const ph = fotoUrl(r);
     tr.innerHTML = '<td class="rk">' + r[0].toLocaleString(loc()) + '</td>' +
-      '<td class="nm">' + (ph ? '<img class="ph" loading="lazy" referrerpolicy="no-referrer" src="' + ph + '" alt="" onerror="this.remove()">' : '') + nombre(r) + '</td>' +
+      '<td class="nm">' + (ph ? '<img class="ph" loading="lazy" referrerpolicy="no-referrer" src="' + ph + '" alt="" onerror="phOff(this)">' : '<span class="ph ph-off"></span>') + nombre(r) + '</td>' +
       '<td class="mut">' + (m ? (en() ? m.en : m.es) : '—') + '</td>' +
       '<td class="mut">' + (m ? regLabel(m.reg) : '—') + '</td>' +
       '<td class="mut">' + occLabel(r) + '</td>' +
@@ -306,10 +310,11 @@ async function dibujarYExportar(usarFotos) {
     if (hayFotos) {
       const im = fotos[ri], dph = Math.min(rowH - 10, 48), pcx = PAD + colRk + dph / 2, pcy = y + rowH / 2;
       ctx.save(); ctx.beginPath(); ctx.arc(pcx, pcy, dph / 2, 0, Math.PI * 2); ctx.clip();
+      ctx.fillStyle = '#ECE7D8'; ctx.fillRect(pcx - dph / 2, pcy - dph / 2, dph, dph);
       if (im) {
         const s0 = Math.min(im.width, im.height);
         ctx.drawImage(im, (im.width - s0) / 2, Math.max(0, (im.height - s0) / 6), s0, s0, pcx - dph / 2, pcy - dph / 2, dph, dph);
-      } else { ctx.fillStyle = '#ECE7D8'; ctx.fillRect(pcx - dph / 2, pcy - dph / 2, dph, dph); }
+      }
       ctx.restore();
     }
     ctx.textAlign = 'left';

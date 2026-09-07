@@ -220,6 +220,10 @@ const COUNTRY_NAMES = {
     "en": "Egypt",
     "es": "Egipto"
   },
+  "ERI": {
+    "en": "Eritrea",
+    "es": "Eritrea"
+  },
   "ESP": {
     "en": "Spain",
     "es": "España"
@@ -563,6 +567,10 @@ const COUNTRY_NAMES = {
   "PNG": {
     "en": "Papua New Guinea",
     "es": "Papúa Nueva Guinea"
+  },
+  "PLW": {
+    "en": "Palau",
+    "es": "Palaos"
   },
   "POL": {
     "en": "Poland",

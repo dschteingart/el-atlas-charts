@@ -26,7 +26,7 @@
     'Caribbean': ['Caribe', 'Caribbean'],
     'Western Europe': ['Europa Occidental', 'Western Europe'],
     'Eastern Europe & Central Asia': ['Europa del Este y Asia Central', 'Eastern Europe & C. Asia'],
-    'North America, Australia & New Zealand': ['Norteamérica, Australia y N.Z.', 'N. America, Aus. & N.Z.'],
+    'North America, Australia & New Zealand': ['Norteamérica y Oceanía', 'N. America & Oceania'],
     'East Asia': ['Asia Oriental', 'East Asia'],
     'Southeast Asia': ['Sudeste Asiático', 'Southeast Asia'],
     'South Asia': ['Asia del Sur', 'South Asia'],
