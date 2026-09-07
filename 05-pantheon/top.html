@@ -228,10 +228,10 @@ function cargarFoto(url) {
     im.src = url;
   });
 }
-async function exportPng() {
+async function dibujarYExportar(usarFotos) {
   try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
   const all = filtrar(), shown = all.slice(0, 15);
-  const fotos = await Promise.all(shown.map(r => cargarFoto(fotoUrl(r))));
+  const fotos = usarFotos ? await Promise.all(shown.map(r => cargarFoto(fotoUrl(r)))) : shown.map(() => null);
   // en file:// Chrome bloquea el CORS de las imagenes: si no cargo ninguna,
   // mejor sin columna de retratos que quince circulos vacios
   const hayFotos = fotos.some(Boolean);
@@ -350,6 +350,16 @@ async function exportPng() {
     }
     res(b ? b.size : 0);
   }, 'image/png'));
+}
+async function exportPng() {
+  // Abierto por file:// (doble clic), las fotos locales "ensucian" el canvas y
+  // toBlob tira SecurityError: el click moria sin descargar nada. Si pasa eso,
+  // se redibuja el mismo export SIN retratos y se descarga igual. Con el server
+  // local (serve-atlas.bat) o publicado, sale siempre CON retratos.
+  try { return await dibujarYExportar(true); }
+  catch (e) { console.error('export con retratos falló; reintento sin', e); }
+  try { return await dibujarYExportar(false); }
+  catch (e) { alert('No se pudo generar el PNG: ' + e); return 0; }
 }
 document.getElementById('btn-png').addEventListener('click', exportPng);
 window.__topExportPng = exportPng;
