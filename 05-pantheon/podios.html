@@ -18,8 +18,13 @@
   /* chips + buscador de la casa: .m-search-* y .m-selected-chip de lib/style.css */
   .m-search-wrap { margin: 2px 0 0; }
   .pod-acciones { display: flex; align-items: center; gap: 10px; margin: 2px 0 0; }
-  .mini { font-family: var(--sans); font-size: 12px; padding: 5px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink-soft); cursor: pointer; }
-  .mini:hover { border-color: var(--accent); color: var(--accent); }
+  /* botones de region: toggle que suma/quita la region entera */
+  .pod-regiones { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
+  .reg-btn { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 12px; padding: 4px 11px; border: 1px solid var(--rule); border-radius: 999px; background: var(--bg); color: var(--ink-soft); cursor: pointer; }
+  .reg-btn:hover { border-color: var(--ink-soft); color: var(--ink); }
+  .reg-btn .dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; }
+  .reg-btn.on { color: #fff; }
+  .reg-btn.on .dot { background: rgba(255,255,255,0.6) !important; }
   /* doble slider de periodo */
   .anios { display: flex; align-items: center; gap: 8px; }
   .anios input[type=number] { font-family: var(--sans); font-size: 13px; width: 72px; padding: 5px 6px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink); }
@@ -72,9 +77,9 @@
           <input type="text" id="pod-search" class="m-search-input" placeholder="Buscar país…" autocomplete="off">
           <div id="pod-search-results" class="m-search-results"></div>
         </div>
+        <div class="pod-regiones" id="pod-regiones"></div>
         <div class="m-selected-chips" id="pod-selected-chips"></div>
         <div class="pod-acciones">
-          <button class="mini" id="btn-latam" data-i18n="pod-latam">América Latina</button>
           <button class="atlas-clear-btn" id="btn-limpiar" data-i18n="pod-limpiar">Limpiar</button>
         </div>
       </div>
@@ -124,7 +129,7 @@
 
 <script src="../lib/i18n.js"></script>
 <script src="../lib/regions.js"></script>
-<script src="./i18n-issue.js?v=14"></script>
+<script src="./i18n-issue.js?v=15"></script>
 <script src="./utils.js?v=3"></script>
 <script src="./data-top.js?v=7"></script>
 <script>
@@ -201,6 +206,31 @@ function renderChips() {
   // Limpiar solo con 2+ chips (criterio 11e); con 1 alcanza la x del chip
   document.getElementById('btn-limpiar').style.display = st.sel.length >= 2 ? '' : 'none';
   document.getElementById('pod-search').placeholder = t('pod-buscar');
+  renderRegBtns();
+}
+// un boton por region: agrega sus paises; si ya estan todos, los quita (toggle)
+function renderRegBtns() {
+  const box = document.getElementById('pod-regiones'); box.innerHTML = '';
+  REGION_ORDER.forEach(reg => {
+    const idxs = [];
+    D.isoMeta.forEach((m, i) => { if (m.reg === reg) idxs.push(i); });
+    if (!idxs.length) return;
+    const full = idxs.every(i => st.sel.includes(i));
+    const col = REGION_COLORS[reg] || '#888';
+    const b2 = document.createElement('button');
+    b2.className = 'reg-btn' + (full ? ' on' : '');
+    if (full) { b2.style.background = col; b2.style.borderColor = col; }
+    const dot = document.createElement('span');
+    dot.className = 'dot'; dot.style.background = col;
+    b2.appendChild(dot);
+    b2.appendChild(document.createTextNode(t('reg.' + reg)));
+    b2.addEventListener('click', () => {
+      if (full) st.sel = st.sel.filter(i => !idxs.includes(i));
+      else idxs.forEach(i => { if (!st.sel.includes(i)) st.sel.push(i); });
+      renderChips(); render();
+    });
+    box.appendChild(b2);
+  });
 }
 const normTxt = x => x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 function setupSearch() {
@@ -250,7 +280,6 @@ function setupSearch() {
     if (!input.contains(ev.target) && !results.contains(ev.target)) results.classList.remove('open');
   });
 }
-document.getElementById('btn-latam').addEventListener('click', () => { st.sel = LATAM.slice(); renderChips(); render(); });
 document.getElementById('btn-limpiar').addEventListener('click', () => { st.sel = []; renderChips(); render(); });
 
 // ===== podios =====
