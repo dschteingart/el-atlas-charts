@@ -15,12 +15,9 @@
   .controls { display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: flex-end; margin: 14px 0 10px; }
   .ctl label { display: block; font-family: var(--sans); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-muted); margin-bottom: 5px; }
   select { font-family: var(--sans); font-size: 13.5px; padding: 7px 9px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink); max-width: 210px; }
-  /* chips de paises (criterio 11: removibles, Limpiar, buscador) */
-  .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-  .chip { display: inline-flex; align-items: center; gap: 5px; font-family: var(--sans); font-size: 12.5px; background: var(--bg-soft); border: 1px solid var(--rule); border-radius: 999px; padding: 3px 7px 3px 10px; color: var(--ink); }
-  .chip button { border: none; background: none; cursor: pointer; color: var(--ink-muted); font-size: 13px; padding: 0 2px; line-height: 1; }
-  .chip button:hover { color: var(--accent); }
-  #buscador { font-family: var(--sans); font-size: 13px; padding: 5px 8px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink); width: 160px; }
+  /* chips + buscador de la casa: .m-search-* y .m-selected-chip de lib/style.css */
+  .m-search-wrap { margin: 2px 0 0; }
+  .pod-acciones { display: flex; align-items: center; gap: 10px; margin: 2px 0 0; }
   .mini { font-family: var(--sans); font-size: 12px; padding: 5px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink-soft); cursor: pointer; }
   .mini:hover { border-color: var(--accent); color: var(--accent); }
   /* doble slider de periodo */
@@ -71,8 +68,15 @@
     <div class="controls">
       <div class="ctl" style="flex:1 1 100%">
         <label data-i18n="pod-lbl-paises">Países</label>
-        <div class="chips" id="chips"></div>
-        <datalist id="dl-paises"></datalist>
+        <div class="m-search-wrap">
+          <input type="text" id="pod-search" class="m-search-input" placeholder="Buscar país…" autocomplete="off">
+          <div id="pod-search-results" class="m-search-results"></div>
+        </div>
+        <div class="m-selected-chips" id="pod-selected-chips"></div>
+        <div class="pod-acciones">
+          <button class="mini" id="btn-latam" data-i18n="pod-latam">América Latina</button>
+          <button class="atlas-clear-btn" id="btn-limpiar" data-i18n="pod-limpiar">Limpiar</button>
+        </div>
       </div>
       <div class="ctl">
         <label data-i18n="pod-lbl-periodo">Nacidos entre</label>
@@ -119,7 +123,8 @@
 </div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=13"></script>
+<script src="../lib/regions.js"></script>
+<script src="./i18n-issue.js?v=14"></script>
 <script src="./utils.js?v=3"></script>
 <script src="./data-top.js?v=7"></script>
 <script>
@@ -179,50 +184,74 @@ function fillSelects() {
   if (so.value === '') { st.occ = -1; so.value = '-1'; }
 }
 
-// ===== chips de paises =====
+// ===== chips + buscador de paises (mismo patron que el explorador) =====
 function renderChips() {
-  const box = document.getElementById('chips'); box.innerHTML = '';
+  const box = document.getElementById('pod-selected-chips'); box.innerHTML = '';
   st.sel.forEach(i => {
-    const ch = document.createElement('span'); ch.className = 'chip';
-    ch.innerHTML = esc(paisLabel(i)) + '<button data-i="' + i + '" aria-label="quitar">✕</button>';
-    box.appendChild(ch);
+    const m = D.isoMeta[i];
+    const chip = document.createElement('span');
+    chip.className = 'm-selected-chip';
+    chip.style.background = (typeof REGION_COLORS !== 'undefined' && REGION_COLORS[m.reg]) || '#888';
+    chip.textContent = paisLabel(i);
+    const x = document.createElement('button');
+    x.className = 'm-chip-x'; x.innerHTML = '\u00d7'; x.setAttribute('aria-label', 'Quitar');
+    x.addEventListener('click', () => { st.sel = st.sel.filter(v => v !== i); renderChips(); render(); });
+    chip.appendChild(x); box.appendChild(chip);
   });
-  const inp = document.createElement('input');
-  inp.id = 'buscador'; inp.setAttribute('list', 'dl-paises');
-  inp.placeholder = t('pod-buscar'); inp.autocomplete = 'off';
-  box.appendChild(inp);
-  const bL = document.createElement('button'); bL.className = 'mini'; bL.textContent = t('pod-latam');
-  const bC = document.createElement('button'); bC.className = 'mini'; bC.textContent = t('pod-limpiar');
-  box.appendChild(bL); box.appendChild(bC);
-  const dl = document.getElementById('dl-paises'); dl.innerHTML = '';
-  const enSel = new Set(st.sel);
-  D.isoMeta.map((m, i) => [m, i]).filter(x => !enSel.has(x[1]))
-    .sort((a, b) => paisLabel(a[1]).localeCompare(paisLabel(b[1]), loc()))
-    .forEach(x => dl.appendChild(new Option(paisLabel(x[1]))));
-  inp.addEventListener('change', () => {
-    const q = inp.value.trim().toLowerCase();
-    if (!q) return;
-    let hit = -1;
-    D.isoMeta.forEach((m, i) => {
-      if (hit >= 0 || enSel.has(i)) return;
-      if (m.es.toLowerCase() === q || m.en.toLowerCase() === q || m.iso.toLowerCase() === q) hit = i;
-    });
-    if (hit < 0) D.isoMeta.forEach((m, i) => {
-      if (hit >= 0 || enSel.has(i)) return;
-      if (m.es.toLowerCase().startsWith(q) || m.en.toLowerCase().startsWith(q)) hit = i;
-    });
-    if (hit >= 0) { st.sel.push(hit); renderChips(); render(); }
-    else inp.value = '';
-  });
-  bL.addEventListener('click', () => { st.sel = LATAM.slice(); renderChips(); render(); });
-  bC.addEventListener('click', () => { st.sel = []; renderChips(); render(); });
+  // Limpiar solo con 2+ chips (criterio 11e); con 1 alcanza la x del chip
+  document.getElementById('btn-limpiar').style.display = st.sel.length >= 2 ? '' : 'none';
+  document.getElementById('pod-search').placeholder = t('pod-buscar');
 }
-document.getElementById('chips').addEventListener('click', e => {
-  const b = e.target.closest('button[data-i]');
-  if (!b) return;
-  st.sel = st.sel.filter(x => x !== +b.dataset.i);
-  renderChips(); render();
-});
+const normTxt = x => x.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+function setupSearch() {
+  const input = document.getElementById('pod-search');
+  const results = document.getElementById('pod-search-results');
+  let matches = [], activeIdx = -1;
+  // solo paises con region: fuera los codigos sin meta (SUN, YUG, AIA...)
+  const lista = () => D.isoMeta.map((m, i) => ({ m, i })).filter(x => x.m.reg)
+    .sort((a2, b2) => paisLabel(a2.i).localeCompare(paisLabel(b2.i), loc()));
+  function toggle(i) {
+    if (st.sel.includes(i)) st.sel = st.sel.filter(v => v !== i);
+    else st.sel.push(i);
+    renderChips(); render();
+  }
+  function getMatches(q) {
+    if (!q) return [];
+    const qn = normTxt(q);
+    return lista().filter(x => normTxt(paisLabel(x.i)).includes(qn)).slice(0, 8);
+  }
+  function paint() {
+    if (!matches.length) { results.innerHTML = ''; results.classList.remove('open'); return; }
+    results.innerHTML = matches.map((x, k) => {
+      const cls = 'm-search-result' + (k === activeIdx ? ' m-active' : '') + (st.sel.includes(x.i) ? ' m-already' : '');
+      return '<div class="' + cls + '" data-i="' + x.i + '">' + esc(paisLabel(x.i)) +
+        '<span class="m-search-region">' + esc(t('reg.' + x.m.reg)) + '</span></div>';
+    }).join('');
+    results.classList.add('open');
+    results.querySelectorAll('.m-search-result').forEach(el => {
+      el.addEventListener('click', () => {
+        toggle(+el.dataset.i); input.value = ''; results.classList.remove('open'); input.focus();
+      });
+    });
+  }
+  input.addEventListener('input', () => {
+    matches = getMatches(input.value);
+    activeIdx = matches.length ? 0 : -1;
+    paint();
+  });
+  input.addEventListener('keydown', ev => {
+    if (!results.classList.contains('open')) return;
+    if (ev.key === 'ArrowDown') { ev.preventDefault(); activeIdx = (activeIdx + 1) % matches.length; paint(); }
+    else if (ev.key === 'ArrowUp') { ev.preventDefault(); activeIdx = (activeIdx - 1 + matches.length) % matches.length; paint(); }
+    else if (ev.key === 'Enter' && activeIdx >= 0) { ev.preventDefault(); toggle(matches[activeIdx].i); input.value = ''; results.classList.remove('open'); }
+    else if (ev.key === 'Escape') { results.classList.remove('open'); input.blur(); }
+  });
+  document.addEventListener('click', ev => {
+    if (!input.contains(ev.target) && !results.contains(ev.target)) results.classList.remove('open');
+  });
+}
+document.getElementById('btn-latam').addEventListener('click', () => { st.sel = LATAM.slice(); renderChips(); render(); });
+document.getElementById('btn-limpiar').addEventListener('click', () => { st.sel = []; renderChips(); render(); });
 
 // ===== podios =====
 function nombre(r) { return en() ? r[1] : (r[2] || r[1]); }
@@ -513,6 +542,7 @@ function cargarBaseCompleta() {
 applyI18n();
 fillSelects();
 renderChips();
+setupSearch();
 syncPeriodo();
 render();
 cargarBaseCompleta();
