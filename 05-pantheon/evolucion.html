@@ -36,6 +36,18 @@
   .mini { font-family: var(--sans); font-size: 12px; padding: 5px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink-soft); cursor: pointer; }
   .mini:hover { border-color: var(--accent); color: var(--accent); }
   .chart-svg-wrap svg { width: 100%; height: auto; display: block; }
+  @media (min-width: 769px) { .chart-svg-wrap svg { max-height: calc(100vh - 320px); min-height: 340px; } }
+  /* doble slider de periodo (mismo patron que el podio) */
+  .anios { display: flex; align-items: center; gap: 8px; }
+  .anios input[type=number] { font-family: var(--sans); font-size: 13px; width: 88px; padding: 5px 6px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink); }
+  .dual { position: relative; width: 190px; height: 26px; }
+  .dual .track { position: absolute; top: 11.5px; left: 0; right: 0; height: 3px; background: var(--rule); border-radius: 2px; }
+  .dual .fill { position: absolute; top: 11.5px; height: 3px; background: var(--accent); border-radius: 2px; }
+  .dual input[type=range] { position: absolute; left: 0; top: 0; width: 100%; height: 26px; margin: 0; background: none; pointer-events: none; -webkit-appearance: none; appearance: none; }
+  .dual input[type=range]::-webkit-slider-runnable-track { height: 3px; background: transparent; }
+  .dual input[type=range]::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--rule); cursor: pointer; margin-top: -6.5px; }
+  .dual input[type=range]::-moz-range-track { height: 3px; background: transparent; }
+  .dual input[type=range]::-moz-range-thumb { pointer-events: auto; width: 13px; height: 13px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--rule); cursor: pointer; }
   @media (max-width: 768px) {
     .wrap-wide .chart-title { font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 4px; }
     .wrap-wide .chart-subtitle { font-size: 12px; font-weight: 400; color: var(--ink-muted); line-height: 1.4; margin: 0 0 8px; }
@@ -65,6 +77,17 @@
           <button data-mode="abs" data-i18n="cevo-abs">Cantidades</button>
         </div>
       </div>
+      <div class="ex-ctrl"><label data-i18n="cevo-lbl-periodo">Nacidos entre</label>
+        <div class="anios">
+          <input type="number" id="evo-y0" step="1" placeholder="Pre-1500">
+          <div class="dual">
+            <div class="track"></div><div class="fill" id="evo-fill"></div>
+            <input type="range" id="evo-r0" min="0" max="11" step="1">
+            <input type="range" id="evo-r1" min="0" max="11" step="1">
+          </div>
+          <input type="number" id="evo-y1" step="1" placeholder="Post-2000">
+        </div>
+      </div>
       <div class="ex-ctrl"><label data-i18n="cevo-lbl-nivel">Apertura</label>
         <div class="m-mode-toggle" id="evo-nivel">
           <button class="active" data-nivel="dom" data-i18n="cevo-doms">Dominios</button>
@@ -79,7 +102,6 @@
             <div id="evo-search-results" class="m-search-results"></div>
           </div>
           <div class="m-selected-chips" id="evo-chips"></div>
-          <button class="mini" id="evo-mundo" data-i18n="cevo-mundo">Mundo</button>
           <button class="atlas-clear-btn" id="evo-limpiar" data-i18n="cevo-limpiar">Limpiar</button>
         </div>
       </div>
@@ -105,10 +127,10 @@
 
 <script src="../lib/i18n.js"></script>
 <script src="../lib/regions.js"></script>
-<script src="./i18n-issue.js?v=17"></script>
+<script src="./i18n-issue.js?v=18"></script>
 <script src="./utils.js?v=4"></script>
-<script src="./data-evolucion.js?v=3"></script>
-<script src="./evolucion.js?v=3"></script>
+<script src="./data-evolucion.js?v=5"></script>
+<script src="./evolucion.js?v=5"></script>
 <script src="./png-export.js?v=3"></script>
 <script>
   initEvo();

@@ -25,9 +25,9 @@ def binidx(y):
     if y >= 2000: return 11
     return 1 + (y - 1500) // 50
 d['bin'] = d.birthyear.map(binidx)
-BINS = [{'es': 'Hasta 1500', 'en': 'Until 1500'}] + \
+BINS = [{'es': 'Pre-1500', 'en': 'Pre-1500'}] + \
        [{'es': '%d-%d' % (a, a + 49), 'en': '%d-%d' % (a, a + 49)} for a in range(1500, 2000, 50)] + \
-       [{'es': '2000+', 'en': '2000+'}]
+       [{'es': 'Post-2000', 'en': 'Post-2000'}]
 
 # --- dominios (orden editorial fijo, mismo del ranking) + ocupaciones ---
 DOMS = [('Poder y figuras públicas', 'Power & public life'),

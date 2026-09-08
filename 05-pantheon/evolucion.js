@@ -42,7 +42,7 @@ function ev_occColors() {
 // ---------- estado + selección ----------
 function ev_state() {
   if (!window.state) window.state = {};
-  if (!state.evo) state.evo = { mode: 'share', nivel: 'dom', sel: [{ t: 'w' }] };
+  if (!state.evo) state.evo = { mode: 'share', nivel: 'dom', sel: [{ t: 'w' }], b0: 0, b1: 11 };
   return state.evo;
 }
 function ev_selLabel(u) {
@@ -91,7 +91,7 @@ function ev_dims(nPan) {
   else if (mobile) {
     if (nPan >= 2) { EV_W = 440; EV_H = 0; }           // multiples: 1 col, alto según filas (abajo)
     else { EV_W = 1100; EV_H = 1150; }
-  } else { EV_W = 1100; EV_H = nPan >= 2 ? 700 : 640; }
+  } else { EV_W = 1100; EV_H = nPan >= 2 ? 700 : 560; }
   return { fmt, mobile, bigFmt: !!fmt || mobile, isPng: !!fmt };
 }
 
@@ -99,6 +99,8 @@ function ev_niceTicks(max, n) {
   const raw = max / n, pow = Math.pow(10, Math.floor(Math.log10(raw || 1)));
   const step = [1, 2, 2.5, 5, 10].map(m => m * pow).find(s => max / s <= n) || pow * 10;
   const out = []; for (let v = 0; v <= max + 1e-9; v += step) out.push(v);
+  // el ultimo tick CUBRE el maximo (si no, la banda mas alta se sale del plot)
+  if (out[out.length - 1] < max) out.push(out[out.length - 1] + step);
   return out;
 }
 const ev_fmtN = (v) => {
@@ -115,10 +117,16 @@ function drawEvo() {
   const tip = document.getElementById('tooltipevo'); if (tip) { tip.style.opacity = '0'; tip.style.display = 'none'; }
   const s = ev_state(), E = window.EVOL, en = ev_lang() === 'en';
   const nivel = s.nivel, share = s.mode === 'share';
+  const B0 = Math.min(s.b0, s.b1), B1 = Math.max(s.b0, s.b1);
   const panels = s.sel.map(u => {
-    const mat = ev_mat(u, nivel);
+    const matFull = ev_mat(u, nivel);
+    const mat = matFull.slice(B0, B1 + 1);
     const totals = mat.map(row => row.reduce((a, b) => a + b, 0));
-    return { u, label: ev_selLabel(u), color: ev_selColor(u), mat, totals };
+    // trim de bins vacios en los extremos: la serie ARRANCA vertical donde hay datos
+    let d0 = 0, d1 = totals.length - 1;
+    while (d0 < d1 && !totals[d0]) d0++;
+    while (d1 > d0 && !totals[d1]) d1--;
+    return { u, label: ev_selLabel(u), color: ev_selColor(u), mat, totals, d0, d1 };
   });
   const n = panels.length;
   const dims = ev_dims(n); const { bigFmt, isPng, mobile } = dims;
@@ -203,7 +211,7 @@ function drawEvo() {
     const cx = single ? M.left : M.left + (pi % cols) * (panW + gapX);
     const cy = single ? M.top : M.top + Math.floor(pi / cols) * (panH + gapY);
     ev_panel(svg, p, {
-      x: cx, y: cy, w: panW, h: panH, cats, nivel, share, absMax, yTicksAbs,
+      x: cx, y: cy, w: panW, h: panH, cats, nivel, share, absMax, yTicksAbs, B0,
       fsLbl, fsTick, fsPan, bigFmt, single, en,
       firstCol: single || pi % cols === 0,
       lastRow: single || Math.floor(pi / cols) === rows - 1
@@ -211,7 +219,7 @@ function drawEvo() {
     hoverZones.push({ p, x: cx, y: cy, w: panW, h: panH });
   });
 
-  if (!isPng) ev_hover(svg, { zones: hoverZones, cats, nivel, share, NB });
+  if (!isPng) ev_hover(svg, { zones: hoverZones, cats, nivel, share, NB: B1 - B0 + 1, B0 });
   ev_syncSub();
 }
 
@@ -222,8 +230,8 @@ function ev_measure(t2, s2, w2) {
 }
 
 function ev_panel(svg, p, o) {
-  const E = window.EVOL, NB = E.bins.length;
-  const xS = (i) => o.x + (i / (NB - 1)) * o.w;
+  const E = window.EVOL, NB = p.mat.length;
+  const xS = (i) => o.x + (NB <= 1 ? 0.5 * o.w : (i / (NB - 1)) * o.w);
   const yS = (v) => o.y + o.h - (v / (o.share ? 1 : o.absMax)) * o.h;   // apila desde abajo en ambos modos
 
   // título del panel (multiples)
@@ -251,13 +259,19 @@ function ev_panel(svg, p, o) {
 
   // ticks X (fila de abajo): <1500, 1600, 1700, 1800, 1900, 2000+
   if (o.lastRow) {
-    const ticks = o.single || o.w > 500 ? [0, 3, 5, 7, 9, 11] : [0, 5, 9];
-    const lab = (bi) => bi === 0 ? '<1500' : bi === 11 ? '2000+' : String(1500 + (bi - 1) * 50);
-    ticks.forEach(bi => {
-      const tk = ev_el('text'); tk.setAttribute('x', xS(bi)); tk.setAttribute('y', o.y + o.h + (o.bigFmt ? 34 : 20));
-      tk.setAttribute('text-anchor', bi === 0 ? 'start' : bi === NB - 1 ? 'end' : 'middle');
+    const lab = (abs) => abs === 0 ? 'Pre-1500' : abs === 11 ? 'Post-2000' : String(1500 + (abs - 1) * 50);
+    const paso = (o.single || o.w > 500) ? (NB > 7 ? 2 : 1) : Math.max(1, Math.ceil(NB / 3));
+    const ks = []; for (let k = 0; k < NB; k += paso) ks.push(k);
+    // el ultimo bin SIEMPRE tiene tick (si el anterior queda pegado, se lo saca)
+    if (ks[ks.length - 1] !== NB - 1) {
+      if (NB - 1 - ks[ks.length - 1] < paso) ks.pop();
+      ks.push(NB - 1);
+    }
+    ks.forEach(kk => {
+      const tk = ev_el('text'); tk.setAttribute('x', xS(kk)); tk.setAttribute('y', o.y + o.h + (o.bigFmt ? 34 : 20));
+      tk.setAttribute('text-anchor', kk === 0 ? 'start' : kk === NB - 1 ? 'end' : 'middle');
       tk.style.cssText = 'font-family:var(--sans);font-size:' + o.fsTick + 'px;fill:var(--ink-muted);';
-      tk.textContent = lab(bi); svg.appendChild(tk);
+      tk.textContent = lab(o.B0 + kk); svg.appendChild(tk);
     });
   }
 
@@ -268,10 +282,11 @@ function ev_panel(svg, p, o) {
   });
   const cum = fr.map(row => { let a = 0; return row.map(v => (a += v)); });
   const g = ev_el('g'); svg.appendChild(g);
+  const D0 = p.d0, D1 = p.d1;
   o.cats.forEach((c, k) => {
     let dp = 'M ';
-    for (let b = 0; b < NB; b++) { const up = k === 0 ? 0 : cum[b][k - 1]; dp += (b ? ' L ' : '') + xS(b).toFixed(1) + ' ' + yS(up).toFixed(1); }
-    for (let b = NB - 1; b >= 0; b--) dp += ' L ' + xS(b).toFixed(1) + ' ' + yS(cum[b][k]).toFixed(1);
+    for (let b = D0; b <= D1; b++) { const up = k === 0 ? 0 : cum[b][k - 1]; dp += (b > D0 ? ' L ' : '') + xS(b).toFixed(1) + ' ' + yS(up).toFixed(1); }
+    for (let b = D1; b >= D0; b--) dp += ' L ' + xS(b).toFixed(1) + ' ' + yS(cum[b][k]).toFixed(1);
     dp += ' Z';
     const path = ev_el('path'); path.setAttribute('d', dp); path.setAttribute('fill', c.color);
     path.setAttribute('fill-opacity', 0.92);
@@ -281,7 +296,7 @@ function ev_panel(svg, p, o) {
 
   // labels de dominio a la derecha (solo single): en occ, centrados en el BLOQUE del dominio
   if (o.single) {
-    const last = NB - 1, tot = p.totals[last] || 1;
+    const last = p.d1, tot = p.totals[last] || 1;
     let blocks;
     if (o.nivel === 'dom') {
       blocks = o.cats.map((c, k) => ({ name: c.name, color: c.color,
@@ -331,7 +346,7 @@ function ev_hover(svg, c) {
       vline.setAttribute('display', ''); vline.setAttribute('x1', xpix); vline.setAttribute('x2', xpix);
       vline.setAttribute('y1', z.y); vline.setAttribute('y2', z.y + z.h);
       const row = z.p.mat[bi], tot = z.p.totals[bi];
-      const binLab = en ? E.bins[bi].en : E.bins[bi].es;
+      const binLab = en ? E.bins[c.B0 + bi].en : E.bins[c.B0 + bi].es;
       let html = '<div style="font-weight:600;margin-bottom:4px;">' + z.p.label + ' · ' + binLab +
         ' · ' + tot.toLocaleString(ev_loc()) + (en ? ' figures' : ' figuras') + '</div>';
       let items = c.cats.map(cat => ({ cat, v: row[cat.i] })).filter(x => x.v > 0);
@@ -373,9 +388,12 @@ function ev_syncSub() {
   const nivel = s.nivel === 'dom' ? (en ? 'domain' : 'dominio') : (en ? 'occupation (shades grouped by domain)' : 'ocupación (tonos agrupados por dominio)');
   const medida = s.mode === 'share' ? (en ? 'share of those born in each period' : '% de las nacidas en cada período')
                                     : (en ? 'number of figures per period' : 'cantidad de figuras por período');
+  const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
+  const fraseEn = 'famous figures by ' + nivel + ', as ' + medida + '.';
+  const fraseEs = 'figuras célebres por ' + nivel + ', como ' + medida + '.';
   el.textContent = en
-    ? (sel ? sel + ': ' : '') + 'famous figures by ' + nivel + ', as ' + medida + '.'
-    : (sel ? sel + ': ' : '') + 'figuras célebres por ' + nivel + ', como ' + medida + '.';
+    ? (sel ? sel + ': ' + fraseEn : cap(fraseEn))
+    : (sel ? sel + ': ' + fraseEs : cap(fraseEs));
 }
 
 // ---------- selector (buscador + chips, patrón podios) ----------
@@ -449,7 +467,45 @@ function ev_setupSearch() {
     if (!input.contains(ev2.target) && !results.contains(ev2.target)) results.classList.remove('open');
   });
   document.getElementById('evo-limpiar').addEventListener('click', () => { s.sel = []; ev_renderChips(); drawEvo(); });
-  document.getElementById('evo-mundo').addEventListener('click', () => { s.sel = [{ t: 'w' }]; ev_renderChips(); drawEvo(); });
+}
+
+// ---------- periodo: doble slider sobre bins + cajitas de anio ----------
+function ev_yearToBin(y) {
+  y = +y;
+  if (!isFinite(y)) return null;
+  if (y < 1500) return 0;
+  if (y >= 2000) return 11;
+  return 1 + Math.floor((y - 1500) / 50);
+}
+function ev_syncPeriodo() {
+  const s = ev_state();
+  const r0 = document.getElementById('evo-r0'), r1 = document.getElementById('evo-r1');
+  const n0 = document.getElementById('evo-y0'), n1 = document.getElementById('evo-y1');
+  r0.value = s.b0; r1.value = s.b1;
+  n0.value = s.b0 === 0 ? '' : 1500 + (s.b0 - 1) * 50;
+  n1.value = s.b1 === 11 ? '' : 1549 + (s.b1 - 1) * 50;
+  const f = document.getElementById('evo-fill');
+  f.style.left = (s.b0 / 11 * 100) + '%';
+  f.style.width = ((s.b1 - s.b0) / 11 * 100) + '%';
+}
+function ev_wirePeriodo() {
+  const s = ev_state();
+  document.getElementById('evo-r0').addEventListener('input', e => {
+    s.b0 = Math.min(+e.target.value, s.b1); ev_syncPeriodo(); drawEvo();
+  });
+  document.getElementById('evo-r1').addEventListener('input', e => {
+    s.b1 = Math.max(+e.target.value, s.b0); ev_syncPeriodo(); drawEvo();
+  });
+  document.getElementById('evo-y0').addEventListener('change', e => {
+    const b = e.target.value === '' ? 0 : ev_yearToBin(e.target.value);
+    if (b !== null) s.b0 = Math.min(b, s.b1);
+    ev_syncPeriodo(); drawEvo();
+  });
+  document.getElementById('evo-y1').addEventListener('change', e => {
+    const b = e.target.value === '' ? 11 : ev_yearToBin(e.target.value);
+    if (b !== null) s.b1 = Math.max(b, s.b0);
+    ev_syncPeriodo(); drawEvo();
+  });
 }
 
 // ---------- toggles ----------
@@ -495,7 +551,7 @@ window.__atlasSupportsFormats = true;
 window.__atlasDefaultPngFormat = 'square';
 window.__atlasRedraw = drawEvo;
 function initEvo() {
-  ev_state(); ev_renderChips(); ev_setupSearch(); ev_wireToggles(); drawEvo();
+  ev_state(); ev_renderChips(); ev_setupSearch(); ev_wireToggles(); ev_wirePeriodo(); ev_syncPeriodo(); drawEvo();
   const btn = document.querySelector('button.download[data-chart="evo-csv"]');
   if (btn) btn.addEventListener('click', () => {
     const blob = new Blob([ev_csv()], { type: 'text/csv;charset=utf-8' });
