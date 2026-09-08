@@ -261,3 +261,37 @@ window.onBeforePngExportGetSourceText = function (chartId) {
     return short !== key ? short : null;
   } catch (e) { return null; }
 };
+
+
+// ==== Tooltips (portado de lib/utils.js, 2026-09-09) ====
+// (a) tap-afuera cierra todo .tooltip (en touch no hay mouseleave); el propio
+// dato lo reabre via los eventos sinteticos del tap.
+document.addEventListener('touchstart', function () {
+  document.querySelectorAll('.tooltip').forEach(function (t) { t.style.opacity = '0'; t.style.display = 'none'; });
+}, { capture: true, passive: true });
+// (b) clamp al viewport via MutationObserver sobre style (igual que lib).
+(function () {
+  var PAD = 6;
+  function clampOne(tt) {
+    if (!tt || tt.style.display === 'none') return;
+    var r = tt.getBoundingClientRect();
+    if (!r.width || !r.height) return;
+    var l = parseFloat(tt.style.left) || 0, t = parseFloat(tt.style.top) || 0, nl = l, nt = t;
+    if (r.right > window.innerWidth - PAD) nl = l - (r.right - (window.innerWidth - PAD));
+    if (r.left + (nl - l) < PAD) nl = l + (PAD - r.left);
+    if (r.bottom > window.innerHeight - PAD) nt = t - (r.bottom - (window.innerHeight - PAD));
+    if (r.top + (nt - t) < PAD) nt = t + (PAD - r.top);
+    if (Math.abs(nl - l) > 0.5) tt.style.left = nl + 'px';
+    if (Math.abs(nt - t) > 0.5) tt.style.top = nt + 'px';
+  }
+  function wire() {
+    document.querySelectorAll('.tooltip').forEach(function (tt) {
+      if (tt.__atlasClamp) return;
+      var obs = new MutationObserver(function () { clampOne(tt); });
+      obs.observe(tt, { attributes: true, attributeFilter: ['style'] });
+      tt.__atlasClamp = obs;
+    });
+  }
+  if (document.readyState !== 'loading') wire();
+  else document.addEventListener('DOMContentLoaded', wire);
+})();

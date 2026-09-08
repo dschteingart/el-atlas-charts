@@ -9,7 +9,9 @@ para ambos archivos. Fotos: el top 5.000 usa los archivos locales de fotos/
 (id.jpg); del 5.001 en adelante va el nombre de archivo de Commons (hotlink en
 la tabla; el PNG las intenta con CORS y si no, circulo neutro).
 
-rows = [rank, name_en, name_es(si difiere), isoIdx, occIdx, hpi, birthyear, img, genero]
+rows = [rank, name_en, name_es(si difiere), isoIdx, occIdx, hpi, birthyear, img,
+        genero(P21 wikidata, fallback pantheon), deathyear, ciudad_nac, n_langs,
+        idiomas_10k_anio, vistas_12m_noen en MILES]
 Necesita: nombres_es.csv, fotos.csv (build_all_names_fotos.py), fotos_local.csv.
 """
 import io, os, json, re, sys, warnings
@@ -31,12 +33,27 @@ d['name_es'] = d.name_es.fillna('')
 # se quita el parentesis final (el nombre nunca vive ahi)
 _sin = d.name_es.str.replace(r'\s*\([^)]*\)\s*$', '', regex=True).str.strip()
 d['name_es'] = _sin.where(_sin != '', d.name_es)
+# overrides manuales (vandalismo): ganan siempre
+_ov = pd.read_csv(os.path.join(DIR, 'nombres_overrides.csv'), encoding='utf-8-sig').set_index('id').name_es
+d['name_es'] = d.id.map(_ov).fillna(d.name_es)
 F = pd.read_csv(os.path.join(DIR, 'fotos.csv'), encoding='utf-8-sig').rename(columns={'img': 'img_commons'})
 d = d.merge(F, on='id', how='left')
 d['img_commons'] = d.img_commons.fillna('')
 FL = pd.read_csv(os.path.join(DIR, 'fotos_local.csv'), encoding='utf-8-sig').rename(columns={'file': 'img_local'})
 d = d.merge(FL, on='id', how='left')
 d['img_local'] = d.img_local.fillna('')
+RX = pd.read_csv(os.path.join(DIR, 'person_2025_update.csv'), low_memory=False,
+                 usecols=['id', 'deathyear', 'bplace_name']).drop_duplicates('id')
+d = d.merge(RX, on='id', how='left')
+LU = pd.read_csv(os.path.join(DIR, 'lugares_recuperados.csv'), encoding='utf-8-sig')[['id', 'lugar']].drop_duplicates('id')
+d = d.merge(LU, on='id', how='left')
+d['ciudad'] = d.bplace_name.fillna('').astype(str).replace('nan', '')
+d.loc[d.ciudad == '', 'ciudad'] = d.lugar.fillna('')
+d['ciudad'] = d.ciudad.astype(str).str.replace(r'\s*\([^)]*\)\s*$', '', regex=True).str.strip()   # 'Stagira (ancient city)' -> 'Stagira'
+# genero: P21 de Wikidata (build_genero.py) manda; Pantheon trae errores (Favaloro=F)
+GN = pd.read_csv(os.path.join(DIR, 'genero.csv'), encoding='utf-8-sig')[['id', 'genero_wd']]
+d = d.merge(GN, on='id', how='left')
+d['genero_wd'] = d.genero_wd.fillna('')
 d = d.sort_values('rank_score').reset_index(drop=True)
 print('base completa: %d | con nombre es: %d | con img commons: %d | con img local: %d'
       % (len(d), int((d.name_es != '').sum()), int((d.img_commons != '').sum()), int((d.img_local != '').sum())))
@@ -84,6 +101,7 @@ for o in occs_raw:
 
 def fila(x):
     img = x.img_local if x.img_local else x.img_commons
+    gen = x.genero_wd if x.genero_wd in ('M', 'F') else (x.gender if x.gender in ('M', 'F') else '')
     return [int(x.rank_score),
             x['name'],
             x.name_es if x.name_es and x.name_es != x['name'] else '',
@@ -92,7 +110,12 @@ def fila(x):
             round(float(x.score), 1),
             int(x.birthyear) if pd.notna(x.birthyear) else None,
             img,
-            x.gender if x.gender in ('M', 'F') else '']
+            gen,
+            int(x.deathyear) if pd.notna(x.deathyear) else None,
+            x.ciudad or '',
+            int(x.n_langs) if pd.notna(x.n_langs) else 0,
+            int(x.idiomas_10k_anio) if pd.notna(x.idiomas_10k_anio) else 0,
+            int(round(x.vistas_12m_noen / 1000)) if pd.notna(x.vistas_12m_noen) else 0]
 
 rows = [fila(x) for _, x in d.iterrows()]
 head = {'isoMeta': isoMeta, 'occs': occMeta,
@@ -101,7 +124,7 @@ head = {'isoMeta': isoMeta, 'occs': occMeta,
 
 p1 = os.path.join(CHARTS, 'data-top.js')
 io.open(p1, 'w', encoding='utf-8', newline='').write(
-    '// Ranking de la fama: meta (base completa) + top %d. rows=[rank,name_en,name_es(si difiere),isoIdx,occIdx,hpi,birthyear,img,genero]\n' % CORTE
+    '// Ranking de la fama: meta (base completa) + top %d. rows=[rank,name_en,name_es(si difiere),isoIdx,occIdx,hpi,birthyear,img,genero,deathyear,ciudad,n_langs,idiomas10k,vistas12m_miles]\n' % CORTE
     + '// img: "id.jpg" = local en fotos/; otro texto = archivo de Commons (hotlink).\n'
     + 'window.TOPFIGS=' + json.dumps(head, ensure_ascii=False, separators=(',', ':')) + ';\n')
 p2 = os.path.join(CHARTS, 'data-top-full.js')

@@ -98,6 +98,7 @@
       </div>
       <div class="ctl"><label data-i18n="pod-lbl-dom">Dominio</label><select id="c-dom"></select></div>
       <div class="ctl"><label data-i18n="pod-lbl-occ">Ocupación</label><select id="c-occ"></select></div>
+      <div class="ctl"><label data-i18n="gen-lbl">Género</label><select id="c-gen"></select></div>
     </div>
 
     <div class="tblbox"><table>
@@ -128,11 +129,13 @@
 
 </div>
 
+<div class="tooltip" id="tt" style="display:none"></div>
+
 <script src="../lib/i18n.js"></script>
 <script src="../lib/regions.js"></script>
-<script src="./i18n-issue.js?v=15"></script>
-<script src="./utils.js?v=3"></script>
-<script src="./data-top.js?v=8"></script>
+<script src="./i18n-issue.js?v=16"></script>
+<script src="./utils.js?v=4"></script>
+<script src="./data-top.js?v=9"></script>
 <script>
 const D = window.TOPFIGS;
 const en = () => (typeof LANG !== 'undefined' && LANG === 'en');
@@ -144,7 +147,7 @@ const fmtHpi = v => v.toLocaleString(loc(), { minimumFractionDigits: 1, maximumF
 const paisLabel = i => en() ? D.isoMeta[i].en : D.isoMeta[i].es;
 const LATAM = D.isoMeta.map((m, i) => [m, i]).filter(([m]) => m.reg === 'Latin America').map(([, i]) => i);
 
-const st = { sel: LATAM.slice(), y0: 1900, y1: 2025, dom: -1, occ: -1 };
+const st = { sel: LATAM.slice(), y0: 1900, y1: 2025, dom: -1, occ: -1, gen: '' };
 
 // ===== periodo: doble slider con escala por tramos (lo moderno con mas lugar) =====
 const ANC = [[0, -4000], [250, 0], [500, 1500], [1000, 2025]];
@@ -188,6 +191,12 @@ function fillSelects() {
     .forEach(([o, i]) => so.add(new Option(en() ? o.en : o.es, i)));
   so.value = String(st.occ);
   if (so.value === '') { st.occ = -1; so.value = '-1'; }
+  const sg = document.getElementById('c-gen');
+  sg.innerHTML = '';
+  sg.add(new Option(t('gen-todos'), ''));
+  sg.add(new Option(t('gen-f'), 'F'));
+  sg.add(new Option(t('gen-m'), 'M'));
+  sg.value = st.gen;
 }
 
 // ===== chips + buscador de paises (mismo patron que el explorador) =====
@@ -303,6 +312,7 @@ function calc() {
     if (r[6] == null || r[6] < st.y0 || r[6] > st.y1) continue;
     if (st.occ >= 0) { if (r[4] !== st.occ) continue; }
     else if (st.dom >= 0 && D.occs[r[4]].dom !== st.dom) continue;
+    if (st.gen && r[8] !== st.gen) continue;
     let a = top.get(r[3]);
     if (!a) top.set(r[3], a = []);
     if (a.length < 3) a.push(r);
@@ -313,9 +323,11 @@ function calc() {
   return out;
 }
 function filtroDomStr() {
-  if (st.occ >= 0) return en() ? D.occs[st.occ].en : D.occs[st.occ].es;
-  if (st.dom >= 0) return en() ? D.doms[st.dom].en : D.doms[st.dom].es;
-  return '';
+  const partes = [];
+  if (st.gen) partes.push(t(st.gen === 'F' ? 'gen-f' : 'gen-m'));
+  if (st.occ >= 0) partes.push(en() ? D.occs[st.occ].en : D.occs[st.occ].es);
+  else if (st.dom >= 0) partes.push(en() ? D.doms[st.dom].en : D.doms[st.dom].es);
+  return partes.join(' · ');
 }
 function subActual() {
   const f = filtroDomStr();
@@ -333,7 +345,7 @@ function phOff(img) {   // criterio comun: sin retrato queda el circulo neutro
 function celda(r) {
   if (!r) return '<td class="fig vac">—</td>';
   const ph = fotoUrl(r);
-  return '<td class="fig"><div class="fw">' +
+  return '<td class="fig" data-rk="' + r[0] + '"><div class="fw">' +
     (ph ? '<img class="ph" loading="lazy" referrerpolicy="no-referrer" src="' + ph + '" alt="" onerror="phOff(this)">'
         : '<span class="ph ph-off"></span>') +
     '<div class="ft"><div class="fn">' + esc(nombre(r)) + '</div>' +
@@ -561,13 +573,53 @@ document.getElementById('n-y1').addEventListener('change', e => {
 });
 document.getElementById('c-dom').addEventListener('input', e => { st.dom = +e.target.value; st.occ = -1; fillSelects(); render(); });
 document.getElementById('c-occ').addEventListener('input', e => { st.occ = +e.target.value; render(); });
+document.getElementById('c-gen').addEventListener('input', e => { st.gen = e.target.value; render(); });
+
+// ===== tooltip de figura (hover/tap sobre la celda) =====
+let __rkMap = null, __rkN = 0;
+function rowByRank(rk) {
+  if (!__rkMap || __rkN !== D.rows.length) { __rkMap = new Map(D.rows.map(r => [r[0], r])); __rkN = D.rows.length; }
+  return __rkMap.get(rk);
+}
+function ttHtml(r) {
+  const m = r[3] >= 0 ? D.isoMeta[r[3]] : null;
+  const o = D.occs[r[4]];
+  const anios = r[6] == null ? '' : (r[9] ? fmtAnio(r[6]) + '\u2013' + fmtAnio(r[9]) : tpl('tt-nacido', { y: fmtAnio(r[6]) }));
+  const lugar = [r[10], m ? (en() ? m.en : m.es) : ''].filter(Boolean).join(', ');
+  const linea2 = [anios, lugar].filter(Boolean).join(' \u00b7 ');
+  const compact = v => new Intl.NumberFormat(loc(), { notation: 'compact', maximumFractionDigits: 1 }).format(v);
+  let h = '<strong>' + esc(nombre(r)) + '</strong>';
+  if (linea2) h += '<div class="tt-region">' + esc(linea2) + '</div>';
+  h += '<div class="tt-row"><span>' + t('tt-occ') + '</span><span>' + esc(occLabel(r)) + '</span></div>';
+  h += '<div class="tt-row"><span>' + t('tt-dom') + '</span><span>' + esc(en() ? D.doms[o.dom].en : D.doms[o.dom].es) + '</span></div>';
+  h += '<div class="tt-row"><span>' + t('tt-hpi') + '</span><span><b>' + fmtHpi(r[5]) + '</b> \u00b7 ' + tpl('tt-rank', { n: r[0].toLocaleString(loc()) }) + '</span></div>';
+  if (r[11]) h += '<div class="tt-row"><span>' + t('tt-wiki') + '</span><span>' + tpl('tt-wiki-v', { n: r[11], k: r[12] }) + '</span></div>';
+  if (r[13]) h += '<div class="tt-row"><span>' + t('tt-lect') + '</span><span>' + tpl('tt-lect-v', { v: compact(r[13] * 1000) }) + '</span></div>';
+  return h;
+}
+(function () {
+  const tt = document.getElementById('tt');
+  const tb = document.getElementById('rows');
+  function move(e) { tt.style.left = (e.pageX + 14) + 'px'; tt.style.top = (e.pageY + 16) + 'px'; }
+  tb.addEventListener('mouseover', e => {
+    const c = e.target.closest('[data-rk]'); if (!c) return;
+    const r = rowByRank(+c.dataset.rk); if (!r) return;
+    tt.innerHTML = ttHtml(r); tt.style.display = 'block'; move(e);
+    requestAnimationFrame(() => { tt.style.opacity = '1'; });
+  });
+  tb.addEventListener('mousemove', e => { if (e.target.closest('[data-rk]')) move(e); });
+  tb.addEventListener('mouseout', e => {
+    const c = e.target.closest('[data-rk]');
+    if (c && !c.contains(e.relatedTarget)) { tt.style.opacity = '0'; tt.style.display = 'none'; }
+  });
+})();
 
 // La base completa se carga ya mismo: los podios de paises chicos suelen estar
 // fuera del top 5.000 y sin ella quedarian incompletos.
 function cargarBaseCompleta() {
   if (window.__fullReq) return; window.__fullReq = true;
   const sc = document.createElement('script');
-  sc.src = './data-top-full.js?v=2';
+  sc.src = './data-top-full.js?v=3';
   sc.onload = () => {
     if (window.TOPFIGS_REST) { D.rows = D.rows.concat(window.TOPFIGS_REST); window.__full = true; render(); }
   };

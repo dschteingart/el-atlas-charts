@@ -55,6 +55,7 @@
       <div class="ctl"><label data-i18n="top-lbl-pais">País</label><select id="c-cty"></select></div>
       <div class="ctl"><label data-i18n="top-lbl-dom">Dominio</label><select id="c-dom"></select></div>
       <div class="ctl"><label data-i18n="top-lbl-occ">Ocupación</label><select id="c-occ"></select></div>
+      <div class="ctl"><label data-i18n="gen-lbl">Género</label><select id="c-gen"></select></div>
     </div>
 
     <div class="tblbox"><table>
@@ -88,10 +89,12 @@
 
 </div>
 
+<div class="tooltip" id="tt" style="display:none"></div>
+
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=15"></script>
-<script src="./utils.js?v=3"></script>
-<script src="./data-top.js?v=8"></script>
+<script src="./i18n-issue.js?v=16"></script>
+<script src="./utils.js?v=4"></script>
+<script src="./data-top.js?v=9"></script>
 <script>
 const D = window.TOPFIGS;
 const REG_LABEL = {
@@ -109,7 +112,9 @@ const regLabel = r => REG_LABEL[r] ? REG_LABEL[r][en() ? 1 : 0] : (r || '—');
 const tpl = (k, vars) => Object.entries(vars).reduce((a, [b, c]) => a.split('{' + b + '}').join(c), t(k));
 const REGS = [...new Set(D.isoMeta.map(m => m.reg).filter(Boolean))];
 
-const st = { n: 10, reg: -1, cty: -1, dom: -1, occ: -1 };
+const st = { n: 10, reg: -1, cty: -1, dom: -1, occ: -1, gen: '' };
+const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const fmtAnio = y => y < 0 ? (-y).toLocaleString(loc()) + (en() ? ' BC' : ' a.C.') : String(y);
 
 function fillSelects() {
   const sr = document.getElementById('c-reg'), sc = document.getElementById('c-cty');
@@ -135,6 +140,12 @@ function fillSelects() {
     .forEach(([o, i]) => so.add(new Option(en() ? o.en : o.es, i)));
   so.value = String(st.occ);
   if (so.value === '') { st.occ = -1; so.value = '-1'; }
+  const sg = document.getElementById('c-gen');
+  sg.innerHTML = '';
+  sg.add(new Option(t('gen-todos'), ''));
+  sg.add(new Option(t('gen-f'), 'F'));
+  sg.add(new Option(t('gen-m'), 'M'));
+  sg.value = st.gen;
 }
 
 function nombre(r) {
@@ -147,6 +158,7 @@ function occLabel(r) {
 }
 function filtrosStr() {
   const partes = [];
+  if (st.gen) partes.push(t(st.gen === 'F' ? 'gen-f' : 'gen-m'));
   if (st.occ >= 0) partes.push(en() ? D.occs[st.occ].en : D.occs[st.occ].es);
   else if (st.dom >= 0) partes.push(en() ? D.doms[st.dom].en : D.doms[st.dom].es);
   if (st.cty >= 0) partes.push(en() ? D.isoMeta[st.cty].en : D.isoMeta[st.cty].es);
@@ -178,6 +190,7 @@ function filtrar() {
     else if (st.reg >= 0) { if (!m || m.reg !== REGS[st.reg]) continue; }
     if (st.occ >= 0) { if (r[4] !== st.occ) continue; }
     else if (st.dom >= 0 && o.dom !== st.dom) continue;
+    if (st.gen && r[8] !== st.gen) continue;
     out.push(r);
     if (out.length >= st.n) break;
   }
@@ -197,7 +210,7 @@ function render() {
     const tr = document.createElement('tr');
     const ph = fotoUrl(r);
     tr.innerHTML = '<td class="rk">' + r[0].toLocaleString(loc()) + '</td>' +
-      '<td class="nm">' + (ph ? '<img class="ph" loading="lazy" referrerpolicy="no-referrer" src="' + ph + '" alt="" onerror="phOff(this)">' : '<span class="ph ph-off"></span>') + nombre(r) + '</td>' +
+      '<td class="nm" data-rk="' + r[0] + '">' + (ph ? '<img class="ph" loading="lazy" referrerpolicy="no-referrer" src="' + ph + '" alt="" onerror="phOff(this)">' : '<span class="ph ph-off"></span>') + nombre(r) + '</td>' +
       '<td class="mut">' + (m ? (en() ? m.en : m.es) : '—') + '</td>' +
       '<td class="mut">' + (m ? regLabel(m.reg) : '—') + '</td>' +
       '<td class="mut">' + occLabel(r) + '</td>' +
@@ -401,13 +414,53 @@ document.getElementById('c-reg').addEventListener('input', e => { st.reg = +e.ta
 document.getElementById('c-cty').addEventListener('input', e => { st.cty = +e.target.value; render(); });
 document.getElementById('c-dom').addEventListener('input', e => { st.dom = +e.target.value; st.occ = -1; fillSelects(); render(); });
 document.getElementById('c-occ').addEventListener('input', e => { st.occ = +e.target.value; render(); });
+document.getElementById('c-gen').addEventListener('input', e => { st.gen = e.target.value; render(); });
+
+// ===== tooltip de figura (hover/tap sobre el nombre o retrato) =====
+let __rkMap = null, __rkN = 0;
+function rowByRank(rk) {
+  if (!__rkMap || __rkN !== D.rows.length) { __rkMap = new Map(D.rows.map(r => [r[0], r])); __rkN = D.rows.length; }
+  return __rkMap.get(rk);
+}
+function ttHtml(r) {
+  const m = r[3] >= 0 ? D.isoMeta[r[3]] : null;
+  const o = D.occs[r[4]];
+  const anios = r[6] == null ? '' : (r[9] ? fmtAnio(r[6]) + '\u2013' + fmtAnio(r[9]) : tpl('tt-nacido', { y: fmtAnio(r[6]) }));
+  const lugar = [r[10], m ? (en() ? m.en : m.es) : ''].filter(Boolean).join(', ');
+  const linea2 = [anios, lugar].filter(Boolean).join(' \u00b7 ');
+  const compact = v => new Intl.NumberFormat(loc(), { notation: 'compact', maximumFractionDigits: 1 }).format(v);
+  let h = '<strong>' + esc(nombre(r)) + '</strong>';
+  if (linea2) h += '<div class="tt-region">' + esc(linea2) + '</div>';
+  h += '<div class="tt-row"><span>' + t('tt-occ') + '</span><span>' + esc(occLabel(r)) + '</span></div>';
+  h += '<div class="tt-row"><span>' + t('tt-dom') + '</span><span>' + esc(en() ? D.doms[o.dom].en : D.doms[o.dom].es) + '</span></div>';
+  h += '<div class="tt-row"><span>' + t('tt-hpi') + '</span><span><b>' + r[5].toLocaleString(loc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '</b> \u00b7 ' + tpl('tt-rank', { n: r[0].toLocaleString(loc()) }) + '</span></div>';
+  if (r[11]) h += '<div class="tt-row"><span>' + t('tt-wiki') + '</span><span>' + tpl('tt-wiki-v', { n: r[11], k: r[12] }) + '</span></div>';
+  if (r[13]) h += '<div class="tt-row"><span>' + t('tt-lect') + '</span><span>' + tpl('tt-lect-v', { v: compact(r[13] * 1000) }) + '</span></div>';
+  return h;
+}
+(function () {
+  const tt = document.getElementById('tt');
+  const tb = document.getElementById('rows');
+  function move(e) { tt.style.left = (e.pageX + 14) + 'px'; tt.style.top = (e.pageY + 16) + 'px'; }
+  tb.addEventListener('mouseover', e => {
+    const c = e.target.closest('[data-rk]'); if (!c) return;
+    const r = rowByRank(+c.dataset.rk); if (!r) return;
+    tt.innerHTML = ttHtml(r); tt.style.display = 'block'; move(e);
+    requestAnimationFrame(() => { tt.style.opacity = '1'; });
+  });
+  tb.addEventListener('mousemove', e => { if (e.target.closest('[data-rk]')) move(e); });
+  tb.addEventListener('mouseout', e => {
+    const c = e.target.closest('[data-rk]');
+    if (c && !c.contains(e.relatedTarget)) { tt.style.opacity = '0'; tt.style.display = 'none'; }
+  });
+})();
 
 // La base completa (111 mil filas mas) se carga en diferido para no frenar el
 // primer render; cualquier filtro que agote el top la reclama al instante.
 function cargarBaseCompleta() {
   if (window.__fullReq) return; window.__fullReq = true;
   const sc = document.createElement('script');
-  sc.src = './data-top-full.js?v=2';
+  sc.src = './data-top-full.js?v=3';
   sc.onload = () => {
     if (window.TOPFIGS_REST) { D.rows = D.rows.concat(window.TOPFIGS_REST); window.__full = true; render(); }
   };

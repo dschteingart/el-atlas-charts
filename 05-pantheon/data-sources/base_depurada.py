@@ -21,6 +21,9 @@ try:
     # o basura "(bachi)": se quita el parentesis final (el nombre nunca vive ahi)
     _sin = d.name_es.str.replace(r'\s*\([^)]*\)\s*$', '', regex=True).str.strip()
     d['name_es'] = _sin.where(_sin != '', d.name_es)
+    # overrides manuales (vandalismo): ganan siempre
+    _ov = pd.read_csv(os.path.join(DIR, 'nombres_overrides.csv'), encoding='utf-8-sig').set_index('id').name_es
+    d['name_es'] = d.id.map(_ov).fillna(d.name_es)
 except FileNotFoundError:
     d['name_es'] = ''
 d = d.sort_values('rank_score')
