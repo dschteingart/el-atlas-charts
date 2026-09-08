@@ -87,7 +87,10 @@ let EV_W = 1100, EV_H = 640;
 function ev_dims(nPan) {
   const fmt = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const mobile = !fmt && ev_isMobile();
-  if (fmt && typeof PNG_FORMATS !== 'undefined' && PNG_FORMATS[fmt]) { EV_W = PNG_FORMATS[fmt].vbW; EV_H = PNG_FORMATS[fmt].vbH; }
+  if (fmt && typeof PNG_FORMATS !== 'undefined' && PNG_FORMATS[fmt]) {
+    EV_W = PNG_FORMATS[fmt].vbW;
+    EV_H = fmt === 'square' ? 910 : fmt === 'newsletter' ? 860 : PNG_FORMATS[fmt].vbH;
+  }
   else if (mobile) {
     if (nPan >= 2) { EV_W = 440; EV_H = 0; }           // multiples: 1 col, alto según filas (abajo)
     else { EV_W = 1100; EV_H = 1150; }
@@ -146,7 +149,7 @@ function drawEvo() {
   const yTicksAbs = share ? null : ev_niceTicks(absMax, bigFmt ? 4 : 5);
   if (!share) absMax = yTicksAbs[yTicksAbs.length - 1] || absMax;
 
-  const fsLbl = bigFmt ? 30 : 15, fsTick = bigFmt ? 27 : 13, fsPan = bigFmt ? 30 : 16;
+  const fsLbl = bigFmt ? 26 : 14, fsTick = bigFmt ? 22 : 12.5, fsPan = bigFmt ? 26 : 15;
   const NB = E.bins.length;
   const cats = nivel === 'dom' ? E.doms.map((d, i) => ({ i, name: en ? d.en : d.es, color: EV_DOM_COL[d.es] }))
                                : E.occs.map((o, i) => ({ i, name: en ? o.en : o.es, color: ev_occColors()[i], dom: o.dom }));
@@ -169,7 +172,7 @@ function drawEvo() {
   let legendH = 0;
   if (!single) {
     // leyenda de dominios con wrap: si no entra, baja de fila
-    const fsLeg = bigFmt ? 23 : 12.5, swS = bigFmt ? 20 : 12;
+    const fsLeg = bigFmt ? 21 : 12, swS = bigFmt ? 19 : 11;
     const rowH = bigFmt ? 30 : 20;
     let lx = 14, fila = 0;
     const ly0 = bigFmt ? 30 : 19;
