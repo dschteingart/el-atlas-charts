@@ -146,7 +146,7 @@ function drawEvo() {
   const yTicksAbs = share ? null : ev_niceTicks(absMax, bigFmt ? 4 : 5);
   if (!share) absMax = yTicksAbs[yTicksAbs.length - 1] || absMax;
 
-  const fsLbl = bigFmt ? 24 : 13.5, fsTick = bigFmt ? 21 : 12, fsPan = bigFmt ? 26 : 14.5;
+  const fsLbl = bigFmt ? 26 : 13.5, fsTick = bigFmt ? 22 : 12, fsPan = bigFmt ? 27 : 14.5;
   const NB = E.bins.length;
   const cats = nivel === 'dom' ? E.doms.map((d, i) => ({ i, name: en ? d.en : d.es, color: EV_DOM_COL[d.es] }))
                                : E.occs.map((o, i) => ({ i, name: en ? o.en : o.es, color: ev_occColors()[i], dom: o.dom }));
@@ -191,8 +191,9 @@ function drawEvo() {
 
   let rightSingle = 0;
   if (single) {
-    const wMax = Math.max(...E.doms.map(dm => ev_measure(en ? dm.en : dm.es, fsLbl, 700)));
-    rightSingle = Math.min(Math.ceil(wMax) + (bigFmt ? 26 : 16), Math.round(EV_W * 0.30));
+    const anchoLab = (nombre) => Math.max(...ev_wrapLab(nombre, fsLbl, bigFmt).map(l => ev_measure(l, fsLbl, 700)));
+    const wMax = Math.max(...E.doms.map(dm => anchoLab(en ? dm.en : dm.es)));
+    rightSingle = Math.ceil(wMax) + (bigFmt ? 24 : 16);
   }
   const yTickW = share ? ev_measure('100%', fsTick) : Math.max(...yTicksAbs.map(v => ev_measure(ev_fmtN(v), fsTick)));
   const M = {
@@ -223,6 +224,17 @@ function drawEvo() {
   ev_syncSub();
 }
 
+// nombres largos a dos lineas en el PNG (corte cerca del medio); en pantalla, una
+function ev_wrapLab(nombre, fs, bigFmt) {
+  if (!bigFmt || ev_measure(nombre, fs, 700) <= 190 || nombre.indexOf(' ') < 0) return [nombre];
+  const w = nombre.split(' ');
+  let best = 1, diff = Infinity;
+  for (let i = 1; i < w.length; i++) {
+    const d = Math.abs(ev_measure(w.slice(0, i).join(' '), fs, 700) - ev_measure(w.slice(i).join(' '), fs, 700));
+    if (d < diff) { diff = d; best = i; }
+  }
+  return [w.slice(0, best).join(' '), w.slice(best).join(' ')];
+}
 function ev_measure(t2, s2, w2) {
   if (!ev_measure._c) ev_measure._c = document.createElement('canvas').getContext('2d');
   ev_measure._c.font = (w2 || 400) + ' ' + s2 + 'px "Source Sans 3", system-ui, sans-serif';
@@ -308,22 +320,34 @@ function ev_panel(svg, p, o) {
         return { name: o.en ? dm.en : dm.es, color: EV_DOM_COL[dm.es], lo: lo || 0, hi };
       });
     }
-    const labs = blocks.map(b2 => ({ ...b2, yy: yS((b2.lo + b2.hi) / 2) }))
-      .filter(b2 => b2.hi - b2.lo > 1e-9);
+    const labs = blocks.map(b2 => {
+      const lineas = ev_wrapLab(b2.name, o.fsLbl, o.bigFmt);
+      return { ...b2, lineas, hh: lineas.length * o.fsLbl * 1.08, yy: yS((b2.lo + b2.hi) / 2) };
+    }).filter(b2 => b2.hi - b2.lo > 1e-9);
     labs.sort((a, b) => a.yy - b.yy);
-    const gap = o.fsLbl + 5;
-    for (let i2 = 1; i2 < labs.length; i2++) if (labs[i2].yy - labs[i2 - 1].yy < gap) labs[i2].yy = labs[i2 - 1].yy + gap;
+    const sep = 6;
+    for (let i2 = 1; i2 < labs.length; i2++) {
+      const min = labs[i2 - 1].yy + labs[i2 - 1].hh / 2 + labs[i2].hh / 2 + sep;
+      if (labs[i2].yy < min) labs[i2].yy = min;
+    }
     // que el bloque no se pase del plot: clamp abajo y pasada inversa
     const btm = o.y + o.h;
-    if (labs.length && labs[labs.length - 1].yy > btm) {
-      labs[labs.length - 1].yy = btm;
-      for (let i2 = labs.length - 2; i2 >= 0; i2--)
-        if (labs[i2].yy > labs[i2 + 1].yy - gap) labs[i2].yy = labs[i2 + 1].yy - gap;
+    if (labs.length && labs[labs.length - 1].yy + labs[labs.length - 1].hh / 2 > btm) {
+      labs[labs.length - 1].yy = btm - labs[labs.length - 1].hh / 2;
+      for (let i2 = labs.length - 2; i2 >= 0; i2--) {
+        const max = labs[i2 + 1].yy - labs[i2 + 1].hh / 2 - labs[i2].hh / 2 - sep;
+        if (labs[i2].yy > max) labs[i2].yy = max;
+      }
     }
     labs.forEach(l => {
-      const tx = ev_el('text'); tx.setAttribute('x', o.x + o.w + (o.bigFmt ? 16 : 9)); tx.setAttribute('y', l.yy + o.fsLbl * 0.34);
-      tx.style.cssText = 'font-family:var(--sans);font-size:' + o.fsLbl + 'px;font-weight:700;fill:' + l.color + ';';
-      tx.textContent = l.name; svg.appendChild(tx);
+      const lh = o.fsLbl * 1.08;
+      l.lineas.forEach((linea, li) => {
+        const tx = ev_el('text');
+        tx.setAttribute('x', o.x + o.w + (o.bigFmt ? 16 : 9));
+        tx.setAttribute('y', l.yy - ((l.lineas.length - 1) / 2 - li) * lh + o.fsLbl * 0.34);
+        tx.style.cssText = 'font-family:var(--sans);font-size:' + o.fsLbl + 'px;font-weight:700;fill:' + l.color + ';';
+        tx.textContent = linea; svg.appendChild(tx);
+      });
     });
   }
 }
