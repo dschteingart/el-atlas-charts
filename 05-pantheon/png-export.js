@@ -465,8 +465,8 @@
     const padX = (isNewsletter || isMobilePng) ? 32 : 42;
     const padTop = 36;
     const padBottom = mobileFirst ? 24 : 36;
-    const titleSize = 36, titleLineH = 48;
-    const subSize   = 20, subLineH   = 30;
+    const titleSize = mobileFirst ? 52 : 36, titleLineH = mobileFirst ? 64 : 48;
+    const subSize   = mobileFirst ? 32 : 20, subLineH   = mobileFirst ? 42 : 30;
     const sourceSize = mobileFirst ? 18 : 14, sourceLineH = mobileFirst ? 24 : 20;
     // Firma editorial (convención compartida con el N°3): grande y en 2 renglones en los
     // formatos mobile-first / mapa ("El Atlas" arriba / "Daniel Schteingart" abajo, más chico).

@@ -146,7 +146,7 @@ function drawEvo() {
   const yTicksAbs = share ? null : ev_niceTicks(absMax, bigFmt ? 4 : 5);
   if (!share) absMax = yTicksAbs[yTicksAbs.length - 1] || absMax;
 
-  const fsLbl = bigFmt ? 26 : 13.5, fsTick = bigFmt ? 22 : 12, fsPan = bigFmt ? 27 : 14.5;
+  const fsLbl = bigFmt ? 30 : 15, fsTick = bigFmt ? 27 : 13, fsPan = bigFmt ? 30 : 16;
   const NB = E.bins.length;
   const cats = nivel === 'dom' ? E.doms.map((d, i) => ({ i, name: en ? d.en : d.es, color: EV_DOM_COL[d.es] }))
                                : E.occs.map((o, i) => ({ i, name: en ? o.en : o.es, color: ev_occColors()[i], dom: o.dom }));
@@ -169,7 +169,7 @@ function drawEvo() {
   let legendH = 0;
   if (!single) {
     // leyenda de dominios con wrap: si no entra, baja de fila
-    const fsLeg = bigFmt ? 19 : 11.5, swS = bigFmt ? 18 : 11;
+    const fsLeg = bigFmt ? 23 : 12.5, swS = bigFmt ? 20 : 12;
     const rowH = bigFmt ? 30 : 20;
     let lx = 14, fila = 0;
     const ly0 = bigFmt ? 30 : 19;
@@ -226,7 +226,7 @@ function drawEvo() {
 
 // nombres largos a dos lineas en el PNG (corte cerca del medio); en pantalla, una
 function ev_wrapLab(nombre, fs, bigFmt) {
-  if (!bigFmt || ev_measure(nombre, fs, 700) <= 190 || nombre.indexOf(' ') < 0) return [nombre];
+  if (!bigFmt || ev_measure(nombre, fs, 700) <= fs * 7.4 || nombre.indexOf(' ') < 0) return [nombre];
   const w = nombre.split(' ');
   let best = 1, diff = Infinity;
   for (let i = 1; i < w.length; i++) {
@@ -278,6 +278,12 @@ function ev_panel(svg, p, o) {
     if (ks[ks.length - 1] !== NB - 1) {
       if (NB - 1 - ks[ks.length - 1] < paso) ks.pop();
       ks.push(NB - 1);
+    }
+    // 'Pre-1500' es ancho y va anclado al inicio: si pisa al tick siguiente, se lo saltea
+    if (ks.length > 2 && o.B0 + ks[0] === 0) {
+      const finPre = xS(ks[0]) + ev_measure('Pre-1500', o.fsTick);
+      const iniSig = xS(ks[1]) - ev_measure(lab(o.B0 + ks[1]), o.fsTick) / 2;
+      if (iniSig - finPre < 24) ks.splice(1, 1);
     }
     ks.forEach(kk => {
       const tk = ev_el('text'); tk.setAttribute('x', xS(kk)); tk.setAttribute('y', o.y + o.h + (o.bigFmt ? 34 : 20));
@@ -340,6 +346,14 @@ function ev_panel(svg, p, o) {
       }
     }
     labs.forEach(l => {
+      const midBanda = yS((l.lo + l.hi) / 2);
+      if (Math.abs(l.yy - midBanda) > o.fsLbl * 0.75) {
+        const gl = ev_el('line');
+        gl.setAttribute('x1', o.x + o.w + 2); gl.setAttribute('y1', midBanda);
+        gl.setAttribute('x2', o.x + o.w + (o.bigFmt ? 12 : 6)); gl.setAttribute('y2', l.yy);
+        gl.setAttribute('stroke', l.color); gl.setAttribute('stroke-width', o.bigFmt ? 1.6 : 1);
+        gl.setAttribute('stroke-opacity', 0.55); svg.appendChild(gl);
+      }
       const lh = o.fsLbl * 1.08;
       l.lineas.forEach((linea, li) => {
         const tx = ev_el('text');
