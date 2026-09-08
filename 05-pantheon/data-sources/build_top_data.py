@@ -11,7 +11,7 @@ la tabla; el PNG las intenta con CORS y si no, circulo neutro).
 
 rows = [rank, name_en, name_es(si difiere), isoIdx, occIdx, hpi, birthyear, img,
         genero(P21 wikidata, fallback pantheon), deathyear, ciudad_nac, n_langs,
-        idiomas_10k_anio, vistas_12m_noen en MILES]
+        idiomas_10k_anio, vistas_12m_noen en MILES, ciudad_es(si difiere)]
 Necesita: nombres_es.csv, fotos.csv (build_all_names_fotos.py), fotos_local.csv.
 """
 import io, os, json, re, sys, warnings
@@ -50,6 +50,13 @@ d = d.merge(LU, on='id', how='left')
 d['ciudad'] = d.bplace_name.fillna('').astype(str).replace('nan', '')
 d.loc[d.ciudad == '', 'ciudad'] = d.lugar.fillna('')
 d['ciudad'] = d.ciudad.astype(str).str.replace(r'\s*\([^)]*\)\s*$', '', regex=True).str.strip()   # 'Stagira (ancient city)' -> 'Stagira'
+# ciudad bilingue: labels de P19 (build_ciudades.py); fallback al bplace de Pantheon
+CI = pd.read_csv(os.path.join(DIR, 'ciudades.csv'), encoding='utf-8-sig')[['id', 'ciudad_es', 'ciudad_en']]
+d = d.merge(CI, on='id', how='left')
+d['ciudad_en2'] = d.ciudad_en.fillna('').astype(str)
+d.loc[d.ciudad_en2 == '', 'ciudad_en2'] = d.ciudad
+d['ciudad_es2'] = d.ciudad_es.fillna('').astype(str)
+d.loc[d.ciudad_es2 == '', 'ciudad_es2'] = d.ciudad_en2
 # genero: P21 de Wikidata (build_genero.py) manda; Pantheon trae errores (Favaloro=F)
 GN = pd.read_csv(os.path.join(DIR, 'genero.csv'), encoding='utf-8-sig')[['id', 'genero_wd']]
 d = d.merge(GN, on='id', how='left')
@@ -112,10 +119,11 @@ def fila(x):
             img,
             gen,
             int(x.deathyear) if pd.notna(x.deathyear) else None,
-            x.ciudad or '',
+            x.ciudad_en2 or '',
             int(x.n_langs) if pd.notna(x.n_langs) else 0,
             int(x.idiomas_10k_anio) if pd.notna(x.idiomas_10k_anio) else 0,
-            int(round(x.vistas_12m_noen / 1000)) if pd.notna(x.vistas_12m_noen) else 0]
+            int(round(x.vistas_12m_noen / 1000)) if pd.notna(x.vistas_12m_noen) else 0,
+            x.ciudad_es2 if x.ciudad_es2 and x.ciudad_es2 != x.ciudad_en2 else '']
 
 rows = [fila(x) for _, x in d.iterrows()]
 head = {'isoMeta': isoMeta, 'occs': occMeta,
@@ -124,7 +132,7 @@ head = {'isoMeta': isoMeta, 'occs': occMeta,
 
 p1 = os.path.join(CHARTS, 'data-top.js')
 io.open(p1, 'w', encoding='utf-8', newline='').write(
-    '// Ranking de la fama: meta (base completa) + top %d. rows=[rank,name_en,name_es(si difiere),isoIdx,occIdx,hpi,birthyear,img,genero,deathyear,ciudad,n_langs,idiomas10k,vistas12m_miles]\n' % CORTE
+    '// Ranking de la fama: meta (base completa) + top %d. rows=[rank,name_en,name_es(si difiere),isoIdx,occIdx,hpi,birthyear,img,genero,deathyear,ciudad_en,n_langs,idiomas10k,vistas12m_miles,ciudad_es(si difiere)]\n' % CORTE
     + '// img: "id.jpg" = local en fotos/; otro texto = archivo de Commons (hotlink).\n'
     + 'window.TOPFIGS=' + json.dumps(head, ensure_ascii=False, separators=(',', ':')) + ';\n')
 p2 = os.path.join(CHARTS, 'data-top-full.js')

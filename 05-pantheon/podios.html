@@ -135,7 +135,7 @@
 <script src="../lib/regions.js"></script>
 <script src="./i18n-issue.js?v=16"></script>
 <script src="./utils.js?v=4"></script>
-<script src="./data-top.js?v=9"></script>
+<script src="./data-top.js?v=10"></script>
 <script>
 const D = window.TOPFIGS;
 const en = () => (typeof LANG !== 'undefined' && LANG === 'en');
@@ -585,7 +585,8 @@ function ttHtml(r) {
   const m = r[3] >= 0 ? D.isoMeta[r[3]] : null;
   const o = D.occs[r[4]];
   const anios = r[6] == null ? '' : (r[9] ? fmtAnio(r[6]) + '\u2013' + fmtAnio(r[9]) : tpl('tt-nacido', { y: fmtAnio(r[6]) }));
-  const lugar = [r[10], m ? (en() ? m.en : m.es) : ''].filter(Boolean).join(', ');
+  const ciudad = en() ? r[10] : (r[14] || r[10]);
+  const lugar = [ciudad, m ? (en() ? m.en : m.es) : ''].filter(Boolean).join(', ');
   const linea2 = [anios, lugar].filter(Boolean).join(' \u00b7 ');
   const compact = v => new Intl.NumberFormat(loc(), { notation: 'compact', maximumFractionDigits: 1 }).format(v);
   let h = '<strong>' + esc(nombre(r)) + '</strong>';
@@ -619,7 +620,7 @@ function ttHtml(r) {
 function cargarBaseCompleta() {
   if (window.__fullReq) return; window.__fullReq = true;
   const sc = document.createElement('script');
-  sc.src = './data-top-full.js?v=3';
+  sc.src = './data-top-full.js?v=4';
   sc.onload = () => {
     if (window.TOPFIGS_REST) { D.rows = D.rows.concat(window.TOPFIGS_REST); window.__full = true; render(); }
   };
