@@ -61,23 +61,23 @@ function drawGenero() {
   // grid + ticks
   xticks.forEach(v => {
     const x = xS(v);
-    const gl = gn_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x); gl.setAttribute('y1', top); gl.setAttribute('y2', top + plotH); gl.style.stroke = 'var(--grid)'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
-    const tk = gn_el('text'); tk.setAttribute('x', x); tk.setAttribute('y', top + plotH + (bigFmt ? 30 : 18)); tk.setAttribute('text-anchor', 'middle'); tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = 'var(--sans)'; tk.style.fill = 'var(--ink-muted)'; tk.textContent = v + '%'; svg.appendChild(tk);
+    const gl = gn_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x); gl.setAttribute('y1', top); gl.setAttribute('y2', top + plotH); gl.style.stroke = '#ECE7D8'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
+    const tk = gn_el('text'); tk.setAttribute('x', x); tk.setAttribute('y', top + plotH + (bigFmt ? 30 : 18)); tk.setAttribute('text-anchor', 'middle'); tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tk.style.fill = '#8A8579'; tk.textContent = v + '%'; svg.appendChild(tk);
   });
   // ref 50% (paridad)
   const xPar = xS(50);
-  const pr = gn_el('line'); pr.setAttribute('x1', xPar); pr.setAttribute('x2', xPar); pr.setAttribute('y1', top - (bigFmt ? 4 : 2)); pr.setAttribute('y2', top + plotH); pr.style.stroke = 'var(--rule-strong)'; pr.setAttribute('stroke-width', bigFmt ? 1.6 : 1); pr.setAttribute('stroke-dasharray', bigFmt ? '5 5' : '3 3'); svg.appendChild(pr);
-  const prt = gn_el('text'); prt.setAttribute('x', xPar); prt.setAttribute('y', top - (bigFmt ? 12 : 7)); prt.setAttribute('text-anchor', 'middle'); prt.style.fontSize = fsTick + 'px'; prt.style.fontFamily = 'var(--sans)'; prt.style.fill = 'var(--ink-muted)'; prt.textContent = en ? 'parity' : 'paridad'; svg.appendChild(prt);
+  const pr = gn_el('line'); pr.setAttribute('x1', xPar); pr.setAttribute('x2', xPar); pr.setAttribute('y1', top - (bigFmt ? 4 : 2)); pr.setAttribute('y2', top + plotH); pr.style.stroke = '#C9C2B2'; pr.setAttribute('stroke-width', bigFmt ? 1.6 : 1); pr.setAttribute('stroke-dasharray', bigFmt ? '5 5' : '3 3'); svg.appendChild(pr);
+  const prt = gn_el('text'); prt.setAttribute('x', xPar); prt.setAttribute('y', top - (bigFmt ? 12 : 7)); prt.setAttribute('text-anchor', 'middle'); prt.style.fontSize = fsTick + 'px'; prt.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; prt.style.fill = '#8A8579'; prt.textContent = en ? 'parity' : 'paridad'; svg.appendChild(prt);
 
   // filas (dumbbell)
   const rDot = bigFmt ? 13 : 7.5;
   rows.forEach((r, i) => {
     const cy = top + i * rowH + rowH / 2;
     // etiqueta dominio
-    const lb = gn_el('text'); lb.setAttribute('x', left - (bigFmt ? 14 : 8)); lb.setAttribute('y', cy + fsLbl * 0.34); lb.setAttribute('text-anchor', 'end'); lb.style.fontSize = fsLbl + 'px'; lb.style.fontFamily = 'var(--sans)'; lb.style.fontWeight = '600'; lb.style.fill = 'var(--ink)'; lb.setAttribute('data-gn', r.key); lb.textContent = gn_label(r); svg.appendChild(lb);
+    const lb = gn_el('text'); lb.setAttribute('x', left - (bigFmt ? 14 : 8)); lb.setAttribute('y', cy + fsLbl * 0.34); lb.setAttribute('text-anchor', 'end'); lb.style.fontSize = fsLbl + 'px'; lb.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; lb.style.fontWeight = '600'; lb.style.fill = '#1A1A1A'; lb.setAttribute('data-gn', r.key); lb.textContent = gn_label(r); svg.appendChild(lb);
     // línea conectora
     const xw = xS(r.world_fem), xl = xS(r.latam_fem);
-    const cn = gn_el('line'); cn.setAttribute('x1', xw); cn.setAttribute('x2', xl); cn.setAttribute('y1', cy); cn.setAttribute('y2', cy); cn.style.stroke = 'var(--rule-strong)'; cn.setAttribute('stroke-width', bigFmt ? 3 : 2); svg.appendChild(cn);
+    const cn = gn_el('line'); cn.setAttribute('x1', xw); cn.setAttribute('x2', xl); cn.setAttribute('y1', cy); cn.setAttribute('y2', cy); cn.style.stroke = '#C9C2B2'; cn.setAttribute('stroke-width', bigFmt ? 3 : 2); svg.appendChild(cn);
     // dot mundo
     const dw = gn_el('circle'); dw.setAttribute('cx', xw); dw.setAttribute('cy', cy); dw.setAttribute('r', rDot); dw.setAttribute('fill', GN_WLD); dw.setAttribute('data-gn', r.key); dw.style.cursor = 'pointer'; svg.appendChild(dw);
     // dot LatAm
@@ -87,12 +87,12 @@ function drawGenero() {
     const loX = loIsW ? xw : xl, hiX = loIsW ? xl : xw;
     const loV = loIsW ? r.world_fem : r.latam_fem, hiV = loIsW ? r.latam_fem : r.world_fem;
     const loCol = loIsW ? GN_WLD : GN_LAT, hiCol = loIsW ? GN_LAT : GN_WLD;
-    const vlo = gn_el('text'); vlo.setAttribute('x', loX - rDot - (bigFmt ? 10 : 6)); vlo.setAttribute('y', cy + fsVal * 0.34); vlo.setAttribute('text-anchor', 'end'); vlo.style.fontSize = fsVal + 'px'; vlo.style.fontFamily = 'var(--sans)'; vlo.style.fontWeight = '700'; vlo.style.fill = loCol; vlo.style.fontVariantNumeric = 'tabular-nums'; vlo.textContent = gn_pct(loV); svg.appendChild(vlo);
-    const vhi = gn_el('text'); vhi.setAttribute('x', hiX + rDot + (bigFmt ? 10 : 6)); vhi.setAttribute('y', cy + fsVal * 0.34); vhi.setAttribute('text-anchor', 'start'); vhi.style.fontSize = fsVal + 'px'; vhi.style.fontFamily = 'var(--sans)'; vhi.style.fontWeight = '700'; vhi.style.fill = hiCol; vhi.style.fontVariantNumeric = 'tabular-nums'; vhi.textContent = gn_pct(hiV); svg.appendChild(vhi);
+    const vlo = gn_el('text'); vlo.setAttribute('x', loX - rDot - (bigFmt ? 10 : 6)); vlo.setAttribute('y', cy + fsVal * 0.34); vlo.setAttribute('text-anchor', 'end'); vlo.style.fontSize = fsVal + 'px'; vlo.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; vlo.style.fontWeight = '700'; vlo.style.fill = loCol; vlo.style.fontVariantNumeric = 'tabular-nums'; vlo.textContent = gn_pct(loV); svg.appendChild(vlo);
+    const vhi = gn_el('text'); vhi.setAttribute('x', hiX + rDot + (bigFmt ? 10 : 6)); vhi.setAttribute('y', cy + fsVal * 0.34); vhi.setAttribute('text-anchor', 'start'); vhi.style.fontSize = fsVal + 'px'; vhi.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; vhi.style.fontWeight = '700'; vhi.style.fill = hiCol; vhi.style.fontVariantNumeric = 'tabular-nums'; vhi.textContent = gn_pct(hiV); svg.appendChild(vhi);
   });
 
   // título eje X
-  const axt = gn_el('text'); axt.setAttribute('x', left + plotW / 2); axt.setAttribute('y', GN_H - (bigFmt ? 16 : 8)); axt.setAttribute('text-anchor', 'middle'); axt.style.fontSize = fsAxis + 'px'; axt.style.fontFamily = 'var(--sans)'; axt.style.fill = 'var(--ink-muted)'; axt.textContent = en ? '% of notable figures who are women' : '% de las figuras célebres que son mujeres'; svg.appendChild(axt);
+  const axt = gn_el('text'); axt.setAttribute('x', left + plotW / 2); axt.setAttribute('y', GN_H - (bigFmt ? 16 : 8)); axt.setAttribute('text-anchor', 'middle'); axt.style.fontSize = fsAxis + 'px'; axt.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; axt.style.fill = '#8A8579'; axt.textContent = en ? '% of notable figures who are women' : '% de las figuras célebres que son mujeres'; svg.appendChild(axt);
 
   // leyenda (arriba)
   const legItems = [{ c: GN_LAT, t: en ? 'Latin America' : 'América Latina' }, { c: GN_WLD, t: en ? 'World' : 'Mundo' }];
@@ -102,7 +102,7 @@ function drawGenero() {
   let cx = left + plotW / 2 - totalW / 2; const lgY = bigFmt ? 40 : 24;
   legItems.forEach((it, i) => {
     const dc = gn_el('circle'); dc.setAttribute('cx', cx + swR); dc.setAttribute('cy', lgY); dc.setAttribute('r', swR); dc.setAttribute('fill', it.c); svg.appendChild(dc);
-    const tx = gn_el('text'); tx.setAttribute('x', cx + swR * 2 + gapTxt); tx.setAttribute('y', lgY + fsLeg * 0.34); tx.style.fontSize = fsLeg + 'px'; tx.style.fontFamily = 'var(--sans)'; tx.style.fontWeight = '600'; tx.style.fill = 'var(--ink-soft)'; tx.textContent = it.t; svg.appendChild(tx);
+    const tx = gn_el('text'); tx.setAttribute('x', cx + swR * 2 + gapTxt); tx.setAttribute('y', lgY + fsLeg * 0.34); tx.style.fontSize = fsLeg + 'px'; tx.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tx.style.fontWeight = '600'; tx.style.fill = '#4A4A4A'; tx.textContent = it.t; svg.appendChild(tx);
     cx += widths[i] + gapItem;
   });
 

@@ -706,7 +706,7 @@ function drawScatter() {
   bg.setAttribute('y', S_MARGIN.top);
   bg.setAttribute('width', S_PLOT_W);
   bg.setAttribute('height', S_PLOT_H);
-  bg.setAttribute('fill', 'var(--bg)');
+  bg.setAttribute('fill', '#FAF8F3');
   svg.appendChild(bg);
 
   // === Grid + ticks X ===
@@ -765,7 +765,7 @@ function drawScatter() {
     const sep = s_ns('line');
     sep.setAttribute('x1', S_MARGIN.left); sep.setAttribute('x2', S_MARGIN.left + S_PLOT_W);
     sep.setAttribute('y1', ySep); sep.setAttribute('y2', ySep);
-    sep.setAttribute('stroke', 'var(--rule-strong)'); sep.setAttribute('stroke-width', 1);
+    sep.setAttribute('stroke', '#C9C2B2'); sep.setAttribute('stroke-width', 1);
     sep.setAttribute('stroke-dasharray', '3 4'); sep.setAttribute('opacity', 0.7);
     axisG.appendChild(sep);
     const z = s_ns('text');
@@ -829,7 +829,7 @@ function drawScatter() {
   // porque el modelo es en ln(gdp), pero el eje es lineal.
   const regPath = s_ns('path');
   regPath.setAttribute('class', 's-regression');
-  regPath.setAttribute('stroke', 'var(--regression)');
+  regPath.setAttribute('stroke', '#1A1A1A');
   regPath.setAttribute('stroke-width', 1.5);
   regPath.setAttribute('stroke-opacity', 0.55);
   regPath.setAttribute('fill', 'none');
@@ -1087,7 +1087,7 @@ function drawScatter() {
     txt.setAttribute('fill', REGION_LABEL_COLORS[l.region] || '#444');
     // INLINE (no atributo): la clase .s-country-label pisaría el font-size.
     txt.style.fontSize = SIZES.label + 'px';
-    txt.style.stroke = 'var(--bg)';
+    txt.style.stroke = '#FAF8F3';
     txt.style.strokeWidth = labelHalo + 'px';
     txt.style.paintOrder = 'stroke';
     txt.style.strokeLinejoin = 'round';

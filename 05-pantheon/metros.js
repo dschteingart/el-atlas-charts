@@ -67,23 +67,23 @@ function drawMetros() {
 
   xticks.forEach(v => {
     const x = xS(v);
-    const gl = mt_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x); gl.setAttribute('y1', top); gl.setAttribute('y2', top + plotH); gl.style.stroke = 'var(--grid)'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
-    const tk = mt_el('text'); tk.setAttribute('x', x); tk.setAttribute('y', top + plotH + (bigFmt ? 28 : 16)); tk.setAttribute('text-anchor', 'middle'); tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = 'var(--sans)'; tk.style.fill = 'var(--ink-muted)'; tk.textContent = mt_num(v); svg.appendChild(tk);
+    const gl = mt_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x); gl.setAttribute('y1', top); gl.setAttribute('y2', top + plotH); gl.style.stroke = '#ECE7D8'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
+    const tk = mt_el('text'); tk.setAttribute('x', x); tk.setAttribute('y', top + plotH + (bigFmt ? 28 : 16)); tk.setAttribute('text-anchor', 'middle'); tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tk.style.fill = '#8A8579'; tk.textContent = mt_num(v); svg.appendChild(tk);
   });
 
   const g = mt_el('g'); svg.appendChild(g);
   rows.forEach((r, i) => {
     const cy = top + i * rowH + rowH / 2, isLat = r.lat_am, col = isLat ? MT_LAT_COL : MT_OTH_COL;
     const lb = mt_el('text'); lb.setAttribute('x', left - (bigFmt ? 12 : 7)); lb.setAttribute('y', cy + fsLbl * 0.34); lb.setAttribute('text-anchor', 'end');
-    lb.style.fontSize = fsLbl + 'px'; lb.style.fontFamily = 'var(--sans)'; lb.style.fontWeight = isLat ? '700' : '500'; lb.style.fill = isLat ? 'var(--ink)' : 'var(--ink-soft)';
+    lb.style.fontSize = fsLbl + 'px'; lb.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; lb.style.fontWeight = isLat ? '700' : '500'; lb.style.fill = isLat ? '#1A1A1A' : '#4A4A4A';
     lb.setAttribute('data-mt', i); lb.textContent = r.city; g.appendChild(lb);
     const bw = Math.max(2, xS(r.n) - left);
     const bar = mt_el('rect'); bar.setAttribute('x', left); bar.setAttribute('y', cy - barH / 2); bar.setAttribute('width', bw); bar.setAttribute('height', barH); bar.setAttribute('rx', bigFmt ? 3 : 2); bar.setAttribute('fill', col); bar.setAttribute('data-mt', i); bar.style.cursor = 'pointer'; g.appendChild(bar);
-    const vt = mt_el('text'); vt.setAttribute('x', left + bw + (bigFmt ? 10 : 6)); vt.setAttribute('y', cy + fsVal * 0.34); vt.style.fontSize = fsVal + 'px'; vt.style.fontFamily = 'var(--sans)'; vt.style.fontWeight = '700'; vt.style.fill = 'var(--ink)'; vt.style.fontVariantNumeric = 'tabular-nums'; vt.setAttribute('data-mt', i); vt.textContent = mt_num(r.n); g.appendChild(vt);
+    const vt = mt_el('text'); vt.setAttribute('x', left + bw + (bigFmt ? 10 : 6)); vt.setAttribute('y', cy + fsVal * 0.34); vt.style.fontSize = fsVal + 'px'; vt.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; vt.style.fontWeight = '700'; vt.style.fill = '#1A1A1A'; vt.style.fontVariantNumeric = 'tabular-nums'; vt.setAttribute('data-mt', i); vt.textContent = mt_num(r.n); g.appendChild(vt);
   });
 
   // título eje X
-  const axt = mt_el('text'); axt.setAttribute('x', left + plotW / 2); axt.setAttribute('y', top + plotH + (bigFmt ? 54 : 34)); axt.setAttribute('text-anchor', 'middle'); axt.style.fontSize = fsAxis + 'px'; axt.style.fontFamily = 'var(--sans)'; axt.style.fill = 'var(--ink-muted)';
+  const axt = mt_el('text'); axt.setAttribute('x', left + plotW / 2); axt.setAttribute('y', top + plotH + (bigFmt ? 54 : 34)); axt.setAttribute('text-anchor', 'middle'); axt.style.fontSize = fsAxis + 'px'; axt.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; axt.style.fill = '#8A8579';
   axt.textContent = en ? 'Notable people born in the metro area' : 'Figuras célebres nacidas en el área metropolitana'; svg.appendChild(axt);
 
   // leyenda (solo en vista Mundo, donde hay LatAm vs resto)
@@ -96,7 +96,7 @@ function drawMetros() {
     let cx = left + plotW / 2 - totalW / 2; if (cx < 8) cx = 8;
     items.forEach(it => {
       const sw = mt_el('rect'); sw.setAttribute('x', cx); sw.setAttribute('y', legY - swR); sw.setAttribute('width', swR * 2); sw.setAttribute('height', swR * 2); sw.setAttribute('rx', 3); sw.setAttribute('fill', it.c); svg.appendChild(sw);
-      const tx = mt_el('text'); tx.setAttribute('x', cx + swR * 2 + gapTxt); tx.setAttribute('y', legY + fsLeg * 0.34); tx.style.fontSize = fsLeg + 'px'; tx.style.fontFamily = 'var(--sans)'; tx.style.fontWeight = '500'; tx.style.fill = 'var(--ink-soft)'; tx.textContent = it.l; svg.appendChild(tx);
+      const tx = mt_el('text'); tx.setAttribute('x', cx + swR * 2 + gapTxt); tx.setAttribute('y', legY + fsLeg * 0.34); tx.style.fontSize = fsLeg + 'px'; tx.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tx.style.fontWeight = '500'; tx.style.fill = '#4A4A4A'; tx.textContent = it.l; svg.appendChild(tx);
       cx += it.w + gapItem;
     });
   }
@@ -113,12 +113,12 @@ function mt_wireHover(svg, rows) {
       mt_emph(svg, k);
       const di = r.dom.indexOf(Math.max(...r.dom)); const dom = (METROS.doms[di] && MT_DOM_SHORT[METROS.doms[di]]) ? MT_DOM_SHORT[METROS.doms[di]][en ? 'en' : 'es'] : '';
       const parts = (r.parts || []).map(mt_part).filter(p => p && p !== r.city).slice(0, 3);
-      tip.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">${r.city} <span style="color:var(--ink-muted);font-weight:400;">· ${r.country}</span></div>`
+      tip.innerHTML = `<div style="font-weight:600;margin-bottom:2px;">${r.city} <span style="color:#8A8579;font-weight:400;">· ${r.country}</span></div>`
         + `<div style="line-height:1.55;">`
         + `<strong style="font-variant-numeric:tabular-nums;">${mt_num(r.n)}</strong> ${en ? 'notable people' : 'figuras célebres'}<br>`
-        + (dom ? `<span style="color:var(--ink-muted);">${en ? 'mostly' : 'sobre todo'} ${dom}</span><br>` : '')
+        + (dom ? `<span style="color:#8A8579;">${en ? 'mostly' : 'sobre todo'} ${dom}</span><br>` : '')
         + `${en ? 'most famous' : 'la más célebre'}: <strong>${r.top}</strong>`
-        + (parts.length ? `<br><span style="color:var(--ink-muted);font-size:11px;">${en ? 'incl.' : 'incluye'} ${parts.join(', ')}</span>` : '')
+        + (parts.length ? `<br><span style="color:#8A8579;font-size:11px;">${en ? 'incl.' : 'incluye'} ${parts.join(', ')}</span>` : '')
         + `</div>`;
       tip.style.display = 'block'; tip.style.opacity = '1'; mt_placeTip(tip, ev, svg);
     });

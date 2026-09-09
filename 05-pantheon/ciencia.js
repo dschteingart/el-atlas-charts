@@ -65,17 +65,17 @@ function drawCiencia() {
   const yticks = (typeof niceLog10Ticks === 'function') ? niceLog10Ticks(ymin, ymax) : [0.1, 1, 10];
   xticks.forEach(v => {
     const x = xS(v); if (x < M.left - 1 || x > M.left + PW + 1) return;
-    const gl = ci_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x); gl.setAttribute('y1', M.top); gl.setAttribute('y2', M.top + PH); gl.style.stroke = 'var(--grid)'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
-    const tk = ci_el('text'); tk.setAttribute('x', x); tk.setAttribute('y', M.top + PH + (bigFmt ? 32 : 18)); tk.setAttribute('text-anchor', 'middle'); tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = 'var(--sans)'; tk.style.fill = 'var(--ink-muted)'; tk.textContent = (typeof fmtTickGDP === 'function') ? fmtTickGDP(v) : ('$' + v); svg.appendChild(tk);
+    const gl = ci_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x); gl.setAttribute('y1', M.top); gl.setAttribute('y2', M.top + PH); gl.style.stroke = '#ECE7D8'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
+    const tk = ci_el('text'); tk.setAttribute('x', x); tk.setAttribute('y', M.top + PH + (bigFmt ? 32 : 18)); tk.setAttribute('text-anchor', 'middle'); tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tk.style.fill = '#8A8579'; tk.textContent = (typeof fmtTickGDP === 'function') ? fmtTickGDP(v) : ('$' + v); svg.appendChild(tk);
   });
   yticks.forEach(v => {
     const y = yS(v); if (y < M.top - 1 || y > M.top + PH + 1) return;
-    const gl = ci_el('line'); gl.setAttribute('x1', M.left); gl.setAttribute('x2', M.left + PW); gl.setAttribute('y1', y); gl.setAttribute('y2', y); gl.style.stroke = 'var(--grid)'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
-    const tk = ci_el('text'); tk.setAttribute('x', M.left - (bigFmt ? 12 : 8)); tk.setAttribute('y', y + fsTick * 0.34); tk.setAttribute('text-anchor', 'end'); tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = 'var(--sans)'; tk.style.fill = 'var(--ink-muted)'; tk.textContent = v >= 1 ? v : v.toString().replace('.', en ? '.' : ','); svg.appendChild(tk);
+    const gl = ci_el('line'); gl.setAttribute('x1', M.left); gl.setAttribute('x2', M.left + PW); gl.setAttribute('y1', y); gl.setAttribute('y2', y); gl.style.stroke = '#ECE7D8'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
+    const tk = ci_el('text'); tk.setAttribute('x', M.left - (bigFmt ? 12 : 8)); tk.setAttribute('y', y + fsTick * 0.34); tk.setAttribute('text-anchor', 'end'); tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tk.style.fill = '#8A8579'; tk.textContent = v >= 1 ? v : v.toString().replace('.', en ? '.' : ','); svg.appendChild(tk);
   });
   // títulos de eje
-  const xt = ci_el('text'); xt.setAttribute('x', M.left + PW / 2); xt.setAttribute('y', CI_H - (bigFmt ? 26 : 14)); xt.setAttribute('text-anchor', 'middle'); xt.style.fontSize = fsAxis + 'px'; xt.style.fontFamily = 'var(--sans)'; xt.style.fill = 'var(--ink-muted)'; xt.textContent = en ? 'GDP per capita (log)' : 'PIB per cápita (log)'; svg.appendChild(xt);
-  const yt = ci_el('text'); yt.setAttribute('transform', `translate(${bigFmt ? 22 : 15}, ${M.top + PH / 2}) rotate(-90)`); yt.setAttribute('text-anchor', 'middle'); yt.style.fontSize = fsAxis + 'px'; yt.style.fontFamily = 'var(--sans)'; yt.style.fill = 'var(--ink-muted)'; yt.textContent = en ? 'Notable scientists per million (log)' : 'Científicos célebres por millón (log)'; svg.appendChild(yt);
+  const xt = ci_el('text'); xt.setAttribute('x', M.left + PW / 2); xt.setAttribute('y', CI_H - (bigFmt ? 26 : 14)); xt.setAttribute('text-anchor', 'middle'); xt.style.fontSize = fsAxis + 'px'; xt.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; xt.style.fill = '#8A8579'; xt.textContent = en ? 'GDP per capita (log)' : 'PIB per cápita (log)'; svg.appendChild(xt);
+  const yt = ci_el('text'); yt.setAttribute('transform', `translate(${bigFmt ? 22 : 15}, ${M.top + PH / 2}) rotate(-90)`); yt.setAttribute('text-anchor', 'middle'); yt.style.fontSize = fsAxis + 'px'; yt.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; yt.style.fill = '#8A8579'; yt.textContent = en ? 'Notable scientists per million (log)' : 'Científicos célebres por millón (log)'; svg.appendChild(yt);
 
   // línea de ajuste (log10): el modelo se ajustó en log natural; convertimos.
   // log(pm) = b0 + b1*log(gdp)  (log natural) → pm = exp(b0)*gdp^b1
@@ -83,11 +83,11 @@ function drawCiencia() {
   const fitY = (gdp) => Math.exp(b0 + b1 * Math.log(gdp));
   const lx0 = xmin, lx1 = xmax;
   const fl = ci_el('line'); fl.setAttribute('x1', xS(lx0)); fl.setAttribute('y1', yS(fitY(lx0))); fl.setAttribute('x2', xS(lx1)); fl.setAttribute('y2', yS(fitY(lx1)));
-  fl.style.stroke = 'var(--ink)'; fl.setAttribute('stroke-width', bigFmt ? 2 : 1.4); fl.setAttribute('stroke-dasharray', bigFmt ? '8 6' : '5 4'); fl.setAttribute('opacity', 0.6); svg.appendChild(fl);
+  fl.style.stroke = '#1A1A1A'; fl.setAttribute('stroke-width', bigFmt ? 2 : 1.4); fl.setAttribute('stroke-dasharray', bigFmt ? '8 6' : '5 4'); fl.setAttribute('opacity', 0.6); svg.appendChild(fl);
   // etiqueta de la línea
   const flt = ci_el('text'); const lxMid = Math.exp((Math.log(lx0) + Math.log(lx1)) / 2);
   flt.setAttribute('x', xS(lxMid * 1.4)); flt.setAttribute('y', yS(fitY(lxMid * 1.4)) - (bigFmt ? 14 : 9)); flt.setAttribute('text-anchor', 'start');
-  flt.style.fontSize = fsLab + 'px'; flt.style.fontFamily = 'var(--sans)'; flt.style.fontStyle = 'italic'; flt.style.fill = 'var(--ink-muted)';
+  flt.style.fontSize = fsLab + 'px'; flt.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; flt.style.fontStyle = 'italic'; flt.style.fill = '#8A8579';
   flt.textContent = en ? 'expected for income level' : 'lo esperado para su PIB'; svg.appendChild(flt);
 
   // dots: primero resto (gris), luego LatAm (terracota) encima
@@ -112,11 +112,11 @@ function drawCiencia() {
     const lx = l.x + l.r + (bigFmt ? 9 : 5);
     const anchorRight = lx + ci_measure(l.name, fsLab, l.latam ? 700 : 500) > M.left + PW;
     const tx = ci_el('text'); tx.setAttribute('x', anchorRight ? l.x - l.r - (bigFmt ? 9 : 5) : lx); tx.setAttribute('y', l.ly + fsLab * 0.34); tx.setAttribute('text-anchor', anchorRight ? 'end' : 'start');
-    tx.style.fontSize = fsLab + 'px'; tx.style.fontFamily = 'var(--sans)'; tx.style.fontWeight = l.latam ? '700' : '500'; tx.style.fill = l.latam ? CI_LATAM : 'var(--ink-muted)';
+    tx.style.fontSize = fsLab + 'px'; tx.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tx.style.fontWeight = l.latam ? '700' : '500'; tx.style.fill = l.latam ? CI_LATAM : '#8A8579';
     tx.setAttribute('paint-order', 'stroke'); tx.setAttribute('stroke', '#FAF8F3'); tx.setAttribute('stroke-width', bigFmt ? 4 : 2.5); tx.setAttribute('stroke-linejoin', 'round');
     tx.textContent = l.name; labG.appendChild(tx);
     // línea guía si se corrió
-    if (Math.abs(l.ly - l.y) > 2) { const gl = ci_el('line'); gl.setAttribute('x1', l.x); gl.setAttribute('y1', l.y); gl.setAttribute('x2', anchorRight ? l.x - l.r : l.x + l.r); gl.setAttribute('y2', l.ly - fsLab * 0.2); gl.style.stroke = l.latam ? CI_LATAM : 'var(--ink-muted)'; gl.setAttribute('stroke-width', bigFmt ? 1.2 : 0.8); gl.setAttribute('opacity', 0.45); labG.insertBefore(gl, labG.firstChild); }
+    if (Math.abs(l.ly - l.y) > 2) { const gl = ci_el('line'); gl.setAttribute('x1', l.x); gl.setAttribute('y1', l.y); gl.setAttribute('x2', anchorRight ? l.x - l.r : l.x + l.r); gl.setAttribute('y2', l.ly - fsLab * 0.2); gl.style.stroke = l.latam ? CI_LATAM : '#8A8579'; gl.setAttribute('stroke-width', bigFmt ? 1.2 : 0.8); gl.setAttribute('opacity', 0.45); labG.insertBefore(gl, labG.firstChild); }
   });
 
   const interactive = !isPng /* tooltips tambien en touch (criterio 6e) */;

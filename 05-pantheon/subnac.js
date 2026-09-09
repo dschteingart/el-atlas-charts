@@ -65,23 +65,23 @@ function drawSubnac() {
 
   xticks.forEach(v => {
     const x = xS(v);
-    const gl = sb_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x); gl.setAttribute('y1', top); gl.setAttribute('y2', top + plotH); gl.style.stroke = 'var(--grid)'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
-    const tk = sb_el('text'); tk.setAttribute('x', x); tk.setAttribute('y', top + plotH + (bigFmt ? 28 : 16)); tk.setAttribute('text-anchor', 'middle'); tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = 'var(--sans)'; tk.style.fill = 'var(--ink-muted)'; tk.textContent = v + '%'; svg.appendChild(tk);
+    const gl = sb_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x); gl.setAttribute('y1', top); gl.setAttribute('y2', top + plotH); gl.style.stroke = '#ECE7D8'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
+    const tk = sb_el('text'); tk.setAttribute('x', x); tk.setAttribute('y', top + plotH + (bigFmt ? 28 : 16)); tk.setAttribute('text-anchor', 'middle'); tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tk.style.fill = '#8A8579'; tk.textContent = v + '%'; svg.appendChild(tk);
   });
 
   const g = sb_el('g'); svg.appendChild(g);
   rows.forEach((r, i) => {
     const cy = top + i * rowH + rowH / 2, isLat = SB_LAT.has(r.iso), col = isLat ? SB_LAT_COL : SB_OTH_COL;
     const lb = sb_el('text'); lb.setAttribute('x', left - (bigFmt ? 12 : 7)); lb.setAttribute('y', cy + fsLbl * 0.34); lb.setAttribute('text-anchor', 'end');
-    lb.style.fontSize = fsLbl + 'px'; lb.style.fontFamily = 'var(--sans)'; lb.style.fontWeight = isLat ? '700' : '500'; lb.style.fill = isLat ? 'var(--ink)' : 'var(--ink-soft)';
+    lb.style.fontSize = fsLbl + 'px'; lb.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; lb.style.fontWeight = isLat ? '700' : '500'; lb.style.fill = isLat ? '#1A1A1A' : '#4A4A4A';
     lb.setAttribute('data-sb', r.iso); lb.textContent = sb_name(r); g.appendChild(lb);
     const bw = Math.max(2, xS(r.topShare) - left);
     const bar = sb_el('rect'); bar.setAttribute('x', left); bar.setAttribute('y', cy - barH / 2); bar.setAttribute('width', bw); bar.setAttribute('height', barH); bar.setAttribute('rx', bigFmt ? 3 : 2); bar.setAttribute('fill', col); bar.setAttribute('data-sb', r.iso); bar.style.cursor = 'pointer'; g.appendChild(bar);
-    const vt = sb_el('text'); vt.setAttribute('x', left + bw + (bigFmt ? 10 : 6)); vt.setAttribute('y', cy + fsVal * 0.34); vt.style.fontSize = fsVal + 'px'; vt.style.fontFamily = 'var(--sans)'; vt.style.fontWeight = '700'; vt.style.fill = 'var(--ink)'; vt.style.fontVariantNumeric = 'tabular-nums'; vt.setAttribute('data-sb', r.iso); vt.textContent = sb_pct(r.topShare); g.appendChild(vt);
+    const vt = sb_el('text'); vt.setAttribute('x', left + bw + (bigFmt ? 10 : 6)); vt.setAttribute('y', cy + fsVal * 0.34); vt.style.fontSize = fsVal + 'px'; vt.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; vt.style.fontWeight = '700'; vt.style.fill = '#1A1A1A'; vt.style.fontVariantNumeric = 'tabular-nums'; vt.setAttribute('data-sb', r.iso); vt.textContent = sb_pct(r.topShare); g.appendChild(vt);
   });
 
   // título eje X
-  const axt = sb_el('text'); axt.setAttribute('x', left + plotW / 2); axt.setAttribute('y', top + plotH + (bigFmt ? 54 : 34)); axt.setAttribute('text-anchor', 'middle'); axt.style.fontSize = fsAxis + 'px'; axt.style.fontFamily = 'var(--sans)'; axt.style.fill = 'var(--ink-muted)';
+  const axt = sb_el('text'); axt.setAttribute('x', left + plotW / 2); axt.setAttribute('y', top + plotH + (bigFmt ? 54 : 34)); axt.setAttribute('text-anchor', 'middle'); axt.style.fontSize = fsAxis + 'px'; axt.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; axt.style.fill = '#8A8579';
   axt.textContent = en ? '% of the country’s notable people born in its leading region' : '% de las figuras célebres del país nacidas en su región líder'; svg.appendChild(axt);
 
   // leyenda
@@ -93,7 +93,7 @@ function drawSubnac() {
   let cx = left + plotW / 2 - totalW / 2; if (cx < 8) cx = 8;
   items.forEach(it => {
     const sw = sb_el('rect'); sw.setAttribute('x', cx); sw.setAttribute('y', legY - swR); sw.setAttribute('width', swR * 2); sw.setAttribute('height', swR * 2); sw.setAttribute('rx', 3); sw.setAttribute('fill', it.c); svg.appendChild(sw);
-    const tx = sb_el('text'); tx.setAttribute('x', cx + swR * 2 + gapTxt); tx.setAttribute('y', legY + fsLeg * 0.34); tx.style.fontSize = fsLeg + 'px'; tx.style.fontFamily = 'var(--sans)'; tx.style.fontWeight = '500'; tx.style.fill = 'var(--ink-soft)'; tx.textContent = it.l; svg.appendChild(tx);
+    const tx = sb_el('text'); tx.setAttribute('x', cx + swR * 2 + gapTxt); tx.setAttribute('y', legY + fsLeg * 0.34); tx.style.fontSize = fsLeg + 'px'; tx.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tx.style.fontWeight = '500'; tx.style.fill = '#4A4A4A'; tx.textContent = it.l; svg.appendChild(tx);
     cx += it.w + gapItem;
   });
 
@@ -112,7 +112,7 @@ function sb_wireHover(svg, rows) {
       tip.innerHTML = `<div style="font-weight:600;margin-bottom:3px;">${sb_name(r)}</div>`
         + `<div style="line-height:1.55;">`
         + `<strong style="font-variant-numeric:tabular-nums;">${sb_pct(r.topShare)}</strong> ${en ? 'in' : 'en'} <strong>${r.topName}</strong><br>`
-        + `<span style="color:var(--ink-muted);">${nf(r.total)} ${en ? 'figures across' : 'figuras en'} ${r.nreg} ${en ? 'regions' : 'regiones'}</span>`
+        + `<span style="color:#8A8579;">${nf(r.total)} ${en ? 'figures across' : 'figuras en'} ${r.nreg} ${en ? 'regions' : 'regiones'}</span>`
         + `</div>`;
       tip.style.display = 'block'; tip.style.opacity = '1'; sb_placeTip(tip, ev, svg);
     });

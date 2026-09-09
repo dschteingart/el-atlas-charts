@@ -99,9 +99,9 @@ function drawAbanico() {
   xticks.forEach(v => {
     const x = xS(v);
     const gl = ab_el('line'); gl.setAttribute('x1', x); gl.setAttribute('x2', x); gl.setAttribute('y1', top); gl.setAttribute('y2', top + plotH);
-    gl.style.stroke = 'var(--grid)'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
+    gl.style.stroke = '#ECE7D8'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
     const tk = ab_el('text'); tk.setAttribute('x', x); tk.setAttribute('y', top + plotH + (bigFmt ? 30 : 18)); tk.setAttribute('text-anchor', 'middle');
-    tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = 'var(--sans)'; tk.style.fill = 'var(--ink-muted)';
+    tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tk.style.fill = '#8A8579';
     tk.textContent = v + '%'; svg.appendChild(tk);
   });
 
@@ -111,13 +111,13 @@ function drawAbanico() {
     const cy = top + i * rowH + rowH / 2;
     const col = AB_COLORS[r.group] || '#888';
     const lb = ab_el('text'); lb.setAttribute('x', left - (bigFmt ? 14 : 8)); lb.setAttribute('y', cy + fsLbl * 0.34); lb.setAttribute('text-anchor', 'end');
-    lb.style.fontSize = fsLbl + 'px'; lb.style.fontFamily = 'var(--sans)'; lb.style.fontWeight = '600'; lb.style.fill = 'var(--ink)';
+    lb.style.fontSize = fsLbl + 'px'; lb.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; lb.style.fontWeight = '600'; lb.style.fill = '#1A1A1A';
     lb.setAttribute('data-ab', r.key); lb.textContent = ab_label(r); barsG.appendChild(lb);
     const bw = Math.max(2, xS(r.share) - left);
     const bar = ab_el('rect'); bar.setAttribute('x', left); bar.setAttribute('y', cy - barH / 2); bar.setAttribute('width', bw); bar.setAttribute('height', barH);
     bar.setAttribute('rx', bigFmt ? 4 : 2); bar.setAttribute('fill', col); bar.setAttribute('data-ab', r.key); bar.style.cursor = 'pointer'; barsG.appendChild(bar);
     const vt = ab_el('text'); vt.setAttribute('x', left + bw + (bigFmt ? 12 : 7)); vt.setAttribute('y', cy + fsVal * 0.34);
-    vt.style.fontSize = fsVal + 'px'; vt.style.fontFamily = 'var(--sans)'; vt.style.fontWeight = '700'; vt.style.fill = 'var(--ink)';
+    vt.style.fontSize = fsVal + 'px'; vt.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; vt.style.fontWeight = '700'; vt.style.fill = '#1A1A1A';
     vt.style.fontVariantNumeric = 'tabular-nums'; vt.setAttribute('data-ab', r.key); vt.textContent = ab_pct(r.share); barsG.appendChild(vt);
   });
 
@@ -125,9 +125,9 @@ function drawAbanico() {
   const en = ab_lang() === 'en';
   const xRef = xS(refPop);
   const rl = ab_el('line'); rl.setAttribute('x1', xRef); rl.setAttribute('x2', xRef); rl.setAttribute('y1', top - (bigFmt ? 6 : 4)); rl.setAttribute('y2', top + plotH);
-  rl.style.stroke = 'var(--ink)'; rl.setAttribute('stroke-width', bigFmt ? 2 : 1.3); rl.setAttribute('stroke-dasharray', bigFmt ? '7 5' : '4 3'); svg.appendChild(rl);
+  rl.style.stroke = '#1A1A1A'; rl.setAttribute('stroke-width', bigFmt ? 2 : 1.3); rl.setAttribute('stroke-dasharray', bigFmt ? '7 5' : '4 3'); svg.appendChild(rl);
   const rlt = ab_el('text'); rlt.setAttribute('y', top - (bigFmt ? 16 : 10));
-  rlt.style.fontSize = fsAxis + 'px'; rlt.style.fontFamily = 'var(--sans)'; rlt.style.fontWeight = '600'; rlt.style.fill = 'var(--ink)';
+  rlt.style.fontSize = fsAxis + 'px'; rlt.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; rlt.style.fontWeight = '600'; rlt.style.fill = '#1A1A1A';
   rlt.textContent = (en ? 'LatAm = ' + ab_pct(refPop) + ' of world population' : 'LatAm = ' + ab_pct(refPop) + ' de la población mundial');
   if (xRef + (bigFmt ? 8 : 5) + ab_measure(rlt.textContent, fsAxis, 600) > AB_W - 8) {
     rlt.setAttribute('x', xRef - (bigFmt ? 8 : 5)); rlt.setAttribute('text-anchor', 'end');
@@ -136,7 +136,7 @@ function drawAbanico() {
 
   // título eje X
   const axt = ab_el('text'); axt.setAttribute('x', left + plotW / 2); axt.setAttribute('y', top + plotH + (bigFmt ? 62 : 38)); axt.setAttribute('text-anchor', 'middle');
-  axt.style.fontSize = fsAxis + 'px'; axt.style.fontFamily = 'var(--sans)'; axt.style.fill = 'var(--ink-muted)';
+  axt.style.fontSize = fsAxis + 'px'; axt.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; axt.style.fill = '#8A8579';
   axt.textContent = en ? '% of the world’s notable people in each field who are Latin American'
                        : '% de las figuras célebres del mundo en cada disciplina que son latinoamericanas';
   svg.appendChild(axt);
@@ -153,7 +153,7 @@ function drawAbanico() {
     const sw = ab_el('rect'); sw.setAttribute('x', cx); sw.setAttribute('y', legY - swR); sw.setAttribute('width', swR * 2); sw.setAttribute('height', swR * 2);
     sw.setAttribute('rx', 3); sw.setAttribute('fill', AB_COLORS[it.g]); svg.appendChild(sw);
     const tx = ab_el('text'); tx.setAttribute('x', cx + swR * 2 + gapTxt); tx.setAttribute('y', legY + fsLeg * 0.34);
-    tx.style.fontSize = fsLeg + 'px'; tx.style.fontFamily = 'var(--sans)'; tx.style.fontWeight = '500'; tx.style.fill = 'var(--ink-soft)';
+    tx.style.fontSize = fsLeg + 'px'; tx.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tx.style.fontWeight = '500'; tx.style.fill = '#4A4A4A';
     tx.textContent = it.label; svg.appendChild(tx);
     cx += it.w + gapItem;
   });
@@ -180,7 +180,7 @@ function ab_wireHover(svg, rows) {
       const nW = r.n_world.toLocaleString(en ? 'en-US' : 'es-AR');
       tip.innerHTML = `<div style="font-weight:600;margin-bottom:4px;">${ab_label(r)}</div>`
         + `<strong style="font-variant-numeric:tabular-nums;">${ab_pct(r.share)}</strong> ${en ? 'is Latin American' : 'es latinoamericano'}`
-        + `<div style="color:var(--ink-muted);margin-top:3px;">${nLat} ${en ? 'of' : 'de'} ${nW} ${en ? 'worldwide' : 'en el mundo'}</div>`;
+        + `<div style="color:#8A8579;margin-top:3px;">${nLat} ${en ? 'of' : 'de'} ${nW} ${en ? 'worldwide' : 'en el mundo'}</div>`;
       tip.style.display = 'block'; tip.style.opacity = '1'; ab_placeTip(tip, ev, svg);
     });
     bar.addEventListener('mousemove', (ev) => ab_placeTip(tip, ev, svg));

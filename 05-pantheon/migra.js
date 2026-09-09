@@ -73,14 +73,14 @@ function drawMigra() {
 
   // títulos de columna
   const hdrPos = mg_el('text'); hdrPos.setAttribute('x', xZero + (bigFmt ? 14 : 8)); hdrPos.setAttribute('y', top - (bigFmt ? 30 : 20)); hdrPos.setAttribute('text-anchor', 'start');
-  hdrPos.style.fontSize = fsHdr + 'px'; hdrPos.style.fontFamily = 'var(--sans)'; hdrPos.style.fontWeight = '700'; hdrPos.style.fill = MG_POS;
+  hdrPos.style.fontSize = fsHdr + 'px'; hdrPos.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; hdrPos.style.fontWeight = '700'; hdrPos.style.fill = MG_POS;
   hdrPos.textContent = en ? '▸ Magnets (gain fame)' : '▸ Imanes (ganan fama)'; svg.appendChild(hdrPos);
   const hdrNeg = mg_el('text'); hdrNeg.setAttribute('x', xZero - (bigFmt ? 14 : 8)); hdrNeg.setAttribute('y', top - (bigFmt ? 30 : 20)); hdrNeg.setAttribute('text-anchor', 'end');
-  hdrNeg.style.fontSize = fsHdr + 'px'; hdrNeg.style.fontFamily = 'var(--sans)'; hdrNeg.style.fontWeight = '700'; hdrNeg.style.fill = MG_NEG;
+  hdrNeg.style.fontSize = fsHdr + 'px'; hdrNeg.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; hdrNeg.style.fontWeight = '700'; hdrNeg.style.fill = MG_NEG;
   hdrNeg.textContent = en ? 'Exporters (lose fame) ◂' : 'Desagües (exportan fama) ◂'; svg.appendChild(hdrNeg);
 
   // línea cero
-  const zl = mg_el('line'); zl.setAttribute('x1', xZero); zl.setAttribute('x2', xZero); zl.setAttribute('y1', top - (bigFmt ? 10 : 6)); zl.setAttribute('y2', top + plotH); zl.style.stroke = 'var(--ink)'; zl.setAttribute('stroke-width', bigFmt ? 1.6 : 1.1); svg.appendChild(zl);
+  const zl = mg_el('line'); zl.setAttribute('x1', xZero); zl.setAttribute('x2', xZero); zl.setAttribute('y1', top - (bigFmt ? 10 : 6)); zl.setAttribute('y2', top + plotH); zl.style.stroke = '#1A1A1A'; zl.setAttribute('stroke-width', bigFmt ? 1.6 : 1.1); svg.appendChild(zl);
 
   const g = mg_el('g'); svg.appendChild(g);
   rows.forEach((x, i) => {
@@ -90,19 +90,19 @@ function drawMigra() {
     const bx = v >= 0 ? xZero : xZero - bw;
     // nombre (en el gutter izquierdo)
     const lb = mg_el('text'); lb.setAttribute('x', leftPad + nameW); lb.setAttribute('y', cy + fsLbl * 0.34); lb.setAttribute('text-anchor', 'end');
-    lb.style.fontSize = fsLbl + 'px'; lb.style.fontFamily = 'var(--sans)'; lb.style.fontWeight = isLat ? '700' : '500'; lb.style.fill = isLat ? 'var(--ink)' : 'var(--ink-soft)';
+    lb.style.fontSize = fsLbl + 'px'; lb.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; lb.style.fontWeight = isLat ? '700' : '500'; lb.style.fill = isLat ? '#1A1A1A' : '#4A4A4A';
     lb.setAttribute('data-mg', r.iso); lb.textContent = mg_name(r); g.appendChild(lb);
     if (isLat) { const dot = mg_el('circle'); dot.setAttribute('cx', leftPad + nameW - mg_measure(mg_name(r), fsLbl, 700) - (bigFmt ? 12 : 7)); dot.setAttribute('cy', cy); dot.setAttribute('r', bigFmt ? 5 : 3); dot.setAttribute('fill', MG_GOLD); g.appendChild(dot); }
     // barra
     const bar = mg_el('rect'); bar.setAttribute('x', bx); bar.setAttribute('y', cy - barH / 2); bar.setAttribute('width', bw); bar.setAttribute('height', barH); bar.setAttribute('rx', bigFmt ? 3 : 2); bar.setAttribute('fill', col); bar.setAttribute('data-mg', r.iso); bar.style.cursor = 'pointer'; g.appendChild(bar);
     // valor
     const vt = mg_el('text'); vt.setAttribute('x', v >= 0 ? (bx + bw + (bigFmt ? 9 : 5)) : (bx - (bigFmt ? 9 : 5))); vt.setAttribute('y', cy + fsVal * 0.34); vt.setAttribute('text-anchor', v >= 0 ? 'start' : 'end');
-    vt.style.fontSize = fsVal + 'px'; vt.style.fontFamily = 'var(--sans)'; vt.style.fontWeight = '700'; vt.style.fill = col; vt.style.fontVariantNumeric = 'tabular-nums'; vt.setAttribute('data-mg', r.iso); vt.textContent = mg_fmtVal(v, metric); g.appendChild(vt);
+    vt.style.fontSize = fsVal + 'px'; vt.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; vt.style.fontWeight = '700'; vt.style.fill = col; vt.style.fontVariantNumeric = 'tabular-nums'; vt.setAttribute('data-mg', r.iso); vt.textContent = mg_fmtVal(v, metric); g.appendChild(vt);
   });
 
   // título eje
   const axt = mg_el('text'); axt.setAttribute('x', xZero); axt.setAttribute('y', top + plotH + (bigFmt ? 40 : 24)); axt.setAttribute('text-anchor', 'middle');
-  axt.style.fontSize = fsAxis + 'px'; axt.style.fontFamily = 'var(--sans)'; axt.style.fill = 'var(--ink-muted)';
+  axt.style.fontSize = fsAxis + 'px'; axt.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; axt.style.fill = '#8A8579';
   axt.textContent = metric === 'rel'
     ? (en ? 'Net balance as % of figures born in the country' : 'Saldo neto como % de las figuras nacidas en el país')
     : (en ? 'Net balance (figures who died there − who were born there)' : 'Saldo neto (figuras que murieron ahí − que nacieron ahí)');
@@ -122,12 +122,12 @@ function mg_wireHover(svg, rows, metric) {
       const nf = (n) => n.toLocaleString(en ? 'en-US' : 'es-AR');
       const regLbl = (typeof t === 'function') ? t('reg.' + r.region) : r.region;
       tip.innerHTML = `<div style="font-weight:600;margin-bottom:3px;">${mg_name(r)}</div>`
-        + `<div style="color:var(--ink-muted);font-size:11px;margin-bottom:5px;">${regLbl}</div>`
+        + `<div style="color:#8A8579;font-size:11px;margin-bottom:5px;">${regLbl}</div>`
         + `<div style="line-height:1.55;">`
         + `${en ? 'Born there' : 'Nacidas ahí'}: <strong>${nf(r.born)}</strong><br>`
         + `${en ? 'Died there' : 'Murieron ahí'}: <strong>${nf(r.died)}</strong><br>`
         + `${en ? 'Emigrated' : 'Emigraron'}: <strong>${r.emig_rate}%</strong>`
-        + (r.topDest ? ` <span style="color:var(--ink-muted);">(→ ${r.topDest})</span>` : '')
+        + (r.topDest ? ` <span style="color:#8A8579;">(→ ${r.topDest})</span>` : '')
         + `<br><span style="color:${r.net >= 0 ? MG_POS : MG_NEG};font-weight:700;">${en ? 'Net' : 'Saldo'}: ${mg_fmtVal(r.net, 'abs')}</span>`
         + `</div>`;
       tip.style.display = 'block'; tip.style.opacity = '1'; mg_placeTip(tip, ev, svg);

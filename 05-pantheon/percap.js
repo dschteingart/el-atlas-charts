@@ -243,19 +243,19 @@
       ln.setAttribute('stroke', '#E5DDD0'); svg.appendChild(ln);
       const lb = ns('text'); lb.setAttribute('x', x); lb.setAttribute('y', margin.top + plotH + 16);
       lb.setAttribute('text-anchor', 'middle'); lb.setAttribute('fill', '#7A6E62');
-      lb.setAttribute('font-family', 'var(--sans), system-ui'); lb.style.fontSize = '11px';
+      lb.setAttribute('font-family', '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, system-ui'); lb.style.fontSize = '11px';
       lb.setAttribute('font-variant-numeric', 'tabular-nums'); lb.textContent = v.toFixed(tickDec) + (isShare ? '%' : '');
       svg.appendChild(lb);
     });
     const xt = ns('text'); xt.setAttribute('x', margin.left + plotW / 2); xt.setAttribute('y', margin.top + plotH + 40);
     xt.setAttribute('text-anchor', 'middle'); xt.setAttribute('fill', '#7A6E62'); xt.setAttribute('font-weight', 500);
-    xt.setAttribute('font-family', 'var(--sans), system-ui'); xt.style.fontSize = '12px'; xt.textContent = axisTitle();
+    xt.setAttribute('font-family', '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, system-ui'); xt.style.fontSize = '12px'; xt.textContent = axisTitle();
     svg.appendChild(xt);
 
     const drawRow = (d, y) => {
       const nm = ns('text'); nm.setAttribute('x', margin.left - 8); nm.setAttribute('y', y + BAR_H / 2);
       nm.setAttribute('text-anchor', 'end'); nm.setAttribute('dominant-baseline', 'central');
-      nm.setAttribute('font-family', 'var(--sans), system-ui'); nm.style.fontSize = '13px';
+      nm.setAttribute('font-family', '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, system-ui'); nm.style.fontSize = '13px';
       nm.setAttribute('font-weight', d.isWorld ? 700 : 500); nm.setAttribute('fill', d.isWorld ? COLOR_WORLD : '#3A3530');
       nm.textContent = d.name; svg.appendChild(nm);
       let xc = margin.left;
@@ -273,7 +273,7 @@
         svg.appendChild(rect); xc += segW;
       });
       const vt = ns('text'); vt.setAttribute('x', xc + 6); vt.setAttribute('y', y + BAR_H / 2);
-      vt.setAttribute('dominant-baseline', 'central'); vt.setAttribute('font-family', 'var(--sans), system-ui');
+      vt.setAttribute('dominant-baseline', 'central'); vt.setAttribute('font-family', '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, system-ui');
       vt.style.fontSize = '12px'; vt.setAttribute('font-weight', 600); vt.setAttribute('fill', d.isWorld ? COLOR_WORLD : '#3A3530');
       vt.setAttribute('font-variant-numeric', 'tabular-nums'); vt.textContent = d.endLabel; svg.appendChild(vt);
     };

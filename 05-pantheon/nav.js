@@ -59,22 +59,22 @@
     const css = `
       #chart-nav { margin: 22px 0 4px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
       .atlas-nav { display: flex; align-items: center; gap: 18px; }
-      .atlas-nav-arrow { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--rule); color: var(--ink); text-decoration: none; font-size: 18px; transition: border-color .15s ease, color .15s ease; }
-      .atlas-nav-arrow:hover { border-color: var(--accent); color: var(--accent); }
+      .atlas-nav-arrow { display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; border: 1px solid #E0DCC8; color: #1A1A1A; text-decoration: none; font-size: 18px; transition: border-color .15s ease, color .15s ease; }
+      .atlas-nav-arrow:hover { border-color: #BE5D32; color: #BE5D32; }
       .atlas-nav-arrow.is-off { opacity: .28; pointer-events: none; }
-      .atlas-nav-count { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--ink-muted); text-decoration: none; letter-spacing: .07em; text-transform: uppercase; min-width: 92px; text-align: center; }
-      .atlas-nav-count:hover { color: var(--accent); }
-      .atlas-nav-all { font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; }
+      .atlas-nav-count { font-family: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 12px; font-weight: 600; color: #8A8579; text-decoration: none; letter-spacing: .07em; text-transform: uppercase; min-width: 92px; text-align: center; }
+      .atlas-nav-count:hover { color: #BE5D32; }
+      .atlas-nav-all { font-family: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13px; font-weight: 600; color: #BE5D32; text-decoration: none; }
       .atlas-nav-all:hover { text-decoration: underline; text-underline-offset: 3px; }
       .brand a.atlas-home { color: inherit; text-decoration: none; }
-      .brand a.atlas-home:hover { color: var(--accent); }
-      .atlas-cta { display: flex; flex-direction: column; align-items: center; gap: 9px; max-width: 460px; text-align: center; text-decoration: none; background: var(--bg); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 24px 16px; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
-      .atlas-cta:hover { border-color: var(--accent); box-shadow: 0 6px 20px rgba(190,93,50,.13); transform: translateY(-1px); }
-      .atlas-cta-eyebrow { font-family: var(--sans); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
-      .atlas-cta-pitch { font-family: var(--serif); font-size: 15px; line-height: 1.4; color: var(--ink); max-width: 380px; }
-      .atlas-cta-go { display: inline-flex; align-items: center; font-family: var(--sans); font-size: 14px; font-weight: 600; color: #fff; background: var(--accent); padding: 9px 20px; border-radius: 22px; margin-top: 2px; }
+      .brand a.atlas-home:hover { color: #BE5D32; }
+      .atlas-cta { display: flex; flex-direction: column; align-items: center; gap: 9px; max-width: 460px; text-align: center; text-decoration: none; background: #FAF8F3; border: 1px solid #E0DCC8; border-radius: 14px; padding: 18px 24px 16px; transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+      .atlas-cta:hover { border-color: #BE5D32; box-shadow: 0 6px 20px rgba(190,93,50,.13); transform: translateY(-1px); }
+      .atlas-cta-eyebrow { font-family: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #BE5D32; }
+      .atlas-cta-pitch { font-family: "Source Serif 4", Georgia, "Times New Roman", serif; font-size: 15px; line-height: 1.4; color: #1A1A1A; max-width: 380px; }
+      .atlas-cta-go { display: inline-flex; align-items: center; font-family: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 14px; font-weight: 600; color: #fff; background: #BE5D32; padding: 9px 20px; border-radius: 22px; margin-top: 2px; }
       .atlas-top-right { display: inline-flex; align-items: center; gap: 16px; }
-      .atlas-top-sub { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: .04em; color: var(--accent); text-decoration: none; white-space: nowrap; opacity: .9; transition: opacity .15s ease; }
+      .atlas-top-sub { font-family: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 11px; font-weight: 600; letter-spacing: .04em; color: #BE5D32; text-decoration: none; white-space: nowrap; opacity: .9; transition: opacity .15s ease; }
       .atlas-top-sub:hover { opacity: 1; text-decoration: underline; text-underline-offset: 3px; }`;
     const st = document.createElement('style'); st.id = 'atlas-nav-css'; st.textContent = css;
     document.head.appendChild(st);

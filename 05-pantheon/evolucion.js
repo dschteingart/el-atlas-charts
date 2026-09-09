@@ -7,6 +7,10 @@
 //  con escala compartida (patrón elo-lines del N°3).
 //  Depende de window.EVOL, REGION_COLORS/REGION_ORDER, LANG, utils.js.
 // =============================================================
+// OJO: prohibido usar var(--x) en cualquier atributo/estilo del SVG. El clon
+// que se rasteriza no resuelve CSS variables (y por file:// ni siquiera se
+// embebe :root), asi que todo cae al serif por defecto. Solo literales.
+const EV_SANS = "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 const EV_NS = 'http://www.w3.org/2000/svg';
 const ev_el = (t) => document.createElementNS(EV_NS, t);
 const EV_DOM_COL = {
@@ -137,7 +141,7 @@ function drawEvo() {
   if (!n) {
     svg.setAttribute('viewBox', '0 0 1100 300');
     const tx = ev_el('text'); tx.setAttribute('x', 550); tx.setAttribute('y', 150); tx.setAttribute('text-anchor', 'middle');
-    tx.style.cssText = 'font-family:var(--sans);font-size:17px;fill:var(--ink-muted);font-style:italic;';
+    tx.style.cssText = 'font-family:' + EV_SANS + ';font-size:17px;fill:#8A8579;font-style:italic;';
     tx.textContent = (typeof t === 'function') ? t('cevo-vacio') : 'Elegí países o regiones con el buscador.';
     svg.appendChild(tx);
     ev_syncSub(); return;
@@ -185,7 +189,7 @@ function drawEvo() {
       sw.setAttribute('width', swS); sw.setAttribute('height', swS);
       sw.setAttribute('rx', 2); sw.setAttribute('fill', EV_DOM_COL[dm.es]); svg.appendChild(sw);
       const tx = ev_el('text'); tx.setAttribute('x', lx + (bigFmt ? 24 : 15), 0); tx.setAttribute('y', ly);
-      tx.style.cssText = 'font-family:var(--sans);font-size:' + fsLeg + 'px;fill:var(--ink-soft);';
+      tx.style.cssText = 'font-family:' + EV_SANS + ';font-size:' + fsLeg + 'px;fill:#4A4A4A;';
       tx.textContent = nombre; svg.appendChild(tx);
       lx += w;
     });
@@ -252,7 +256,7 @@ function ev_panel(svg, p, o) {
   // título del panel (multiples)
   if (!o.single) {
     const tt = ev_el('text'); tt.setAttribute('x', o.x); tt.setAttribute('y', o.y - (o.bigFmt ? 12 : 7));
-    tt.style.cssText = 'font-family:var(--sans);font-size:' + o.fsPan + 'px;font-weight:700;fill:' + p.color + ';';
+    tt.style.cssText = 'font-family:' + EV_SANS + ';font-size:' + o.fsPan + 'px;font-weight:700;fill:' + p.color + ';';
     tt.textContent = p.label; svg.appendChild(tt);
   }
 
@@ -262,11 +266,11 @@ function ev_panel(svg, p, o) {
     const y = yS(v);
     const gl = ev_el('line'); gl.setAttribute('x1', o.x); gl.setAttribute('x2', o.x + o.w);
     gl.setAttribute('y1', y); gl.setAttribute('y2', y);
-    gl.style.stroke = 'var(--grid)'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
+    gl.style.stroke = '#ECE7D8'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
     if (o.firstCol) {
       const tk = ev_el('text'); tk.setAttribute('x', o.x - (o.bigFmt ? 10 : 6)); tk.setAttribute('y', y + o.fsTick * 0.34);
       tk.setAttribute('text-anchor', 'end');
-      tk.style.cssText = 'font-family:var(--sans);font-size:' + o.fsTick + 'px;fill:var(--ink-muted);';
+      tk.style.cssText = 'font-family:' + EV_SANS + ';font-size:' + o.fsTick + 'px;fill:#8A8579;';
       tk.textContent = o.share ? Math.round(v * 100) + '%' : ev_fmtN(v);
       svg.appendChild(tk);
     }
@@ -291,7 +295,7 @@ function ev_panel(svg, p, o) {
     ks.forEach(kk => {
       const tk = ev_el('text'); tk.setAttribute('x', xS(kk)); tk.setAttribute('y', o.y + o.h + (o.bigFmt ? 34 : 20));
       tk.setAttribute('text-anchor', kk === 0 ? 'start' : kk === NB - 1 ? 'end' : 'middle');
-      tk.style.cssText = 'font-family:var(--sans);font-size:' + o.fsTick + 'px;fill:var(--ink-muted);';
+      tk.style.cssText = 'font-family:' + EV_SANS + ';font-size:' + o.fsTick + 'px;fill:#8A8579;';
       tk.textContent = lab(o.B0 + kk); svg.appendChild(tk);
     });
   }
@@ -362,7 +366,7 @@ function ev_panel(svg, p, o) {
         const tx = ev_el('text');
         tx.setAttribute('x', o.x + o.w + (o.bigFmt ? 16 : 9));
         tx.setAttribute('y', l.yy - ((l.lineas.length - 1) / 2 - li) * lh + o.fsLbl * 0.34);
-        tx.style.cssText = 'font-family:var(--sans);font-size:' + o.fsLbl + 'px;font-weight:700;fill:' + l.color + ';';
+        tx.style.cssText = 'font-family:' + EV_SANS + ';font-size:' + o.fsLbl + 'px;font-weight:700;fill:' + l.color + ';';
         tx.textContent = linea; svg.appendChild(tx);
       });
     });

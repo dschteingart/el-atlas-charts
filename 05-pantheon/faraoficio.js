@@ -49,12 +49,12 @@ function drawFama() {
   // grid + ticks Y (0/25/50/75/100%)
   [0, .25, .5, .75, 1].forEach(f => {
     const y = yS(f);
-    const gl = fo_el('line'); gl.setAttribute('x1', M.left); gl.setAttribute('x2', M.left + PW); gl.setAttribute('y1', y); gl.setAttribute('y2', y); gl.style.stroke = 'var(--grid)'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
-    const tk = fo_el('text'); tk.setAttribute('x', M.left - (bigFmt ? 10 : 6)); tk.setAttribute('y', y + fsTick * 0.34); tk.setAttribute('text-anchor', 'end'); tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = 'var(--sans)'; tk.style.fill = 'var(--ink-muted)'; tk.textContent = Math.round(f * 100) + '%'; svg.appendChild(tk);
+    const gl = fo_el('line'); gl.setAttribute('x1', M.left); gl.setAttribute('x2', M.left + PW); gl.setAttribute('y1', y); gl.setAttribute('y2', y); gl.style.stroke = '#ECE7D8'; gl.setAttribute('stroke-width', 1); svg.appendChild(gl);
+    const tk = fo_el('text'); tk.setAttribute('x', M.left - (bigFmt ? 10 : 6)); tk.setAttribute('y', y + fsTick * 0.34); tk.setAttribute('text-anchor', 'end'); tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tk.style.fill = '#8A8579'; tk.textContent = Math.round(f * 100) + '%'; svg.appendChild(tk);
   });
   // ticks X (décadas, cada 40 años)
   decs.forEach((d, i) => { if (d % 40 !== 0 && d !== decs[decs.length - 1]) return;
-    const tk = fo_el('text'); tk.setAttribute('x', xS(i)); tk.setAttribute('y', M.top + PH + (bigFmt ? 34 : 18)); tk.setAttribute('text-anchor', 'middle'); tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = 'var(--sans)'; tk.style.fill = 'var(--ink-muted)'; tk.textContent = d; svg.appendChild(tk);
+    const tk = fo_el('text'); tk.setAttribute('x', xS(i)); tk.setAttribute('y', M.top + PH + (bigFmt ? 34 : 18)); tk.setAttribute('text-anchor', 'middle'); tk.style.fontSize = fsTick + 'px'; tk.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tk.style.fill = '#8A8579'; tk.textContent = d; svg.appendChild(tk);
   });
 
   // bandas apiladas (cumulativo). doms[0] abajo (frac 0..) → doms[last] arriba? Apilamos
@@ -81,7 +81,7 @@ function drawFama() {
   for (let i = 1; i < labs.length; i++) if (labs[i].y - labs[i - 1].y < gap) labs[i].y = labs[i - 1].y + gap;
   labs.forEach(l => {
     const tx = fo_el('text'); tx.setAttribute('x', M.left + PW + (bigFmt ? 14 : 8)); tx.setAttribute('y', l.y + fsLbl * 0.34); tx.setAttribute('text-anchor', 'start');
-    tx.style.fontSize = fsLbl + 'px'; tx.style.fontFamily = 'var(--sans)'; tx.style.fontWeight = '700'; tx.style.fill = FO_COLORS[l.dm.key];
+    tx.style.fontSize = fsLbl + 'px'; tx.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tx.style.fontWeight = '700'; tx.style.fill = FO_COLORS[l.dm.key];
     tx.textContent = l.dm[en ? 'en' : 'es']; svg.appendChild(tx);
   });
   if (!isPng /* tooltips tambien en touch (criterio 6e) */) fo_hover(svg, { decs, doms, shares, totals, M, PW, PH, xS, yS });

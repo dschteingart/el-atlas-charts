@@ -104,7 +104,7 @@ function drawHuella() {
     const x = left + j * cw + cw / 2;
     const tx = hu_el('text'); tx.setAttribute('x', x); tx.setAttribute('y', top - (bigFmt ? 12 : 7));
     tx.setAttribute('text-anchor', 'start'); tx.setAttribute('transform', `rotate(-45 ${x} ${top - (bigFmt ? 12 : 7)})`);
-    tx.style.fontSize = fsCol + 'px'; tx.style.fontFamily = 'var(--sans)'; tx.style.fontWeight = '600'; tx.style.fill = 'var(--ink-soft)';
+    tx.style.fontSize = fsCol + 'px'; tx.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tx.style.fontWeight = '600'; tx.style.fill = '#4A4A4A';
     tx.textContent = hu_colLabel(c); svg.appendChild(tx);
   });
 
@@ -112,7 +112,7 @@ function drawHuella() {
   rows.forEach((r, i) => {
     const y = top + i * rh;
     const rl = hu_el('text'); rl.setAttribute('x', left - (bigFmt ? 12 : 7)); rl.setAttribute('y', y + rh / 2 + fsRow * 0.34); rl.setAttribute('text-anchor', 'end');
-    rl.style.fontSize = fsRow + 'px'; rl.style.fontFamily = 'var(--sans)'; rl.style.fontWeight = '600'; rl.style.fill = 'var(--ink)';
+    rl.style.fontSize = fsRow + 'px'; rl.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; rl.style.fontWeight = '600'; rl.style.fill = '#1A1A1A';
     rl.setAttribute('data-hu-row', r.iso); rl.textContent = hu_rowLabel(r); svg.appendChild(rl);
 
     cols.forEach((c, j) => {
@@ -124,8 +124,8 @@ function drawHuella() {
       // anotar ×N solo en celdas fuertes
       if (cell.lift >= HU_ANNOT_LIFT) {
         const tx = hu_el('text'); tx.setAttribute('x', x + cw / 2); tx.setAttribute('y', y + rh / 2 + fsCell * 0.34); tx.setAttribute('text-anchor', 'middle');
-        tx.style.fontSize = fsCell + 'px'; tx.style.fontFamily = 'var(--sans)'; tx.style.fontWeight = '700';
-        tx.style.fill = hu_isDark(cell.lift) ? '#FAF8F3' : 'var(--ink)'; tx.style.pointerEvents = 'none';
+        tx.style.fontSize = fsCell + 'px'; tx.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; tx.style.fontWeight = '700';
+        tx.style.fill = hu_isDark(cell.lift) ? '#FAF8F3' : '#1A1A1A'; tx.style.pointerEvents = 'none';
         tx.textContent = hu_liftFmt(cell.lift); svg.appendChild(tx);
       }
     });
@@ -139,11 +139,11 @@ function drawHuella() {
   [0, 0.25, 0.5, 0.75, 1].forEach(s => { const st = hu_el('stop'); st.setAttribute('offset', (s * 100) + '%'); const lift = Math.exp(Math.log(0.4) + s * (Math.log(25) - Math.log(0.4))); st.setAttribute('stop-color', hu_color(lift)); grad.appendChild(st); });
   defs.appendChild(grad); svg.appendChild(defs);
   const lr = hu_el('rect'); lr.setAttribute('x', lgX); lr.setAttribute('y', lgY); lr.setAttribute('width', lgW); lr.setAttribute('height', lgH); lr.setAttribute('rx', 2); lr.setAttribute('fill', 'url(#hu-grad)'); svg.appendChild(lr);
-  const mkLab = (x, anchor, txt) => { const t = hu_el('text'); t.setAttribute('x', x); t.setAttribute('y', lgY + lgH + (bigFmt ? 26 : 16)); t.setAttribute('text-anchor', anchor); t.style.fontSize = fsNote + 'px'; t.style.fontFamily = 'var(--sans)'; t.style.fill = 'var(--ink-muted)'; t.textContent = txt; svg.appendChild(t); };
+  const mkLab = (x, anchor, txt) => { const t = hu_el('text'); t.setAttribute('x', x); t.setAttribute('y', lgY + lgH + (bigFmt ? 26 : 16)); t.setAttribute('text-anchor', anchor); t.style.fontSize = fsNote + 'px'; t.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; t.style.fill = '#8A8579'; t.textContent = txt; svg.appendChild(t); };
   mkLab(lgX, 'start', en ? 'below world avg' : 'menos que el promedio');
   mkLab(lgX + lgW, 'end', en ? 'far above (×10+)' : 'mucho más (×10+)');
   const lgt = hu_el('text'); lgt.setAttribute('x', lgX + lgW / 2); lgt.setAttribute('y', lgY - (bigFmt ? 10 : 6)); lgt.setAttribute('text-anchor', 'middle');
-  lgt.style.fontSize = fsNote + 'px'; lgt.style.fontFamily = 'var(--sans)'; lgt.style.fontWeight = '600'; lgt.style.fill = 'var(--ink-soft)';
+  lgt.style.fontSize = fsNote + 'px'; lgt.style.fontFamily = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'; lgt.style.fontWeight = '600'; lgt.style.fill = '#4A4A4A';
   lgt.textContent = en ? 'Over-representation vs the world (×)' : 'Sobre-representación vs el mundo (×)'; svg.appendChild(lgt);
 
   const interactive = !isPng /* tooltips tambien en touch (criterio 6e) */;
@@ -162,7 +162,7 @@ function hu_wireHover(svg, rows, cols) {
       const r = rowByIso[iso], c = colByKey[ck], cell = r.cells[ck] || { lift: 0, n: 0, pct: 0 };
       tip.innerHTML = `<div style="font-weight:600;margin-bottom:4px;">${hu_rowLabel(r)} · ${hu_colLabel(c)}</div>`
         + `<strong>${cell.lift ? hu_liftFmt(cell.lift) : '—'}</strong> ${en ? 'vs world avg' : 'vs el promedio mundial'}`
-        + `<div style="color:var(--ink-muted);margin-top:3px;">${cell.n} ${en ? 'figures' : 'figuras'} (${(cell.pct||0).toString().replace('.', en?'.':',')}% ${en ? 'of the country' : 'del país'})</div>`;
+        + `<div style="color:#8A8579;margin-top:3px;">${cell.n} ${en ? 'figures' : 'figuras'} (${(cell.pct||0).toString().replace('.', en?'.':',')}% ${en ? 'of the country' : 'del país'})</div>`;
       tip.style.display = 'block'; tip.style.opacity = '1'; hu_placeTip(tip, ev, svg);
     });
     rect.addEventListener('mousemove', (ev) => hu_placeTip(tip, ev, svg));

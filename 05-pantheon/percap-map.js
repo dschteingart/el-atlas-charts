@@ -207,7 +207,7 @@
       .on('mouseenter', (ev, n) => showTipXY(ev, n.name, n.v, n.key, n.isReg)).on('mousemove', onMove).on('mouseleave', hideTip);
     // etiquetas para los más grandes
     g.selectAll('text').data(nodes.filter(n => n.r >= (st.view === 'region' ? 14 : 11))).join('text')
-      .attr('x', n => n.x).attr('y', n => n.y + 3).attr('text-anchor', 'middle').attr('font-family', 'var(--sans),system-ui')
+      .attr('x', n => n.x).attr('y', n => n.y + 3).attr('text-anchor', 'middle').attr('font-family', '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif,system-ui')
       .attr('font-size', n => Math.min(13, n.r * 0.7)).attr('fill', '#fff').attr('font-weight', 600).attr('pointer-events', 'none')
       .text(n => st.view === 'region' ? n.name.split(',')[0] : (ISO_META[n.key] ? n.key : n.name));
   }
@@ -259,7 +259,7 @@
     if (ws != null) h += `<div class="tt-row"><span>${T('% del total mundial', '% of world total')}</span><span>${ws.toFixed(ws < 10 ? 2 : 1)}%</span></div>`;
     if (st.filter !== 'all') { const sh = entityShare(key, isReg); if (sh != null) h += `<div class="tt-row"><span>${isReg ? T('% de la región', '% of region') : T('% del país', '% of country')}</span><span>${sh.toFixed(1)}%</span></div>`; }
     const tf = topFigFor(key, isReg);
-    if (tf) h += `<div class="tt-fig"><span class="tt-fig-name">${tf[0]} <span style="font-weight:400;color:var(--ink-muted)">(${fmtYear(tf[1])})</span></span><span class="tt-fig-meta">HPI ${tf[2]} · #${tf[3].toLocaleString(en ? 'en-US' : 'es-AR')} ${T('global', 'global')}</span></div>`;
+    if (tf) h += `<div class="tt-fig"><span class="tt-fig-name">${tf[0]} <span style="font-weight:400;color:#8A8579">(${fmtYear(tf[1])})</span></span><span class="tt-fig-meta">HPI ${tf[2]} · #${tf[3].toLocaleString(en ? 'en-US' : 'es-AR')} ${T('global', 'global')}</span></div>`;
     tt.innerHTML = h; tt.style.display = 'block'; posTip(ev);
   }
   function posTip(ev) { const tt = document.getElementById('mTip'); if (!tt || tt.style.display === 'none') return; const w = tt.parentElement.getBoundingClientRect(); let px = ev.clientX - w.left + 14, py = ev.clientY - w.top - tt.offsetHeight - 8; if (px + tt.offsetWidth > w.width) px = ev.clientX - w.left - tt.offsetWidth - 14; if (py < 0) py = ev.clientY - w.top + 18; tt.style.left = px + 'px'; tt.style.top = py + 'px'; }
@@ -278,17 +278,17 @@
     leg.selectAll('*').remove();
     if (st.mapMode === 'dorling') { // leyenda de tamaños
       const W = 240, H = 54; leg.attr('viewBox', `0 0 ${W} ${H}`);
-      leg.append('text').attr('x', 0).attr('y', 10).attr('font-family', 'var(--sans)').attr('font-size', 11).attr('fill', 'var(--ink-soft)').text(T('Tamaño = ' + measLabel(), 'Size = ' + measLabel()));
+      leg.append('text').attr('x', 0).attr('y', 10).attr('font-family', '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif').attr('font-size', 11).attr('fill', '#4A4A4A').text(T('Tamaño = ' + measLabel(), 'Size = ' + measLabel()));
       return;
     }
     const W_MAIN = 320, GAP = 12, ND_W = 14, BIN_H = 12, TEXT_Y = BIN_H + 12;
     leg.attr('viewBox', `0 0 ${W_MAIN + GAP + ND_W} ${TEXT_Y + 4}`);
     const nBins = legendBreaks.length + 1, binW = W_MAIN / nBins;
     for (let i = 0; i < nBins; i++) leg.append('rect').attr('x', i * binW).attr('y', 0).attr('width', binW).attr('height', BIN_H).attr('fill', RAMP[i]).attr('stroke', 'rgba(0,0,0,.08)').attr('stroke-width', .5).attr('data-bin', i).style('cursor', 'pointer').on('mouseenter', () => hiBin(i)).on('mouseleave', clearHi);
-    legendBreaks.forEach((b, idx) => leg.append('text').attr('x', (idx + 1) * binW).attr('y', TEXT_Y).attr('text-anchor', 'middle').attr('font-family', 'var(--sans)').attr('font-size', 10).attr('fill', 'var(--ink-soft)').attr('font-variant-numeric', 'tabular-nums').text(fmtVal(b)));
+    legendBreaks.forEach((b, idx) => leg.append('text').attr('x', (idx + 1) * binW).attr('y', TEXT_Y).attr('text-anchor', 'middle').attr('font-family', '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif').attr('font-size', 10).attr('fill', '#4A4A4A').attr('font-variant-numeric', 'tabular-nums').text(fmtVal(b)));
     const ndX = W_MAIN + GAP;
     leg.append('rect').attr('x', ndX).attr('y', 0).attr('width', ND_W).attr('height', BIN_H).attr('fill', NODATA).attr('stroke', 'rgba(0,0,0,.15)').attr('stroke-width', .5);
-    leg.append('text').attr('x', ndX + ND_W / 2).attr('y', TEXT_Y).attr('text-anchor', 'middle').attr('font-family', 'var(--sans)').attr('font-size', 10).attr('fill', 'var(--ink-soft)').text(T('s/d', 'n/a'));
+    leg.append('text').attr('x', ndX + ND_W / 2).attr('y', TEXT_Y).attr('text-anchor', 'middle').attr('font-family', '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif').attr('font-size', 10).attr('fill', '#4A4A4A').text(T('s/d', 'n/a'));
   }
   function hiBin(i) { window.d3.selectAll('.m-country').each(function () { const el = window.d3.select(this); const own = el.attr('data-bin'); if (own === String(i)) el.attr('stroke', STROKE_HOVER).attr('stroke-width', 1.2).attr('fill-opacity', 1); else el.attr('stroke', STROKE).attr('stroke-width', .5).attr('fill-opacity', .3); }); }
   function clearHi() { window.d3.selectAll('.m-country').attr('stroke', STROKE).attr('stroke-width', .5).attr('fill-opacity', 1); }
