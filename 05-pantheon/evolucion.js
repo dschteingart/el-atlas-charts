@@ -116,6 +116,19 @@ const ev_fmtN = (v) => {
   return String(Math.round(v));
 };
 
+// Resaltado de una BANDA del apilado (hover sobre el area o su etiqueta): la
+// banda apuntada queda opaca y el resto se atenua. Portado tal cual del
+// amistosos del N3 (ts_bandEmph en 03b-partidos/ts-partidos.js).
+function ev_bandEmph(svg, key) {
+  svg.querySelectorAll('[data-band]').forEach(el => {
+    if (key == null) el.setAttribute('fill-opacity', el.getAttribute('data-band-op'));
+    else el.setAttribute('fill-opacity', el.getAttribute('data-band') === key ? 1 : 0.22);
+  });
+  svg.querySelectorAll('[data-band-label]').forEach(el => {
+    el.style.opacity = (key == null || el.getAttribute('data-band-label') === key) ? '' : '0.25';
+  });
+}
+
 // ---------- dibujo ----------
 function drawEvo() {
   const svg = document.getElementById('chartevo');
@@ -219,7 +232,7 @@ function drawEvo() {
     const cx = single ? M.left : M.left + (pi % cols) * (panW + gapX);
     const cy = single ? M.top : M.top + Math.floor(pi / cols) * (panH + gapY);
     ev_panel(svg, p, {
-      x: cx, y: cy, w: panW, h: panH, cats, nivel, share, absMax, yTicksAbs, B0,
+      x: cx, y: cy, w: panW, h: panH, cats, nivel, share, absMax, yTicksAbs, B0, isPng,
       fsLbl, fsTick, fsPan, bigFmt, single, en,
       firstCol: single || pi % cols === 0,
       lastRow: single || Math.floor(pi / cols) === rows - 1
@@ -316,6 +329,13 @@ function ev_panel(svg, p, o) {
     const path = ev_el('path'); path.setAttribute('d', dp); path.setAttribute('fill', c.color);
     path.setAttribute('fill-opacity', 0.92);
     path.setAttribute('stroke', '#FAF8F3'); path.setAttribute('stroke-width', o.nivel === 'occ' ? 0.4 : (o.bigFmt ? 1 : 0.6));
+    // clave de banda: en ocupaciones se agrupa por DOMINIO (resalta el bloque)
+    const bandKey = o.nivel === 'dom' ? String(c.i) : 'd' + c.dom;
+    path.setAttribute('data-band', bandKey); path.setAttribute('data-band-op', 0.92);
+    if (!o.isPng) {
+      path.addEventListener('mouseenter', () => ev_bandEmph(svg, bandKey));
+      path.addEventListener('mouseleave', () => ev_bandEmph(svg, null));
+    }
     g.appendChild(path);
   });
 
@@ -324,13 +344,13 @@ function ev_panel(svg, p, o) {
     const last = p.d1, tot = p.totals[last] || 1;
     let blocks;
     if (o.nivel === 'dom') {
-      blocks = o.cats.map((c, k) => ({ name: c.name, color: c.color,
+      blocks = o.cats.map((c, k) => ({ name: c.name, color: c.color, band: String(c.i),
         lo: k === 0 ? 0 : cum[last][k - 1], hi: cum[last][k] }));
     } else {
       blocks = E.doms.map((dm, di) => {
         let lo = null, hi = 0;
         o.cats.forEach((c, k) => { if (c.dom === di) { if (lo === null) lo = k === 0 ? 0 : cum[last][k - 1]; hi = cum[last][k]; } });
-        return { name: o.en ? dm.en : dm.es, color: EV_DOM_COL[dm.es], lo: lo || 0, hi };
+        return { name: o.en ? dm.en : dm.es, color: EV_DOM_COL[dm.es], band: 'd' + di, lo: lo || 0, hi };
       });
     }
     const labs = blocks.map(b2 => {
@@ -367,7 +387,17 @@ function ev_panel(svg, p, o) {
         tx.setAttribute('x', o.x + o.w + (o.bigFmt ? 16 : 9));
         tx.setAttribute('y', l.yy - ((l.lineas.length - 1) / 2 - li) * lh + o.fsLbl * 0.34);
         tx.style.cssText = 'font-family:' + EV_SANS + ';font-size:' + o.fsLbl + 'px;font-weight:700;fill:' + l.color + ';';
-        tx.textContent = linea; svg.appendChild(tx);
+        tx.textContent = linea;
+        // hover sobre la etiqueta resalta su banda, igual que en el amistosos
+        if (l.band != null) {
+          tx.setAttribute('data-band-label', l.band);
+          if (!o.isPng) {
+            tx.style.cursor = 'default';
+            tx.addEventListener('mouseenter', () => ev_bandEmph(svg, l.band));
+            tx.addEventListener('mouseleave', () => ev_bandEmph(svg, null));
+          }
+        }
+        svg.appendChild(tx);
       });
     });
   }
