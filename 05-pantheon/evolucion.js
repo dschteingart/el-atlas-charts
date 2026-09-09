@@ -408,14 +408,18 @@ function ev_hover(svg, c) {
   const tip = document.getElementById('tooltipevo'); if (!tip) return;
   const en = ev_lang() === 'en', E = window.EVOL;
   const vline = ev_el('line'); vline.setAttribute('stroke', '#9a9488'); vline.setAttribute('stroke-width', 1);
-  vline.setAttribute('stroke-dasharray', '3 3'); vline.setAttribute('display', 'none'); svg.appendChild(vline);
-  c.zones.forEach(z => {
-    const cap = ev_el('rect'); cap.setAttribute('x', z.x); cap.setAttribute('y', z.y);
-    cap.setAttribute('width', z.w); cap.setAttribute('height', z.h); cap.setAttribute('fill', 'transparent');
-    svg.appendChild(cap);
+  vline.setAttribute('stroke-dasharray', '3 3'); vline.setAttribute('display', 'none');
+  // SIN capa de captura: un rect transparente encima se comeria el mouseenter de
+  // las bandas y el resaltado no andaria (patron del amistosos: el crosshair no
+  // recibe eventos y el movimiento se escucha en el SVG).
+  vline.setAttribute('pointer-events', 'none'); svg.appendChild(vline);
+  {
+    const zonaDe = (lx, ly) => c.zones.find(z => lx >= z.x && lx <= z.x + z.w && ly >= z.y && ly <= z.y + z.h);
     const move = (ev2) => {
       const rc = svg.getBoundingClientRect(), sc = rc.width / EV_W;
-      const lx = (ev2.clientX - rc.left) / sc;
+      const lx = (ev2.clientX - rc.left) / sc, ly = (ev2.clientY - rc.top) / sc;
+      const z = zonaDe(lx, ly);
+      if (!z) { vline.setAttribute('display', 'none'); tip.style.opacity = '0'; tip.style.display = 'none'; return; }
       let bi = Math.round((lx - z.x) / z.w * (c.NB - 1)); bi = Math.max(0, Math.min(c.NB - 1, bi));
       const xpix = z.x + (bi / (c.NB - 1)) * z.w;
       vline.setAttribute('display', ''); vline.setAttribute('x1', xpix); vline.setAttribute('x2', xpix);
@@ -445,10 +449,12 @@ function ev_hover(svg, c) {
       tip.style.left = ((x2 + 16 + tw > rc.width) ? Math.max(2, x2 - tw - 16) : x2 + 14) + 'px';
       tip.style.top = (y2 + 14) + 'px';
     };
-    cap.addEventListener('mousemove', move);
-    cap.addEventListener('mouseenter', move);
+    svg.addEventListener('mousemove', move);
+  }
+  svg.addEventListener('mouseleave', () => {
+    vline.setAttribute('display', 'none'); tip.style.opacity = '0'; tip.style.display = 'none';
+    ev_bandEmph(svg, null);   // por si el puntero sale sin pasar por el mouseleave de la banda
   });
-  svg.addEventListener('mouseleave', () => { vline.setAttribute('display', 'none'); tip.style.opacity = '0'; tip.style.display = 'none'; });
 }
 
 // ---------- subtítulo dinámico (el custom del editor manda) ----------
