@@ -31,10 +31,16 @@ const ISSUE_I18N = {
     'c4-sources':  'Datos: Pantheon (Datawheel, base 2025). % de mujeres entre las figuras célebres de cada dominio, América Latina vs el total mundial. La identidad de género proviene de Wikidata. Se cuentan sólo figuras multiidioma (biografía leída en al menos 2 idiomas desde 2015): quedan afuera los perfiles inflados por una sola Wikipedia.',
 
     // Chart 5 — Explorador
-    'c5-title':    'Figuras célebres per cápita, disciplina por disciplina',
-    'c5-subtitle': 'Elegí un rubro y un período de nacimiento: cada punto es un país. Eje vertical, figuras célebres por millón; eje horizontal, su PIB per cápita.',
-    'c5-sources':  'Datos: Pantheon (Datawheel, base 2025), Maddison Project (PIB per cápita) y OWID (población). Figuras por millón = nacidas en el período ÷ población promedio del período. PIB pc = promedio ponderado por el año de nacimiento de las figuras. Escala log-log. Regiones: taxonomía de El Atlas. Se cuentan sólo figuras multiidioma (biografía leída en al menos 2 idiomas desde 2015): quedan afuera los perfiles inflados por una sola Wikipedia. La fama no es el HPI del archivo de Pantheon: es un índice reconstruido desde las vistas de Wikipedia por idioma y por mes.',
-    'c5-lbl-rubro': 'Rubro', 'c5-lbl-from': 'Desde', 'c5-lbl-to': 'hasta',
+    'c5-title':    'La cantidad de famosos per cápita aumenta con el desarrollo',
+    'c5-subtitle': 'Figuras célebres por millón vs PIB per cápita, nacidas entre 1850 y 2010.',
+    'c5-sources':  'Datos: Pantheon (Datawheel), base editada por El Atlas; PIB per cápita del Maddison Project y población de OWID. Se toman personas con entrada de Wikipedia en al menos dos idiomas con más de mil lecturas. Figuras por millón = nacidas en el período ÷ población promedio del período.',
+    'c5-lbl-rubro': 'Rubro', 'c5-lbl-pop': 'Población', 'c5-scale-x': 'Escala PIB', 'c5-scale-y': 'Escala figuras',
+    'c5-log': 'Logarítmica', 'c5-lineal': 'Lineal', 'c5-lbl-periodo': 'Nacidos entre',
+    'c5-select': 'Seleccionar', 'c5-search-ph': 'Agregar país…',
+    'c5-select-hint': 'Los países elegidos son los que quedan etiquetados en el gráfico.',
+    'c5-banner-hint': 'Pasá el mouse por una región de la leyenda para ver los nombres de sus países; hacé clic (o tocá) para apagarla y sacarla del ajuste.',
+    'c5-show-all': 'Ver todas las regiones',
+    'ctrl-show-method': 'Ver metodología y fuentes',
 
     // Chart 6 — La fama cambió de oficio
     'c6-title':    'La fama cambió de oficio',
@@ -65,7 +71,7 @@ const ISSUE_I18N = {
     'c2-png-note': 'Datos: Pantheon (Datawheel).',
     'c3-png-note': 'Datos: Pantheon (Datawheel) y Maddison Project.',
     'c4-png-note': 'Datos: Pantheon (Datawheel).',
-    'c5-png-note': 'Datos: Pantheon (Datawheel), Maddison y OWID.',
+    'c5-png-note': 'Datos: Pantheon (Datawheel), base editada por El Atlas; PIB per cápita del Maddison Project y población de OWID. Se toman personas con entrada de Wikipedia en al menos dos idiomas con más de mil lecturas. Figuras por millón = nacidas en el período ÷ población promedio del período.',
     'c6-png-note': 'Datos: Pantheon (Datawheel).',
     'c7-png-note': 'Datos: Pantheon (Datawheel).',
     'c8-png-note': 'Datos: Pantheon (Datawheel).',
@@ -211,10 +217,16 @@ const ISSUE_I18N = {
     'c4-sources':  'Data: Pantheon (Datawheel, 2025 release). Share of women among the notable figures in each domain, Latin America vs the world total. Gender identity from Wikidata. Only multilingual figures are counted (biography read in at least 2 languages since 2015), which drops profiles inflated by a single Wikipedia.',
 
     // Chart 5 — Explorer
-    'c5-title':    'Notable figures per capita, field by field',
-    'c5-subtitle': 'Pick a field and a birth period: each dot is a country. Vertical axis, notable figures per million; horizontal axis, GDP per capita.',
-    'c5-sources':  'Data: Pantheon (Datawheel, 2025), Maddison Project (GDP per capita) and OWID (population). Figures per million = born in the period ÷ average population over the period. GDP pc = weighted by the figures’ birth years. Log-log scale. Regions: The Atlas taxonomy. Only multilingual figures are counted (biography read in at least 2 languages since 2015), which drops profiles inflated by a single Wikipedia. Fame is not the HPI from the Pantheon file: it is an index rebuilt from Wikipedia pageviews by language and month.',
-    'c5-lbl-rubro': 'Field', 'c5-lbl-from': 'From', 'c5-lbl-to': 'to',
+    'c5-title':    'Fame per capita rises with development',
+    'c5-subtitle': 'Notable figures per million vs GDP per capita, born 1850–2010.',
+    'c5-sources':  'Data: Pantheon (Datawheel), dataset edited by The Atlas; GDP per capita from the Maddison Project and population from OWID. Includes people whose Wikipedia entry exists in at least two languages with over 1,000 reads. Figures per million = born in the period ÷ average population over the period.',
+    'c5-lbl-rubro': 'Field', 'c5-lbl-pop': 'Population', 'c5-scale-x': 'GDP scale', 'c5-scale-y': 'Figures scale',
+    'c5-log': 'Logarithmic', 'c5-lineal': 'Linear', 'c5-lbl-periodo': 'Born between',
+    'c5-select': 'Select', 'c5-search-ph': 'Add a country…',
+    'c5-select-hint': 'The countries you pick are the ones labeled on the chart.',
+    'c5-banner-hint': 'Hover over a region in the legend to reveal its country names; click (or tap) to turn it off and drop it from the fit.',
+    'c5-show-all': 'Show all regions',
+    'ctrl-show-method': 'Methodology & sources',
 
     // Chart 6 — Fame changed jobs
     'c6-title':    'Fame changed jobs',
@@ -245,7 +257,7 @@ const ISSUE_I18N = {
     'c2-png-note': 'Data: Pantheon (Datawheel).',
     'c3-png-note': 'Data: Pantheon (Datawheel) and Maddison Project.',
     'c4-png-note': 'Data: Pantheon (Datawheel).',
-    'c5-png-note': 'Data: Pantheon (Datawheel), Maddison and OWID.',
+    'c5-png-note': 'Data: Pantheon (Datawheel), dataset edited by The Atlas; GDP per capita from the Maddison Project and population from OWID. Includes people whose Wikipedia entry exists in at least two languages with over 1,000 reads. Figures per million = born in the period ÷ average population over the period.',
     'c6-png-note': 'Data: Pantheon (Datawheel).',
     'c7-png-note': 'Data: Pantheon (Datawheel).',
     'c8-png-note': 'Data: Pantheon (Datawheel).',

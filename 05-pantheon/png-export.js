@@ -24,7 +24,7 @@
     '2': { es: 'el-atlas-05-huella-paises.png',     en: 'the-atlas-05-country-fingerprint.png' },
     '3': { es: 'el-atlas-05-ciencia.png',           en: 'the-atlas-05-science.png'             },
     '4': { es: 'el-atlas-05-genero.png',            en: 'the-atlas-05-gender.png'              },
-    '5': { es: 'el-atlas-05-explorador.png',        en: 'the-atlas-05-explorer.png'            },
+    '5': { es: 'el-atlas-05-fama-desarrollo.png',   en: 'the-atlas-05-fame-development.png'    },
     '6': { es: 'el-atlas-05-fama-oficio.png',       en: 'the-atlas-05-fame-jobs.png'           },
     '7': { es: 'el-atlas-05-migracion-fama.png',    en: 'the-atlas-05-fame-migration.png'      },
     '8': { es: 'el-atlas-05-subnacional.png',       en: 'the-atlas-05-subnational.png'         },
@@ -43,7 +43,9 @@
   // (`.m-legend` renderada por renderMarimekkoLegend) sigue como está.
   // Charts 1-4 dibujan su leyenda DENTRO del SVG. El chart 5 (scatter clonado
   // del N°2) usa la leyenda canvas de regiones, igual que el N°2.
-  const SHOWS_LEGEND = chartId => chartId === '5';
+  // Ningun chart dibuja leyenda de canvas hoy: el 5 nuevo (motor del N4)
+  // lleva la leyenda ADENTRO del svg, asi el PNG la rasteriza tal cual.
+  const SHOWS_LEGEND = chartId => false;
 
   // Props CSS que aplican a SVG y necesitamos preservar al rasterizar.
   // Esta lista es el "cinturón" — además, embebemos el CSS del documento
