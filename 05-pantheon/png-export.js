@@ -733,13 +733,14 @@
       y += legendH;
     }
 
-    // En formato del editor, si el SVG no llenó todo el alto (típico en el mapa
-    // apaisado), el bloque nota/firma queda equidistante entre el borde inferior del
-    // gráfico y el del PNG (centrado en el espacio sobrante), no pegado al gráfico.
+    // En formato del editor, si el SVG no llenó todo el alto, el bloque
+    // nota/firma se ancla al BORDE INFERIOR (receta amistosos: nota y firma
+    // cerca del borde inferior; si sobra alto, se estira el gráfico). Antes
+    // se centraba en el sobrante y quedaba un pie blanco (Daniel 2026-09-10).
     if (format && PNG_FORMATS[format] && sourceText) {
       const gap = (showLegend ? gapAfterLegend : gapAfterSvg);
-      const centeredTop = y + (H - y - sourceH) / 2;
-      y = Math.max(y, centeredTop - gap);
+      const bottomTop = H - padBottom - sourceH;
+      y = Math.max(y, bottomTop - gap);
     }
 
     if (sourceText) {

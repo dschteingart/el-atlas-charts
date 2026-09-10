@@ -19,7 +19,8 @@ iso2es={x['iso3']:(x.get('country_es') or x.get('country')) for x in ARR}
 iso2en={x['iso3']:x.get('country') for x in ARR}
 ROV={'PRI':'Latin America','CUB':'Latin America','TWN':'East Asia','HKG':'East Asia','MAC':'East Asia','PSE':'Middle East & North Africa'}
 NMOV={'PRI':('Puerto Rico','Puerto Rico'),'CUB':('Cuba','Cuba'),'TWN':('Taiwán','Taiwan'),'HKG':('Hong Kong','Hong Kong'),'MMR':('Birmania','Myanmar'),'COD':('R.D. del Congo','DR Congo'),'KOR':('Corea del Sur','South Korea'),'GBR':('Reino Unido','UK'),'USA':('EE.UU.','USA'),'CZE':('Chequia','Czechia'),'BIH':('Bosnia','Bosnia'),'ARE':('Emiratos','UAE')}
-def region_of(i): return iso2region.get(i) or ROV.get(i)
+# overrides PRIMERO (mismo bug que export_scatter: PRI quedaba Caribbean)
+def region_of(i): return ROV.get(i) or iso2region.get(i)
 def names(i):
     if i in NMOV: return NMOV[i]
     return (iso2es.get(i) or i, iso2en.get(i) or i)

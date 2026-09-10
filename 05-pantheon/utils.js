@@ -295,3 +295,30 @@ document.addEventListener('touchstart', function () {
   if (document.readyState !== 'loading') wire();
   else document.addEventListener('DOMContentLoaded', wire);
 })();
+
+// Boton "Limpiar" universal (criterio 11e de la casa, portado de lib/utils.js):
+// toda lista de chips multi-select con id *-selected-chips gana un boton que
+// clickea todas las cruces. Aparece con 2+ chips.
+function atlasWireClearButtons() {
+  const wire = (cont) => {
+    if (!cont || cont.__atlasClearWired) return;
+    cont.__atlasClearWired = true;
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'atlas-clear-btn';
+    btn.addEventListener('click', () => {
+      Array.from(cont.querySelectorAll('.m-chip-x, .ts-chip-x')).forEach(x => x.click());
+    });
+    cont.insertAdjacentElement('afterend', btn);
+    const sync = () => {
+      const n = cont.querySelectorAll('.m-chip-x, .ts-chip-x').length;
+      btn.textContent = (typeof LANG !== 'undefined' && LANG === 'en') ? 'Clear' : 'Limpiar';
+      btn.style.display = n >= 2 ? '' : 'none';
+    };
+    new MutationObserver(sync).observe(cont, { childList: true, subtree: true });
+    sync();
+  };
+  document.querySelectorAll('[id*="-selected-chips"]').forEach(wire);
+}
+window.addEventListener('load', () => setTimeout(atlasWireClearButtons, 0));
+

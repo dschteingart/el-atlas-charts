@@ -25,7 +25,9 @@ iso2es = {d['iso3']: d.get('country_es') or d.get('country') for d in arr}
 iso2en = {d['iso3']: d.get('country') for d in arr}
 REG_OV = {'PRI':'Latin America','CUB':'Latin America','HKG':'East Asia','TWN':'East Asia','MAC':'East Asia','PSE':'Middle East & North Africa'}
 NM_OV  = {'PRI':('Puerto Rico','Puerto Rico'),'TWN':('Taiwán','Taiwan'),'HKG':('Hong Kong','Hong Kong'),'CUB':('Cuba','Cuba'),'MAC':('Macao','Macao'),'PSE':('Palestina','Palestine')}
-def region_of(iso): return iso2region.get(iso) or REG_OV.get(iso)
+# los overrides van PRIMERO: la tabla del N1 trae PRI como Caribbean y con
+# `tabla or override` el override nunca aplicaba (bug detectado 2026-09-10)
+def region_of(iso): return REG_OV.get(iso) or iso2region.get(iso)
 def names_of(iso):
     if iso in NM_OV: return NM_OV[iso]
     return (iso2es.get(iso) or iso, iso2en.get(iso) or iso)

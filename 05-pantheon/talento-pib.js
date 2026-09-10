@@ -41,7 +41,7 @@ const TPX = (es, en) => (tp_lang() === 'en' ? en : es);
 // chart-desarrollo del N°4: la región protagonista son chips normales, se
 // sacan de a uno con la cruz).
 const TP_DEFAULT_SEL = ['ARG', 'BOL', 'BRA', 'CHL', 'COL', 'CRI', 'CUB', 'DOM', 'ECU',
-  'GTM', 'HND', 'HTI', 'MEX', 'NIC', 'PAN', 'PER', 'PRY', 'SLV', 'URY'];
+  'GTM', 'HND', 'HTI', 'MEX', 'NIC', 'PAN', 'PER', 'PRI', 'PRY', 'SLV', 'URY'];
 const TP_DEFAULT_POP = 1;      // millones (pedido 5c)
 const TP_ANCHORS = {
   USA: 1, DEU: 1, FRA: 1, GBR: 1, ESP: 1, ITA: 1, RUS: 1,
@@ -239,26 +239,18 @@ function tp_buildModel(pts) {
 }
 
 // =================== Escalas ===================
-// Dominio X FIJO sobre todo el dataset (el eje no salta al mover el slider),
-// calculado una vez desde las series de PIB.
-function tp_xDomain() {
-  if (tp_xDomain._c) return tp_xDomain._c;
-  const E = EXPLORA;
-  let lo = Infinity, hi = 0;
-  for (let idx = 0; idx < E.isoMeta.length; idx++) {
-    const g = E.gdp[idx]; if (!g) continue;
-    for (let i = 0; i < g.length; i++) { const v = g[i]; if (v > 0) { if (v < lo) lo = v; if (v > hi) hi = v; } }
-  }
-  if (!isFinite(lo)) { lo = 500; hi = 100000; }
-  return (tp_xDomain._c = { lo: lo * 0.9, hi: hi * 1.1 });
-}
-
 function tp_makeScales(pts, MARGIN, plotW, plotH) {
   const s = state[5];
-  const xd = tp_xDomain();
+  // Dominio X DINAMICO por render (con padding): un dominio fijo sobre todo
+  // el dataset dejaba medio eje vacio al promediar periodos largos (los
+  // promedios nunca llegan al maximo puntual) - pedido de Daniel 2026-09-10.
+  let gLo = Infinity, gHi = 0;
+  pts.forEach(p => { if (p.gdp_pc > 0) { if (p.gdp_pc < gLo) gLo = p.gdp_pc; if (p.gdp_pc > gHi) gHi = p.gdp_pc; } });
+  if (!isFinite(gLo)) { gLo = 700; gHi = 50000; }
+  const xd = { lo: gLo * 0.85, hi: gHi * 1.12 };
   const xLog = s.scaleX === 'log';
   const x0 = xLog ? Math.log10(xd.lo) : 0;
-  const x1 = xLog ? Math.log10(xd.hi) : xd.hi;
+  const x1 = xLog ? Math.log10(xd.hi) : xd.hi * 1.02;
   const xScale = (gdp) => MARGIN.left + (((xLog ? Math.log10(gdp) : gdp) - x0) / (x1 - x0)) * plotW;
 
   const yLog = s.scaleY === 'log';
@@ -279,17 +271,19 @@ function tp_makeScales(pts, MARGIN, plotW, plotH) {
     const yScale = (v) => (v > 0)
       ? yLogBot - ((Math.log10(v) - yd[0]) / (yd[1] - yd[0])) * (yLogBot - yTop)
       : yZero;
-    return { xScale, yScale, yLog: true, hasZero, yZero, yLogBot, yLo: lo, yHi: hi };
+    return { xScale, yScale, xLo: xd.lo, xHi: xd.hi, yLog: true, hasZero, yZero, yLogBot, yLo: lo, yHi: hi };
   }
   const hi = yMaxRaw * 1.08;
   const yScale = (v) => MARGIN.top + plotH - (v / hi) * plotH;
-  return { xScale, yScale, yLog: false, hasZero: false, yLo: 0, yHi: hi };
+  return { xScale, yScale, xLo: xd.lo, xHi: xd.hi, yLog: false, hasZero: false, yLo: 0, yHi: hi };
 }
 
 // =================== Layout por formato (clon del N°4) ===================
 function tp_layout(editorFormat, mobile) {
   if (editorFormat === 'newsletter' || editorFormat === 'square') {
-    return { W: 1100, H: 760, M: { top: 76, right: 44, left: 108 }, baseBottom: 30,
+    // H 800 (era 760): en el canvas cuadrado el sobrante se lo come el
+    // scatter, no el blanco del pie (Daniel 2026-09-10).
+    return { W: 1100, H: 800, M: { top: 76, right: 44, left: 108 }, baseBottom: 30,
              SIZES: { tick: 22, axisTitle: 25, label: 24, dot: 8, strip: 22, legend: 20 } };
   }
   if (editorFormat === 'mobile') {
@@ -405,18 +399,17 @@ function drawTalento() {
 
   // === Grid + ticks X ===
   const gridG = tp_ns('g'); svg.appendChild(gridG);
-  const xd = tp_xDomain();
   let xTicks;
   if (s.scaleX === 'log') {
-    xTicks = (typeof niceLog10Ticks === 'function') ? niceLog10Ticks(xd.lo, xd.hi) : [1000, 10000, 100000];
-    if (bigFmt) xTicks = xTicks.filter(vv => Math.abs(Math.log10(vv) - Math.round(Math.log10(vv))) < 1e-9);
+    xTicks = (typeof niceLog10Ticks === 'function') ? niceLog10Ticks(sc.xLo, sc.xHi) : [1000, 10000, 100000];
+    if (bigFmt && xTicks.length > 6) xTicks = xTicks.filter(vv => Math.abs(Math.log10(vv) - Math.round(Math.log10(vv))) < 1e-9);
   } else {
-    xTicks = (typeof niceLinearTicks === 'function') ? niceLinearTicks(0, xd.hi, 6) : [0, 50000, 100000];
-    if (bigFmt) xTicks = xTicks.filter((vv, i) => i % 2 === 0);
+    xTicks = (typeof niceLinearTicks === 'function') ? niceLinearTicks(0, sc.xHi, 6) : [0, 50000, 100000];
+    if (bigFmt && xTicks.length > 6) xTicks = xTicks.filter((vv, i) => i % 2 === 0);
   }
   xTicks.forEach(vv => {
-    const x = xScale(Math.max(vv, s.scaleX === 'log' ? xd.lo : 0));
-    if (vv > 0 && s.scaleX === 'log' && (vv < xd.lo || vv > xd.hi)) return;
+    const x = xScale(Math.max(vv, s.scaleX === 'log' ? sc.xLo : 0));
+    if (vv > 0 && s.scaleX === 'log' && (vv < sc.xLo || vv > sc.xHi)) return;
     if (x < MARGIN.left - 0.5 || x > MARGIN.left + plotW + 0.5) return;
     const ln = tp_ns('line');
     ln.setAttribute('x1', x); ln.setAttribute('x2', x);

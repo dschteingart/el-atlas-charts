@@ -299,10 +299,7 @@
     svg.select('#legendG').remove();
     const leg = svg.append('g').attr('id', 'legendG').attr('transform', `translate(${MARGIN.left + 4},${LEG_Y}) scale(1.9)`);
     const FONT = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
-    if (st.mapMode === 'dorling') {
-      leg.append('text').attr('x', 0).attr('y', 12).attr('font-family', FONT).attr('font-size', 11).attr('fill', '#4A4A4A').text(T('Tamaño = ', 'Size = ') + measLabel());
-      return;
-    }
+    if (st.mapMode === 'dorling') return;   // el cartograma no lleva rotulo (pedido de Daniel)
     const W_MAIN = 320, GAP = 12, ND_W = 14, BIN_H = 12, TEXT_Y = BIN_H + 12;
     const nBins = legendBreaks.length + 1, binW = W_MAIN / nBins;
     for (let i = 0; i < nBins; i++) leg.append('rect').attr('x', i * binW).attr('y', 0).attr('width', binW).attr('height', BIN_H).attr('fill', RAMP[i]).attr('stroke', 'rgba(0,0,0,.08)').attr('stroke-width', .5).attr('data-bin', i).style('cursor', 'pointer').on('mouseenter', () => hiBin(i)).on('mouseleave', clearHi);

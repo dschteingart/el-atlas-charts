@@ -177,7 +177,10 @@ function drawEvo() {
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, dims.fmt);
 
   const anchoLab = (nombre) => Math.max(...ev_wrapLab(nombre, fsLbl, bigFmt).map(l => ev_measure(l, fsLbl, 700)));
-  const rightSingle = Math.ceil(Math.max(...E.doms.map(dm => anchoLab(en ? dm.en : dm.es)))) + (bigFmt ? 24 : 16);
+  // +42 de colchon en PNG: el texto arranca en x=+16 y la medicion de canvas
+  // puede quedar corta vs el raster final (carrera de fuentes) -> "figuras
+  // publicas" se salia del borde derecho (Daniel, 2026-09-10).
+  const rightSingle = Math.ceil(Math.max(...E.doms.map(dm => anchoLab(en ? dm.en : dm.es)))) + (bigFmt ? 42 : 16);
   const yTickW = share ? ev_measure('100%', fsTick) : Math.max(...yTicksAbs.map(v => ev_measure(ev_fmtN(v), fsTick)));
   const M = {
     top: bigFmt ? 34 : 18,

@@ -35,7 +35,7 @@
   .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
   /* periodo universal: doble slider + cajitas (criterio de la casa) */
   .anios { display: flex; align-items: center; gap: 8px; }
-  .anios input[type=number] { font-family: var(--sans); font-size: 13px; width: 88px; padding: 5px 6px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink); }
+  .anios input[type=number] { font-family: var(--sans); font-size: 12.5px; width: 60px; padding: 4px 6px; border: 1px solid var(--rule); border-radius: 7px; background: var(--bg); color: var(--ink); }
   .dual { position: relative; width: 190px; height: 26px; }
   .dual .track { position: absolute; top: 11.5px; left: 0; right: 0; height: 3px; background: var(--rule); border-radius: 2px; }
   .dual .fill { position: absolute; top: 11.5px; height: 3px; background: var(--accent); border-radius: 2px; }
@@ -116,9 +116,6 @@
   <div class="footer">
     <p><button class="download" data-chart="map-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="map" data-i18n="footer-download-png">Descargar PNG</button></p>
     <div class="footer-row">
-      <p class="sources" data-i18n="cmap-note">…</p>
-    </div>
-    <div class="footer-row">
       <p class="sources" data-i18n="cmap-sources">Datos: Pantheon (Datawheel).</p>
       <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
     </div>
@@ -128,16 +125,16 @@
 <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=22"></script>
-<script src="./utils.js?v=4"></script>
+<script src="./i18n-issue.js?v=23"></script>
+<script src="./utils.js?v=5"></script>
 <script src="./country-names.js?v=2"></script>
 <script src="./data-country-geo-mini.js?v=2"></script>
-<script src="./data-geo-regions.js?v=2"></script>
+<script src="./data-geo-regions.js?v=4"></script>
 <script src="./data-percap-map.js?v=9"></script>
 <script src="./data-percap-pop.js?v=4"></script>
 <script src="./data-percap-topfig.js?v=9"></script>
-<script src="./percap-map.js?v=18"></script>
-<script src="./png-export.js?v=7"></script>
+<script src="./percap-map.js?v=19"></script>
+<script src="./png-export.js?v=8"></script>
 <script>
   applyI18n();
   if (typeof setupLangToggle === 'function') setupLangToggle(() => { applyI18n(); if (window.__mapRelang) window.__mapRelang(); });

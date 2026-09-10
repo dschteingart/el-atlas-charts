@@ -65,14 +65,82 @@ print('size:', round(os.path.getsize(OUT) / 1024), 'KB (era 2001 KB)')
 # DESPUES: unir los poligonos ya simplificados deja rendijas en las fronteras
 # compartidas. La membresia iso->region sale del PCMAP (fuente unica).
 from shapely.ops import unary_union
-from shapely.geometry.polygon import orient
-from shapely.geometry import Polygon as _Poly, MultiPolygon as _MPoly
+import math as _math
 
-def _reorienta(g, sign):
-    # d3.geoPath usa winding ESFERICO: si el anillo va al reves, pinta el
-    # complemento (el oceano entero terracota). Alineamos con los paises fuente.
-    if g.geom_type == 'Polygon': return orient(g, sign)
-    if g.geom_type == 'MultiPolygon': return _MPoly([orient(pp, sign) for pp in g.geoms])
+def _area_esf(ring):
+    # area ESFERICA con signo (formula de turf/geojson-rewind). El criterio
+    # planar (shapely orient) MIENTE en latitudes altas: forzar CW planar
+    # invirtio el sentido esferico de un anillo artico de Norteamerica y
+    # d3 pintaba su COMPLEMENTO (el oceano entero terracota, 2026-09-10).
+    # Calibracion: los 1009 anillos exteriores de la fuente dan area > 0.
+    a = 0.0
+    for i in range(len(ring) - 1):
+        l1, f1 = _math.radians(ring[i][0]), _math.radians(ring[i][1])
+        l2, f2 = _math.radians(ring[i+1][0]), _math.radians(ring[i+1][1])
+        a += (l2 - l1) * (2 + _math.sin(f1) + _math.sin(f2))
+    return a / 2.0
+
+TAU = 2 * _math.pi
+def _d3_ring_area(ring):
+    # Replica exacta del areaRing de d3-geo, en [0, 4pi). Es EL oraculo: lo
+    # que d3 vea invertido pinta el complemento en pantalla.
+    if len(ring) < 4: return 0.0
+    lam0 = _math.radians(ring[0][0]); phi = _math.radians(ring[0][1]) / 2 + _math.pi / 4
+    cos0, sin0 = _math.cos(phi), _math.sin(phi)
+    S = 0.0
+    for i in range(1, len(ring)):
+        lam = _math.radians(ring[i][0]); phi = _math.radians(ring[i][1]) / 2 + _math.pi / 4
+        dl = lam - lam0; sd = 1 if dl >= 0 else -1; ad = sd * dl
+        c, snf = _math.cos(phi), _math.sin(phi)
+        k = sin0 * snf
+        u = cos0 * c + k * _math.cos(ad)
+        v = k * sd * _math.sin(ad)
+        S += _math.atan2(v, u)
+        lam0, cos0, sin0 = lam, c, snf
+    if S < 0: S += TAU
+    return 2 * S
+
+def _shoelace(ring):
+    a = 0.0
+    for i in range(len(ring) - 1):
+        a += ring[i][0] * ring[i+1][1] - ring[i+1][0] * ring[i][1]
+    return a / 2.0
+
+def _limpia_piezas(g):
+    # El redondeo a 2 decimales puede COLAPSAR una astilla del buffer en un
+    # anillo degenerado (4 puntos identicos): d3 lo lee como la esfera entera
+    # (area 4pi) y pinta el oceano del color de la region (bug del 2026-09-10,
+    # pieza fantasma en -81,25). Se tiran las piezas sin area real; si una
+    # pieza GRANDE quedara invertida segun d3, se da vuelta.
+    def ok(cs):
+        ext = cs[0]
+        if len(set(map(tuple, ext))) < 4: return None
+        if abs(_shoelace(ext)) < 1e-4: return None
+        if _d3_ring_area(ext) > TAU:
+            cs = [r[::-1] for r in cs]
+            if _d3_ring_area(cs[0]) > TAU: return None
+        return cs
+    if g['type'] == 'Polygon':
+        cs = ok(g['coordinates'])
+        return {'type': 'Polygon', 'coordinates': cs} if cs else None
+    piezas = [ok(cs) for cs in g['coordinates']]
+    piezas = [cs for cs in piezas if cs]
+    if not piezas: return None
+    return {'type': 'MultiPolygon', 'coordinates': piezas}
+
+def _rewind_coords(g):
+    # exterior: area esferica > 0; agujeros: < 0 (como los paises fuente).
+    def poly(cs):
+        out = []
+        for k, ring in enumerate(cs):
+            a = _area_esf(ring)
+            if (k == 0 and a < 0) or (k > 0 and a > 0): ring = ring[::-1]
+            out.append(ring)
+        return out
+    if g['type'] == 'Polygon':
+        g['coordinates'] = poly(g['coordinates'])
+    elif g['type'] == 'MultiPolygon':
+        g['coordinates'] = [poly(cs) for cs in g['coordinates']]
     return g
 
 PCMAP = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-pantheon\data-percap-map.js'
@@ -92,10 +160,14 @@ feats = []
 for reg, gs in por_region.items():
     u = unary_union(gs).buffer(0.02).buffer(-0.02)   # micro-cierre de rendijas
     u = u.simplify(TOL, preserve_topology=True)
-    u = _reorienta(u, -1.0)   # exterior horario, como los paises fuente
-    m = mapping(u)
-    feats.append({'type': 'Feature', 'id': reg,
-                  'geometry': {'type': m['type'], 'coordinates': rnd(m['coordinates'])}})
+    m = json.loads(json.dumps(mapping(u)))   # a listas mutables
+    m = _rewind_coords(m)
+    m = {'type': m['type'], 'coordinates': rnd(m['coordinates'])}
+    m = _limpia_piezas(m)   # DESPUES del redondeo, que es quien degenera
+    assert m, reg
+    peor = max(_d3_ring_area(cs[0]) for cs in (m['coordinates'] if m['type'] == 'MultiPolygon' else [m['coordinates']]))
+    assert peor < TAU, (reg, peor)
+    feats.append({'type': 'Feature', 'id': reg, 'geometry': m})
 out_r = {'type': 'FeatureCollection', 'features': feats}
 open(OUT_R, 'w', encoding='utf-8').write(
     '// Regiones DISUELTAS (union por region desde la geometria fuente). id=nombre de region.\n'

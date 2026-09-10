@@ -101,8 +101,8 @@
 </div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=22"></script>
-<script src="./utils.js?v=4"></script>
+<script src="./i18n-issue.js?v=23"></script>
+<script src="./utils.js?v=5"></script>
 <script src="./data-percap-map.js?v=7"></script>
 <script>
 const E = window.PCMAP;
@@ -211,12 +211,16 @@ function repSubNeutral() {
     : 'Porcentaje ' + quien + ', por país y período.';
 }
 // curva raiz con piso: la lineal v/m*.5 dejaba invisible todo lo <5%
-const heatAlpha = (v, m) => (!m || v == null || v <= 0) ? 0 : Math.min(.55, Math.max(.07, Math.sqrt(v / m) * .55));
+const heatAlpha = (v, m) => (!m || v == null || v <= 0) ? 0 : Math.min(.6, Math.max(.05, (v / m) * .6));
 const heat = (v, m) => 'background:rgba(190,93,50,' + heatAlpha(v, m).toFixed(3) + ')';
 const heatD = (v, m) => v == null ? '' : 'background:rgba(' + (v >= 0 ? '190,93,50' : '74,111,143') + ',' + heatAlpha(Math.abs(v), m).toFixed(3) + ')';
 const maxes = rows => {
-  const mx = { pre: 0, post: 0, tot: 0, dif: 0 };
-  rows.forEach(r => { ['pre', 'post', 'tot'].forEach(k => { if (r[k] > mx[k]) mx[k] = r[k]; }); if (Math.abs(r.dif) > mx.dif) mx.dif = Math.abs(r.dif); });
+  // UN solo maximo para las tres columnas de share: con maximo por columna,
+  // la region top salia igual de oscura en las tres celdas aunque los valores
+  // difieran (57,5% vs 40% de Europa, lo que marco Daniel 2026-09-10).
+  const mx = { share: 0, dif: 0 };
+  rows.forEach(r => { ['pre', 'post', 'tot'].forEach(k => { if (r[k] > mx.share) mx.share = r[k]; }); if (Math.abs(r.dif) > mx.dif) mx.dif = Math.abs(r.dif); });
+  mx.pre = mx.post = mx.tot = mx.share;
   return mx;
 };
 

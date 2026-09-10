@@ -90,7 +90,6 @@ const ISSUE_I18N = {
     'cmap-lbl-filtro': 'Dominio / ocupación',
     'cmap-lbl-periodo': 'Nacidos entre',
     'cmap-zoom': '↺ Zoom',
-    'cmap-note': 'Per cápita divide por la población promedio del período (por millón de habitantes). El tooltip muestra la figura de mayor HPI del país o región en el período elegido.',
     'cmap-sources': 'Datos: Pantheon (Datawheel), que toma personas con entrada de Wikipedia en al menos 15 idiomas; El Atlas depura la base y exige al menos dos idiomas con más de mil lecturas.',
     'cmap-png-note': 'Datos: Pantheon (Datawheel), que toma personas con entrada de Wikipedia en al menos 15 idiomas; El Atlas depura la base y exige al menos dos idiomas con más de mil lecturas.',
     // De que esta hecha la fama (evolucion.html)
@@ -276,7 +275,6 @@ const ISSUE_I18N = {
     'cmap-lbl-filtro': 'Domain / occupation',
     'cmap-lbl-periodo': 'Born between',
     'cmap-zoom': '↺ Zoom',
-    'cmap-note': 'Per capita divides by the average population of the period (per million people). The tooltip shows the top-HPI figure of the country or region in the chosen period.',
     'cmap-sources': 'Data: Pantheon (Datawheel), which includes people with a Wikipedia entry in at least 15 languages; The Atlas edits the dataset and requires at least two languages with over 1,000 reads.',
     'cmap-png-note': 'Data: Pantheon (Datawheel), which includes people with a Wikipedia entry in at least 15 languages; The Atlas edits the dataset and requires at least two languages with over 1,000 reads.',
     // What fame is made of (evolucion.html)
