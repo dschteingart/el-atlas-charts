@@ -33,7 +33,7 @@ const ISSUE_I18N = {
     // Chart 5 — Explorador
     'c5-title':    'La cantidad de famosos per cápita aumenta con el desarrollo',
     'c5-subtitle': 'Figuras célebres por millón vs PIB per cápita, nacidas entre 1850 y 2010.',
-    'c5-sources':  'Datos: Pantheon (Datawheel), base editada por El Atlas; PIB per cápita del Maddison Project y población de OWID. Se toman personas con entrada de Wikipedia en al menos dos idiomas con más de mil lecturas. Figuras por millón = nacidas en el período ÷ población promedio del período.',
+    'c5-sources':  'Datos: Pantheon (Datawheel), que toma personas con entrada de Wikipedia en al menos 15 idiomas; El Atlas depura la base y exige al menos dos idiomas con más de mil lecturas. PIB per cápita del Maddison Project y población de OWID. Figuras por millón = nacidas en el período ÷ población promedio del período.',
     'c5-lbl-rubro': 'Rubro', 'c5-lbl-pop': 'Población', 'c5-scale-x': 'Escala PIB', 'c5-scale-y': 'Escala figuras',
     'c5-log': 'Logarítmica', 'c5-lineal': 'Lineal', 'c5-lbl-periodo': 'Nacidos entre',
     'c5-select': 'Seleccionar', 'c5-search-ph': 'Agregar país…',
@@ -71,7 +71,7 @@ const ISSUE_I18N = {
     'c2-png-note': 'Datos: Pantheon (Datawheel).',
     'c3-png-note': 'Datos: Pantheon (Datawheel) y Maddison Project.',
     'c4-png-note': 'Datos: Pantheon (Datawheel).',
-    'c5-png-note': 'Datos: Pantheon (Datawheel), base editada por El Atlas; PIB per cápita del Maddison Project y población de OWID. Se toman personas con entrada de Wikipedia en al menos dos idiomas con más de mil lecturas. Figuras por millón = nacidas en el período ÷ población promedio del período.',
+    'c5-png-note': 'Datos: Pantheon (Datawheel), que toma personas con entrada de Wikipedia en al menos 15 idiomas; El Atlas depura la base y exige al menos dos idiomas con más de mil lecturas. PIB per cápita del Maddison Project y población de OWID. Figuras por millón = nacidas en el período ÷ población promedio del período.',
     'c6-png-note': 'Datos: Pantheon (Datawheel).',
     'c7-png-note': 'Datos: Pantheon (Datawheel).',
     'c8-png-note': 'Datos: Pantheon (Datawheel).',
@@ -91,8 +91,8 @@ const ISSUE_I18N = {
     'cmap-lbl-periodo': 'Nacidos entre',
     'cmap-zoom': '↺ Zoom',
     'cmap-note': 'Per cápita divide por la población promedio del período (por millón de habitantes). El tooltip muestra la figura de mayor HPI del país o región en el período elegido.',
-    'cmap-sources': 'Datos: Pantheon (Datawheel), base editada por El Atlas. Se toman personas con entrada de Wikipedia en al menos dos idiomas con más de mil lecturas.',
-    'cmap-png-note': 'Datos: Pantheon (Datawheel), base editada por El Atlas. Se toman personas con entrada de Wikipedia en al menos dos idiomas con más de mil lecturas.',
+    'cmap-sources': 'Datos: Pantheon (Datawheel), que toma personas con entrada de Wikipedia en al menos 15 idiomas; El Atlas depura la base y exige al menos dos idiomas con más de mil lecturas.',
+    'cmap-png-note': 'Datos: Pantheon (Datawheel), que toma personas con entrada de Wikipedia en al menos 15 idiomas; El Atlas depura la base y exige al menos dos idiomas con más de mil lecturas.',
     // De que esta hecha la fama (evolucion.html)
     'cevo-title': 'Cómo cambió el perfil de la fama',
     'cevo-lbl-medida': 'Medida',
@@ -107,8 +107,8 @@ const ISSUE_I18N = {
     'cevo-limpiar': 'Limpiar',
     'cevo-vacio': 'Elegí un país o una región con el buscador.',
     'cevo-note': 'Figuras célebres agrupadas por período de nacimiento: un solo tramo pre-1500 y tramos de 50 años desde entonces (post-2000 agrupa el final). En la apertura por ocupación, cada franja es una ocupación y el tono indica su gran rubro.',
-    'cevo-sources': 'Datos: Pantheon (Datawheel), base editada por El Atlas. Se toman personas con entrada de Wikipedia en al menos dos idiomas con más de mil lecturas.',
-    'cevo-png-note': 'Datos: Pantheon (Datawheel), base editada por El Atlas. Se toman personas con entrada de Wikipedia en al menos dos idiomas con más de mil lecturas.',
+    'cevo-sources': 'Datos: Pantheon (Datawheel), que toma personas con entrada de Wikipedia en al menos 15 idiomas; El Atlas depura la base y exige al menos dos idiomas con más de mil lecturas.',
+    'cevo-png-note': 'Datos: Pantheon (Datawheel), que toma personas con entrada de Wikipedia en al menos 15 idiomas; El Atlas depura la base y exige al menos dos idiomas con más de mil lecturas.',
     // genero + tooltips de figura (podios/top)
     'gen-lbl': 'Género',
     'gen-todos': 'Todos',
@@ -140,7 +140,7 @@ const ISSUE_I18N = {
     'pod-sin-figuras': 'sin figuras con estos filtros',
     'pod-cargando': 'Cargando la base completa…',
     'pod-note': 'Para cada país, las tres figuras con mayor HPI nacidas en el período elegido. El HPI (0–100) pondera idiomas y lecturas de Wikipedia fuera del inglés, con corrección por antigüedad; versión modificada del índice de Pantheon. Universo: toda la base depurada (116.319 figuras multiidioma).',
-    'pod-sources': 'Datos: Pantheon (Datawheel), base editada por El Atlas. Se toman personas con entrada de Wikipedia en al menos dos idiomas con más de mil lecturas.',
+    'pod-sources': 'Datos: Pantheon (Datawheel), que toma personas con entrada de Wikipedia en al menos 15 idiomas; El Atlas depura la base y exige al menos dos idiomas con más de mil lecturas.',
     'pod-png-note': 'Datos: Pantheon (Datawheel). El HPI pondera idiomas y lecturas de Wikipedia fuera del inglés; versión modificada del índice original de Pantheon.',
     'pod-png-top': 'Top {n} países de la selección.',
     // Quien es quien (top.html)
@@ -163,7 +163,7 @@ const ISSUE_I18N = {
     'top-aviso-cargando': 'Cargando la base completa…',
     'top-aviso-fin': 'No hay más figuras con estos filtros: se muestran {n}.',
     'top-note': 'El Historical Popularity Index (HPI, 0–100) se calcula a partir de la cantidad de idiomas en los que cada figura es leída en Wikipedia, sus lecturas fuera del inglés (último año, acumuladas históricas y mediana mensual) y una corrección por antigüedad. Es una versión modificada del que calcula Pantheon; las diferencias entre ambos cálculos están en la nota metodológica del número. El puesto (#) es el ranking global entre las 116.319 figuras de la base.',
-    'top-sources': 'Datos: Pantheon (Datawheel), base editada por El Atlas. Se toman personas con entrada de Wikipedia en al menos dos idiomas con más de mil lecturas.',
+    'top-sources': 'Datos: Pantheon (Datawheel), que toma personas con entrada de Wikipedia en al menos 15 idiomas; El Atlas depura la base y exige al menos dos idiomas con más de mil lecturas.',
     'top-png-top': 'Top {n} de la selección.',
     'top-png-note': 'Datos: Pantheon (Datawheel). El HPI combina en cuántos idiomas está la entrada de Wikipedia de cada figura, cuántas lecturas tiene y cuán antigua es. #: puesto en el ranking mundial.',
     // Reparto de la fama (reparto.html)
@@ -185,7 +185,7 @@ const ISSUE_I18N = {
     'rep-col-n': 'n',
     'rep-resumen': 'Figuras en la selección: {pre} nacidas antes de {corte} · {post} desde {corte}.',
     'rep-note': '',
-    'rep-sources': 'Datos: Pantheon (Datawheel), base editada por El Atlas. Se toman personas con entrada de Wikipedia en al menos dos idiomas con más de mil lecturas.',
+    'rep-sources': 'Datos: Pantheon (Datawheel), que toma personas con entrada de Wikipedia en al menos 15 idiomas; El Atlas depura la base y exige al menos dos idiomas con más de mil lecturas.',
     'rep-png-note-pais': 'Top {n} países por la columna ordenada.',
   },
   en: {
@@ -219,7 +219,7 @@ const ISSUE_I18N = {
     // Chart 5 — Explorer
     'c5-title':    'Fame per capita rises with development',
     'c5-subtitle': 'Notable figures per million vs GDP per capita, born 1850–2010.',
-    'c5-sources':  'Data: Pantheon (Datawheel), dataset edited by The Atlas; GDP per capita from the Maddison Project and population from OWID. Includes people whose Wikipedia entry exists in at least two languages with over 1,000 reads. Figures per million = born in the period ÷ average population over the period.',
+    'c5-sources':  'Data: Pantheon (Datawheel), which includes people with a Wikipedia entry in at least 15 languages; The Atlas edits the dataset and requires at least two languages with over 1,000 reads. GDP per capita from the Maddison Project and population from OWID. Figures per million = born in the period ÷ average population over the period.',
     'c5-lbl-rubro': 'Field', 'c5-lbl-pop': 'Population', 'c5-scale-x': 'GDP scale', 'c5-scale-y': 'Figures scale',
     'c5-log': 'Logarithmic', 'c5-lineal': 'Linear', 'c5-lbl-periodo': 'Born between',
     'c5-select': 'Select', 'c5-search-ph': 'Add a country…',
@@ -257,7 +257,7 @@ const ISSUE_I18N = {
     'c2-png-note': 'Data: Pantheon (Datawheel).',
     'c3-png-note': 'Data: Pantheon (Datawheel) and Maddison Project.',
     'c4-png-note': 'Data: Pantheon (Datawheel).',
-    'c5-png-note': 'Data: Pantheon (Datawheel), dataset edited by The Atlas; GDP per capita from the Maddison Project and population from OWID. Includes people whose Wikipedia entry exists in at least two languages with over 1,000 reads. Figures per million = born in the period ÷ average population over the period.',
+    'c5-png-note': 'Data: Pantheon (Datawheel), which includes people with a Wikipedia entry in at least 15 languages; The Atlas edits the dataset and requires at least two languages with over 1,000 reads. GDP per capita from the Maddison Project and population from OWID. Figures per million = born in the period ÷ average population over the period.',
     'c6-png-note': 'Data: Pantheon (Datawheel).',
     'c7-png-note': 'Data: Pantheon (Datawheel).',
     'c8-png-note': 'Data: Pantheon (Datawheel).',
@@ -277,8 +277,8 @@ const ISSUE_I18N = {
     'cmap-lbl-periodo': 'Born between',
     'cmap-zoom': '↺ Zoom',
     'cmap-note': 'Per capita divides by the average population of the period (per million people). The tooltip shows the top-HPI figure of the country or region in the chosen period.',
-    'cmap-sources': 'Data: Pantheon (Datawheel), dataset edited by The Atlas. Includes people whose Wikipedia entry exists in at least two languages with over 1,000 reads.',
-    'cmap-png-note': 'Data: Pantheon (Datawheel), dataset edited by The Atlas. Includes people whose Wikipedia entry exists in at least two languages with over 1,000 reads.',
+    'cmap-sources': 'Data: Pantheon (Datawheel), which includes people with a Wikipedia entry in at least 15 languages; The Atlas edits the dataset and requires at least two languages with over 1,000 reads.',
+    'cmap-png-note': 'Data: Pantheon (Datawheel), which includes people with a Wikipedia entry in at least 15 languages; The Atlas edits the dataset and requires at least two languages with over 1,000 reads.',
     // What fame is made of (evolucion.html)
     'cevo-title': 'How the profile of fame changed',
     'cevo-lbl-medida': 'Measure',
@@ -293,8 +293,8 @@ const ISSUE_I18N = {
     'cevo-limpiar': 'Clear',
     'cevo-vacio': 'Pick a country or region with the search box.',
     'cevo-note': 'Famous figures grouped by birth period: a single pre-1500 bucket and 50-year bins afterwards (post-2000 groups the tail). In the occupation breakdown each band is one occupation, shaded by its broader domain.',
-    'cevo-sources': 'Data: Pantheon (Datawheel), dataset edited by The Atlas. Includes people whose Wikipedia entry exists in at least two languages with over 1,000 reads.',
-    'cevo-png-note': 'Data: Pantheon (Datawheel), dataset edited by The Atlas. Includes people whose Wikipedia entry exists in at least two languages with over 1,000 reads.',
+    'cevo-sources': 'Data: Pantheon (Datawheel), which includes people with a Wikipedia entry in at least 15 languages; The Atlas edits the dataset and requires at least two languages with over 1,000 reads.',
+    'cevo-png-note': 'Data: Pantheon (Datawheel), which includes people with a Wikipedia entry in at least 15 languages; The Atlas edits the dataset and requires at least two languages with over 1,000 reads.',
     // gender + person tooltips (podios/top)
     'gen-lbl': 'Gender',
     'gen-todos': 'All',
@@ -326,7 +326,7 @@ const ISSUE_I18N = {
     'pod-sin-figuras': 'no figures under these filters',
     'pod-cargando': 'Loading the full dataset…',
     'pod-note': "For each country, the three highest-HPI figures born in the chosen period. The HPI (0–100) weighs languages and non-English Wikipedia readership, with an age correction; a modified version of Pantheon's index. Universe: the full cleaned dataset (116,319 multilingual figures).",
-    'pod-sources': 'Data: Pantheon (Datawheel), dataset edited by The Atlas. Includes people whose Wikipedia entry exists in at least two languages with over 1,000 reads.',
+    'pod-sources': 'Data: Pantheon (Datawheel), which includes people with a Wikipedia entry in at least 15 languages; The Atlas edits the dataset and requires at least two languages with over 1,000 reads.',
     'pod-png-note': "Data: Pantheon (Datawheel). The HPI weighs languages and non-English Wikipedia readership; a modified version of Pantheon's original index.",
     'pod-png-top': 'Top {n} countries of the selection.',
     // Who's who (top.html)
@@ -349,7 +349,7 @@ const ISSUE_I18N = {
     'top-aviso-cargando': 'Loading the full dataset…',
     'top-aviso-fin': 'No more figures match these filters: showing {n}.',
     'top-note': "The Historical Popularity Index (HPI, 0–100) is computed from the number of languages in which each figure is read on Wikipedia, their non-English pageviews (last year, all-time and monthly median) and an age correction. It is a modified version of the index Pantheon computes; the differences are covered in the issue's methodological note. The rank (#) is global among the 116,319 figures in the dataset.",
-    'top-sources': 'Data: Pantheon (Datawheel), dataset edited by The Atlas. Includes people whose Wikipedia entry exists in at least two languages with over 1,000 reads.',
+    'top-sources': 'Data: Pantheon (Datawheel), which includes people with a Wikipedia entry in at least 15 languages; The Atlas edits the dataset and requires at least two languages with over 1,000 reads.',
     'top-png-top': 'Top {n} of the selection.',
     'top-png-note': 'Data: Pantheon (Datawheel). The HPI combines how many languages a figure\'s Wikipedia entry exists in, how much it is read and how old the figure is. #: world ranking position.',
     // Fame shares (reparto.html)
@@ -371,7 +371,7 @@ const ISSUE_I18N = {
     'rep-col-n': 'n',
     'rep-resumen': 'Figures in this selection: {pre} born before {corte} · {post} since {corte}.',
     'rep-note': '',
-    'rep-sources': 'Data: Pantheon (Datawheel), dataset edited by The Atlas. Includes people whose Wikipedia entry exists in at least two languages with over 1,000 reads.',
+    'rep-sources': 'Data: Pantheon (Datawheel), which includes people with a Wikipedia entry in at least 15 languages; The Atlas edits the dataset and requires at least two languages with over 1,000 reads.',
     'rep-png-note-pais': 'Top {n} countries by the sorted column.',
   },
 };
