@@ -92,9 +92,9 @@
 <div class="tooltip" id="tt" style="display:none"></div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=19"></script>
+<script src="./i18n-issue.js?v=20"></script>
 <script src="./utils.js?v=4"></script>
-<script src="./data-top.js?v=10"></script>
+<script src="./data-top.js?v=11"></script>
 <script>
 const D = window.TOPFIGS;
 const REG_LABEL = {
@@ -461,7 +461,7 @@ function ttHtml(r) {
 function cargarBaseCompleta() {
   if (window.__fullReq) return; window.__fullReq = true;
   const sc = document.createElement('script');
-  sc.src = './data-top-full.js?v=4';
+  sc.src = './data-top-full.js?v=5';
   sc.onload = () => {
     if (window.TOPFIGS_REST) { D.rows = D.rows.concat(window.TOPFIGS_REST); window.__full = true; render(); }
   };

@@ -59,3 +59,45 @@ if 'landmask' in obj:
 open(OUT, 'w', encoding='utf-8').write('// Geometría liviana (simplificada, islas chicas descartadas) para percap-map. id=ISO3.\nwindow.GEO_MINI=' + json.dumps(out, separators=(',', ':')) + ';\n')
 print('features:', len(feats), '| partes antes:', parts_before, '-> después:', parts_after)
 print('size:', round(os.path.getsize(OUT) / 1024), 'KB (era 2001 KB)')
+
+# ============ regiones DISUELTAS (fronteras internas fundidas) ============
+# Union por region desde la geometria FUENTE (detallada) y simplificacion
+# DESPUES: unir los poligonos ya simplificados deja rendijas en las fronteras
+# compartidas. La membresia iso->region sale del PCMAP (fuente unica).
+from shapely.ops import unary_union
+from shapely.geometry.polygon import orient
+from shapely.geometry import Polygon as _Poly, MultiPolygon as _MPoly
+
+def _reorienta(g, sign):
+    # d3.geoPath usa winding ESFERICO: si el anillo va al reves, pinta el
+    # complemento (el oceano entero terracota). Alineamos con los paises fuente.
+    if g.geom_type == 'Polygon': return orient(g, sign)
+    if g.geom_type == 'MultiPolygon': return _MPoly([orient(pp, sign) for pp in g.geoms])
+    return g
+
+PCMAP = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-pantheon\data-percap-map.js'
+OUT_R = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-pantheon\data-geo-regions.js'
+pm = open(PCMAP, encoding='utf-8').read()
+PM = json.loads(pm.split('window.PCMAP=', 1)[1].rstrip().rstrip(';'))
+iso2reg = {m['iso']: m['reg'] for m in PM['isoMeta'] if m.get('reg')}
+
+por_region = {}
+for f in obj['features']:
+    reg = iso2reg.get(f['id'])
+    if not reg: continue
+    g = shape(f['geometry']).buffer(0)
+    por_region.setdefault(reg, []).append(g)
+
+feats = []
+for reg, gs in por_region.items():
+    u = unary_union(gs).buffer(0.02).buffer(-0.02)   # micro-cierre de rendijas
+    u = u.simplify(TOL, preserve_topology=True)
+    u = _reorienta(u, -1.0)   # exterior horario, como los paises fuente
+    m = mapping(u)
+    feats.append({'type': 'Feature', 'id': reg,
+                  'geometry': {'type': m['type'], 'coordinates': rnd(m['coordinates'])}})
+out_r = {'type': 'FeatureCollection', 'features': feats}
+open(OUT_R, 'w', encoding='utf-8').write(
+    '// Regiones DISUELTAS (union por region desde la geometria fuente). id=nombre de region.\n'
+    'window.GEO_REGIONS=' + json.dumps(out_r, separators=(',', ':'), ensure_ascii=False) + ';\n')
+print('=> data-geo-regions.js: %d regiones, %.0f KB' % (len(feats), os.path.getsize(OUT_R) / 1024))

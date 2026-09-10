@@ -101,7 +101,7 @@
 </div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=19"></script>
+<script src="./i18n-issue.js?v=20"></script>
 <script src="./utils.js?v=4"></script>
 <script src="./data-percap-map.js?v=7"></script>
 <script>
@@ -191,7 +191,8 @@ function syncTitulo() {
   const tx = (ae && ae.texts && ae.texts[en() ? 'en' : 'es']) || {};
   const k = esDefault() ? 'insight' : 'neutral';
   if (!(tx.title || '').trim()) document.getElementById('rep-title').textContent = t('rep-title-' + k);
-  if (!(tx.subtitle || '').trim()) document.getElementById('rep-subtitle').textContent = k === 'insight' ? t('rep-subtitle-insight') : repSubNeutral();
+  // el subtitulo es SIEMPRE el neutral OWID (Daniel, ronda 2b): el insight vive solo en el titulo
+  if (!(tx.subtitle || '').trim()) document.getElementById('rep-subtitle').textContent = repSubNeutral();
 }
 
 // subtitulo neutral estilo OWID: medida + universo (dominio) + corte de la vista

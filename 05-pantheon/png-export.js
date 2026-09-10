@@ -29,7 +29,8 @@
     '7': { es: 'el-atlas-05-migracion-fama.png',    en: 'the-atlas-05-fame-migration.png'      },
     '8': { es: 'el-atlas-05-subnacional.png',       en: 'the-atlas-05-subnational.png'         },
     '9': { es: 'el-atlas-05-ciudades-fama.png',     en: 'the-atlas-05-cities-of-fame.png'      },
-    'evo': { es: 'el-atlas-05-de-que-esta-hecha-la-fama.png', en: 'the-atlas-05-what-fame-is-made-of.png' }
+    'evo': { es: 'el-atlas-05-de-que-esta-hecha-la-fama.png', en: 'the-atlas-05-what-fame-is-made-of.png' },
+    'map': { es: 'el-atlas-05-mapa-fama.png', en: 'the-atlas-05-fame-map.png' }
   };
 
   const VIEWBOX_RIGHT_EXTENSION = {};
@@ -380,7 +381,8 @@
     const isMobilePng  = format === 'mobile';
     // El mapa del chart 4 es apaisado pero usa la composición "mobile-first" (firma
     // grande en 2 renglones centrada, nota más abajo), igual que el 'worldmap' del N°3.
-    const isMapChart   = (chartId === '4' && typeof state !== 'undefined' && state[4] && state[4].view === 'map');
+    const isMapChart   = (chartId === '4' && typeof state !== 'undefined' && state[4] && state[4].view === 'map')
+                       || chartId === 'map';   // percap-map.html (mapa de la fama)
     // Re-render del mapa al ASPECTO DEL CONTINENTE para el PNG: la versión interactiva es
     // apaisada (sin scroll), pero el PNG necesita el mapa reencuadrado a la forma del
     // continente (si no, queda apaisado dentro de un canvas cuadrado/vertical → medio vacío,
@@ -462,6 +464,9 @@
       const cv = RK_CONT_VIEW[state[4].continent] || RK_CONT_VIEW.all;
       W = cv.nW; mapCanvasH = cv.nH;
     }
+    // mapa de la fama (percap-map): mapamundi apaisado a 1200 de ancho, la
+    // convencion de los mapas del N3 (52/32 mobile-first proporcionados a 1200).
+    if (chartId === 'map') W = 1200;
     const padX = (isNewsletter || isMobilePng) ? 32 : 42;
     const padTop = 36;
     const padBottom = mobileFirst ? 24 : 36;

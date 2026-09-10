@@ -11,17 +11,17 @@
 (function () {
   'use strict';
   const E = window.PCMAP, PP = window.PERCAP_POP;
-  const LANG = (new URLSearchParams(location.search).get('lang') === 'en') ? 'en' : 'es';
-  const en = LANG === 'en';
-  const T = (es, eng) => (en ? eng : es);
+  // idioma DINAMICO: lee el global LANG de lib/i18n (toggle de la casa)
+  const en = () => (typeof LANG !== 'undefined' ? LANG === 'en' : false);
+  const T = (es, eng) => (en() ? eng : es);
 
   const YMIN = E.yearMin, YMAX = E.yearMax, ND = E.domains.length, NSUB = E.subMeta.length;
   const SUBDOM = E.subMeta.map(s => s.dom);
   const ISO_META = {}; E.isoMeta.forEach((m, k) => { ISO_META[m.iso] = m; m._k = k; });
   const idxByIso = {}; E.isoMeta.forEach((m, k) => idxByIso[m.iso] = k);
-  const dispName = (iso) => (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[iso] && COUNTRY_NAMES[iso][LANG]) || (ISO_META[iso] ? ISO_META[iso][en ? 'en' : 'es'] : iso);
+  const dispName = (iso) => (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[iso] && COUNTRY_NAMES[iso][LANG]) || (ISO_META[iso] ? ISO_META[iso][en() ? 'en' : 'es'] : iso);
   const fmtYear = (y) => y < 0 ? `${-y} ${T('a.C.', 'BC')}` : String(y);
-  const subName = (s) => E.subMeta[s][en ? 'en' : 'es'];
+  const subName = (s) => E.subMeta[s][en() ? 'en' : 'es'];
   const REG_LABEL = {
     'Latin America': ['América Latina', 'Latin America'], 'Caribbean': ['Caribe', 'Caribbean'],
     'Western Europe': ['Europa Occidental', 'Western Europe'], 'Eastern Europe & Central Asia': ['Europa del Este y Asia Central', 'Eastern Europe & C. Asia'],
@@ -29,12 +29,12 @@
     'Southeast Asia': ['Sudeste Asiático', 'Southeast Asia'], 'South Asia': ['Asia del Sur', 'South Asia'],
     'Middle East & North Africa': ['Medio Oriente y N. de África', 'Middle East & N. Africa'], 'Sub-Saharan Africa': ['África Subsahariana', 'Sub-Saharan Africa']
   };
-  const regLabel = (k) => (REG_LABEL[k] ? REG_LABEL[k][en ? 1 : 0] : k);
+  const regLabel = (k) => (REG_LABEL[k] ? REG_LABEL[k][en() ? 1 : 0] : k);
 
   // Paleta secuencial terracota (claro→oscuro) + gris "sin dato".
   const RAMP = ['#F1E0D2', '#E0B68F', '#CE8A5E', '#BE5D32', '#9B3D24', '#5A2818'];
   const NODATA = '#D8D3C8', STROKE = 'rgba(255,255,255,0.55)', STROKE_HOVER = '#1A1A1A', CARTO_COLOR = '#BE5D32';
-  const M_W = 1100, M_H = 580, MARGIN = { top: 8, right: 8, bottom: 8, left: 8 };
+  const M_W = 1100, M_H = 580, LEG_Y = 590, MARGIN = { top: 8, right: 8, bottom: 8, left: 8 };
   const PW = M_W - MARGIN.left - MARGIN.right, PH = M_H - MARGIN.top - MARGIN.bottom;
 
   // multiOnly por DEFAULT (decisión de Daniel; se sacó el toggle). El mapa solo
@@ -93,15 +93,14 @@
     const valOf = (cnt, tot, sco, iso) => {
       if (st.measure === 'abs') return cnt > 0 ? cnt : null;
       if (st.measure === 'percap') { const pm = avgPopM(iso, st.y0, st.y1); return (cnt > 0 && pm > 0) ? cnt / pm : null; }
-      if (st.measure === 'hpishare') return (worldScore > 0 && sco > 0) ? sco / worldScore * 100 : null;
-      return tot > 0 ? cnt / tot * 100 : null;   // share interno
+      return null;
     };
     const byIso = {};
     if (st.view === 'region') {
       const acc = {};
       for (let k = 0; k < NI; k++) { const reg = E.isoMeta[k].reg; if (!reg) continue; const a = acc[reg] || (acc[reg] = { c: 0, t: 0, pk: 0, sc: 0 }); a.c += filt[k]; a.t += total[k]; a.sc += fsco[k]; a.pk += avgPopK(PP.pop[E.isoMeta[k].iso], st.y0, st.y1); }
       const regVal = {};
-      Object.keys(acc).forEach(reg => { const a = acc[reg]; regVal[reg] = st.measure === 'abs' ? (a.c > 0 ? a.c : null) : st.measure === 'percap' ? (a.c > 0 && a.pk > 0 ? a.c / (a.pk / 1000) : null) : st.measure === 'hpishare' ? (worldScore > 0 && a.sc > 0 ? a.sc / worldScore * 100 : null) : (a.t > 0 ? a.c / a.t * 100 : null); });
+      Object.keys(acc).forEach(reg => { const a = acc[reg]; regVal[reg] = st.measure === 'abs' ? (a.c > 0 ? a.c : null) : (a.c > 0 && a.pk > 0 ? a.c / (a.pk / 1000) : null); });
       for (let k = 0; k < NI; k++) { const reg = E.isoMeta[k].reg; byIso[E.isoMeta[k].iso] = reg ? regVal[reg] : null; }
       byIso.__regVal = regVal; byIso.__total = total; byIso.__filt = filt;
     } else {
@@ -118,10 +117,8 @@
 
   function fmtVal(v) {
     if (v == null) return '—';
-    if (st.measure === 'hpishare') return v.toFixed(v < 1 ? 2 : 1) + '%';
-    if (st.measure === 'share') return v.toFixed(1) + '%';
-    if (st.measure === 'abs') return Math.round(v).toLocaleString(en ? 'en-US' : 'es-AR');
-    return v >= 100 ? Math.round(v).toLocaleString(en ? 'en-US' : 'es-AR') : v >= 10 ? v.toFixed(1) : v.toFixed(2);
+    if (st.measure === 'abs') return Math.round(v).toLocaleString(en() ? 'en-US' : 'es-AR');
+    return v >= 100 ? Math.round(v).toLocaleString(en() ? 'en-US' : 'es-AR') : v >= 10 ? v.toFixed(1) : v.toFixed(2);
   }
 
   let colorScale = null, legendBreaks = [];
@@ -139,7 +136,7 @@
 
   // ===================== Render =====================
   function draw() {
-    const d3 = window.d3, svg = d3.select('#mapSvg');
+    const d3 = window.d3, svg = d3.select('#chartmap');
     if (svg.empty() || !geo) return;
     svg.selectAll('*').remove();
     updateSub();
@@ -147,7 +144,7 @@
     const values = Object.keys(byIso).filter(k => !k.startsWith('__')).map(k => byIso[k]);
     buildColor(values);
 
-    projection = d3.geoRobinson().fitSize([PW, PH], geo);
+    projection = d3.geoRobinson().fitSize([PW, PH], geo);   // marco fijo: paises (las regiones disueltas comparten fuente)
     path = d3.geoPath(projection);
     centroidCache = {};
 
@@ -168,6 +165,24 @@
 
   function drawPolys(gZoom, byIso) {
     const d3 = window.d3;
+    // en vista REGION se dibujan las geometrias DISUELTAS (fronteras internas
+    // fundidas, hechas con union en el builder): un solo contorno por region
+    const regiones = st.view === 'region' && typeof GEO_REGIONS !== 'undefined';
+    if (regiones) {
+      const regVal = byIso.__regVal || {};
+      // el fondo de "sin dato" son los paises sin region (quedan grises detras)
+      gZoom.append('g').selectAll('path').data(geo.features, isoOf).join('path')
+        .attr('d', path).attr('fill', NODATA).attr('stroke', 'none').attr('pointer-events', 'none');
+      const feats = GEO_REGIONS.features.slice().sort((a, b) => d3.geoArea(b) - d3.geoArea(a));
+      gZoom.append('g').selectAll('path').data(feats, f => f.id).join('path')
+        .attr('class', 'm-country').attr('data-iso', f => f.id)
+        .attr('data-bin', f => { const b = binOf(regVal[f.id]); return b == null ? '' : b; })
+        .attr('d', path)
+        .attr('fill', f => colorScale(regVal[f.id]))
+        .attr('stroke', STROKE).attr('stroke-width', 0.8).attr('vector-effect', 'non-scaling-stroke')
+        .on('mouseenter', onEnterRegion).on('mousemove', onMove).on('mouseleave', onLeave);
+      return;
+    }
     if (geo.landmask) gZoom.append('path').attr('d', path(geo.landmask)).attr('fill', NODATA).attr('pointer-events', 'none');
     const feats = geo.features.slice().sort((a, b) => d3.geoArea(b) - d3.geoArea(a));
     gZoom.append('g').selectAll('path').data(feats, isoOf).join('path')
@@ -177,6 +192,12 @@
       .attr('fill', d => colorScale(byIso[isoOf(d)]))
       .attr('stroke', STROKE).attr('stroke-width', 0.5).attr('vector-effect', 'non-scaling-stroke')
       .on('mouseenter', onEnter).on('mousemove', onMove).on('mouseleave', onLeave);
+  }
+
+  function onEnterRegion(ev, f) {
+    window.d3.select('.m-hover').attr('d', path(f));
+    const regVal = (lastVals && lastVals.__regVal) || {};
+    showTipXY(ev, regLabel(f.id), regVal[f.id], f.id, true);
   }
 
   function drawDorling(gZoom, byIso) {
@@ -234,6 +255,7 @@
     const inc = includeSet(), TP = window.PCTOP; if (!TP) return null;
     const y0 = st.y0, y1 = st.y1; let best = null;
     const scan = (isoc) => {
+      if (!(isoc in idxByIso)) return;   // consistencia: sin fila en el mapa, sin figura en el tooltip
       const d = TP[isoc]; if (!d) return;
       for (const sub in d) {
         if (inc && !inc.has(+sub)) continue;
@@ -259,47 +281,61 @@
     if (ws != null) h += `<div class="tt-row"><span>${T('% del total mundial', '% of world total')}</span><span>${ws.toFixed(ws < 10 ? 2 : 1)}%</span></div>`;
     if (st.filter !== 'all') { const sh = entityShare(key, isReg); if (sh != null) h += `<div class="tt-row"><span>${isReg ? T('% de la región', '% of region') : T('% del país', '% of country')}</span><span>${sh.toFixed(1)}%</span></div>`; }
     const tf = topFigFor(key, isReg);
-    if (tf) h += `<div class="tt-fig"><span class="tt-fig-name">${tf[0]} <span style="font-weight:400;color:#8A8579">(${fmtYear(tf[1])})</span></span><span class="tt-fig-meta">HPI ${tf[2]} · #${tf[3].toLocaleString(en ? 'en-US' : 'es-AR')} ${T('global', 'global')}</span></div>`;
+    if (tf) h += `<div class="tt-fig"><span class="tt-fig-name">${tf[0]} <span style="font-weight:400;color:#8A8579">(${fmtYear(tf[1])})</span></span><span class="tt-fig-meta">HPI ${tf[2]} · #${tf[3].toLocaleString(en() ? 'en-US' : 'es-AR')} ${T('global', 'global')}</span></div>`;
     tt.innerHTML = h; tt.style.display = 'block'; posTip(ev);
   }
   function posTip(ev) { const tt = document.getElementById('mTip'); if (!tt || tt.style.display === 'none') return; const w = tt.parentElement.getBoundingClientRect(); let px = ev.clientX - w.left + 14, py = ev.clientY - w.top - tt.offsetHeight - 8; if (px + tt.offsetWidth > w.width) px = ev.clientX - w.left - tt.offsetWidth - 14; if (py < 0) py = ev.clientY - w.top + 18; tt.style.left = px + 'px'; tt.style.top = py + 'px'; }
   function hideTip() { const tt = document.getElementById('mTip'); if (tt) tt.style.display = 'none'; }
   function measLabel() {
-    const rub = st.filter === 'all' ? T('Figuras', 'Figures') : st.filter.startsWith('dom:') ? E.domains[+st.filter.slice(4)][en ? 'en' : 'es'] : subName(+st.filter.slice(4));
-    if (st.measure === 'hpishare') return T('Share del mundo (HPI)', 'World share (HPI)');
-    if (st.measure === 'share') return T('Share', 'Share') + ' ' + rub;
+    const rub = st.filter === 'all' ? T('Figuras', 'Figures') : st.filter.startsWith('dom:') ? E.domains[+st.filter.slice(4)][en() ? 'en' : 'es'] : subName(+st.filter.slice(4));
     if (st.measure === 'percap') return rub + T(' / millón', ' / million');
     return rub;
   }
 
   // ===================== Leyenda =====================
   function drawLegend() {
-    const d3 = window.d3, leg = d3.select('#m-legend'); if (leg.empty()) return;
-    leg.selectAll('*').remove();
-    if (st.mapMode === 'dorling') { // leyenda de tamaños
-      const W = 240, H = 54; leg.attr('viewBox', `0 0 ${W} ${H}`);
-      leg.append('text').attr('x', 0).attr('y', 10).attr('font-family', '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif').attr('font-size', 11).attr('fill', '#4A4A4A').text(T('Tamaño = ' + measLabel(), 'Size = ' + measLabel()));
+    // leyenda ADENTRO del svg del mapa (asi el PNG exportado la incluye)
+    const d3 = window.d3, svg = d3.select('#chartmap'); if (svg.empty()) return;
+    svg.select('#legendG').remove();
+    const leg = svg.append('g').attr('id', 'legendG').attr('transform', `translate(${MARGIN.left + 4},${LEG_Y}) scale(1.9)`);
+    const FONT = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    if (st.mapMode === 'dorling') {
+      leg.append('text').attr('x', 0).attr('y', 12).attr('font-family', FONT).attr('font-size', 11).attr('fill', '#4A4A4A').text(T('Tamaño = ', 'Size = ') + measLabel());
       return;
     }
     const W_MAIN = 320, GAP = 12, ND_W = 14, BIN_H = 12, TEXT_Y = BIN_H + 12;
-    leg.attr('viewBox', `0 0 ${W_MAIN + GAP + ND_W} ${TEXT_Y + 4}`);
     const nBins = legendBreaks.length + 1, binW = W_MAIN / nBins;
     for (let i = 0; i < nBins; i++) leg.append('rect').attr('x', i * binW).attr('y', 0).attr('width', binW).attr('height', BIN_H).attr('fill', RAMP[i]).attr('stroke', 'rgba(0,0,0,.08)').attr('stroke-width', .5).attr('data-bin', i).style('cursor', 'pointer').on('mouseenter', () => hiBin(i)).on('mouseleave', clearHi);
-    legendBreaks.forEach((b, idx) => leg.append('text').attr('x', (idx + 1) * binW).attr('y', TEXT_Y).attr('text-anchor', 'middle').attr('font-family', '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif').attr('font-size', 10).attr('fill', '#4A4A4A').attr('font-variant-numeric', 'tabular-nums').text(fmtVal(b)));
+    legendBreaks.forEach((b, idx) => leg.append('text').attr('x', (idx + 1) * binW).attr('y', TEXT_Y).attr('text-anchor', 'middle').attr('font-family', FONT).attr('font-size', 10).attr('fill', '#4A4A4A').attr('font-variant-numeric', 'tabular-nums').text(fmtVal(b)));
     const ndX = W_MAIN + GAP;
     leg.append('rect').attr('x', ndX).attr('y', 0).attr('width', ND_W).attr('height', BIN_H).attr('fill', NODATA).attr('stroke', 'rgba(0,0,0,.15)').attr('stroke-width', .5);
-    leg.append('text').attr('x', ndX + ND_W / 2).attr('y', TEXT_Y).attr('text-anchor', 'middle').attr('font-family', '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif').attr('font-size', 10).attr('fill', '#4A4A4A').text(T('s/d', 'n/a'));
+    leg.append('text').attr('x', ndX + ND_W / 2).attr('y', TEXT_Y).attr('text-anchor', 'middle').attr('font-family', FONT).attr('font-size', 10).attr('fill', '#4A4A4A').text(T('s/d', 'n/a'));
   }
   function hiBin(i) { window.d3.selectAll('.m-country').each(function () { const el = window.d3.select(this); const own = el.attr('data-bin'); if (own === String(i)) el.attr('stroke', STROKE_HOVER).attr('stroke-width', 1.2).attr('fill-opacity', 1); else el.attr('stroke', STROKE).attr('stroke-width', .5).attr('fill-opacity', .3); }); }
   function clearHi() { window.d3.selectAll('.m-country').attr('stroke', STROKE).attr('stroke-width', .5).attr('fill-opacity', 1); }
 
   // ===================== Subtítulo =====================
+  // subtitulo OWID: quien (genitivo del dominio / ocupacion) + medida + corte
+  const GEN_DOM_ES = { 'Deportes': 'del deporte', 'Artes y espectáculo': 'del arte y el espectáculo',
+    'Ciencia y tecnología': 'de la ciencia y la tecnología', 'Humanidades': 'de las humanidades',
+    'Poder y figuras públicas': 'del poder y las figuras públicas', 'Negocios y exploración': 'de los negocios y la exploración' };
   function updateSub() {
     const el = document.getElementById('mSub'); if (!el) return;
-    const med = st.measure === 'hpishare' ? T('share del mundo ponderado por HPI', 'world share weighted by HPI') : st.measure === 'share' ? T('share interno', 'internal share') : st.measure === 'abs' ? T('cantidad', 'count') : T('por millón', 'per million');
-    const lv = st.view === 'region' ? T('por región', 'by region') : T('por país', 'by country');
-    const mode = st.measure === 'abs' && st.mapMode === 'dorling' ? T(' · cartograma Dorling', ' · Dorling cartogram') : '';
-    el.textContent = `${measLabel()} — ${med} ${lv}${mode}, ${fmtYear(st.y0)}–${fmtYear(st.y1)}`;
+    const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+    const tx = (ae && ae.texts && ae.texts[en() ? 'en' : 'es']) || {};
+    if ((tx.subtitle || '').trim()) return;
+    const rangoCompleto = st.y0 <= YMIN && st.y1 >= YMAX;
+    const corte = st.view === 'region' ? T('por región', 'by region') : T('por país', 'by country');
+    const porQuien = rangoCompleto ? corte + T(' y período.', ' and period.')
+                                   : corte + ', ' + T('nacidas', 'born') + ' ' + fmtYear(st.y0) + '–' + fmtYear(st.y1) + '.';
+    const pc = st.measure === 'percap' ? T(' por millón de habitantes', ' per million people') : '';
+    let quien;
+    if (st.filter === 'all') quien = T('Figuras célebres', 'Famous figures');
+    else if (st.filter.startsWith('dom:')) {
+      const d = E.domains[+st.filter.slice(4)];
+      quien = en() ? 'Famous figures in ' + d.en.toLowerCase() : 'Figuras célebres ' + (GEN_DOM_ES[d.es] || 'de ' + d.es.toLowerCase());
+    } else quien = subName(+st.filter.slice(4)) + ': ' + T('figuras célebres', 'famous figures');
+    el.textContent = quien + pc + ', ' + porQuien;
   }
 
   // ===================== Controles =====================
@@ -311,40 +347,46 @@
   function wire() {
     const grp = (id, key, after) => document.querySelectorAll('#' + id + ' button').forEach(b => b.addEventListener('click', () => { st[key] = b.dataset.val; if (after) after(); syncControls(); draw(); }));
     grp('m-view', 'view', () => { if (st.view === 'region') st.mapMode = 'choro'; });
-    grp('m-measure', 'measure', () => {
-      if (st.measure !== 'abs') st.mapMode = 'choro';
-      if (st.measure === 'share' && st.filter === 'all') { st.filter = 'dom:0'; const fs = document.getElementById('m-filter'); if (fs) fs.value = 'dom:0'; }
-    });
+    grp('m-measure', 'measure', () => { if (st.measure !== 'abs') st.mapMode = 'choro'; });
     grp('m-mapmode', 'mapMode');
 
     const fs = document.getElementById('m-filter');
-    let html = `<option value="all">${T('Todas las disciplinas', 'All fields')}</option>`;
-    html += `<optgroup label="${T('Dominios', 'Domains')}">` + E.domains.map((d, i) => `<option value="dom:${i}">${d[en ? 'en' : 'es']}</option>`).join('') + '</optgroup>';
-    html += `<optgroup label="${T('Sub-rubros', 'Sub-fields')}">` + E.subMeta.map((s, i) => s.dom < 0 ? '' : `<option value="sub:${i}">${subName(i)}</option>`).join('') + '</optgroup>';
-    fs.innerHTML = html; fs.value = st.filter;
-    fs.addEventListener('change', () => { st.filter = fs.value; if (st.measure === 'share' && st.filter === 'all') { st.measure = 'abs'; } draw(); syncControls(); });
+    window.__mapFillFilter = function () {
+      let html = `<option value="all">${T('Todas las disciplinas', 'All fields')}</option>`;
+      html += `<optgroup label="${T('Dominios', 'Domains')}">` + E.domains.map((d, i) => `<option value="dom:${i}">${d[en() ? 'en' : 'es']}</option>`).join('') + '</optgroup>';
+      html += `<optgroup label="${T('Sub-rubros', 'Sub-fields')}">` + E.subMeta.map((s, i) => s.dom < 0 ? '' : `<option value="sub:${i}">${subName(i)}</option>`).join('') + '</optgroup>';
+      fs.innerHTML = html; fs.value = st.filter;
+    };
+    window.__mapFillFilter();
+    fs.addEventListener('change', () => { st.filter = fs.value; draw(); syncControls(); });
 
 
-    const f = document.getElementById('m-from'), tt = document.getElementById('m-to');
-    const fb = document.getElementById('m-from-v'), tb = document.getElementById('m-to-v');
-    [f, tt].forEach(r => { r.min = YMIN; r.max = YMAX; r.step = 1; });
-    [fb, tb].forEach(b => { b.min = YMIN; b.max = YMAX; });
-    f.value = st.y0; tt.value = st.y1; fb.value = st.y0; tb.value = st.y1;
-    // arrastrar el slider redibuja con DEBOUNCE (sin esto, cada input dispara un
-    // redraw pesado —geo 2MB + sim Dorling— y se traba/crashea).
+    // periodo UNIVERSAL de la casa: doble slider por tramos + cajitas (vacio = extremo)
+    const ANC = [[0, YMIN], [250, 0], [500, 1500], [1000, YMAX]];
+    const s2y = (v) => { v = +v; for (let k = 1; k < ANC.length; k++) if (v <= ANC[k][0]) { const a = ANC[k - 1], b = ANC[k]; return Math.round(a[1] + (v - a[0]) * (b[1] - a[1]) / (b[0] - a[0])); } return YMAX; };
+    const y2s = (y) => { y = Math.max(YMIN, Math.min(YMAX, +y)); for (let k = 1; k < ANC.length; k++) if (y <= ANC[k][1]) { const a = ANC[k - 1], b = ANC[k]; return a[0] + (y - a[1]) * (b[0] - a[0]) / (b[1] - a[1]); } return 1000; };
+    const r0 = document.getElementById('m-r0'), r1 = document.getElementById('m-r1');
+    const b0 = document.getElementById('m-y0'), b1 = document.getElementById('m-y1');
+    function syncPeriodo() {
+      r0.value = y2s(st.y0); r1.value = y2s(st.y1);
+      b0.value = st.y0 === YMIN ? '' : st.y0;
+      b1.value = st.y1 === YMAX ? '' : st.y1;
+      const fill = document.getElementById('m-fill');
+      fill.style.left = (y2s(st.y0) / 10) + '%';
+      fill.style.width = Math.max(0, (y2s(st.y1) - y2s(st.y0)) / 10) + '%';
+    }
     let drawT; const redraw = () => { clearTimeout(drawT); drawT = setTimeout(draw, 110); };
-    const clampY = (v, d) => { v = Math.round(+v); if (!isFinite(v)) return d; return Math.max(YMIN, Math.min(YMAX, v)); };
-    const fromSlider = () => { let a = +f.value, b = +tt.value; if (a > b) { if (document.activeElement === f) b = a; else a = b; f.value = a; tt.value = b; } st.y0 = a; st.y1 = b; fb.value = a; tb.value = b; redraw(); };
-    const fromBox = () => { let a = clampY(fb.value, st.y0), b = clampY(tb.value, st.y1); if (a > b) { const tmp = a; a = b; b = tmp; } st.y0 = a; st.y1 = b; f.value = a; tt.value = b; fb.value = a; tb.value = b; draw(); };
-    f.addEventListener('input', fromSlider); tt.addEventListener('input', fromSlider);
-    fb.addEventListener('change', fromBox); tb.addEventListener('change', fromBox);
-    fb.addEventListener('keydown', e => { if (e.key === 'Enter') fb.blur(); });
-    tb.addEventListener('keydown', e => { if (e.key === 'Enter') tb.blur(); });
-    document.getElementById('m-reset').addEventListener('click', () => window.d3.select('#mapSvg').transition().duration(450).call(zoom.transform, window.d3.zoomIdentity));
+    r0.addEventListener('input', () => { st.y0 = Math.min(s2y(r0.value), st.y1); syncPeriodo(); redraw(); });
+    r1.addEventListener('input', () => { st.y1 = Math.max(s2y(r1.value), st.y0); syncPeriodo(); redraw(); });
+    b0.addEventListener('change', () => { const v = b0.value === '' ? YMIN : Math.round(+b0.value); if (isFinite(v)) st.y0 = Math.max(YMIN, Math.min(v, st.y1)); syncPeriodo(); draw(); });
+    b1.addEventListener('change', () => { const v = b1.value === '' ? YMAX : Math.round(+b1.value); if (isFinite(v)) st.y1 = Math.min(YMAX, Math.max(v, st.y0)); syncPeriodo(); draw(); });
+    [b0, b1].forEach(b => b.addEventListener('keydown', e => { if (e.key === 'Enter') b.blur(); }));
+    syncPeriodo();
+    document.getElementById('m-reset').addEventListener('click', () => window.d3.select('#chartmap').transition().duration(450).call(zoom.transform, window.d3.zoomIdentity));
     syncControls();
   }
   function setupZoom() {
-    const d3 = window.d3, svg = d3.select('#mapSvg');
+    const d3 = window.d3, svg = d3.select('#chartmap');
     zoom = d3.zoom().scaleExtent([1, 8]).translateExtent([[-M_W * 0.2, -M_H * 0.2], [M_W * 1.2, M_H * 1.2]]).on('zoom', ev => svg.select('.m-zoom').attr('transform', ev.transform.toString()));
     svg.call(zoom).on('dblclick.zoom', null);
   }
@@ -352,6 +394,42 @@
   // store values for hover
   const _origCompute = computeValues;
   computeValues = function () { const r = _origCompute(); lastVals = r; return r; };
+
+  // CSV de lo visible (pais o region, con ambas medidas y n)
+  function csvActual() {
+    const vals = computeValues();
+    const q = (x) => '"' + String(x).replace(/"/g, '""') + '"';
+    const lines = [];
+    if (st.view === 'region') {
+      lines.push(['region', 'n_figures', 'per_million'].join(','));
+      const regVal = vals.__regVal || {}, f = vals.__filt;
+      const accN = {}, accP = {};
+      for (let k = 0; k < E.isoMeta.length; k++) { const r = E.isoMeta[k].reg; if (!r) continue; accN[r] = (accN[r] || 0) + f[k]; accP[r] = (accP[r] || 0) + avgPopK(PP.pop[E.isoMeta[k].iso], st.y0, st.y1); }
+      Object.keys(accN).sort().forEach(r => lines.push([q(regLabel(r)), Math.round(accN[r]), accP[r] > 0 ? (accN[r] / (accP[r] / 1000)).toFixed(2) : ''].join(',')));
+    } else {
+      lines.push(['iso3', 'country', 'region', 'n_figures', 'per_million'].join(','));
+      const f = vals.__filt;
+      E.isoMeta.forEach((m, k) => {
+        if (!(f[k] > 0)) return;
+        const pm = avgPopM(m.iso, st.y0, st.y1);
+        lines.push([m.iso, q(dispName(m.iso)), q(m.reg ? regLabel(m.reg) : ''), Math.round(f[k]), pm > 0 ? (f[k] / pm).toFixed(2) : ''].join(','));
+      });
+    }
+    return '\ufeff' + lines.join('\n');
+  }
+  const csvBtn = document.querySelector('button.download[data-chart="map-csv"]');
+  if (csvBtn) csvBtn.addEventListener('click', () => {
+    const blob = new Blob([csvActual()], { type: 'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = en() ? 'the-atlas-05-fame-map.csv' : 'el-atlas-05-mapa-fama.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(a.href);
+  });
+
+  // toggle de idioma de la casa: re-render completo
+  window.__mapRelang = function () { if (window.__mapFillFilter) window.__mapFillFilter(); draw(); };
+  window.__atlasSupportsFormats = false;   // el PNG sale del viewBox actual (mapa apaisado)
 
   loadGeo(); wire(); setupZoom(); draw();
 })();

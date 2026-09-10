@@ -58,7 +58,8 @@ NAMES_EXTRA = {'VEN': ('Venezuela', 'Venezuela'), 'PRK': ('Corea del Norte', 'No
                'GUF': ('Guayana Francesa', 'French Guiana'), 'GLP': ('Guadalupe', 'Guadeloupe'), 'MTQ': ('Martinica', 'Martinique'), 'PYF': ('Polinesia Francesa', 'French Polynesia'),
                'FRO': ('Islas Feroe', 'Faroe Islands'), 'PRI': ('Puerto Rico', 'Puerto Rico'), 'REU': ('Reunión', 'Réunion'), 'NCL': ('Nueva Caledonia', 'New Caledonia'),
                'AND': ('Andorra', 'Andorra'), 'LIE': ('Liechtenstein', 'Liechtenstein'), 'SMR': ('San Marino', 'San Marino'), 'BMU': ('Bermudas', 'Bermuda'),
-               'GRL': ('Groenlandia', 'Greenland'), 'IMN': ('Isla de Man', 'Isle of Man')}
+               'GRL': ('Groenlandia', 'Greenland'), 'IMN': ('Isla de Man', 'Isle of Man'),
+               'ATA': ('Antártida', 'Antarctica')}
 def name_of(iso):
     if iso in NAMES: return NAMES[iso].get('es', iso), NAMES[iso].get('en', iso)
     if iso in NAMES_EXTRA: return NAMES_EXTRA[iso]
@@ -135,11 +136,13 @@ with open(CORR, encoding='utf-8-sig') as f:
         iso = iso_of(r['id'], r.get('pais'))
         if iso: figcount[iso] += 1
 have = set(m['iso'] for m in isoMeta); added = []
-for iso in sorted(popcodes):
+for iso in sorted(popcodes | set(figcount)):
     if iso in have: continue
     reg = iso2region.get(iso)
-    if not reg: continue
-    if figcount.get(iso, 0) >= 1 or reg == 'Latin America':
+    # con figuras entra si tiene region O nombre resoluble (ATA='Antartida');
+    # asi no se cuelan los codigos historicos sin nombre (SUN, YUG...)
+    con_nombre = name_of(iso)[0] != iso
+    if (figcount.get(iso, 0) >= 1 and (reg or con_nombre)) or reg == 'Latin America':
         es, en = name_of(iso); isoMeta.append({'iso': iso, 'es': es, 'en': en, 'reg': reg}); added.append(iso)
 for m in isoMeta:
     if m['iso'] in FORCE: m['reg'] = FORCE[m['iso']]
