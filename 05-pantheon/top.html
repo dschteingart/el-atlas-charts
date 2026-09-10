@@ -92,7 +92,7 @@
 <div class="tooltip" id="tt" style="display:none"></div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=18"></script>
+<script src="./i18n-issue.js?v=19"></script>
 <script src="./utils.js?v=4"></script>
 <script src="./data-top.js?v=10"></script>
 <script>
@@ -125,7 +125,7 @@ function fillSelects() {
   sr.value = String(st.reg);
   sc.innerHTML = ''; sc.add(new Option(t('top-todos'), -1));
   D.isoMeta.map((m, i) => [m, i])
-    .filter(([m]) => st.reg < 0 || m.reg === REGS[st.reg])
+    .filter(([m]) => m.reg && (st.reg < 0 || m.reg === REGS[st.reg]))   // fuera los isos sin meta (siglas crudas)
     .sort((a, b) => (en() ? a[0].en : a[0].es).localeCompare(en() ? b[0].en : b[0].es, loc()))
     .forEach(([m, i]) => sc.add(new Option(en() ? m.en : m.es, i)));
   sc.value = String(st.cty);

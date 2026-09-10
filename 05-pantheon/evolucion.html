@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Atlas — De qué está hecha la fama</title>
+<title>El Atlas — Cómo cambió el perfil de la fama</title>
 <meta name="description" content="La composición de las figuras célebres por período de nacimiento, desde la Antigüedad hasta hoy. Gráfico interactivo de El Atlas.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/evolucion.html">
-<meta property="og:title" content="De qué está hecha la fama — El Atlas N°5">
+<meta property="og:title" content="Cómo cambió el perfil de la fama — El Atlas N°5">
 <meta property="og:description" content="Qué ocupaciones y dominios dominan la fama en cada era, del poder antiguo al deporte y el espectáculo de hoy.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -67,7 +67,7 @@
   </header>
 
   <section class="chart-block" data-chart="evo" data-editor-id="evolucion-fama">
-    <h2 class="chart-title" data-i18n="cevo-title">De qué está hecha la fama</h2>
+    <h2 class="chart-title" data-i18n="cevo-title">Cómo cambió el perfil de la fama</h2>
     <p class="chart-subtitle">…</p>
 
     <div class="ex-controls">
@@ -90,7 +90,7 @@
       </div>
       <div class="ex-ctrl"><label data-i18n="cevo-lbl-nivel">Apertura</label>
         <div class="m-mode-toggle" id="evo-nivel">
-          <button class="active" data-nivel="dom" data-i18n="cevo-doms">Dominios</button>
+          <button class="active" data-nivel="dom" data-i18n="cevo-doms">Rubros</button>
           <button data-nivel="occ" data-i18n="cevo-occs">Ocupaciones</button>
         </div>
       </div>
@@ -102,7 +102,6 @@
             <div id="evo-search-results" class="m-search-results"></div>
           </div>
           <div class="m-selected-chips" id="evo-chips"></div>
-          <button class="atlas-clear-btn" id="evo-limpiar" data-i18n="cevo-limpiar">Limpiar</button>
         </div>
       </div>
     </div>
@@ -127,10 +126,10 @@
 
 <script src="../lib/i18n.js"></script>
 <script src="../lib/regions.js"></script>
-<script src="./i18n-issue.js?v=18"></script>
+<script src="./i18n-issue.js?v=19"></script>
 <script src="./utils.js?v=4"></script>
 <script src="./data-evolucion.js?v=10"></script>
-<script src="./evolucion.js?v=15"></script>
+<script src="./evolucion.js?v=17"></script>
 <script src="./png-export.js?v=4"></script>
 <script>
   initEvo();

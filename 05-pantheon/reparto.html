@@ -79,7 +79,7 @@
         <th data-c="pre" id="h-pre">Hasta 1900</th>
         <th data-c="post" id="h-post">Desde 1900</th>
         <th data-c="tot" id="h-tot">Total</th>
-        <th data-c="dif" id="h-dif">Δ (pp)</th>
+        <th data-c="dif" id="h-dif">Variación (pp)</th>
         <th data-c="n" id="h-n">n</th>
       </tr></thead>
       <tbody id="rows"></tbody>
@@ -91,9 +91,7 @@
       <button class="download" id="btn-csv" data-i18n="footer-download">Descargar datos (CSV)</button>
       <button class="download" id="btn-png" data-i18n="footer-download-png">Descargar PNG</button>
     </p>
-    <div class="footer-row">
-      <p class="sources" data-i18n="rep-note">…</p>
-    </div>
+    
     <div class="footer-row">
       <p class="sources" data-i18n="rep-sources">Datos: Pantheon (Datawheel), fama reconstruida por El Atlas.</p>
       <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
@@ -103,7 +101,7 @@
 </div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=18"></script>
+<script src="./i18n-issue.js?v=19"></script>
 <script src="./utils.js?v=4"></script>
 <script src="./data-percap-map.js?v=7"></script>
 <script>
@@ -193,11 +191,28 @@ function syncTitulo() {
   const tx = (ae && ae.texts && ae.texts[en() ? 'en' : 'es']) || {};
   const k = esDefault() ? 'insight' : 'neutral';
   if (!(tx.title || '').trim()) document.getElementById('rep-title').textContent = t('rep-title-' + k);
-  if (!(tx.subtitle || '').trim()) document.getElementById('rep-subtitle').textContent = t('rep-subtitle-' + k);
+  if (!(tx.subtitle || '').trim()) document.getElementById('rep-subtitle').textContent = k === 'insight' ? t('rep-subtitle-insight') : repSubNeutral();
 }
 
-const heat = (v, m) => 'background:rgba(190,93,50,' + (m && v != null ? (v / m * .5).toFixed(3) : 0) + ')';
-const heatD = (v, m) => v == null ? '' : 'background:rgba(' + (v >= 0 ? '190,93,50' : '74,111,143') + ',' + (m ? (Math.abs(v) / m * .5).toFixed(3) : 0) + ')';
+// subtitulo neutral estilo OWID: medida + universo (dominio) + corte de la vista
+const GEN_DOM_ES = { 'Deportes': 'del deporte', 'Artes y espectáculo': 'del arte y el espectáculo',
+  'Ciencia y tecnología': 'de la ciencia y la tecnología', 'Humanidades': 'de las humanidades',
+  'Poder y figuras públicas': 'del poder y las figuras públicas', 'Negocios y exploración': 'de los negocios y la exploración' };
+function repSubNeutral() {
+  const d = st.dom >= 0 ? E.domains[st.dom] : null;
+  if (en()) {
+    const quien = d ? 'famous figures in ' + d.en.toLowerCase() : 'famous figures';
+    return 'Share of ' + quien + (st.vista === 'region' ? ' by region of birth and period.' : ' by country and period.');
+  }
+  const quien = d ? 'de las figuras célebres ' + (GEN_DOM_ES[d.es] || 'de ' + d.es.toLowerCase()) : 'de las figuras célebres';
+  return st.vista === 'region'
+    ? 'Porcentaje ' + quien + ' según región de nacimiento, por período.'
+    : 'Porcentaje ' + quien + ', por país y período.';
+}
+// curva raiz con piso: la lineal v/m*.5 dejaba invisible todo lo <5%
+const heatAlpha = (v, m) => (!m || v == null || v <= 0) ? 0 : Math.min(.55, Math.max(.07, Math.sqrt(v / m) * .55));
+const heat = (v, m) => 'background:rgba(190,93,50,' + heatAlpha(v, m).toFixed(3) + ')';
+const heatD = (v, m) => v == null ? '' : 'background:rgba(' + (v >= 0 ? '190,93,50' : '74,111,143') + ',' + heatAlpha(Math.abs(v), m).toFixed(3) + ')';
 const maxes = rows => {
   const mx = { pre: 0, post: 0, tot: 0, dif: 0 };
   rows.forEach(r => { ['pre', 'post', 'tot'].forEach(k => { if (r[k] > mx[k]) mx[k] = r[k]; }); if (Math.abs(r.dif) > mx.dif) mx.dif = Math.abs(r.dif); });
@@ -393,7 +408,7 @@ async function exportPng() {
     res(b ? b.size : 0);
   }, 'image/png'));
 }
-const heatA = (v, m) => (m && v != null ? (v / m * .5) : 0).toFixed(3);
+const heatA = (v, m) => heatAlpha(v, m).toFixed(3);
 const fitText = (ctx, s, maxW) => {
   s = String(s); if (ctx.measureText(s).width <= maxW) return s;
   while (s.length > 2 && ctx.measureText(s + '…').width > maxW) s = s.slice(0, -1);

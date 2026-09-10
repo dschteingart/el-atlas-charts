@@ -95,10 +95,8 @@ function ev_dims(nPan) {
     EV_W = PNG_FORMATS[fmt].vbW;
     EV_H = fmt === 'square' ? 910 : fmt === 'newsletter' ? 860 : PNG_FORMATS[fmt].vbH;
   }
-  else if (mobile) {
-    if (nPan >= 2) { EV_W = 440; EV_H = 0; }           // multiples: 1 col, alto según filas (abajo)
-    else { EV_W = 1100; EV_H = 1150; }
-  } else { EV_W = 1100; EV_H = nPan >= 2 ? 700 : 560; }
+  else if (mobile) { EV_W = 1100; EV_H = 1150; }
+  else { EV_W = 1100; EV_H = 560; }
   return { fmt, mobile, bigFmt: !!fmt || mobile, isPng: !!fmt };
 }
 
@@ -119,13 +117,16 @@ const ev_fmtN = (v) => {
 // Resaltado de una BANDA del apilado (hover sobre el area o su etiqueta): la
 // banda apuntada queda opaca y el resto se atenua. Portado tal cual del
 // amistosos del N3 (ts_bandEmph en 03b-partidos/ts-partidos.js).
-function ev_bandEmph(svg, key) {
+function ev_bandEmph(svg, band, domKey) {
+  const off = band == null && domKey == null;
   svg.querySelectorAll('[data-band]').forEach(el => {
-    if (key == null) el.setAttribute('fill-opacity', el.getAttribute('data-band-op'));
-    else el.setAttribute('fill-opacity', el.getAttribute('data-band') === key ? 1 : 0.22);
+    if (off) { el.setAttribute('fill-opacity', el.getAttribute('data-band-op')); return; }
+    const hit = band != null ? el.getAttribute('data-band') === band
+                             : el.getAttribute('data-dom') === domKey;
+    el.setAttribute('fill-opacity', hit ? 1 : 0.22);
   });
   svg.querySelectorAll('[data-band-label]').forEach(el => {
-    el.style.opacity = (key == null || el.getAttribute('data-band-label') === key) ? '' : '0.25';
+    el.style.opacity = (off || el.getAttribute('data-band-label') === (domKey != null ? domKey : band)) ? '' : '0.25';
   });
 }
 
@@ -166,81 +167,43 @@ function drawEvo() {
   const yTicksAbs = share ? null : ev_niceTicks(absMax, bigFmt ? 4 : 5);
   if (!share) absMax = yTicksAbs[yTicksAbs.length - 1] || absMax;
 
-  const fsLbl = bigFmt ? 26 : 14, fsTick = bigFmt ? 22 : 12.5, fsPan = bigFmt ? 26 : 15;
+  const fsLbl = bigFmt ? 26 : 16, fsTick = bigFmt ? 22 : 14, fsPan = bigFmt ? 26 : 16;
   const NB = E.bins.length;
   const cats = nivel === 'dom' ? E.doms.map((d, i) => ({ i, name: en ? d.en : d.es, color: EV_DOM_COL[d.es] }))
                                : E.occs.map((o, i) => ({ i, name: en ? o.en : o.es, color: ev_occColors()[i], dom: o.dom }));
 
-  // ----- layout: single o grilla -----
-  const single = n === 1;
-  let cols, rows;
-  if (single) { cols = 1; rows = 1; }
-  else {
-    cols = (mobile && !isPng) ? 1 : (n <= 3 ? Math.min(n, (EV_W < 900 ? 2 : 3)) : Math.min(3, Math.ceil(Math.sqrt(n))));
-    rows = Math.ceil(n / cols);
-    if (mobile && !isPng) { EV_H = 90 + rows * 300; }
-    else if (!isPng) { EV_H = Math.max(700, 120 + rows * 300); }
-    else if (rows > 2) { EV_H = EV_H; } // PNG: formato manda; paneles se achican
-  }
+  // ----- layout: un solo panel (la seleccion es unica; sin small multiples) -----
   svg.setAttribute('viewBox', '0 0 ' + EV_W + ' ' + EV_H);
   if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, dims.fmt);
 
-  // leyenda de dominios arriba (solo multiples; en single van labels a la derecha)
-  let legendH = 0;
-  if (!single) {
-    // leyenda de dominios con wrap: si no entra, baja de fila
-    const fsLeg = bigFmt ? 21 : 12, swS = bigFmt ? 19 : 11;
-    const rowH = bigFmt ? 30 : 20;
-    let lx = 14, fila = 0;
-    const ly0 = bigFmt ? 30 : 19;
-    E.doms.forEach(dm => {
-      const nombre = en ? dm.en : dm.es;
-      const w = (bigFmt ? 24 : 15) + ev_measure(nombre, fsLeg) + (bigFmt ? 26 : 16);
-      if (lx + w > EV_W - 14 && lx > 14) { fila++; lx = 14; }
-      const ly = ly0 + fila * rowH;
-      const sw = ev_el('rect'); sw.setAttribute('x', lx); sw.setAttribute('y', ly - (bigFmt ? 14 : 9));
-      sw.setAttribute('width', swS); sw.setAttribute('height', swS);
-      sw.setAttribute('rx', 2); sw.setAttribute('fill', EV_DOM_COL[dm.es]); svg.appendChild(sw);
-      const tx = ev_el('text'); tx.setAttribute('x', lx + (bigFmt ? 24 : 15), 0); tx.setAttribute('y', ly);
-      tx.style.cssText = 'font-family:' + EV_SANS + ';font-size:' + fsLeg + 'px;fill:#4A4A4A;';
-      tx.textContent = nombre; svg.appendChild(tx);
-      lx += w;
-    });
-    legendH = (bigFmt ? 46 : 30) + fila * rowH;
-  }
-
-  let rightSingle = 0;
-  if (single) {
-    const anchoLab = (nombre) => Math.max(...ev_wrapLab(nombre, fsLbl, bigFmt).map(l => ev_measure(l, fsLbl, 700)));
-    const wMax = Math.max(...E.doms.map(dm => anchoLab(en ? dm.en : dm.es)));
-    rightSingle = Math.ceil(wMax) + (bigFmt ? 24 : 16);
-  }
+  const anchoLab = (nombre) => Math.max(...ev_wrapLab(nombre, fsLbl, bigFmt).map(l => ev_measure(l, fsLbl, 700)));
+  const rightSingle = Math.ceil(Math.max(...E.doms.map(dm => anchoLab(en ? dm.en : dm.es)))) + (bigFmt ? 24 : 16);
   const yTickW = share ? ev_measure('100%', fsTick) : Math.max(...yTicksAbs.map(v => ev_measure(ev_fmtN(v), fsTick)));
   const M = {
-    top: (single ? (bigFmt ? 34 : 18) : legendH + (bigFmt ? 40 : 26)),
-    right: single ? rightSingle : (bigFmt ? 22 : 12),
-    bottom: bigFmt ? 60 : 36,
-    left: Math.ceil(yTickW + (bigFmt ? 22 : 12))
+    top: bigFmt ? 34 : 18,
+    right: rightSingle,
+    bottom: bigFmt ? 60 : 40,
+    left: Math.ceil(yTickW + (bigFmt ? 22 : 14))
   };
-  const gapX = bigFmt ? 46 : 26, gapY = bigFmt ? 64 : 44;
-  const gridW = EV_W - M.left - M.right, gridH = EV_H - M.top - M.bottom;
-  const panW = single ? gridW : (gridW - (cols - 1) * gapX) / cols;
-  const panH = single ? gridH : (gridH - (rows - 1) * gapY) / rows;
-
-  const hoverZones = [];
-  panels.forEach((p, pi) => {
-    const cx = single ? M.left : M.left + (pi % cols) * (panW + gapX);
-    const cy = single ? M.top : M.top + Math.floor(pi / cols) * (panH + gapY);
-    ev_panel(svg, p, {
-      x: cx, y: cy, w: panW, h: panH, cats, nivel, share, absMax, yTicksAbs, B0, isPng,
-      fsLbl, fsTick, fsPan, bigFmt, single, en,
-      firstCol: single || pi % cols === 0,
-      lastRow: single || Math.floor(pi / cols) === rows - 1
-    });
-    hoverZones.push({ p, x: cx, y: cy, w: panW, h: panH });
+  const panW = EV_W - M.left - M.right, panH = EV_H - M.top - M.bottom;
+  const pnl = panels[0];
+  ev_panel(svg, pnl, {
+    x: M.left, y: M.top, w: panW, h: panH, cats, nivel, share, absMax, yTicksAbs, B0, isPng,
+    fsLbl, fsTick, fsPan, bigFmt, single: true, en,
+    firstCol: true, lastRow: true
   });
 
-  if (!isPng) ev_hover(svg, { zones: hoverZones, cats, nivel, share, NB: B1 - B0 + 1, B0 });
+  // contexto de hover: los listeners se cablean UNA sola vez y leen esto.
+  // En PNG (o si algun dia no hay panel) queda null y el tooltip no aparece.
+  if (!isPng) {
+    const vline = ev_el('line'); vline.setAttribute('stroke', '#9a9488'); vline.setAttribute('stroke-width', 1);
+    vline.setAttribute('stroke-dasharray', '3 3'); vline.setAttribute('display', 'none');
+    vline.setAttribute('pointer-events', 'none'); svg.appendChild(vline);
+    svg.__evCtx = { zones: [{ p: pnl, x: M.left, y: M.top, w: panW, h: panH }],
+                    cats, nivel, share, NB: B1 - B0 + 1, B0, vline };
+    ev_wireHover(svg);
+  } else svg.__evCtx = null;
+
   ev_syncSub();
 }
 
@@ -329,12 +292,15 @@ function ev_panel(svg, p, o) {
     const path = ev_el('path'); path.setAttribute('d', dp); path.setAttribute('fill', c.color);
     path.setAttribute('fill-opacity', 0.92);
     path.setAttribute('stroke', '#FAF8F3'); path.setAttribute('stroke-width', o.nivel === 'occ' ? 0.4 : (o.bigFmt ? 1 : 0.6));
-    // clave de banda: en ocupaciones se agrupa por DOMINIO (resalta el bloque)
-    const bandKey = o.nivel === 'dom' ? String(c.i) : 'd' + c.dom;
+    // clave de banda: SIEMPRE la categoria puntual (en ocupaciones, esa ocupacion);
+    // data-dom permite que la etiqueta del bloque resalte el dominio entero
+    const bandKey = String(c.i);
+    const domKey = o.nivel === 'occ' ? 'd' + c.dom : bandKey;
     path.setAttribute('data-band', bandKey); path.setAttribute('data-band-op', 0.92);
+    path.setAttribute('data-dom', domKey);
     if (!o.isPng) {
-      path.addEventListener('mouseenter', () => ev_bandEmph(svg, bandKey));
-      path.addEventListener('mouseleave', () => ev_bandEmph(svg, null));
+      path.addEventListener('mouseenter', () => { svg.__evHoverCat = o.nivel === 'occ' ? c.i : null; ev_bandEmph(svg, bandKey, domKey); });
+      path.addEventListener('mouseleave', () => { svg.__evHoverCat = null; ev_bandEmph(svg, null, null); });
     }
     g.appendChild(path);
   });
@@ -393,8 +359,8 @@ function ev_panel(svg, p, o) {
           tx.setAttribute('data-band-label', l.band);
           if (!o.isPng) {
             tx.style.cursor = 'default';
-            tx.addEventListener('mouseenter', () => ev_bandEmph(svg, l.band));
-            tx.addEventListener('mouseleave', () => ev_bandEmph(svg, null));
+            tx.addEventListener('mouseenter', () => ev_bandEmph(svg, null, l.band));
+            tx.addEventListener('mouseleave', () => ev_bandEmph(svg, null, null));
           }
         }
         svg.appendChild(tx);
@@ -404,57 +370,59 @@ function ev_panel(svg, p, o) {
 }
 
 // ---------- hover / tap: crosshair por panel ----------
-function ev_hover(svg, c) {
+function ev_wireHover(svg) {
+  if (svg.__evWired) return; svg.__evWired = true;
   const tip = document.getElementById('tooltipevo'); if (!tip) return;
-  const en = ev_lang() === 'en', E = window.EVOL;
-  const vline = ev_el('line'); vline.setAttribute('stroke', '#9a9488'); vline.setAttribute('stroke-width', 1);
-  vline.setAttribute('stroke-dasharray', '3 3'); vline.setAttribute('display', 'none');
-  // SIN capa de captura: un rect transparente encima se comeria el mouseenter de
-  // las bandas y el resaltado no andaria (patron del amistosos: el crosshair no
-  // recibe eventos y el movimiento se escucha en el SVG).
-  vline.setAttribute('pointer-events', 'none'); svg.appendChild(vline);
-  {
-    const zonaDe = (lx, ly) => c.zones.find(z => lx >= z.x && lx <= z.x + z.w && ly >= z.y && ly <= z.y + z.h);
-    const move = (ev2) => {
-      const rc = svg.getBoundingClientRect(), sc = rc.width / EV_W;
-      const lx = (ev2.clientX - rc.left) / sc, ly = (ev2.clientY - rc.top) / sc;
-      const z = zonaDe(lx, ly);
-      if (!z) { vline.setAttribute('display', 'none'); tip.style.opacity = '0'; tip.style.display = 'none'; return; }
-      let bi = Math.round((lx - z.x) / z.w * (c.NB - 1)); bi = Math.max(0, Math.min(c.NB - 1, bi));
-      const xpix = z.x + (bi / (c.NB - 1)) * z.w;
-      vline.setAttribute('display', ''); vline.setAttribute('x1', xpix); vline.setAttribute('x2', xpix);
-      vline.setAttribute('y1', z.y); vline.setAttribute('y2', z.y + z.h);
-      const row = z.p.mat[bi], tot = z.p.totals[bi];
-      const binLab = en ? E.bins[c.B0 + bi].en : E.bins[c.B0 + bi].es;
-      let html = '<div style="font-weight:600;margin-bottom:4px;">' + z.p.label + ' · ' + binLab +
-        ' · ' + tot.toLocaleString(ev_loc()) + (en ? ' figures' : ' figuras') + '</div>';
-      let items = c.cats.map(cat => ({ cat, v: row[cat.i] })).filter(x => x.v > 0);
-      items.sort((a, b) => b.v - a.v);
-      const top = c.nivel === 'occ' ? items.slice(0, 8) : items;
-      top.forEach(x => {
-        const pc = tot ? Math.round(x.v / tot * 100) : 0;
-        html += '<div style="display:flex;gap:6px;align-items:center;line-height:1.5;">' +
-          '<span style="width:8px;height:8px;border-radius:2px;background:' + x.cat.color + ';flex:0 0 auto;"></span>' +
-          '<span style="flex:1;">' + x.cat.name + '</span>' +
-          '<strong>' + (c.share ? pc + '%' : x.v.toLocaleString(ev_loc())) + '</strong></div>';
-      });
-      if (c.nivel === 'occ' && items.length > 8) {
-        const resto = items.slice(8).reduce((a, x) => a + x.v, 0);
-        const pc = tot ? Math.round(resto / tot * 100) : 0;
-        html += '<div style="display:flex;gap:6px;line-height:1.5;color:#C9C2B2;"><span style="width:8px;"></span><span style="flex:1;">' +
-          (en ? 'others' : 'otras') + '</span><strong>' + (c.share ? pc + '%' : resto.toLocaleString(ev_loc())) + '</strong></div>';
-      }
-      tip.innerHTML = html; tip.style.display = 'block'; tip.style.opacity = '1';
-      const x2 = ev2.clientX - rc.left, y2 = ev2.clientY - rc.top, tw = tip.offsetWidth || 220;
-      tip.style.left = ((x2 + 16 + tw > rc.width) ? Math.max(2, x2 - tw - 16) : x2 + 14) + 'px';
-      tip.style.top = (y2 + 14) + 'px';
-    };
-    svg.addEventListener('mousemove', move);
-  }
-  svg.addEventListener('mouseleave', () => {
-    vline.setAttribute('display', 'none'); tip.style.opacity = '0'; tip.style.display = 'none';
-    ev_bandEmph(svg, null);   // por si el puntero sale sin pasar por el mouseleave de la banda
+  const oculta = () => {
+    const c = svg.__evCtx;
+    if (c && c.vline) c.vline.setAttribute('display', 'none');
+    tip.style.opacity = '0'; tip.style.display = 'none';
+  };
+  svg.addEventListener('mousemove', (ev2) => {
+    const c = svg.__evCtx;
+    if (!c || !c.zones.length) { oculta(); return; }
+    const en = ev_lang() === 'en', E = window.EVOL;
+    const rc = svg.getBoundingClientRect(), sc = rc.width / EV_W;
+    const lx = (ev2.clientX - rc.left) / sc, ly = (ev2.clientY - rc.top) / sc;
+    const z = c.zones.find(z2 => lx >= z2.x && lx <= z2.x + z2.w && ly >= z2.y && ly <= z2.y + z2.h);
+    if (!z) { oculta(); return; }
+    let bi = Math.round((lx - z.x) / z.w * (c.NB - 1)); bi = Math.max(0, Math.min(c.NB - 1, bi));
+    const xpix = z.x + (c.NB <= 1 ? 0.5 * z.w : (bi / (c.NB - 1)) * z.w);
+    c.vline.setAttribute('display', ''); c.vline.setAttribute('x1', xpix); c.vline.setAttribute('x2', xpix);
+    c.vline.setAttribute('y1', z.y); c.vline.setAttribute('y2', z.y + z.h);
+    const row = z.p.mat[bi], tot = z.p.totals[bi];
+    const binLab = en ? E.bins[c.B0 + bi].en : E.bins[c.B0 + bi].es;
+    let html = '<div style="font-weight:600;margin-bottom:4px;">' + z.p.label + ' · ' + binLab +
+      ' · ' + tot.toLocaleString(ev_loc()) + (en ? ' figures' : ' figuras') + '</div>';
+    let items = c.cats.map(cat => ({ cat, v: row[cat.i] })).filter(x => x.v > 0);
+    items.sort((a, b) => b.v - a.v);
+    // en ocupaciones, la banda bajo el puntero va PRIMERA y destacada
+    const hc = c.nivel === 'occ' ? svg.__evHoverCat : null;
+    if (hc != null) {
+      const k = items.findIndex(x => x.cat.i === hc);
+      if (k > 0) items.unshift(items.splice(k, 1)[0]);
+    }
+    const top = c.nivel === 'occ' ? items.slice(0, 8) : items;
+    top.forEach(x => {
+      const dest = hc != null && x.cat.i === hc;
+      const pc = tot ? Math.round(x.v / tot * 100) : 0;
+      html += '<div style="display:flex;gap:6px;align-items:center;line-height:1.5;' + (dest ? 'font-weight:700;' : '') + '">' +
+        '<span style="width:8px;height:8px;border-radius:2px;background:' + x.cat.color + ';flex:0 0 auto;' + (dest ? 'outline:1.5px solid #fff;' : '') + '"></span>' +
+        '<span style="flex:1;">' + x.cat.name + '</span>' +
+        '<strong>' + (c.share ? pc + '%' : x.v.toLocaleString(ev_loc())) + '</strong></div>';
+    });
+    if (c.nivel === 'occ' && items.length > 8) {
+      const resto = items.slice(8).reduce((a, x) => a + x.v, 0);
+      const pc = tot ? Math.round(resto / tot * 100) : 0;
+      html += '<div style="display:flex;gap:6px;line-height:1.5;color:#C9C2B2;"><span style="width:8px;"></span><span style="flex:1;">' +
+        (en ? 'others' : 'otras') + '</span><strong>' + (c.share ? pc + '%' : resto.toLocaleString(ev_loc())) + '</strong></div>';
+    }
+    tip.innerHTML = html; tip.style.display = 'block'; tip.style.opacity = '1';
+    const x2 = ev2.clientX - rc.left, y2 = ev2.clientY - rc.top, tw = tip.offsetWidth || 220;
+    tip.style.left = ((x2 + 16 + tw > rc.width) ? Math.max(2, x2 - tw - 16) : x2 + 14) + 'px';
+    tip.style.top = (y2 + 14) + 'px';
   });
+  svg.addEventListener('mouseleave', () => { oculta(); ev_bandEmph(svg, null, null); });
 }
 
 // ---------- subtítulo dinámico (el custom del editor manda) ----------
@@ -463,18 +431,32 @@ function ev_syncSub() {
   const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
   const tx = (ae && ae.texts && ae.texts[ev_lang() === 'en' ? 'en' : 'es']) || {};
   if ((tx.subtitle || '').trim()) return;
-  const s = ev_state(), en = ev_lang() === 'en';
-  const names = s.sel.map(ev_selLabel);
-  const sel = names.length === 0 ? '' : names.length <= 3 ? names.join(' · ') : names.slice(0, 3).join(' · ') + ' +' + (names.length - 3);
-  const nivel = s.nivel === 'dom' ? (en ? 'domain' : 'dominio') : (en ? 'occupation (shades grouped by domain)' : 'ocupación (tonos agrupados por dominio)');
-  const medida = s.mode === 'share' ? (en ? 'share of those born in each period' : '% de las nacidas en cada período')
-                                    : (en ? 'number of figures per period' : 'cantidad de figuras por período');
-  const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
-  const fraseEn = 'famous figures by ' + nivel + ', as ' + medida + '.';
-  const fraseEs = 'figuras célebres por ' + nivel + ', como ' + medida + '.';
-  el.textContent = en
-    ? (sel ? sel + ': ' + fraseEn : cap(fraseEn))
-    : (sel ? sel + ': ' + fraseEs : cap(fraseEs));
+  const s = ev_state(), en = ev_lang() === 'en', u = s.sel[0];
+  const lugar = u.t === 'w' ? null : ev_selLabel(u);
+  const nivel = s.nivel === 'dom' ? (en ? 'domain' : 'rubro') : (en ? 'occupation' : 'ocupación');
+  const b0 = Math.min(s.b0, s.b1), b1 = Math.max(s.b0, s.b1);
+  const full = b0 === 0 && b1 === 11;
+  const y0 = b0 === 0 ? null : 1500 + (b0 - 1) * 50;
+  const y1 = b1 === 11 ? null : 1549 + (b1 - 1) * 50;
+  let frase;
+  if (en) {
+    frase = 'Composition of famous figures by ' + nivel;
+    if (full) frase += ' across history' + (lugar ? ', ' + lugar : ' worldwide');
+    else {
+      const per = y0 && y1 ? y0 + '–' + y1 : y0 ? 'since ' + y0 : 'until ' + y1;
+      frase += ', ' + per + ', ' + (lugar || 'World');
+    }
+  } else {
+    frase = 'Composición de las figuras célebres por ' + nivel;
+    if (full) frase += ' a lo largo de la historia' + (lugar ? ', ' + lugar : ' en el Mundo');
+    else {
+      const per = y0 && y1 ? y0 + '–' + y1 : y0 ? 'desde ' + y0 : 'hasta ' + y1;
+      frase += ', ' + per + ', ' + (lugar || 'Mundo');
+    }
+  }
+  frase += '.';
+  if (s.mode === 'abs') frase += en ? ' In counts.' : ' En cantidades.';
+  el.textContent = frase;
 }
 
 // ---------- selector (buscador + chips, patrón podios) ----------
@@ -486,19 +468,21 @@ function ev_candidatos() {
   return out;
 }
 function ev_renderChips() {
+  // seleccion UNICA: un chip; Mundo es el piso (sin x); elegir otro REEMPLAZA
   const s = ev_state();
   const box = document.getElementById('evo-chips'); box.innerHTML = '';
-  s.sel.forEach((u, k) => {
-    const chip = document.createElement('span');
-    chip.className = 'm-selected-chip';
-    chip.style.background = ev_selColor(u);
-    chip.textContent = ev_selLabel(u);
+  const u = s.sel[0];
+  const chip = document.createElement('span');
+  chip.className = 'm-selected-chip';
+  chip.style.background = ev_selColor(u);
+  chip.textContent = ev_selLabel(u);
+  if (u.t !== 'w') {
     const x = document.createElement('button');
-    x.className = 'm-chip-x'; x.innerHTML = '×'; x.setAttribute('aria-label', 'Quitar');
-    x.addEventListener('click', () => { s.sel.splice(k, 1); ev_renderChips(); drawEvo(); });
-    chip.appendChild(x); box.appendChild(chip);
-  });
-  document.getElementById('evo-limpiar').style.display = s.sel.length >= 2 ? '' : 'none';
+    x.className = 'm-chip-x'; x.innerHTML = '×'; x.setAttribute('aria-label', 'Volver al Mundo');
+    x.addEventListener('click', () => { s.sel = [{ t: 'w' }]; ev_renderChips(); drawEvo(); });
+    chip.appendChild(x);
+  }
+  box.appendChild(chip);
   document.getElementById('evo-search').placeholder = (typeof t === 'function') ? t('cevo-buscar') : 'Buscar país o región…';
 }
 function ev_setupSearch() {
@@ -509,8 +493,7 @@ function ev_setupSearch() {
   const norm = (x) => x.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
   const enSel = (u) => s.sel.some(v => ev_selKey(v) === ev_selKey(u));
   function toggle(u) {
-    const k = s.sel.findIndex(v => ev_selKey(v) === ev_selKey(u));
-    if (k >= 0) s.sel.splice(k, 1); else s.sel.push(u);
+    s.sel = [u];   // seleccion unica: reemplaza (Daniel, ronda 2)
     ev_renderChips(); drawEvo();
   }
   function getMatches(q) {
@@ -523,9 +506,8 @@ function ev_setupSearch() {
     const en = ev_lang() === 'en';
     results.innerHTML = matches.map((u, k) => {
       const cls = 'm-search-result' + (k === activeIdx ? ' m-active' : '') + (enSel(u) ? ' m-already' : '');
-      const tag = u.t === 'w' ? (en ? 'aggregate' : 'agregado')
-        : u.t === 'r' ? (en ? 'region' : 'región')
-        : (typeof t === 'function' ? t('reg.' + window.EVOL.isoMeta[u.i].reg) : '');
+      // solo los paises llevan la region en gris; Mundo y regiones van a nombre pelado
+      const tag = u.t === 'c' && typeof t === 'function' ? t('reg.' + window.EVOL.isoMeta[u.i].reg) : '';
       return '<div class="' + cls + '" data-k="' + k + '">' + ev_selLabel(u) +
         '<span class="m-search-region">' + tag + '</span></div>';
     }).join('');
@@ -547,7 +529,6 @@ function ev_setupSearch() {
   document.addEventListener('click', ev2 => {
     if (!input.contains(ev2.target) && !results.contains(ev2.target)) results.classList.remove('open');
   });
-  document.getElementById('evo-limpiar').addEventListener('click', () => { s.sel = []; ev_renderChips(); drawEvo(); });
 }
 
 // ---------- periodo: doble slider sobre bins + cajitas de anio ----------
