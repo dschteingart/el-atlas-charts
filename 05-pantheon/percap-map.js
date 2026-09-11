@@ -19,7 +19,10 @@
   const SUBDOM = E.subMeta.map(s => s.dom);
   const ISO_META = {}; E.isoMeta.forEach((m, k) => { ISO_META[m.iso] = m; m._k = k; });
   const idxByIso = {}; E.isoMeta.forEach((m, k) => idxByIso[m.iso] = k);
-  const dispName = (iso) => (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[iso] && COUNTRY_NAMES[iso][LANG]) || (ISO_META[iso] ? ISO_META[iso][en() ? 'en' : 'es'] : iso);
+  // dependencias y territorios que el mapa dibuja pero no tienen fila de datos
+  const TERR = {}; (E.terrMeta || []).forEach(m => { TERR[m.iso] = m; });
+  const dispName = (iso) => (typeof COUNTRY_NAMES !== 'undefined' && COUNTRY_NAMES[iso] && COUNTRY_NAMES[iso][LANG])
+    || (ISO_META[iso] ? ISO_META[iso][en() ? 'en' : 'es'] : (TERR[iso] ? TERR[iso][en() ? 'en' : 'es'] : iso));
   const fmtYear = (y) => y < 0 ? `${-y} ${T('a.C.', 'BC')}` : String(y);
   const subName = (s) => E.subMeta[s][en() ? 'en' : 'es'];
   const REG_LABEL = {
@@ -200,19 +203,39 @@
     showTipXY(ev, regLabel(f.id), regVal[f.id], f.id, true);
   }
 
+  // Centroide de la PIEZA MAS GRANDE del pais. Con el centroide del
+  // multipoligono entero, Alaska y las islas arrastran el de EE.UU. al norte y
+  // la burbuja caia sobre Canada (Daniel 2026-09-11). Mismo problema tenian
+  // Francia, Holanda o Dinamarca por sus territorios de ultramar.
+  function centroidMain(f) {
+    const g = f && f.geometry; if (!g) return null;
+    if (g.type !== 'MultiPolygon' || g.coordinates.length < 2) return path.centroid(f);
+    let best = null, bestA = -1;
+    for (let i = 0; i < g.coordinates.length; i++) {
+      const piece = { type: 'Feature', geometry: { type: 'Polygon', coordinates: g.coordinates[i] } };
+      const a2 = Math.abs(path.area(piece));
+      if (a2 > bestA) { bestA = a2; best = piece; }
+    }
+    return best ? path.centroid(best) : path.centroid(f);
+  }
+
   function drawDorling(gZoom, byIso) {
     const d3 = window.d3;
-    if (geo.landmask) gZoom.append('path').attr('d', path(geo.landmask)).attr('fill', NODATA).attr('opacity', 0.5).attr('pointer-events', 'none');
+    // Fondo: los PAISES, no un landmask plano — asi se ven las fronteras
+    // debajo de las burbujas (Daniel 2026-09-11).
+    gZoom.append('g').attr('pointer-events', 'none').selectAll('path').data(geo.features, isoOf).join('path')
+      .attr('d', path).attr('fill', NODATA).attr('fill-opacity', 0.45)
+      .attr('stroke', '#B9B2A4').attr('stroke-width', 0.5).attr('vector-effect', 'non-scaling-stroke');
     let nodes;
     if (st.view === 'region') {
       const regVal = byIso.__regVal || {};
       // centroide de región = promedio de centroides de miembros (ponderado por área)
       const acc = {};
-      geo.features.forEach(f => { const m = ISO_META[isoOf(f)]; if (!m) return; const reg = m.reg; const a = Math.abs(path.area(f)); const c = path.centroid(f); if (!(a > 0) || !c) return; const x = acc[reg] || (acc[reg] = { x: 0, y: 0, a: 0 }); x.x += c[0] * a; x.y += c[1] * a; x.a += a; });
+      geo.features.forEach(f => { const m = ISO_META[isoOf(f)]; if (!m) return; const reg = m.reg; const a = Math.abs(path.area(f)); const c = centroidMain(f); if (!(a > 0) || !c) return; const x = acc[reg] || (acc[reg] = { x: 0, y: 0, a: 0 }); x.x += c[0] * a; x.y += c[1] * a; x.a += a; });
       nodes = Object.keys(regVal).filter(r => regVal[r] > 0 && acc[r]).map(r => ({ key: r, name: regLabel(r), v: regVal[r], x: acc[r].x / acc[r].a, y: acc[r].y / acc[r].a, isReg: true }));
     } else {
       nodes = [];
-      geo.features.forEach(f => { const iso = isoOf(f); const v = byIso[iso]; if (!(v > 0)) return; const c = path.centroid(f); if (!c || isNaN(c[0])) return; nodes.push({ key: iso, name: dispName(iso), v, x: c[0], y: c[1] }); });
+      geo.features.forEach(f => { const iso = isoOf(f); const v = byIso[iso]; if (!(v > 0)) return; const c = centroidMain(f); if (!c || isNaN(c[0])) return; nodes.push({ key: iso, name: dispName(iso), v, x: c[0], y: c[1] }); });
     }
     const maxV = d3.max(nodes, n => n.v) || 1;
     const rMax = st.view === 'region' ? 60 : 26;
@@ -223,7 +246,7 @@
     const g = gZoom.append('g');
     g.selectAll('circle').data(nodes).join('circle')
       .attr('cx', n => n.x).attr('cy', n => n.y).attr('r', n => n.r)
-      .attr('fill', CARTO_COLOR).attr('fill-opacity', 0.82).attr('stroke', '#fff').attr('stroke-width', 0.6)
+      .attr('fill', CARTO_COLOR).attr('fill-opacity', 0.85).attr('stroke', '#FAF8F3').attr('stroke-width', 1.4)
       .style('cursor', 'pointer')
       .on('mouseenter', (ev, n) => showTipXY(ev, n.name, n.v, n.key, n.isReg)).on('mousemove', onMove).on('mouseleave', hideTip);
     // etiquetas para los más grandes
@@ -349,9 +372,9 @@
 
     const fs = document.getElementById('m-filter');
     window.__mapFillFilter = function () {
-      let html = `<option value="all">${T('Todas las disciplinas', 'All fields')}</option>`;
-      html += `<optgroup label="${T('Dominios', 'Domains')}">` + E.domains.map((d, i) => `<option value="dom:${i}">${d[en() ? 'en' : 'es']}</option>`).join('') + '</optgroup>';
-      html += `<optgroup label="${T('Sub-rubros', 'Sub-fields')}">` + E.subMeta.map((s, i) => s.dom < 0 ? '' : `<option value="sub:${i}">${subName(i)}</option>`).join('') + '</optgroup>';
+      let html = `<option value="all">${T('Todos los rubros', 'All fields')}</option>`;
+      html += `<optgroup label="${T('Rubros', 'Fields')}">` + E.domains.map((d, i) => `<option value="dom:${i}">${d[en() ? 'en' : 'es']}</option>`).join('') + '</optgroup>';
+      html += `<optgroup label="${T('Ocupaciones', 'Occupations')}">` + E.subMeta.map((s, i) => s.dom < 0 ? '' : `<option value="sub:${i}">${subName(i)}</option>`).join('') + '</optgroup>';
       fs.innerHTML = html; fs.value = st.filter;
     };
     window.__mapFillFilter();

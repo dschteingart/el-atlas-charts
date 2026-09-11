@@ -57,11 +57,9 @@
   .dual input[type=range]::-moz-range-thumb { pointer-events: auto; width: 13px; height: 13px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--rule); cursor: pointer; }
 
   /* ===== chips + buscador ===== */
-  .m-selected-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 0; margin: 2px 0 4px; }
-  .m-selected-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 9px; border-radius: 12px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--ink); background: var(--bg); border: 1px solid var(--rule); }
-  .m-chip-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
-  .m-chip-x { width: 18px; height: 18px; border-radius: 50%; border: none; background: transparent; color: var(--ink-muted); font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
-  .m-chip-x:hover { background: var(--grid); color: var(--ink); }
+  /* chips: los de la casa (lib/style.css) — fondo del color de la region y
+     texto blanco. NO se redefinen por pagina (criterio unico, Daniel 2026-09-11). */
+  .m-selected-chips { margin: 2px 0 4px; }
   .m-search-wrap { position: relative; margin: 0; min-width: 200px; max-width: 280px; }
   .m-search-input { width: 100%; padding: 7px 10px; border: 1px solid var(--rule); border-radius: 5px; background: var(--bg); font-family: var(--sans); font-size: 13px; color: var(--ink); outline: none; }
   .m-search-input:focus { border-color: var(--accent); }
@@ -204,12 +202,12 @@
 
 <script src="../lib/regions.js"></script>
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=23"></script>
+<script src="./i18n-issue.js?v=24"></script>
 <script src="./utils.js?v=5"></script>
 <script src="./country-names.js?v=2"></script>
 <script src="../lib/scatter-render.js?v=74"></script>
 <script src="./data-explora.js?v=22"></script>
-<script src="./talento-pib.js?v=6"></script>
+<script src="./talento-pib.js?v=8"></script>
 <script src="./png-export.js?v=8"></script>
 <script>
   initTalento();

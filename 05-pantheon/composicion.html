@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Atlas — El mapa de la fama mundial</title>
-<meta name="description" content="Dónde nacieron las figuras célebres del mundo: mapa por país o región, absoluto o per cápita, con filtros por rubro y período. Interactivo de El Atlas.">
+<title>El Atlas — De qué está hecha la fama</title>
+<meta name="description" content="La composición de las figuras célebres por rubro y ocupación, región por región y país por país. Interactivo de El Atlas.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
-<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/percap-map.html">
-<meta property="og:title" content="El mapa de la fama mundial — El Atlas N°5">
-<meta property="og:description" content="Dónde nacieron las figuras célebres: por país o región, absoluto o per cápita, desde la Antigüedad hasta hoy.">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/composicion.html">
+<meta property="og:title" content="De qué está hecha la fama — El Atlas N°5">
+<meta property="og:description" content="Qué rubros dominan la fama de cada región: deporte, arte, ciencia, poder.">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,12 +31,10 @@
   .seg button:hover { color: var(--ink); }
   .seg button.on { background: var(--bg); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
   select { font-family: var(--sans); font-size: 13px; padding: 6px 9px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink); max-width: 230px; }
-  .reset-btn { font-family: var(--sans); font-size: 12px; padding: 6px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--bg); color: var(--ink-soft); cursor: pointer; }
-  .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
   /* periodo universal: doble slider + cajitas (criterio de la casa) */
   .anios { display: flex; align-items: center; gap: 8px; }
   .anios input[type=number] { font-family: var(--sans); font-size: 12.5px; width: 60px; padding: 4px 6px; border: 1px solid var(--rule); border-radius: 7px; background: var(--bg); color: var(--ink); }
-  .dual { position: relative; width: 190px; height: 26px; }
+  .dual { position: relative; width: 180px; height: 26px; }
   .dual .track { position: absolute; top: 11.5px; left: 0; right: 0; height: 3px; background: var(--rule); border-radius: 2px; }
   .dual .fill { position: absolute; top: 11.5px; height: 3px; background: var(--accent); border-radius: 2px; }
   .dual input[type=range] { position: absolute; left: 0; top: 0; width: 100%; height: 26px; margin: 0; background: none; pointer-events: none; -webkit-appearance: none; appearance: none; }
@@ -44,22 +42,22 @@
   .dual input[type=range]::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--rule); cursor: pointer; margin-top: -6.5px; }
   .dual input[type=range]::-moz-range-track { height: 3px; background: transparent; }
   .dual input[type=range]::-moz-range-thumb { pointer-events: auto; width: 13px; height: 13px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--rule); cursor: pointer; }
-  /* mapa + tooltip */
-  .maprow { position: relative; }
-  .maprow svg { width: 100%; height: auto; display: block; }
-  #mTip { position: absolute; display: none; pointer-events: none; background: var(--ink); color: #fff; font-family: var(--sans); font-size: 11.5px; line-height: 1.5; padding: 9px 12px; border-radius: 4px; max-width: 250px; z-index: 10; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
-  #mTip strong { display: block; font-family: var(--serif); font-size: 13.5px; font-weight: 600; margin-bottom: 2px; }
-  #mTip .tt-period { color: #C9C2B2; font-size: 9.5px; text-transform: uppercase; letter-spacing: .9px; margin-bottom: 6px; }
-  #mTip .tt-row { display: flex; justify-content: space-between; gap: 14px; }
-  #mTip .tt-row span:first-child { color: #C9C2B2; }
-  #mTip .tt-row span:last-child { color: #fff; font-weight: 600; font-variant-numeric: tabular-nums; }
-  #mTip .tt-fig { margin-top: 6px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,.25); }
-  #mTip .tt-fig-name { display: block; font-weight: 700; }
-  #mTip .tt-fig-meta { display: block; color: #C9C2B2; font-size: 11px; font-variant-numeric: tabular-nums; }
-  .m-country { transition: fill .15s; }
+  /* buscador de paises: el de la casa (lib/style.css .m-search-*) */
+  .m-search-wrap { position: relative; min-width: 210px; max-width: 260px; }
+  .m-selected-chips { margin: 2px 0 6px; }
+  /* grafico + tooltip oscuro de la casa */
+  .chart-svg-wrap { position: relative; }
+  .chart-svg-wrap svg { width: 100%; height: auto; display: block; }
+  #compTip { position: absolute; display: none; pointer-events: none; background: var(--ink); color: #fff; font-family: var(--sans); font-size: 11.5px; line-height: 1.5; padding: 9px 12px; border-radius: 4px; max-width: 260px; z-index: 10; box-shadow: 0 4px 14px rgba(0,0,0,.18); }
+  #compTip strong { display: block; font-family: var(--serif); font-size: 13.5px; font-weight: 600; margin-bottom: 2px; }
+  #compTip .tt-period { color: #C9C2B2; font-size: 9.5px; text-transform: uppercase; letter-spacing: .9px; margin-bottom: 6px; }
+  #compTip .tt-row { display: flex; justify-content: space-between; gap: 14px; }
+  #compTip .tt-row span:first-child { color: #C9C2B2; }
+  #compTip .tt-row span:last-child { color: #fff; font-weight: 600; font-variant-numeric: tabular-nums; }
   @media (max-width: 768px) {
     .wrap-wide .chart-title { font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 4px; }
     .wrap-wide .chart-subtitle { font-size: 12px; font-weight: 400; color: var(--ink-muted); line-height: 1.4; margin: 0 0 8px; }
+    .m-search-wrap { max-width: 100%; }
     .footer .sources, .footer .attribution { font-size: 10.5px; }
     .footer .download { font-size: 11px; padding: 6px 10px; }
   }
@@ -74,70 +72,81 @@
     </div>
   </header>
 
-  <section class="chart-block" data-chart="map" data-editor-id="mapa-fama">
-    <h2 class="chart-title" data-i18n="cmap-title">El mapa de la fama mundial</h2>
-    <p class="chart-subtitle" id="mSub">…</p>
+  <section class="chart-block" data-chart="comp" data-editor-id="composicion-fama">
+    <h2 class="chart-title" data-i18n="ccomp-title">Los famosos latinoamericanos son mayormente deportistas</h2>
+    <p class="chart-subtitle" id="compSub">…</p>
 
     <div class="controls">
-      <div class="ctl"><label data-i18n="cmap-lbl-vista">Vista</label>
-        <div class="seg" id="m-view"><button data-val="country" data-i18n="cmap-pais">País</button><button data-val="region" data-i18n="cmap-region">Región</button></div>
-      </div>
-      <div class="ctl"><label data-i18n="cmap-lbl-medida">Medida</label>
-        <div class="seg" id="m-measure"><button data-val="abs" data-i18n="cmap-abs">Absoluto</button><button data-val="percap" data-i18n="cmap-percap">Per cápita</button></div>
-      </div>
-      <div class="ctl" id="m-mapmode-wrap"><label data-i18n="cmap-lbl-mapa">Mapa</label>
-        <div class="seg" id="m-mapmode"><button data-val="choro" data-i18n="cmap-coro">Coroplético</button><button data-val="dorling" data-i18n="cmap-carto">Cartograma ●</button></div>
-      </div>
-      <div class="ctl"><label data-i18n="cmap-lbl-filtro">Dominio / ocupación</label>
-        <select id="m-filter"></select>
-      </div>
-      <div class="ctl"><label data-i18n="cmap-lbl-periodo">Nacidos entre</label>
-        <div class="anios">
-          <input type="number" id="m-y0" step="1" placeholder="−3500">
-          <div class="dual">
-            <div class="track"></div><div class="fill" id="m-fill"></div>
-            <input type="range" id="m-r0" min="0" max="1000" step="1">
-            <input type="range" id="m-r1" min="0" max="1000" step="1">
-          </div>
-          <input type="number" id="m-y1" step="1" placeholder="2021">
+      <div class="ctl"><label data-i18n="ccomp-lbl-vista">Vista</label>
+        <div class="seg" id="comp-view">
+          <button data-val="country" data-i18n="ccomp-pais">País</button>
+          <button data-val="region" data-i18n="ccomp-region">Región</button>
         </div>
       </div>
-      <div class="ctl"><label>&nbsp;</label>
-        <button class="reset-btn" id="m-reset" data-i18n="cmap-zoom">↺ Zoom</button>
+      <div class="ctl"><label data-i18n="ccomp-lbl-medida">Medida</label>
+        <div class="seg" id="comp-measure">
+          <button data-val="share" data-i18n="ccomp-share">% del total</button>
+          <button data-val="abs" data-i18n="ccomp-abs">Absoluto</button>
+          <button data-val="percap" data-i18n="ccomp-percap">Per cápita</button>
+        </div>
+      </div>
+      <div class="ctl"><label data-i18n="ccomp-lbl-apertura">Apertura</label>
+        <div class="seg" id="comp-breakdown">
+          <button data-val="total" data-i18n="ccomp-total">Total</button>
+          <button data-val="dom" data-i18n="ccomp-rubros">Rubros</button>
+          <button data-val="occ" data-i18n="ccomp-ocupaciones">Ocupaciones</button>
+        </div>
+      </div>
+      <div class="ctl" id="comp-domwrap"><label data-i18n="ccomp-lbl-rubro">Rubro</label>
+        <select id="comp-domain"></select>
+      </div>
+      <div class="ctl"><label data-i18n="ccomp-lbl-periodo">Nacidos entre</label>
+        <div class="anios">
+          <input type="number" id="comp-y0" step="1" placeholder="−3500">
+          <div class="dual">
+            <div class="track"></div><div class="fill" id="comp-fill"></div>
+            <input type="range" id="comp-r0" min="0" max="1000" step="1">
+            <input type="range" id="comp-r1" min="0" max="1000" step="1">
+          </div>
+          <input type="number" id="comp-y1" step="1" placeholder="2021">
+        </div>
+      </div>
+      <div class="ctl" id="comp-paises"><label data-i18n="ccomp-lbl-paises">Países</label>
+        <div class="m-search-wrap">
+          <input type="text" id="comp-search" class="m-search-input" data-i18n-placeholder="ccomp-buscar" placeholder="Agregar país…" autocomplete="off">
+          <div id="comp-search-results" class="m-search-results"></div>
+        </div>
       </div>
     </div>
+    <div class="m-selected-chips" id="comp-selected-chips"></div>
 
-    <div class="maprow">
-      <svg id="chartmap" viewBox="0 0 1100 636" xmlns="http://www.w3.org/2000/svg"></svg>
-      <div id="mTip"></div>
+    <div class="chart-svg-wrap">
+      <svg id="chartcomp" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div id="compTip"></div>
     </div>
   </section>
 
   <div class="footer">
-    <p><button class="download" data-chart="map-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="map" data-i18n="footer-download-png">Descargar PNG</button></p>
+    <p><button class="download" data-chart="comp-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="comp" data-i18n="footer-download-png">Descargar PNG</button></p>
     <div class="footer-row">
-      <p class="sources" data-i18n="cmap-sources">Datos: Pantheon (Datawheel).</p>
+      <p class="sources" data-i18n="ccomp-sources">Datos: Pantheon (Datawheel).</p>
       <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
     </div>
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
+<script src="../lib/regions.js"></script>
 <script src="../lib/i18n.js"></script>
 <script src="./i18n-issue.js?v=24"></script>
 <script src="./utils.js?v=5"></script>
 <script src="./country-names.js?v=2"></script>
-<script src="./data-country-geo-mini.js?v=2"></script>
-<script src="./data-geo-regions.js?v=5"></script>
 <script src="./data-percap-map.js?v=10"></script>
 <script src="./data-percap-pop.js?v=4"></script>
-<script src="./data-percap-topfig.js?v=10"></script>
-<script src="./percap-map.js?v=20"></script>
+<script src="./composicion.js?v=4"></script>
 <script src="./png-export.js?v=8"></script>
 <script>
   applyI18n();
-  if (typeof setupLangToggle === 'function') setupLangToggle(() => { applyI18n(); if (window.__mapRelang) window.__mapRelang(); });
+  if (typeof setupLangToggle === 'function') setupLangToggle(() => { applyI18n(); if (window.__compRelang) window.__compRelang(); });
 </script>
 <script src="../lib/editor.js?v=8"></script>
 </body>

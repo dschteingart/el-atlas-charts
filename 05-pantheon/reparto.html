@@ -24,7 +24,13 @@
   .corte-row input[type=range] { width: 180px; accent-color: var(--accent); }
   #resumen { font-family: var(--sans); font-size: 12px; color: var(--ink-muted); margin: 0 0 8px; }
   .tblbox { max-height: 640px; overflow: auto; border: 1px solid var(--rule); border-radius: 10px; }
-  table { border-collapse: collapse; font-family: var(--sans); width: 100%; min-width: 560px; }
+  /* table-layout fijo: las 5 columnas de datos miden IGUAL (son comparables
+     entre si; con layout automatico "Variacion (pp)" se robaba ancho por
+     tener el encabezado mas largo). Mismo reparto que el PNG. */
+  table { border-collapse: collapse; font-family: var(--sans); width: 100%; min-width: 560px; table-layout: fixed; }
+  th.name { width: 30%; }
+  thead th:not(.name) { width: 14%; }
+  thead th { white-space: normal; vertical-align: bottom; }
   thead th { position: sticky; top: 0; background: var(--bg); z-index: 2; }
   th, td { padding: 7px 11px; font-size: 13.5px; border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap; }
   th { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); font-weight: 700; cursor: pointer; user-select: none; }
@@ -101,7 +107,7 @@
 </div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=23"></script>
+<script src="./i18n-issue.js?v=24"></script>
 <script src="./utils.js?v=5"></script>
 <script src="./data-percap-map.js?v=7"></script>
 <script>

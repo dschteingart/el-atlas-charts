@@ -48,9 +48,54 @@ ROV = {'PRI': 'Latin America', 'CUB': 'Latin America', 'TWN': 'East Asia', 'HKG'
        'BMU': 'Caribbean', 'GLP': 'Caribbean', 'MTQ': 'Caribbean',
        'FJI': 'North America, Australia & New Zealand', 'TON': 'North America, Australia & New Zealand', 'VUT': 'North America, Australia & New Zealand',
        'WSM': 'North America, Australia & New Zealand', 'PYF': 'North America, Australia & New Zealand', 'MHL': 'North America, Australia & New Zealand',
-       'NCL': 'North America, Australia & New Zealand', 'PLW': 'North America, Australia & New Zealand', 'FSM': 'North America, Australia & New Zealand', 'KIR': 'North America, Australia & New Zealand'}
+       'NCL': 'North America, Australia & New Zealand', 'PLW': 'North America, Australia & New Zealand', 'FSM': 'North America, Australia & New Zealand', 'KIR': 'North America, Australia & New Zealand',
+       # quedaban sin region y por eso no entraban a la vista Region (2026-09-11)
+       'SSD': 'Sub-Saharan Africa', 'PNG': 'North America, Australia & New Zealand',
+       'NRU': 'North America, Australia & New Zealand', 'SLB': 'North America, Australia & New Zealand',
+       'TUV': 'North America, Australia & New Zealand'}
 for k, v in ROV.items(): iso2region.setdefault(k, v)
 FORCE = {'GUF': 'Caribbean', 'PRI': 'Latin America'}; iso2region.update(FORCE)
+
+# Territorios y dependencias que el mapa DIBUJA pero que no tienen fila propia
+# (sin figuras ni serie de poblacion). Se emiten aparte (terrMeta) para dos cosas:
+# el tooltip muestra el nombre en vez del codigo ISO crudo ("ESH" -> Sahara
+# Occidental, marcado por Daniel 2026-09-11) y la union por region los incluye,
+# asi la vista Region no queda con agujeros grises adentro de un continente.
+# Los poligonos polares/deshabitados (ATF, HMD, SGS) quedan a proposito sin
+# region, como la Antartida.
+TERRITORIOS = {
+    'ESH': ('Sáhara Occidental', 'Western Sahara', 'Middle East & North Africa'),
+    'CYN': ('Chipre del Norte', 'Northern Cyprus', 'Western Europe'),
+    'KAS': ('Cachemira', 'Kashmir', 'South Asia'),
+    'IOT': ('Territorio Británico del Océano Índico', 'British Indian Ocean Territory', 'South Asia'),
+    'SHN': ('Santa Elena', 'Saint Helena', 'Sub-Saharan Africa'),
+    'ALA': ('Islas Åland', 'Åland Islands', 'Western Europe'),
+    'GGY': ('Guernsey', 'Guernsey', 'Western Europe'),
+    'JEY': ('Jersey', 'Jersey', 'Western Europe'),
+    'VAT': ('Ciudad del Vaticano', 'Vatican City', 'Western Europe'),
+    'AIA': ('Anguila', 'Anguilla', 'Caribbean'),
+    'BLM': ('San Bartolomé', 'Saint Barthélemy', 'Caribbean'),
+    'CYM': ('Islas Caimán', 'Cayman Islands', 'Caribbean'),
+    'MAF': ('San Martín', 'Saint Martin', 'Caribbean'),
+    'MSR': ('Montserrat', 'Montserrat', 'Caribbean'),
+    'SXM': ('Sint Maarten', 'Sint Maarten', 'Caribbean'),
+    'TCA': ('Islas Turcas y Caicos', 'Turks and Caicos Islands', 'Caribbean'),
+    'VGB': ('Islas Vírgenes Británicas', 'British Virgin Islands', 'Caribbean'),
+    'VIR': ('Islas Vírgenes de EE.UU.', 'U.S. Virgin Islands', 'Caribbean'),
+    'SPM': ('San Pedro y Miquelón', 'Saint Pierre and Miquelon', 'North America, Australia & New Zealand'),
+    'ASM': ('Samoa Americana', 'American Samoa', 'North America, Australia & New Zealand'),
+    'ATC': ('Islas Ashmore y Cartier', 'Ashmore and Cartier Islands', 'North America, Australia & New Zealand'),
+    'COK': ('Islas Cook', 'Cook Islands', 'North America, Australia & New Zealand'),
+    'GUM': ('Guam', 'Guam', 'North America, Australia & New Zealand'),
+    'MNP': ('Islas Marianas del Norte', 'Northern Mariana Islands', 'North America, Australia & New Zealand'),
+    'NFK': ('Isla Norfolk', 'Norfolk Island', 'North America, Australia & New Zealand'),
+    'NIU': ('Niue', 'Niue', 'North America, Australia & New Zealand'),
+    'PCN': ('Islas Pitcairn', 'Pitcairn Islands', 'North America, Australia & New Zealand'),
+    'WLF': ('Wallis y Futuna', 'Wallis and Futuna', 'North America, Australia & New Zealand'),
+    'ATF': ('Tierras Australes Francesas', 'French Southern Territories', None),
+    'HMD': ('Islas Heard y McDonald', 'Heard and McDonald Islands', None),
+    'SGS': ('Georgias del Sur', 'South Georgia', None),
+}
 
 NAMES = load_js_obj(CNAMES, '{')
 NAMES_EXTRA = {'VEN': ('Venezuela', 'Venezuela'), 'PRK': ('Corea del Norte', 'North Korea'), 'SOM': ('Somalia', 'Somalia'), 'SDN': ('Sudán', 'Sudan'),
@@ -166,7 +211,9 @@ with open(CORR, encoding='utf-8-sig') as f:
         buf += bytes((k & 0xFF, sub & 0xFF, yw & 0xFF, (yw >> 8) & 0xFF, s16 & 0xFF, (s16 >> 8) & 0xFF))
         n += 1; multi1 += multi; minY = min(minY, y); maxY = max(maxY, y)
 
-mp = {'isoMeta': isoMeta, 'domains': domains_out, 'subMeta': subMeta, 'yearMin': minY, 'yearMax': maxY, 'F': {'b64': base64.b64encode(bytes(buf)).decode(), 'n': n}}
+mp = {'isoMeta': isoMeta,
+      'terrMeta': [{'iso': k, 'es': v[0], 'en': v[1], 'reg': v[2]} for k, v in sorted(TERRITORIOS.items())],
+      'domains': domains_out, 'subMeta': subMeta, 'yearMin': minY, 'yearMax': maxY, 'F': {'b64': base64.b64encode(bytes(buf)).decode(), 'n': n}}
 open(OUT_M, 'w', encoding='utf-8').write('// Mapa (dataset corregido). F=6 bytes (iso, subId, year13b+multi-bit15, score*100 uint16).\nwindow.PCMAP=' + json.dumps(mp, separators=(',', ':'), ensure_ascii=False) + ';\n')
 
 # TOP figuras por país×sub = [nombre, año, score, rank_score] — SOLO multiidioma.

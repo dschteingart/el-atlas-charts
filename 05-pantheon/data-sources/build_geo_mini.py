@@ -148,6 +148,10 @@ OUT_R = r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\0
 pm = open(PCMAP, encoding='utf-8').read()
 PM = json.loads(pm.split('window.PCMAP=', 1)[1].rstrip().rstrip(';'))
 iso2reg = {m['iso']: m['reg'] for m in PM['isoMeta'] if m.get('reg')}
+# los territorios sin fila propia tambien pertenecen a una region: si no, la
+# vista Region deja agujeros grises (Sahara Occidental dentro de Africa, etc.)
+for m in PM.get('terrMeta', []):
+    if m.get('reg'): iso2reg.setdefault(m['iso'], m['reg'])
 
 por_region = {}
 for f in obj['features']:

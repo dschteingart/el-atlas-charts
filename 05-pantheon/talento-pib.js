@@ -144,7 +144,7 @@ function tp_occSet(s) {
 }
 function tp_rubroLabel(s) {
   const E = EXPLORA, en = tp_lang() === 'en';
-  if (s.rubroType === 'all') return TPX('Todas las disciplinas', 'All fields');
+  if (s.rubroType === 'all') return TPX('Todos los rubros', 'All fields');
   if (s.rubroType === 'sub') return E.subrubros[s.rubroIdx][en ? 'en' : 'es'];
   return E.domains[s.rubroIdx][en ? 'en' : 'es'];
 }
@@ -281,10 +281,12 @@ function tp_makeScales(pts, MARGIN, plotW, plotH) {
 // =================== Layout por formato (clon del N°4) ===================
 function tp_layout(editorFormat, mobile) {
   if (editorFormat === 'newsletter' || editorFormat === 'square') {
-    // H 800 (era 760): en el canvas cuadrado el sobrante se lo come el
-    // scatter, no el blanco del pie (Daniel 2026-09-10).
-    return { W: 1100, H: 800, M: { top: 76, right: 44, left: 108 }, baseBottom: 30,
-             SIZES: { tick: 22, axisTitle: 25, label: 24, dot: 8, strip: 22, legend: 20 } };
+    // Aspecto ~1.40 = el del hueco disponible en el canvas cuadrado (1116 de
+    // ancho x ~793 de alto): asi el SVG llena las dos dimensiones en vez de
+    // sobrarle ancho. Margenes de abajo al minimo para que el plot crezca y la
+    // leyenda baje hacia el caption (Daniel 2026-09-11).
+    return { W: 1100, H: 786, M: { top: 44, right: 44, left: 108 }, baseBottom: 12,
+             SIZES: { tick: 22, axisTitle: 25, label: 24, dot: 8, strip: 22, legend: 19 } };
   }
   if (editorFormat === 'mobile') {
     return { W: 1100, H: 1100, M: { top: 84, right: 40, left: 108 }, baseBottom: 58,
@@ -303,7 +305,7 @@ function tp_layout(editorFormat, mobile) {
            SIZES: { tick: 11, axisTitle: 12, label: 11.5, dot: 5, strip: 11, legend: 10.5 } };
 }
 
-function tp_legendLayout(regions, fs, plotW) {
+function tp_legendLayout(regions, fs, plotW, bigFmt) {
   const dotR = fs * 0.45;
   const gapDot = dotR * 2 + fs * 0.5;
   const gapItem = fs * 1.5;
@@ -318,7 +320,7 @@ function tp_legendLayout(regions, fs, plotW) {
     cur.push(it); curW += it.w;
   });
   if (cur.length) rows.push(cur);
-  return { rows, dotR, gapDot, gapItem, rowH: fs * 1.7 };
+  return { rows, dotR, gapDot, gapItem, rowH: fs * (bigFmt ? 1.5 : 1.7) };
 }
 
 // =================== Render principal ===================
@@ -348,14 +350,14 @@ function drawTalento() {
     .filter(r => allPts.some(p => p.region === r))
     .filter(r => !editorFormat || !hidden.has(r));
   let legendFs = SIZES.legend;
-  let leg = tp_legendLayout(presentRegions, legendFs, plotW);
+  let leg = tp_legendLayout(presentRegions, legendFs, plotW, bigFmt);
   if (leg.rows.length * leg.rowH > H * 0.26) {
     legendFs = SIZES.legend * 0.8;
-    leg = tp_legendLayout(presentRegions, legendFs, plotW);
+    leg = tp_legendLayout(presentRegions, legendFs, plotW, bigFmt);
   }
   const legendH = leg.rows.length * leg.rowH;
   const xTickGap = bigFmt ? SIZES.tick * 1.5 : 17;
-  MARGIN.bottom = xTickGap + L.baseBottom + SIZES.axisTitle * 1.7 + legendH + legendFs * 1.4;
+  MARGIN.bottom = xTickGap + L.baseBottom + SIZES.axisTitle * 1.7 + legendH + legendFs * (bigFmt ? 0.9 : 1.4);
   const plotH = H - MARGIN.top - MARGIN.bottom;
 
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
@@ -932,10 +934,7 @@ function tp_renderChips() {
     const meta = EXPLORA.isoMeta.find(m => m.iso === iso);
     const chip = document.createElement('span');
     chip.className = 'm-selected-chip';
-    const dot = document.createElement('span');
-    dot.className = 'm-chip-dot';
-    dot.style.background = tp_regionColor(meta ? meta.reg : '');
-    chip.appendChild(dot);
+    chip.style.background = tp_regionColor(meta ? meta.reg : '');
     chip.appendChild(document.createTextNode(tp_name(iso)));
     const x = document.createElement('button');
     x.className = 'm-chip-x';
@@ -1001,14 +1000,14 @@ function tp_buildRubroSelect() {
   const E = EXPLORA, en = tp_lang() === 'en', s = state[5];
   sel.innerHTML = '';
   const oAll = document.createElement('option');
-  oAll.value = 'all'; oAll.textContent = TPX('Todas las disciplinas', 'All fields');
+  oAll.value = 'all'; oAll.textContent = TPX('Todos los rubros', 'All fields');
   sel.appendChild(oAll);
-  const g1 = document.createElement('optgroup'); g1.label = TPX('Dominios', 'Domains');
+  const g1 = document.createElement('optgroup'); g1.label = TPX('Rubros', 'Fields');
   E.domains.forEach((d, i) => {
     const o = document.createElement('option'); o.value = 'dom:' + i; o.textContent = d[en ? 'en' : 'es'];
     g1.appendChild(o);
   });
-  const g2 = document.createElement('optgroup'); g2.label = TPX('Sub-rubros', 'Sub-fields');
+  const g2 = document.createElement('optgroup'); g2.label = TPX('Ocupaciones', 'Occupations');
   E.subrubros.forEach((d, i) => {
     const o = document.createElement('option'); o.value = 'sub:' + i; o.textContent = d[en ? 'en' : 'es'];
     g2.appendChild(o);
