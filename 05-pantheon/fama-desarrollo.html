@@ -9,7 +9,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
-<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/chart-5.html">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/fama-desarrollo.html">
 <meta property="og:title" content="La cantidad de famosos per cápita aumenta con el desarrollo — El Atlas N°5">
 <meta property="og:description" content="Figuras célebres por millón vs PIB per cápita, por rubro y período, país por país.">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/chart-5.png">
@@ -123,7 +123,7 @@
 
   <section class="chart-block" data-chart="5" data-editor-id="explora-talento">
     <h2 class="chart-title" data-i18n="c5-title">La cantidad de famosos per cápita aumenta con el desarrollo</h2>
-    <p class="chart-subtitle" data-i18n="c5-subtitle">Figuras célebres por millón vs PIB per cápita, nacidas entre 1850 y 2010.</p>
+    <p class="chart-subtitle" data-i18n="c5-subtitle">Figuras célebres por millón vs PIB per cápita, nacidas entre 1900 y 2010.</p>
 
     <div class="m-controls">
       <div class="m-ctrl-group">
@@ -202,16 +202,18 @@
 
 <script src="../lib/regions.js"></script>
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=24"></script>
+<script src="./i18n-issue.js?v=25"></script>
 <script src="./utils.js?v=5"></script>
 <script src="./country-names.js?v=2"></script>
 <script src="../lib/scatter-render.js?v=74"></script>
 <script src="./data-explora.js?v=22"></script>
-<script src="./talento-pib.js?v=8"></script>
+<script src="./fama-desarrollo.js?v=9"></script>
 <script src="./png-export.js?v=8"></script>
 <script>
-  initTalento();
+  // applyI18n ANTES del init: los textos dinamicos (titulo/subtitulo con el
+  // periodo) pisan al estatico, nunca al reves.
   applyI18n();
+  initTalento();
   setupLangToggle(() => { applyI18n(); tp_onLangChange(); });
 </script>
 <div id="chart-nav"></div>

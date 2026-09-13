@@ -32,7 +32,7 @@ const ISSUE_I18N = {
 
     // Chart 5 — Explorador
     'c5-title':    'La cantidad de famosos per cápita aumenta con el desarrollo',
-    'c5-subtitle': 'Figuras célebres por millón vs PIB per cápita, nacidas entre 1850 y 2010.',
+    'c5-subtitle': 'Figuras célebres por millón vs PIB per cápita, nacidas entre 1900 y 2010.',
     'c5-sources':  'Datos: Pantheon (Datawheel), que toma personas con entrada de Wikipedia en al menos 15 idiomas; El Atlas depura la base y exige al menos dos idiomas con más de mil lecturas. PIB per cápita del Maddison Project y población de OWID. Figuras por millón = nacidas en el período ÷ población promedio del período.',
     'c5-lbl-rubro': 'Rubro', 'c5-lbl-pop': 'Población', 'c5-scale-x': 'Escala PIB', 'c5-scale-y': 'Escala figuras',
     'c5-log': 'Logarítmica', 'c5-lineal': 'Lineal', 'c5-lbl-periodo': 'Nacidos entre',
@@ -226,7 +226,7 @@ const ISSUE_I18N = {
 
     // Chart 5 — Explorer
     'c5-title':    'Fame per capita rises with development',
-    'c5-subtitle': 'Notable figures per million vs GDP per capita, born 1850–2010.',
+    'c5-subtitle': 'Notable figures per million vs GDP per capita, born 1900–2010.',
     'c5-sources':  'Data: Pantheon (Datawheel), which includes people with a Wikipedia entry in at least 15 languages; The Atlas edits the dataset and requires at least two languages with over 1,000 reads. GDP per capita from the Maddison Project and population from OWID. Figures per million = born in the period ÷ average population over the period.',
     'c5-lbl-rubro': 'Field', 'c5-lbl-pop': 'Population', 'c5-scale-x': 'GDP scale', 'c5-scale-y': 'Figures scale',
     'c5-log': 'Logarithmic', 'c5-lineal': 'Linear', 'c5-lbl-periodo': 'Born between',

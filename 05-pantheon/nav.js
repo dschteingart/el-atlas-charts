@@ -15,7 +15,7 @@
     'chart-2.html',
     'chart-3.html',
     'chart-4.html',
-    'chart-5.html',
+    'fama-desarrollo.html',
     'chart-6.html',
     'chart-7.html',
     'chart-8.html',

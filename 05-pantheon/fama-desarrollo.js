@@ -40,9 +40,13 @@ const TPX = (es, en) => (tp_lang() === 'en' ? en : es);
 // América Latina completa nace etiquetada (regla de la casa, fijada en el
 // chart-desarrollo del N°4: la región protagonista son chips normales, se
 // sacan de a uno con la cruz).
-const TP_DEFAULT_SEL = ['ARG', 'BOL', 'BRA', 'CHL', 'COL', 'CRI', 'CUB', 'DOM', 'ECU',
-  'GTM', 'HND', 'HTI', 'MEX', 'NIC', 'PAN', 'PER', 'PRI', 'PRY', 'SLV', 'URY'];
+// Seleccion editorial de Daniel (2026-09-13): latam grandes + referencias de
+// todos los niveles de ingreso + los outliers que cuenta la nota (Croacia,
+// Noruega, Camerun, China, India).
+const TP_DEFAULT_SEL = ['ARG', 'BRA', 'URY', 'CUB', 'PER', 'CHL', 'MEX', 'COL',
+  'HRV', 'NOR', 'USA', 'DEU', 'GBR', 'FRA', 'ESP', 'ITA', 'JPN', 'CHN', 'IND', 'RUS', 'CMR'];
 const TP_DEFAULT_POP = 1;      // millones (pedido 5c)
+const TP_DEF_Y0 = 1900;        // periodo por default: post-1900 (Daniel 2026-09-13)
 const TP_ANCHORS = {
   USA: 1, DEU: 1, FRA: 1, GBR: 1, ESP: 1, ITA: 1, RUS: 1,
   CHN: 1, JPN: 1, KOR: 1, IND: 1, BRA: 1, MEX: 1, ARG: 1, ZAF: 1, NGA: 1
@@ -566,7 +570,10 @@ function drawTalento() {
     tp_dots.push(c);
     const hit = tp_ns('circle');
     hit.setAttribute('cx', cx); hit.setAttribute('cy', cy);
-    hit.setAttribute('r', Math.max(30, r * 2.4));
+    // Con MOUSE el hit generoso de 30px dispara el tooltip lejos del punto
+    // ("descalibrado", Daniel 2026-09-13): en dispositivos con hover el radio
+    // acompana al punto; el area tactil de 30px queda solo para touch.
+    hit.setAttribute('r', (typeof HAS_HOVER !== 'undefined' && !HAS_HOVER) ? Math.max(30, r * 2.4) : Math.max(9, r * 1.5));
     hit.setAttribute('fill', 'transparent');
     hit.style.cursor = 'pointer';
     hit.addEventListener('mouseenter', (e) => tp_showTooltip(e, p));
@@ -802,7 +809,7 @@ function tp_esDefault() {
   const s = state[5];
   if (!s) return false;
   if (s.rubroType !== 'all') return false;
-  if (s.y0 !== EXPLORA.y0 || s.y1 !== EXPLORA.y1) return false;
+  if (s.y0 !== TP_DEF_Y0 || s.y1 !== EXPLORA.y1) return false;
   if (s.minPopM !== TP_DEFAULT_POP) return false;
   if (tp_hidden().size) return false;
   const sel = (s.selected || []).slice().sort().join(',');
@@ -1104,6 +1111,8 @@ function tp_setupPeriodo() {
   y0.addEventListener('change', () => { syncPeriodo(true); redraw(); });
   y1.addEventListener('change', () => { syncPeriodo(true); redraw(); });
   y0.placeholder = String(YMIN); y1.placeholder = String(YMAX);
+  y0.value = state[5].y0 === YMIN ? '' : String(state[5].y0);
+  y1.value = state[5].y1 === YMAX ? '' : String(state[5].y1);
   syncPeriodo(true);
 }
 
@@ -1136,7 +1145,7 @@ function initTalento() {
   if (!state[5]) {
     state[5] = {
       rubroType: 'all', rubroIdx: 0,
-      y0: EXPLORA.y0, y1: EXPLORA.y1,
+      y0: TP_DEF_Y0, y1: EXPLORA.y1,
       minPopM: TP_DEFAULT_POP,
       scaleX: 'log', scaleY: 'log',
       selected: TP_DEFAULT_SEL.slice(),
