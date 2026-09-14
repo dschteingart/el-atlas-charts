@@ -11,15 +11,13 @@
 (function () {
   // Orden de los gráficos del número (= orden del index).
   const CHARTS = [
-    'chart-1.html',
-    'chart-2.html',
-    'chart-3.html',
-    'chart-4.html',
+    'top.html',
+    'reparto.html',
+    'evolucion.html',
+    'percap-map.html',
     'fama-desarrollo.html',
-    'chart-6.html',
-    'chart-7.html',
-    'chart-8.html',
-    'chart-9.html'
+    'composicion.html',
+    'podios.html'
   ];
   const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
   const T = {
