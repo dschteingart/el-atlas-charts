@@ -1,240 +1,280 @@
 # Nota metodológica — El panteón de El Atlas (N°5)
 
-*Esta nota explica de dónde salen los datos del número, qué problemas encontramos en
-el índice original de Pantheon y cómo construimos el nuestro. Está escrita para
-cualquier lector; los detalles formales (fórmula exacta y parámetros) están en el
-apéndice técnico del final.*
+*Esta nota documenta de dónde salen los datos del número, qué adaptaciones hicimos
+sobre el índice de fama de Pantheon y por qué. Está escrita para cualquier lector. Los
+detalles formales (fórmulas y parámetros) están en el apéndice técnico del final.*
 
 ---
 
-## 1. De dónde salen los datos
+## 1. Los datos de origen
 
-La fuente es [Pantheon](https://pantheon.world), un proyecto nacido en el MIT Media
-Lab (liderado por el físico chileno César Hidalgo) y hoy desarrollado por la empresa
-Datawheel. La idea de Pantheon es simple: usar Wikipedia como termómetro de la memoria
-colectiva. Wikipedia existe en cientos de idiomas —la Wikipedia en español, en
-francés, en japonés: cada una es una "edición"— y Pantheon considera que una persona
-es globalmente memorable si su biografía existe en **al menos 15 ediciones
-idiomáticas**.
+La fuente es [Pantheon](https://pantheon.world), un proyecto nacido en el MIT Media Lab
+bajo la dirección del físico chileno César Hidalgo y desarrollado hoy por la empresa
+Datawheel. Su idea es usar Wikipedia como termómetro de la memoria colectiva. Wikipedia
+existe en cientos de idiomas y cada versión idiomática se llama "edición". Pantheon
+considera globalmente memorable a una persona cuya biografía existe en al menos 15
+ediciones.
 
 Para cada una de esas personas, Pantheon registra dónde y cuándo nació y a qué se
-dedicó, y calcula un índice de popularidad histórica, el **HPI** (*Historical
-Popularity Index*): un puntaje que resume, en un solo número, cuán presente está esa
-figura en la memoria del mundo. Para armarlo combina, entre otras cosas, en cuántos
-idiomas existe la biografía, cuántas visitas recibe (excluyendo el inglés), qué tan
-parejas son esas visitas y cuán antigua es la figura.
+dedicó, y calcula un índice de popularidad histórica, el **HPI** (*Historical Popularity
+Index*), que resume en un solo número cuán presente está esa figura en la memoria del
+mundo. El índice combina cuatro ingredientes.
 
-Nosotros partimos de la actualización 2025 del archivo de Pantheon: **126.582
-figuras**, después de eliminar fichas repetidas. Usamos su universo de personas, sus
-ocupaciones y sus lugares de nacimiento. Lo que **no** usamos es su puntaje de fama.
-Esta nota explica por qué.
+| Ingrediente | Qué mide |
+|---|---|
+| Ediciones (L) | En cuántos idiomas existe la biografía |
+| Ediciones efectivas (L\*) | Cuántos idiomas pesan de verdad, descontando los que aportan una porción marginal de las lecturas |
+| Visitas fuera del inglés (v) | Cuánta gente lee la biografía, excluyendo la Wikipedia en inglés |
+| Coeficiente de variación (CV) | Qué tan parejas son esas lecturas entre idiomas. Cuanto más parejas, mejor puntúa |
 
-## 2. Qué encontramos al revisar el índice original
+A eso se le aplica una corrección por antigüedad, que premia a las figuras cuya fama
+sobrevivió siglos y castiga a las recientes, que todavía no demostraron permanencia. El
+resultado se reescala de 0 a 100.
 
-Antes de usar el HPI del archivo lo pusimos a prueba, y aparecieron tres problemas.
-Los tres tienen la misma raíz: **contar en cuántas Wikipedias figura alguien no es lo
-mismo que medir cuánta gente lo recuerda.**
+Partimos de la actualización 2025 del archivo público de Pantheon, con **126.582
+figuras** sin repeticiones. De ahí tomamos el universo de personas, sus ocupaciones y
+sus lugares de nacimiento. Lo que no tomamos es el puntaje de fama, y el resto de esta
+nota explica por qué y con qué lo reemplazamos.
 
-### 2.1. Las ediciones se pueden inflar; los lectores, no
+## 2. Tres adaptaciones sobre el índice original
 
-Un dato para arrancar: en la base cruda de Pantheon, **el país con más futbolistas
-célebres de la historia no es Brasil ni Inglaterra: es Japón**, con 4.132 futbolistas
-— dos veces y media los de Brasil (1.642). ¿Una potencia oculta del fútbol? No. En
-Wikipedia hay programas automáticos ("bots") que crean artículos en cadena: toman una
-lista —por ejemplo, todos los jugadores que pasaron por la liga japonesa— y generan
-para cada uno un artículo-cáscara de una o dos líneas en decenas de idiomas. Cada uno
-de esos artículos cuenta como una "edición" más, aunque no lo lea nadie.
+El HPI fue diseñado en 2014 para ordenar figuras históricas, y para eso funciona bien.
+Nuestro número tiene un objetivo algo distinto, porque compara países y regiones y llega
+hasta las figuras nacidas en el siglo XX. Al revisar el índice con ese uso en mente
+encontramos tres puntos donde convenía ajustarlo. El denominador común es que contar en
+cuántas Wikipedias figura alguien no equivale a medir cuánta gente lo recuerda. Cada
+apartado plantea primero lo observado y después la decisión que tomamos.
 
-El caso extremo es **Takashi Kasahara**, un jugador japonés amateur de los años 30 con
-biografía en 49 idiomas, casi todas de un párrafo. Para el HPI del archivo, Kasahara
-es el **futbolista número 59 de toda la historia**, por delante de Neymar, Mbappé,
-Modrić, Salah e Iniesta. Si en lugar de contar ediciones se cuentan lecturas reales,
-Kasahara no aparece ni entre las 30.000 figuras más leídas de la base.
+### 2.1. El conteo de ediciones se puede inflar; las lecturas, no
 
-### 2.2. La medida de "fama pareja" premia la irrelevancia
+**Lo observado.** En la base cruda de Pantheon, el país con más futbolistas célebres de
+la historia no es Brasil ni Inglaterra sino **Japón**, con 4.132 futbolistas, dos veces
+y media los de Brasil (1.642). La explicación no es futbolística. En Wikipedia hay
+programas automáticos, los "bots", que generan artículos en cadena a partir de listas.
+Tomando la nómina de jugadores que pasaron por la liga japonesa, un bot puede crear para
+cada uno un artículo de una o dos líneas en decenas de idiomas. Cada uno de esos
+artículos suma una edición más, aunque no lo lea nadie.
 
-El HPI intenta distinguir la fama repartida entre idiomas de la fama concentrada en
-uno solo. Para eso usa una medida estadística llamada *coeficiente de variación*: las
-visitas de la figura, medidas por su desparejo relativo (cuanto más parejas entre
-idiomas y momentos, mejor puntúa). El problema: esa medida mira si las visitas son
-*parejas*, no si son *muchas*.
+El caso más marcado es el de **Takashi Kasahara**, un futbolista japonés amateur de los
+años treinta con biografía en 49 idiomas, casi todas de un párrafo. Con el HPI publicado,
+Kasahara resulta el futbolista número 59 de toda la historia, por delante de Neymar,
+Mbappé, Modrić, Salah e Iniesta. Contando lecturas reales no aparece entre las 30.000
+figuras más leídas de la base.
 
-El resultado es absurdo en los extremos. Un atleta italiano con **73 visitas anuales**
-fuera del inglés, repartidas parejito, obtiene un coeficiente casi perfecto (0,007).
-**Lionel Messi**, con 6,6 millones de visitas fuera del inglés —desiguales entre
-idiomas, con picos en cada Mundial—, obtiene 5,5. Y Taylor Swift, 7,7. Es decir: la
-métrica de "diversidad" del índice original trata mejor a un deportista que no lee
-nadie que a las personas más leídas del planeta, precisamente porque la fama real es
-enorme y despareja.
+**Nuestra decisión.** No usamos el conteo de ediciones como insumo principal. Bajamos de
+la plataforma de Pantheon, figura por figura, las visitas que recibe en cada idioma y en
+cada mes desde julio de 2015, y construimos el índice sobre esas lecturas.
 
-Nuestra solución es más directa: en lugar de premiar la uniformidad, contamos **en
-cuántos idiomas la figura supera un piso absoluto de lecturas** (1.000 y 10.000
-visitas). Ser leído en serio en muchos idiomas es diversidad; ser ignorado parejo, no.
+### 2.2. La medida de fama pareja puede premiar a figuras poco leídas
 
-### 2.3. La antigüedad estaba premiada de más
+**Lo observado.** Para distinguir la fama repartida entre idiomas de la concentrada en
+uno solo, el HPI usa el coeficiente de variación, una medida estadística de cuán
+disparejas son las visitas. Cuanto más parejas, mejor puntúa. La medida captura la
+dispersión relativa, sin mirar el volumen, y en los extremos eso produce resultados
+contraintuitivos. El atleta italiano **Luca Beccaro**, con 73 visitas anuales fuera del
+inglés repartidas de manera uniforme, obtiene un coeficiente casi perfecto de 0,007.
+**Lionel Messi**, con 6,6 millones de visitas fuera del inglés, muy desiguales entre
+idiomas y con picos en cada Mundial, obtiene 5,5. Taylor Swift obtiene 7,7. La métrica de
+diversidad termina favoreciendo a quien casi nadie lee frente a las personas más leídas
+del planeta, justamente porque la fama masiva es despareja.
 
-Tiene sentido que un índice de memoria histórica premie a las figuras que siguen
-siendo leídas siglos después de su muerte, y que mire con sospecha la fama de la
-última década (todavía no demostró que vaya a durar). El índice original hace eso,
-pero con una dosis tan fuerte que produce rankings difíciles de defender: **Messi
-queda en el puesto 3.638 del mundo, y ni siquiera es el deportista argentino mejor
-rankeado: es el cuarto**, detrás de Maradona, Di Stéfano y Fangio. El problema no es
-corregir por antigüedad —hay que hacerlo— sino la dosis.
+**Nuestra decisión.** Reemplazamos la uniformidad por un umbral absoluto. Contamos en
+cuántos idiomas la figura supera un piso de lecturas (1.000 y 10.000 visitas). Ser leído
+de verdad en muchos idiomas cuenta como diversidad; ser poco leído de manera uniforme,
+no.
 
-## 3. Nuestra base depurada
+### 2.3. La corrección por antigüedad resulta muy fuerte para el siglo XX
 
-Lo primero fue cambiar la materia prima: en lugar de confiar en el conteo de
-ediciones, descargamos de la propia plataforma de Pantheon, figura por figura, **sus
-visitas en cada idioma y en cada mes desde julio de 2015**. Sobre esa medición
-aplicamos un filtro de entrada:
+**Lo observado.** Corregir por antigüedad es necesario. Sin esa corrección, cualquier
+índice de memoria histórica quedaría dominado por la última figura viral, y una carrera
+reciente todavía no probó que vaya a recordarse. La intensidad de la corrección, sin
+embargo, condiciona mucho el resultado cuando se llega hasta el siglo XX. Con el HPI
+publicado, Messi queda en el puesto 3.638 del mundo y es apenas el cuarto deportista
+argentino, detrás de Maradona, Di Stéfano y Fangio. En Argentina y en el mundo se
+discute hace años si el mejor futbolista de la historia fue Maradona o Messi, pero nadie
+sostendría que Di Stéfano o Fangio son deportistas más recordados que ellos.
+
+**Nuestra decisión.** Conservamos la corrección por antigüedad con una intensidad menor
+y explicitamos el parámetro que la gobierna, para que cualquiera pueda evaluar su
+efecto (§4).
+
+## 3. La base depurada
+
+Con las visitas por idioma y por mes ya descargadas, el primer paso fue definir qué
+figuras entran. El criterio es el siguiente.
 
 > **Entra a la base la figura leída en al menos 2 idiomas con al menos 1.000 visitas
 > acumuladas desde 2015.**
 
-- El filtro deja afuera **9.313 figuras (7,4% del archivo)**; otras ~950 no tienen los
-  datos mínimos para calcular el índice (ocupación o año de nacimiento). La base
-  final del número: **116.319 figuras**.
-- El umbral se calibró revisando a mano los casos límite. La prueba de fuego eran las
-  figuras de fama enorme pero concentrada en su región: el cantante vallenato
-  **Diomedes Díaz** (ídolo masivo en Colombia) o el epidemiólogo **Zhong Nanshan** (la
-  cara de la respuesta china a la pandemia) debían quedar adentro — y quedan, porque
-  su fama, aunque concentrada, desborda su idioma. Los perfiles que solo se leen en
-  una Wikipedia, o que no se leen, quedan afuera.
-- El efecto más visible es exactamente el buscado: **Japón pierde el 47,8% de sus
-  figuras** (la liga japonesa y los artículos creados por bots). Ningún otro país
-  pierde una proporción parecida.
+El filtro deja afuera 9.313 figuras, el 7,4% del archivo. Otras 950 aproximadamente no
+tienen los datos mínimos para calcular el índice, por falta de ocupación o de año de
+nacimiento. La base final que usamos en el número contiene **116.319 figuras**.
 
-## 4. Nuestro índice de fama
+El umbral se calibró revisando manualmente los casos límite, y el criterio de
+aceptación fueron las figuras de fama enorme pero concentrada en su región. El cantante
+vallenato **Diomedes Díaz**, ídolo masivo en Colombia, y el epidemiólogo **Zhong
+Nanshan**, cara visible de la respuesta china a la pandemia, debían quedar adentro, y
+quedan, porque su fama desborda su propio idioma aunque esté concentrada. Quedan afuera
+los perfiles que solo se leen en una Wikipedia y los que no se leen en ninguna.
 
-Sobre la base depurada calculamos un puntaje de 0 a 100 (el máximo es Aristóteles =
-100). La lógica, en una frase: **una figura es globalmente famosa si se la lee mucho,
-en muchos idiomas, de manera sostenida — y esa fama vale más cuanto más tiempo
-sobrevivió.** El índice multiplica tres piezas:
+El efecto agregado más visible es el esperado. **Japón pierde el 47,8% de sus figuras**,
+que son las de la liga japonesa y los artículos creados por bots. Ningún otro país
+pierde una proporción comparable.
+
+## 4. El índice de fama
+
+Sobre la base depurada calculamos un puntaje que ordena a las figuras según su presencia
+en la memoria global. La lógica es que una figura es globalmente famosa si se la lee
+mucho, en muchos idiomas y de manera sostenida en el tiempo, y que esa fama vale más
+cuanto más tiempo sobrevivió. El puntaje multiplica tres piezas.
 
 1. **Amplitud (idiomas).** En cuántos idiomas existe la biografía y, sobre todo, en
-   cuántos se la lee en serio (más de 10.000 visitas al año). Es el reemplazo del
+   cuántos se la lee en serio, con más de 10.000 visitas al año. Reemplaza al
    coeficiente de variación (§2.2).
-2. **Intensidad (lecturas).** Cuánto se la lee fuera del inglés: en el último año, en
-   la década completa y en el mes "típico" (la mediana mensual: el valor del mes del
-   medio, que no se deja arrastrar por un pico puntual de actualidad — una muerte, un
-   escándalo, un Mundial).
-3. **Permanencia (antigüedad).** Un premio suave y creciente con los años desde el
-   nacimiento, y una penalización solo para figuras de menos de 40 años, que todavía
-   no demostraron permanencia.
+2. **Intensidad (lecturas).** Cuánto se la lee fuera del inglés, medido en el último
+   año, en la década completa y en el mes típico. Ese último término es la mediana
+   mensual, el valor del mes del medio, que no se deja arrastrar por un pico puntual de
+   actualidad como una muerte, un escándalo o un Mundial.
+3. **Permanencia (antigüedad).** Un premio suave y creciente con los años transcurridos
+   desde el nacimiento, más una penalización que solo alcanza a las figuras de menos de
+   40 años.
 
-Tres decisiones de diseño que conviene explicitar:
+El puntaje resultante se reescala de 0 a 100, asignando 100 a la figura más alta de la
+base. Con nuestros criterios esa figura es Aristóteles, y con los de Pantheon es Mahoma.
+El valor del extremo no tiene lectura sustantiva, ya que es solo la unidad de medida de
+la escala.
 
-- **Se excluye el inglés de las lecturas.** La Wikipedia en inglés es tan dominante
-  (la lee todo el mundo, sobre cualquier tema) que, adentro de la cuenta, taparía la
-  señal de "fama en muchas lenguas". Este criterio ya estaba en el índice original de
-  Pantheon y lo conservamos.
-- **Amplitud e intensidad se combinan con un promedio exigente.** Usamos la *media
-  geométrica*, un promedio que solo es alto si **todos** sus términos son altos: si
-  uno es casi cero, el resultado se hunde (a diferencia del promedio común, donde un
-  término grande compensa a uno chico). Así, no alcanza con estar en 50 Wikipedias que
-  nadie lee, ni con ser enorme en una sola. Además, todas las variables entran en
-  escala logarítmica: una escala que comprime las diferencias gigantes (pasar de 1.000
-  a 10.000 visitas "vale" lo mismo que pasar de 100.000 a 1.000.000), para que el
-  índice no quede dominado por un puñado de megaestrellas.
-- **La corrección por antigüedad, recalibrada y reportada.** El punto de corte de los
-  40 años es la decisión que más mueve a las figuras vivas, así que la reportamos con
-  transparencia: con el corte en 40, Messi queda 141° del mundo (y primero entre los
-  deportistas argentinos); si el corte fuera 50, caería a 384°; con 70, a 1.231°.
-  Elegimos 40 porque es el punto en que los íconos vivos indiscutidos quedan bien
-  rankeados sin que el índice se llene de celebridades de la última década. Un dato
-  importante: los resultados *agregados* del número casi no dependen de esta elección
-  — América Latina explica el 5,9% de la fama mundial con cualquiera de los tres
-  cortes.
+Cuatro decisiones de diseño merecen explicitarse.
+
+**Se excluye el inglés de las lecturas.** La Wikipedia en inglés es tan dominante, y la
+consulta gente de todo el mundo sobre cualquier tema, que dentro de la cuenta taparía la
+señal de fama en muchas lenguas. El criterio ya estaba en el índice original de Pantheon
+y lo conservamos.
+
+**Amplitud e intensidad se combinan con un promedio exigente.** Usamos la media
+geométrica, un promedio que solo da alto si todos sus términos son altos. Si uno es casi
+cero, el resultado se hunde, a diferencia del promedio común, donde un término grande
+compensa a uno chico. De ese modo no alcanza con estar en 50 Wikipedias que nadie lee ni
+con ser enorme en una sola.
+
+**Las variables entran en escala logarítmica.** Es una escala que comprime las
+diferencias muy grandes, de manera que pasar de 1.000 a 10.000 visitas pesa lo mismo que
+pasar de 100.000 a 1.000.000. Sin esa compresión, un puñado de megaestrellas dominaría
+el índice entero.
+
+**La corrección por antigüedad se recalibra y se reporta acá.** El parámetro que la
+gobierna es el punto de corte por debajo del cual una figura se considera demasiado
+reciente, y es la decisión que más mueve a las figuras vivas. Con el corte en 40 años,
+Messi queda 141° del mundo y primero entre los deportistas argentinos. Con el corte en
+50 caería a 384°, y con 70, a 1.231°. Elegimos 40 porque es el punto donde los íconos
+vivos indiscutidos quedan razonablemente rankeados sin que el índice se llene de
+celebridades de la última década. Conviene aclarar que el parámetro no excluye a nadie,
+solo altera el orden, y que los resultados agregados del número casi no dependen de esa
+elección. Midiendo la fama de cada región como la suma de los puntajes de sus figuras,
+América Latina explica el 6,1% de la fama mundial con el corte en 40 años, el 6,0% con
+50 y el 5,9% con 70.
 
 ### Qué cambia en la práctica
 
-Comparamos los dos rankings —el del archivo y el nuestro— sobre las mismas 116.319
-figuras. La correlación entre ambos es 0,63 (en una escala donde 1 significa rankings
-idénticos y 0, ninguna relación): parecidos en el fondo, muy distintos en los bordes.
-Los movimientos típicos:
+Comparamos los dos rankings sobre las mismas 116.319 figuras. La correlación entre ambos
+es de 0,63, en una escala donde 1 significa rankings idénticos y 0, ninguna relación. Es
+decir que los dos coinciden a grandes rasgos y se separan en los bordes, que es donde
+están los casos de las secciones anteriores. Los movimientos típicos son estos.
 
-| Con el HPI del archivo | Con lecturas reales |
+| Con el HPI publicado | Con lecturas reales |
 |---|---|
-| Físicos ganadores del Nobel de hace un siglo, con decenas de ediciones-cáscara y sin lectores (E. V. Appleton #586, C. T. R. Wilson #766) | caen a #20.000–35.000 |
-| Estrellas actuales leídas masivamente en decenas de idiomas (Katy Perry, LeBron James: #20.000–26.000 en el archivo) | suben al top 1.000 |
-| Messi #3.638, cuarto deportista argentino | #141, primer deportista argentino |
+| Físicos ganadores del Nobel de hace un siglo, con decenas de ediciones muy breves y sin lectores (E. V. Appleton, puesto 586; C. T. R. Wilson, 766) | caen entre los puestos 20.000 y 35.000 |
+| Estrellas actuales leídas masivamente en decenas de idiomas (Katy Perry y LeBron James, entre los puestos 20.000 y 26.000) | suben al top 1.000 |
+| Messi, puesto 3.638, cuarto deportista argentino | puesto 141, primer deportista argentino |
 
 ## 5. Rubros y ocupaciones
 
-Las **ocupaciones** de cada figura (futbolista, física, poeta…) son las de Pantheon:
-no las tocamos. Los **6 rubros** en los que las agrupamos (Deporte; Arte y
-espectáculo; Ciencia y tecnología; Humanidades; Poder y figuras públicas; Negocios y
-exploración) son un reagrupamiento propio. No quedaba alternativa: la actualización
-2025 del archivo no trae la columna de dominio (la base original sí la tenía), la
-taxonomía oficial de Pantheon (de 2014) no cubre 20 ocupaciones nuevas (4.972
-figuras), y sus categorías chicas quedaban ilegibles en los gráficos (Exploración,
-0,9% de la base; Negocios y derecho, 1,0%).
+Las **ocupaciones** de cada figura (futbolista, física, poeta) son las de Pantheon y no
+las modificamos. Los **6 rubros** en los que las agrupamos (Deporte; Arte y espectáculo;
+Ciencia y tecnología; Humanidades; Poder y figuras públicas; Negocios y exploración) son
+un reagrupamiento propio, equivalente a lo que Pantheon llama dominios.
 
-Respecto del agrupamiento original, 17 ocupaciones cambian de rubro (3.112 figuras,
-el 2,7% de la base): las ciencias sociales pasan a Humanidades, la farándula a Arte y
-espectáculo, los astronautas a Ciencia, periodistas y abogados a Poder y figuras
-públicas. Un chequeo de robustez: el share de América Latina en la ciencia mundial da
-**1,0% con nuestro reagrupamiento y 1,0% con el de Pantheon** — los hallazgos del
-número no dependen de la taxonomía elegida.
+La decisión tiene una razón práctica y otra editorial. La práctica es que el archivo
+público 2025 que descargamos no incluye la columna de dominio, a diferencia de la
+versión original del dataset. Los dominios de la versión actual pueden reconstruirse
+desde el sitio de Pantheon, así que era posible adoptarlos. La editorial es que no nos
+resultaban los más útiles para este número. La taxonomía oficial fue diseñada en 2014 y
+no cubre 20 ocupaciones incorporadas después, que reúnen 4.972 figuras, y algunas de sus
+categorías quedan demasiado chicas para leerse en un gráfico, como Exploración, con el
+0,9% de la base, o Negocios y derecho, con el 1,0%.
+
+Respecto del agrupamiento original, 17 ocupaciones cambian de rubro, lo que afecta a
+3.112 figuras, el 2,7% de la base. Las ciencias sociales pasan a Humanidades, la
+farándula a Arte y espectáculo, los astronautas a Ciencia y tecnología, y periodistas y
+abogados a Poder y figuras públicas. Como chequeo de robustez calculamos el share de
+América Latina en la ciencia mundial con ambos agrupamientos, y da 1,0% en los dos
+casos, de modo que los hallazgos del número no dependen de la taxonomía elegida.
 
 ## 6. País, región y lugar de nacimiento
 
-- Cada figura se asigna al **lugar donde nació, traducido a las fronteras de hoy**
-  (criterio de Pantheon): Julio César suma para Italia, Freud para Chequia — y los
-  reyes de las antiguas dinastías coreanas nacidos al norte del paralelo 38 suman
-  para Corea del Norte. No arbitramos nacimientos disputados caso por caso: se
-  respeta la asignación de la fuente (Carlomagno queda en Alemania, por Aquisgrán).
-  Ojo: "nació ahí" no significa "hizo su carrera ahí".
-- Pantheon deja **sin país a 4.983 figuras** de la base (antiguas, bíblicas, de
-  reinos que ya no existen). Recuperamos 2.735 (el 55%) usando Wikidata —la base de
-  datos estructurada, hermana de Wikipedia, de donde salen los datos "de ficha" de
-  cada persona— y las coordenadas del lugar de nacimiento cruzadas con mapas
-  actuales. Cuando Wikidata dice explícitamente en qué país está el lugar, eso manda
-  sobre nuestro cruce de mapas (que en las fronteras puede errar por metros).
-- Las **10 regiones** del número son la taxonomía de El Atlas (la misma del N°1), con
-  un ajuste editorial: Puerto Rico cuenta en América Latina.
+Cada figura se asigna al **lugar donde nació, traducido a las fronteras actuales**, que
+es el criterio de Pantheon. Julio César suma para Italia y Freud para Chequia, y los
+reyes de las antiguas dinastías coreanas nacidos al norte del paralelo 38 suman para
+Corea del Norte. No arbitramos nacimientos disputados caso por caso, sino que respetamos
+la asignación de la fuente, con lo cual Carlomagno queda en Alemania por Aquisgrán.
+Cabe aclarar que haber nacido en un país no implica haber desarrollado ahí la carrera.
 
-## 7. Otras correcciones de la base
+Pantheon deja **sin país a 4.983 figuras** de la base, en su mayoría antiguas, bíblicas o
+nacidas en reinos que ya no existen. Recuperamos 2.735, el 55%, con dos fuentes.
+Wikidata, que es la base de datos estructurada hermana de Wikipedia de donde salen los
+datos de ficha de cada persona, y las coordenadas del lugar de nacimiento cruzadas con
+mapas actuales. Cuando Wikidata afirma explícitamente en qué país está el lugar, esa
+afirmación tiene prioridad sobre nuestro cruce de mapas, que en las fronteras puede
+errar por metros.
 
-- **Nombres en español.** Los rótulos vienen de Wikidata, que es editable por
-  cualquiera y trae vandalismo ocasional: encontramos figuras con insultos
-  intercalados en el nombre (el físico y político español Pablo Echenique), con
-  apodos ajenos ("Daniel Ortega (bachi)") o directamente con el nombre de un
-  personaje de ficción (el actor Norman Reedus figuraba como "DARYL DIXON").
-  Aplicamos una limpieza automática de patrones típicos de vandalismo, más una tabla
-  de correcciones revisada a mano que tiene precedencia en los casos auditados.
-- **Género.** El campo del archivo de Pantheon trae errores (René Favaloro figuraba
-  como mujer). Lo re-relevamos completo desde Wikidata: 2.712 correcciones.
-- **Ciudad de nacimiento.** También re-relevada desde Wikidata, con rótulos en
-  español e inglés.
+Las **10 regiones** del número son la taxonomía de El Atlas que usamos en el N°1, con un
+ajuste editorial, que es contar a Puerto Rico dentro de América Latina.
+
+## 7. Otras correcciones sobre la base
+
+**Nombres en español.** Los rótulos provienen de Wikidata, que es editable por cualquier
+usuario y presenta vandalismo ocasional. Encontramos figuras con insultos intercalados
+en el nombre, como el físico y político español Pablo Echenique, con apodos ajenos, como
+"Daniel Ortega (bachi)", o directamente con el nombre de un personaje de ficción, ya que
+el actor Norman Reedus figuraba como "DARYL DIXON". Aplicamos una limpieza automática de
+los patrones típicos de vandalismo y una tabla de correcciones revisada manualmente, que
+tiene prioridad sobre las fuentes automáticas en los casos auditados.
+
+**Género.** El campo del archivo de Pantheon presenta errores, entre ellos el de René
+Favaloro, registrado como mujer. Lo relevamos de nuevo para toda la base desde Wikidata,
+con 2.712 correcciones.
+
+**Ciudad de nacimiento.** También relevada de nuevo desde Wikidata, con rótulos en
+español y en inglés.
 
 ## 8. Limitaciones
 
-Wikipedia no es un registro neutral de la historia: refleja qué personas fueron más
+Wikipedia no es un registro neutral de la historia. Refleja qué personas fueron más
 documentadas, digitalizadas y traducidas por comunidades de editores muy desiguales
-entre países e idiomas. Nuestro índice mide **memoria global hoy** —lecturas
-2015–2025—, no talento ni mérito: genocidas y narcotraficantes puntúan alto. Dos
-límites que agregan nuestras propias decisiones: al excluir el inglés, una figura
-cuya fama es casi exclusivamente angloparlante queda subrepresentada; y al asignar
-por lugar de nacimiento, un país "produce" figuras cuya carrera pudo desarrollarse
-enteramente en otro.
+entre países e idiomas. El índice mide memoria global contemporánea, con lecturas de
+2015 a 2025, y no talento ni mérito, motivo por el cual genocidas y narcotraficantes
+obtienen puntajes altos.
+
+Nuestras propias decisiones agregan dos límites. Al excluir el inglés de las lecturas,
+una figura cuya fama es casi exclusivamente angloparlante queda subrepresentada. Al
+asignar por lugar de nacimiento, un país figura como origen de personas cuya carrera
+pudo desarrollarse enteramente en otro.
 
 ## 9. Transparencia y reproducibilidad
 
-El pipeline completo —descarga de visitas por idioma y mes, filtro de entrada,
-cálculo del índice y exportación de cada gráfico— está en scripts que se publican en
-el repositorio del proyecto en GitHub, junto con el dataset final y el archivo de
-parámetros. Además, el número incluye un laboratorio interactivo (*fame lab*) que
-permite mover todos los parámetros del índice y ver cómo cambia el ranking; su preset
-"Publicado" reproduce exactamente el dataset del número. *(Los links concretos a
-repositorio, dataset y laboratorio se fijan al publicar.)*
+El pipeline completo, que incluye la descarga de visitas por idioma y mes, el filtro de
+entrada, el cálculo del índice y la exportación de cada gráfico, se publica junto con el
+número, con el dataset final y el archivo de parámetros. El número incluye además un
+laboratorio interactivo que permite mover todos los parámetros del índice y observar
+cómo cambia el ranking, cuyo preset "Publicado" reproduce exactamente el dataset
+utilizado.
 
 ---
 
 ## Apéndice técnico
 
-**Fórmula exacta del índice.** Para cada figura de la base depurada, con visitas
-medidas fuera del inglés entre julio de 2015 y 2025:
+**Fórmula del índice.** Para cada figura de la base depurada, con visitas medidas fuera
+del inglés entre julio de 2015 y 2025:
 
 ```
 norm(x)  = log(1+x) / máx[ log(1+x) ]          (cada variable, normalizada a [0,1])
@@ -247,31 +287,37 @@ A        = 2025 − año de nacimiento   (mínimo 1)
 crudo    = log₄(A) − máx( 0 , (T − A) / 7 )    con T = 40
 Edad×    = 0,5 + 0,5 · (crudo − mín) / (máx − mín)
 
-Score    = Base · Edad× , reescalado para que el máximo de la base sea 100
+Puntaje  = Base · Edad× , reescalado para que el máximo de la base sea 100
 ```
 
-Dentro de `Lenguas` los dos términos se promedian de forma aritmética (no
-geométrica): el 58,9% de la base tiene 0 idiomas con ≥10.000 visitas anuales, y en
-una media geométrica ese cero anularía el índice entero de media base. La media
-geométrica se usa donde no hay ceros estructurales: dentro de `Vistas` y entre
-`Lenguas` y `Vistas`.
+Dentro de `Lenguas` los dos términos se promedian de forma aritmética y no geométrica.
+El 58,9% de la base tiene 0 idiomas con 10.000 visitas anuales o más, y en una media
+geométrica ese cero anularía el índice entero de media base. La media geométrica se usa
+donde no hay ceros estructurales, es decir dentro de `Vistas` y entre `Lenguas` y
+`Vistas`.
 
-**Parámetros publicados:** T = 40 años; piso de la corrección por edad 0,5; pesos del
-premio y la penalización de edad iguales a 1; año de referencia 2025. Quedan escritos
-en un archivo de parámetros junto al dataset.
+**Parámetros publicados.** Corte de antigüedad T de 40 años; piso de la corrección por
+edad de 0,5; pesos del premio y de la penalización por edad iguales a 1; año de
+referencia 2025. Quedan escritos en un archivo de parámetros junto al dataset.
 
-**Gate de entrada:** ≥2 idiomas con ≥1.000 visitas acumuladas desde julio de 2015.
-Del archivo 2025 (126.582 figuras deduplicadas), 9.313 no pasan el gate y ~950 no
-tienen ocupación o año de nacimiento; la base final es de 116.319.
+**Filtro de entrada.** Al menos 2 idiomas con al menos 1.000 visitas acumuladas desde
+julio de 2015. Del archivo 2025, que trae 126.582 figuras sin repeticiones, 9.313 no
+pasan el filtro y unas 950 no tienen ocupación o año de nacimiento registrados, con lo
+que la base final queda en 116.319.
 
-**Sobre el criterio de los 15 idiomas del archivo:** es el umbral de diseño de
-Pantheon, pero el conteo de ediciones es una foto móvil (las biografías se crean y
-también se borran). En el archivo 2025, el 93,5% de las figuras cumple ≥15 según el
-conteo del propio archivo; re-relevado por nosotros en 2025, el 89,4% — unas 5.200
-figuras que cumplían al entrar hoy no llegan, típicamente porque las ediciones-
-cáscara fueron borradas.
+**Sobre el criterio de las 15 ediciones.** Es el umbral de diseño de Pantheon, y en el
+archivo 2025 lo cumple el 93,5% de las figuras según el conteo del propio archivo. No lo
+usamos como filtro, dado que el nuestro se basa en lecturas y no en ediciones.
 
-**Referencias.** Yu, A. Z., Ronen, S., Hu, K., Lu, T. y Hidalgo, C. A. (2016),
-"Pantheon 1.0, a manually verified dataset of globally famous biographies",
-*Scientific Data* 3, 150075. La versión actual del proyecto (Pantheon 2.0, base
-2025) y la descripción de su HPI están en [pantheon.world](https://pantheon.world).
+**Sobre el HPI de Pantheon.** El archivo público expone los cuatro insumos del índice (L,
+L\*, v y CV), la edad de cada figura y el índice resultante, tanto en su escala original
+como reescalado de 0 a 100, pero no la implementación exacta que los combina en la
+versión 2025. Las combinaciones documentadas para la versión 1.0 reproducen el orden del
+índice publicado con una correlación de 0,77, insuficiente para presentar acá una
+fórmula cerrada. Por eso la §1 describe los ingredientes y remite a la documentación
+original.
+
+**Referencias.** Yu, A. Z., Ronen, S., Hu, K., Lu, T. y Hidalgo, C. A. (2016), "Pantheon
+1.0, a manually verified dataset of globally famous biographies", *Scientific Data* 3,
+150075. La versión actual del proyecto y la descripción de su HPI están en
+[pantheon.world](https://pantheon.world).
