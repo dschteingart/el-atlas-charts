@@ -4,8 +4,8 @@
 const ISSUE_I18N = {
   es: {
     'issue-num':  'N° 5',
-    'page-title': '¿En qué es talentosa América Latina?',
-    'page-lede':  'Para su tamaño y su nivel de desarrollo, la región produce muchísimas figuras célebres en unas pocas disciplinas y casi ninguna en otras. Cuatro cartografías del talento latinoamericano.',
+    'page-title': 'Fuera de serie',
+    'page-lede':  'Por qué algunos países son recordados por sus científicos y artistas, y otros por sus futbolistas. Siete gráficos sobre las más de 110.000 personas que el mundo recuerda.',
     'index-charts-label': 'Gráficos interactivos',
     'index-see':  'Ver gráfico →',
     'footer-signature': 'El Atlas · Daniel Schteingart · 2026',
@@ -198,8 +198,8 @@ const ISSUE_I18N = {
   },
   en: {
     'issue-num':  'No. 5',
-    'page-title': 'What is Latin America talented at?',
-    'page-lede':  'For its size and level of development, the region produces a great many notable people in a few fields — and almost none in others. Four maps of Latin American talent.',
+    'page-title': 'Out of the ordinary',
+    'page-lede':  'Why some countries are remembered for their scientists and artists, and others for their footballers. Seven charts on the 110,000-plus people the world remembers.',
     'index-charts-label': 'Interactive charts',
     'index-see':  'See chart →',
     'footer-signature': 'The Atlas · Daniel Schteingart · 2026',

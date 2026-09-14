@@ -4,6 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>El Atlas — El podio de cada país</title>
+<meta name="description" content="Las tres figuras más célebres nacidas en cada país, según el índice de popularidad histórica.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/podios.html">
+<meta property="og:title" content="El podio de cada país — El Atlas N°5">
+<meta property="og:description" content="Che Guevara, Messi y Francisco en Argentina; Pelé, Ronaldinho y Ronaldo en Brasil.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/podios.png">
+<meta property="og:image:alt" content="Las tres figuras más célebres nacidas en cada país">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="El podio de cada país — El Atlas N°5">
+<meta name="twitter:description" content="Che Guevara, Messi y Francisco en Argentina; Pelé, Ronaldinho y Ronaldo en Brasil.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/podios.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -133,7 +146,7 @@
 
 <script src="../lib/i18n.js"></script>
 <script src="../lib/regions.js"></script>
-<script src="./i18n-issue.js?v=25"></script>
+<script src="./i18n-issue.js?v=26"></script>
 <script src="./utils.js?v=7"></script>
 <script src="./data-top.js?v=11"></script>
 <script>
@@ -412,6 +425,16 @@ function wrapText(ctx, text, maxW) {
   w.forEach(x => { const p = cur ? cur + ' ' + x : x; if (ctx.measureText(p).width > maxW && cur) { out.push(cur); cur = x; } else cur = p; });
   if (cur) out.push(cur); return out;
 }
+// Achica el cuerpo (hasta un piso) antes de recortar con puntos suspensivos:
+// "Gabriel Garcia Marquez" o "Joaquin Guzman Loera" no entran a 25px y salian
+// cortados en el PNG (Daniel 2026-09-14). Devuelve el font-size a usar.
+const fitFont = (ctx, s, maxW, fmax, fmin, peso) => {
+  for (let f = fmax; f >= fmin; f--) {
+    ctx.font = peso + ' ' + f + 'px ' + SANS;
+    if (ctx.measureText(String(s)).width <= maxW) return f;
+  }
+  return fmin;
+};
 const fitText = (ctx, s, maxW) => {
   s = String(s); if (ctx.measureText(s).width <= maxW) return s;
   while (s.length > 2 && ctx.measureText(s + '…').width > maxW) s = s.slice(0, -1);
@@ -471,7 +494,8 @@ async function dibujarYExportar(usarFotos) {
   shown.forEach((p, pi) => {
     const cy = y + rowH / 2;
     ctx.textAlign = 'left';
-    ctx.fillStyle = PNG.ink; ctx.font = '700 27px ' + SANS;
+    ctx.fillStyle = PNG.ink;
+    ctx.font = '700 ' + fitFont(ctx, paisLabel(p.i), colP - 18, 27, 19, '700') + 'px ' + SANS;
     ctx.fillText(fitText(ctx, paisLabel(p.i), colP - 18), PAD, cy + 9);
     p.figs.forEach((r, k) => {
       const x0 = PAD + colP + k * colF + 4;
@@ -488,7 +512,8 @@ async function dibujarYExportar(usarFotos) {
         tx = x0 + dph + 10;
       }
       const maxW = x0 + colF - 16 - tx;
-      ctx.fillStyle = PNG.ink; ctx.font = '600 25px ' + SANS;
+      ctx.fillStyle = PNG.ink;
+      ctx.font = '600 ' + fitFont(ctx, nombre(r), maxW, 25, 18, '600') + 'px ' + SANS;
       ctx.fillText(fitText(ctx, nombre(r), maxW), tx, cy - 3);
       ctx.font = '700 20px ' + SANS;
       const hpiTxt = fmtHpi(r[5]);

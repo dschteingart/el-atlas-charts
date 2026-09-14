@@ -29,9 +29,9 @@
     '7': { es: 'el-atlas-05-migracion-fama.png',    en: 'the-atlas-05-fame-migration.png'      },
     '8': { es: 'el-atlas-05-subnacional.png',       en: 'the-atlas-05-subnational.png'         },
     '9': { es: 'el-atlas-05-ciudades-fama.png',     en: 'the-atlas-05-cities-of-fame.png'      },
-    'evo': { es: 'el-atlas-05-de-que-esta-hecha-la-fama.png', en: 'the-atlas-05-what-fame-is-made-of.png' },
+    'evo': { es: 'el-atlas-05-perfil-de-la-fama.png', en: 'the-atlas-05-fame-profile.png' },
     'map': { es: 'el-atlas-05-mapa-fama.png', en: 'the-atlas-05-fame-map.png' },
-    'comp': { es: 'el-atlas-05-composicion-fama.png', en: 'the-atlas-05-what-fame-is-made-of.png' }
+    'comp': { es: 'el-atlas-05-composicion-fama.png', en: 'the-atlas-05-fame-composition.png' }
   };
 
   const VIEWBOX_RIGHT_EXTENSION = {};

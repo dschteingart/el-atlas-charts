@@ -3,26 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>El Atlas — La fama se hace en la capital</title>
-<meta name="description" content="¿En qué países el talento se concentra en una sola región y en cuáles se reparte? La concentración subnacional de las figuras célebres. Gráfico interactivo de El Atlas.">
+<title>El Atlas — Las ciudades de la fama</title>
+<meta name="description" content="¿Qué ciudades del mundo produjeron más figuras célebres? El ranking de áreas metropolitanas de la fama. Gráfico interactivo de El Atlas.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
-<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/chart-8.html">
-<meta property="og:title" content="El talento se hace en la capital — El Atlas N°5">
-<meta property="og:description" content="En América Latina, el talento célebre nace abrumadoramente en la capital. La concentración subnacional de la fama, país por país.">
-<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/chart-8.png">
-<meta property="og:image:alt" content="Concentración subnacional del talento: % nacido en la región líder de cada país">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/chart-9.html">
+<meta property="og:title" content="Las ciudades de la fama — El Atlas N°5">
+<meta property="og:description" content="Nueva York, Londres y París lideran. Buenos Aires es la #17 del mundo: el ranking metropolitano de la fama.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/chart-9.png">
+<meta property="og:image:alt" content="Ranking de áreas metropolitanas por figuras célebres nacidas ahí">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="El talento se hace en la capital — El Atlas N°5">
-<meta name="twitter:description" content="En América Latina, el talento célebre nace abrumadoramente en la capital.">
-<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/chart-8.png">
+<meta name="twitter:title" content="Las ciudades de la fama — El Atlas N°5">
+<meta name="twitter:description" content="Nueva York, Londres y París lideran. Buenos Aires es la #17 del mundo.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/chart-9.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../lib/style.css">
-<link rel="stylesheet" href="../lib/editor.css?v=1">
-<link rel="stylesheet" href="./editor.css">
+<link rel="stylesheet" href="../../lib/style.css">
+<link rel="stylesheet" href="../../lib/editor.css?v=1">
+<link rel="stylesheet" href="../editor.css">
 <style>
   .wrap-wide { max-width: 1100px; padding: 10px 20px 16px; }
   .wrap-wide header { padding-bottom: 8px; margin-bottom: 10px; }
@@ -55,53 +55,53 @@
     </div>
   </header>
 
-  <section class="chart-block" data-chart="8" data-editor-id="subnacional">
-    <h2 class="chart-title" data-i18n="c8-title">La fama se hace en la capital</h2>
-    <p class="chart-subtitle" data-i18n="c8-subtitle">% de las figuras célebres de cada país nacidas en su región líder.</p>
+  <section class="chart-block" data-chart="9" data-editor-id="metros">
+    <h2 class="chart-title" data-i18n="c9-title">Las ciudades de la fama</h2>
+    <p class="chart-subtitle" data-i18n="c9-subtitle">Figuras célebres nacidas en cada área metropolitana.</p>
 
     <div class="ex-controls">
-      <div class="ex-ctrl"><label data-i18n="c8-lbl-view">Mostrar</label>
-        <div class="m-mode-toggle" id="sb-view">
-          <button class="active" data-view="conc">Más concentrados</button>
-          <button data-view="disp">Más distribuidos</button>
+      <div class="ex-ctrl"><label data-i18n="c9-lbl-scope">Mostrar</label>
+        <div class="m-mode-toggle" id="mt-scope">
+          <button class="active" data-scope="world">Mundo</button>
+          <button data-scope="latam">América Latina</button>
         </div>
       </div>
     </div>
 
     <div class="chart-svg-wrap">
-      <svg id="chart8" viewBox="0 0 1100 640" preserveAspectRatio="xMidYMid meet"></svg>
-      <div class="tooltip" id="tooltip8"></div>
+      <svg id="chart9" viewBox="0 0 1100 640" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip9"></div>
     </div>
   </section>
 
   <div class="footer">
-    <p><button class="download" data-chart="8-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="8" data-i18n="footer-download-png">Descargar PNG</button></p>
+    <p><button class="download" data-chart="9-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="9" data-i18n="footer-download-png">Descargar PNG</button></p>
     <div class="footer-row">
-      <p class="sources m-desktop-only" data-i18n="c8-sources">Datos: Pantheon (Datawheel).</p>
+      <p class="sources m-desktop-only" data-i18n="c9-sources">Datos: Pantheon (Datawheel).</p>
       <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
     </div>
   </div>
 </div>
 
-<script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=25"></script>
-<script src="./utils.js?v=7"></script>
-<script src="./data-subnacional.js?v=7"></script>
-<script src="./subnac.js?v=5"></script>
-<script src="./png-export.js?v=8"></script>
+<script src="../../lib/i18n.js"></script>
+<script src="../i18n-issue.js?v=25"></script>
+<script src="../utils.js?v=7"></script>
+<script src="../data-metros.js?v=9"></script>
+<script src="../metros.js?v=6"></script>
+<script src="../png-export.js?v=8"></script>
 <script>
-  function sbSyncToggleLabels() {
+  function mtSyncToggleLabels() {
     const en = LANG === 'en';
-    document.querySelectorAll('#sb-view button').forEach(b => {
-      b.textContent = b.dataset.view === 'disp' ? (en ? 'Most spread out' : 'Más distribuidos') : (en ? 'Most concentrated' : 'Más concentrados');
+    document.querySelectorAll('#mt-scope button').forEach(b => {
+      b.textContent = b.dataset.scope === 'latam' ? (en ? 'Latin America' : 'América Latina') : (en ? 'World' : 'Mundo');
     });
   }
-  initSubnac();
-  applyI18n(); sbSyncToggleLabels();
-  setupLangToggle(() => { sbSyncToggleLabels(); drawSubnac(); });
+  initMetros();
+  applyI18n(); mtSyncToggleLabels();
+  setupLangToggle(() => { mtSyncToggleLabels(); drawMetros(); });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=4"></script>
-<script src="../lib/editor.js?v=8"></script>
+<script src="../nav.js?v=4"></script>
+<script src="../../lib/editor.js?v=8"></script>
 </body>
 </html>

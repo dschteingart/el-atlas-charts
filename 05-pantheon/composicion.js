@@ -327,7 +327,9 @@
     const conLeyenda = st.breakdown !== 'total';
     const leg = conLeyenda ? legendLayout(FS.leg, plotW) : null;
     const legH = leg ? leg.rows.length * leg.rowH + FS.leg * 1.2 : 0;
-    const ejeH = FS.tick * 1.6 + FS.axis * 2.1;
+    // el titulo del eje respira antes de la leyenda: con 2.1 quedaban pegados
+    // (Daniel 2026-09-14). El colchon escala con el cuerpo de la leyenda.
+    const ejeH = FS.tick * 1.6 + FS.axis * 1.5 + FS.leg * 2.0;
     const H = top + plotH + ejeH + legH + L.pad;
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
     if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, fmt);
@@ -764,7 +766,7 @@
         const blob = new Blob([csvActual()], { type: 'text/csv;charset=utf-8' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = en() ? 'the-atlas-05-what-fame-is-made-of.csv' : 'el-atlas-05-composicion-fama.csv';
+        a.download = en() ? 'the-atlas-05-fame-composition.csv' : 'el-atlas-05-composicion-fama.csv';
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
         URL.revokeObjectURL(a.href);
       });

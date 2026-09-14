@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — La fama se hace en la capital</title>
+<meta name="description" content="¿En qué países el talento se concentra en una sola región y en cuáles se reparte? La concentración subnacional de las figuras célebres. Gráfico interactivo de El Atlas.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/chart-8.html">
+<meta property="og:title" content="El talento se hace en la capital — El Atlas N°5">
+<meta property="og:description" content="En América Latina, el talento célebre nace abrumadoramente en la capital. La concentración subnacional de la fama, país por país.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/chart-8.png">
+<meta property="og:image:alt" content="Concentración subnacional del talento: % nacido en la región líder de cada país">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="El talento se hace en la capital — El Atlas N°5">
+<meta name="twitter:description" content="En América Latina, el talento célebre nace abrumadoramente en la capital.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/chart-8.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../lib/style.css">
+<link rel="stylesheet" href="../../lib/editor.css?v=1">
+<link rel="stylesheet" href="../editor.css">
+<style>
+  .wrap-wide { max-width: 1100px; padding: 10px 20px 16px; }
+  .wrap-wide header { padding-bottom: 8px; margin-bottom: 10px; }
+  .wrap-wide .chart-block { margin: 10px 0 4px; }
+  .wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; }
+  .wrap-wide .chart-subtitle { margin: 0 0 8px; font-size: 13.5px; }
+  .ex-controls { display: flex; align-items: center; gap: 12px; margin: 4px 0 8px; }
+  .ex-ctrl label { font-family: var(--sans); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-muted); font-weight: 600; margin-right: 8px; }
+  .m-mode-toggle { display: inline-flex; gap: 4px; padding: 3px; background: var(--bg-soft); border-radius: 7px; }
+  .m-mode-toggle button { background: transparent; border: none; padding: 5px 12px; font-family: var(--sans); font-size: 12px; color: var(--ink-soft); cursor: pointer; border-radius: 5px; font-weight: 500; transition: all .15s ease; }
+  .m-mode-toggle button:hover { color: var(--ink); }
+  .m-mode-toggle button.active { background: var(--bg); color: var(--ink); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .chart-svg-wrap svg { width: 100%; height: auto; display: block; }
+  @media (max-width: 768px) {
+    .wrap-wide .chart-title { font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 4px; }
+    .wrap-wide .chart-subtitle { font-size: 12px; font-weight: 400; color: var(--ink-muted); line-height: 1.4; margin: 0 0 8px; }
+    .chart-svg-wrap svg { height: min(82vh, 640px); }
+    .footer .sources, .footer .attribution { font-size: 10.5px; }
+    .footer .download { font-size: 11px; padding: 6px 10px; }
+    .m-desktop-only { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 5</span></div>
+      <div class="lang-toggle"><button data-lang="es" class="active">ES</button><button data-lang="en">EN</button></div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="8" data-editor-id="subnacional">
+    <h2 class="chart-title" data-i18n="c8-title">La fama se hace en la capital</h2>
+    <p class="chart-subtitle" data-i18n="c8-subtitle">% de las figuras célebres de cada país nacidas en su región líder.</p>
+
+    <div class="ex-controls">
+      <div class="ex-ctrl"><label data-i18n="c8-lbl-view">Mostrar</label>
+        <div class="m-mode-toggle" id="sb-view">
+          <button class="active" data-view="conc">Más concentrados</button>
+          <button data-view="disp">Más distribuidos</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="chart-svg-wrap">
+      <svg id="chart8" viewBox="0 0 1100 640" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip8"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p><button class="download" data-chart="8-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="8" data-i18n="footer-download-png">Descargar PNG</button></p>
+    <div class="footer-row">
+      <p class="sources m-desktop-only" data-i18n="c8-sources">Datos: Pantheon (Datawheel).</p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+</div>
+
+<script src="../../lib/i18n.js"></script>
+<script src="../i18n-issue.js?v=25"></script>
+<script src="../utils.js?v=7"></script>
+<script src="../data-subnacional.js?v=7"></script>
+<script src="../subnac.js?v=5"></script>
+<script src="../png-export.js?v=8"></script>
+<script>
+  function sbSyncToggleLabels() {
+    const en = LANG === 'en';
+    document.querySelectorAll('#sb-view button').forEach(b => {
+      b.textContent = b.dataset.view === 'disp' ? (en ? 'Most spread out' : 'Más distribuidos') : (en ? 'Most concentrated' : 'Más concentrados');
+    });
+  }
+  initSubnac();
+  applyI18n(); sbSyncToggleLabels();
+  setupLangToggle(() => { sbSyncToggleLabels(); drawSubnac(); });
+</script>
+<div id="chart-nav"></div>
+<script src="../nav.js?v=4"></script>
+<script src="../../lib/editor.js?v=8"></script>
+</body>
+</html>

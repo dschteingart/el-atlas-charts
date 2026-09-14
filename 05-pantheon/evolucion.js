@@ -685,7 +685,7 @@ function initEvo() {
     const blob = new Blob([ev_csv()], { type: 'text/csv;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = ev_lang() === 'en' ? 'the-atlas-05-what-fame-is-made-of.csv' : 'el-atlas-05-de-que-esta-hecha-la-fama.csv';
+    a.download = ev_lang() === 'en' ? 'the-atlas-05-fame-profile.csv' : 'el-atlas-05-perfil-de-la-fama.csv';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(a.href);
   });
