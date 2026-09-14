@@ -108,7 +108,7 @@
 
 <script src="../lib/i18n.js"></script>
 <script src="./i18n-issue.js?v=25"></script>
-<script src="./utils.js?v=5"></script>
+<script src="./utils.js?v=7"></script>
 <script src="./data-percap-map.js?v=7"></script>
 <script>
 const E = window.PCMAP;
@@ -230,7 +230,40 @@ const maxes = rows => {
   return mx;
 };
 
+
+// ===== Vista compartible (?vista=&rubro=&corte=&min=) =====
+let rep_urlWired = false;
+function rep_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const v = atlasUrlParam('vista');
+  if (v === 'pais' || v === 'region') st.vista = v;
+  const rub = atlasUrlParam('rubro');
+  if (rub) { const i = atlasIdxPorSlug(E.domains, rub); if (i >= 0) st.dom = i; }
+  const c = parseInt(atlasUrlParam('corte'), 10);
+  if (c >= 1500 && c <= 2000) st.corte = c;
+  const mn = parseInt(atlasUrlParam('min'), 10);
+  if (mn >= 0 && mn <= 5000) st.min = mn;
+  rep_urlWired = true;
+  // reflejar el estado en los controles
+  document.querySelectorAll('#c-vista button').forEach(x => x.classList.toggle('on', x.dataset.v === st.vista));
+  document.getElementById('c-min-wrap').style.display = st.vista === 'pais' ? '' : 'none';
+  document.getElementById('c-min').value = String(st.min);
+  document.getElementById('c-corte-v').value = st.corte;
+  document.getElementById('c-corte').value = st.corte;
+  fillDomSelect(); render();
+}
+function rep_syncUrl() {
+  if (!rep_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const todoDefault = st.vista === 'region' && st.dom < 0 && st.corte === 1900 && st.min === 25;
+  atlasSyncUrl(todoDefault ? { vista: null, rubro: null, corte: null, min: null } : {
+    vista: st.vista,
+    rubro: st.dom >= 0 ? atlasSlug(E.domains[st.dom].es) : null,
+    corte: st.corte === 1900 ? null : st.corte,
+    min: (st.vista === 'pais' && st.min !== 25) ? st.min : null
+  });
+}
 function render() {
+  rep_syncUrl();
   const { rows, sumPre, sumPost } = compute();
   document.getElementById('h-name').childNodes[0].nodeValue = t(st.vista === 'region' ? 'rep-vista-region' : 'rep-vista-pais');
   document.getElementById('h-pre').childNodes[0].nodeValue = t('rep-col-hasta') + ' ' + st.corte;
@@ -449,6 +482,7 @@ document.querySelectorAll('thead th').forEach(th => th.addEventListener('click',
 applyI18n();
 fillDomSelect();
 render();
+rep_applyUrlState();
 if (typeof setupLangToggle === 'function') setupLangToggle(() => { applyI18n(); fillDomSelect(); render(); });
 </script>
 <script src="../lib/editor.js?v=8"></script>

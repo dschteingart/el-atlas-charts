@@ -240,7 +240,58 @@
   }
 
   // ===================== Render =====================
+
+  // ===== Vista compartible (?vista=&medida=&apertura=&rubro=&periodo=&paises=&ocultos=) =====
+  let urlWired = false;
+  function applyUrlState() {
+    if (typeof atlasUrlParam !== 'function') return;
+    const v = atlasUrlParam('vista');
+    if (v === 'pais') st.view = 'country';
+    else if (v === 'region') st.view = 'region';
+    const md = atlasUrlParam('medida');
+    if (md === 'abs' || md === 'percap' || md === 'share') st.measure = md;
+    const ap = atlasUrlParam('apertura');
+    if (ap === 'total' || ap === 'ocupaciones' || ap === 'rubros') st.breakdown = (ap === 'ocupaciones') ? 'occ' : (ap === 'rubros' ? 'dom' : 'total');
+    const rub = atlasUrlParam('rubro');
+    if (rub) { const i = atlasIdxPorSlug(E.domains, rub); if (i >= 0) st.domainFilter = String(i); }
+    const per = atlasUrlParam('periodo');
+    if (per && per.indexOf('~') > 0) {
+      const [a, b] = per.split('~').map(Number);
+      if (!isNaN(a) && !isNaN(b) && a <= b) { st.y0 = Math.max(YMIN, a); st.y1 = Math.min(YMAX, b); }
+    }
+    const ps = atlasUrlParam('paises');
+    if (ps !== null) {
+      st.selected = (ps === 'ninguno') ? []
+        : ps.split('~').map(x => x.toUpperCase()).filter(iso => ISO_META[iso]);
+      if (st.selected.length) st.view = 'country';
+    } else if (st.view === 'country') st.selected = defaultSelection();
+    const oc = atlasUrlParam('ocultos');
+    if (oc) {
+      const off = oc.split('~').map(x => atlasIdxPorSlug(E.domains, x)).filter(i => i >= 0);
+      if (off.length < ND) st.offDoms = off;
+    }
+    urlWired = true;
+    fillDomainSelect(); syncControls(); renderChips();
+    if (window.__compSyncPeriodo) window.__compSyncPeriodo();
+    draw();
+  }
+  function syncUrl() {
+    if (!urlWired || typeof atlasSyncUrl !== 'function') return;
+    const todoDefault = st.view === 'region' && st.measure === 'share' && st.breakdown === 'dom'
+      && st.domainFilter === 'all' && !st.offDoms.length && st.y0 === DEF_Y0 && st.y1 === YMAX;
+    atlasSyncUrl(todoDefault ? { vista: null, medida: null, apertura: null, rubro: null, periodo: null, paises: null, ocultos: null } : {
+      vista: st.view === 'region' ? null : 'pais',
+      medida: st.measure === 'share' ? null : st.measure,
+      apertura: st.breakdown === 'dom' ? null : (st.breakdown === 'occ' ? 'ocupaciones' : 'total'),
+      rubro: (st.breakdown === 'total' && st.domainFilter !== 'all') ? atlasSlug(E.domains[+st.domainFilter].es) : null,
+      periodo: (st.y0 === DEF_Y0 && st.y1 === YMAX) ? null : (st.y0 + '~' + st.y1),
+      paises: st.view === 'country' ? (st.selected.length ? st.selected.join('~') : 'ninguno') : null,
+      ocultos: st.offDoms.length ? st.offDoms.map(d => atlasSlug(E.domains[d].es)).join('~') : null
+    });
+  }
+
   function draw() {
+    syncUrl();
     const svg = document.getElementById('chartcomp'); if (!svg) return;
     svg.innerHTML = '';
     const fmt = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
@@ -658,6 +709,11 @@
       if (fill) { fill.style.left = lo + '%'; fill.style.width = (hi - lo) + '%'; }
       syncTextos();
     }
+    window.__compSyncPeriodo = () => {
+      c0.value = st.y0 === YMIN ? '' : String(st.y0);
+      c1.value = st.y1 === YMAX ? '' : String(st.y1);
+      sync(true);
+    };
     r0.addEventListener('input', () => { sync(false); redraw(); });
     r1.addEventListener('input', () => { sync(false); redraw(); });
     c0.addEventListener('change', () => { sync(true); redraw(); });
@@ -719,6 +775,7 @@
   wire();
   renderChips();
   draw();
+  applyUrlState();
   wireDescargas();
   window.__atlasSupportsFormats = true;
   window.__atlasDefaultPngFormat = 'square';

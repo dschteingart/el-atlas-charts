@@ -328,7 +328,71 @@ function tp_legendLayout(regions, fs, plotW, bigFmt) {
 }
 
 // =================== Render principal ===================
+
+// ===== Vista compartible (?rubro=&pob=&escx=&escy=&periodo=&paises=&ocultas=) =====
+let tp_urlWired = false;
+function tp_rubroAUrl() {
+  const s = state[5];
+  if (s.rubroType === 'all') return null;
+  const E = EXPLORA;
+  return atlasSlug((s.rubroType === 'dom' ? E.domains[s.rubroIdx] : E.subrubros[s.rubroIdx]).es);
+}
+function tp_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const s = state[5], E = EXPLORA;
+  const rub = atlasUrlParam('rubro');
+  if (rub) {
+    let i = atlasIdxPorSlug(E.domains, rub);
+    if (i >= 0) { s.rubroType = 'dom'; s.rubroIdx = i; }
+    else { i = atlasIdxPorSlug(E.subrubros, rub); if (i >= 0) { s.rubroType = 'sub'; s.rubroIdx = i; } }
+  }
+  const pob = parseFloat(atlasUrlParam('pob'));
+  if (!isNaN(pob) && pob >= 0) s.minPopM = pob;
+  const ex = atlasUrlParam('escx'); if (ex === 'log' || ex === 'linear') s.scaleX = ex;
+  const ey = atlasUrlParam('escy'); if (ey === 'log' || ey === 'linear') s.scaleY = ey;
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    if (!isNaN(a) && !isNaN(b) && a <= b) { s.y0 = Math.max(E.y0, a); s.y1 = Math.min(E.y1, b); }
+  }
+  const ps = atlasUrlParam('paises');
+  if (ps !== null) {
+    s.selected = (ps === 'ninguno') ? []
+      : ps.split('~').map(x => x.toUpperCase()).filter(iso => E.isoMeta.some(m => m.iso === iso));
+  }
+  const oc = atlasUrlParam('ocultas');
+  if (oc && typeof REGION_ORDER !== 'undefined') {
+    const off = oc.split('~').map(x => REGION_ORDER.find(r => atlasSlug(r) === atlasSlug(x))).filter(Boolean);
+    if (off.length && off.length < REGION_ORDER.length) s.hiddenRegions = off;
+  }
+  tp_urlWired = true;
+  tp_buildRubroSelect(); tp_buildPopSelect();
+  if (window.__tpSyncPeriodo) window.__tpSyncPeriodo();
+  document.querySelectorAll('#tp-scale-x button').forEach(b => b.classList.toggle('active', b.dataset.scale === s.scaleX));
+  document.querySelectorAll('#tp-scale-y button').forEach(b => b.classList.toggle('active', b.dataset.scale === s.scaleY));
+  tp_renderChips(); drawTalento();
+}
+function tp_syncUrl() {
+  if (!tp_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = state[5], E = EXPLORA;
+  const selDef = TP_DEFAULT_SEL.slice().sort().join('~');
+  const sel = (s.selected || []).slice().sort();
+  const todoDefault = s.rubroType === 'all' && s.minPopM === TP_DEFAULT_POP
+    && s.scaleX === 'log' && s.scaleY === 'log' && s.y0 === TP_DEF_Y0 && s.y1 === E.y1
+    && sel.join('~') === selDef && !(s.hiddenRegions || []).length;
+  atlasSyncUrl(todoDefault ? { rubro: null, pob: null, escx: null, escy: null, periodo: null, paises: null, ocultas: null } : {
+    rubro: tp_rubroAUrl(),
+    pob: s.minPopM === TP_DEFAULT_POP ? null : s.minPopM,
+    escx: s.scaleX === 'log' ? null : 'linear',
+    escy: s.scaleY === 'log' ? null : 'linear',
+    periodo: (s.y0 === TP_DEF_Y0 && s.y1 === E.y1) ? null : (s.y0 + '~' + s.y1),
+    paises: sel.length ? sel.join('~') : 'ninguno',
+    ocultas: (s.hiddenRegions || []).length ? s.hiddenRegions.map(r => atlasSlug(r)).join('~') : null
+  });
+}
+
 function drawTalento() {
+  tp_syncUrl();
   const svg = document.getElementById('chart5');
   if (!svg) return;
   svg.innerHTML = '';
@@ -1106,6 +1170,11 @@ function tp_setupPeriodo() {
     }
     tp_updateSubtitle();
   }
+  window.__tpSyncPeriodo = () => {
+    y0.value = state[5].y0 === YMIN ? '' : String(state[5].y0);
+    y1.value = state[5].y1 === YMAX ? '' : String(state[5].y1);
+    syncPeriodo(true);
+  };
   r0.addEventListener('input', () => { syncPeriodo(false); redraw(); });
   r1.addEventListener('input', () => { syncPeriodo(false); redraw(); });
   y0.addEventListener('change', () => { syncPeriodo(true); redraw(); });
@@ -1161,6 +1230,7 @@ function initTalento() {
   tp_renderChips();
   tp_setupCSV();
   drawTalento();
+  tp_applyUrlState();
 
   window.__atlasSupportsFormats = true;
   window.__atlasDefaultPngFormat = 'square';

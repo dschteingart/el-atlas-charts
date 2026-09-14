@@ -131,7 +131,69 @@ function ev_bandEmph(svg, band, domKey) {
 }
 
 // ---------- dibujo ----------
+
+// ===== Vista compartible (?medida=&apertura=&sel=&periodo=) =====
+// Criterio de la casa: default = URL limpia; cualquier desvio escribe el estado
+// completo. `sel` viaja como "mundo", el ISO3 del pais o el slug de la region.
+let ev_urlWired = false;
+function ev_selDesdeUrl(v) {
+  const E = window.EVOL;
+  if (!v || v === 'mundo' || v === 'world') return { t: 'w' };
+  const iso = v.toUpperCase();
+  const i = E.isoMeta.findIndex(m => m.iso === iso);
+  if (i >= 0) return { t: 'c', i };
+  const regs = [...new Set(E.isoMeta.map(m => m.reg).filter(Boolean))];
+  const r = regs.find(x => atlasSlug(x) === atlasSlug(v));
+  return r ? { t: 'r', reg: r } : null;
+}
+function ev_selAUrl(u) {
+  if (!u || u.t === 'w') return 'mundo';
+  if (u.t === 'r') return atlasSlug(u.reg);
+  return window.EVOL.isoMeta[u.i].iso;
+}
+// bins <-> anios: bin 0 = todo lo anterior a 1500; bin 11 = 2000 en adelante.
+const ev_binAAnio = (b) => b <= 0 ? 1500 : (b >= 11 ? 2000 : 1500 + (b - 1) * 50);
+const ev_anioABin = (y) => y <= 1500 ? 0 : (y >= 2000 ? 11 : Math.max(0, Math.min(11, Math.round((y - 1500) / 50) + 1)));
+function ev_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const s = ev_state();
+  const md = atlasUrlParam('medida');
+  if (md === 'abs' || md === 'share') s.mode = md;
+  const ap = atlasUrlParam('apertura');
+  if (ap === 'ocupaciones' || ap === 'occ') s.nivel = 'occ';
+  else if (ap === 'rubros' || ap === 'dom') s.nivel = 'dom';
+  const sel = atlasUrlParam('sel');
+  if (sel) { const u = ev_selDesdeUrl(sel); if (u) s.sel = [u]; }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    if (!isNaN(a) && !isNaN(b)) {
+      const b0 = ev_anioABin(a), b1 = ev_anioABin(b);
+      if (b0 <= b1) { s.b0 = b0; s.b1 = b1; }
+    }
+  }
+  ev_urlWired = true;
+  const tm = document.getElementById('evo-mode');
+  if (tm) tm.querySelectorAll('button').forEach(x => x.classList.toggle('active', x.dataset.mode === s.mode));
+  const tn = document.getElementById('evo-nivel');
+  if (tn) tn.querySelectorAll('button').forEach(x => x.classList.toggle('active', x.dataset.nivel === s.nivel));
+  ev_syncPeriodo(); ev_renderChips(); drawEvo();
+}
+function ev_syncUrl() {
+  if (!ev_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const s = ev_state();
+  const u = s.sel[0] || { t: 'w' };
+  const todoDefault = s.mode === 'share' && s.nivel === 'dom' && u.t === 'w' && s.b0 === 0 && s.b1 === 11;
+  atlasSyncUrl(todoDefault ? { medida: null, apertura: null, sel: null, periodo: null } : {
+    medida: s.mode === 'share' ? null : 'abs',
+    apertura: s.nivel === 'dom' ? null : 'ocupaciones',
+    sel: u.t === 'w' ? null : ev_selAUrl(u),
+    periodo: (s.b0 === 0 && s.b1 === 11) ? null : (ev_binAAnio(s.b0) + '~' + ev_binAAnio(s.b1))
+  });
+}
+
 function drawEvo() {
+  ev_syncUrl();
   const svg = document.getElementById('chartevo');
   if (!svg || typeof EVOL === 'undefined') return;
   svg.innerHTML = '';
@@ -617,6 +679,7 @@ window.__atlasDefaultPngFormat = 'square';
 window.__atlasRedraw = drawEvo;
 function initEvo() {
   ev_state(); ev_renderChips(); ev_setupSearch(); ev_wireToggles(); ev_wirePeriodo(); ev_syncPeriodo(); drawEvo();
+  ev_applyUrlState();
   const btn = document.querySelector('button.download[data-chart="evo-csv"]');
   if (btn) btn.addEventListener('click', () => {
     const blob = new Blob([ev_csv()], { type: 'text/csv;charset=utf-8' });

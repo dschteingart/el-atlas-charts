@@ -93,7 +93,7 @@
 
 <script src="../lib/i18n.js"></script>
 <script src="./i18n-issue.js?v=25"></script>
-<script src="./utils.js?v=5"></script>
+<script src="./utils.js?v=7"></script>
 <script src="./data-top.js?v=11"></script>
 <script>
 const D = window.TOPFIGS;
@@ -200,6 +200,7 @@ function phOff(img) {   // criterio comun: sin retrato queda el circulo neutro
   const sp = document.createElement('span'); sp.className = 'ph ph-off'; img.replaceWith(sp);
 }
 function render() {
+  top_syncUrl();
   const H = { 'h-nombre': 'top-col-nombre', 'h-pais': 'top-col-pais', 'h-region': 'top-col-region', 'h-occ': 'top-col-occ', 'h-dom': 'top-col-dom', 'h-score': 'top-col-score' };
   Object.entries(H).forEach(([id, k]) => { document.getElementById(id).textContent = t(k); });
   const rows = filtrar();
@@ -468,9 +469,46 @@ function cargarBaseCompleta() {
   sc.onerror = () => { window.__fullReq = false; };
   document.body.appendChild(sc);
 }
+
+// ===== Vista compartible (?region=&pais=&rubro=&ocupacion=&genero=&n=) =====
+// Criterio de la casa: default = URL limpia; cualquier desvio escribe el estado
+// completo. Se compara por SLUG (nunca por indice) para que un rebuild del
+// dataset no rompa los links viejos.
+let top_urlWired = false;
+function top_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const n = parseInt(atlasUrlParam('n'), 10);
+  if (n >= 1 && n <= 500) st.n = n;
+  const reg = atlasUrlParam('region');
+  if (reg) { const i = REGS.findIndex(r => atlasSlug(r) === atlasSlug(reg)); if (i >= 0) st.reg = i; }
+  const pais = atlasUrlParam('pais');
+  if (pais) { const i = D.isoMeta.findIndex(m => m.iso === pais.toUpperCase()); if (i >= 0) { st.cty = i; st.reg = -1; } }
+  const rub = atlasUrlParam('rubro');
+  if (rub) { const i = atlasIdxPorSlug(D.doms, rub); if (i >= 0) st.dom = i; }
+  const occ = atlasUrlParam('ocupacion');
+  if (occ) { const i = atlasIdxPorSlug(D.occs, occ); if (i >= 0) { st.occ = i; st.dom = D.occs[i].dom; } }
+  const g = (atlasUrlParam('genero') || '').toUpperCase();
+  if (g === 'F' || g === 'M') st.gen = g;
+  const nIn = document.getElementById('c-n'); if (nIn) nIn.value = st.n;
+  top_urlWired = true;
+  fillSelects(); render();
+}
+function top_syncUrl() {
+  if (!top_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const todoDefault = st.n === 10 && st.reg < 0 && st.cty < 0 && st.dom < 0 && st.occ < 0 && !st.gen;
+  atlasSyncUrl(todoDefault ? { n: null, region: null, pais: null, rubro: null, ocupacion: null, genero: null } : {
+    n: st.n === 10 ? null : st.n,
+    region: st.reg >= 0 && st.cty < 0 ? atlasSlug(REGS[st.reg]) : null,
+    pais: st.cty >= 0 ? D.isoMeta[st.cty].iso : null,
+    rubro: st.dom >= 0 ? atlasSlug(D.doms[st.dom].es) : null,
+    ocupacion: st.occ >= 0 ? atlasSlug(D.occs[st.occ].es) : null,
+    genero: st.gen ? st.gen.toLowerCase() : null
+  });
+}
 applyI18n();
 fillSelects();
 render();
+top_applyUrlState();
 setTimeout(cargarBaseCompleta, 1200);
 if (typeof setupLangToggle === 'function') setupLangToggle(() => { applyI18n(); fillSelects(); render(); });
 </script>

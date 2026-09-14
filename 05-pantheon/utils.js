@@ -322,3 +322,51 @@ function atlasWireClearButtons() {
 }
 window.addEventListener('load', () => setTimeout(atlasWireClearButtons, 0));
 
+
+// ===== Vista compartible (criterio de la casa, N°4 y backport a N°1-3) =====
+// La barra de direcciones refleja el estado del chart, asi el lector copia el
+// link y comparte exactamente lo que esta mirando. Regla TODO-O-NADA: la vista
+// de fabrica viaja como URL LIMPIA (nunca se escribe el default, para que los
+// cambios editoriales posteriores le lleguen a quien ya tiene el link) y
+// cualquier desvio escribe el estado completo. Copia local de lib/utils.js.
+function atlasSyncUrl(params) {
+  try {
+    const u = new URL(location.href);
+    Object.keys(params).forEach(k => {
+      const v = params[k];
+      if (v === null || v === undefined || v === '') u.searchParams.delete(k);
+      else u.searchParams.set(k, String(v));
+    });
+    const q = u.searchParams.toString();
+    history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + u.hash);
+  } catch (_) { /* URL invalida o history bloqueado: el chart sigue andando */ }
+}
+function atlasUrlParam(k) {
+  try { return new URLSearchParams(location.search).get(k); } catch (_) { return null; }
+}
+// Slug estable para meter nombres en la URL ("Arte y espectáculo" ->
+// "arte-y-espectaculo"). Se compara SIEMPRE por slug, nunca por indice: un
+// rebuild del dataset puede reordenar las ocupaciones y romper los links.
+function atlasSlug(s) {
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+// Indice del primer elemento de `lista` cuyo slug (de cualquiera de sus campos
+// es/en) coincide con `valor`. -1 si no hay match (parametro invalido: se ignora).
+// Los datasets no escriben igual el mismo rubro ("Deporte" en data-top,
+// "Deportes" en el cubo del mapa), asi que la comparacion ignora las eses
+// finales de cada palabra. Sin esto, un link de un chart no abre en otro.
+function atlasSinPlural(slug) {
+  return String(slug).split('-').map(w => w.length > 3 && w.endsWith('s') ? w.slice(0, -1) : w).join('-');
+}
+function atlasIdxPorSlug(lista, valor, campos) {
+  if (!valor) return -1;
+  const v = atlasSinPlural(atlasSlug(valor));
+  const cs = campos || ['es', 'en'];
+  for (let i = 0; i < lista.length; i++) {
+    for (let c = 0; c < cs.length; c++) {
+      if (lista[i] && atlasSinPlural(atlasSlug(lista[i][cs[c]])) === v) return i;
+    }
+  }
+  return -1;
+}

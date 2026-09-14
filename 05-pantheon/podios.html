@@ -134,7 +134,7 @@
 <script src="../lib/i18n.js"></script>
 <script src="../lib/regions.js"></script>
 <script src="./i18n-issue.js?v=25"></script>
-<script src="./utils.js?v=5"></script>
+<script src="./utils.js?v=7"></script>
 <script src="./data-top.js?v=11"></script>
 <script>
 const D = window.TOPFIGS;
@@ -352,6 +352,7 @@ function celda(r) {
     '<div class="fm">' + esc(occLabel(r)) + ' · <b>' + fmtHpi(r[5]) + '</b></div></div></div></td>';
 }
 function render() {
+  pod_syncUrl();
   document.getElementById('h-pais').textContent = t('pod-col-pais');
   const ord = en() ? ['1st', '2nd', '3rd'] : ['1°', '2°', '3°'];
   ['h-p1', 'h-p2', 'h-p3'].forEach((id, k) => { document.getElementById(id).textContent = ord[k]; });
@@ -627,12 +628,52 @@ function cargarBaseCompleta() {
   sc.onerror = () => { window.__fullReq = false; };
   document.body.appendChild(sc);
 }
+// ===== Vista compartible (?paises=&periodo=&rubro=&ocupacion=&genero=) =====
+// Default = URL limpia; cualquier desvio escribe el estado completo. Los
+// paises viajan por ISO3 y los rubros por slug, nunca por indice.
+let pod_urlWired = false;
+const POD_DEF_SEL = LATAM.slice().sort().join('~');
+function pod_applyUrlState() {
+  if (typeof atlasUrlParam !== 'function') return;
+  const ps = atlasUrlParam('paises');
+  if (ps !== null) {
+    st.sel = (ps === 'ninguno') ? []
+      : ps.split('~').map(x => D.isoMeta.findIndex(m => m.iso === x.toUpperCase())).filter(i => i >= 0);
+  }
+  const per = atlasUrlParam('periodo');
+  if (per && per.indexOf('~') > 0) {
+    const [a, b] = per.split('~').map(Number);
+    if (!isNaN(a) && !isNaN(b) && a <= b) { st.y0 = Math.max(-4000, a); st.y1 = Math.min(2025, b); }
+  }
+  const rub = atlasUrlParam('rubro');
+  if (rub) { const i = atlasIdxPorSlug(D.doms, rub); if (i >= 0) st.dom = i; }
+  const occ = atlasUrlParam('ocupacion');
+  if (occ) { const i = atlasIdxPorSlug(D.occs, occ); if (i >= 0) { st.occ = i; st.dom = D.occs[i].dom; } }
+  const g = (atlasUrlParam('genero') || '').toUpperCase();
+  if (g === 'F' || g === 'M') st.gen = g;
+  pod_urlWired = true;
+  syncPeriodo(); fillSelects(); renderChips(); render();
+}
+function pod_syncUrl() {
+  if (!pod_urlWired || typeof atlasSyncUrl !== 'function') return;
+  const sel = st.sel.slice().sort();
+  const todoDefault = sel.join('~') === POD_DEF_SEL && st.y0 === 1900 && st.y1 === 2025
+    && st.dom < 0 && st.occ < 0 && !st.gen;
+  atlasSyncUrl(todoDefault ? { paises: null, periodo: null, rubro: null, ocupacion: null, genero: null } : {
+    paises: sel.length ? sel.map(i => D.isoMeta[i].iso).join('~') : 'ninguno',
+    periodo: st.y0 + '~' + st.y1,
+    rubro: st.dom >= 0 ? atlasSlug(D.doms[st.dom].es) : null,
+    ocupacion: st.occ >= 0 ? atlasSlug(D.occs[st.occ].es) : null,
+    genero: st.gen ? st.gen.toLowerCase() : null
+  });
+}
 applyI18n();
 fillSelects();
 renderChips();
 setupSearch();
 syncPeriodo();
 render();
+pod_applyUrlState();
 cargarBaseCompleta();
 if (typeof setupLangToggle === 'function') setupLangToggle(() => { applyI18n(); fillSelects(); renderChips(); render(); });
 </script>

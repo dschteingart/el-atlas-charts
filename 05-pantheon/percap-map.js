@@ -138,7 +138,58 @@
   const binOf = (v) => { if (v == null) return null; let i = 0; for (const b of legendBreaks) { if (v < b) return i; i++; } return i; };
 
   // ===================== Render =====================
+
+  // ===== Vista compartible (?vista=&medida=&mapa=&filtro=&periodo=) =====
+  let urlWired = false;
+  function filtroAUrl() {
+    if (st.filter === 'all') return null;
+    if (st.filter.startsWith('dom:')) return atlasSlug(E.domains[+st.filter.slice(4)].es);
+    return atlasSlug(E.subMeta[+st.filter.slice(4)].es);
+  }
+  function filtroDesdeUrl(v) {
+    if (!v) return null;
+    let i = atlasIdxPorSlug(E.domains, v);
+    if (i >= 0) return 'dom:' + i;
+    i = atlasIdxPorSlug(E.subMeta, v);
+    if (i >= 0 && E.subMeta[i].dom >= 0) return 'sub:' + i;
+    return null;
+  }
+  function applyUrlState() {
+    if (typeof atlasUrlParam !== 'function') return;
+    const v = atlasUrlParam('vista');
+    if (v === 'region' || v === 'pais') st.view = (v === 'pais') ? 'country' : 'region';
+    const md = atlasUrlParam('medida');
+    if (md === 'percap' || md === 'abs') st.measure = md;
+    const mp = atlasUrlParam('mapa');
+    if (mp === 'cartograma' || mp === 'dorling') st.mapMode = 'dorling';
+    const f = filtroDesdeUrl(atlasUrlParam('filtro'));
+    if (f) st.filter = f;
+    const per = atlasUrlParam('periodo');
+    if (per && per.indexOf('~') > 0) {
+      const [a, b] = per.split('~').map(Number);
+      if (!isNaN(a) && !isNaN(b) && a <= b) { st.y0 = Math.max(YMIN, a); st.y1 = Math.min(YMAX, b); }
+    }
+    if (st.view === 'region' || st.measure !== 'abs') st.mapMode = 'choro';
+    urlWired = true;
+    if (window.__mapFillFilter) window.__mapFillFilter();
+    if (window.__mapSyncPeriodo) window.__mapSyncPeriodo();
+    syncControls(); draw();
+  }
+  function syncUrl() {
+    if (!urlWired || typeof atlasSyncUrl !== 'function') return;
+    const todoDefault = st.view === 'country' && st.measure === 'abs' && st.mapMode === 'choro'
+      && st.filter === 'all' && st.y0 === 1800 && st.y1 === YMAX;
+    atlasSyncUrl(todoDefault ? { vista: null, medida: null, mapa: null, filtro: null, periodo: null } : {
+      vista: st.view === 'country' ? null : 'region',
+      medida: st.measure === 'abs' ? null : 'percap',
+      mapa: st.mapMode === 'choro' ? null : 'cartograma',
+      filtro: filtroAUrl(),
+      periodo: (st.y0 === 1800 && st.y1 === YMAX) ? null : (st.y0 + '~' + st.y1)
+    });
+  }
+
   function draw() {
+    syncUrl();
     const d3 = window.d3, svg = d3.select('#chartmap');
     if (svg.empty() || !geo) return;
     svg.selectAll('*').remove();
@@ -396,6 +447,7 @@
       fill.style.width = Math.max(0, (y2s(st.y1) - y2s(st.y0)) / 10) + '%';
     }
     let drawT; const redraw = () => { clearTimeout(drawT); drawT = setTimeout(draw, 110); };
+    window.__mapSyncPeriodo = syncPeriodo;
     r0.addEventListener('input', () => { st.y0 = Math.min(s2y(r0.value), st.y1); syncPeriodo(); redraw(); });
     r1.addEventListener('input', () => { st.y1 = Math.max(s2y(r1.value), st.y0); syncPeriodo(); redraw(); });
     b0.addEventListener('change', () => { const v = b0.value === '' ? YMIN : Math.round(+b0.value); if (isFinite(v)) st.y0 = Math.max(YMIN, Math.min(v, st.y1)); syncPeriodo(); draw(); });
@@ -452,4 +504,5 @@
   window.__atlasSupportsFormats = false;   // el PNG sale del viewBox actual (mapa apaisado)
 
   loadGeo(); wire(); setupZoom(); draw();
+  applyUrlState();
 })();
