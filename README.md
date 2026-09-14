@@ -33,4 +33,4 @@ A cualquier `chart-*.html` se le agrega `?nl=1` (o Ctrl/Cmd+Shift+E) y aparece e
 
 ## Criterios de diseño
 
-Documentados en la skill `graficos-atlas` (sesiones de Claude Code) y en el informe de la auditoría jul-2026. Los esenciales: paleta única (`lib/theme.js` — prohibido inventar paletas por chart), todo responde al tacto (nada detrás de `HAS_HOVER`), tooltip oscuro estándar, PNG cuadrado 1200×1200 mobile-first (mapas: apaisado 1200×920), números en locale (`es-AR`/`en-US`).
+**`CLAUDE.md` es el manual de la casa** (proceso, contrato de página, componentes únicos, PNG, checklist de integración); el detalle profundo vive en la skill `graficos-atlas` (sesiones de Claude Code). Los esenciales: paleta única (`lib/theme.js` — prohibido inventar paletas por chart), todo responde al tacto (nada detrás de `HAS_HOVER`), tooltip oscuro estándar, PNG cuadrado 1200×1200 mobile-first (mapas: apaisado 1200×920), números en locale (`es-AR`/`en-US`), bilingüe + CSV + PNG + vista compartible en la URL desde la v1.
