@@ -419,9 +419,23 @@ function wrapText(ctx, text, maxW) {
   w.forEach(x => { const p = cur ? cur + ' ' + x : x; if (ctx.measureText(p).width > maxW && cur) { out.push(cur); cur = x; } else cur = p; });
   if (cur) out.push(cur); return out;
 }
-// Dos lineas antes que puntos suspensivos: el nombre es el dato. Devuelve 1 o 2
-// renglones, partidos por la palabra que deja los dos mas parejos; solo una
-// palabra sola mas ancha que la caja termina recortada.
+// Nombre largo: se abrevia con inicial, no se parte ni se recorta con puntos
+// suspensivos (Daniel 2026-09-15). "Gabriel Garcia Marquez" -> "G. Garcia
+// Marquez", "Maria Corina Machado" -> "M. Corina Machado". Se abrevia de a un
+// nombre de pila por vez, nunca el apellido final ni las particulas.
+const PARTICULA = /^(de|del|la|las|los|le|van|von|da|das|dos|do|di|du|el|y|e|bin|ibn|al|ben|san|santa|mc|o')$/i;
+const abreviarNombre = (ctx, s, maxW) => {
+  s = String(s);
+  if (ctx.measureText(s).width <= maxW) return s;
+  const w = s.split(/\s+/);
+  for (let k = 1; k < w.length; k++) {
+    const cab = w.slice(0, k).map(x => PARTICULA.test(x) ? x : (x.charAt(0) + '.'));
+    const cand = cab.concat(w.slice(k)).join(' ');
+    if (ctx.measureText(cand).width <= maxW) return cand;
+  }
+  return fitText(ctx, s, maxW);
+};
+// El pais sigue pudiendo ir en dos renglones: debajo no lleva nada.
 const partirNombre = (ctx, s, maxW) => {
   s = String(s);
   if (ctx.measureText(s).width <= maxW) return [s];
@@ -514,12 +528,10 @@ async function dibujarYExportar(usarFotos) {
     let k = 0; shown.forEach(p => { fotos.push(p.figs.map(() => ims[k++])); });
   } else shown.forEach(p => fotos.push(p.figs.map(() => null)));
   const hayFotos = fotos.some(a => a.some(Boolean));
-  // Un cuerpo para toda la columna de paises y otro para todas las figuras.
-  const anchoFig = colF - 20 - (hayFotos ? Math.min(rowH - 34, 54) + 10 : 0);
+  // Cuerpo unico por columna. Los paises usan el mayor al que entra toda la
+  // columna; las figuras van siempre a 25 porque las largas se abrevian.
   const fsPais = fitFontComun(ctx, shown.map(p => paisLabel(p.i)), colP - 18, 27, 21, '700');
-  const nombres = [];
-  shown.forEach(p => p.figs.forEach(r => nombres.push(nombre(r))));
-  const fsFig = fitFontComun(ctx, nombres, anchoFig, 25, 21, '600');
+  const fsFig = 25;
   shown.forEach((p, pi) => {
     const cy = y + rowH / 2;
     ctx.textAlign = 'left';
@@ -544,13 +556,8 @@ async function dibujarYExportar(usarFotos) {
       const maxW = x0 + colF - 16 - tx;
       ctx.fillStyle = PNG.ink;
       ctx.font = '600 ' + fsFig + 'px ' + SANS;
-      const ln = partirNombre(ctx, nombre(r), maxW);
-      // nombre + ocupacion como un bloque centrado en la fila: asi los de dos
-      // renglones no empujan la ocupacion fuera de la celda
-      const LH = fsFig + 4, altoBloque = ln.length * LH + 22;
-      let ny = cy - altoBloque / 2 + fsFig;
-      ln.forEach(l => { ctx.fillText(l, tx, ny); ny += LH; });
-      const yOcc = ny + 4;
+      ctx.fillText(abreviarNombre(ctx, nombre(r), maxW), tx, cy - 3);
+      const yOcc = cy + 23;
       ctx.font = '700 20px ' + SANS;
       const hpiTxt = fmtHpi(r[5]);
       const hpiW = ctx.measureText(hpiTxt).width;
