@@ -275,7 +275,7 @@ Todo lo necesario para rehacer el número está publicado.
 - **El pipeline**, que incluye la descarga de visitas por idioma y mes, el filtro de
   entrada, el cálculo del índice y la exportación de cada gráfico, está en
   [`data-sources/`](https://github.com/dschteingart/el-atlas-charts/tree/main/05-pantheon/data-sources).
-- **El dataset final**, [`pantheon_corregido.csv`](https://github.com/dschteingart/el-atlas-charts/blob/main/05-pantheon/data-sources/pantheon_corregido.csv), trae una fila por figura con sus
+- **El dataset final**, [`pantheon_corregido.csv`](https://raw.githubusercontent.com/dschteingart/el-atlas-charts/main/05-pantheon/data-sources/pantheon_corregido.csv) (23 MB), trae una fila por figura con sus
   insumos, los tres componentes del índice y el puntaje. El
   [diccionario de datos](https://github.com/dschteingart/el-atlas-charts/blob/main/05-pantheon/data-sources/DATOS.md) describe cada columna, y el archivo de parámetros que lo
   acompaña deja escritos los valores con los que se calculó.

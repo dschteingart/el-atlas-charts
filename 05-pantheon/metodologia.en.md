@@ -271,7 +271,7 @@ Everything needed to rebuild the issue is published.
 - **The pipeline**, which includes downloading pageviews by language and month, the entry
   filter, the computation of the index and the export of each chart, lives in
   [`data-sources/`](https://github.com/dschteingart/el-atlas-charts/tree/main/05-pantheon/data-sources).
-- **The final dataset**, [`pantheon_corregido.csv`](https://github.com/dschteingart/el-atlas-charts/blob/main/05-pantheon/data-sources/pantheon_corregido.csv), carries one row per figure with
+- **The final dataset**, [`pantheon_corregido.csv`](https://raw.githubusercontent.com/dschteingart/el-atlas-charts/main/05-pantheon/data-sources/pantheon_corregido.csv) (23 MB), carries one row per figure with
   its inputs, the three components of the index and the score. The
   [data dictionary](https://github.com/dschteingart/el-atlas-charts/blob/main/05-pantheon/data-sources/DATOS.md) describes every column, and the parameter file next to it records
   the values the index was computed with.
