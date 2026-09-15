@@ -4,8 +4,8 @@
 const ISSUE_I18N = {
   es: {
     'issue-num':  'N° 5',
-    'page-title': 'Fuera de serie',
-    'page-lede':  'Por qué algunos países son recordados por sus científicos y artistas, y otros por sus futbolistas. Siete gráficos sobre las más de 110.000 personas que el mundo recuerda.',
+    'page-title': 'La geografía de la fama',
+    'page-lede':  'Quién entra en la memoria del mundo, de dónde viene y qué hizo. Siete gráficos sobre más de 110.000 figuras célebres.',
     'index-charts-label': 'Gráficos interactivos',
     'index-see':  'Ver gráfico →',
     'footer-signature': 'El Atlas · Daniel Schteingart · 2026',
@@ -198,8 +198,8 @@ const ISSUE_I18N = {
   },
   en: {
     'issue-num':  'No. 5',
-    'page-title': 'Out of the ordinary',
-    'page-lede':  'Why some countries are remembered for their scientists and artists, and others for their footballers. Seven charts on the 110,000-plus people the world remembers.',
+    'page-title': 'The geography of fame',
+    'page-lede':  'Who makes it into the world’s memory, where they came from and what they did. Seven charts on more than 110,000 notable figures.',
     'index-charts-label': 'Interactive charts',
     'index-see':  'See chart →',
     'footer-signature': 'The Atlas · Daniel Schteingart · 2026',
