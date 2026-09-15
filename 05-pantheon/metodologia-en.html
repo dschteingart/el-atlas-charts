@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Methodological note — The Atlas No. 5</title>
+<meta name="description" content="How the fame index in The Atlas No. 5 is built: what we take from Pantheon, what we adjusted and why.">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="en_US">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/metodologia-en.html">
+<meta property="og:title" content="Methodological note — The Atlas No. 5">
+<meta property="og:description" content="What we adjusted in Pantheon's index and why. The full kitchen behind The Atlas pantheon.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/top.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Methodological note — The Atlas No. 5">
+<meta name="twitter:description" content="What we adjusted in Pantheon's index and why. The full kitchen behind The Atlas pantheon.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/top.png">
+<link rel="alternate" hreflang="es" href="./metodologia.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css">
+<style>
+  .wrap-doc { max-width: 760px; margin: 0 auto; padding: 18px 20px 56px; }
+  .wrap-doc header { padding-bottom: 8px; margin-bottom: 18px; }
+  .wrap-doc h1 { font-family: var(--serif); font-size: 30px; line-height: 1.18; margin: 0 0 8px; }
+  .wrap-doc h2 { font-family: var(--serif); font-size: 21px; line-height: 1.25; margin: 34px 0 10px; padding-top: 14px; border-top: 1px solid var(--rule); }
+  .wrap-doc h3 { font-family: var(--serif); font-size: 17px; margin: 24px 0 8px; }
+  .wrap-doc p { font-family: var(--serif); font-size: 16.5px; line-height: 1.62; color: var(--ink); margin: 0 0 14px; }
+  .wrap-doc p.lede { font-size: 15px; color: var(--ink-soft); font-style: italic; }
+  .wrap-doc li { font-family: var(--serif); font-size: 16.5px; line-height: 1.6; margin: 0 0 8px; }
+  .wrap-doc ul, .wrap-doc ol { padding-left: 22px; margin: 0 0 16px; }
+  .wrap-doc a { color: var(--accent); }
+  .wrap-doc code { font-family: Consolas, "SF Mono", Menlo, monospace; font-size: 14px; background: var(--bg-soft); padding: 1px 4px; border-radius: 4px; }
+  .formula { font-family: Consolas, "SF Mono", Menlo, monospace; font-size: 13px; line-height: 1.5; background: var(--bg-soft); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; overflow-x: auto; margin: 0 0 16px; }
+  .formula code { background: none; padding: 0; font-size: inherit; }
+  blockquote { margin: 0 0 16px; padding: 10px 16px; border-left: 3px solid var(--accent); background: var(--bg-soft); border-radius: 0 8px 8px 0; }
+  blockquote p { margin: 0; font-weight: 600; }
+  .tablabox { overflow-x: auto; margin: 0 0 18px; }
+  .wrap-doc table { border-collapse: collapse; width: 100%; font-family: var(--sans); font-size: 14px; }
+  .wrap-doc th, .wrap-doc td { text-align: left; vertical-align: top; padding: 8px 10px; border-bottom: 1px solid var(--rule); }
+  .wrap-doc th { font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-muted); font-weight: 700; }
+  .wrap-doc hr { border: none; border-top: 1px solid var(--rule); margin: 26px 0; }
+  .doc-volver { display: inline-block; margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--rule); width: 100%; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; }
+  @media (max-width: 600px) { .wrap-doc h1 { font-size: 25px; } .wrap-doc p, .wrap-doc li { font-size: 16px; } }
+</style>
+</head>
+<body>
+<div class="wrap wrap-doc">
+  <header>
+    <div class="top-bar">
+      <div class="brand"><a class="brand-em" href="../index.html" style="text-decoration:none;color:inherit">El Atlas</a> · <span>No. 5</span></div>
+      <div class="lang-toggle">
+        <button data-lang="es" onclick="location.href='./metodologia.html'">ES</button><button data-lang="en" class="active" onclick="location.href='./metodologia-en.html'">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <h1 id="methodological-note-the-atlas-pantheon-n">Methodological note — The Atlas pantheon (No. 5)</h1>
+  <p class="lede"><em>This note documents where the issue's data comes from, what adjustments we made to Pantheon's fame index and why. It is written for any reader. The formal details (formulas and parameters) are in the technical appendix at the end.</em></p>
+  <hr>
+  <h2 id="1-the-source-data">1. The source data</h2>
+  <p>The source is <a href="https://pantheon.world" target="_blank" rel="noopener">Pantheon</a>, a project born at the MIT Media Lab under the direction of Chilean physicist César Hidalgo and developed today by the company Datawheel. Its idea is to use Wikipedia as a thermometer of collective memory. Wikipedia exists in hundreds of languages and each language version is called an "edition". Pantheon considers a person globally memorable when their biography exists in at least 15 editions.</p>
+  <p>For each of those people, Pantheon records where and when they were born and what they did, and computes a historical popularity index, the <strong>HPI</strong>, which sums up in a single number how present that figure is in the world's memory. The index combines four ingredients.</p>
+  <div class="tablabox"><table><thead><tr><th>Ingredient</th><th>What it measures</th></tr></thead><tbody><tr><td>Editions (L)</td><td>In how many languages the biography exists</td></tr><tr><td>Effective editions (L*)</td><td>How many languages really count, discounting those that contribute a marginal share of the reading</td></tr><tr><td>Non-English pageviews (v)</td><td>How many people read the biography, excluding the English Wikipedia</td></tr><tr><td>Coefficient of variation (CV)</td><td>How even that readership is across languages. The more even, the higher the score</td></tr></tbody></table></div>
+  <p>An age correction is then applied, rewarding figures whose fame survived centuries and penalising recent ones, which have yet to prove they will last. The result is rescaled from 0 to 100.</p>
+  <p>We start from the 2025 update of Pantheon's public file, with <strong>126,582 figures</strong> and no duplicates. From it we take the universe of people, their occupations and their places of birth. What we do not take is the fame score, and the rest of this note explains why and what we replaced it with.</p>
+  <h2 id="2-three-adjustments-to-the-original-inde">2. Three adjustments to the original index</h2>
+  <p>The HPI was designed in 2014 to rank historical figures, and for that it works well. Our issue has a somewhat different goal, since it compares countries and regions and reaches figures born in the twentieth century. Reviewing the index with that use in mind, we found three points worth adjusting. The common thread is that counting how many Wikipedias someone appears in is not the same as measuring how many people remember them. Each section first states what we observed and then the decision we took.</p>
+  <h3 id="2-1-edition-counts-can-be-inflated-reade">2.1. Edition counts can be inflated; readership cannot</h3>
+  <p><strong>What we observed.</strong> In Pantheon's raw file, the country with the most famous footballers in history is neither Brazil nor England but <strong>Japan</strong>, with 4,132 footballers, two and a half times Brazil's 1,642. The explanation is not footballing. On Wikipedia there are automated programs, "bots", that generate articles in bulk from lists. Taking the roster of players who went through the Japanese league, a bot can create for each of them a one or two line article in dozens of languages. Each of those articles adds one more edition, even if nobody reads it.</p>
+  <p>The clearest case is <strong>Takashi Kasahara</strong>, an amateur Japanese footballer from the 1930s with a biography in 49 languages, almost all of them a single paragraph long. Under the published HPI, Kasahara comes out as the 59th footballer of all time, ahead of Neymar, Mbappé, Modrić, Salah and Iniesta. Counting actual readership, he does not appear among the 30,000 most-read figures in the base.</p>
+  <p><strong>Our decision.</strong> We do not use the edition count as the main input. We downloaded from Pantheon's platform, figure by figure, the pageviews each one receives in every language and every month since July 2015, and built the index on that readership.</p>
+  <h3 id="2-2-the-evenness-measure-can-reward-bare">2.2. The evenness measure can reward barely-read figures</h3>
+  <p><strong>What we observed.</strong> To tell fame spread across languages from fame concentrated in a single one, the HPI uses the coefficient of variation, a statistical measure of how uneven the pageviews are. The more even, the higher the score. The measure captures relative dispersion without looking at volume, and at the extremes that produces counterintuitive results. Italian athlete <strong>Luca Beccaro</strong>, with 73 non-English pageviews a year spread evenly, gets an almost perfect coefficient of 0.007. <strong>Lionel Messi</strong>, with 6.6 million non-English pageviews, very uneven across languages and spiking at every World Cup, gets 5.5. Taylor Swift gets 7.7. The diversity metric ends up favouring someone almost nobody reads over the most-read people on the planet, precisely because mass fame is uneven.</p>
+  <p><strong>Our decision.</strong> We replaced evenness with an absolute threshold. We count in how many languages the figure clears a readership floor (1,000 and 10,000 pageviews). Being genuinely read in many languages counts as diversity; being barely read evenly does not.</p>
+  <h3 id="2-3-the-age-correction-is-very-strong-fo">2.3. The age correction is very strong for the twentieth century</h3>
+  <p><strong>What we observed.</strong> Correcting for age is necessary. Without that correction, any index of historical memory would be dominated by the latest viral figure, and a recent career has not yet proved it will be remembered. The strength of the correction, however, heavily conditions the result once you reach the twentieth century. Under the published HPI, Messi ranks 3,638th in the world and is only the fourth Argentine athlete, behind Maradona, Di Stéfano and Fangio. In Argentina and around the world people have long argued whether the best footballer in history was Maradona or Messi, but nobody would claim that Di Stéfano or Fangio are more remembered athletes than they are.</p>
+  <p><strong>Our decision.</strong> We kept the age correction with a lower strength and we make the parameter that governs it explicit, so that anyone can assess its effect (§4).</p>
+  <h2 id="3-the-cleaned-base">3. The cleaned base</h2>
+  <p>With the pageviews by language and month already downloaded, the first step was to define which figures get in. The criterion is the following.</p>
+  <blockquote><p><strong>A figure enters the base if it is read in at least 2 languages with at least 1,000 pageviews accumulated since 2015.</strong></p></blockquote>
+  <p>The filter leaves out 9,313 figures, 7.4% of the file. Another 950 or so lack the minimum data to compute the index, missing either occupation or year of birth. The final base we use in the issue contains <strong>116,319 figures</strong>.</p>
+  <p>The threshold was calibrated by manually reviewing the borderline cases, and the test were figures with enormous but regionally concentrated fame. Vallenato singer <strong>Diomedes Díaz</strong>, a massive idol in Colombia, and epidemiologist <strong>Zhong Nanshan</strong>, the public face of China's pandemic response, had to stay in, and they do, because their fame spills beyond their own language even though it is concentrated. What stays out are profiles read in a single Wikipedia and those read in none.</p>
+  <p>The most visible aggregate effect is the expected one. <strong>Japan loses 47.8% of its figures</strong>, which are those of the Japanese league and the bot-created articles. No other country loses a comparable share.</p>
+  <h2 id="4-the-fame-index">4. The fame index</h2>
+  <p>On the cleaned base we compute a score that ranks figures by their presence in global memory. The logic is that a figure is globally famous if it is read a lot, in many languages and in a sustained way over time, and that such fame is worth more the longer it has survived. The score multiplies three pieces.</p>
+  <ol><li><strong>Breadth (languages).</strong> Two things that weigh the same: in how many languages the biography exists and in how many it is genuinely read, with more than 10,000 pageviews a year. It replaces the coefficient of variation (§2.2).</li><li><strong>Intensity (readership).</strong> How much it is read outside English, measured over the last year, the full decade and the typical month. That last term is the monthly median, the value of the middle month, which is not dragged by a one-off news spike such as a death, a scandal or a World Cup.</li><li><strong>Permanence (age).</strong> A gentle reward growing with the years since birth, plus a penalty that only reaches figures under 40 years old.</li></ol>
+  <p>The resulting score is rescaled from 0 to 100, assigning 100 to the highest figure in the base. Under our criteria that figure is Aristotle, and under Pantheon's it is Muhammad. The value at the top carries no substantive reading, since it is merely the unit of the scale.</p>
+  <p>Five design decisions are worth making explicit.</p>
+  <p><strong>English is excluded from the readership.</strong> The English Wikipedia is so dominant, and is consulted by people all over the world on any subject, that inside the count it would mask the signal of fame in many languages. The criterion was already in Pantheon's original index and we kept it.</p>
+  <p><strong>Breadth and intensity are combined with a demanding average.</strong> Between the two we use the geometric mean, an average that is high only if both its terms are high. If one is near zero the result collapses, unlike the ordinary average, where a large term compensates for a small one. That way it is not enough to be in 50 Wikipedias nobody reads, nor to be huge in a single one. The same rule applies inside intensity, among the three readership measures.</p>
+  <p><strong>Inside breadth, by contrast, the average is the ordinary one.</strong> There the two terms are added and divided by two. The reason is that the second term (languages with more than 10,000 pageviews a year) is zero for 58.9% of the base, and with a demanding average that zero would sink the index for half the base until it became indistinguishable. With the ordinary average, that term still adds when it exists without acting as a switch when it does not.</p>
+  <p><strong>The variables enter on a logarithmic scale.</strong> It is a scale that compresses very large differences, so that going from 1,000 to 10,000 pageviews weighs the same as going from 100,000 to 1,000,000. Without that compression, a handful of megastars would dominate the whole index.</p>
+  <p><strong>The age correction is recalibrated and reported here.</strong> The parameter governing it is the cut-off below which a figure is considered too recent, and it is the decision that moves living figures the most. With the cut-off at 40 years, Messi ranks 141st in the world and first among Argentine athletes. With the cut-off at 50 he would fall to 384th, and at 70, to 1,231st. We chose 40 because it is the point where undisputed living icons rank reasonably without the index filling up with celebrities of the last decade. It is worth clarifying that the parameter excludes nobody, it only alters the order, and that the issue's aggregate results barely depend on that choice. Measuring each region's fame as the sum of its figures' scores, Latin America accounts for 6.1% of world fame with the cut-off at 40 years, 6.0% at 50 and 5.9% at 70.</p>
+  <h3 id="what-changes-in-practice">What changes in practice</h3>
+  <p>We compared the two rankings over the same 116,319 figures. The correlation between them is 0.63, on a scale where 1 means identical rankings and 0 no relationship at all. That is, the two broadly agree and part ways at the edges, which is where the cases in the previous sections live. The typical movements are these.</p>
+  <div class="tablabox"><table><thead><tr><th>Under the published HPI</th><th>With actual readership</th></tr></thead><tbody><tr><td>Nobel-winning physicists from a century ago, with dozens of very short editions and no readers (E. V. Appleton, rank 586; C. T. R. Wilson, 766)</td><td>fall to ranks between 20,000 and 35,000</td></tr><tr><td>Present-day stars read massively in dozens of languages (Katy Perry and LeBron James, between ranks 20,000 and 26,000)</td><td>rise into the top 1,000</td></tr><tr><td>Messi, rank 3,638, fourth Argentine athlete</td><td>rank 141, first Argentine athlete</td></tr></tbody></table></div>
+  <h2 id="5-fields-and-occupations">5. Fields and occupations</h2>
+  <p>Each figure's <strong>occupations</strong> (footballer, physicist, poet) are Pantheon's and we do not modify them. The <strong>6 fields</strong> we group them into (Sport; Arts and entertainment; Science and technology; Humanities; Power and public figures; Business and exploration) are a grouping of our own, equivalent to what Pantheon calls domains.</p>
+  <p>The decision has one practical reason and one editorial one. The practical one is that the 2025 public file we downloaded does not include the domain column, unlike the original version of the dataset. The current version's domains can be reconstructed from Pantheon's site, so adopting them was possible. The editorial one is that they were not the most useful for this issue. The official taxonomy was designed in 2014 and does not cover 20 occupations added later, which hold 4,972 figures, and some of its categories end up too small to read in a chart, such as Exploration, with 0.9% of the base, or Business and Law, with 1.0%.</p>
+  <p>Relative to the original grouping, 17 occupations change field, affecting 3,112 figures, 2.7% of the base. The social sciences move to Humanities, show business to Arts and entertainment, astronauts to Science and technology, and journalists and lawyers to Power and public figures. As a robustness check we computed Latin America's share of world science under both groupings, and it comes out at 1.0% in both cases, so the issue's findings do not depend on the chosen taxonomy.</p>
+  <h2 id="6-country-region-and-place-of-birth">6. Country, region and place of birth</h2>
+  <p>Each figure is assigned to the <strong>place where they were born, translated into today's borders</strong>, which is Pantheon's criterion. Julius Caesar counts for Italy and Freud for Czechia, and the kings of the old Korean dynasties born north of the 38th parallel count for North Korea. We do not arbitrate disputed births case by case; we respect the source's assignment, which is why Charlemagne stays in Germany via Aachen. It is worth clarifying that having been born in a country does not imply having built a career there.</p>
+  <p>Pantheon leaves <strong>4,983 figures without a country</strong> in the base, mostly ancient, biblical or born in kingdoms that no longer exist. We recovered 2,735 of them, 55%, with two sources. Wikidata, the structured database that is Wikipedia's sibling and the source of each person's factbox data, and the coordinates of the birthplace crossed with current maps. When Wikidata explicitly states which country the place is in, that statement takes priority over our map crossing, which at borders can be off by metres.</p>
+  <p>The issue's <strong>10 regions</strong> are The Atlas taxonomy we used in issue No. 1, with one editorial adjustment, which is counting Puerto Rico within Latin America.</p>
+  <h2 id="7-other-corrections-to-the-base">7. Other corrections to the base</h2>
+  <p><strong>Spanish names.</strong> The labels come from Wikidata, which any user can edit and which shows occasional vandalism. We found figures with insults inserted into their names, such as Spanish physicist and politician Pablo Echenique, with other people's nicknames, such as "Daniel Ortega (bachi)", or outright with the name of a fictional character, since actor Norman Reedus appeared as "DARYL DIXON". We applied an automatic clean-up of the typical vandalism patterns plus a manually reviewed correction table, which takes priority over the automatic sources in audited cases.</p>
+  <p><strong>Gender.</strong> The field in Pantheon's file contains errors, among them René Favaloro, recorded as a woman. We re-collected it for the whole base from Wikidata, with 2,712 corrections.</p>
+  <p><strong>City of birth.</strong> Also re-collected from Wikidata, with labels in Spanish and English.</p>
+  <h2 id="8-limitations">8. Limitations</h2>
+  <p>Wikipedia is not a neutral record of history. It reflects which people were most documented, digitised and translated by communities of editors that are very unequal across countries and languages. The index measures contemporary global memory, with readership from 2015 to 2025, not talent or merit, which is why genocidaires and drug lords score high.</p>
+  <p>Our own decisions add two limits. By excluding English from the readership, a figure whose fame is almost exclusively English-speaking is under-represented. By assigning figures to their birthplace, a country appears as the origin of people whose careers may have unfolded entirely elsewhere.</p>
+  <h2 id="9-transparency-and-reproducibility">9. Transparency and reproducibility</h2>
+  <p>The full pipeline, which includes downloading pageviews by language and month, the entry filter, the computation of the index and the export of each chart, is published together with the issue, along with the final dataset and the parameter file. The issue also includes an interactive lab that lets anyone move every parameter of the index and see how the ranking changes, whose "Published" preset reproduces exactly the dataset used.</p>
+  <hr>
+  <h2 id="technical-appendix">Technical appendix</h2>
+  <p><strong>Index formula.</strong> For each figure in the cleaned base, with pageviews measured outside English between July 2015 and 2025:</p>
+  <pre class="formula"><code>norm(x)     = log(1+x) / max[ log(1+x) ]        (each variable, normalised to [0,1])
+  
+  Languages   = ( norm(total languages) + norm(languages with ≥10,000 views/year) ) / 2
+  Views       = ( norm(views 12 months) · norm(all-time views) · norm(monthly median) )^(1/3)
+  Base        = ( Languages · Views )^(1/2)
+  
+  A           = 2025 − year of birth   (minimum 1)
+  raw         = log₄(A) − max( 0 , (T − A) / 7 )   with T = 40
+  Age×        = 0.5 + 0.5 · (raw − min) / (max − min)
+  
+  Score       = Base · Age× , rescaled so that the maximum of the base is 100</code></pre>
+  <p>The geometric mean is used where there are no structural zeros, that is inside <code>Views</code> and between <code>Languages</code> and <code>Views</code>. Inside <code>Languages</code> the average is arithmetic, with equal weights, for the reason explained in §4: 58.9% of the base has 0 languages with 10,000 or more yearly views, and in a geometric mean that zero would wipe out the index for half the base.</p>
+  <p><strong>Published parameters.</strong> Age cut-off T of 40 years; floor of the age correction 0.5; weights of the age reward and penalty both equal to 1; reference year 2025. They are written in a parameter file alongside the dataset.</p>
+  <p><strong>Entry filter.</strong> At least 2 languages with at least 1,000 pageviews accumulated since July 2015. Of the 2025 file, which holds 126,582 figures with no duplicates, 9,313 fail the filter and some 950 have no occupation or year of birth on record, leaving the final base at 116,319.</p>
+  <p><strong>On the 15-edition criterion.</strong> It is Pantheon's design threshold, and in the 2025 file 93.5% of figures meet it according to the file's own count. We do not use it as a filter, since ours is based on readership rather than editions.</p>
+  <p><strong>On Pantheon's HPI.</strong> The public file exposes the index's four inputs (L, L*, v and CV), each figure's age and the resulting index, both on its original scale and rescaled from 0 to 100, but not the exact implementation that combines them in the 2025 version. The combinations documented for version 1.0 reproduce the order of the published index with a correlation of 0.77, not enough to present a closed formula here. That is why §1 describes the ingredients and refers to the original documentation.</p>
+  <p><strong>References.</strong> Yu, A. Z., Ronen, S., Hu, K., Lu, T. and Hidalgo, C. A. (2016), "Pantheon 1.0, a manually verified dataset of globally famous biographies", <em>Scientific Data</em> 3,</p>
+  <ol><li>The current version of the project and the description of its HPI are at <a href="https://pantheon.world" target="_blank" rel="noopener">pantheon.world</a>.</li></ol>
+
+  <a class="doc-volver" href="./index.html?lang=en">← Back to the charts</a>
+</div>
+</body>
+</html>

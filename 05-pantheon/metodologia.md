@@ -128,9 +128,9 @@ en la memoria global. La lógica es que una figura es globalmente famosa si se l
 mucho, en muchos idiomas y de manera sostenida en el tiempo, y que esa fama vale más
 cuanto más tiempo sobrevivió. El puntaje multiplica tres piezas.
 
-1. **Amplitud (idiomas).** En cuántos idiomas existe la biografía y, sobre todo, en
-   cuántos se la lee en serio, con más de 10.000 visitas al año. Reemplaza al
-   coeficiente de variación (§2.2).
+1. **Amplitud (idiomas).** Dos cosas que pesan lo mismo: en cuántos idiomas existe la
+   biografía y en cuántos se la lee en serio, con más de 10.000 visitas al año.
+   Reemplaza al coeficiente de variación (§2.2).
 2. **Intensidad (lecturas).** Cuánto se la lee fuera del inglés, medido en el último
    año, en la década completa y en el mes típico. Ese último término es la mediana
    mensual, el valor del mes del medio, que no se deja arrastrar por un pico puntual de
@@ -144,18 +144,26 @@ base. Con nuestros criterios esa figura es Aristóteles, y con los de Pantheon e
 El valor del extremo no tiene lectura sustantiva, ya que es solo la unidad de medida de
 la escala.
 
-Cuatro decisiones de diseño merecen explicitarse.
+Cinco decisiones de diseño merecen explicitarse.
 
 **Se excluye el inglés de las lecturas.** La Wikipedia en inglés es tan dominante, y la
 consulta gente de todo el mundo sobre cualquier tema, que dentro de la cuenta taparía la
 señal de fama en muchas lenguas. El criterio ya estaba en el índice original de Pantheon
 y lo conservamos.
 
-**Amplitud e intensidad se combinan con un promedio exigente.** Usamos la media
-geométrica, un promedio que solo da alto si todos sus términos son altos. Si uno es casi
-cero, el resultado se hunde, a diferencia del promedio común, donde un término grande
-compensa a uno chico. De ese modo no alcanza con estar en 50 Wikipedias que nadie lee ni
-con ser enorme en una sola.
+**Amplitud e intensidad se combinan con un promedio exigente.** Entre las dos usamos la
+media geométrica, un promedio que solo da alto si sus dos términos son altos. Si uno es
+casi cero, el resultado se hunde, a diferencia del promedio común, donde un término
+grande compensa a uno chico. De ese modo no alcanza con estar en 50 Wikipedias que nadie
+lee ni con ser enorme en una sola. La misma regla vale dentro de la intensidad, entre
+las tres medidas de lecturas.
+
+**Dentro de la amplitud, en cambio, el promedio es el común.** Ahí los dos términos se
+suman y se dividen por dos. La razón es que el segundo término (idiomas con más de
+10.000 visitas al año) vale cero para el 58,9% de la base, y con un promedio exigente ese
+cero hundiría el índice de media base hasta volverla indistinguible. Con el promedio
+común, ese término sigue sumando cuando existe sin funcionar como interruptor cuando no
+existe.
 
 **Las variables entran en escala logarítmica.** Es una escala que comprime las
 diferencias muy grandes, de manera que pasar de 1.000 a 10.000 visitas pesa lo mismo que
@@ -290,11 +298,11 @@ Edad×    = 0,5 + 0,5 · (crudo − mín) / (máx − mín)
 Puntaje  = Base · Edad× , reescalado para que el máximo de la base sea 100
 ```
 
-Dentro de `Lenguas` los dos términos se promedian de forma aritmética y no geométrica.
-El 58,9% de la base tiene 0 idiomas con 10.000 visitas anuales o más, y en una media
-geométrica ese cero anularía el índice entero de media base. La media geométrica se usa
-donde no hay ceros estructurales, es decir dentro de `Vistas` y entre `Lenguas` y
-`Vistas`.
+La media geométrica se usa donde no hay ceros estructurales, es decir dentro de `Vistas`
+y entre `Lenguas` y `Vistas`. Dentro de `Lenguas` el promedio es aritmético, con pesos
+iguales, por lo explicado en la §4: el 58,9% de la base tiene 0 idiomas con 10.000
+visitas anuales o más, y en una media geométrica ese cero anularía el índice de media
+base.
 
 **Parámetros publicados.** Corte de antigüedad T de 40 años; piso de la corrección por
 edad de 0,5; pesos del premio y de la penalización por edad iguales a 1; año de

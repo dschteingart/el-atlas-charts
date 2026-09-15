@@ -7,6 +7,8 @@ const ISSUE_I18N = {
     'page-title': 'La geografía de la fama',
     'page-lede':  'Quién entra en la memoria del mundo, de dónde viene y qué hizo. Siete gráficos sobre más de 110.000 figuras célebres.',
     'index-charts-label': 'Gráficos interactivos',
+    'index-metodo': 'Cómo se construyó el índice de fama: nota metodológica →',
+    'index-metodo-href': './metodologia.html',
     'index-see':  'Ver gráfico →',
     'footer-signature': 'El Atlas · Daniel Schteingart · 2026',
 
@@ -201,6 +203,8 @@ const ISSUE_I18N = {
     'page-title': 'The geography of fame',
     'page-lede':  'Who makes it into the world’s memory, where they came from and what they did. Seven charts on more than 110,000 notable figures.',
     'index-charts-label': 'Interactive charts',
+    'index-metodo': 'How the fame index was built: methodological note →',
+    'index-metodo-href': './metodologia-en.html',
     'index-see':  'See chart →',
     'footer-signature': 'The Atlas · Daniel Schteingart · 2026',
 
