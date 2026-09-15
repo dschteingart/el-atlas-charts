@@ -9,12 +9,12 @@
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/podios.html">
-<meta property="og:title" content="El podio de cada país — El Atlas N°5">
+<meta property="og:title" content="El podio de cada país — El Atlas">
 <meta property="og:description" content="Che Guevara, Messi y Francisco en Argentina; Pelé, Ronaldinho y Ronaldo en Brasil.">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/podios.png">
 <meta property="og:image:alt" content="Las tres figuras más célebres nacidas en cada país">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="El podio de cada país — El Atlas N°5">
+<meta name="twitter:title" content="El podio de cada país — El Atlas">
 <meta name="twitter:description" content="Che Guevara, Messi y Francisco en Argentina; Pelé, Ronaldinho y Ronaldo en Brasil.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/podios.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -72,7 +72,7 @@
 
   <header>
     <div class="top-bar">
-      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 5</span></div>
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span class="brand-topic" data-i18n="brand-topic">Fama</span></div>
       <div class="lang-toggle">
         <button data-lang="es" class="active">ES</button>
         <button data-lang="en">EN</button>
@@ -93,9 +93,6 @@
         </div>
         <div class="pod-regiones" id="pod-regiones"></div>
         <div class="m-selected-chips" id="pod-selected-chips"></div>
-        <div class="pod-acciones">
-          <button class="atlas-clear-btn" id="btn-limpiar" data-i18n="pod-limpiar">Limpiar</button>
-        </div>
       </div>
       <div class="ctl">
         <label data-i18n="pod-lbl-periodo">Nacidos entre</label>
@@ -226,8 +223,6 @@ function renderChips() {
     x.addEventListener('click', () => { st.sel = st.sel.filter(v => v !== i); renderChips(); render(); });
     chip.appendChild(x); box.appendChild(chip);
   });
-  // Limpiar solo con 2+ chips (criterio 11e); con 1 alcanza la x del chip
-  document.getElementById('btn-limpiar').style.display = st.sel.length >= 2 ? '' : 'none';
   document.getElementById('pod-search').placeholder = t('pod-buscar');
   renderRegBtns();
 }
@@ -303,7 +298,6 @@ function setupSearch() {
     if (!input.contains(ev.target) && !results.contains(ev.target)) results.classList.remove('open');
   });
 }
-document.getElementById('btn-limpiar').addEventListener('click', () => { st.sel = []; renderChips(); render(); });
 
 // ===== podios =====
 function nombre(r) { return en() ? r[1] : (r[2] || r[1]); }
@@ -425,13 +419,42 @@ function wrapText(ctx, text, maxW) {
   w.forEach(x => { const p = cur ? cur + ' ' + x : x; if (ctx.measureText(p).width > maxW && cur) { out.push(cur); cur = x; } else cur = p; });
   if (cur) out.push(cur); return out;
 }
-// Achica el cuerpo (hasta un piso) antes de recortar con puntos suspensivos:
-// "Gabriel Garcia Marquez" o "Joaquin Guzman Loera" no entran a 25px y salian
-// cortados en el PNG (Daniel 2026-09-14). Devuelve el font-size a usar.
-const fitFont = (ctx, s, maxW, fmax, fmin, peso) => {
+// Dos lineas antes que puntos suspensivos: el nombre es el dato. Devuelve 1 o 2
+// renglones, partidos por la palabra que deja los dos mas parejos; solo una
+// palabra sola mas ancha que la caja termina recortada.
+const partirNombre = (ctx, s, maxW) => {
+  s = String(s);
+  if (ctx.measureText(s).width <= maxW) return [s];
+  const w = s.split(/\s+/);
+  if (w.length < 2) return [fitText(ctx, s, maxW)];
+  let mejor = null, dif = Infinity;
+  for (let k = 1; k < w.length; k++) {
+    const a1 = w.slice(0, k).join(' '), b1 = w.slice(k).join(' ');
+    const wa = ctx.measureText(a1).width, wb = ctx.measureText(b1).width;
+    if (Math.max(wa, wb) > maxW) continue;
+    const d = Math.abs(wa - wb);
+    if (d < dif) { dif = d; mejor = [a1, b1]; }
+  }
+  return mejor || [fitText(ctx, s, maxW)];
+};
+// Cuerpo UNICO para toda una columna: el mayor tamano al que TODA la columna
+// entra en uno o dos renglones. La version anterior achicaba de a una figura,
+// asi que un nombre quedaba de otro cuerpo al lado del resto y encima seguia
+// saliendo cortado (Daniel 2026-09-15).
+const cabeEnDos = (ctx, s, maxW) => {
+  s = String(s);
+  if (ctx.measureText(s).width <= maxW) return true;
+  const w = s.split(/\s+/);
+  for (let k = 1; k < w.length; k++) {
+    if (ctx.measureText(w.slice(0, k).join(' ')).width <= maxW
+        && ctx.measureText(w.slice(k).join(' ')).width <= maxW) return true;
+  }
+  return false;
+};
+const fitFontComun = (ctx, lista, maxW, fmax, fmin, peso) => {
   for (let f = fmax; f >= fmin; f--) {
     ctx.font = peso + ' ' + f + 'px ' + SANS;
-    if (ctx.measureText(String(s)).width <= maxW) return f;
+    if (lista.every(s => cabeEnDos(ctx, s, maxW))) return f;
   }
   return fmin;
 };
@@ -491,12 +514,19 @@ async function dibujarYExportar(usarFotos) {
     let k = 0; shown.forEach(p => { fotos.push(p.figs.map(() => ims[k++])); });
   } else shown.forEach(p => fotos.push(p.figs.map(() => null)));
   const hayFotos = fotos.some(a => a.some(Boolean));
+  // Un cuerpo para toda la columna de paises y otro para todas las figuras.
+  const anchoFig = colF - 20 - (hayFotos ? Math.min(rowH - 34, 54) + 10 : 0);
+  const fsPais = fitFontComun(ctx, shown.map(p => paisLabel(p.i)), colP - 18, 27, 21, '700');
+  const nombres = [];
+  shown.forEach(p => p.figs.forEach(r => nombres.push(nombre(r))));
+  const fsFig = fitFontComun(ctx, nombres, anchoFig, 25, 21, '600');
   shown.forEach((p, pi) => {
     const cy = y + rowH / 2;
     ctx.textAlign = 'left';
     ctx.fillStyle = PNG.ink;
-    ctx.font = '700 ' + fitFont(ctx, paisLabel(p.i), colP - 18, 27, 19, '700') + 'px ' + SANS;
-    ctx.fillText(fitText(ctx, paisLabel(p.i), colP - 18), PAD, cy + 9);
+    ctx.font = '700 ' + fsPais + 'px ' + SANS;
+    const lp = partirNombre(ctx, paisLabel(p.i), colP - 18), lhP = fsPais + 4;
+    lp.forEach((l, li) => ctx.fillText(l, PAD, cy + 9 - (lp.length - 1) * lhP / 2 + li * lhP));
     p.figs.forEach((r, k) => {
       const x0 = PAD + colP + k * colF + 4;
       let tx = x0;
@@ -513,15 +543,21 @@ async function dibujarYExportar(usarFotos) {
       }
       const maxW = x0 + colF - 16 - tx;
       ctx.fillStyle = PNG.ink;
-      ctx.font = '600 ' + fitFont(ctx, nombre(r), maxW, 25, 18, '600') + 'px ' + SANS;
-      ctx.fillText(fitText(ctx, nombre(r), maxW), tx, cy - 3);
+      ctx.font = '600 ' + fsFig + 'px ' + SANS;
+      const ln = partirNombre(ctx, nombre(r), maxW);
+      // nombre + ocupacion como un bloque centrado en la fila: asi los de dos
+      // renglones no empujan la ocupacion fuera de la celda
+      const LH = fsFig + 4, altoBloque = ln.length * LH + 22;
+      let ny = cy - altoBloque / 2 + fsFig;
+      ln.forEach(l => { ctx.fillText(l, tx, ny); ny += LH; });
+      const yOcc = ny + 4;
       ctx.font = '700 20px ' + SANS;
       const hpiTxt = fmtHpi(r[5]);
       const hpiW = ctx.measureText(hpiTxt).width;
       ctx.fillStyle = PNG.soft; ctx.font = '400 20px ' + SANS;
-      ctx.fillText(fitText(ctx, occLabel(r), maxW - hpiW - 14), tx, cy + 23);
+      ctx.fillText(fitText(ctx, occLabel(r), maxW - hpiW - 14), tx, yOcc);
       ctx.fillStyle = PNG.accent; ctx.font = '700 20px ' + SANS; ctx.textAlign = 'right';
-      ctx.fillText(hpiTxt, x0 + colF - 16, cy + 23);
+      ctx.fillText(hpiTxt, x0 + colF - 16, yOcc);
       ctx.textAlign = 'left';
     });
     y += rowH;
@@ -646,7 +682,7 @@ function ttHtml(r) {
 function cargarBaseCompleta() {
   if (window.__fullReq) return; window.__fullReq = true;
   const sc = document.createElement('script');
-  sc.src = './data-top-full.js?v=5';
+  sc.src = './data-top-full.js?v=6';
   sc.onload = () => {
     if (window.TOPFIGS_REST) { D.rows = D.rows.concat(window.TOPFIGS_REST); window.__full = true; render(); }
   };

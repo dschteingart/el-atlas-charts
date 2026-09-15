@@ -1,9 +1,9 @@
-// Strings específicos del N°5 "Talento" + helpers de i18n.
+// Strings de "La geografía de la fama" + helpers de i18n.
 // BASE_I18N (compartido) viene de lib/i18n.js, cargado antes.
 
 const ISSUE_I18N = {
   es: {
-    'issue-num':  'N° 5',
+    'brand-topic': 'Fama',
     'page-title': 'La geografía de la fama',
     'page-lede':  'Quién entra en la memoria del mundo, de dónde viene y qué hizo. Siete gráficos sobre más de 110.000 figuras célebres.',
     'index-charts-label': 'Gráficos interactivos',
@@ -224,7 +224,7 @@ const ISSUE_I18N = {
     'rep-png-note-pais': 'Top {n} países por la columna ordenada.',
   },
   en: {
-    'issue-num':  'No. 5',
+    'brand-topic': 'Fame',
     'page-title': 'The geography of fame',
     'page-lede':  'Who makes it into the world’s memory, where they came from and what they did. Seven charts on more than 110,000 notable figures.',
     'index-charts-label': 'Interactive charts',

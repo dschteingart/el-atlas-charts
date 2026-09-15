@@ -1,4 +1,4 @@
-# Methodological note — The Atlas pantheon (No. 5)
+# Methodological note — The Atlas pantheon
 
 *This note documents where the issue's data comes from, what adjustments we made to
 Pantheon's fame index and why. It is written for any reader. The formal details

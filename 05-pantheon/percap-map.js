@@ -37,8 +37,10 @@
   // Paleta secuencial terracota (claro→oscuro) + gris "sin dato".
   const RAMP = ['#F1E0D2', '#E0B68F', '#CE8A5E', '#BE5D32', '#9B3D24', '#5A2818'];
   const NODATA = '#D8D3C8', STROKE = 'rgba(255,255,255,0.55)', STROKE_HOVER = '#1A1A1A', CARTO_COLOR = '#BE5D32';
-  const M_W = 1100, M_H = 580, LEG_Y = 590, MARGIN = { top: 8, right: 8, bottom: 8, left: 8 };
-  const PW = M_W - MARGIN.left - MARGIN.right, PH = M_H - MARGIN.top - MARGIN.bottom;
+  const M_W = 1100, MARGIN = { top: 8, right: 8, bottom: 8, left: 8 };
+  const PW = M_W - MARGIN.left - MARGIN.right;
+  const LEG_H = 46;                       // alto del bloque de leyenda bajo el mapa
+  let M_H = 580, PH = M_H - MARGIN.top - MARGIN.bottom, LEG_Y = M_H + 10;
 
   // multiOnly por DEFAULT (decisión de Daniel; se sacó el toggle). El mapa solo
   // cuenta figuras multiidioma (≥2 idiomas con vistas reales).
@@ -117,6 +119,35 @@
   let geo = null, projection = null, path = null, zoom = null, centroidCache = {};
   function loadGeo() { const g = (typeof GEO_MINI !== 'undefined') ? GEO_MINI : (typeof GEO_COUNTRIES !== 'undefined' ? GEO_COUNTRIES : null); if (!g) throw new Error('geometría no cargada'); geo = g; }
   const isoOf = (f) => f.id || (f.properties && f.properties.iso) || null;
+
+  // La Antartida no tiene figuras y se comia el tercio inferior del lienzo: en
+  // vista region, donde las geometrias disueltas llegan hasta -55,8, el marco
+  // reservaba hasta -90 y el PNG quedaba con un hueco entre el mapa y el pie.
+  // Fuera del dibujo y fuera del encuadre; el landmask lo recorta el clip.
+  const ANTARTIDA = { ATA: 1, ATF: 1, BVT: 1, HMD: 1, SGS: 1 };
+  const esAntartida = (f) => !!ANTARTIDA[isoOf(f)];
+  let geoFit = null;
+  // El landmask es una sola pieza que baja hasta -90: se le quitan los anillos
+  // integramente al sur del cono sur, o asomaria como una banda gris al pie.
+  function sinSur(g, latMin) {
+    const vive = (anillo) => anillo.some(pt => pt[1] > latMin);
+    if (!g) return g;
+    if (g.type === 'MultiPolygon') return { type: 'MultiPolygon', coordinates: g.coordinates.map(pol => pol.filter(vive)).filter(pol => pol.length) };
+    if (g.type === 'Polygon') { const c = g.coordinates.filter(vive); return c.length ? { type: 'Polygon', coordinates: c } : null; }
+    return g;
+  }
+  function ajustarMarco() {
+    const d3 = window.d3; if (!d3 || !geo) return;
+    geoFit = { type: 'FeatureCollection', features: geo.features.filter(f => !esAntartida(f)) };
+    if (geo.landmask) geoFit.landmask = sinSur(geo.landmask, -56);
+    const b = d3.geoPath(d3.geoRobinson().fitWidth(PW, geoFit)).bounds(geoFit);
+    const alto = Math.ceil(b[1][1] - b[0][1]);
+    M_H = alto + MARGIN.top + MARGIN.bottom;
+    PH = M_H - MARGIN.top - MARGIN.bottom;
+    LEG_Y = M_H + 10;
+    const svg = document.getElementById('chartmap');
+    if (svg) svg.setAttribute('viewBox', '0 0 ' + M_W + ' ' + (LEG_Y + LEG_H));
+  }
 
   function fmtVal(v) {
     if (v == null) return '—';
@@ -198,7 +229,8 @@
     const values = Object.keys(byIso).filter(k => !k.startsWith('__')).map(k => byIso[k]);
     buildColor(values);
 
-    projection = d3.geoRobinson().fitSize([PW, PH], geo);   // marco fijo: paises (las regiones disueltas comparten fuente)
+    if (!geoFit) ajustarMarco();
+    projection = d3.geoRobinson().fitSize([PW, PH], geoFit);   // marco fijo: paises sin Antartida (las regiones disueltas comparten fuente)
     path = d3.geoPath(projection);
     centroidCache = {};
 
@@ -225,7 +257,7 @@
     if (regiones) {
       const regVal = byIso.__regVal || {};
       // el fondo de "sin dato" son los paises sin region (quedan grises detras)
-      gZoom.append('g').selectAll('path').data(geo.features, isoOf).join('path')
+      gZoom.append('g').selectAll('path').data(geoFit.features, isoOf).join('path')
         .attr('d', path).attr('fill', NODATA).attr('stroke', 'none').attr('pointer-events', 'none');
       const feats = GEO_REGIONS.features.slice().sort((a, b) => d3.geoArea(b) - d3.geoArea(a));
       gZoom.append('g').selectAll('path').data(feats, f => f.id).join('path')
@@ -237,8 +269,8 @@
         .on('mouseenter', onEnterRegion).on('mousemove', onMove).on('mouseleave', onLeave);
       return;
     }
-    if (geo.landmask) gZoom.append('path').attr('d', path(geo.landmask)).attr('fill', NODATA).attr('pointer-events', 'none');
-    const feats = geo.features.slice().sort((a, b) => d3.geoArea(b) - d3.geoArea(a));
+    if (geoFit.landmask) gZoom.append('path').attr('d', path(geoFit.landmask)).attr('fill', NODATA).attr('pointer-events', 'none');
+    const feats = geoFit.features.slice().sort((a, b) => d3.geoArea(b) - d3.geoArea(a));
     gZoom.append('g').selectAll('path').data(feats, isoOf).join('path')
       .attr('class', 'm-country').attr('data-iso', isoOf)
       .attr('data-bin', d => { const b = binOf(byIso[isoOf(d)]); return b == null ? '' : b; })
@@ -274,7 +306,7 @@
     const d3 = window.d3;
     // Fondo: los PAISES, no un landmask plano — asi se ven las fronteras
     // debajo de las burbujas (Daniel 2026-09-11).
-    gZoom.append('g').attr('pointer-events', 'none').selectAll('path').data(geo.features, isoOf).join('path')
+    gZoom.append('g').attr('pointer-events', 'none').selectAll('path').data(geoFit.features, isoOf).join('path')
       .attr('d', path).attr('fill', NODATA).attr('fill-opacity', 0.45)
       .attr('stroke', '#B9B2A4').attr('stroke-width', 0.5).attr('vector-effect', 'non-scaling-stroke');
     let nodes;
@@ -503,6 +535,6 @@
   window.__mapRelang = function () { if (window.__mapFillFilter) window.__mapFillFilter(); draw(); };
   window.__atlasSupportsFormats = false;   // el PNG sale del viewBox actual (mapa apaisado)
 
-  loadGeo(); wire(); setupZoom(); draw();
+  loadGeo(); ajustarMarco(); wire(); setupZoom(); draw();
   applyUrlState();
 })();

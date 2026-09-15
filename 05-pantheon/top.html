@@ -9,12 +9,12 @@
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/top.html">
-<meta property="og:title" content="El ranking de la fama mundial — El Atlas N°5">
+<meta property="og:title" content="El ranking de la fama mundial — El Atlas">
 <meta property="og:description" content="Quiénes son las figuras que el mundo más recuerda, de Aristóteles para acá.">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/top.png">
 <meta property="og:image:alt" content="Ranking de las figuras más célebres del mundo, con foto, país y ocupación">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="El ranking de la fama mundial — El Atlas N°5">
+<meta name="twitter:title" content="El ranking de la fama mundial — El Atlas">
 <meta name="twitter:description" content="Quiénes son las figuras que el mundo más recuerda, de Aristóteles para acá.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/top.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,7 +48,7 @@
 
   <header>
     <div class="top-bar">
-      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 5</span></div>
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span class="brand-topic" data-i18n="brand-topic">Fama</span></div>
       <div class="lang-toggle">
         <button data-lang="es" class="active">ES</button>
         <button data-lang="en">EN</button>
@@ -475,7 +475,7 @@ function ttHtml(r) {
 function cargarBaseCompleta() {
   if (window.__fullReq) return; window.__fullReq = true;
   const sc = document.createElement('script');
-  sc.src = './data-top-full.js?v=5';
+  sc.src = './data-top-full.js?v=6';
   sc.onload = () => {
     if (window.TOPFIGS_REST) { D.rows = D.rows.concat(window.TOPFIGS_REST); window.__full = true; render(); }
   };

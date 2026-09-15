@@ -1,4 +1,4 @@
-# Nota metodológica — El panteón de El Atlas (N°5)
+# Nota metodológica — El panteón de El Atlas
 
 *Esta nota documenta de dónde salen los datos del número, qué adaptaciones hicimos
 sobre el índice de fama de Pantheon y por qué. Está escrita para cualquier lector. Los

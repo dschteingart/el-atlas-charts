@@ -9,12 +9,12 @@
 <meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
 <meta property="og:locale" content="es_AR">
 <meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/reparto.html">
-<meta property="og:title" content="La fama ya no es monopolio europeo — El Atlas N°5">
+<meta property="og:title" content="La fama ya no es monopolio europeo — El Atlas">
 <meta property="og:description" content="Europa Occidental concentraba el 57% de las figuras nacidas antes de 1900; entre las nacidas después, un tercio.">
 <meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/reparto.png">
 <meta property="og:image:alt" content="Participación de cada región en las figuras célebres del mundo, antes y después de 1900">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="La fama ya no es monopolio europeo — El Atlas N°5">
+<meta name="twitter:title" content="La fama ya no es monopolio europeo — El Atlas">
 <meta name="twitter:description" content="Europa Occidental concentraba el 57% de las figuras nacidas antes de 1900; entre las nacidas después, un tercio.">
 <meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/thumbs/reparto.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -61,7 +61,7 @@
 
   <header>
     <div class="top-bar">
-      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 5</span></div>
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span class="brand-topic" data-i18n="brand-topic">Fama</span></div>
       <div class="lang-toggle">
         <button data-lang="es" class="active">ES</button>
         <button data-lang="en">EN</button>
@@ -368,17 +368,54 @@ async function exportPng() {
   const xs = [PAD, PAD + colName];
   for (let i = 1; i <= 5; i++) xs.push(PAD + colName + colNum * i);
   const bottom = PNG.H - 158;
-  const headH = 46;
-  const rowH = Math.max(46, Math.min(68, Math.floor((bottom - y - headH) / Math.max(shown.length, 1))));
 
-  // encabezados
-  ctx.font = '700 23px ' + SANS; ctx.fillStyle = PNG.muted;
+  // Encabezados: cuerpo comun para las columnas numericas y, si aun asi alguno
+  // no entra en su celda, dos renglones. "VARIACIÓN (PP)" mide mas que su
+  // columna y se montaba sobre "TOTAL" (Daniel 2026-09-15).
   const heads = [t(st.vista === 'region' ? 'rep-vista-region' : 'rep-vista-pais').toUpperCase(),
                  (t('rep-col-hasta') + ' ' + st.corte).toUpperCase(), (t('rep-col-desde') + ' ' + st.corte).toUpperCase(),
                  t('rep-col-total').toUpperCase(), t('rep-col-delta').toUpperCase(), 'N'];
-  heads.forEach((h, i) => {
-    if (i === 0) { ctx.textAlign = 'left'; ctx.fillText(h, xs[0], y + 30); }
-    else { ctx.textAlign = 'right'; ctx.fillText(h, xs[i] + colNum - 14, y + 30); }
+  const anchoCol = colNum - 14;
+  const entra = (h, f) => { ctx.font = '700 ' + f + 'px ' + SANS; return ctx.measureText(h).width <= anchoCol; };
+  // Se prioriza el cuerpo sobre el renglon unico: partir "VARIACION (PP)" en dos
+  // se lee mejor que bajar todos los titulos a 18 (el PNG se mira a un tercio).
+  const cabeEnDos = (h, f) => {
+    if (entra(h, f)) return true;
+    const w = h.split(' ');
+    for (let k = 1; k < w.length; k++) {
+      if (ctx.measureText(w.slice(0, k).join(' ')).width <= anchoCol
+          && ctx.measureText(w.slice(k).join(' ')).width <= anchoCol) return true;
+    }
+    return false;
+  };
+  let fsHead = 23;
+  while (fsHead > 18 && !heads.slice(1).every(h => cabeEnDos(h, fsHead))) fsHead--;
+  const headLines = heads.map((h, i) => {
+    if (i === 0 || entra(h, fsHead)) return [h];
+    const w = h.split(' ');
+    if (w.length < 2) return [h];
+    let mejor = null, dif = Infinity;
+    for (let k = 1; k < w.length; k++) {
+      const a1 = w.slice(0, k).join(' '), b1 = w.slice(k).join(' ');
+      const wa = ctx.measureText(a1).width, wb = ctx.measureText(b1).width;
+      if (Math.max(wa, wb) > anchoCol) continue;
+      if (Math.abs(wa - wb) < dif) { dif = Math.abs(wa - wb); mejor = [a1, b1]; }
+    }
+    return mejor || [h];
+  });
+  const headLH = fsHead + 7, nHead = Math.max.apply(null, headLines.map(l => l.length));
+  const headH = 16 + nHead * headLH;
+  const rowH = Math.max(46, Math.min(68, Math.floor((bottom - y - headH) / Math.max(shown.length, 1))));
+
+  ctx.font = '700 ' + fsHead + 'px ' + SANS; ctx.fillStyle = PNG.muted;
+  headLines.forEach((ls, i) => {
+    // alineados abajo: los de un renglon comparten linea de base con el segundo
+    // renglon de los partidos
+    const y0 = y + headH - 16 - (ls.length - 1) * headLH;
+    ls.forEach((l, k) => {
+      if (i === 0) { ctx.textAlign = 'left'; ctx.fillText(l, xs[0], y0 + k * headLH); }
+      else { ctx.textAlign = 'right'; ctx.fillText(l, xs[i] + colNum - 14, y0 + k * headLH); }
+    });
   });
   y += headH;
   ctx.strokeStyle = PNG.ink; ctx.lineWidth = 2.5;

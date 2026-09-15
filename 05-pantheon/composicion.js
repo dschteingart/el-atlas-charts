@@ -43,6 +43,23 @@
                ink: '#3A3530', muted: '#7A6E62', bg: '#FAF8F3' };
   const domColor = (d) => DOM_COL[E.domains[d].es] || '#888';
 
+  // Tinta del rótulo que va ADENTRO del tramo. El rect se dibuja con
+  // fill-opacity, así que primero se mezcla con el fondo y recién ahí se mide la
+  // luminancia: sobre el amarillo del arte el blanco no se lee.
+  function inkSobre(color, alpha) {
+    let r, g, b;
+    if (color.charAt(0) === '#') {
+      r = parseInt(color.slice(1, 3), 16); g = parseInt(color.slice(3, 5), 16); b = parseInt(color.slice(5, 7), 16);
+    } else {
+      const m = color.match(/\d+/g); if (!m) return '#FFFFFF';
+      r = +m[0]; g = +m[1]; b = +m[2];
+    }
+    const a2 = alpha == null ? 1 : alpha, BG = [250, 248, 243];
+    const li = (c, i) => { const x = (c * a2 + BG[i] * (1 - a2)) / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); };
+    const L = 0.2126 * li(r, 0) + 0.7152 * li(g, 1) + 0.0722 * li(b, 2);
+    return L > 0.33 ? '#2B2620' : '#FFFFFF';
+  }
+
   // tonos por ocupación dentro de la gama del rubro (oscuro → claro)
   function shade(hex, p, P) {
     const f = P <= 1 ? 0 : (p / (P - 1)) * 0.62;
@@ -178,14 +195,18 @@
     const val = (cnt) => st.measure === 'abs' ? cnt
       : st.measure === 'percap' ? (e.popM > 0 ? cnt / e.popM : 0)
       : (e.total > 0 ? cnt / e.total * 100 : 0);
+    // Peso del tramo dentro de la fila, siempre sobre el total de la entidad.
+    // Es lo que se rotula adentro de la barra en el PNG, y no depende de la
+    // medida elegida (en % del total ya coincide con val()).
+    const pct = (cnt) => e.total > 0 ? cnt / e.total * 100 : 0;
     let segs = [];
     if (st.breakdown === 'total') {
       const cnt = st.domainFilter === 'all' ? e.total : e.dom[+st.domainFilter];
-      segs = [{ key: '_', dom: -1, color: e.isWorld ? CO.world : CO.bar, v: val(cnt), label: '' }];
+      segs = [{ key: '_', dom: -1, color: e.isWorld ? CO.world : CO.bar, v: val(cnt), pct: pct(cnt), label: '' }];
     } else if (st.breakdown === 'dom') {
       for (let d = 0; d < ND; d++) {
         if (isOff(d)) continue;
-        segs.push({ key: 'd' + d, dom: d, color: domColor(d), v: val(e.dom[d]), label: domName(d) });
+        segs.push({ key: 'd' + d, dom: d, color: domColor(d), v: val(e.dom[d]), pct: pct(e.dom[d]), label: domName(d) });
       }
     } else {
       // ocupaciones: agrupadas por rubro, y dentro del rubro de mayor a menor
@@ -194,18 +215,18 @@
         const subs = [];
         for (let s = 0; s < NSUB; s++) if (SUBDOM[s] === d && e.sub[s] > 0) subs.push(s);
         subs.sort((a, b) => e.sub[b] - e.sub[a]);
-        subs.forEach(s => segs.push({ key: 's' + s, dom: d, color: SUB_COLOR[s], v: val(e.sub[s]), label: subName(s) }));
+        subs.forEach(s => segs.push({ key: 's' + s, dom: d, color: SUB_COLOR[s], v: val(e.sub[s]), pct: pct(e.sub[s]), label: subName(s) }));
       }
     }
     const barValue = segs.reduce((a, x) => a + x.v, 0);
     const todos = st.breakdown === 'total' || !st.offDoms.length;
-    let endLabel;
-    if (st.measure === 'share') endLabel = todos ? fmtInt(e.total) : fmtVal(barValue) + '%';
+    let endLabel, endIsN = false;
+    if (st.measure === 'share') { endIsN = todos; endLabel = todos ? fmtInt(e.total) : fmtVal(barValue) + '%'; }
     else endLabel = st.measure === 'abs' ? fmtInt(barValue) : fmtVal(barValue);
     let sortVal = barValue;
     if (st.measure === 'share' && st.breakdown !== 'total') sortVal = segs.length ? segs[0].v : 0;
     else if (st.measure === 'share') sortVal = e.total;
-    return { key: e.key, name: e.name, isWorld: e.isWorld, segs, barValue, endLabel,
+    return { key: e.key, name: e.name, isWorld: e.isWorld, segs, barValue, endLabel, endIsN,
              total: e.total, popM: e.popM, sortVal };
   }
 
@@ -213,11 +234,11 @@
   const W = 1100;
   function isMobile() { return (typeof isMobileViewport === 'function') ? isMobileViewport() : (window.innerWidth || 1024) < 768; }
   function layout(fmt, mobile) {
-    if (fmt === 'newsletter' || fmt === 'square') return { barH: 42, gap: 12, fs: { name: 23, tick: 20, axis: 23, leg: 20, val: 21 }, pad: 26 };
-    if (fmt === 'mobile') return { barH: 42, gap: 12, fs: { name: 26, tick: 22, axis: 26, leg: 23, val: 24 }, pad: 28 };
-    if (fmt === 'public' || fmt === 'worldmap') return { barH: 28, gap: 9, fs: { name: 16, tick: 14, axis: 16, leg: 15, val: 15 }, pad: 20 };
-    if (mobile) return { barH: 34, gap: 10, fs: { name: 22, tick: 19, axis: 22, leg: 20, val: 20 }, pad: 24 };
-    return { barH: 22, gap: 7, fs: { name: 13, tick: 11, axis: 12, leg: 12, val: 12 }, pad: 16 };
+    if (fmt === 'newsletter' || fmt === 'square') return { barH: 42, gap: 12, fs: { name: 23, tick: 20, axis: 23, leg: 20, val: 21, pct: 19 }, pad: 26 };
+    if (fmt === 'mobile') return { barH: 42, gap: 12, fs: { name: 26, tick: 22, axis: 26, leg: 23, val: 24, pct: 21 }, pad: 28 };
+    if (fmt === 'public' || fmt === 'worldmap') return { barH: 28, gap: 9, fs: { name: 16, tick: 14, axis: 16, leg: 15, val: 15, pct: 14 }, pad: 20 };
+    if (mobile) return { barH: 34, gap: 10, fs: { name: 22, tick: 19, axis: 22, leg: 20, val: 20, pct: 18 }, pad: 24 };
+    return { barH: 22, gap: 7, fs: { name: 13, tick: 11, axis: 12, leg: 12, val: 12, pct: 11 }, pad: 16 };
   }
   function measure(text, fs, w) {
     if (!measure._c) measure._c = document.createElement('canvas').getContext('2d');
@@ -316,9 +337,13 @@
     let maxName = 0;
     rows.concat(worldRow || []).forEach(d => { const w2 = measure(d.name, FS.name, 700); if (w2 > maxName) maxName = w2; });
     const left = Math.min(Math.round(W * 0.42), Math.ceil(maxName) + FS.name * 1.1);
+    // En el PNG la n de la punta se va (Daniel, 2026-09-15): en % del total la
+    // barra siempre llega a 100 y ese número era el único que sobraba. El
+    // margen derecho pasa a ser un respiro.
+    const conPunta = !(fmt && rows[0] && rows[0].endIsN);
     let maxEnd = 0;
-    rows.concat(worldRow || []).forEach(d => { const w2 = measure(d.endLabel, FS.val, 600); if (w2 > maxEnd) maxEnd = w2; });
-    const right = Math.ceil(maxEnd) + FS.val * 1.6;
+    if (conPunta) rows.concat(worldRow || []).forEach(d => { const w2 = measure(d.endLabel, FS.val, 600); if (w2 > maxEnd) maxEnd = w2; });
+    const right = conPunta ? Math.ceil(maxEnd) + FS.val * 1.6 : Math.round(FS.val * 1.2);
     const top = L.pad;
     const plotW = W - left - right;
     const plotH = nBars * (L.barH + L.gap) - L.gap + (worldRow ? WGAP : 0);
@@ -355,6 +380,7 @@
         { fs: FS.axis, anchor: 'middle', fill: CO.muted, weight: 500 });
 
     // --- barras ---
+    const rotulaDentro = !!fmt && st.breakdown !== 'total';
     const drawRow = (d, y) => {
       txt(svg, left - FS.name * 0.5, y + L.barH / 2, d.name,
           { fs: FS.name, anchor: 'end', baseline: 'central', weight: d.isWorld ? 700 : 500, fill: d.isWorld ? CO.world : CO.ink });
@@ -373,9 +399,20 @@
           r.addEventListener('mousemove', posTip);
           r.addEventListener('mouseleave', () => { r.setAttribute('fill-opacity', d.isWorld ? 0.75 : 0.92); hideTip(); });
         }
-        svg.appendChild(r); xc += w2;
+        svg.appendChild(r);
+        // El % del rubro, adentro del tramo, sólo si entra sin recortarse.
+        if (rotulaDentro && seg.pct >= 0.5) {
+          const et = Math.round(seg.pct) + '%';
+          if (measure(et, FS.pct, 700) + FS.pct * 0.9 <= w2) {
+            txt(svg, xc + w2 / 2, y + L.barH / 2, et, {
+              fs: FS.pct, anchor: 'middle', baseline: 'central', weight: 700, tnum: true,
+              fill: inkSobre(seg.color, d.isWorld ? 0.75 : 0.92)
+            });
+          }
+        }
+        xc += w2;
       });
-      txt(svg, xc + FS.val * 0.5, y + L.barH / 2, d.endLabel,
+      if (conPunta) txt(svg, xc + FS.val * 0.5, y + L.barH / 2, d.endLabel,
           { fs: FS.val, baseline: 'central', weight: 600, tnum: true, fill: d.isWorld ? CO.world : CO.ink });
     };
     rows.forEach((d, i) => drawRow(d, top + i * (L.barH + L.gap)));
