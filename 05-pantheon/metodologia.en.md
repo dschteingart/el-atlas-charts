@@ -38,12 +38,11 @@ and what we replaced it with.
 
 ## 2. Three adjustments to the original index
 
-The HPI was designed in 2014 to rank historical figures, and for that it works well. Our
-issue has a somewhat different goal, since it compares countries and regions and reaches
-figures born in the twentieth century. Reviewing the index with that use in mind, we
-found three points worth adjusting. The common thread is that counting how many
-Wikipedias someone appears in is not the same as measuring how many people remember
-them. Each section first states what we observed and then the decision we took.
+The HPI was designed in 2014 to rank historical figures, and for that it works
+reasonably well. Reviewing the index, however, we found three points worth adjusting.
+The common thread is that counting how many Wikipedias someone appears in is not the
+same as measuring how many people remember them. Each section first states what we
+observed and then the decision we took.
 
 ### 2.1. Edition counts can be inflated; readership cannot
 
@@ -74,9 +73,9 @@ relative dispersion without looking at volume, and at the extremes that produces
 counterintuitive results. Italian athlete **Luca Beccaro**, with 73 non-English
 pageviews a year spread evenly, gets an almost perfect coefficient of 0.007. **Lionel
 Messi**, with 6.6 million non-English pageviews, very uneven across languages and
-spiking at every World Cup, gets 5.5. Taylor Swift gets 7.7. The diversity metric ends
-up favouring someone almost nobody reads over the most-read people on the planet,
-precisely because mass fame is uneven.
+spiking at every World Cup, gets 5.5. Taylor Swift gets 7.7. The diversity metric sometimes
+ends up favouring someone almost nobody reads over the most-read people on the planet,
+precisely because mass fame is often uneven.
 
 **Our decision.** We replaced evenness with an absolute threshold. We count in how many
 languages the figure clears a readership floor (1,000 and 10,000 pageviews). Being

@@ -38,12 +38,11 @@ nota explica por qué y con qué lo reemplazamos.
 
 ## 2. Tres adaptaciones sobre el índice original
 
-El HPI fue diseñado en 2014 para ordenar figuras históricas, y para eso funciona bien.
-Nuestro número tiene un objetivo algo distinto, porque compara países y regiones y llega
-hasta las figuras nacidas en el siglo XX. Al revisar el índice con ese uso en mente
-encontramos tres puntos donde convenía ajustarlo. El denominador común es que contar en
-cuántas Wikipedias figura alguien no equivale a medir cuánta gente lo recuerda. Cada
-apartado plantea primero lo observado y después la decisión que tomamos.
+El HPI fue diseñado en 2014 para ordenar figuras históricas, y para eso funciona
+razonablemente bien. Sin embargo, al revisar el índice encontramos tres puntos donde
+convenía ajustarlo. El denominador común es que contar en cuántas Wikipedias figura
+alguien no equivale a medir cuánta gente lo recuerda. Cada apartado plantea primero lo
+observado y después la decisión que tomamos.
 
 ### 2.1. El conteo de ediciones se puede inflar; las lecturas, no
 
@@ -75,8 +74,8 @@ contraintuitivos. El atleta italiano **Luca Beccaro**, con 73 visitas anuales fu
 inglés repartidas de manera uniforme, obtiene un coeficiente casi perfecto de 0,007.
 **Lionel Messi**, con 6,6 millones de visitas fuera del inglés, muy desiguales entre
 idiomas y con picos en cada Mundial, obtiene 5,5. Taylor Swift obtiene 7,7. La métrica de
-diversidad termina favoreciendo a quien casi nadie lee frente a las personas más leídas
-del planeta, justamente porque la fama masiva es despareja.
+diversidad a veces termina favoreciendo a quien casi nadie lee frente a las personas más
+leídas del planeta, justamente porque la fama masiva a menudo es despareja.
 
 **Nuestra decisión.** Reemplazamos la uniformidad por un umbral absoluto. Contamos en
 cuántos idiomas la figura supera un piso de lecturas (1.000 y 10.000 visitas). Ser leído
