@@ -362,8 +362,22 @@ async function exportPng() {
   wrapText(ctx, document.getElementById('rep-subtitle').textContent, W).slice(0, 3).forEach(l => { ctx.fillText(l, PAD, y); y += 42; });
   y += 18;
 
-  // geometría de la tabla
-  const colName = Math.round(W * 0.34);
+  // geometría de la tabla. La columna de nombres se dimensiona por el nombre
+  // mas largo, no por un 34% fijo: asi "Europa del Este y Asia Central" y
+  // "Medio Oriente y N. de Africa" entran enteros (Daniel 2026-09-15). El techo
+  // le deja a las cinco columnas numericas lugar para sus valores; si con el
+  // techo todavia no entra, baja el cuerpo de TODA la columna antes de recortar.
+  const FS_NOMBRE_MAX = 30, FS_NOMBRE_MIN = 24;
+  let fsNombre = FS_NOMBRE_MAX, anchoNombre = 0;
+  const midoNombres = (f) => {
+    ctx.font = '600 ' + f + 'px ' + SANS;
+    let m = 0;
+    shown.forEach(r => { const w2 = ctx.measureText(r.name).width; if (w2 > m) m = w2; });
+    return m;
+  };
+  anchoNombre = midoNombres(fsNombre);
+  const colName = Math.round(Math.min(Math.max(W * 0.34, anchoNombre + 18), W * 0.46));
+  while (fsNombre > FS_NOMBRE_MIN && midoNombres(fsNombre) > colName - 16) fsNombre--;
   const colNum = Math.round((W - colName) / 5);
   const xs = [PAD, PAD + colName];
   for (let i = 1; i <= 5; i++) xs.push(PAD + colName + colNum * i);
@@ -433,7 +447,7 @@ async function exportPng() {
     ctx.fillRect(xs[4], y, colNum, rowH);
 
     const ty = y + rowH / 2 + 11;
-    ctx.fillStyle = PNG.ink; ctx.font = '600 30px ' + SANS; ctx.textAlign = 'left';
+    ctx.fillStyle = PNG.ink; ctx.font = '600 ' + fsNombre + 'px ' + SANS; ctx.textAlign = 'left';
     ctx.fillText(fitText(ctx, r.name, colName - 16), xs[0], ty);
     ctx.font = '400 30px ' + SANS; ctx.textAlign = 'right';
     ctx.fillText(fmt1(r.pre), xs[1] + colNum - 14, ty);

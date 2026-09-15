@@ -424,14 +424,32 @@ function wrapText(ctx, text, maxW) {
 // Marquez", "Maria Corina Machado" -> "M. Corina Machado". Se abrevia de a un
 // nombre de pila por vez, nunca el apellido final ni las particulas.
 const PARTICULA = /^(de|del|la|las|los|le|van|von|da|das|dos|do|di|du|el|y|e|bin|ibn|al|ben|san|santa|mc|o')$/i;
+// El apodo va entre comillas y es UNA pieza: partiendo por espacios,
+// 'Joaquín "El Chapo" Guzmán' salia como 'J. ". C. Guzmán' (Daniel 2026-09-15).
+// Las comillas simples no cuentan: son apostrofes de apellido (O'Neal, de' Medici).
+const tokenizarNombre = (s) => String(s).match(/"[^"]*"|[\u201c][^\u201d]*[\u201d]|[\u00ab][^\u00bb]*[\u00bb]|\S+/g) || [];
+const esApodo = (t) => /^["\u201c\u00ab]/.test(t);
 const abreviarNombre = (ctx, s, maxW) => {
   s = String(s);
   if (ctx.measureText(s).width <= maxW) return s;
-  const w = s.split(/\s+/);
-  for (let k = 1; k < w.length; k++) {
-    const cab = w.slice(0, k).map(x => PARTICULA.test(x) ? x : (x.charAt(0) + '.'));
-    const cand = cab.concat(w.slice(k)).join(' ');
-    if (ctx.measureText(cand).width <= maxW) return cand;
+  // abrevia de a un nombre de pila por vez; nunca el ultimo, ni el apodo, ni las particulas
+  const escalera = (w) => {
+    for (let k = 1; k < w.length; k++) {
+      const cand = w.map((x, i) => (i < k && !esApodo(x) && !PARTICULA.test(x)) ? x.charAt(0) + '.' : x).join(' ');
+      if (ctx.measureText(cand).width <= maxW) return cand;
+    }
+    return null;
+  };
+  const w = tokenizarNombre(s);
+  let r = escalera(w);
+  if (r) return r;
+  // si con iniciales tampoco entra, el apodo se cae entero antes que quedar roto
+  const sinApodo = w.filter(x => !esApodo(x));
+  if (sinApodo.length && sinApodo.length < w.length) {
+    const plano = sinApodo.join(' ');
+    if (ctx.measureText(plano).width <= maxW) return plano;
+    r = escalera(sinApodo);
+    if (r) return r;
   }
   return fitText(ctx, s, maxW);
 };
