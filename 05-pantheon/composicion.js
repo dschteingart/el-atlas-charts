@@ -560,7 +560,7 @@
     const h2 = blk.querySelector('.chart-title'), sub = blk.querySelector('.chart-subtitle');
     if (h2 && !editorCustom('title')) {
       if (esDefault()) h2.textContent = T('Los famosos latinoamericanos son mayormente deportistas',
-                                          'Latin America’s famous are mostly athletes');
+                                          'Latin America’s famous are mostly from sports');
       else if (st.breakdown !== 'total') h2.textContent = st.view === 'region'
         ? T('De qué está hecha la fama de cada región', 'What fame is made of in each region')
         : T('De qué está hecha la fama de cada país', 'What fame is made of in each country');

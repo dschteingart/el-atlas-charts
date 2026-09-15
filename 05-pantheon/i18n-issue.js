@@ -304,7 +304,7 @@ const ISSUE_I18N = {
     // The world fame map (percap-map.html)
     'cmap-title': 'The world fame map',
     // ---- composicion.html ----
-    'ccomp-title': 'Latin America’s famous are mostly athletes',
+    'ccomp-title': 'Latin America’s famous are mostly from sports',
     'ccomp-lbl-vista': 'View', 'ccomp-pais': 'Country', 'ccomp-region': 'Region',
     'ccomp-lbl-medida': 'Measure', 'ccomp-share': '% of total', 'ccomp-abs': 'Absolute', 'ccomp-percap': 'Per capita',
     'ccomp-lbl-apertura': 'Breakdown', 'ccomp-total': 'Total', 'ccomp-rubros': 'Fields', 'ccomp-ocupaciones': 'Occupations',

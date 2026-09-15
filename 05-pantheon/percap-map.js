@@ -136,6 +136,13 @@
     if (g.type === 'Polygon') { const c = g.coordinates.filter(vive); return c.length ? { type: 'Polygon', coordinates: c } : null; }
     return g;
   }
+  // El cartograma no lleva rotulo de escala, asi que reservarle el alto de la
+  // leyenda dejaba una franja vacia entre el mapa y el pie del PNG.
+  function ajustarAlto() {
+    const svg = document.getElementById('chartmap'); if (!svg) return;
+    const conLeyenda = st.mapMode !== 'dorling';
+    svg.setAttribute('viewBox', '0 0 ' + M_W + ' ' + (conLeyenda ? LEG_Y + LEG_H : M_H + 6));
+  }
   function ajustarMarco() {
     const d3 = window.d3; if (!d3 || !geo) return;
     geoFit = { type: 'FeatureCollection', features: geo.features.filter(f => !esAntartida(f)) };
@@ -145,8 +152,7 @@
     M_H = alto + MARGIN.top + MARGIN.bottom;
     PH = M_H - MARGIN.top - MARGIN.bottom;
     LEG_Y = M_H + 10;
-    const svg = document.getElementById('chartmap');
-    if (svg) svg.setAttribute('viewBox', '0 0 ' + M_W + ' ' + (LEG_Y + LEG_H));
+    ajustarAlto();
   }
 
   function fmtVal(v) {
@@ -247,6 +253,7 @@
 
     if (zoom) { const cur = d3.zoomTransform(svg.node()); if (cur && (cur.k !== 1 || cur.x || cur.y)) gZoom.attr('transform', cur.toString()); }
     drawLegend();
+    ajustarAlto();
   }
 
   function drawPolys(gZoom, byIso) {
