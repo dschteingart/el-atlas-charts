@@ -266,11 +266,22 @@ have unfolded entirely elsewhere.
 
 ## 9. Transparency and reproducibility
 
-The full pipeline, which includes downloading pageviews by language and month, the entry
-filter, the computation of the index and the export of each chart, is published together
-with the issue, along with the final dataset and the parameter file. The issue also
-includes an interactive lab that lets anyone move every parameter of the index and see
-how the ranking changes, whose "Published" preset reproduces exactly the dataset used.
+Everything needed to rebuild the issue is published.
+
+- **The pipeline**, which includes downloading pageviews by language and month, the entry
+  filter, the computation of the index and the export of each chart, lives in
+  [`data-sources/`](https://github.com/dschteingart/el-atlas-charts/tree/main/05-pantheon/data-sources).
+- **The final dataset**, [`pantheon_corregido.csv`](https://github.com/dschteingart/el-atlas-charts/blob/main/05-pantheon/data-sources/pantheon_corregido.csv), carries one row per figure with
+  its inputs, the three components of the index and the score. The
+  [data dictionary](https://github.com/dschteingart/el-atlas-charts/blob/main/05-pantheon/data-sources/DATOS.md) describes every column, and the parameter file next to it records
+  the values the index was computed with.
+- **The [index lab](fame-lab.html?lang=en)** lets anyone move every parameter and watch
+  the ranking change. Its "Published" preset reproduces the issue's dataset exactly, so
+  it can be used to measure how much of each result depends on the decisions described
+  here.
+
+Anyone who prefers a different criterion can change the parameter, rebuild the index and
+compare.
 
 ---
 

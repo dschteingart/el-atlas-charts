@@ -26,6 +26,7 @@ enlazados desde el índice ni desde la navegación, y no se mantienen.
 | `chart-8.html` | Concentración subnacional (`subnac.js`) |
 | `chart-9.html` | Ciudades de la fama (`metros.js`) |
 | `panorama.html` | Prototipo de tablero; dependía de `explora.js`, que se eliminó al reescribir el chart 5 como `fama-desarrollo.html`. **Roto.** |
+| `hpi-lab.html` | Laboratorio anterior: recalculaba el HPI de Pantheon desde las columnas crudas del archivo (`data-hpi-lab.js`). Lo reemplazó `fame-lab.html`, que trabaja sobre el índice propio y sí está publicado. |
 
 Notas de mantenimiento:
 
@@ -33,5 +34,7 @@ Notas de mantenimiento:
   `../lib/` → `../../lib/`), así que los que no dependen de archivos borrados
   siguen abriendo desde esta subcarpeta.
 - Sus `data-*.js` y sus renderers siguen en `05-pantheon/`, junto con el resto.
+- El único lab que sí se publica es `fame-lab.html`, enlazado desde el índice y
+  desde la §9 de la nota metodológica.
 - No tienen la vista compartible en la URL ni el resto de los criterios que se
   fijaron para los siete publicados.

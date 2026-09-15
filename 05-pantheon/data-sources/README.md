@@ -1,10 +1,14 @@
-# N°5 — ¿En qué es talentosa América Latina? · pipeline de datos
+# N°5 — La geografía de la fama · pipeline de datos
 
 Los scripts corren desde `el-atlas\insumos\#5 - Talento\` (fuera del repo de charts,
 sincronizada por MEGAsync), que es donde viven los insumos pesados. Hasta el 30/8/2026
 esa cocina estaba en `Downloads\_talento_work`, herencia de la sesión de junio; se mudó
 entera y se reescribieron las rutas de los scripts. Esta carpeta guarda la copia
 versionada; si editás un script, copialo de vuelta a `insumos\#5 - Talento`.
+
+El dataset final, `pantheon_corregido.csv`, se publica acá mismo desde el 14/9/2026, con
+su diccionario de columnas en [`DATOS.md`](DATOS.md). Es el archivo del que salen los
+siete gráficos y el que reproduce el preset **Publicado (T40)** del laboratorio.
 
 ## Metodología: el HPI del archivo no se usa
 
@@ -45,11 +49,15 @@ idioma y por mes) y aplicamos un filtro de entrada:
   se conserva donde no hay ceros: dentro de Vistas y entre Lenguas y Vistas.
 
 `fame-lab.html` deja mover todas las perillas en vivo; el preset **Publicado (T40)**
-reproduce exactamente `pantheon_corregido.csv`.
+reproduce exactamente `pantheon_corregido.csv`. Está publicado, en los dos idiomas, y
+enlazado desde el índice y desde la §9 de la nota metodológica. Sale de
+`fame_lab_data.py`, que recorta el mismo universo del score (124.967 figuras con
+ocupación, año de nacimiento y rubro) y arrastra las mismas decisiones de región y de
+lugar de nacimiento recuperado que `export_dataset.py`.
 
-`hpi-lab.html` es el laboratorio anterior — recalcula el HPI desde las columnas crudas
-del archivo Pantheon. Quedó como registro del camino recorrido; **no alimenta ningún
-gráfico publicado**.
+`_no-publicados/hpi-lab.html` es el laboratorio anterior — recalcula el HPI de Pantheon
+desde las columnas crudas del archivo. Quedó como registro del camino recorrido; **no
+alimenta ningún gráfico publicado**.
 
 ## Dominios: reagrupamiento propio, no el de Pantheon
 
@@ -136,7 +144,7 @@ de GitHub Pages sigue sirviendo el viejo.
 ## Insumos pesados (en `insumos\#5 - Talento`, fuera del repo de charts)
 
 `person_2025_update.csv` (archivo Pantheon 2025, 39 MB) · `fame_pantheon.csv` (8,8 MB)
-· `pantheon_corregido.csv` (23 MB) · `master_corregido.csv` (11 MB) ·
+· `master_corregido.csv` (11 MB) ·
 `base_depurada.csv` (22 MB) · `gdp-per-capita-maddison-project-database.csv` ·
 `pop3/population.csv` y `pop_owid/population.csv` (OWID) · `talento_ALL_abs_adm1_all.csv`
 · `geo_backfill.csv`, `geo_upgrade.csv`, `geonameid_to_metro.csv`.

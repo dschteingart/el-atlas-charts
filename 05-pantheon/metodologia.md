@@ -270,12 +270,21 @@ pudo desarrollarse enteramente en otro.
 
 ## 9. Transparencia y reproducibilidad
 
-El pipeline completo, que incluye la descarga de visitas por idioma y mes, el filtro de
-entrada, el cálculo del índice y la exportación de cada gráfico, se publica junto con el
-número, con el dataset final y el archivo de parámetros. El número incluye además un
-laboratorio interactivo que permite mover todos los parámetros del índice y observar
-cómo cambia el ranking, cuyo preset "Publicado" reproduce exactamente el dataset
-utilizado.
+Todo lo necesario para rehacer el número está publicado.
+
+- **El pipeline**, que incluye la descarga de visitas por idioma y mes, el filtro de
+  entrada, el cálculo del índice y la exportación de cada gráfico, está en
+  [`data-sources/`](https://github.com/dschteingart/el-atlas-charts/tree/main/05-pantheon/data-sources).
+- **El dataset final**, [`pantheon_corregido.csv`](https://github.com/dschteingart/el-atlas-charts/blob/main/05-pantheon/data-sources/pantheon_corregido.csv), trae una fila por figura con sus
+  insumos, los tres componentes del índice y el puntaje. El
+  [diccionario de datos](https://github.com/dschteingart/el-atlas-charts/blob/main/05-pantheon/data-sources/DATOS.md) describe cada columna, y el archivo de parámetros que lo
+  acompaña deja escritos los valores con los que se calculó.
+- **El [laboratorio del índice](fame-lab.html)** permite mover todos los parámetros y
+  observar cómo cambia el ranking. Su preset "Publicado" reproduce exactamente el
+  dataset del número, así que sirve para medir cuánto de cada resultado depende de las
+  decisiones descritas acá.
+
+Quien prefiera otro criterio puede cambiar el parámetro, rehacer el índice y comparar.
 
 ---
 

@@ -3,7 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lab de Fama Reconstruida — El Atlas N°5</title>
+<title data-title-en="Fame index lab — The Atlas">Laboratorio del índice de fama — El Atlas</title>
+<meta name="description" content="El índice de fama del N°5 con todas sus perillas a la vista: mové los parámetros y mirá cómo cambia el ranking.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/05-pantheon/fame-lab.html">
+<meta property="og:title" content="Laboratorio del índice de fama — El Atlas N°5">
+<meta property="og:description" content="Mové los parámetros del índice y mirá cómo cambia el ranking de las figuras más célebres del mundo.">
+<meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -46,33 +53,41 @@
   td.sc { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
   tr.hl td { background: rgba(190,93,50,.09); }
   .arr { color: var(--accent); }
+  .wrap-lab header { padding-bottom: 8px; margin-bottom: 14px; }
+  .lab-volver { display: inline-block; margin-top: 26px; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--accent); text-decoration: none; }
 </style>
 </head>
 <body>
-<div class="wrap-lab">
-  <h1>Lab de Fama Reconstruida</h1>
-  <p class="lab-sub">Score armado desde las vistas por idioma/mes de Pantheon (API). Dimensiones: <b>Lenguas</b> (media de traducciones y traducciones con ≥10k vistas) × <b>Vistas</b> (geom. de 12m, histórico y mediana) × <b>Edad</b>. Mové las perillas. El preset <b>Publicado</b> reproduce <code>pantheon_corregido.csv</code>. Datos: <code>data-fame-lab.js</code> (124.967 figuras).</p>
+<div class="wrap wrap-lab">
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span data-i18n="issue-num">N° 5</span></div>
+      <div class="lang-toggle"><button data-lang="es" class="active">ES</button><button data-lang="en">EN</button></div>
+    </div>
+  </header>
+  <h1 data-i18n="clab-title">Laboratorio del índice de fama</h1>
+  <p class="lab-sub" data-i18n="clab-sub">El índice del número, con todas sus perillas a la vista.</p>
   <div class="lab-grid">
     <div class="panel">
-      <h2>Presets</h2>
+      <h2 data-i18n="clab-presets">Presets</h2>
       <div class="presets" id="presets">
-        <button data-p="pub" class="on">Publicado (T40) ★</button>
-        <button data-p="hpi">Estilo HPI (T70)</button>
-        <button data-p="noage">Sin edad</button>
-        <button data-p="simple">Media simple</button>
+        <button data-p="pub" class="on" data-i18n="clab-p-pub">Publicado (T40) ★</button>
+        <button data-p="hpi" data-i18n="clab-p-hpi">Estilo HPI (T70)</button>
+        <button data-p="noage" data-i18n="clab-p-noage">Sin edad</button>
+        <button data-p="simple" data-i18n="clab-p-simple">Media simple</button>
       </div>
-      <h2>Perillas</h2>
+      <h2 data-i18n="clab-knobs">Perillas</h2>
       <div id="knobs"></div>
-      <div style="font-family:var(--sans);font-size:12px;margin:6px 0 2px;"><label style="font-weight:600;cursor:pointer;"><input type="checkbox" id="geom" checked> Media geométrica (si no, simple)</label></div>
+      <div style="font-family:var(--sans);font-size:12px;margin:6px 0 2px;"><label style="font-weight:600;cursor:pointer;"><input type="checkbox" id="geom" checked> <span data-i18n="clab-geom">Media geométrica (si no, promedio simple)</span></label></div>
       <div class="formula" id="formula"></div>
-      <h2>Filtros</h2>
+      <h2 data-i18n="clab-filtros">Filtros</h2>
       <div class="filters">
-        <div><label>Dominio</label><select id="f-dom"><option value="-1">Todos</option></select></div>
-        <div><label>Ocupación</label><select id="f-occ"><option value="-1">Todas</option></select></div>
-        <div><label>Región</label><select id="f-reg"><option value="-1">Todas</option></select></div>
-        <div><label>País</label><select id="f-cty"><option value="-1">Todos</option></select></div>
-        <div class="full"><label>Período de nacimiento</label><div class="period"><input type="number" id="f-y0" step="10"> <span style="color:var(--ink-muted)">→</span> <input type="number" id="f-y1" step="10"></div></div>
-        <div class="full"><label style="text-transform:none;letter-spacing:0;font-weight:600;color:var(--ink);cursor:pointer;display:flex;gap:7px;align-items:baseline;"><input type="checkbox" id="f-multi" style="width:auto;"> Solo multi-idioma <span style="color:var(--ink-muted);font-weight:400;font-size:10.5px;">(≥2 idiomas con ≥1000 vistas desde 2015 — saca la inflación de una sola wiki, ej. J-League)</span></label></div>
+        <div><label data-i18n="clab-f-dom">Rubro</label><select id="f-dom"><option value="-1">Todos</option></select></div>
+        <div><label data-i18n="clab-f-occ">Ocupación</label><select id="f-occ"><option value="-1">Todas</option></select></div>
+        <div><label data-i18n="clab-f-reg">Región</label><select id="f-reg"><option value="-1">Todas</option></select></div>
+        <div><label data-i18n="clab-f-cty">País</label><select id="f-cty"><option value="-1">Todos</option></select></div>
+        <div class="full"><label data-i18n="clab-f-per">Período de nacimiento</label><div class="period"><input type="number" id="f-y0" step="10"> <span style="color:var(--ink-muted)">→</span> <input type="number" id="f-y1" step="10"></div></div>
+        <div class="full"><label style="text-transform:none;letter-spacing:0;font-weight:600;color:var(--ink);cursor:pointer;display:flex;gap:7px;align-items:baseline;"><input type="checkbox" id="f-multi" style="width:auto;"> <span data-i18n="clab-f-multi">Solo multiidioma</span> <span style="color:var(--ink-muted);font-weight:400;font-size:10.5px;" data-i18n="clab-f-multi-h">(2 idiomas o más con 1.000 visitas o más desde 2015)</span></label></div>
       </div>
     </div>
     <div>
@@ -80,17 +95,21 @@
       <div class="panel" style="padding:6px 14px;">
         <div id="count" style="font-family:var(--sans);font-size:12px;color:var(--ink-muted);margin:8px 2px;"></div>
         <table><thead><tr>
-          <th class="rk">#</th><th>Figura</th><th>Ocupación</th><th class="num">Nac.</th>
-          <th class="num s" data-c="Lenguas" title="media de idiomas_norm e idiomas≥10k_norm. 0–1.">Lenguas</th>
-          <th class="num s" data-c="Vistas" title="geomean(vis12, vis histórico, mediana mensual) normalizadas. 0–1.">Vistas</th>
-          <th class="num s" data-c="ageMult" title="multiplicador de edad [piso–1]: log₄(A) − penalidad(<T), normalizado.">Edad×</th>
-          <th class="num s" data-c="score" title="Base × Edad, reescalado a 100.">Score</th>
+          <th class="rk">#</th><th data-i18n="clab-th-fig">Figura</th><th data-i18n="clab-th-occ">Ocupación</th><th class="num" data-i18n="clab-th-nac">Nac.</th>
+          <th class="num s" data-c="Lenguas" data-i18n="clab-th-len" data-i18n-title="clab-tt-len">Lenguas</th>
+          <th class="num s" data-c="Vistas" data-i18n="clab-th-vis" data-i18n-title="clab-tt-vis">Vistas</th>
+          <th class="num s" data-c="ageMult" data-i18n="clab-th-edad" data-i18n-title="clab-tt-edad">Edad×</th>
+          <th class="num s" data-c="score" data-i18n="clab-th-score" data-i18n-title="clab-tt-score">Score</th>
         </tr></thead><tbody id="rows"></tbody></table>
       </div>
     </div>
   </div>
+  <a class="lab-volver" href="./index.html" data-i18n="clab-volver">← Volver a los gráficos</a>
 </div>
-<script src="./data-fame-lab.js?v=4"></script>
+
+<script src="../lib/i18n.js"></script>
+<script src="./i18n-issue.js?v=31"></script>
+<script src="./data-fame-lab.js?v=6"></script>
 <script>
 const D=window.FAMELAB, N=D.figs.length, LN4=Math.log(4), REF=D.refYear;
 const C={}; D.cols.forEach((c,i)=>C[c]=i);
@@ -105,17 +124,28 @@ const nNL=new Float64Array(N),nL10=new Float64Array(N),nV12=new Float64Array(N),
 for(let i=0;i<N;i++){nNL[i]=lnNL[i]/MNL;nL10[i]=lnL10[i]/ML10;nV12[i]=lnV12[i]/MV12;nVA[i]=lnVA[i]/MVA;nMed[i]=lnMed[i]/MMED;}
 const nameIdx={};for(let i=0;i<N;i++)if(!(nm[i] in nameIdx))nameIdx[nm[i]]=i;  // primera aparición (mayor vistas) por nombre
 
+const TT=(k,f)=>(typeof t==='function' && t(k)!==k) ? t(k) : f;
+const EN=()=>(typeof LANG!=='undefined'&&LANG==='en');
+// Rotulos del dato en los dos idiomas. Rubros, ocupaciones y paises vienen con su
+// par es/en desde data-fame-lab.js; las regiones viajan con su clave canonica y se
+// traducen con la misma tabla que el mapa y composicion.
+const LBL=o=>(o&&typeof o==='object')?(EN()?o.en:o.es):o;
+const REG_LABEL={
+  'Latin America':['América Latina','Latin America'],'Caribbean':['Caribe','Caribbean'],
+  'Western Europe':['Europa Occidental','Western Europe'],'Eastern Europe & Central Asia':['Europa del Este y Asia Central','Eastern Europe & C. Asia'],
+  'North America, Australia & New Zealand':['Norteamérica y Oceanía','N. America & Oceania'],'East Asia':['Asia Oriental','East Asia'],
+  'Southeast Asia':['Sudeste Asiático','Southeast Asia'],'South Asia':['Asia del Sur','South Asia'],
+  'Middle East & North Africa':['Medio Oriente y N. de África','Middle East & N. Africa'],'Sub-Saharan Africa':['África Subsahariana','Sub-Saharan Africa']};
+const regLabel=k=>REG_LABEL[k]?REG_LABEL[k][EN()?1:0]:k;
 const KNOBS=[
-  {k:'T',lbl:'Umbral de edad (años)',hint:'debajo de T se penaliza (HPI usa 70)',min:0,max:100,step:5},
-  {k:'piso',lbl:'Piso de edad',hint:'cuánto conserva el más joven (0,5 = la mitad)',min:0,max:1,step:.05},
-  {k:'wA',lbl:'Peso bono antigüedad',hint:'cuánto premia ser viejo (×log₄A)',min:0,max:2,step:.1},
-  {k:'wRec',lbl:'Peso penalidad recencia',hint:'cuánto castiga ser joven',min:0,max:2,step:.1},
+  {k:'T',min:0,max:100,step:5},{k:'piso',min:0,max:1,step:.05},
+  {k:'wA',min:0,max:2,step:.1},{k:'wRec',min:0,max:2,step:.1},
 ];
 const PRESETS={pub:{T:40,piso:.5,wA:1,wRec:1,geom:true},hpi:{T:70,piso:.5,wA:1,wRec:1,geom:true},noage:{T:40,piso:1,wA:1,wRec:1,geom:true},simple:{T:40,piso:.5,wA:1,wRec:1,geom:false}};
 let W=Object.assign({},PRESETS.pub), mode='pub';
 const kc=document.getElementById('knobs');
 KNOBS.forEach(kn=>{const d=document.createElement('div');d.className='knob';
-  d.innerHTML=`<div class="knob-top"><label>${kn.lbl} <span class="hint">· ${kn.hint}</span></label><span class="v" id="v-${kn.k}"></span></div><input type="range" id="i-${kn.k}" min="${kn.min}" max="${kn.max}" step="${kn.step}">`;
+  d.innerHTML=`<div class="knob-top"><label><span data-knob-lbl="${kn.k}"></span> <span class="hint">· <span data-knob-hint="${kn.k}"></span></span></label><span class="v" id="v-${kn.k}"></span></div><input type="range" id="i-${kn.k}" min="${kn.min}" max="${kn.max}" step="${kn.step}">`;
   kc.appendChild(d); d.querySelector('input').addEventListener('input',e=>{W[kn.k]=+e.target.value;mode='custom';syncP();render();});});
 function syncK(){KNOBS.forEach(kn=>{document.getElementById('i-'+kn.k).value=W[kn.k];document.getElementById('v-'+kn.k).textContent=kn.step>=1?Math.round(W[kn.k]):(+W[kn.k]).toFixed(2);});document.getElementById('geom').checked=W.geom;}
 function syncP(){document.querySelectorAll('#presets button').forEach(b=>b.classList.toggle('on',b.dataset.p===mode));}
@@ -123,10 +153,11 @@ document.querySelectorAll('#presets button').forEach(b=>b.addEventListener('clic
 document.getElementById('geom').addEventListener('change',e=>{W.geom=e.target.checked;mode='custom';syncP();render();});
 
 const fdom=document.getElementById('f-dom'),focc=document.getElementById('f-occ'),freg=document.getElementById('f-reg'),fcty=document.getElementById('f-cty'),fy0=document.getElementById('f-y0'),fy1=document.getElementById('f-y1'),fmulti=document.getElementById('f-multi');
-D.doms.forEach((x,i)=>fdom.add(new Option(x,i)));
-(D.regs||[]).forEach((x,i)=>freg.add(new Option(x,i)));
-function fillOcc(){const dv=+fdom.value;focc.innerHTML='<option value="-1">Todas</option>';D.occs.map((o,i)=>[o,i]).filter(([o,i])=>dv<0||D.occDom[i]===dv).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([o,i])=>focc.add(new Option(o,i)));}
-function fillCty(){const rv=+freg.value,CR=D.ctyReg||[];fcty.innerHTML='<option value="-1">Todos</option>';(D.ctys||[]).map((c,i)=>[c,i]).filter(([c,i])=>rv<0||CR[i]===rv).sort((a,b)=>a[0].localeCompare(b[0],'es')).forEach(([c,i])=>fcty.add(new Option(c,i)));}
+function fillDom(){const v=fdom.value;fdom.innerHTML='<option value="-1">'+TT('clab-todos','Todos')+'</option>';D.doms.forEach((x,i)=>fdom.add(new Option(LBL(x),i)));fdom.value=v||'-1';}
+function fillReg(){const v=freg.value;freg.innerHTML='<option value="-1">'+TT('clab-todas','Todas')+'</option>';(D.regs||[]).forEach((x,i)=>freg.add(new Option(regLabel(x),i)));freg.value=v||'-1';}
+fillDom();fillReg();
+function fillOcc(){const dv=+fdom.value,lc=EN()?'en':'es';focc.innerHTML='<option value="-1">'+TT('clab-todas','Todas')+'</option>';D.occs.map((o,i)=>[LBL(o),i]).filter(([o,i])=>dv<0||D.occDom[i]===dv).sort((a,b)=>a[0].localeCompare(b[0],lc)).forEach(([o,i])=>focc.add(new Option(o,i)));}
+function fillCty(){const rv=+freg.value,CR=D.ctyReg||[],lc=EN()?'en':'es';fcty.innerHTML='<option value="-1">'+TT('clab-todos','Todos')+'</option>';(D.ctys||[]).map((c,i)=>[LBL(c),i]).filter(([c,i])=>rv<0||CR[i]===rv).sort((a,b)=>a[0].localeCompare(b[0],lc)).forEach(([c,i])=>fcty.add(new Option(c,i)));}
 fillOcc();fillCty();
 let minB=9999,maxB=-9999;for(let i=0;i<N;i++){if(by[i]<minB)minB=by[i];if(by[i]>maxB)maxB=by[i];}
 fy0.value=minB;fy1.value=maxB;
@@ -180,11 +211,12 @@ function render(){
     if(cv>=0){if(cty[i]!==cv)continue;}else if(rv>=0){const cr=cty[i]>=0?CR[cty[i]]:-1;if(cr!==rv)continue;}
     if(by[i]<y0||by[i]>y1)continue; idx.push(i);}
   idx.sort((a,b)=>sortDir*(key[a]-key[b]));
-  document.getElementById('count').textContent=idx.length.toLocaleString('es-AR')+' figuras en la vista · rango y score globales (el filtro solo recorta, no recalcula)';
+  const loc=(typeof LANG!=='undefined'&&LANG==='en')?'en-US':'es-AR';
+  document.getElementById('count').textContent=TT('clab-count','{n} figuras en la vista').replace('{n}', idx.length.toLocaleString(loc));
   const tb=document.getElementById('rows');tb.innerHTML='';
   idx.slice(0,40).forEach(i=>{const tr=document.createElement('tr');if(SENT.includes(nm[i]))tr.className='hl';
-    tr.innerHTML=`<td class="rk">${grankOf(i)}</td><td>${nm[i]}</td><td style="color:var(--ink-soft)">${D.occs[occ[i]]}</td>`+
-      `<td class="num">${by[i]<0?Math.abs(by[i])+' aC':by[i]}</td><td class="num">${M.Leng[i].toFixed(2)}</td><td class="num">${M.Vis[i].toFixed(2)}</td>`+
+    tr.innerHTML=`<td class="rk">${grankOf(i)}</td><td>${nm[i]}</td><td style="color:var(--ink-soft)">${LBL(D.occs[occ[i]])}</td>`+
+      `<td class="num">${by[i]<0?Math.abs(by[i])+' '+TT('clab-bc','a.C.'):by[i]}</td><td class="num">${M.Leng[i].toFixed(2)}</td><td class="num">${M.Vis[i].toFixed(2)}</td>`+
       `<td class="num">${M.age[i].toFixed(2)}</td><td class="num sc">${M.sc[i].toFixed(1)}</td>`;
     tb.appendChild(tr);});
   // sentinels: rango global por SCORE (contado, sin sort completo)
@@ -194,7 +226,26 @@ function render(){
     const d=document.createElement('div');d.className='sent';
     d.innerHTML=`<span class="nm">${name.split(' ').slice(-1)[0]}</span> <b>${rk}</b>`;sc2.appendChild(d);});
 }
+function aplicarIdioma(){
+  KNOBS.forEach(kn=>{
+    const l=document.querySelector('[data-knob-lbl="'+kn.k+'"]'), h=document.querySelector('[data-knob-hint="'+kn.k+'"]');
+    if(l) l.textContent=TT('clab-k-'+kn.k, kn.k);
+    if(h) h.textContent=TT('clab-k-'+kn.k+'-h', '');
+  });
+  const tt=document.querySelector('title');
+  if(tt&&tt.dataset.titleEn){ if(!tt.dataset.titleEs) tt.dataset.titleEs=tt.textContent;
+    tt.textContent = EN()? tt.dataset.titleEn : tt.dataset.titleEs; }
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{
+    const v=TT(el.dataset.i18nTitle,''); if(v) el.setAttribute('title',v);
+  });
+  const dv=fdom.value, rv=freg.value, ov=focc.value, cv=fcty.value;
+  fillDom(); fillReg(); fdom.value=dv; freg.value=rv;
+  fillOcc(); fillCty(); focc.value=ov; fcty.value=cv;
+}
 syncK();render();
+  applyI18n();
+  aplicarIdioma();
+  if (typeof setupLangToggle === 'function') setupLangToggle(() => { applyI18n(); aplicarIdioma(); render(); });
 </script>
 </body>
 </html>
