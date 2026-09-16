@@ -106,7 +106,7 @@
           <input type="number" id="n-y1" min="-4000" max="2025" step="1">
         </div>
       </div>
-      <div class="ctl"><label data-i18n="pod-lbl-dom">Dominio</label><select id="c-dom"></select></div>
+      <div class="ctl"><label data-i18n="pod-lbl-dom">Rubro</label><select id="c-dom"></select></div>
       <div class="ctl"><label data-i18n="pod-lbl-occ">Ocupación</label><select id="c-occ"></select></div>
       <div class="ctl"><label data-i18n="gen-lbl">Género</label><select id="c-gen"></select></div>
     </div>
@@ -143,9 +143,9 @@
 
 <script src="../lib/i18n.js"></script>
 <script src="../lib/regions.js"></script>
-<script src="./i18n-issue.js?v=32"></script>
+<script src="./i18n-issue.js?v=33"></script>
 <script src="./utils.js?v=7"></script>
-<script src="./data-top.js?v=11"></script>
+<script src="./data-top.js?v=12"></script>
 <script>
 const D = window.TOPFIGS;
 const en = () => (typeof LANG !== 'undefined' && LANG === 'en');
@@ -388,7 +388,7 @@ function render() {
 // ===== CSV =====
 function csvActual() {
   const q = s => '"' + String(s).replace(/"/g, '""') + '"';
-  const head = ['country', 'iso3', 'position', 'rank_global', 'name_en', 'name_es', 'occupation', 'domain', 'birthyear', 'hpi_0_100'];
+  const head = ['country', 'iso3', 'position', 'rank_global', 'name_en', 'name_es', 'occupation', 'field', 'birthyear', 'hpi_0_100'];
   const lines = [head.join(',')];
   calc().forEach(p => {
     const m = D.isoMeta[p.i];
@@ -707,7 +707,7 @@ function ttHtml(r) {
 function cargarBaseCompleta() {
   if (window.__fullReq) return; window.__fullReq = true;
   const sc = document.createElement('script');
-  sc.src = './data-top-full.js?v=6';
+  sc.src = './data-top-full.js?v=7';
   sc.onload = () => {
     if (window.TOPFIGS_REST) { D.rows = D.rows.concat(window.TOPFIGS_REST); window.__full = true; render(); }
   };

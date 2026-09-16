@@ -77,7 +77,7 @@
       <div class="ctl"><label data-i18n="rep-lbl-vista">Vista</label>
         <div class="seg" id="c-vista"><button data-v="region" class="on" data-i18n="rep-vista-region">Región</button><button data-v="pais" data-i18n="rep-vista-pais">País</button></div>
       </div>
-      <div class="ctl"><label data-i18n="rep-lbl-dom">Dominio</label>
+      <div class="ctl"><label data-i18n="rep-lbl-dom">Rubro</label>
         <select id="c-dom"></select>
       </div>
       <div class="ctl"><label data-i18n="rep-lbl-corte">Año de corte</label>
@@ -120,7 +120,7 @@
 </div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=32"></script>
+<script src="./i18n-issue.js?v=33"></script>
 <script src="./utils.js?v=7"></script>
 <script src="./data-percap-map.js?v=7"></script>
 <script>
@@ -468,7 +468,7 @@ async function exportPng() {
   // caption minimalista en el PNG: fuente + solo el estado que cambia la lectura
   let notaTxt = t('rep-sources');
   const domTxt = st.dom >= 0 ? (en() ? E.domains[st.dom].en : E.domains[st.dom].es) : null;
-  if (domTxt) notaTxt = (en() ? 'Domain: ' : 'Dominio: ') + domTxt + '. ' + notaTxt;
+  if (domTxt) notaTxt = (en() ? 'Field: ' : 'Rubro: ') + domTxt + '. ' + notaTxt;
   if (st.vista === 'pais') notaTxt += ' ' + tpl('rep-png-note-pais', { n: shown.length });
   // el caption no pasa por debajo de la firma: ancho reservado + firma centrada
   ctx.font = '700 34px ' + SANS;

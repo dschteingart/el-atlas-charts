@@ -108,14 +108,14 @@
 </div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=32"></script>
-<script src="./data-fame-lab.js?v=6"></script>
+<script src="./i18n-issue.js?v=33"></script>
+<script src="./data-fame-lab.js?v=7"></script>
 <script>
 const D=window.FAMELAB, N=D.figs.length, LN4=Math.log(4), REF=D.refYear;
 const C={}; D.cols.forEach((c,i)=>C[c]=i);
-const nm=[],occ=new Int16Array(N),by=new Int16Array(N),cty=new Int16Array(N),dom=new Int8Array(N),multi=new Int8Array(N);
+const nm=[],nmEs=[],occ=new Int16Array(N),by=new Int16Array(N),cty=new Int16Array(N),dom=new Int8Array(N),multi=new Int8Array(N);
 const lnNL=new Float64Array(N),lnL10=new Float64Array(N),lnV12=new Float64Array(N),lnVA=new Float64Array(N),lnMed=new Float64Array(N);
-for(let i=0;i<N;i++){const f=D.figs[i]; nm[i]=f[C.name]; occ[i]=f[C.occIdx]; by[i]=f[C.birthyear]; cty[i]=f[C.ctyIdx]; dom[i]=D.occDom[f[C.occIdx]];
+for(let i=0;i<N;i++){const f=D.figs[i]; nm[i]=f[C.name]; nmEs[i]=(C.nameEs!=null?f[C.nameEs]:'')||''; occ[i]=f[C.occIdx]; by[i]=f[C.birthyear]; cty[i]=f[C.ctyIdx]; dom[i]=D.occDom[f[C.occIdx]];
   lnNL[i]=Math.log1p(f[C.n_langs]); lnL10[i]=Math.log1p(f[C.langs10k]); lnV12[i]=Math.log1p(f[C.total12]); lnVA[i]=Math.log1p(f[C.total_all]); lnMed[i]=Math.log1p(f[C.median]); multi[i]=C.multi==null?1:f[C.multi]; }
 const mx=a=>{let m=0;for(let i=0;i<N;i++)if(a[i]>m)m=a[i];return m||1;};
 const MNL=mx(lnNL),ML10=mx(lnL10),MV12=mx(lnV12),MVA=mx(lnVA),MMED=mx(lnMed);
@@ -130,6 +130,8 @@ const EN=()=>(typeof LANG!=='undefined'&&LANG==='en');
 // par es/en desde data-fame-lab.js; las regiones viajan con su clave canonica y se
 // traducen con la misma tabla que el mapa y composicion.
 const LBL=o=>(o&&typeof o==='object')?(EN()?o.en:o.es):o;
+// El nombre en castellano solo viaja cuando difiere del ingles.
+const NOM=i=>EN()?nm[i]:(nmEs[i]||nm[i]);
 const REG_LABEL={
   'Latin America':['América Latina','Latin America'],'Caribbean':['Caribe','Caribbean'],
   'Western Europe':['Europa Occidental','Western Europe'],'Eastern Europe & Central Asia':['Europa del Este y Asia Central','Eastern Europe & C. Asia'],
@@ -215,7 +217,7 @@ function render(){
   document.getElementById('count').textContent=TT('clab-count','{n} figuras en la vista').replace('{n}', idx.length.toLocaleString(loc));
   const tb=document.getElementById('rows');tb.innerHTML='';
   idx.slice(0,40).forEach(i=>{const tr=document.createElement('tr');if(SENT.includes(nm[i]))tr.className='hl';
-    tr.innerHTML=`<td class="rk">${grankOf(i)}</td><td>${nm[i]}</td><td style="color:var(--ink-soft)">${LBL(D.occs[occ[i]])}</td>`+
+    tr.innerHTML=`<td class="rk">${grankOf(i)}</td><td>${NOM(i)}</td><td style="color:var(--ink-soft)">${LBL(D.occs[occ[i]])}</td>`+
       `<td class="num">${by[i]<0?Math.abs(by[i])+' '+TT('clab-bc','a.C.'):by[i]}</td><td class="num">${M.Leng[i].toFixed(2)}</td><td class="num">${M.Vis[i].toFixed(2)}</td>`+
       `<td class="num">${M.age[i].toFixed(2)}</td><td class="num sc">${M.sc[i].toFixed(1)}</td>`;
     tb.appendChild(tr);});
@@ -224,7 +226,8 @@ function render(){
   SENT.forEach(name=>{const fi=nameIdx[name];let rk='—';
     if(fi!=null){const si=M.sc[fi];let r=1;for(let j=0;j<N;j++)if(M.sc[j]>si)r++;rk='#'+r;}
     const d=document.createElement('div');d.className='sent';
-    d.innerHTML=`<span class="nm">${name.split(' ').slice(-1)[0]}</span> <b>${rk}</b>`;sc2.appendChild(d);});
+    const et=(fi!=null?NOM(fi):name).split(' ').slice(-1)[0];
+    d.innerHTML=`<span class="nm">${et}</span> <b>${rk}</b>`;sc2.appendChild(d);});
 }
 function aplicarIdioma(){
   KNOBS.forEach(kn=>{

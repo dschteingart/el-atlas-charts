@@ -32,7 +32,7 @@ const ISSUE_I18N = {
     // Chart 4 — Género
     'c4-title':    'Las mujeres pesan donde la región pesa poco',
     'c4-subtitle': 'Entre las figuras célebres latinoamericanas, las mujeres pesan más que en el mundo justo donde la región produce poco —arte, humanidades, ciencia— y menos donde más brilla: el deporte y el poder.',
-    'c4-sources':  'Datos: Pantheon (Datawheel, base 2025). % de mujeres entre las figuras célebres de cada dominio, América Latina vs el total mundial. La identidad de género proviene de Wikidata. Se cuentan sólo figuras multiidioma (biografía leída en al menos 2 idiomas desde 2015): quedan afuera los perfiles inflados por una sola Wikipedia.',
+    'c4-sources':  'Datos: Pantheon (Datawheel, base 2025). % de mujeres entre las figuras célebres de cada rubro, América Latina vs el total mundial. La identidad de género proviene de Wikidata. Se cuentan sólo figuras multiidioma (biografía leída en al menos 2 idiomas desde 2015): quedan afuera los perfiles inflados por una sola Wikipedia.',
 
     // Chart 5 — Explorador
     'c5-title':    'La cantidad de famosos per cápita aumenta con el desarrollo',
@@ -49,7 +49,7 @@ const ISSUE_I18N = {
     // Chart 6 — La fama cambió de oficio
     'c6-title':    'La fama cambió de oficio',
     'c6-subtitle': 'Composición de las figuras célebres por década de nacimiento: el poder, la ciencia y las letras ceden ante el deporte y el espectáculo.',
-    'c6-sources':  'Datos: Pantheon (Datawheel, base 2025). Cada columna es una década de nacimiento; las bandas, el % de figuras célebres de cada dominio. El nivel del deporte está inflado por el sesgo de Wikipedia a la era de internet, pero la dirección del cambio es robusta. Se cuentan sólo figuras multiidioma (biografía leída en al menos 2 idiomas desde 2015): quedan afuera los perfiles inflados por una sola Wikipedia.',
+    'c6-sources':  'Datos: Pantheon (Datawheel, base 2025). Cada columna es una década de nacimiento; las bandas, el % de figuras célebres de cada rubro. El nivel del deporte está inflado por el sesgo de Wikipedia a la era de internet, pero la dirección del cambio es robusta. Se cuentan sólo figuras multiidioma (biografía leída en al menos 2 idiomas desde 2015): quedan afuera los perfiles inflados por una sola Wikipedia.',
 
     // Chart 7 — Migración de la fama
     'c7-title':    'La fama emigra',
@@ -150,7 +150,7 @@ const ISSUE_I18N = {
     'gen-f': 'Mujeres',
     'gen-m': 'Varones',
     'tt-occ': 'Ocupación',
-    'tt-dom': 'Dominio',
+    'tt-dom': 'Rubro',
     'tt-hpi': 'HPI',
     'tt-rank': 'puesto {n}',
     'tt-wiki': 'Wikipedias',
@@ -166,7 +166,7 @@ const ISSUE_I18N = {
     'pod-buscar': 'Buscar país…',
     'pod-limpiar': 'Limpiar',
     'pod-lbl-periodo': 'Nacidos entre',
-    'pod-lbl-dom': 'Dominio',
+    'pod-lbl-dom': 'Rubro',
     'pod-lbl-occ': 'Ocupación',
     'pod-todos': 'Todos',
     'pod-todas': 'Todas',
@@ -185,7 +185,7 @@ const ISSUE_I18N = {
     'top-lbl-n': 'Mostrar',
     'top-lbl-region': 'Región',
     'top-lbl-pais': 'País',
-    'top-lbl-dom': 'Dominio',
+    'top-lbl-dom': 'Rubro',
     'top-lbl-occ': 'Ocupación',
     'top-todas': 'Todas',
     'top-todos': 'Todos',
@@ -193,7 +193,7 @@ const ISSUE_I18N = {
     'top-col-pais': 'País',
     'top-col-region': 'Región',
     'top-col-occ': 'Ocupación',
-    'top-col-dom': 'Dominio',
+    'top-col-dom': 'Rubro',
     'top-col-score': 'HPI',
     'top-aviso-cargando': 'Cargando la base completa…',
     'top-aviso-fin': 'No hay más figuras con estos filtros: se muestran {n}.',
@@ -237,7 +237,7 @@ const ISSUE_I18N = {
 
     // Chart 1 — Specialization fan
     'c1-title':    'All pitch, no lab',
-    'c1-subtitle': 'For its share of the world’s population (8%), Latin America produces twice its quota of famous athletes — and just a fraction of its scientists. Each bar is a field; the colour, its domain.',
+    'c1-subtitle': 'For its share of the world’s population (8%), Latin America produces twice its quota of famous athletes — and just a fraction of its scientists. Each bar is an occupation; the colour, its field.',
     'c1-sources':  'Data: Pantheon (Datawheel / pantheon.world, 2025 release). "Talent" = people with a notable Wikipedia biography (global notability, skewed to the internet era). Each bar: Latin Americans as a % of the world total in that field. Population: World Bank / OWID. Only multilingual figures are counted (biography read in at least 2 languages since 2015), which drops profiles inflated by a single Wikipedia.',
 
     // Chart 2 — The fingerprint of each country
@@ -253,7 +253,7 @@ const ISSUE_I18N = {
     // Chart 4 — Gender
     'c4-title':    'Women weigh most where the region weighs least',
     'c4-subtitle': 'Among Latin America’s notable figures, women weigh more than in the world precisely where the region produces little — arts, humanities, science — and less where it shines brightest: sport and power.',
-    'c4-sources':  'Data: Pantheon (Datawheel, 2025 release). Share of women among the notable figures in each domain, Latin America vs the world total. Gender identity from Wikidata. Only multilingual figures are counted (biography read in at least 2 languages since 2015), which drops profiles inflated by a single Wikipedia.',
+    'c4-sources':  'Data: Pantheon (Datawheel, 2025 release). Share of women among the notable figures in each field, Latin America vs the world total. Gender identity from Wikidata. Only multilingual figures are counted (biography read in at least 2 languages since 2015), which drops profiles inflated by a single Wikipedia.',
 
     // Chart 5 — Explorer
     'c5-title':    'Fame per capita rises with development',
@@ -270,7 +270,7 @@ const ISSUE_I18N = {
     // Chart 6 — Fame changed jobs
     'c6-title':    'Fame changed jobs',
     'c6-subtitle': 'Composition of notable people by birth decade: power, science and letters give way to sport and entertainment.',
-    'c6-sources':  'Data: Pantheon (Datawheel, 2025 release). Each column is a birth decade; bands are the % of notable people in each domain. Sport’s level is inflated by Wikipedia’s internet-era bias, but the direction of change is robust. Only multilingual figures are counted (biography read in at least 2 languages since 2015), which drops profiles inflated by a single Wikipedia.',
+    'c6-sources':  'Data: Pantheon (Datawheel, 2025 release). Each column is a birth decade; bands are the % of notable people in each field. Sport’s level is inflated by Wikipedia’s internet-era bias, but the direction of change is robust. Only multilingual figures are counted (biography read in at least 2 languages since 2015), which drops profiles inflated by a single Wikipedia.',
 
     // Chart 7 — Fame migrates
     'c7-title':    'Fame migrates',
@@ -355,14 +355,14 @@ const ISSUE_I18N = {
     'cevo-share': '% of period',
     'cevo-abs': 'Counts',
     'cevo-lbl-nivel': 'Breakdown',
-    'cevo-doms': 'Domains',
+    'cevo-doms': 'Fields',
     'cevo-occs': 'Occupations',
     'cevo-lbl-periodo': 'Born between',
     'cevo-lbl-sel': 'Countries or regions',
     'cevo-buscar': 'Search country or region…',
     'cevo-limpiar': 'Clear',
     'cevo-vacio': 'Pick a country or region with the search box.',
-    'cevo-note': 'Famous figures grouped by birth period: a single pre-1500 bucket and 50-year bins afterwards (post-2000 groups the tail). In the occupation breakdown each band is one occupation, shaded by its broader domain.',
+    'cevo-note': 'Famous figures grouped by birth period: a single pre-1500 bucket and 50-year bins afterwards (post-2000 groups the tail). In the occupation breakdown each band is one occupation, shaded by its broader field.',
     'cevo-sources': 'Data: Pantheon (Datawheel), which includes people with a Wikipedia entry in at least 15 languages; The Atlas edits the dataset and requires at least two languages with over 1,000 reads.',
     'cevo-png-note': 'Data: Pantheon (Datawheel), which includes people with a Wikipedia entry in at least 15 languages; The Atlas edits the dataset and requires at least two languages with over 1,000 reads.',
     // gender + person tooltips (podios/top)
@@ -371,7 +371,7 @@ const ISSUE_I18N = {
     'gen-f': 'Women',
     'gen-m': 'Men',
     'tt-occ': 'Occupation',
-    'tt-dom': 'Domain',
+    'tt-dom': 'Field',
     'tt-hpi': 'HPI',
     'tt-rank': 'rank {n}',
     'tt-wiki': 'Wikipedias',
@@ -387,7 +387,7 @@ const ISSUE_I18N = {
     'pod-buscar': 'Search country…',
     'pod-limpiar': 'Clear',
     'pod-lbl-periodo': 'Born between',
-    'pod-lbl-dom': 'Domain',
+    'pod-lbl-dom': 'Field',
     'pod-lbl-occ': 'Occupation',
     'pod-todos': 'All',
     'pod-todas': 'All',
@@ -406,7 +406,7 @@ const ISSUE_I18N = {
     'top-lbl-n': 'Show',
     'top-lbl-region': 'Region',
     'top-lbl-pais': 'Country',
-    'top-lbl-dom': 'Domain',
+    'top-lbl-dom': 'Field',
     'top-lbl-occ': 'Occupation',
     'top-todas': 'All',
     'top-todos': 'All',
@@ -414,7 +414,7 @@ const ISSUE_I18N = {
     'top-col-pais': 'Country',
     'top-col-region': 'Region',
     'top-col-occ': 'Occupation',
-    'top-col-dom': 'Domain',
+    'top-col-dom': 'Field',
     'top-col-score': 'HPI',
     'top-aviso-cargando': 'Loading the full dataset…',
     'top-aviso-fin': 'No more figures match these filters: showing {n}.',
@@ -430,7 +430,7 @@ const ISSUE_I18N = {
     'rep-lbl-vista': 'View',
     'rep-vista-region': 'Region',
     'rep-vista-pais': 'Country',
-    'rep-lbl-dom': 'Domain',
+    'rep-lbl-dom': 'Field',
     'rep-dom-all': 'All',
     'rep-lbl-corte': 'Cutoff year',
     'rep-lbl-min': 'Min. figures',

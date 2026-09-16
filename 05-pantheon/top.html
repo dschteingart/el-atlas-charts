@@ -40,6 +40,10 @@
   .ph-off { display: inline-block; }   /* placeholder cuando no hay retrato */
   td.sc, th.sc { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; color: var(--accent); }
   td.mut { color: var(--ink-soft); }
+  /* columnas que el filtro deja constantes: se esconden y el nombre toma el sobrante */
+  table.sin-pais .c-pais, table.sin-region .c-region,
+  table.sin-occ .c-occ, table.sin-dom .c-dom { display: none; }
+  table.angosta td.nm, table.angosta th.c-nombre { width: 100%; }
   #aviso { font-family: var(--sans); font-size: 12px; color: var(--ink-muted); margin: 8px 0 0; }
 </style>
 </head>
@@ -58,7 +62,7 @@
 
   <section class="chart-block" data-chart="top" data-editor-id="top-figuras">
     <h2 class="chart-title" data-i18n="top-title">El ranking de la fama mundial</h2>
-    <p class="chart-subtitle" data-i18n="top-subtitle">Las figuras más célebres de la historia según el índice de fama de El Atlas. Elegí cuántas ver y filtrá por región, país, dominio u ocupación.</p>
+    <p class="chart-subtitle" data-i18n="top-subtitle">Las figuras más célebres de la historia según el índice de fama de El Atlas. Elegí cuántas ver y filtrá por región, país, rubro u ocupación.</p>
 
     <div class="controls">
       <div class="ctl"><label data-i18n="top-lbl-n">Mostrar</label>
@@ -66,7 +70,7 @@
       </div>
       <div class="ctl"><label data-i18n="top-lbl-region">Región</label><select id="c-reg"></select></div>
       <div class="ctl"><label data-i18n="top-lbl-pais">País</label><select id="c-cty"></select></div>
-      <div class="ctl"><label data-i18n="top-lbl-dom">Dominio</label><select id="c-dom"></select></div>
+      <div class="ctl"><label data-i18n="top-lbl-dom">Rubro</label><select id="c-dom"></select></div>
       <div class="ctl"><label data-i18n="top-lbl-occ">Ocupación</label><select id="c-occ"></select></div>
       <div class="ctl"><label data-i18n="gen-lbl">Género</label><select id="c-gen"></select></div>
     </div>
@@ -74,11 +78,11 @@
     <div class="tblbox"><table>
       <thead><tr>
         <th class="rk">#</th>
-        <th id="h-nombre">Figura</th>
-        <th id="h-pais">País</th>
-        <th id="h-region">Región</th>
-        <th id="h-occ">Ocupación</th>
-        <th id="h-dom">Dominio</th>
+        <th class="c-nombre" id="h-nombre">Figura</th>
+        <th class="c-pais" id="h-pais">País</th>
+        <th class="c-region" id="h-region">Región</th>
+        <th class="c-occ" id="h-occ">Ocupación</th>
+        <th class="c-dom" id="h-dom">Rubro</th>
         <th class="sc" id="h-score">Fama</th>
       </tr></thead>
       <tbody id="rows"></tbody>
@@ -105,9 +109,9 @@
 <div class="tooltip" id="tt" style="display:none"></div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=32"></script>
+<script src="./i18n-issue.js?v=33"></script>
 <script src="./utils.js?v=7"></script>
-<script src="./data-top.js?v=11"></script>
+<script src="./data-top.js?v=12"></script>
 <script>
 const D = window.TOPFIGS;
 const REG_LABEL = {
@@ -216,6 +220,15 @@ function render() {
   top_syncUrl();
   const H = { 'h-nombre': 'top-col-nombre', 'h-pais': 'top-col-pais', 'h-region': 'top-col-region', 'h-occ': 'top-col-occ', 'h-dom': 'top-col-dom', 'h-score': 'top-col-score' };
   Object.entries(H).forEach(([id, k]) => { document.getElementById(id).textContent = t(k); });
+  // Una columna que el filtro deja con un unico valor no aporta: elegir un pais
+  // fija tambien la region, y elegir una ocupacion fija el rubro.
+  const tabla = document.querySelector('.tblbox table');
+  if (tabla) {
+    const ocultas = { 'sin-pais': st.cty >= 0, 'sin-region': st.cty >= 0 || st.reg >= 0,
+                      'sin-occ': st.occ >= 0, 'sin-dom': st.occ >= 0 || st.dom >= 0 };
+    Object.entries(ocultas).forEach(([c, v]) => tabla.classList.toggle(c, v));
+    tabla.classList.toggle('angosta', Object.values(ocultas).some(Boolean));
+  }
   const rows = filtrar();
   const tb = document.getElementById('rows'); tb.innerHTML = '';
   rows.forEach(r => {
@@ -225,10 +238,10 @@ function render() {
     const ph = fotoUrl(r);
     tr.innerHTML = '<td class="rk">' + r[0].toLocaleString(loc()) + '</td>' +
       '<td class="nm" data-rk="' + r[0] + '">' + (ph ? '<img class="ph" loading="lazy" referrerpolicy="no-referrer" src="' + ph + '" alt="" onerror="phOff(this)">' : '<span class="ph ph-off"></span>') + nombre(r) + '</td>' +
-      '<td class="mut">' + (m ? (en() ? m.en : m.es) : '—') + '</td>' +
-      '<td class="mut">' + (m ? regLabel(m.reg) : '—') + '</td>' +
-      '<td class="mut">' + occLabel(r) + '</td>' +
-      '<td class="mut">' + (en() ? D.doms[o.dom].en : D.doms[o.dom].es) + '</td>' +
+      '<td class="mut c-pais">' + (m ? (en() ? m.en : m.es) : '—') + '</td>' +
+      '<td class="mut c-region">' + (m ? regLabel(m.reg) : '—') + '</td>' +
+      '<td class="mut c-occ">' + occLabel(r) + '</td>' +
+      '<td class="mut c-dom">' + (en() ? D.doms[o.dom].en : D.doms[o.dom].es) + '</td>' +
       '<td class="sc">' + r[5].toLocaleString(loc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '</td>';
     tb.appendChild(tr);
   });
@@ -245,7 +258,7 @@ function render() {
 function csvActual() {
   const rows = filtrar();
   const q = s => '"' + String(s).replace(/"/g, '""') + '"';
-  const head = ['rank', 'name_en', 'name_es', 'iso3', 'country', 'region', 'occupation', 'domain', 'birthyear', 'hpi_0_100'];
+  const head = ['rank', 'name_en', 'name_es', 'iso3', 'country', 'region', 'occupation', 'field', 'birthyear', 'hpi_0_100'];
   const lines = [head.join(',')];
   rows.forEach(r => {
     const m = r[3] >= 0 ? D.isoMeta[r[3]] : null;
@@ -314,7 +327,10 @@ async function dibujarYExportar(usarFotos) {
   wrapText(ctx, subPng, W).slice(0, 2).forEach(l => { ctx.fillText(l, PAD, y); y += 42; });
   y += 14;
   const colRk = 86, colPh = hayFotos ? 62 : 0, colSc = 130;
-  const colNm = Math.round((W - colRk - colPh - colSc) * 0.52);
+  // La segunda columna junta pais y ocupacion; si el filtro fija alguno de los
+  // dos, ese dato sale y el nombre se queda con el ancho.
+  const pngPais = st.cty < 0, pngOcc = st.occ < 0;
+  const colNm = Math.round((W - colRk - colPh - colSc) * (pngPais && pngOcc ? 0.52 : 0.66));
   const colOc = W - colRk - colSc - colNm;
   const bottom = PNG.H - 148;
   // tope automatico: nunca mas filas de las que entran sin pisar el caption
@@ -324,7 +340,8 @@ async function dibujarYExportar(usarFotos) {
   ctx.font = '700 23px ' + SANS; ctx.fillStyle = PNG.muted; ctx.textAlign = 'left';
   ctx.fillText('#', PAD, y + 28);
   ctx.fillText(t('top-col-nombre').toUpperCase(), PAD + colRk + colPh, y + 28);
-  ctx.fillText((t('top-col-pais') + ' · ' + t('top-col-occ')).toUpperCase(), PAD + colRk + colPh + colNm, y + 28);
+  const encMeta = [pngPais ? t('top-col-pais') : null, pngOcc ? t('top-col-occ') : null].filter(Boolean).join(' · ');
+  if (encMeta) ctx.fillText(encMeta.toUpperCase(), PAD + colRk + colPh + colNm, y + 28);
   ctx.textAlign = 'right'; ctx.fillText(t('top-col-score').toUpperCase(), PAD + W, y + 28);
   y += 44;
   ctx.strokeStyle = PNG.ink; ctx.lineWidth = 2.5;
@@ -350,8 +367,8 @@ async function dibujarYExportar(usarFotos) {
     ctx.fillStyle = PNG.ink; ctx.font = '600 31px ' + SANS;
     ctx.fillText(fitText(ctx, nombre(r), colNm - 16), PAD + colRk + colPh, ty);
     ctx.fillStyle = PNG.soft; ctx.font = '400 27px ' + SANS;
-    const meta = (m ? (en() ? m.en : m.es) : '—') + ' · ' + occLabel(r);
-    ctx.fillText(fitText(ctx, meta, colOc - 16), PAD + colRk + colPh + colNm, ty);
+    const meta = [pngPais ? (m ? (en() ? m.en : m.es) : '—') : null, pngOcc ? occLabel(r) : null].filter(Boolean).join(' · ');
+    if (meta) ctx.fillText(fitText(ctx, meta, colOc - 16), PAD + colRk + colPh + colNm, ty);
     ctx.fillStyle = PNG.accent; ctx.font = '700 31px ' + SANS; ctx.textAlign = 'right';
     ctx.fillText(r[5].toLocaleString(loc(), { minimumFractionDigits: 1, maximumFractionDigits: 1 }), PAD + W, ty);
     y += rowH;
@@ -475,7 +492,7 @@ function ttHtml(r) {
 function cargarBaseCompleta() {
   if (window.__fullReq) return; window.__fullReq = true;
   const sc = document.createElement('script');
-  sc.src = './data-top-full.js?v=6';
+  sc.src = './data-top-full.js?v=7';
   sc.onload = () => {
     if (window.TOPFIGS_REST) { D.rows = D.rows.concat(window.TOPFIGS_REST); window.__full = true; render(); }
   };

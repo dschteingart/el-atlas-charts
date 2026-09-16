@@ -1,11 +1,29 @@
 # -*- coding: utf-8 -*-
 # Genera data-fame-lab.js desde fame_pantheon.csv (métricas reconstruidas) + joins de occ/región/país.
 import pandas as pd, numpy as np, json, warnings, sys, io, os
+COC = os.path.dirname(os.path.abspath(__file__))
 OUTDIR=r'C:\Users\FUNDAR\Documents\MEGAsync\substack\el-atlas\el-atlas-charts\05-pantheon'
 warnings.filterwarnings('ignore'); sys.stdout.reconfigure(encoding='utf-8')
 F=pd.read_csv('fame_pantheon.csv', on_bad_lines='skip'); F=F[F.n_langs>=0].copy()
 PE=pd.read_csv('person_2025_update.csv',low_memory=False)[['id','occupation','birthyear','bplace_country']].drop_duplicates('id')
 d=F.merge(PE,on='id',how='left').dropna(subset=['occupation','birthyear'])
+# Nombre en castellano, de las mismas dos capas que el ranking: el label de
+# Wikidata (nombres_es.csv) y los overrides que corrigen los vandalizados. Sin
+# esto el lab mostraba a todo el mundo en ingles aunque la pagina estuviera en
+# castellano.
+try:
+    _N = pd.read_csv(os.path.join(COC, 'nombres_es.csv'), encoding='utf-8-sig')[['id', 'name_es']]
+    d = d.merge(_N, on='id', how='left')
+    d['name_es'] = d.name_es.fillna('')
+    _sin = d.name_es.str.replace(r'\s*\([^)]*\)\s*$', '', regex=True).str.strip()
+    d['name_es'] = _sin.where(_sin != '', d.name_es)
+    _ov = pd.read_csv(os.path.join(COC, 'nombres_overrides.csv'), encoding='utf-8-sig').set_index('id').name_es
+    d['name_es'] = d.id.map(_ov).fillna(d.name_es)
+    d.loc[d.name_es == d.name, 'name_es'] = ''      # solo viaja si difiere
+    print('nombres en castellano:', int((d.name_es != '').sum()))
+except FileNotFoundError as _e:
+    d['name_es'] = ''
+    print('(sin nombres_es.csv: el lab queda en ingles) %s' % _e)
 # lugares de nacimiento recuperados (recuperar_lugar.py): Pantheon deja sin pais a
 # figuras antiguas y biblicas. El dataset publicado los completa; el lab tambien,
 # asi el filtro de pais/region del lab y el del numero muestran lo mismo.
@@ -111,14 +129,14 @@ ctyReg=[reg_of(_grupo[k]['src'][0]) for k in _kk]
 
 figs=[]
 for _,x in d.iterrows():
-    figs.append([str(x['name']), occ_idx[x.occupation], int(x.birthyear), (cty_idx[x.ctyN] if x.ctyN in cty_idx else -1),
+    figs.append([str(x['name']), str(x.name_es or ''), occ_idx[x.occupation], int(x.birthyear), (cty_idx[x.ctyN] if x.ctyN in cty_idx else -1),
                  int(x.n_langs), int(x.langs1k), int(x.langs10k), int(x.total12_noen), int(x.total_all_noen),
                  int(x.medianMonthly_noen), float(x.pctMonths_o100k), float(x.pctMonths_o300k), int(x.multi)])
 DOMS_EN=['Sports','Arts & entertainment','Science & tech','Humanities','Power & public life','Business & exploration']
 out={'occs':[{'es':occ_es(o),'en':occ_en(o)} for o in occs],'occDom':[dom_idx[o2d[o]] for o in occs],
      'doms':[{'es':_a,'en':_b} for _a,_b in zip(DOMS,DOMS_EN)],
      'ctys':ctys,'ctyReg':ctyReg,'regs':REG,'refYear':2025,
-     'cols':['name','occIdx','birthyear','ctyIdx','n_langs','langs1k','langs10k','total12','total_all','median','pctM100','pctM300','multi'],'figs':figs}
+     'cols':['name','nameEs','occIdx','birthyear','ctyIdx','n_langs','langs1k','langs10k','total12','total_all','median','pctM100','pctM300','multi'],'figs':figs}
 OUT=OUTDIR
 open(os.path.join(OUT,'data-fame-lab.js'),'w',encoding='utf-8').write('// Lab de fama reconstruida (Pantheon API /pageviews). figs cols: name,occ,by,cty,n_langs,langs1k,langs10k,total12,total_all,median,pctM100,pctM300\nwindow.FAMELAB='+json.dumps(out,ensure_ascii=False,separators=(',',':'))+';\n')
 import os
