@@ -155,10 +155,13 @@
     ajustarAlto();
   }
 
+  // toFixed siempre escribe el punto: en castellano hay que pasar por el locale
+  // (criterio 6 de la casa). Afectaba a la leyenda, al per capita y al tooltip.
+  const dec = (v, n) => v.toLocaleString(en() ? 'en-US' : 'es-AR', { minimumFractionDigits: n, maximumFractionDigits: n });
   function fmtVal(v) {
     if (v == null) return '—';
     if (st.measure === 'abs') return Math.round(v).toLocaleString(en() ? 'en-US' : 'es-AR');
-    return v >= 100 ? Math.round(v).toLocaleString(en() ? 'en-US' : 'es-AR') : v >= 10 ? v.toFixed(1) : v.toFixed(2);
+    return v >= 100 ? Math.round(v).toLocaleString(en() ? 'en-US' : 'es-AR') : dec(v, v >= 10 ? 1 : 2);
   }
 
   let colorScale = null, legendBreaks = [];
@@ -362,8 +365,8 @@
     const k = idxByIso[key]; return (k != null && t[k] > 0) ? f[k] / t[k] * 100 : null;
   }
   // figura de mayor HPI de la entidad dado el filtro Y EL PERÍODO elegido.
-  // PCTOP[iso][sub] = top-K [nombre, año, score, rank] (multiidioma). Elegimos la
-  // de mayor score nacida en [y0,y1]. → [nombre, año, score, rank]
+  // PCTOP[iso][sub] = top-K [nombre_en, año, score, rank, nombre_es si difiere]
+  // (multiidioma). Elegimos la de mayor score nacida en [y0,y1].
   function topFigFor(key, isReg) {
     const inc = includeSet(), TP = window.PCTOP; if (!TP) return null;
     const y0 = st.y0, y1 = st.y1; let best = null;
@@ -391,10 +394,10 @@
     const tt = document.getElementById('mTip'); if (!tt) return;
     let h = `<strong>${name}</strong><div class="tt-period">${T('Nacidas', 'Born')} ${fmtYear(st.y0)}–${fmtYear(st.y1)}</div><div class="tt-row"><span>${measLabel()}</span><span>${fmtVal(v)}</span></div>`;
     const ws = entityWorldShare(key, isReg);
-    if (ws != null) h += `<div class="tt-row"><span>${T('% del total mundial', '% of world total')}</span><span>${ws.toFixed(ws < 10 ? 2 : 1)}%</span></div>`;
-    if (st.filter !== 'all') { const sh = entityShare(key, isReg); if (sh != null) h += `<div class="tt-row"><span>${isReg ? T('% de la región', '% of region') : T('% del país', '% of country')}</span><span>${sh.toFixed(1)}%</span></div>`; }
+    if (ws != null) h += `<div class="tt-row"><span>${T('% del total mundial', '% of world total')}</span><span>${dec(ws, ws < 10 ? 2 : 1)}%</span></div>`;
+    if (st.filter !== 'all') { const sh = entityShare(key, isReg); if (sh != null) h += `<div class="tt-row"><span>${isReg ? T('% de la región', '% of region') : T('% del país', '% of country')}</span><span>${dec(sh, 1)}%</span></div>`; }
     const tf = topFigFor(key, isReg);
-    if (tf) h += `<div class="tt-fig"><span class="tt-fig-name">${tf[0]} <span style="font-weight:400;color:#8A8579">(${fmtYear(tf[1])})</span></span><span class="tt-fig-meta">HPI ${tf[2]} · #${tf[3].toLocaleString(en() ? 'en-US' : 'es-AR')} ${T('global', 'global')}</span></div>`;
+    if (tf) h += `<div class="tt-fig"><span class="tt-fig-name">${(en() ? tf[0] : (tf[4] || tf[0]))} <span style="font-weight:400;color:#8A8579">(${fmtYear(tf[1])})</span></span><span class="tt-fig-meta">HPI ${dec(tf[2], 1)} · #${tf[3].toLocaleString(en() ? 'en-US' : 'es-AR')} ${T('global', 'global')}</span></div>`;
     tt.innerHTML = h; tt.style.display = 'block'; posTip(ev);
   }
   function posTip(ev) { const tt = document.getElementById('mTip'); if (!tt || tt.style.display === 'none') return; const w = tt.parentElement.getBoundingClientRect(); let px = ev.clientX - w.left + 14, py = ev.clientY - w.top - tt.offsetHeight - 8; if (px + tt.offsetWidth > w.width) px = ev.clientX - w.left - tt.offsetWidth - 14; if (py < 0) py = ev.clientY - w.top + 18; tt.style.left = px + 'px'; tt.style.top = py + 'px'; }

@@ -225,6 +225,21 @@ def bidx(y):
     for i in range(len(BUCKETS) - 1):
         if BUCKETS[i] <= y < BUCKETS[i + 1]: return i
     return len(BUCKETS) - 2
+# Nombre en castellano, de las mismas dos capas que el ranking y el laboratorio:
+# el label de Wikidata y los overrides que corrigen los vandalizados. Sin esto el
+# tooltip del mapa decia "Jesus" y "Alexander the Great" tambien en la vista ES.
+NOM_ES = {}
+try:
+    import pandas as _pd
+    _N = _pd.read_csv(os.path.join(os.path.dirname(CORR), 'nombres_es.csv'), encoding='utf-8-sig')[['id', 'name_es']]
+    _N['name_es'] = _N.name_es.fillna('').str.replace(r'\s*\([^)]*\)\s*$', '', regex=True).str.strip()
+    NOM_ES = dict(zip(_N.id.astype(str), _N.name_es))
+    _ov = _pd.read_csv(os.path.join(os.path.dirname(CORR), 'nombres_overrides.csv'), encoding='utf-8-sig')
+    NOM_ES.update(dict(zip(_ov.id.astype(str), _ov.name_es)))
+    print('nombres ES para el tooltip del mapa:', sum(1 for v in NOM_ES.values() if v))
+except Exception as _e:
+    print('(sin nombres en castellano para el mapa: %s)' % _e)
+
 allf = {}
 with open(CORR, encoding='utf-8-sig') as f:
     for r in csv.DictReader(f):
@@ -236,7 +251,8 @@ with open(CORR, encoding='utf-8-sig') as f:
         except (ValueError, TypeError): continue
         if not name or rk <= 0: continue
         sub = str(sub_of((r.get('occupation') or '').strip().upper()))
-        allf.setdefault(iso, {}).setdefault(sub, []).append([name, yr, sc, rk])
+        nes = (NOM_ES.get(str(r['id'])) or '').strip()
+        allf.setdefault(iso, {}).setdefault(sub, []).append([name, yr, sc, rk, '' if nes == name else nes])
 topfig = {}
 for iso, subs in allf.items():
     d = {}
@@ -249,9 +265,9 @@ for iso, subs in allf.items():
             if b not in perb or e[2] > perb[b][2]: perb[b] = e
         for e in perb.values():
             if id(e) not in seen: keep.append(e); seen.add(id(e))
-        d[sub] = [[e[0], e[1], round(e[2], 1), e[3]] for e in keep]
+        d[sub] = [[e[0], e[1], round(e[2], 1), e[3]] + ([e[4]] if e[4] else []) for e in keep]
     topfig[iso] = d
-open(OUT_T, 'w', encoding='utf-8').write('// Top figuras por país×sub (corregido, multiidioma): [nombre, año, score, rank_score]. top-4 por score + campeón por era.\nwindow.PCTOP=' + json.dumps(topfig, separators=(',', ':'), ensure_ascii=False) + ';\n')
+open(OUT_T, 'w', encoding='utf-8').write('// Top figuras por país×sub (corregido, multiidioma): [nombre_en, año, score, rank_score, nombre_es si difiere]. top-4 por score + campeón por era.\nwindow.PCTOP=' + json.dumps(topfig, separators=(',', ':'), ensure_ascii=False) + ';\n')
 
 print('isoMeta:', len(isoMeta), '(+%d)' % len(added), '| figuras F:', n, '| multi=1:', multi1, '| dropped(sin iso):', dropped)
 print('rango años:', minY, '->', maxY)
