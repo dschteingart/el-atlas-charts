@@ -79,5 +79,6 @@ Cada ítem se olvidó al menos una vez:
 - **Cache-busting: UNA versión global por carpeta** (`?v=N` idéntico en todas las páginas del número; las libs llevan la suya). Bumpear en CADA edición de un `.js` — sin bump, el fix no le llega a nadie y "no funciona". Ningún `<script>`/`<link>` sin `?v=`.
 - **El entorno real es `file://`** (doble clic en el .html): todo lo verificado solo por `http://localhost` puede mentir (fuentes, CORS, fetch).
 - **Cuando muchas iteraciones no resuelven**: instrumentar con `console.log` y pedir el output del navegador real, en vez de seguir parchando a ciegas.
+- **Las ocupaciones de Pantheon tienen errores** (N°5): la persona queda anotada con una sola y a veces no es la que la hizo memorable. La tabla de correcciones es `05-pantheon/data-sources/ocupaciones_overrides.csv` y el orden de regeneración está en `correcciones-ocupaciones.md`, al lado. Tocar el rubro de alguien se hace ahí, nunca a mano sobre un `data-*.js`.
 - **Al regenerar datos**: verificar que el cambio sea quirúrgico (diff contra HEAD; lo que no debía cambiar, byte a byte idéntico), y subir el `?v=` de cada `data-*.js` tocado.
 - El N°5 usa copias locales de `utils.js`/`png-export.js` (deuda conocida, igualadas a lib); los charts nuevos usan `lib/` directamente.

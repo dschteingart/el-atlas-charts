@@ -23,6 +23,15 @@ print('multi=1:',int(d.multi_idioma.sum()),'| multi=0 (NO pasa):',int((d.multi_i
 # === DOMINIO (taxonomia del N°4) ===
 _DOM={'Deporte':['SOCCER PLAYER','ATHLETE','BASKETBALL PLAYER','CYCLIST','TENNIS PLAYER','SWIMMER','WRESTLER','RACING DRIVER','SKIER','HOCKEY PLAYER','BOXER','GYMNAST','HANDBALL PLAYER','SKATER','COACH','CHESS PLAYER','FENCER','VOLLEYBALL PLAYER','BADMINTON PLAYER','MARTIAL ARTS','REFEREE','RUGBY PLAYER','CRICKETER','TABLE TENNIS PLAYER','BASEBALL PLAYER','GOLFER','SNOOKER','AMERICAN FOOTBALL PLAYER','MOUNTAINEER','POKER PLAYER','BULLFIGHTER','GO PLAYER','GAMER'],'Arte y espectáculo':['ACTOR','SINGER','MUSICIAN','FILM DIRECTOR','PAINTER','COMPOSER','MODEL','COMIC ARTIST','PORNOGRAPHIC ACTOR','PRESENTER','PHOTOGRAPHER','PRODUCER','CONDUCTOR','ARTIST','DANCER','DESIGNER','COMEDIAN','FASHION DESIGNER','SCULPTOR','CHEF','MAGICIAN','CELEBRITY','YOUTUBER','GAME DESIGNER','ARCHITECT'],'Ciencia y tecnología':['BIOLOGIST','PHYSICIST','MATHEMATICIAN','ASTRONOMER','CHEMIST','ASTRONAUT','INVENTOR','ENGINEER','COMPUTER SCIENTIST','PHYSICIAN','GEOLOGIST','STATISTICIAN'],'Humanidades':['WRITER','PHILOSOPHER','HISTORIAN','ECONOMIST','PSYCHOLOGIST','LINGUIST','ARCHAEOLOGIST','ANTHROPOLOGIST','GEOGRAPHER','SOCIOLOGIST','POLITICAL SCIENTIST','CRITIC'],'Poder y figuras públicas':['POLITICIAN','RELIGIOUS FIGURE','MILITARY PERSONNEL','NOBLEMAN','SOCIAL ACTIVIST','COMPANION','EXTREMIST','JOURNALIST','DIPLOMAT','MAFIOSO','PILOT','JUDGE','PUBLIC WORKER','PIRATE','LAWYER','OCCULTIST','INSPIRATION'],'Negocios y exploración':['BUSINESSPERSON','EXPLORER']}
 o2d={o:k for k,l in _DOM.items() for o in l}
+# Overrides editoriales de ocupacion: Pantheon asigna UNA ocupacion y a veces
+# no es la que hizo memorable a la persona (Steve Jobs figura como DESIGNER).
+# La tabla vive en ocupaciones_overrides.csv, con motivo y confianza por fila.
+from aplicar_overrides_ocupacion import cargar_overrides as _cargar_ov
+_ov=_cargar_ov(os.path.dirname(os.path.abspath(__file__)))
+if _ov:
+    _n=d.id.map(_ov); _t=_n.notna()&(_n!=d.occupation)
+    d.loc[_t,'occupation']=_n[_t]
+    print('overrides de ocupacion aplicados:',int(_t.sum()),'de',len(_ov))
 d['dominio']=d.occupation.map(o2d)
 
 # === REGION (taxonomia N°1) ===

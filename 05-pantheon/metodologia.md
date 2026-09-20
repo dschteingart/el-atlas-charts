@@ -196,8 +196,8 @@ están los casos de las secciones anteriores. Los movimientos típicos son estos
 
 ## 5. Rubros y ocupaciones
 
-Las **ocupaciones** de cada figura (futbolista, física, poeta) son las de Pantheon y no
-las modificamos. Los **6 rubros** en los que las agrupamos (Deporte; Arte y espectáculo;
+Las **ocupaciones** de cada figura (futbolista, física, poeta) son las de Pantheon, con
+28 correcciones manuales que detallamos en la sección 7. Los **6 rubros** en los que las agrupamos (Deporte; Arte y espectáculo;
 Ciencia y tecnología; Humanidades; Poder y figuras públicas; Negocios y exploración) son
 un reagrupamiento propio, equivalente a lo que Pantheon llama dominios.
 
@@ -246,6 +246,17 @@ en el nombre, como el físico y político español Pablo Echenique, con apodos a
 el actor Norman Reedus figuraba como "DARYL DIXON". Aplicamos una limpieza automática de
 los patrones típicos de vandalismo y una tabla de correcciones revisada manualmente, que
 tiene prioridad sobre las fuentes automáticas en los casos auditados.
+
+**Ocupaciones.** Pantheon asigna una sola ocupación por persona y a veces no es aquella
+por la que el mundo la recuerda. Steve Jobs figura como diseñador, Santiago Peña como
+economista y François Duvalier como médico. Corregimos 28 casos de ese tipo, con el
+criterio de anotar la actividad que explica la fama y no el título que la persona tuvo.
+Los dos grupos más numerosos son fundadores de empresas que pasan a Negocios (Steve
+Jobs, Elon Musk, Henry Ford) y figuras políticas o religiosas clasificadas por su
+profesión previa (Alexander Hamilton, Mario Draghi, Basilio el Grande). La tabla
+completa, con el motivo de cada cambio, está publicada en el repositorio. Ninguna cifra
+agregada del número se mueve: los deportistas siguen siendo el 47% del panteón mundial y
+los científicos el 3,5%; en América Latina, el 74% y el 0,7%.
 
 **Género.** El campo del archivo de Pantheon presenta errores, entre ellos el de René
 Favaloro, registrado como mujer. Lo relevamos de nuevo para toda la base desde Wikidata,

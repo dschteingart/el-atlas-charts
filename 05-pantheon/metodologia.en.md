@@ -193,8 +193,8 @@ previous sections live. The typical movements are these.
 
 ## 5. Fields and occupations
 
-Each figure's **occupations** (footballer, physicist, poet) are Pantheon's and we do not
-modify them. The **6 fields** we group them into (Sport; Arts and entertainment; Science
+Each figure's **occupations** (footballer, physicist, poet) are Pantheon's, with 28 manual
+corrections detailed in section 7. The **6 fields** we group them into (Sport; Arts and entertainment; Science
 and technology; Humanities; Power and public figures; Business and exploration) are a
 grouping of our own, equivalent to what Pantheon calls domains.
 
@@ -243,6 +243,16 @@ as "Daniel Ortega (bachi)", or outright with the name of a fictional character, 
 actor Norman Reedus appeared as "DARYL DIXON". We applied an automatic clean-up of the
 typical vandalism patterns plus a manually reviewed correction table, which takes
 priority over the automatic sources in audited cases.
+
+**Occupations.** Pantheon assigns a single occupation per person, and sometimes it is not
+the one the world remembers them for. Steve Jobs is listed as a designer, Santiago Peña as
+an economist and François Duvalier as a physician. We corrected 28 cases of this kind,
+recording the activity that explains the fame rather than the title the person held. The
+two largest groups are company founders moving to Business (Steve Jobs, Elon Musk, Henry
+Ford) and political or religious figures classified by their earlier profession (Alexander
+Hamilton, Mario Draghi, Basil of Caesarea). The full table, with the reason for each
+change, is published in the repository. No aggregate figure in the issue moves: athletes
+are still 47% of the world pantheon and scientists 3.5%; in Latin America, 74% and 0.7%.
 
 **Gender.** The field in Pantheon's file contains errors, among them René Favaloro,
 recorded as a woman. We re-collected it for the whole base from Wikidata, with 2,712

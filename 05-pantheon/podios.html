@@ -143,9 +143,9 @@
 
 <script src="../lib/i18n.js"></script>
 <script src="../lib/regions.js"></script>
-<script src="./i18n-issue.js?v=33"></script>
-<script src="./utils.js?v=7"></script>
-<script src="./data-top.js?v=12"></script>
+<script src="./i18n-issue.js?v=34"></script>
+<script src="./utils.js?v=34"></script>
+<script src="./data-top.js?v=34"></script>
 <script>
 const D = window.TOPFIGS;
 const en = () => (typeof LANG !== 'undefined' && LANG === 'en');
@@ -707,7 +707,7 @@ function ttHtml(r) {
 function cargarBaseCompleta() {
   if (window.__fullReq) return; window.__fullReq = true;
   const sc = document.createElement('script');
-  sc.src = './data-top-full.js?v=7';
+  sc.src = './data-top-full.js?v=34';
   sc.onload = () => {
     if (window.TOPFIGS_REST) { D.rows = D.rows.concat(window.TOPFIGS_REST); window.__full = true; render(); }
   };
@@ -764,7 +764,7 @@ cargarBaseCompleta();
 if (typeof setupLangToggle === 'function') setupLangToggle(() => { applyI18n(); fillSelects(); renderChips(); render(); });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=4"></script>
+<script src="./nav.js?v=34"></script>
 <script src="../lib/editor.js?v=8"></script>
 </body>
 </html>

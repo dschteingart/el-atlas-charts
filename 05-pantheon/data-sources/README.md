@@ -6,6 +6,14 @@ esa cocina estaba en `Downloads\_talento_work`, herencia de la sesión de junio;
 entera y se reescribieron las rutas de los scripts. Esta carpeta guarda la copia
 versionada; si editás un script, copialo de vuelta a `insumos\#5 - Talento`.
 
+**Correcciones de ocupación (20/9/2026).** Pantheon asigna una sola ocupación por
+persona y a veces no es la que la hizo memorable: Steve Jobs figuraba como diseñador y
+François Duvalier como médico. La tabla editorial de 28 correcciones vive en
+[`ocupaciones_overrides.csv`](ocupaciones_overrides.csv), la aplica
+`aplicar_overrides_ocupacion.py` y el criterio, el detalle y el orden de regeneración
+están en [`correcciones-ocupaciones.md`](correcciones-ocupaciones.md). `export_dataset.py`
+también las aplica, así que una corrida completa del pipeline no las pierde.
+
 El dataset final, `pantheon_corregido.csv`, se publica acá mismo desde el 14/9/2026, con
 su diccionario de columnas en [`DATOS.md`](DATOS.md). Es el archivo del que salen los
 siete gráficos y el que reproduce el preset **Publicado (T40)** del laboratorio.
