@@ -37,10 +37,28 @@
   // Paleta secuencial terracota (claro→oscuro) + gris "sin dato".
   const RAMP = ['#F1E0D2', '#E0B68F', '#CE8A5E', '#BE5D32', '#9B3D24', '#5A2818'];
   const NODATA = '#D8D3C8', STROKE = 'rgba(255,255,255,0.55)', STROKE_HOVER = '#1A1A1A', CARTO_COLOR = '#BE5D32';
-  const M_W = 1100, MARGIN = { top: 8, right: 8, bottom: 8, left: 8 };
-  const PW = M_W - MARGIN.left - MARGIN.right;
-  const LEG_H = 46;                       // alto del bloque de leyenda bajo el mapa
+  // Ancho del viewBox: 1100, o 1100/k con el zoom del editor (?nl=1): el mapa
+  // sigue llenando el ancho del PNG y la leyenda y las burbujas salen k veces
+  // mas grandes.
+  const MARGIN = { top: 8, right: 8, bottom: 8, left: 8 };
+  let M_W = 1100, PW = M_W - MARGIN.left - MARGIN.right, zoomK = 1;
+  // Leyenda: se dibuja a escala 1.9 (cuerpo 10 → 19 px); la perilla "Leyenda"
+  // del editor mueve ese cuerpo. El alto del bloque acompaña a la escala.
+  let LEG_S = 1.9, LEG_H = 46;
   let M_H = 580, PH = M_H - MARGIN.top - MARGIN.bottom, LEG_Y = M_H + 10;
+  function editorKnobs() {
+    const aeSz = (typeof atlasEditorSizes === 'function') ? atlasEditorSizes() : null;
+    const legFs = (typeof atlasEditorSize === 'function') ? atlasEditorSize(aeSz, 'special', 19) : 19;
+    LEG_S = legFs / 10;
+    LEG_H = Math.ceil(24.2 * LEG_S);
+    const k = (typeof atlasEditorZoom === 'function') ? atlasEditorZoom() : 1;
+    if (k !== zoomK) {
+      zoomK = k;
+      M_W = Math.round(1100 / k);
+      PW = M_W - MARGIN.left - MARGIN.right;
+      geoFit = null;   // el marco se recalcula con el ancho nuevo
+    }
+  }
 
   // multiOnly por DEFAULT (decisión de Daniel; se sacó el toggle). El mapa solo
   // cuenta figuras multiidioma (≥2 idiomas con vistas reales).
@@ -238,7 +256,11 @@
     const values = Object.keys(byIso).filter(k => !k.startsWith('__')).map(k => byIso[k]);
     buildColor(values);
 
-    if (!geoFit) ajustarMarco();
+    editorKnobs();
+    if (!geoFit) {
+      ajustarMarco();
+      if (zoom) zoom.translateExtent([[-M_W * 0.2, -M_H * 0.2], [M_W * 1.2, M_H * 1.2]]);
+    }
     projection = d3.geoRobinson().fitSize([PW, PH], geoFit);   // marco fijo: paises sin Antartida (las regiones disueltas comparten fuente)
     path = d3.geoPath(projection);
     centroidCache = {};
@@ -413,7 +435,7 @@
     // leyenda ADENTRO del svg del mapa (asi el PNG exportado la incluye)
     const d3 = window.d3, svg = d3.select('#chartmap'); if (svg.empty()) return;
     svg.select('#legendG').remove();
-    const leg = svg.append('g').attr('id', 'legendG').attr('transform', `translate(${MARGIN.left + 4},${LEG_Y}) scale(1.9)`);
+    const leg = svg.append('g').attr('id', 'legendG').attr('transform', `translate(${MARGIN.left + 4},${LEG_Y}) scale(${LEG_S})`);
     const FONT = '"Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
     if (st.mapMode === 'dorling') return;   // el cartograma no lleva rotulo (pedido de Daniel)
     const W_MAIN = 320, GAP = 12, ND_W = 14, BIN_H = 12, TEXT_Y = BIN_H + 12;
@@ -547,4 +569,6 @@
 
   loadGeo(); ajustarMarco(); wire(); setupZoom(); draw();
   applyUrlState();
+  // el editor (?nl=1) cambia textos y tamaños (zoom, leyenda): redibujar
+  window.addEventListener('atlas-editor-change', () => draw());
 })();

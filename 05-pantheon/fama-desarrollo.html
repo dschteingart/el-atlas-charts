@@ -23,8 +23,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../lib/style.css">
-<link rel="stylesheet" href="../lib/editor.css?v=1">
-<link rel="stylesheet" href="./editor.css">
+<link rel="stylesheet" href="../lib/editor.css?v=90">
 <style>
   .wrap-wide { max-width: 1100px; padding: 10px 20px 16px; }
   .wrap-wide header { padding-bottom: 8px; margin-bottom: 10px; }
@@ -121,7 +120,7 @@
     </div>
   </header>
 
-  <section class="chart-block" data-chart="5" data-editor-id="explora-talento">
+  <section class="chart-block" data-chart="5" data-editor-id="explora-talento" data-editor-caps="sizes" data-editor-sizes="title,subtitle,chart,ticks,axisTitle,labels,special,caption">
     <h2 class="chart-title" data-i18n="c5-title">La cantidad de famosos per cápita aumenta con el desarrollo</h2>
     <p class="chart-subtitle" data-i18n="c5-subtitle">Figuras célebres por millón vs PIB per cápita, nacidas entre 1900 y 2010.</p>
 
@@ -202,13 +201,13 @@
 
 <script src="../lib/regions.js"></script>
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=34"></script>
-<script src="./utils.js?v=34"></script>
-<script src="./country-names.js?v=34"></script>
+<script src="./i18n-issue.js?v=35"></script>
+<script src="./utils.js?v=35"></script>
+<script src="./country-names.js?v=35"></script>
 <script src="../lib/scatter-render.js?v=74"></script>
-<script src="./data-explora.js?v=34"></script>
-<script src="./fama-desarrollo.js?v=34"></script>
-<script src="./png-export.js?v=34"></script>
+<script src="./data-explora.js?v=35"></script>
+<script src="./fama-desarrollo.js?v=35"></script>
+<script src="./png-export.js?v=35"></script>
 <script>
   // applyI18n ANTES del init: los textos dinamicos (titulo/subtitulo con el
   // periodo) pisan al estatico, nunca al reves.
@@ -217,7 +216,7 @@
   setupLangToggle(() => { applyI18n(); tp_onLangChange(); });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=34"></script>
-<script src="../lib/editor.js?v=8"></script>
+<script src="./nav.js?v=35"></script>
+<script src="../lib/editor.js?v=90"></script>
 </body>
 </html>

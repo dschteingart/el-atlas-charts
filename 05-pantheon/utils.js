@@ -97,8 +97,14 @@ function applyFormatWrapper(svgEl, format) {
   if (!wrap) return;
   if (format && PNG_FORMATS[format]) {
     const f = PNG_FORMATS[format];
+    // El aspecto es el del viewBox que el chart ACABA de fijar (en el N°5 el
+    // alto se adapta al hueco que dejan titulo, subtitulo y nota del PNG, y el
+    // zoom del editor achica el viewBox): con el del formato nominal, en
+    // pantalla quedaban franjas vacias arriba y abajo del grafico.
+    const vb = svgEl.viewBox && svgEl.viewBox.baseVal;
+    const aspect = (vb && vb.width && vb.height) ? vb.width / vb.height : f.vbW / f.vbH;
     wrap.classList.add('ae-format-wrapper');
-    wrap.style.setProperty('--ae-aspect', (f.vbW / f.vbH).toFixed(4));
+    wrap.style.setProperty('--ae-aspect', aspect.toFixed(4));
   } else {
     wrap.classList.remove('ae-format-wrapper');
     wrap.style.removeProperty('--ae-aspect');
@@ -244,6 +250,40 @@ window.addEventListener('load', () => setTimeout(atlasApplyEditorTexts, 0));
 if (typeof applyI18n === 'function') {
   const _applyI18n_orig = applyI18n;
   applyI18n = function () { _applyI18n_orig(); try { atlasApplyEditorTexts(); } catch (e) {} };
+}
+
+
+// ===== Perillas de tamaño del editor (?nl=1) — portado de lib/utils.js =====
+// atlasEditorSize(aeSizes, clave, preset): el slider del editor pisa el preset
+// del formato SOLO si el lector lo movio (config.sizesTouched); si no, manda el
+// preset. Publica el tamaño realmente usado para que el panel muestre ese
+// numero (si no, la perilla "parece rota": marca 11 con el grafico en 22).
+function atlasEditorSize(aeSizes, clave, preset) {
+  let out = preset;
+  if (aeSizes && typeof aeSizes[clave] === 'number') {
+    const cfg = (window.AtlasEditor && window.AtlasEditor.getConfig)
+      ? window.AtlasEditor.getConfig() : null;
+    const tocado = !!(cfg && cfg.sizesTouched && cfg.sizesTouched[clave]);
+    if (tocado) out = aeSizes[clave];
+  }
+  if (!window.__atlasEffectiveSizes) window.__atlasEffectiveSizes = {};
+  window.__atlasEffectiveSizes[clave] = out;
+  return out;
+}
+// Los tamaños guardados por el editor (null sin editor: la version publica).
+function atlasEditorSizes() {
+  const cfg = (window.AtlasEditor && window.AtlasEditor.getConfig)
+    ? window.AtlasEditor.getConfig() : null;
+  return cfg ? cfg.sizes : null;
+}
+// Zoom del CONTENIDO del grafico (perilla "Gráfico" del editor, en %). Los
+// charts SVG lo aplican dibujando en un viewBox 1/k mas chico: el recuadro del
+// PNG no cambia, pero todo lo de adentro (marcas, etiquetas, ejes, margenes)
+// sale k veces mas grande. Las tablas multiplican sus medidas por k. 1 = sin
+// tocar (siempre, sin editor).
+function atlasEditorZoom() {
+  const pct = atlasEditorSize(atlasEditorSizes(), 'chart', 100);
+  return Math.max(0.5, Math.min(1.6, (+pct || 100) / 100));
 }
 
 

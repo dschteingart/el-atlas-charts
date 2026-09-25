@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../lib/style.css">
-<link rel="stylesheet" href="../lib/editor.css?v=1">
+<link rel="stylesheet" href="../lib/editor.css?v=90">
 <style>
   .wrap-wide { max-width: 1100px; padding: 10px 20px 16px; }
   .wrap-wide header { padding-bottom: 8px; margin-bottom: 10px; }
@@ -80,7 +80,7 @@
     </div>
   </header>
 
-  <section class="chart-block" data-chart="podios" data-editor-id="podios-pais">
+  <section class="chart-block" data-chart="podios" data-editor-id="podios-pais" data-editor-caps="sizes" data-editor-sizes="title,subtitle,chart,caption" data-editor-format="off">
     <h2 class="chart-title" data-i18n="pod-title">El podio de cada país</h2>
     <p class="chart-subtitle" data-i18n="pod-subtitle">…</p>
 
@@ -143,9 +143,9 @@
 
 <script src="../lib/i18n.js"></script>
 <script src="../lib/regions.js"></script>
-<script src="./i18n-issue.js?v=34"></script>
-<script src="./utils.js?v=34"></script>
-<script src="./data-top.js?v=34"></script>
+<script src="./i18n-issue.js?v=35"></script>
+<script src="./utils.js?v=35"></script>
+<script src="./data-top.js?v=35"></script>
 <script>
 const D = window.TOPFIGS;
 const en = () => (typeof LANG !== 'undefined' && LANG === 'en');
@@ -414,6 +414,11 @@ document.getElementById('btn-csv').addEventListener('click', () => {
 const PNG = { W: 1200, H: 1200, bg: '#FAF8F3', ink: '#1A1A1A', soft: '#4A4A4A', muted: '#8A8579', rule: '#E0DCC8', accent: '#BE5D32' };
 const SERIF = '"Source Serif 4", Georgia, serif';
 const SANS = '"Source Sans 3", Arial, sans-serif';
+// Perillas del editor (?nl=1): cuerpos de titulo/subtitulo/nota y zoom de la
+// tabla. Sin editor, los presets de la casa.
+const edSz = (k, preset) => (typeof atlasEditorSize === 'function')
+  ? atlasEditorSize((typeof atlasEditorSizes === 'function') ? atlasEditorSizes() : null, k, preset) : preset;
+const edZoom = () => (typeof atlasEditorZoom === 'function') ? atlasEditorZoom() : 1;
 function wrapText(ctx, text, maxW) {
   const w = String(text).split(' '), out = []; let cur = '';
   w.forEach(x => { const p = cur ? cur + ' ' + x : x; if (ctx.measureText(p).width > maxW && cur) { out.push(cur); cur = x; } else cur = p; });
@@ -506,62 +511,84 @@ function cargarFoto(url) {
     im.src = url;
   });
 }
-async function dibujarYExportar(usarFotos) {
+async function dibujarPng(usarFotos) {
   try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
   const all = calc().filter(p => p.figs.length);
   const cv = document.createElement('canvas'); cv.width = PNG.W; cv.height = PNG.H;
   const ctx = cv.getContext('2d');
   ctx.fillStyle = PNG.bg; ctx.fillRect(0, 0, PNG.W, PNG.H);
   const PAD = 56, W = PNG.W - PAD * 2;
-  let y = 96;
-  ctx.fillStyle = PNG.ink; ctx.font = '700 52px ' + SERIF;
-  wrapText(ctx, document.querySelector('.chart-title').textContent, W).forEach(l => { ctx.fillText(l, PAD, y); y += 60; });
+  // Perillas del editor: cuerpos de los textos y zoom de la tabla (k agranda
+  // filas, retratos y nombres; con menos lugar, entran menos paises).
+  const k = edZoom();
+  const fsTit = edSz('title', 52), lhTit = Math.round(fsTit * 60 / 52);
+  const fsSub = edSz('subtitle', 32), lhSub = Math.round(fsSub * 42 / 32);
+  const fsNota = edSz('caption', 22), lhNota = Math.round(fsNota * 29 / 22);
+  let y = PAD + Math.round(fsTit * 40 / 52);
+  ctx.fillStyle = PNG.ink; ctx.font = '700 ' + fsTit + 'px ' + SERIF;
+  wrapText(ctx, document.querySelector('.chart-title').textContent, W).forEach(l => { ctx.fillText(l, PAD, y); y += lhTit; });
   const aeS = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
   const txS = (aeS && aeS.texts && aeS.texts[en() ? 'en' : 'es']) || {};
   const subPng = (txS.subtitle || '').trim() || subActual();
-  y += 2; ctx.fillStyle = PNG.soft; ctx.font = 'italic 32px ' + SERIF;   // Source Serif 4 italica de la casa
-  wrapText(ctx, subPng, W).slice(0, 2).forEach(l => { ctx.fillText(l, PAD, y); y += 42; });
-  y += 12;
-  const colP = 200, colF = Math.floor((W - colP) / 3);
-  const bottom = PNG.H - 148;
+  y += 2; ctx.fillStyle = PNG.soft; ctx.font = 'italic ' + fsSub + 'px ' + SERIF;   // Source Serif 4 italica de la casa
+  wrapText(ctx, subPng, W).slice(0, 2).forEach(l => { ctx.fillText(l, PAD, y); y += lhSub; });
+  y += Math.round(12 * k);
+  const colP = Math.round(200 * k), colF = Math.floor((W - colP) / 3);
+
+  // Pie (nota + firma): se mide PRIMERO porque define hasta donde llega la
+  // tabla. Con los tamanos de fabrica, el piso es el de siempre (H-148).
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const tx = (ae && ae.texts && ae.texts[en() ? 'en' : 'es']) || {};
+  const notaBase = (tx.caption || '').trim() || t('pod-png-note');
+  ctx.font = '700 34px ' + SANS;
+  const firmaW = Math.max(ctx.measureText('El Atlas').width, (() => { ctx.font = '600 27px ' + SANS; return ctx.measureText('Daniel Schteingart').width; })());
+  const notaMaxW = W - firmaW - 46;
+  const medirNota = (s) => { ctx.font = '400 ' + fsNota + 'px ' + SANS; return wrapText(ctx, s, notaMaxW).slice(0, 3); };
+  const nLineasNota = medirNota(notaBase + ' ' + tpl('pod-png-top', { n: 8 })).length;
+  const notaPrimera = PNG.H - 46 - (nLineasNota - 1) * lhNota;
+  const notaCentroY = notaPrimera + ((nLineasNota - 1) * lhNota) / 2 - 8;
+  const pieTop = Math.min(notaPrimera - fsNota, notaCentroY - Math.round(34 * 1.27));
+  const bottom = Math.min(PNG.H - 148, pieTop - 20);
+
   // encabezado de columnas + regla gruesa
-  ctx.font = '700 23px ' + SANS; ctx.fillStyle = PNG.muted; ctx.textAlign = 'left';
-  ctx.fillText(t('pod-col-pais').toUpperCase(), PAD, y + 28);
-  (en() ? ['1st', '2nd', '3rd'] : ['1°', '2°', '3°']).forEach((s, k) => {
-    ctx.fillText(s, PAD + colP + k * colF + 4, y + 28);
+  ctx.font = '700 ' + (23 * k) + 'px ' + SANS; ctx.fillStyle = PNG.muted; ctx.textAlign = 'left';
+  ctx.fillText(t('pod-col-pais').toUpperCase(), PAD, y + 28 * k);
+  (en() ? ['1st', '2nd', '3rd'] : ['1°', '2°', '3°']).forEach((s, i) => {
+    ctx.fillText(s, PAD + colP + i * colF + 4 * k, y + 28 * k);
   });
-  y += 44;
+  y += Math.round(44 * k);
   ctx.strokeStyle = PNG.ink; ctx.lineWidth = 2.5;
   ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(PAD + W, y); ctx.stroke();
   // tope automatico de filas: nunca pisar el caption; las que entran se
   // estiran para llenar el alto (sin aire muerto antes de la nota)
-  const nCaben = Math.max(3, Math.floor((bottom - y) / 84));
+  const nCaben = Math.max(3, Math.floor((bottom - y) / (84 * k)));
   const shown = all.slice(0, nCaben);
-  const rowH = Math.min(104, Math.floor((bottom - y) / Math.max(shown.length, 1)));
+  const rowH = Math.min(104 * k, Math.floor((bottom - y) / Math.max(shown.length, 1)));
   const fotos = [];
   if (usarFotos) {
     const urls = [];
     shown.forEach(p => p.figs.forEach(r => urls.push(fotoUrl(r))));
     const ims = await Promise.all(urls.map(cargarFoto));
-    let k = 0; shown.forEach(p => { fotos.push(p.figs.map(() => ims[k++])); });
+    let j = 0; shown.forEach(p => { fotos.push(p.figs.map(() => ims[j++])); });
   } else shown.forEach(p => fotos.push(p.figs.map(() => null)));
   const hayFotos = fotos.some(a => a.some(Boolean));
   // Cuerpo unico por columna. Los paises usan el mayor al que entra toda la
   // columna; las figuras van siempre a 25 porque las largas se abrevian.
-  const fsPais = fitFontComun(ctx, shown.map(p => paisLabel(p.i)), colP - 18, 27, 21, '700');
-  const fsFig = 25;
+  const fsPais = fitFontComun(ctx, shown.map(p => paisLabel(p.i)), colP - 18 * k, Math.round(27 * k), Math.round(21 * k), '700');
+  const fsFig = Math.round(25 * k);
+  const fsOcc = Math.round(20 * k);
   shown.forEach((p, pi) => {
     const cy = y + rowH / 2;
     ctx.textAlign = 'left';
     ctx.fillStyle = PNG.ink;
     ctx.font = '700 ' + fsPais + 'px ' + SANS;
-    const lp = partirNombre(ctx, paisLabel(p.i), colP - 18), lhP = fsPais + 4;
-    lp.forEach((l, li) => ctx.fillText(l, PAD, cy + 9 - (lp.length - 1) * lhP / 2 + li * lhP));
-    p.figs.forEach((r, k) => {
-      const x0 = PAD + colP + k * colF + 4;
-      let tx = x0;
+    const lp = partirNombre(ctx, paisLabel(p.i), colP - 18 * k), lhP = fsPais + 4;
+    lp.forEach((l, li) => ctx.fillText(l, PAD, cy + 9 * k - (lp.length - 1) * lhP / 2 + li * lhP));
+    p.figs.forEach((r, i) => {
+      const x0 = PAD + colP + i * colF + 4 * k;
+      let tx2 = x0;
       if (hayFotos) {
-        const dph = Math.min(rowH - 34, 54), im = fotos[pi][k], pcx = x0 + dph / 2, pcy = cy;
+        const dph = Math.min(rowH - 34 * k, 54 * k), im = fotos[pi][i], pcx = x0 + dph / 2, pcy = cy;
         ctx.save(); ctx.beginPath(); ctx.arc(pcx, pcy, dph / 2, 0, Math.PI * 2); ctx.clip();
         ctx.fillStyle = '#ECE7D8'; ctx.fillRect(pcx - dph / 2, pcy - dph / 2, dph, dph);
         if (im) {
@@ -569,40 +596,32 @@ async function dibujarYExportar(usarFotos) {
           ctx.drawImage(im, (im.width - s0) / 2, Math.max(0, (im.height - s0) / 6), s0, s0, pcx - dph / 2, pcy - dph / 2, dph, dph);
         }
         ctx.restore();
-        tx = x0 + dph + 10;
+        tx2 = x0 + dph + 10 * k;
       }
-      const maxW = x0 + colF - 16 - tx;
+      const maxW = x0 + colF - 16 * k - tx2;
       ctx.fillStyle = PNG.ink;
       ctx.font = '600 ' + fsFig + 'px ' + SANS;
-      ctx.fillText(abreviarNombre(ctx, nombre(r), maxW), tx, cy - 3);
-      const yOcc = cy + 23;
-      ctx.font = '700 20px ' + SANS;
+      ctx.fillText(abreviarNombre(ctx, nombre(r), maxW), tx2, cy - 3 * k);
+      const yOcc = cy + 23 * k;
+      ctx.font = '700 ' + fsOcc + 'px ' + SANS;
       const hpiTxt = fmtHpi(r[5]);
       const hpiW = ctx.measureText(hpiTxt).width;
-      ctx.fillStyle = PNG.soft; ctx.font = '400 20px ' + SANS;
-      ctx.fillText(fitText(ctx, occLabel(r), maxW - hpiW - 14), tx, yOcc);
-      ctx.fillStyle = PNG.accent; ctx.font = '700 20px ' + SANS; ctx.textAlign = 'right';
-      ctx.fillText(hpiTxt, x0 + colF - 16, yOcc);
+      ctx.fillStyle = PNG.soft; ctx.font = '400 ' + fsOcc + 'px ' + SANS;
+      ctx.fillText(fitText(ctx, occLabel(r), maxW - hpiW - 14 * k), tx2, yOcc);
+      ctx.fillStyle = PNG.accent; ctx.font = '700 ' + fsOcc + 'px ' + SANS; ctx.textAlign = 'right';
+      ctx.fillText(hpiTxt, x0 + colF - 16 * k, yOcc);
       ctx.textAlign = 'left';
     });
     y += rowH;
     ctx.strokeStyle = PNG.rule; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(PAD + W, y); ctx.stroke();
   });
-  // caption minimo + firma (el custom del editor manda)
-  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
-  const tx = (ae && ae.texts && ae.texts[en() ? 'en' : 'es']) || {};
-  let nota = (tx.caption || '').trim() || t('pod-png-note');
+  // la nota dice cuantos paises entraron: su TEXTO se arma recien aca
+  let nota = notaBase;
   if (all.length > shown.length) nota += ' ' + tpl('pod-png-top', { n: shown.length });
-  ctx.font = '700 34px ' + SANS;
-  const firmaW = Math.max(ctx.measureText('El Atlas').width, (() => { ctx.font = '600 27px ' + SANS; return ctx.measureText('Daniel Schteingart').width; })());
-  ctx.textAlign = 'left'; ctx.fillStyle = PNG.muted; ctx.font = '400 22px ' + SANS;
-  const notaMaxW = W - firmaW - 46;
-  const notaLineas = wrapText(ctx, nota, notaMaxW).slice(0, 3);
-  const notaLineH = 29;
-  let ny = PNG.H - 46 - (notaLineas.length - 1) * notaLineH;
-  const notaCentroY = ny + ((notaLineas.length - 1) * notaLineH) / 2 - 8;
-  notaLineas.forEach(l => { ctx.fillText(l, PAD, ny); ny += notaLineH; });
+  ctx.textAlign = 'left'; ctx.fillStyle = PNG.muted; ctx.font = '400 ' + fsNota + 'px ' + SANS;
+  let ny = notaPrimera;
+  medirNota(nota).forEach(l => { ctx.fillText(l, PAD, ny); ny += lhNota; });
   (function () {
     const partes = t('attribution-text').split('·').map(x => x.trim()).filter(Boolean);
     const size1 = 34, size2 = Math.round(34 * 0.78), lineH = Math.round(34 * 1.15);
@@ -627,16 +646,24 @@ async function dibujarYExportar(usarFotos) {
     }
     ctx.textBaseline = 'alphabetic';
   })();
-  return new Promise(res => cv.toBlob(b => {
-    if (b) {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(b);
-      a.download = en() ? 'the-atlas-05-podium-countries.png' : 'el-atlas-05-podio-paises.png';
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      URL.revokeObjectURL(a.href);
-    }
-    res(b ? b.size : 0);
-  }, 'image/png'));
+  return cv;
+}
+async function dibujarYExportar(usarFotos) {
+  const cv = await dibujarPng(usarFotos);
+  return new Promise((res, rej) => {
+    try {
+      cv.toBlob(b => {
+        if (b) {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(b);
+          a.download = en() ? 'the-atlas-05-podium-countries.png' : 'el-atlas-05-podio-paises.png';
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          URL.revokeObjectURL(a.href);
+        }
+        res(b ? b.size : 0);
+      }, 'image/png');
+    } catch (e) { rej(e); }
+  });
 }
 async function exportPng() {
   // en file:// las fotos locales ensucian el canvas (SecurityError en toBlob):
@@ -648,6 +675,8 @@ async function exportPng() {
 }
 document.getElementById('btn-png').addEventListener('click', exportPng);
 window.__podExportPng = exportPng;
+// Vista previa del editor (?nl=1): el MISMO canvas que baja el boton.
+window.__atlasPngPreview = () => dibujarPng(true);
 
 // ===== controles =====
 document.getElementById('r-y0').addEventListener('input', e => { st.y0 = Math.min(s2y(e.target.value), st.y1); syncPeriodo(); render(); });
@@ -707,7 +736,7 @@ function ttHtml(r) {
 function cargarBaseCompleta() {
   if (window.__fullReq) return; window.__fullReq = true;
   const sc = document.createElement('script');
-  sc.src = './data-top-full.js?v=34';
+  sc.src = './data-top-full.js?v=35';
   sc.onload = () => {
     if (window.TOPFIGS_REST) { D.rows = D.rows.concat(window.TOPFIGS_REST); window.__full = true; render(); }
   };
@@ -764,7 +793,7 @@ cargarBaseCompleta();
 if (typeof setupLangToggle === 'function') setupLangToggle(() => { applyI18n(); fillSelects(); renderChips(); render(); });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=34"></script>
-<script src="../lib/editor.js?v=8"></script>
+<script src="./nav.js?v=35"></script>
+<script src="../lib/editor.js?v=90"></script>
 </body>
 </html>

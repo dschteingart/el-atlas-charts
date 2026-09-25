@@ -1,5 +1,5 @@
 /* =============================================================
- *  editor.css — sidebar editorial para los charts del N°2
+ *  editor.css — sidebar editorial de los charts (?nl=1), compartido
  * =============================================================
  *
  * Panel fijo a la derecha (300px) que aparece solo en chart-1/2/3.html
@@ -199,10 +199,83 @@ body.ae-open {
 /* ===== Sliders ===== */
 .ae-slider-row {
   display: grid;
-  grid-template-columns: 1fr 90px 32px;
+  grid-template-columns: 1fr 84px 34px 14px;
   gap: 6px;
   align-items: center;
   margin-bottom: 7px;
+}
+/* ↺ de cada perilla: visible solo si el lector la movió (lo maneja el JS). */
+.ae-size-reset {
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--ae-accent);
+  cursor: pointer;
+  visibility: hidden;
+}
+.ae-size-reset:hover { color: #a64d28; }
+
+/* ===== Vista previa del PNG =====
+ * Queda fija arriba mientras se mueven las perillas de abajo. */
+.ae-preview-section {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--ae-bg);
+  margin: -12px -14px 14px;
+  padding: 10px 14px 10px;
+  border-bottom: 0.5px solid var(--ae-rule);
+}
+.ae-preview-section .ae-section-title { display: flex; justify-content: space-between; }
+.ae-preview-dims {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+.ae-preview {
+  min-height: 60px;
+  border: 1px solid var(--ae-rule);
+  border-radius: 3px;
+  background: var(--ae-bg-soft);
+  cursor: zoom-in;
+  line-height: 0;
+  transition: opacity 0.15s ease;
+  outline: none;
+}
+.ae-preview:focus-visible { border-color: var(--ae-accent); }
+.ae-preview.ae-preview-busy { opacity: 0.55; }
+.ae-preview canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 46vh;
+  object-fit: contain;
+}
+/* Ampliada: la misma imagen sobre la página (clic o Escape cierra). */
+.ae-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(26, 26, 26, 0.72);
+  cursor: zoom-out;
+  padding: 3vh 3vw;
+  box-sizing: border-box;
+}
+.ae-lightbox.ae-open { display: flex; }
+.ae-lightbox canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.35);
 }
 .ae-slider-row label {
   font-size: 11px;

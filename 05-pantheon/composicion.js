@@ -231,9 +231,31 @@
   }
 
   // ===================== Layout por formato =====================
-  const W = 1100;
+  // Ancho del viewBox (1100; en el PNG puede ensancharse para llenar el hueco).
+  let W = 1100;
   function isMobile() { return (typeof isMobileViewport === 'function') ? isMobileViewport() : (window.innerWidth || 1024) < 768; }
+  // Preset del formato + las perillas que el lector haya movido en el editor:
+  // ticks, titulo del eje, nombres y valores (van juntos: los valores y el %
+  // de adentro de la barra conservan su proporcion con el nombre) y leyenda.
+  // El zoom del editor multiplica todo eso y los margenes, pero NO el grosor
+  // de las barras: el grafico ya llena el alto del PNG con las filas, asi que
+  // las barras toman el lugar que queda (igual que las filas de las tablas).
+  // Un zoom parejo que tambien engordara las barras no tendria donde crecer.
   function layout(fmt, mobile) {
+    const L = layoutBase(fmt, mobile);
+    if (!fmt) return L;
+    const aeSz = (typeof atlasEditorSizes === 'function') ? atlasEditorSizes() : null;
+    const ed = (k, preset) => (typeof atlasEditorSize === 'function') ? atlasEditorSize(aeSz, k, preset) : preset;
+    const z = (typeof atlasEditorZoom === 'function') ? atlasEditorZoom() : 1;
+    const f = L.fs, name = ed('labels', f.name);
+    L.fs = {
+      tick: ed('ticks', f.tick) * z, axis: ed('axisTitle', f.axis) * z, leg: ed('special', f.leg) * z,
+      name: name * z, val: f.val * name / f.name * z, pct: f.pct * name / f.name * z
+    };
+    L.pad = L.pad * z;
+    return L;
+  }
+  function layoutBase(fmt, mobile) {
     if (fmt === 'newsletter' || fmt === 'square') return { barH: 42, gap: 12, fs: { name: 23, tick: 20, axis: 23, leg: 20, val: 21, pct: 19 }, pad: 26 };
     if (fmt === 'mobile') return { barH: 42, gap: 12, fs: { name: 26, tick: 22, axis: 26, leg: 23, val: 24, pct: 21 }, pad: 28 };
     if (fmt === 'public' || fmt === 'worldmap') return { barH: 28, gap: 9, fs: { name: 16, tick: 14, axis: 16, leg: 15, val: 15, pct: 14 }, pad: 20 };
@@ -318,6 +340,7 @@
     const fmt = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
     const mobile = !fmt && isMobile();
     const L = layout(fmt, mobile), FS = L.fs;
+    W = 1100;
     const agg = aggregate();
     const rows = computeEntities(agg).map(rowOf).sort((a, b) => b.sortVal - a.sortVal);
     const relativa = st.measure === 'percap' || st.measure === 'share';
@@ -336,7 +359,6 @@
     const WGAP = L.gap * 2.2;
     let maxName = 0;
     rows.concat(worldRow || []).forEach(d => { const w2 = measure(d.name, FS.name, 700); if (w2 > maxName) maxName = w2; });
-    const left = Math.min(Math.round(W * 0.42), Math.ceil(maxName) + FS.name * 1.1);
     // En el PNG la n de la punta se va (Daniel, 2026-09-15): en % del total la
     // barra siempre llega a 100 y ese número era el único que sobraba. El
     // margen derecho pasa a ser un respiro.
@@ -345,17 +367,49 @@
     if (conPunta) rows.concat(worldRow || []).forEach(d => { const w2 = measure(d.endLabel, FS.val, 600); if (w2 > maxEnd) maxEnd = w2; });
     const right = conPunta ? Math.ceil(maxEnd) + FS.val * 1.6 : Math.round(FS.val * 1.2);
     const top = L.pad;
-    const plotW = W - left - right;
     const plotH = nBars * (L.barH + L.gap) - L.gap + (worldRow ? WGAP : 0);
-
     // leyenda de RUBROS (en ocupaciones también: los tonos son de su gama)
     const conLeyenda = st.breakdown !== 'total';
-    const leg = conLeyenda ? legendLayout(FS.leg, plotW) : null;
-    const legH = leg ? leg.rows.length * leg.rowH + FS.leg * 1.2 : 0;
     // el titulo del eje respira antes de la leyenda: con 2.1 quedaban pegados
     // (Daniel 2026-09-14). El colchon escala con el cuerpo de la leyenda.
     const ejeH = FS.tick * 1.6 + FS.axis * 1.5 + FS.leg * 2.0;
-    const H = top + plotH + ejeH + legH + L.pad;
+    const geom = (Wv) => {
+      const left = Math.min(Math.round(Wv * 0.42), Math.ceil(maxName) + FS.name * 1.1);
+      const plotW = Wv - left - right;
+      const leg = conLeyenda ? legendLayout(FS.leg, plotW) : null;
+      const legH = leg ? leg.rows.length * leg.rowH + FS.leg * 1.2 : 0;
+      return { left, plotW, leg, legH, H: top + plotH + ejeH + legH + L.pad };
+    };
+    let g = geom(W);
+    // Si el gráfico queda MAS ALTO que el hueco del PNG (muchas filas, o el
+    // zoom del editor), el lienzo lo achicaba y dejaba franjas muertas a los
+    // costados. En vez de eso se ensancha el viewBox: las barras usan todo el
+    // ancho. Ensanchar puede reacomodar la leyenda en menos renglones y bajar
+    // el alto, asi que se prueban unos pocos anchos y se elige el que deja el
+    // grafico MAS GRANDE (escala = cuanto entra del viewBox en el hueco).
+    const box = (fmt && typeof atlasPngBox === 'function') ? atlasPngBox('comp', fmt) : null;
+    if (box && box.h > 0) {
+      const W0 = W, cands = [W0];
+      for (let i = 0; i < 3; i++) {
+        const gi = geom(cands[cands.length - 1]);
+        const wi = Math.max(W0, Math.round(gi.H * box.w / box.h));
+        if (cands.indexOf(wi) >= 0) break;
+        cands.push(wi);
+      }
+      let best = null;
+      cands.forEach(wc => {
+        const gc = geom(wc);
+        const s = Math.min(box.w / wc, box.h / gc.H);   // cuánto entra en el hueco
+        const ancho = wc * s;                            // ancho dibujado
+        // primero el que deja la tipografía más grande; a igual escala, el que
+        // llena más ancho (si no, el gráfico queda con franjas a los costados).
+        if (!best || s > best.s + 1e-4 || (s > best.s - 1e-4 && ancho > best.ancho + 0.5)) {
+          best = { w: wc, g: gc, s, ancho };
+        }
+      });
+      W = best.w; g = best.g;
+    }
+    const left = g.left, plotW = g.plotW, leg = g.leg, legH = g.legH, H = g.H;
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
     if (typeof applyFormatWrapper === 'function') applyFormatWrapper(svg, fmt);
 

@@ -21,7 +21,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../lib/style.css">
-<link rel="stylesheet" href="../lib/editor.css?v=1">
+<link rel="stylesheet" href="../lib/editor.css?v=90">
 <style>
   .wrap-wide { max-width: 1100px; padding: 10px 20px 16px; }
   .wrap-wide header { padding-bottom: 8px; margin-bottom: 10px; }
@@ -69,7 +69,7 @@
     </div>
   </header>
 
-  <section class="chart-block" data-chart="reparto" data-editor-id="reparto-fama">
+  <section class="chart-block" data-chart="reparto" data-editor-id="reparto-fama" data-editor-caps="sizes" data-editor-sizes="title,subtitle,chart,caption" data-editor-format="off">
     <h2 class="chart-title" id="rep-title">La fama ya no es monopolio europeo</h2>
     <p class="chart-subtitle" id="rep-subtitle">Europa Occidental concentraba el 57% de las figuras célebres del mundo nacidas antes de 1900; entre las nacidas después, un tercio. América Latina más que triplicó su parte.</p>
 
@@ -120,9 +120,9 @@
 </div>
 
 <script src="../lib/i18n.js"></script>
-<script src="./i18n-issue.js?v=34"></script>
-<script src="./utils.js?v=34"></script>
-<script src="./data-percap-map.js?v=34"></script>
+<script src="./i18n-issue.js?v=35"></script>
+<script src="./utils.js?v=35"></script>
+<script src="./data-percap-map.js?v=35"></script>
 <script>
 const E = window.PCMAP;
 const REG_LABEL = {
@@ -333,6 +333,11 @@ document.getElementById('btn-csv').addEventListener('click', () => {
 const PNG = { W: 1200, H: 1200, bg: '#FAF8F3', ink: '#1A1A1A', soft: '#4A4A4A', muted: '#8A8579', rule: '#E0DCC8', accent: '#BE5D32' };
 const SERIF = '"Source Serif 4", Georgia, serif';
 const SANS = '"Source Sans 3", Arial, sans-serif';
+// Perillas del editor (?nl=1): cuerpos de titulo/subtitulo/nota y zoom de la
+// tabla. Sin editor, los presets de la casa.
+const edSz = (k, preset) => (typeof atlasEditorSize === 'function')
+  ? atlasEditorSize((typeof atlasEditorSizes === 'function') ? atlasEditorSizes() : null, k, preset) : preset;
+const edZoom = () => (typeof atlasEditorZoom === 'function') ? atlasEditorZoom() : 1;
 
 function wrapText(ctx, text, maxW) {
   const words = String(text).split(' '), lines = []; let cur = '';
@@ -344,7 +349,7 @@ function wrapText(ctx, text, maxW) {
   return lines;
 }
 
-async function exportPng() {
+async function dibujarPng() {
   try { await Promise.race([document.fonts.ready, new Promise(r => setTimeout(r, 1500))]); } catch (e) {}
   const { rows, sumPre, sumPost } = compute();
   const shown = st.vista === 'pais' ? rows.slice(0, 12) : rows;
@@ -353,21 +358,48 @@ async function exportPng() {
   const ctx = cv.getContext('2d');
   ctx.fillStyle = PNG.bg; ctx.fillRect(0, 0, PNG.W, PNG.H);
   const PAD = 56, W = PNG.W - PAD * 2;
-  let y = 96;
+  // Perillas del editor: cuerpos de los textos y zoom de la tabla.
+  const k = edZoom();
+  const fsTit = edSz('title', 52), lhTit = Math.round(fsTit * 60 / 52);
+  const fsSub = edSz('subtitle', 32), lhSub = Math.round(fsSub * 42 / 32);
+  const fsNota = edSz('caption', 22), lhNota = Math.round(fsNota * 29 / 22);
+  let y = PAD + Math.round(fsTit * 40 / 52);
 
-  ctx.fillStyle = PNG.ink; ctx.font = '700 52px ' + SERIF; ctx.textBaseline = 'alphabetic';
-  wrapText(ctx, document.getElementById('rep-title').textContent, W).forEach(l => { ctx.fillText(l, PAD, y); y += 60; });
+  ctx.fillStyle = PNG.ink; ctx.font = '700 ' + fsTit + 'px ' + SERIF; ctx.textBaseline = 'alphabetic';
+  wrapText(ctx, document.getElementById('rep-title').textContent, W).forEach(l => { ctx.fillText(l, PAD, y); y += lhTit; });
   y += 4;
-  ctx.fillStyle = PNG.soft; ctx.font = 'italic 32px ' + SERIF;   // subtitulo de la casa: Source Serif 4 italica
-  wrapText(ctx, document.getElementById('rep-subtitle').textContent, W).slice(0, 3).forEach(l => { ctx.fillText(l, PAD, y); y += 42; });
-  y += 18;
+  ctx.fillStyle = PNG.soft; ctx.font = 'italic ' + fsSub + 'px ' + SERIF;   // subtitulo de la casa: Source Serif 4 italica
+  wrapText(ctx, document.getElementById('rep-subtitle').textContent, W).slice(0, 3).forEach(l => { ctx.fillText(l, PAD, y); y += lhSub; });
+  y += Math.round(18 * k);
+
+  // Pie (nota + firma): se mide PRIMERO porque define hasta donde llega la
+  // tabla. El caption custom del editor manda sobre la fuente de la pagina.
+  const ae = (window.AtlasEditor && window.AtlasEditor.getConfig) ? window.AtlasEditor.getConfig() : null;
+  const txEd = (ae && ae.texts && ae.texts[en() ? 'en' : 'es']) || {};
+  let notaTxt = (txEd.caption || '').trim();
+  if (!notaTxt) {
+    // caption minimalista en el PNG: fuente + solo el estado que cambia la lectura
+    notaTxt = t('rep-sources');
+    const domTxt = st.dom >= 0 ? (en() ? E.domains[st.dom].en : E.domains[st.dom].es) : null;
+    if (domTxt) notaTxt = (en() ? 'Field: ' : 'Rubro: ') + domTxt + '. ' + notaTxt;
+    if (st.vista === 'pais') notaTxt += ' ' + tpl('rep-png-note-pais', { n: shown.length });
+  }
+  ctx.font = '700 34px ' + SANS;
+  const firmaW = Math.max(ctx.measureText('El Atlas').width, (() => { ctx.font = '600 27px ' + SANS; return ctx.measureText('Daniel Schteingart').width; })());
+  const notaMaxW = W - firmaW - 46;
+  ctx.font = '400 ' + fsNota + 'px ' + SANS;
+  const notaLineas = wrapText(ctx, notaTxt, notaMaxW).slice(0, 3);
+  const notaPrimera = PNG.H - 46 - (notaLineas.length - 1) * lhNota;
+  const notaCentroY = notaPrimera + ((notaLineas.length - 1) * lhNota) / 2 - 8;
+  const pieTop = Math.min(notaPrimera - fsNota, notaCentroY - Math.round(34 * 1.27));
+  const bottom = Math.min(PNG.H - 158, pieTop - 20);
 
   // geometría de la tabla. La columna de nombres se dimensiona por el nombre
   // mas largo, no por un 34% fijo: asi "Europa del Este y Asia Central" y
   // "Medio Oriente y N. de Africa" entran enteros (Daniel 2026-09-15). El techo
   // le deja a las cinco columnas numericas lugar para sus valores; si con el
   // techo todavia no entra, baja el cuerpo de TODA la columna antes de recortar.
-  const FS_NOMBRE_MAX = 30, FS_NOMBRE_MIN = 24;
+  const FS_NOMBRE_MAX = Math.round(30 * k), FS_NOMBRE_MIN = Math.round(24 * k);
   let fsNombre = FS_NOMBRE_MAX, anchoNombre = 0;
   const midoNombres = (f) => {
     ctx.font = '600 ' + f + 'px ' + SANS;
@@ -376,12 +408,11 @@ async function exportPng() {
     return m;
   };
   anchoNombre = midoNombres(fsNombre);
-  const colName = Math.round(Math.min(Math.max(W * 0.34, anchoNombre + 18), W * 0.46));
-  while (fsNombre > FS_NOMBRE_MIN && midoNombres(fsNombre) > colName - 16) fsNombre--;
+  const colName = Math.round(Math.min(Math.max(W * 0.34, anchoNombre + 18 * k), W * 0.46));
+  while (fsNombre > FS_NOMBRE_MIN && midoNombres(fsNombre) > colName - 16 * k) fsNombre--;
   const colNum = Math.round((W - colName) / 5);
   const xs = [PAD, PAD + colName];
   for (let i = 1; i <= 5; i++) xs.push(PAD + colName + colNum * i);
-  const bottom = PNG.H - 158;
 
   // Encabezados: cuerpo comun para las columnas numericas y, si aun asi alguno
   // no entra en su celda, dos renglones. "VARIACIÓN (PP)" mide mas que su
@@ -389,46 +420,47 @@ async function exportPng() {
   const heads = [t(st.vista === 'region' ? 'rep-vista-region' : 'rep-vista-pais').toUpperCase(),
                  (t('rep-col-hasta') + ' ' + st.corte).toUpperCase(), (t('rep-col-desde') + ' ' + st.corte).toUpperCase(),
                  t('rep-col-total').toUpperCase(), t('rep-col-delta').toUpperCase(), 'N'];
-  const anchoCol = colNum - 14;
+  const anchoCol = colNum - 14 * k;
   const entra = (h, f) => { ctx.font = '700 ' + f + 'px ' + SANS; return ctx.measureText(h).width <= anchoCol; };
   // Se prioriza el cuerpo sobre el renglon unico: partir "VARIACION (PP)" en dos
   // se lee mejor que bajar todos los titulos a 18 (el PNG se mira a un tercio).
   const cabeEnDos = (h, f) => {
     if (entra(h, f)) return true;
     const w = h.split(' ');
-    for (let k = 1; k < w.length; k++) {
-      if (ctx.measureText(w.slice(0, k).join(' ')).width <= anchoCol
-          && ctx.measureText(w.slice(k).join(' ')).width <= anchoCol) return true;
+    for (let j = 1; j < w.length; j++) {
+      if (ctx.measureText(w.slice(0, j).join(' ')).width <= anchoCol
+          && ctx.measureText(w.slice(j).join(' ')).width <= anchoCol) return true;
     }
     return false;
   };
-  let fsHead = 23;
-  while (fsHead > 18 && !heads.slice(1).every(h => cabeEnDos(h, fsHead))) fsHead--;
+  let fsHead = Math.round(23 * k);
+  const fsHeadMin = Math.round(18 * k);
+  while (fsHead > fsHeadMin && !heads.slice(1).every(h => cabeEnDos(h, fsHead))) fsHead--;
   const headLines = heads.map((h, i) => {
     if (i === 0 || entra(h, fsHead)) return [h];
     const w = h.split(' ');
     if (w.length < 2) return [h];
     let mejor = null, dif = Infinity;
-    for (let k = 1; k < w.length; k++) {
-      const a1 = w.slice(0, k).join(' '), b1 = w.slice(k).join(' ');
+    for (let j = 1; j < w.length; j++) {
+      const a1 = w.slice(0, j).join(' '), b1 = w.slice(j).join(' ');
       const wa = ctx.measureText(a1).width, wb = ctx.measureText(b1).width;
       if (Math.max(wa, wb) > anchoCol) continue;
       if (Math.abs(wa - wb) < dif) { dif = Math.abs(wa - wb); mejor = [a1, b1]; }
     }
     return mejor || [h];
   });
-  const headLH = fsHead + 7, nHead = Math.max.apply(null, headLines.map(l => l.length));
-  const headH = 16 + nHead * headLH;
-  const rowH = Math.max(46, Math.min(68, Math.floor((bottom - y - headH) / Math.max(shown.length, 1))));
+  const headLH = fsHead + 7 * k, nHead = Math.max.apply(null, headLines.map(l => l.length));
+  const headH = 16 * k + nHead * headLH;
+  const rowH = Math.max(46 * k, Math.min(68 * k, Math.floor((bottom - y - headH) / Math.max(shown.length, 1))));
 
   ctx.font = '700 ' + fsHead + 'px ' + SANS; ctx.fillStyle = PNG.muted;
   headLines.forEach((ls, i) => {
     // alineados abajo: los de un renglon comparten linea de base con el segundo
     // renglon de los partidos
-    const y0 = y + headH - 16 - (ls.length - 1) * headLH;
-    ls.forEach((l, k) => {
-      if (i === 0) { ctx.textAlign = 'left'; ctx.fillText(l, xs[0], y0 + k * headLH); }
-      else { ctx.textAlign = 'right'; ctx.fillText(l, xs[i] + colNum - 14, y0 + k * headLH); }
+    const y0 = y + headH - 16 * k - (ls.length - 1) * headLH;
+    ls.forEach((l, j) => {
+      if (i === 0) { ctx.textAlign = 'left'; ctx.fillText(l, xs[0], y0 + j * headLH); }
+      else { ctx.textAlign = 'right'; ctx.fillText(l, xs[i] + colNum - 14 * k, y0 + j * headLH); }
     });
   });
   y += headH;
@@ -436,6 +468,7 @@ async function exportPng() {
   ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(PAD + W, y); ctx.stroke();
 
   // filas
+  const fsVal = Math.round(30 * k), fsN = Math.round(26 * k);
   shown.forEach(r => {
     const cells = [[r.pre, heatA(r.pre, mx.pre)], [r.post, heatA(r.post, mx.post)], [r.tot, heatA(r.tot, mx.tot)]];
     cells.forEach(([v, a], i) => {
@@ -446,43 +479,30 @@ async function exportPng() {
     ctx.fillStyle = (r.dif != null && r.dif < 0) ? 'rgba(74,111,143,' + dA.toFixed(3) + ')' : 'rgba(190,93,50,' + dA.toFixed(3) + ')';
     ctx.fillRect(xs[4], y, colNum, rowH);
 
-    const ty = y + rowH / 2 + 11;
+    const ty = y + rowH / 2 + 11 * k;
     ctx.fillStyle = PNG.ink; ctx.font = '600 ' + fsNombre + 'px ' + SANS; ctx.textAlign = 'left';
-    ctx.fillText(fitText(ctx, r.name, colName - 16), xs[0], ty);
-    ctx.font = '400 30px ' + SANS; ctx.textAlign = 'right';
-    ctx.fillText(fmt1(r.pre), xs[1] + colNum - 14, ty);
-    ctx.fillText(fmt1(r.post), xs[2] + colNum - 14, ty);
-    ctx.font = '600 30px ' + SANS;
-    ctx.fillText(fmt1(r.tot), xs[3] + colNum - 14, ty);
-    ctx.font = '400 30px ' + SANS;
-    ctx.fillText(r.dif == null ? '—' : (r.dif >= 0 ? '+' : '−') + fmt1(Math.abs(r.dif)), xs[4] + colNum - 14, ty);
-    ctx.fillStyle = PNG.muted; ctx.font = '400 26px ' + SANS;
-    ctx.fillText(r.n.toLocaleString(loc()), xs[5] + colNum - 14, ty);
+    ctx.fillText(fitText(ctx, r.name, colName - 16 * k), xs[0], ty);
+    ctx.font = '400 ' + fsVal + 'px ' + SANS; ctx.textAlign = 'right';
+    ctx.fillText(fmt1(r.pre), xs[1] + colNum - 14 * k, ty);
+    ctx.fillText(fmt1(r.post), xs[2] + colNum - 14 * k, ty);
+    ctx.font = '600 ' + fsVal + 'px ' + SANS;
+    ctx.fillText(fmt1(r.tot), xs[3] + colNum - 14 * k, ty);
+    ctx.font = '400 ' + fsVal + 'px ' + SANS;
+    ctx.fillText(r.dif == null ? '—' : (r.dif >= 0 ? '+' : '−') + fmt1(Math.abs(r.dif)), xs[4] + colNum - 14 * k, ty);
+    ctx.fillStyle = PNG.muted; ctx.font = '400 ' + fsN + 'px ' + SANS;
+    ctx.fillText(r.n.toLocaleString(loc()), xs[5] + colNum - 14 * k, ty);
     y += rowH;
     ctx.strokeStyle = PNG.rule; ctx.lineWidth = 1;
     ctx.beginPath(); ctx.moveTo(PAD, y); ctx.lineTo(PAD + W, y); ctx.stroke();
   });
 
   // nota + firma
-  ctx.textAlign = 'left'; ctx.fillStyle = PNG.muted; ctx.font = '400 22px ' + SANS;
-  // caption minimalista en el PNG: fuente + solo el estado que cambia la lectura
-  let notaTxt = t('rep-sources');
-  const domTxt = st.dom >= 0 ? (en() ? E.domains[st.dom].en : E.domains[st.dom].es) : null;
-  if (domTxt) notaTxt = (en() ? 'Field: ' : 'Rubro: ') + domTxt + '. ' + notaTxt;
-  if (st.vista === 'pais') notaTxt += ' ' + tpl('rep-png-note-pais', { n: shown.length });
-  // el caption no pasa por debajo de la firma: ancho reservado + firma centrada
-  ctx.font = '700 34px ' + SANS;
-  const firmaW = Math.max(ctx.measureText('El Atlas').width, (() => { ctx.font = '600 27px ' + SANS; return ctx.measureText('Daniel Schteingart').width; })());
-  ctx.fillStyle = PNG.muted; ctx.font = '400 22px ' + SANS; ctx.textAlign = 'left';
-  const notaMaxW = W - firmaW - 46;
-  const notaLineas = wrapText(ctx, notaTxt, notaMaxW).slice(0, 3);
-  const notaLineH = 29;
-  let ny = PNG.H - 46 - (notaLineas.length - 1) * notaLineH;
-  const notaCentroY = ny + ((notaLineas.length - 1) * notaLineH) / 2 - 8;
-  notaLineas.forEach(l => { ctx.fillText(l, PAD, ny); ny += notaLineH; });
+  ctx.fillStyle = PNG.muted; ctx.font = '400 ' + fsNota + 'px ' + SANS; ctx.textAlign = 'left';
+  let ny = notaPrimera;
+  notaLineas.forEach(l => { ctx.fillText(l, PAD, ny); ny += lhNota; });
   // firma de la casa: dos lineas, Source Sans, terracota, bloque a la derecha
   (function () {
-    const partes = t('attribution-text').split('\u00b7').map(x => x.trim()).filter(Boolean);
+    const partes = t('attribution-text').split('·').map(x => x.trim()).filter(Boolean);
     const size1 = 34, size2 = Math.round(34 * 0.78), lineH = Math.round(34 * 1.15);
     const cyF = notaCentroY;
     ctx.fillStyle = PNG.accent;
@@ -491,13 +511,13 @@ async function exportPng() {
       ctx.font = '700 ' + size1 + 'px ' + SANS;
       const w1 = ctx.measureText(partes[0]).width;
       ctx.font = '600 ' + size2 + 'px ' + SANS;
-      const w2 = ctx.measureText(partes.slice(1).join(' \u00b7 ')).width;
+      const w2 = ctx.measureText(partes.slice(1).join(' · ')).width;
       const cx = PNG.W - PAD - Math.max(w1, w2) / 2;
       ctx.textAlign = 'center';
       ctx.font = '700 ' + size1 + 'px ' + SANS;
       ctx.fillText(partes[0], cx, cyF - lineH * 0.42);
       ctx.font = '600 ' + size2 + 'px ' + SANS;
-      ctx.fillText(partes.slice(1).join(' \u00b7 '), cx, cyF + lineH * 0.42);
+      ctx.fillText(partes.slice(1).join(' · '), cx, cyF + lineH * 0.42);
     } else {
       ctx.textAlign = 'right';
       ctx.font = '600 ' + size1 + 'px ' + SANS;
@@ -505,7 +525,11 @@ async function exportPng() {
     }
     ctx.textBaseline = 'alphabetic';
   })();
+  return cv;
+}
 
+async function exportPng() {
+  const cv = await dibujarPng();
   return new Promise(res => cv.toBlob(b => {
     if (b) {
       const a = document.createElement('a');
@@ -524,6 +548,8 @@ const fitText = (ctx, s, maxW) => {
 };
 document.getElementById('btn-png').addEventListener('click', exportPng);
 window.__repExportPng = exportPng;   // para verificación programática
+// Vista previa del editor (?nl=1): el MISMO canvas que baja el boton.
+window.__atlasPngPreview = () => dibujarPng();
 
 // ===================== controles =====================
 document.querySelectorAll('#c-vista button').forEach(b => b.addEventListener('click', () => {
@@ -550,7 +576,7 @@ rep_applyUrlState();
 if (typeof setupLangToggle === 'function') setupLangToggle(() => { applyI18n(); fillDomSelect(); render(); });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=34"></script>
-<script src="../lib/editor.js?v=8"></script>
+<script src="./nav.js?v=35"></script>
+<script src="../lib/editor.js?v=90"></script>
 </body>
 </html>

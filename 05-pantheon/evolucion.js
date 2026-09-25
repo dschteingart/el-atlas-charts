@@ -92,8 +92,16 @@ function ev_dims(nPan) {
   const fmt = (typeof getActivePngFormat === 'function') ? getActivePngFormat() : null;
   const mobile = !fmt && ev_isMobile();
   if (fmt && typeof PNG_FORMATS !== 'undefined' && PNG_FORMATS[fmt]) {
-    EV_W = PNG_FORMATS[fmt].vbW;
-    EV_H = fmt === 'square' ? 910 : fmt === 'newsletter' ? 860 : PNG_FORMATS[fmt].vbH;
+    // Zoom del editor: el viewBox se achica 1/k y todo lo de adentro sale k
+    // veces mas grande en el mismo recuadro del PNG.
+    const k = (typeof atlasEditorZoom === 'function') ? atlasEditorZoom() : 1;
+    EV_W = Math.round(PNG_FORMATS[fmt].vbW / k);
+    // Alto = el del hueco que el PNG le deja al grafico (lo que no ocupan
+    // titulo, subtitulo y nota): si el lector achica un texto, el grafico lo
+    // aprovecha. Sin png-export cargado, los altos fijos de la casa.
+    const box = (typeof atlasPngBox === 'function') ? atlasPngBox('evo', fmt) : null;
+    EV_H = box ? Math.round(EV_W * box.h / box.w)
+               : Math.round((fmt === 'square' ? 910 : fmt === 'newsletter' ? 860 : PNG_FORMATS[fmt].vbH) / k);
   }
   else if (mobile) { EV_W = 1100; EV_H = 1150; }
   else { EV_W = 1100; EV_H = 560; }
@@ -229,7 +237,10 @@ function drawEvo() {
   const yTicksAbs = share ? null : ev_niceTicks(absMax, bigFmt ? 4 : 5);
   if (!share) absMax = yTicksAbs[yTicksAbs.length - 1] || absMax;
 
-  const fsLbl = bigFmt ? 26 : 16, fsTick = bigFmt ? 22 : 14, fsPan = bigFmt ? 26 : 16;
+  // Perillas del editor (?nl=1): etiquetas de rubro y ticks. Sin editor, los presets.
+  const aeSz = (typeof atlasEditorSizes === 'function') ? atlasEditorSizes() : null;
+  const edSz = (k, preset) => (typeof atlasEditorSize === 'function') ? atlasEditorSize(aeSz, k, preset) : preset;
+  const fsLbl = edSz('labels', bigFmt ? 26 : 16), fsTick = edSz('ticks', bigFmt ? 22 : 14), fsPan = bigFmt ? 26 : 16;
   const NB = E.bins.length;
   const cats = nivel === 'dom' ? E.doms.map((d, i) => ({ i, name: en ? d.en : d.es, color: EV_DOM_COL[d.es] }))
                                : E.occs.map((o, i) => ({ i, name: en ? o.en : o.es, color: ev_occColors()[i], dom: o.dom }));
@@ -247,7 +258,8 @@ function drawEvo() {
   const M = {
     top: bigFmt ? 34 : 18,
     right: rightSingle,
-    bottom: bigFmt ? 60 : 40,
+    // el pie acompaña al cuerpo de los ticks (60 con el preset de 22)
+    bottom: bigFmt ? Math.round(fsTick * 60 / 22) : 40,
     left: Math.ceil(yTickW + (bigFmt ? 22 : 14))
   };
   const panW = EV_W - M.left - M.right, panH = EV_H - M.top - M.bottom;
@@ -334,7 +346,7 @@ function ev_panel(svg, p, o) {
       if (iniSig - finPre < 24) ks.splice(1, 1);
     }
     ks.forEach(kk => {
-      const tk = ev_el('text'); tk.setAttribute('x', xS(kk)); tk.setAttribute('y', o.y + o.h + (o.bigFmt ? 34 : 20));
+      const tk = ev_el('text'); tk.setAttribute('x', xS(kk)); tk.setAttribute('y', o.y + o.h + (o.bigFmt ? Math.round(o.fsTick * 34 / 22) : 20));
       tk.setAttribute('text-anchor', kk === 0 ? 'start' : kk === NB - 1 ? 'end' : 'middle');
       tk.style.cssText = 'font-family:' + EV_SANS + ';font-size:' + o.fsTick + 'px;fill:#8A8579;';
       tk.textContent = lab(o.B0 + kk); svg.appendChild(tk);
@@ -680,6 +692,8 @@ window.__atlasRedraw = drawEvo;
 function initEvo() {
   ev_state(); ev_renderChips(); ev_setupSearch(); ev_wireToggles(); ev_wirePeriodo(); ev_syncPeriodo(); drawEvo();
   ev_applyUrlState();
+  // el editor (?nl=1) cambia formato, textos y tamaños: redibujar al instante
+  window.addEventListener('atlas-editor-change', () => drawEvo());
   const btn = document.querySelector('button.download[data-chart="evo-csv"]');
   if (btn) btn.addEventListener('click', () => {
     const blob = new Blob([ev_csv()], { type: 'text/csv;charset=utf-8' });

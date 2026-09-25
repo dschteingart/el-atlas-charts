@@ -282,8 +282,41 @@ function tp_makeScales(pts, MARGIN, plotW, plotH) {
   return { xScale, yScale, xLo: xd.lo, xHi: xd.hi, yLog: false, hasZero: false, yLo: 0, yHi: hi };
 }
 
+// Ticks del eje Y que se dibujan (en log y formato grande, solo potencias de 10).
+function tp_yTicks(sc, bigFmt) {
+  let yTicks;
+  if (sc.yLog) {
+    yTicks = (typeof niceLog10Ticks === 'function') ? niceLog10Ticks(sc.yLo, sc.yHi) : [0.1, 1, 10];
+    if (bigFmt) yTicks = yTicks.filter(vv => Math.abs(Math.log10(vv) - Math.round(Math.log10(vv))) < 1e-9);
+  } else {
+    yTicks = (typeof niceLinearTicks === 'function') ? niceLinearTicks(0, sc.yHi, 6) : [];
+  }
+  return yTicks.filter(vv => !(sc.yLog && (vv < sc.yLo || vv > sc.yHi)));
+}
+
 // =================== Layout por formato (clon del N°4) ===================
+// Con formato del editor/PNG, dos ajustes sobre el preset: los tamaños que el
+// lector haya movido en el editor (?nl=1) y el zoom del contenido (viewBox
+// 1/k); el alto sigue al hueco que el PNG le deja al grafico (atlasPngBox).
 function tp_layout(editorFormat, mobile) {
+  const L = tp_layoutBase(editorFormat, mobile);
+  if (!editorFormat) return L;
+  const aeSz = (typeof atlasEditorSizes === 'function') ? atlasEditorSizes() : null;
+  const ed = (k, preset) => (typeof atlasEditorSize === 'function') ? atlasEditorSize(aeSz, k, preset) : preset;
+  L.SIZES = Object.assign({}, L.SIZES, {
+    tick: ed('ticks', L.SIZES.tick),
+    axisTitle: ed('axisTitle', L.SIZES.axisTitle),
+    label: ed('labels', L.SIZES.label),
+    legend: ed('special', L.SIZES.legend)
+  });
+  const k = (typeof atlasEditorZoom === 'function') ? atlasEditorZoom() : 1;
+  const box = (typeof atlasPngBox === 'function') ? atlasPngBox('5', editorFormat) : null;
+  const W = Math.round(L.W / k);
+  L.H = box ? Math.round(W * box.h / box.w) : Math.round(L.H / k);
+  L.W = W;
+  return L;
+}
+function tp_layoutBase(editorFormat, mobile) {
   if (editorFormat === 'newsletter' || editorFormat === 'square') {
     // Aspecto ~1.40 = el del hueco disponible en el canvas cuadrado (1116 de
     // ancho x ~793 de alto): asi el SVG llena las dos dimensiones en vez de
@@ -408,11 +441,26 @@ function drawTalento() {
   const W = L.W, H = L.H, SIZES = L.SIZES;
   const marginTop = Math.max(editorFormat ? 28 : (mobile ? 26 : 16), L.M.top - SIZES.strip * 1.6);
   const MARGIN = { top: marginTop, right: L.M.right, left: L.M.left, bottom: 0 };
-  const plotW = W - MARGIN.left - MARGIN.right;
+  // Titulo del eje Y (rotado): su centro se corre si el cuerpo crece, para
+  // que no se salga por el borde izquierdo.
+  const ytx = bigFmt ? Math.max(26, Math.round(SIZES.axisTitle * 1.04)) : 16;
 
   const allPts = tp_points();
   const hidden = tp_hidden();
   const pts = allPts.filter(p => !hidden.has(p.region));
+
+  // Margen izquierdo = franja del titulo del eje Y + el tick mas ancho. Con
+  // los presets queda el de la casa (108); si en el editor crecen los ticks o
+  // el titulo del eje, se ensancha en vez de montarlos. Los valores de los
+  // ticks dependen solo del dato, asi que se pueden medir antes de las escalas.
+  if (bigFmt && pts.length) {
+    const sc0 = tp_makeScales(pts, MARGIN, 100, 100);
+    const labs = tp_yTicks(sc0, bigFmt).map(tp_rate).concat(sc0.yLog && sc0.hasZero ? ['0'] : []);
+    const maxW = labs.reduce((m, l) => Math.max(m, tp_measure(l, SIZES.tick, 400)), 0);
+    const need = Math.ceil(ytx + SIZES.axisTitle * 0.3 + 12 + maxW + SIZES.tick * 0.7);
+    if (need > MARGIN.left) MARGIN.left = need;
+  }
+  const plotW = W - MARGIN.left - MARGIN.right;
 
   const presentRegions = (typeof REGION_ORDER !== 'undefined' ? REGION_ORDER : [])
     .filter(r => allPts.some(p => p.region === r))
@@ -499,15 +547,7 @@ function drawTalento() {
   });
 
   // === Grid + ticks Y ===
-  let yTicks;
-  if (sc.yLog) {
-    yTicks = (typeof niceLog10Ticks === 'function') ? niceLog10Ticks(sc.yLo, sc.yHi) : [0.1, 1, 10];
-    if (bigFmt) yTicks = yTicks.filter(vv => Math.abs(Math.log10(vv) - Math.round(Math.log10(vv))) < 1e-9);
-  } else {
-    yTicks = (typeof niceLinearTicks === 'function') ? niceLinearTicks(0, sc.yHi, 6) : [];
-  }
-  yTicks.forEach(vv => {
-    if (sc.yLog && (vv < sc.yLo || vv > sc.yHi)) return;
+  tp_yTicks(sc, bigFmt).forEach(vv => {
     const y = yScale(vv);
     const ln = tp_ns('line');
     ln.setAttribute('x1', MARGIN.left); ln.setAttribute('x2', MARGIN.left + plotW);
@@ -563,18 +603,21 @@ function drawTalento() {
   svg.appendChild(xTitle);
 
   const yTitle = tp_ns('text');
-  const ytx = bigFmt ? 26 : 16;
   yTitle.setAttribute('x', ytx);
   yTitle.setAttribute('y', MARGIN.top + plotH / 2);
   yTitle.setAttribute('text-anchor', 'middle');
   yTitle.setAttribute('font-family', TP_FONT);
   yTitle.setAttribute('fill', TP_AXIS_TITLE_INK);
   yTitle.setAttribute('font-weight', 500);
-  yTitle.style.fontSize = SIZES.axisTitle + 'px';
   yTitle.setAttribute('transform', `rotate(-90 ${ytx} ${MARGIN.top + plotH / 2})`);
   yTitle.textContent = s.scaleY === 'log'
     ? TPX('Figuras célebres por millón (escala log)', 'Notable figures per million (log scale)')
     : TPX('Figuras célebres por millón', 'Notable figures per million');
+  // Rotado, el titulo corre a lo largo del alto del plot: si el cuerpo que
+  // pidio el editor no entra, se achica ESTE texto en vez de cortarse.
+  const yTitleFs = Math.min(SIZES.axisTitle,
+    SIZES.axisTitle * (plotH + MARGIN.top * 0.8) / Math.max(1, tp_measure(yTitle.textContent, SIZES.axisTitle, 500)));
+  yTitle.style.fontSize = yTitleFs + 'px';
   svg.appendChild(yTitle);
 
   // === Curva del modelo (siempre log-log; se dibuja sólo sobre el rango
