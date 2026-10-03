@@ -490,8 +490,21 @@
       nav.classList.remove('oculto'); document.body.classList.remove('cursor-oculto');
       clearTimeout(tm); tm = setTimeout(() => { nav.classList.add('oculto'); document.body.classList.add('cursor-oculto'); }, 2500);
     };
-    addEventListener('mousemove', mostrar); mostrar();
+    addEventListener('mousemove', mostrar); addEventListener('touchstart', mostrar, { passive: true }); mostrar();
+    const g = document.createElement('div'); g.id = 'girar';
+    g.textContent = 'Girá el teléfono para ver la placa más grande. Deslizá a los costados para cambiar de placa.';
+    document.body.appendChild(g);
   }
+
+  // teléfono: deslizar a los costados cambia de placa (un toque sigue funcionando como siempre)
+  let toque = null;
+  addEventListener('touchstart', e => { if (e.touches.length === 1) toque = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
+  addEventListener('touchend', e => {
+    if (!toque || modoPNG) return;
+    const t = e.changedTouches[0], dx = t.clientX - toque.x, dy = t.clientY - toque.y;
+    toque = null;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > 1.5 * Math.abs(dy)) ir(actual + (dx < 0 ? 1 : -1));
+  }, { passive: true });
 
   addEventListener('keydown', e => {
     if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
@@ -517,6 +530,12 @@
     '700 62px "Source Serif 4"', 'italic 400 31px "Source Serif 4"', '400 24px "Source Sans 3"',
     '600 20px "Source Sans 3"', '700 24px "Source Sans 3"', 'italic 400 20px "Source Sans 3"',
   ].map(f => document.fonts.load(f))).catch(() => null) : Promise.resolve();
-  Promise.race([fuentes, new Promise(r => setTimeout(r, 2500))]).then(() => ir(desdeHash()));
+  Promise.race([fuentes, new Promise(r => setTimeout(r, 2500))]).then(() => {
+    ir(desdeHash());
+    // red de seguridad: si la tipografía llegó tarde (conexión lenta), se re-acomoda la placa una vez
+    if (document.fonts && !document.fonts.check('700 58px "Source Serif 4"')) {
+      document.fonts.addEventListener('loadingdone', () => render(actual), { once: true });
+    }
+  });
   window.PLACAS = PLACAS;
 })();

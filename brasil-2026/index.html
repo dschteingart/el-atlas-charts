@@ -4,15 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Brasil 2026 en datos — placas</title>
-<link rel="stylesheet" href="fonts/fonts.css?v=23">
-<link rel="stylesheet" href="css/placas.css?v=23">
+<link rel="stylesheet" href="fonts/fonts.css?v=25">
+<link rel="stylesheet" href="css/placas.css?v=25">
 </head>
 <body>
 <div id="escenario"></div>
 <script>
   // Carga en orden y reintenta si un archivo falla (algunos antivirus cortan descargas locales).
   (function () {
-    const V = 23;
+    const V = 25;
     const archivos = ['data/series.js', 'data/encuestas.js', 'data/elecciones-2022.js', 'js/geo-br.js', 'js/charts.js', 'js/mapa.js', 'js/placas.js'];
     function cargar(i, intento) {
       if (i >= archivos.length) return;
