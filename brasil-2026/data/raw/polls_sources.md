@@ -141,3 +141,13 @@ Rows whose figures could not be found in fetched article text are marked "figure
 - **Mode effects.** AtlasIntel (online) reports almost no undecided (blank+undecided 0.3–4%), while Quaest (face to face) reports 15–22%. Lula and Flávio levels are therefore not directly comparable across pollsters on a %-of-total basis.
 - **Withdrawn and ineligible names.** Leonardo Avalanche (PRTB) withdrew on 30 Sep and appears with about 0% in late-September polls. Pablo Marçal's scenarios were avoided where possible.
 - **AtlasIntel second-round blanks.** AtlasIntel reports blank/null/"don't know" only combined in the 2nd round, so `blank_null` and `undecided` are empty for those rows.
+
+## Update 2026-10-03, evening (eve-of-election releases)
+
+Three national polls released on the evening of 3 Oct were added to the top of each file (1st round 115 rows, 2nd round 112, valid votes 7). pt.wikipedia had not yet filled them in, so each row comes from the article text or the pollster's report, checked against the TSE PesqEle registry (open data generated 2026-10-03 05:46):
+
+- **Datafolha**, BR-01708/2026, 4,006 face-to-face interviews on 3 Oct (TSE, Gazeta do Povo, JB). pt.wikipedia shows "1–3 Oct, 2,002", which matches neither the registration nor any article. 1st round: Lula 42, Flávio 40, Caiado 4, Renan 3, Cury 3, Zema 0, blank/null 4, undecided 3 (JB; Exame). 2nd round: Lula 47, Flávio 46, blank/null 6, undecided 2 (ND+; Exame; Gazeta do Povo). Zema is 1% in valid votes and 0% of the total per JB, while pt.wikipedia lists him at 1% of the total.
+- **Quaest** (Genial/Quaest), BR-02197/2026, 3,702 face-to-face interviews on 2–3 Oct. 1st round: Lula 40, Flávio 38, Cury 3, Renan 3, Caiado 3, every other name 0, blank/null/won't vote 10, undecided 3. 2nd round: Flávio 44, Lula 42, blank/null 13, undecided 1 (Band; Gazeta do Povo text; Exame). Gazeta do Povo's list swaps the two runoff labels, but its own text agrees with Band.
+- **Futura** (Apex/Futura, "Futura/100% Cidades"), BR-02431/2026, 2,000 phone interviews. The pollster's report gives the field as 2–3 Oct. The TSE registration says 29 Sep–3 Oct, and CNN Brasil prints both 25–29 Sep and 2–3 Oct. 1st round from the report (Cenário 1; labels and values paired by position on the page, sum 100.0): Flávio 42.5, Lula 40.5, Cury 3.9, Caiado 3.7, Renan 2.6, Zema 0.8, others 1.0, blank/null 2.6, undecided 2.4. 2nd round: Flávio 48.0, Lula 45.1, blank/null 5.7, undecided 1.2.
+
+Not added: **AtlasIntel** national, BR-00999/2026, 27 Sep–2 Oct, n=5,000. It is registered for release on 3 Oct, but no national result could be found in any outlet by 21:00 Brasília time; only its state polls were published. Gerp, Palver, Veritá, IFP and Vox remain excluded under the pollster rule above.

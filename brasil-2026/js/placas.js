@@ -783,6 +783,7 @@
     const V = P.vistas ? P.vistas[0] : P;
     return typeof V.titulo === 'function' ? V.titulo() : V.titulo;
   }
+  const cuantos = n => (EN ? ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen'] : ['Diez', 'Once', 'Doce', 'Trece', 'Catorce', 'Quince'])[n - 10] || String(n);
   function armarPortada() {
     const p = document.createElement('div'); p.id = 'portada';
     p.innerHTML = `<div class="wrap-idx">
@@ -795,8 +796,8 @@
           </div>
         </div>
         <h1>${T('Elecciones en Brasil', 'Elections in Brazil')}</h1>
-        <p class="lede">${T('Cómo llega Brasil a las urnas. Doce gráficos sobre la economía, el empleo, la pobreza, la desigualdad, la violencia, el comercio con Argentina, las encuestas y el mapa de 2022 municipio por municipio.',
-          'How Brazil heads into the vote. Twelve charts on the economy, jobs, poverty, inequality, violence, trade with Argentina, the polls and the 2022 map, municipality by municipality.')}</p>
+        <p class="lede">${T(`Cómo llega Brasil a las urnas. ${cuantos(PLACAS.length)} gráficos sobre la economía, la composición del empleo por categoría ocupacional y por sector, la pobreza, la desigualdad, la violencia, las encuestas y el mapa de 2022 municipio por municipio.`,
+          `How Brazil heads into the vote. ${cuantos(PLACAS.length)} charts on the economy, the makeup of employment by occupational category and by sector, poverty, inequality, violence, the polls and the 2022 map, municipality by municipality.`)}</p>
         <div class="accent-rule"></div>
       </header>
       <div class="idx-section-label">${T('Gráficos interactivos', 'Interactive charts')}</div>

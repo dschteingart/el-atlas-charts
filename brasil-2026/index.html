@@ -26,7 +26,7 @@
   // Carga en orden y reintenta si un archivo falla (algunos antivirus cortan descargas locales).
   // estilos.js va primero: inyecta las tipografías y el CSS (los reusa la descarga en PNG).
   (function () {
-    const V = 38;
+    const V = 39;
     const archivos = ['js/estilos.js', 'data/series.js', 'data/encuestas.js', 'data/elecciones-2022.js', 'js/geo-br.js', 'js/charts.js', 'js/exportar.js', 'js/mapa.js', 'js/placas.js'];
     function cargar(i, intento) {
       if (i >= archivos.length) return;
