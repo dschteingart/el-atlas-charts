@@ -126,6 +126,120 @@
       `Voting intention for president, % of all respondents: first round (left) and a Lula vs. Flávio Bolsonaro runoff (right). Polls from ${fechaLarga(E.desde)} to ${fechaLarga(E.hasta)}.`);
   }
 
+  /* ================= proyección en vivo ================= */
+  // vivo.py escribe data/vivo/2026-<turno>.js con el escrutinio y la proyección (proyeccion.py)
+  const vivoDe = v => (window.VIVO && window.VIVO['2026-' + v]) || null;
+  const colorCand = n => ((window.Mapa && window.Mapa.COLOR[n]) || '#8A8579');
+  const nomCorto = nm => nm.replace('Flávio Bolsonaro', 'Flávio').replace('Ronaldo ', '').replace('Romeu ', '').replace('Augusto ', '');
+  function ordenProy(D) {
+    const P = D.proy, base = P && P.ok ? P.proy : (P && P.conteo) || D.nac.v;
+    return D.cands.map((c, i) => i).sort((a, b) => base[b] - base[a]);
+  }
+  function conteoPct(D) {
+    const P = D.proy;
+    if (P && P.conteo) return P.conteo;
+    const t = D.nac.v.reduce((a, b) => a + b, 0);
+    return D.nac.v.map(x => (t ? 100 * x / t : 0));
+  }
+  function tituloProy(v) {
+    const D = vivoDe(v), P = D && D.proy;
+    if (!D) return T('Proyección en vivo del resultado', 'Live projection of the result');
+    const o = ordenProy(D), a = D.cands[o[0]], b = D.cands[o[1]];
+    if (D.final) {
+      const c = conteoPct(D);
+      return T(`Escrutinio terminado: ${a.nm} ${fmt(c[o[0]], 1)}%, ${b.nm} ${fmt(c[o[1]], 1)}%`, `Count finished: ${a.nm} ${fmt(c[o[0]], 1)}%, ${b.nm} ${fmt(c[o[1]], 1)}%`);
+    }
+    if (!P || !P.ok) return T('Proyección en vivo: todavía hay pocos votos contados', 'Live projection: too few votes counted yet');
+    const r1 = x => Math.round(x * 10) / 10, d = r1(P.proy[o[0]]) - r1(P.proy[o[1]]);
+    if (v === '1' && P.proy[o[0]] - P.banda[o[0]] > 50)
+      return T(`La proyección da ganador a ${a.nm} en primera vuelta`, `The projection has ${a.nm} winning outright in the first round`);
+    if (d <= P.banda_margen)
+      return T(`La proyección da un empate técnico entre ${a.nm} y ${b.nm}`, `The projection shows a statistical tie between ${a.nm} and ${b.nm}`);
+    return T(`La proyección da a ${a.nm} ${fmt(d, 1)} puntos arriba de ${b.nm}`, `The projection puts ${a.nm} ${fmt(d, 1)} points ahead of ${b.nm}`);
+  }
+  function bajadaProy(v) {
+    const D = vivoDe(v);
+    const vuelta = v === '1' ? T('la primera vuelta', 'the first round') : T('el balotaje', 'the runoff');
+    const pct = D ? T(` con ${fmt(D.nac.pct || 0, 1)}% de las secciones escrutadas`, ` with ${fmt(D.nac.pct || 0, 1)}% of polling stations counted`) : '';
+    return T(`Proyección del resultado final de ${vuelta}${pct}, a partir de cuánto cambió el voto respecto de 2022 en los municipios ya contados. No es un resultado oficial.`,
+      `Projection of the final result of ${vuelta}${pct}, based on how much the vote changed from 2022 in the municipalities already counted. Not an official result.`);
+  }
+  function placaProyeccion(box, v) {
+    const D = vivoDe(v);
+    if (!D) {
+      const bat = `EN_VIVO_${v === '1' ? '1ra' : '2da'}_vuelta.bat`;
+      box.innerHTML = `<div class="aviso" style="max-width:1100px">${T(`Esperando datos del TSE. Tiene que estar abierta la ventana de <code>${bat}</code> (o <code>python vivo.py${v === '2' ? ' --turno 2' : ''}</code>); esta placa se actualiza sola cada 15 segundos.`,
+        `Waiting for TSE data. The <code>${bat}</code> window must be running; this chart refreshes every 15 seconds.`)}</div>`;
+      return;
+    }
+    const P = D.proy || {}, ok = !!P.ok, c = conteoPct(D), o = ordenProy(D);
+    const nMos = D.cands.length <= 2 ? 2 : 4;
+    const badge = D.simulacro ? `<span class="badge simu">${T('Simulacro · datos ficticios', 'Drill · fictitious data')}</span>`
+      : D.final ? '' : `<span class="badge vivo">${T('En vivo', 'Live')}</span>`;
+    let izq = `<div class="py-cab">${ok ? T('Proyección al final del conteo', 'Projected final result') : T('Conteo hasta el momento', 'Count so far')} ${badge}</div>`;
+    o.slice(0, nMos).forEach(i => {
+      const k = D.cands[i], col = colorCand(k.n), p = ok ? P.proy[i] : c[i], bd = ok ? P.banda[i] : 0;
+      izq += `<div class="py-fila">
+        <div class="py-nom">${k.nm}<small>${k.p || ''}</small></div>
+        <div class="py-pct" style="color:${col}">${fmt(p, 1)}%${ok ? `<span class="py-pm">± ${fmt(bd, 1)}</span>` : ''}</div>
+        <div class="py-bar">${ok ? `<b style="left:${Math.max(0, p - bd)}%;width:${2 * bd}%;background:${col}"></b>` : ''}<i style="width:${p}%;background:${col}"></i>${v === '1' ? '<s class="m50"></s>' : ''}${ok ? `<em style="left:${c[i]}%"></em>` : ''}</div>
+        ${ok ? `<div class="py-sub">${T('Conteo hasta ahora', 'Count so far')}: ${fmt(c[i], 1)}% <span class="py-ref">${T('(la marca negra)', '(black mark)')}</span></div>` : ''}
+      </div>`;
+    });
+    if (ok) {
+      const a = D.cands[o[0]], b = D.cands[o[1]], d = Math.round(P.proy[o[0]] * 10) / 10 - Math.round(P.proy[o[1]] * 10) / 10;
+      izq += `<div class="py-dif">${T(`Diferencia proyectada: <b>${nomCorto(a.nm)} +${fmt(d, 1)} pts</b> sobre ${nomCorto(b.nm)} (± ${fmt(P.banda_margen, 1)})`, `Projected gap: <b>${nomCorto(a.nm)} +${fmt(d, 1)} pts</b> over ${nomCorto(b.nm)} (± ${fmt(P.banda_margen, 1)})`)}</div>`;
+    } else {
+      izq += `<div class="aviso" style="font-size:19px">${T('La proyección aparece cuando hay al menos 2% de los votos contados y datos de 20 estados.', 'The projection appears once at least 2% of votes are counted, with data from 20 states.')}</div>`;
+    }
+    const pct = D.nac.pct || 0;
+    izq += `<div class="progreso" style="margin-top:auto"><b>${fmt(pct, 2)}%</b> ${T('de las secciones escrutadas', 'of polling stations counted')}${ok ? T(` · proyección con ${num(P.n_mun)} municipios de ${P.n_uf} estados`, ` · projection uses ${num(P.n_mun)} municipalities in ${P.n_uf} states`) : ''}${D.actualizado ? ` · ${D.simulacro ? T('simulacro', 'drill') : 'TSE'} ${D.actualizado.slice(-8)}` : ''}<div class="pb"><i style="width:${pct}%"></i></div></div>`;
+    box.innerHTML = `<div class="py-wrap"><div class="py-izq">${izq}</div><div class="py-der">
+      <div class="py-ley"><span><i style="border-top:6px solid #1A1A1A"></i>${T('Proyección (y su margen)', 'Projection (and its margin)')}</span><span><i style="border-top:4px dashed #1A1A1A"></i>${T('Conteo hasta ese momento', 'Count at that moment')}</span></div>
+      <div class="py-graf"></div><div class="py-eje">${T('% de las secciones escrutadas', '% of polling stations counted')}</div></div></div>`;
+    const H = (P.hist || []).filter(h => h.p && h.c);
+    const g = box.querySelector('.py-graf');
+    if (H.length < 2) {
+      g.innerHTML = `<div class="aviso" style="position:absolute;left:86px;top:40px;right:40px">${T('El gráfico se arma a medida que avanza el escrutinio: muestra cómo se mueve la proyección y cuánto engaña el conteo parcial.', 'The chart builds up as the count advances: it shows how the projection moves and how much the partial count misleads.')}</div>`;
+      return;
+    }
+    const top = o.slice(0, 2);
+    const vals = H.flatMap(h => top.flatMap(i => [h.p[i] - h.b[i], h.p[i] + h.b[i], h.c[i]]));
+    const y0 = Math.floor((Math.min(...vals) - 1) / 5) * 5;
+    let y1 = Math.ceil((Math.max(...vals) + 1) / 5) * 5;
+    if (y1 - y0 < 10) y1 = y0 + 10;
+    const paso = y1 - y0 > 20 ? 5 : 2;
+    const ticks = []; for (let t = y0; t <= y1 + 1e-9; t += paso) ticks.push(t);
+    const capas = [];
+    top.forEach(i => {
+      const col = colorCand(D.cands[i].n), nm = nomCorto(D.cands[i].nm);
+      capas.push({ tipo: 'banda', datos: H.map(h => ({ t: h.pct, lo: h.p[i] - h.b[i], hi: h.p[i] + h.b[i] })), color: col, opacidad: 0.18 });
+      capas.push({ tipo: 'linea', datos: H.map(h => ({ t: h.pct, v: h.c[i] })), color: col, grosor: 3.5, punteada: true,
+        etiquetaFinal: [fmt(H[H.length - 1].c[i], 1) + '%', T('conteo', 'count')], tamFinal: 21 });
+      capas.push({ tipo: 'linea', datos: H.map(h => ({ t: h.pct, v: h.p[i] })), color: col, grosor: 6,
+        etiquetaFinal: [fmt(H[H.length - 1].p[i], 1) + '%', nm], tamFinal: 28 });
+    });
+    dibujarTiempo(g, {
+      x: [0, 100], y: { min: y0, max: y1, ticks, fmt: t => t + '%' }, gob: false,
+      xticksPos: [0, 25, 50, 75, 100].map(t => ({ t, lbl: t + '%' })), m: { l: 86, r: 210, t: 20, b: 52 }, capas, gapFinal: 30,
+      tips: H.map(h => h.pct),
+      tip: t => {
+        const h = H.find(z => z.pct === t);
+        const filas = top.flatMap(i => [
+          { nm: nomCorto(D.cands[i].nm) + T(' · proyección', ' · projection'), val: `${fmt(h.p[i], 1)}% ± ${fmt(h.b[i], 1)}`, color: colorCand(D.cands[i].n) },
+          { nm: nomCorto(D.cands[i].nm) + T(' · conteo', ' · count'), val: fmt(h.c[i], 1) + '%', color: colorCand(D.cands[i].n) }]);
+        return { html: tipHTML(T(`Con ${fmt(t, 1)}% escrutado`, `With ${fmt(t, 1)}% counted`), filas), puntos: top.map(i => ({ v: h.p[i], color: colorCand(D.cands[i].n) })) };
+      },
+    });
+  }
+  // relectura periódica del archivo que escribe vivo.py (sin servidor: se inyecta un <script>)
+  function recargarVivo(v, alTerminar) {
+    const s = document.createElement('script');
+    s.src = `data/vivo/2026-${v}.js?_=${Date.now()}`;
+    s.onload = s.onerror = () => { s.remove(); alTerminar(); };
+    document.head.appendChild(s);
+  }
+
   /* ================= placas ================= */
   const PLACAS = [
     {
@@ -536,6 +650,23 @@
       },
     },
     { id: 'mapa', kicker: T('Elecciones', 'Elections'), corto: T('Mapa de resultados', 'Results map'), mapa: true },
+    {
+      // solo en la copia local (streaming): en la web no hay escrutinio en vivo
+      id: 'proyeccion', kicker: T('Elecciones · proyección en vivo', 'Elections · live projection'), corto: T('Proyección en vivo', 'Live projection'), vivo: true,
+      vistas: [
+        { id: '1', nm: T('1ª vuelta', '1st round'), titulo: () => tituloProy('1'), bajada: () => bajadaProy('1') },
+        { id: '2', nm: T('2ª vuelta', '2nd round'), titulo: () => tituloProy('2'), bajada: () => bajadaProy('2') },
+      ],
+      fuente: () => T('<b>Fuente:</b> TSE (escrutinio en vivo) y resultados por municipio de 2022. Proyección propia: el cambio de voto respecto de 2022 en los municipios que faltan se estima con el de municipios parecidos y cercanos ya contados. El margen (±) es el error que tuvo el método en 9 de cada 10 simulaciones del escrutinio de 2022 proyectado desde 2018.',
+        '<b>Source:</b> TSE (live count) and 2022 results by municipality. Own projection: the change in the vote since 2022 in the municipalities still missing is estimated from similar, nearby municipalities already counted. The margin (±) is the error this method had in 9 out of 10 simulations of the 2022 count projected from 2018.'),
+      datos: v => {
+        const D = vivoDe(v), H = (D && D.proy && D.proy.hist) || [];
+        const cs = D ? D.cands : [];
+        const cols = [T('secciones_escrutadas_pct', 'polling_stations_counted_pct'), ...cs.flatMap(c => [`${c.nm}_${T('proyeccion', 'projection')}`, `${c.nm}_${T('margen', 'margin')}`, `${c.nm}_${T('conteo', 'count')}`])];
+        return { archivo: T(`proyeccion-2026-${v}v`, `projection-2026-${v}`), cols, filas: H.map(h => [h.pct, ...cs.flatMap((c, i) => [h.p[i], h.b[i], h.c[i]])]) };
+      },
+      render(box, vista) { placaProyeccion(box, vista); },
+    },
   ];
 
   /* ================= montaje ================= */
@@ -549,6 +680,8 @@
   // ?modo=web | ?modo=stream fuerzan uno u otro (p. ej. para ensayar la versión web en local)
   const MODO_WEB = !modoPNG && (params.get('modo') ? params.get('modo') === 'web' : EN_LA_WEB);
   let actual = -1, vistaDe = {};
+  if (MODO_WEB || modoPNG) PLACAS.splice(PLACAS.findIndex(p => p.id === 'proyeccion'), 1);
+  let timerVivo = null, firmaVivo = '';
 
   function escalar() {
     const arriba = MODO_WEB ? (document.getElementById('atlas-top') || { offsetHeight: 0 }).offsetHeight : 0;
@@ -566,6 +699,15 @@
   function render(i) {
     const P = PLACAS[i];
     if (window.Mapa) window.Mapa.desmontar();
+    clearInterval(timerVivo); timerVivo = null;
+    if (P.vivo) {
+      // datos que escribe vivo.py: se releen cada 15 s y la placa se redibuja si cambiaron
+      const v = vistaActual(P), firma = () => { const D = vivoDe(v); return (D ? D.consultado : 'nada') + '|' + v; };
+      const tick = () => recargarVivo(v, () => { if (actual === i && firma() !== firmaVivo) { firmaVivo = firma(); render(i); } });
+      timerVivo = setInterval(tick, 15000);
+      if (!vivoDe(v)) setTimeout(tick, 50);
+      firmaVivo = firma();
+    }
     esc.innerHTML = '';
     const sec = document.createElement('section');
     if (P.mapa) {
@@ -576,7 +718,7 @@
     }
     const vista = vistaActual(P);
     const V = P.vistas ? P.vistas.find(v => v.id === vista) : P;
-    sec.className = 'placa';
+    sec.className = 'placa' + (P.vivo ? ' sin-anim' : '');
     sec.innerHTML = `
       <div class="kicker">${T('Brasil 2026', 'Brazil 2026')} <span class="sep">·</span> ${P.kicker}</div>
       <h1 class="titulo">${modoPNG && params.get('titulo') ? params.get('titulo') : (typeof V.titulo === 'function' ? V.titulo() : V.titulo)}</h1>

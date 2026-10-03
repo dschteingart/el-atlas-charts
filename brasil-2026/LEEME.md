@@ -11,25 +11,26 @@ Placas 16:9 (1920×1080) con la estética de El Atlas, más un mapa electoral qu
 | Mostrar las placas | `index.html` (o `PLACAS.bat`). Se abre directo del disco: no necesita internet ni servidor |
 | Escrutinio en vivo, domingo 4/10 | `EN_VIVO_1ra_vuelta.bat` |
 | Escrutinio en vivo, domingo 25/10 | `EN_VIVO_2da_vuelta.bat` |
-| Ensayar el mapa en vivo (datos ficticios) | `SIMULACRO_ensayo.bat` |
+| Ensayar el mapa y la proyección en vivo (datos ficticios) | `SIMULACRO_ensayo.bat` |
 
 Los `.bat` de vivo abren el mapa en el navegador y dejan una ventana negra que consulta al TSE: **no la cierres** mientras estés al aire. El mapa relee los datos cada 15 segundos.
 
 ### Teclas
 - `←` `→` (o PageUp/PageDown de un clicker): placa anterior / siguiente
 - `G`: índice de placas · `F`: pantalla completa · `T`: cambia la vista (empleo, consumo)
-- En el mapa: clic en un estado para acercarse, `Esc` o "← Brasil" para volver
+- En el mapa: clic en un estado para acercarse; clic en un municipio para ver sus datos (resultado, cambio vs 2022 o comparación con Brasil). Buscador arriba a la derecha (estados y municipios, sin importar tildes). `Esc` o el botón de arriba a la izquierda vuelven un paso (municipio → estado → Brasil)
 - La barra de navegación y el cursor se ocultan solos a los 2,5 s
 
 ### En OBS / vMix
 Lo más simple es capturar la ventana del navegador en pantalla completa (`F`). Si usás fuente de navegador (1920×1080), la URL es la ruta del archivo más la placa:
-`file:///C:/ruta/a/la/carpeta/index.html#pib`, y lo mismo con `#desempleo`, `#empleo`, `#pobreza`, `#ingreso`, `#gini`, `#homicidios`, `#consumo`, `#fiscal`, `#comercio`, `#encuestas` (`#encuestas?vista=2v` para el balotaje), `#mapa`.
+`file:///C:/ruta/a/la/carpeta/index.html#pib`, y lo mismo con `#desempleo`, `#empleo`, `#pobreza`, `#ingreso`, `#gini`, `#homicidios`, `#consumo`, `#fiscal`, `#comercio`, `#encuestas` (`#encuestas?vista=2v` para el balotaje), `#mapa`, `#proyeccion` (`#proyeccion?vista=2` para el balotaje).
 El mapa acepta su estado en la URL, para tener escenas listas:
 - `#mapa?e=2022-2&n=mun` → 2ª vuelta 2022 por municipio
 - `#mapa?e=2026-1` → escrutinio en vivo 1ª vuelta (estados)
 - `#mapa?e=2026-1&n=mun&m=cand&c=13` → % de Lula por municipio
 - `#mapa?e=2026-1&m=delta&c=13` → cambio de Lula vs 2022 (puntos)
 - `&uf=SP` → arranca acercado a un estado
+- `&mun=3106200` → arranca con un municipio elegido (código IBGE; este es Belo Horizonte)
 
 Agregá `?png=1` antes del `#` para sacar animaciones y navegación. Las imágenes fijas están en `png/` (regenerarlas: `python scripts/exportar_png.py`).
 
@@ -49,6 +50,32 @@ El navegador no puede leerlos directo (el TSE no habilita CORS), así que `vivo.
 - Opciones: `python vivo.py --intervalo 20` (consultar más seguido); `--servir` levanta además http://localhost:8026 si alguna vez hace falta.
 - El simulacro escribe el mismo archivo pero marcado: el mapa muestra "SIMULACRO · DATOS FICTICIOS" en grande. Al arrancar el modo real, el archivo del simulacro se borra solo.
 - Boa Esperança do Norte (MT) vota por primera vez en 2026 y no está en la malla del IBGE: sus votos cuentan en MT y en Brasil, pero no se dibuja.
+
+## La proyección en vivo (placa 13, `#proyeccion`)
+
+Mientras corre `EN_VIVO_…bat`, `vivo.py` calcula además una **proyección del resultado final** (`proyeccion.py`) y la placa 13 la muestra al lado del conteo, con un gráfico de cómo se movieron las dos cosas a medida que avanzó el escrutinio. Solo existe en la copia local (en la web no aparece).
+
+**Por qué hace falta.** El conteo parcial engaña porque las urnas no llegan en orden aleatorio: en 2022 el Nordeste entró más tarde y Lula recién pasó a Bolsonaro con 70% escrutado en la 1ª vuelta y con 67,8% en el balotaje.
+
+**Cómo funciona.**
+1. En cada municipio ya contado se mide cuánto cambió el voto respecto de 2022 (misma vuelta): Lula contra Lula, Flávio contra Jair, el resto contra el resto. Se mide en *log-odds* (no en puntos) para no proyectar más de 100% en los bastiones.
+2. Para los municipios que faltan, ese cambio se estima con una regresión (según cuánto votó cada lugar en 2022 y su tamaño) más efectos de región, estado, región intermedia y región inmediata del IBGE, cada uno "encogido" hacia el nivel de arriba cuando hay pocos municipios contados.
+3. Los votos esperados de cada municipio salen de los de 2022 ajustados por la participación que se va viendo.
+4. Dentro del "resto", el reparto entre Caiado, Zema, etc. sale de lo que se ve en el mismo estado y región (Caiado pesa en Goiás, Zema en Minas).
+5. Se muestra cuando hay al menos 2% de los votos contados y datos de 20 estados.
+
+**Prueba (`scripts/probar_proyeccion.py`).** Simulé el escrutinio de 2022 sección por sección (unas 470.000 urnas, con el orden calibrado para que Lula pase adelante cuando pasó de verdad) y lo proyecté usando 2018 como referencia, un salto mucho más grande que el de 2022 a 2026 (Haddad 29% → Lula 48%). Error en la diferencia Lula−Bolsonaro, en 9 de cada 10 simulaciones:
+
+| Escrutado | Conteo crudo (1ª vuelta) | Proyección, orden como 2022 (1ª vuelta) | Proyección con un sesgo que el modelo no ve (1ª / balotaje) |
+|---|---|---|---|
+| 5% | 16 pts | 1,5 pts | 1,0 pts (1ª) / 3,4 pts (balotaje) |
+| 10% | 16 pts | 1,2 pts | 0,8 / 1,9 pts |
+| 20% | 15 pts | 0,7 pts | 0,4 / 0,6 pts |
+| 50% | 10 pts | 0,3 pts | 0,2 / 0,1 pts |
+
+En el peor caso que probé (dentro de cada estado entran primero los municipios donde menos cambió el voto, con un sesgo fuerte), la proyección del margen erró 4,9 pts con 10% escrutado y 1 pt con 50%: **en los primeros minutos hay que leerla con cuidado**. El "±" de la placa sale de esta prueba (percentil 90), con un piso prudente.
+
+**Ensayo.** `SIMULACRO_ensayo.bat` también genera la proyección. El simulacro ahora mueve votos de Lula a Flávio (más en el Nordeste) y hace que el Nordeste y el Norte se cuenten más tarde, así el conteo parcial engaña como en 2022: con 25% escrutado el conteo daba Flávio +9 y la proyección Lula +1,0 (resultado final del simulacro: Lula +1,0 a +1,3).
 
 ## Datos y fuentes (bajados el 2/10/2026)
 

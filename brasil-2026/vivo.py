@@ -21,6 +21,10 @@ y un "-ab.json" por estado con el % de urnas escrutadas de cada municipio, que
 usamos para pedir solo los municipios que cambiaron. El navegador no puede leer
 esos archivos directo (el TSE no habilita CORS), por eso este script los baja y
 deja un resumen en data/vivo/2026-<turno>.js (y .json), que la página lee cada 15 s.
+
+En cada ciclo también calcula una PROYECCIÓN del resultado final (proyeccion.py): mide cuánto cambió
+el voto respecto de 2022 en los municipios ya contados y lo estima para los que faltan. Se ve en la
+placa "Proyección" (index.html#proyeccion). Prueba y márgenes de error: scripts/probar_proyeccion.py.
 """
 import argparse, json, os, random, ssl, sys, threading, time, urllib.request, urllib.error
 from concurrent.futures import ThreadPoolExecutor
@@ -116,6 +120,30 @@ class Escrutinio:
         self.uf = {}
         self.nac = None
         self.cands = []          # orden fijo [(n, nombre, partido)]
+        self.proy = None         # proyección (proyeccion.py), se arma en el primer guardado
+
+    def proyectar(self, simulacro):
+        """proyección del resultado final; si algo falla, el escrutinio sigue igual"""
+        try:
+            if self.proy is None:
+                from proyeccion import ProyeccionEnVivo
+                self.proy = ProyeccionEnVivo(self.turno, RAIZ)
+                if not simulacro:  # si vivo.py se reinicia en medio de la noche, se conserva la historia
+                    try:
+                        prev = json.load(open(os.path.join(SALIDA, f'2026-{self.turno}.json'), encoding='utf-8'))
+                        if not prev.get('simulacro'):
+                            self.proy.hist = prev.get('proy', {}).get('hist', [])
+                    except (OSError, ValueError):
+                        pass
+            r = self.proy.calcular(self.cands, self.mun, self.uf, self.nac.get('pct', 0))
+            if r.get('ok'):
+                lid = sorted(range(len(self.cands)), key=lambda i: -r['proy'][i])[:3]
+                log('proyección: ' + ' · '.join(f"{self.cands[i][1]} {r['proy'][i]:.1f}% (±{r['banda'][i]:.1f})" for i in lid)
+                    + f" · con {100 * r['contado']:.1f}% de los votos esperados")
+            return r
+        except Exception as ex:
+            log('aviso: no pude calcular la proyección:', repr(ex))
+            return {'ok': False, 'motivo': 'error'}
 
     def config(self):
         d = bajar(f'{self.ele}/config/mun-e00{self.ele}-cm.json')
@@ -194,7 +222,7 @@ class Escrutinio:
             'fuente': ('SIMULACRO: datos FICTICIOS de ensayo, armados con los resultados municipales de 2022.' if simulacro
                        else 'TSE, divulgación oficial de resultados (resultados.tse.jus.br).'),
             'cands': [{'n': n, 'nm': nm, 'p': p} for n, nm, p in self.cands],
-            'nac': self.nac, 'uf': self.uf, 'mun': self.mun,
+            'nac': self.nac, 'uf': self.uf, 'mun': self.mun, 'proy': self.proyectar(simulacro),
             'final': self.nac.get('pct', 0) >= 100, 'actualizado': self.nac.get('hora', ''),
             'consultado': datetime.now().strftime('%d/%m/%Y %H:%M:%S'), 'simulacro': simulacro,
         }
@@ -230,13 +258,26 @@ class Simulacro(Escrutinio):
         self.cands = [(mapa.get(c['n'], c['n']), NOMBRES.get(mapa.get(c['n'], c['n']), c['nm']), '')
                       for c in self.b['cands']]
         self.prog = {ib: 0.0 for ib in self.b['mun']}
-        self.ruido = {ib: random.uniform(-0.06, 0.06) for ib in self.b['mun']}
+        # cambio ficticio respecto de 2022 (para ensayar la proyección): parte de los votos de Lula pasa al
+        # segundo, más en el Nordeste y menos en el Sur, con ruido municipal; y el Nordeste y el Norte
+        # empiezan a contarse más tarde (como en 2022), así el conteo parcial engaña
+        try:
+            jer = json.load(open(os.path.join(RAIZ, 'data', 'mun-jerarquia.json'), encoding='utf-8'))
+        except (OSError, ValueError):
+            jer = {}
+        reg = {ib: (jer.get(ib) or ['SE'])[0] for ib in self.b['mun']}
+        sesgo = {'NE': 0.07, 'N': 0.05, 'SE': 0.03, 'CO': 0.01, 'S': -0.02}
+        self.ruido = {ib: sesgo.get(reg[ib], 0) + random.uniform(-0.05, 0.05) for ib in self.b['mun']}
+        demora = {'S': 0, 'CO': 1, 'SE': 1, 'N': 3, 'NE': 4}
+        self.arranca = {ib: demora.get(reg[ib], 1) + random.randint(0, 2) for ib in self.b['mun']}
+        self.n_ciclo = 0
         self.t0 = time.time()
 
     def ciclo(self):
-        # avanza: capitales y ciudades grandes primero, el resto después
+        # avanza: capitales y ciudades grandes primero, el resto después (Nordeste y Norte arrancan más tarde)
+        self.n_ciclo += 1
         for ib, row in self.b['mun'].items():
-            if self.prog[ib] >= 1:
+            if self.prog[ib] >= 1 or self.n_ciclo < self.arranca[ib]:
                 continue
             peso = 0.06 + 0.25 * min(1, row[3] / 400000)
             if random.random() < 0.5:

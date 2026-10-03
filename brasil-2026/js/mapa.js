@@ -47,7 +47,8 @@
   const SG2COD = Object.fromEntries(Object.entries(UF).map(([c, v]) => [v[0], c]));
   const ORDEN_2026 = ['13', '22', '55', '30', '14', '70', '27', '21', '16', '80', '35', '28', '29'];
 
-  const st = { elec: '2022-1', nivel: 'uf', modo: 'ganador', cand: '13', foco: null };
+  const st = { elec: '2022-1', nivel: 'uf', modo: 'ganador', cand: '13', foco: null, mun: null };
+  const nomMun = ib => (window.MUN_NOMES || {})[ib] || null;   // [nombre, sigla del estado]
   const vivo = {};          // id -> datos 2026 cargados
   let estadoVivo = {};      // id -> 'ok' | 'sin-servidor' | 'esperando'
   let timer = null, raiz = null, cache = null;
@@ -146,8 +147,12 @@
       const off = { '53': [0, 0], '28': [8, 4], '27': [16, 2], '25': [26, 0], '24': [18, -4], '26': [36, 2], '32': [10, 6], '33': [8, 8] }[c] || [0, 0];
       sig[c] = el('text', { x: p[0] + off[0], y: p[1] + off[1], class: 'sig' }, gSig, UF[c][0]);
     });
+    const gSel = el('g', { 'pointer-events': 'none' }, svg);
+    const selHalo = el('path', { class: 'mun-sel-halo', display: 'none' }, gSel);
+    const sel = el('path', { class: 'mun-sel', display: 'none' }, gSel);
+    const anillo = el('circle', { class: 'mun-anillo', display: 'none' }, gSel);
     const marca = el('text', { x: G.w / 2, y: G.h / 2, 'text-anchor': 'middle', 'font-family': '"Source Sans 3", sans-serif', 'font-weight': 800, 'font-size': 64, fill: '#C9A227', 'fill-opacity': .35, transform: `rotate(-24 ${G.w / 2} ${G.h / 2})`, 'pointer-events': 'none', display: 'none' }, svg, 'SIMULACRO · DATOS FICTICIOS');
-    return { svg, gMun, gUF, gBord, gSig, mun, uf, bord, sig, marca };
+    return { svg, gMun, gUF, gBord, gSig, mun, uf, bord, sig, marca, selHalo, sel, anillo };
   }
 
   /* ---------- zoom ---------- */
@@ -164,6 +169,7 @@
     requestAnimationFrame(paso);
   }
   function enfocar(cod) {
+    if (!cod || (st.mun && st.mun.slice(0, 2) !== cod)) st.mun = null;
     st.foco = cod;
     const G = window.GEO_BR;
     if (!cod) { animarViewBox(cache.svg, [0, 0, G.w, G.h]); }
@@ -175,6 +181,14 @@
     }
     pintar(); syncHash();
   }
+
+  // elegir un municipio: zoom a su estado, se marca en el mapa y el panel muestra sus datos
+  function elegirMun(ib) {
+    st.mun = ib;
+    const c = ib.slice(0, 2);
+    if (st.foco !== c && cache.uf[c]) enfocar(c); else { pintar(); syncHash(); }
+  }
+  function soltarMun() { st.mun = null; pintar(); syncHash(); }
 
   /* ---------- pintado ---------- */
   function pintar() {
@@ -205,6 +219,16 @@
         cache.uf[c].setAttribute('fill', fillDe(D, filaUF(D, sg), filaUF(B, sg)));
       }
     }
+    // municipio elegido: contorno + un anillo (para encontrarlo aunque sea chiquito)
+    const pm = st.mun && cache.mun[st.mun];
+    [cache.selHalo, cache.sel, cache.anillo].forEach(e => e.setAttribute('display', pm ? 'inline' : 'none'));
+    if (pm) {
+      const d = pm.getAttribute('d');
+      cache.selHalo.setAttribute('d', d); cache.sel.setAttribute('d', d);
+      const b = pm.getBBox(), u = cache.uf[st.mun.slice(0, 2)].getBBox();
+      cache.anillo.setAttribute('cx', b.x + b.width / 2); cache.anillo.setAttribute('cy', b.y + b.height / 2);
+      cache.anillo.setAttribute('r', Math.max(b.width, b.height) / 2 + Math.max(u.width, u.height) * 0.035);
+    }
     // siglas: blancas sobre colores oscuros
     for (const c in cache.sig) {
       const f = verMun ? null : cache.uf[c].getAttribute('fill');
@@ -231,15 +255,19 @@
     const P = raiz.querySelector('.mapa-panel'); P.innerHTML = '';
     const E = ELECCIONES.find(x => x.id === st.elec), D = datos(st.elec);
     const sg = st.foco ? UF[st.foco][0] : null;
-    const fila = D ? (sg ? filaUF(D, sg) : D.nac) : null;
+    const nm = st.mun ? nomMun(st.mun) : null;
+    const fila = D ? (st.mun ? filaMun(D, st.mun) : sg ? filaUF(D, sg) : D.nac) : null;
 
     // encabezado
     const h = document.createElement('div');
     let badge = '';
     if (E.vivo && D && D.simulacro) badge = `<span class="badge simu">${T('Simulacro · datos ficticios', 'Drill · fictitious data')}</span>`;
     else if (E.vivo && D && !D.final) badge = `<span class="badge vivo">${T('En vivo', 'Live')}</span>`;
+    const titulo = st.mun ? (nm ? nm[0] : st.mun) : sg ? UF[st.foco][1] : T('Brasil', 'Brazil');
+    const filaRef = st.mun ? (fila || filaMun(window.ELEC[st.elec.endsWith('2') ? '2022-2' : '2022-1'], st.mun)) : null;
     h.innerHTML = `<div class="kicker">${T('Presidente', 'President')} <span class="sep">·</span> ${E.nm} ${badge}</div>
-      <div class="titulo" style="font-size:56px;margin-top:6px">${sg ? UF[st.foco][1] : T('Brasil', 'Brazil')}</div>`;
+      <div class="titulo" style="font-size:${titulo.length > 22 ? 44 : 56}px;margin-top:6px">${titulo}</div>` +
+      (st.mun ? `<div class="mun-sub">${T('Municipio de', 'Municipality in')} ${UF[st.mun.slice(0, 2)][1]}${filaRef && filaRef.apt ? ` · ${num(filaRef.apt)} ${T('electores', 'registered voters')}` : ''}</div>` : '');
     P.appendChild(h);
 
     // controles
@@ -282,10 +310,16 @@
     }
     if (!D) return;
 
+    if (st.mun && (!fila || !fila.val)) {
+      const a = document.createElement('div'); a.className = 'aviso';
+      a.textContent = st.elec.startsWith('2026') ? T('Todavía no hay urnas escrutadas en este municipio.', 'No ballot boxes counted in this municipality yet.')
+        : T('Sin datos de este municipio para esta elección (puede ser un municipio creado después).', 'No data for this municipality in this election (it may have been created later).');
+      P.appendChild(a); bloqueMun(P, D, null); fuente(P, D); return;
+    }
     // resultados
     const res = document.createElement('div');
     const orden = ordenCands(D, fila);
-    const nMostrar = D.cands.length <= 2 ? 2 : (st.modo === 'ganador' ? 5 : 4);
+    const nMostrar = D.cands.length <= 2 ? 2 : st.mun ? 3 : (st.modo === 'ganador' ? 5 : 4);
     const val = fila ? fila.val : 0;
     orden.slice(0, nMostrar).forEach(i => {
       const c = D.cands[i], v = fila ? fila.v[i] : 0, p = val ? 100 * v / val : 0;
@@ -309,6 +343,7 @@
       res.appendChild(r);
     }
     P.appendChild(res);
+    if (st.mun) bloqueMun(P, D, fila);
 
     // progreso / participación
     const pr = document.createElement('div'); pr.className = 'progreso';
@@ -320,11 +355,56 @@
       pr.innerHTML = T(`Resultado oficial final · votos válidos ${num(val)}${part ? ` · participación ${fmt(part, 1)}%` : ''}`, `Final official result · ${num(val)} valid votes${part ? ` · turnout ${fmt(part, 1)}%` : ''}`);
     }
     P.appendChild(pr);
-    leyenda(P, D);
+    if (!st.mun) leyenda(P, D);
+    fuente(P, D);
+  }
+  function fuente(P, D) {
     const f = document.createElement('div'); f.className = 'fuente'; f.style.marginTop = 'auto';
     f.innerHTML = T(`<b>Fuente:</b> ${D.anio === 2022 ? 'TSE, resultados oficiales (datos abiertos).' : D.fuente} Porcentajes sobre votos válidos.`,
       `<b>Source:</b> ${D.anio === 2022 ? 'TSE (Superior Electoral Court), official results (open data).' : 'TSE (Superior Electoral Court), official results feed.'} Percentages of valid votes.`);
     P.appendChild(f);
+  }
+
+  // datos extra del municipio elegido: en 2026, cuánto cambió respecto de 2022; en 2022, cómo se compara
+  // con el total de Brasil y cómo votó en la otra vuelta
+  function bloqueMun(P, D, fila) {
+    const pc = (Dx, f, n) => { const v = share(Dx, f, n); return v == null ? null : 100 * v; };
+    const dif = x => (x >= 0 ? '+' : '−') + fmt(Math.abs(x), 1);
+    const b = document.createElement('div'); b.className = 'cmp';
+    if (st.elec.startsWith('2026')) {
+      const B = baseDelta(), prev = filaMun(B, st.mun);
+      const vuelta = st.elec === '2026-1' ? T('1ª vuelta', '1st round') : T('balotaje', 'runoff');
+      if (!fila) {
+        if (prev) b.innerHTML = `<div class="ctrl-lbl">${T(`En 2022 (${vuelta})`, `In 2022 (${vuelta})`)}</div>` + ['13', '22'].map(n =>
+          `<div class="cmp-f"><span><i style="background:${colorDe(n)}"></i>${B.cands.find(c => c.n === n).nm}</span><b>${fmt(pc(B, prev, n), 1)}%</b></div>`).join('');
+      } else {
+        let h = `<div class="ctrl-lbl">${T(`Cambio respecto de 2022 (${vuelta})`, `Change since 2022 (${vuelta})`)}</div>
+          <div class="cmp-g"><span></span><small>${T('Hoy', 'Now')}</small><small>2022</small><small>${T('Cambio', 'Change')}</small>`;
+        ['13', '22'].forEach(n => {
+          const c = D.cands.find(k => k.n === n); if (!c) return;
+          const a = pc(D, fila, n), z = pc(B, prev, n);
+          h += `<span><i style="background:${colorDe(n)}"></i>${c.nm}${n === '22' ? ` <em>${T('vs Jair', 'vs Jair')}</em>` : ''}</span><b>${a == null ? '–' : fmt(a, 1) + '%'}</b><b class="g">${z == null ? '–' : fmt(z, 1) + '%'}</b>` +
+            `<b style="color:${a != null && z != null ? (a - z >= 0 ? colorDe(n) : '#6E6A60') : ''}">${a != null && z != null ? dif(a - z) + ' pts' : '–'}</b>`;
+        });
+        b.innerHTML = h + '</div>';
+      }
+    } else {
+      const otra = window.ELEC[st.elec === '2022-1' ? '2022-2' : '2022-1'], fo = filaMun(otra, st.mun);
+      let h = `<div class="ctrl-lbl">${T('Comparado con el total de Brasil', 'Compared with Brazil as a whole')}</div>
+        <div class="cmp-g"><span></span><small>${T('Acá', 'Here')}</small><small>Brasil</small><small>${T('Diferencia', 'Difference')}</small>`;
+      ['13', '22'].forEach(n => {
+        const c = D.cands.find(k => k.n === n), a = pc(D, fila, n), z = pc(D, D.nac, n);
+        h += `<span><i style="background:${colorDe(n)}"></i>${c.nm}</span><b>${fmt(a, 1)}%</b><b class="g">${fmt(z, 1)}%</b><b style="color:${a - z >= 0 ? colorDe(n) : '#6E6A60'}">${dif(a - z)} pts</b>`;
+      });
+      h += '</div>';
+      if (fo && fo.val) {
+        const ord = ordenCands(otra, fo).slice(0, 2);
+        h += `<div class="cmp-otra">${st.elec === '2022-1' ? T('En el balotaje', 'In the runoff') : T('En la 1ª vuelta', 'In the 1st round')}: ` +
+          ord.map(i => `${otra.cands[i].nm} <b>${fmt(100 * fo.v[i] / fo.val, 1)}%</b>`).join(' · ') + '</div>';
+      }
+      b.innerHTML = h;
+    }
+    if (b.innerHTML) P.appendChild(b);
   }
 
   function leyenda(P, D) {
@@ -383,10 +463,12 @@
     svg.addEventListener('mouseleave', () => tip.hide());
     svg.addEventListener('click', ev => {
       const t = ev.target;
-      const c = t.classList.contains('uf') ? t.getAttribute('data-u') : t.classList.contains('mun') ? t.getAttribute('data-c').slice(0, 2) : null;
-      if (!c) return;
-      tip.hide();
-      enfocar(st.foco === c ? null : c);
+      if (t.classList.contains('uf')) { tip.hide(); const c = t.getAttribute('data-u'); enfocar(st.foco === c ? null : c); return; }
+      if (t.classList.contains('mun')) {
+        tip.hide();
+        const ib = t.getAttribute('data-c');
+        if (st.mun === ib) soltarMun(); else elegirMun(ib);
+      }
     });
   }
 
@@ -399,6 +481,8 @@
     if (['ganador', 'cand', 'delta'].includes(q.get('m'))) st.modo = q.get('m');
     if (q.get('c')) st.cand = q.get('c');
     st.foco = q.get('uf') && SG2COD[q.get('uf').toUpperCase()] || null;
+    st.mun = /^\d{7}$/.test(q.get('mun') || '') ? q.get('mun') : null;
+    if (st.mun) st.foco = st.mun.slice(0, 2);
   }
   function syncHash() {
     const q = new URLSearchParams();
@@ -406,8 +490,52 @@
     if (st.nivel !== 'uf') q.set('n', st.nivel);
     if (st.modo !== 'ganador') { q.set('m', st.modo); q.set('c', st.cand); }
     if (st.foco) q.set('uf', UF[st.foco][0]);
+    if (st.mun) q.set('mun', st.mun);
     const base = location.hash.split('?')[0] || '#mapa';
     history.replaceState(null, '', base + (q.toString() ? '?' + q : ''));
+  }
+
+  /* ---------- buscador de estados y municipios ---------- */
+  const sinTildes = x => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  let indice = null;
+  function armarIndice() {
+    const aptos = (window.ELEC['2022-1'] || {}).mun || {};
+    const ufs = Object.entries(UF).map(([c, v]) => ({ tipo: 'uf', c, nm: v[1], sub: T('Estado', 'State'), k: sinTildes(v[1]), sg: v[0].toLowerCase(), peso: 1e12 }));
+    const muns = Object.entries(window.MUN_NOMES || {}).map(([ib, v]) => ({ tipo: 'mun', ib, nm: v[0], sub: v[1], k: sinTildes(v[0]), peso: (aptos[ib] || [0, 0, 0, 0])[3] }));
+    indice = ufs.concat(muns);
+  }
+  function buscar(q) {
+    if (!indice) armarIndice();
+    q = sinTildes(q.trim());
+    if (!q) return [];
+    const nota = e => (e.k === q || e.sg === q ? 0 : e.k.startsWith(q) ? 1 : e.k.split(/[\s'-]+/).some(w => w.startsWith(q)) ? 2 : e.k.includes(q) ? 3 : 9);
+    return indice.map(e => [nota(e), e]).filter(x => x[0] < 9)
+      .sort((a, b) => a[0] - b[0] || b[1].peso - a[1].peso).slice(0, 8).map(x => x[1]);
+  }
+  function buscador() {
+    const w = document.createElement('div'); w.className = 'mapa-buscar no-png';
+    w.innerHTML = `<input type="search" autocomplete="off" spellcheck="false" placeholder="${T('Buscar estado o municipio…', 'Search state or municipality…')}"><div class="mb-lista"></div>`;
+    const inp = w.querySelector('input'), lista = w.querySelector('.mb-lista');
+    let res = [], k = 0;
+    const dibujar = () => {
+      lista.innerHTML = res.map((e, i) => `<div class="mb-it${i === k ? ' on' : ''}" data-i="${i}"><span>${e.nm}</span><small>${e.sub}</small></div>`).join('') +
+        (inp.value.trim() && !res.length ? `<div class="mb-nada">${T('Sin resultados', 'No results')}</div>` : '');
+    };
+    const elegir = e => {
+      inp.value = ''; res = []; dibujar(); inp.blur();
+      if (e.tipo === 'uf') { st.mun = null; enfocar(e.c); } else elegirMun(e.ib);
+    };
+    inp.addEventListener('input', () => { res = buscar(inp.value); k = 0; dibujar(); });
+    inp.addEventListener('keydown', ev => {
+      ev.stopPropagation();   // que las teclas no cambien de placa ni cierren el zoom
+      if (ev.key === 'ArrowDown') { ev.preventDefault(); k = Math.min(k + 1, res.length - 1); dibujar(); }
+      else if (ev.key === 'ArrowUp') { ev.preventDefault(); k = Math.max(k - 1, 0); dibujar(); }
+      else if (ev.key === 'Enter' && res[k]) elegir(res[k]);
+      else if (ev.key === 'Escape') { inp.value = ''; res = []; dibujar(); inp.blur(); }
+    });
+    lista.addEventListener('mousedown', ev => { const it = ev.target.closest('.mb-it'); if (it) { ev.preventDefault(); elegir(res[+it.dataset.i]); } });
+    inp.addEventListener('blur', () => setTimeout(() => { res = []; dibujar(); }, 150));
+    return w;
   }
 
   /* ---------- entrada desde las placas ---------- */
@@ -421,14 +549,18 @@
     box.appendChild(cache.svg);
     if (!cache.wired) { wireTooltip(box); cache.wired = true; cache.box = box; }
     else { box.appendChild(cache.box.querySelector('.tip') || document.createElement('div')); }
-    const vuelta = document.createElement('button'); vuelta.className = 'volver'; vuelta.textContent = T('← Brasil', '← Brazil');
-    vuelta.addEventListener('click', () => enfocar(null)); box.appendChild(vuelta);
+    const vuelta = document.createElement('button'); vuelta.className = 'volver no-png'; vuelta.textContent = T('← Brasil', '← Brazil');
+    vuelta.addEventListener('click', () => { if (st.mun) soltarMun(); else enfocar(null); }); box.appendChild(vuelta);
+    box.appendChild(buscador());
     const G = window.GEO_BR;
     vbActual = null; cache.svg.setAttribute('viewBox', `0 0 ${G.w} ${G.h}`);
-    const obs = new MutationObserver(() => { vuelta.style.display = st.foco ? '' : 'none'; });
+    const obs = new MutationObserver(() => {
+      vuelta.style.display = st.foco ? '' : 'none';
+      vuelta.textContent = st.mun ? '← ' + UF[st.mun.slice(0, 2)][1] : T('← Brasil', '← Brazil');
+    });
     obs.observe(cont.querySelector('.mapa-panel'), { childList: true });
     programarVivo();
-    if (st.foco) { const f = st.foco; st.foco = null; enfocar(f); } else pintar();
+    if (st.foco) { const f = st.foco, m = st.mun; st.foco = null; enfocar(f); if (m) { st.mun = m; pintar(); syncHash(); } } else pintar();
     vuelta.style.display = st.foco ? '' : 'none';
   }
   function desmontar() { clearInterval(timer); raiz = null; }
@@ -464,7 +596,10 @@
       .map(ib => fila(filaMun(D, ib), [ib, (nombres[ib] || [ib])[0], (nombres[ib] || ['', ''])[1]]));
     return { archivo: nombreArchivo(), cols: [T('codigo_ibge', 'ibge_code'), T('municipio', 'municipality'), 'uf', ...colsCand, ...extra], filas };
   }
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && raiz && st.foco) enfocar(null); });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape' || !raiz) return;
+    if (st.mun) soltarMun(); else if (st.foco) enfocar(null);
+  });
 
   window.Mapa = { montar, desmontar, st, COLOR, datos: datosCSV, nombreArchivo };
 })();

@@ -217,6 +217,15 @@
       });
     },
 
+    /* franja entre dos valores (margen de error): datos [{t, lo, hi}] */
+    banda(g, c, { X, Y }) {
+      const d = c.datos.filter(z => z.lo != null && z.hi != null);
+      if (d.length < 2) return;
+      const p = d.map(z => `${X(z.t).toFixed(1)} ${Y(z.hi).toFixed(1)}`)
+        .concat(d.slice().reverse().map(z => `${X(z.t).toFixed(1)} ${Y(z.lo).toFixed(1)}`));
+      el('path', { d: 'M' + p.join('L') + 'Z', fill: c.color, 'fill-opacity': c.opacidad || 0.16, stroke: 'none', class: 'anim-fade' }, g);
+    },
+
     /* puntos sueltos (una encuesta = un punto): datos [{t, v, color}] */
     puntos(g, c, { X, Y }) {
       c.datos.forEach((d, i) => el('circle', {
