@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<!-- Tarjeta para redes (og:image 1200×630). La captura scripts/exportar_png.py con Chrome sin ventana.
+     ?lang=en para la versión en inglés. Usa el mapa del balotaje 2022 por municipio ya exportado. -->
+<script src="../js/estilos.js"></script>
+<style>
+  html, body { margin: 0; width: 1200px; height: 630px; overflow: hidden; background: #FAF8F3; }
+  .og { display: grid; grid-template-columns: 650px 1fr; height: 630px; }
+  .mapa { background-repeat: no-repeat; background-size: 1189px 669px; background-position: -28px -18px; }
+  .txt { padding: 70px 56px 0 10px; display: flex; flex-direction: column; }
+  .k { font-family: "Source Sans 3", sans-serif; font-weight: 600; font-size: 19px; letter-spacing: 3px; text-transform: uppercase; color: #4A4A4A; }
+  .k b { color: #BE5D32; font-weight: 600; }
+  h1 { font-family: "Source Serif 4", serif; font-weight: 700; font-size: 60px; line-height: 1.04; margin: 18px 0 0; color: #1A1A1A; letter-spacing: -0.5px; }
+  .regla { width: 54px; height: 4px; background: #BE5D32; margin: 24px 0 0; }
+  p { font-family: "Source Serif 4", serif; font-style: italic; font-size: 25px; line-height: 1.32; color: #4A4A4A; margin: 22px 0 0; }
+  .res { margin-top: 26px; font-family: "Source Sans 3", sans-serif; font-size: 23px; color: #4A4A4A; }
+  .res div { display: flex; align-items: center; gap: 12px; margin: 6px 0; }
+  .res i { width: 18px; height: 18px; border-radius: 3px; display: inline-block; }
+  .res b { font-family: "Source Serif 4", serif; font-size: 27px; }
+  .firma { margin-top: auto; margin-bottom: 40px; font-family: "Source Sans 3", sans-serif; color: #BE5D32; line-height: 1.05; }
+  .firma .f1 { font-weight: 700; font-size: 28px; } .firma .f2 { font-weight: 600; font-size: 21px; }
+</style>
+</head>
+<body>
+<div class="og">
+  <div class="mapa" id="mapa"></div>
+  <div class="txt">
+    <div class="k" id="k"></div>
+    <h1 id="t"></h1>
+    <div class="regla"></div>
+    <p id="b"></p>
+    <div class="res" id="r"></div>
+    <div class="firma"><div class="f1" id="f1"></div><div class="f2">Daniel Schteingart</div></div>
+  </div>
+</div>
+<script>
+  const en = new URLSearchParams(location.search).get('lang') === 'en';
+  document.getElementById('mapa').style.backgroundImage = `url(../png/${en ? 'en/' : ''}12d-mapa-2022-2v-municipios.png)`;
+  document.getElementById('k').innerHTML = en ? 'The Atlas <b>·</b> Special' : 'El Atlas <b>·</b> Especial';
+  document.getElementById('t').textContent = en ? 'Brazil elections' : 'Elecciones en Brasil';
+  document.getElementById('b').textContent = en ? 'How Brazil heads into the vote, in twelve charts. Here, the 2022 runoff municipality by municipality.' : 'Cómo llega Brasil a las urnas, en doce gráficos. Acá, el balotaje de 2022 municipio por municipio.';
+  document.getElementById('r').innerHTML = en
+    ? '<div><i style="background:#C8372D"></i>Lula <b>50.9%</b></div><div><i style="background:#234B85"></i>Jair Bolsonaro <b>49.1%</b></div>'
+    : '<div><i style="background:#C8372D"></i>Lula <b>50,9%</b></div><div><i style="background:#234B85"></i>Jair Bolsonaro <b>49,1%</b></div>';
+  document.getElementById('f1').textContent = en ? 'The Atlas' : 'El Atlas';
+</script>
+</body>
+</html>

@@ -3,17 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Brasil 2026 en datos — placas</title>
-<link rel="stylesheet" href="fonts/fonts.css?v=25">
-<link rel="stylesheet" href="css/placas.css?v=25">
+<title data-title-en="Brazil elections — The Atlas">Elecciones en Brasil — El Atlas</title>
+<meta name="description" content="Especial de El Atlas: la economía y la sociedad de Brasil desde 2010, el promedio de encuestas para 2026 y el mapa de la elección de 2022 por municipio.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/brasil-2026/">
+<meta property="og:title" content="¿Cómo llega Brasil a las elecciones? — El Atlas">
+<meta property="og:description" content="Doce gráficos: crecimiento, empleo, pobreza, desigualdad, homicidios, cuentas fiscales, comercio con Argentina, encuestas y el mapa del balotaje 2022 municipio por municipio.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/brasil-2026/thumbs/og-balotaje-2022.png">
+<meta property="og:image:alt" content="Mapa del balotaje 2022 en Brasil por municipio: en rojo donde ganó Lula, en azul donde ganó Bolsonaro">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/brasil-2026/thumbs/og-balotaje-2022.png">
+<meta name="twitter:title" content="¿Cómo llega Brasil a las elecciones? — El Atlas">
+<meta name="twitter:description" content="Doce gráficos: crecimiento, empleo, pobreza, desigualdad, homicidios, cuentas fiscales, comercio con Argentina, encuestas y el mapa del balotaje 2022 municipio por municipio.">
+<link rel="alternate" hreflang="en" href="https://dschteingart.github.io/el-atlas-charts/brasil-2026/index-en.html">
+<script>window.LANG = new URLSearchParams(location.search).get('lang') === 'en' ? 'en' : 'es';</script>
 </head>
 <body>
 <div id="escenario"></div>
 <script>
   // Carga en orden y reintenta si un archivo falla (algunos antivirus cortan descargas locales).
+  // estilos.js va primero: inyecta las tipografías y el CSS (los reusa la descarga en PNG).
   (function () {
-    const V = 25;
-    const archivos = ['data/series.js', 'data/encuestas.js', 'data/elecciones-2022.js', 'js/geo-br.js', 'js/charts.js', 'js/mapa.js', 'js/placas.js'];
+    const V = 31;
+    const archivos = ['js/estilos.js', 'data/series.js', 'data/encuestas.js', 'data/elecciones-2022.js', 'js/geo-br.js', 'js/charts.js', 'js/exportar.js', 'js/mapa.js', 'js/placas.js'];
     function cargar(i, intento) {
       if (i >= archivos.length) return;
       const s = document.createElement('script');

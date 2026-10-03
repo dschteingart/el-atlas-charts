@@ -69,7 +69,13 @@ El navegador no puede leerlos directo (el TSE no habilita CORS), así que `vivo.
 
 Detalle de cada serie (tablas, códigos, advertencias metodológicas): `data/raw/*_sources.md`. Los CSV originales están en `data/raw/`.
 
+## Versión web (El Atlas)
+- Está en el índice de El Atlas como "Especial · Elecciones Brasil": https://dschteingart.github.io/el-atlas-charts/brasil-2026/ (en inglés: `index-en.html`, que es la que conviene compartir porque trae la tarjeta en inglés).
+- La barra de abajo tiene ES/EN y los botones **Descargar datos (CSV)** y **Descargar PNG** de la placa que se está viendo (con la vista, el zoom y el modo del mapa incluidos).
+- En la web los botones 2026 del mapa están deshabilitados ("A la espera de resultados"); en la copia local siguen andando para el streaming.
+
 ## Para actualizar algo
+- Después de tocar `css/placas.css` o `fonts/fonts.css`: `python scripts/armar_estilos.py` (arma `js/estilos.js`, que usa la página y la descarga en PNG).
 - Sumar una encuesta nueva: agregar la fila en `data/raw/polls_first_round.csv` (o `polls_second_round.csv`) y correr `python scripts/agregar_encuestas.py`. El título de la placa se recalcula solo con el último promedio.
 - Cambiar un dato: editar el CSV en `data/raw/` y correr `python scripts/armar_series.py`.
 - Títulos, bajadas y notas de cada placa: `js/placas.js` (arriba de todo está la firma, `MARCA`).

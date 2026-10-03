@@ -4,8 +4,15 @@
    Geometría: window.GEO_BR (js/geo-br.js), proyección Albers, viewBox 1000×910.
    Estado compartible en el hash: #mapa?e=2022-2&n=mun&m=cand&c=13 */
 (function () {
-  const { el, fmt } = window.Charts;
+  const { el, fmt, LOC } = window.Charts;
   const BG = '#FAF8F3', SIN = '#E3DED0';
+  const EN = window.LANG === 'en';
+  const T = (es, en) => (EN ? en : es);
+  const num = v => v.toLocaleString(LOC());
+  // En la web (GitHub Pages) el escrutinio 2026 no se puede leer (lo hace vivo.py en la copia local):
+  // ahí los botones 2026 quedan deshabilitados "a la espera de resultados".
+  const EN_LA_WEB = /^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  const VIVO_OK = !EN_LA_WEB;
 
   // Colores por número de urna (mismo número = mismo color en 2022 y 2026)
   const COLOR = {
@@ -23,17 +30,17 @@
   const colorDe = n => COLOR[n] || OTROS;
 
   const ELECCIONES = [
-    { id: '2022-1', nm: '2022 · 1ª vuelta', corto: '2022 1ª' },
-    { id: '2022-2', nm: '2022 · 2ª vuelta', corto: '2022 2ª' },
-    { id: '2026-1', nm: '2026 · 1ª vuelta', corto: '2026 1ª', vivo: true },
-    { id: '2026-2', nm: '2026 · 2ª vuelta', corto: '2026 2ª', vivo: true },
+    { id: '2022-1', nm: T('2022 · 1ª vuelta', '2022 · 1st round'), corto: T('2022 1ª', '2022 1st') },
+    { id: '2022-2', nm: T('2022 · 2ª vuelta', '2022 · runoff'), corto: T('2022 2ª', '2022 2nd') },
+    { id: '2026-1', nm: T('2026 · 1ª vuelta', '2026 · 1st round'), corto: T('2026 1ª', '2026 1st'), vivo: true },
+    { id: '2026-2', nm: T('2026 · 2ª vuelta', '2026 · runoff'), corto: T('2026 2ª', '2026 2nd'), vivo: true },
   ];
   const UF = {
     '11': ['RO', 'Rondônia'], '12': ['AC', 'Acre'], '13': ['AM', 'Amazonas'], '14': ['RR', 'Roraima'],
     '15': ['PA', 'Pará'], '16': ['AP', 'Amapá'], '17': ['TO', 'Tocantins'], '21': ['MA', 'Maranhão'],
     '22': ['PI', 'Piauí'], '23': ['CE', 'Ceará'], '24': ['RN', 'Rio Grande do Norte'], '25': ['PB', 'Paraíba'],
     '26': ['PE', 'Pernambuco'], '27': ['AL', 'Alagoas'], '28': ['SE', 'Sergipe'], '29': ['BA', 'Bahia'],
-    '31': ['MG', 'Minas Gerais'], '32': ['ES', 'Espírito Santo'], '33': ['RJ', 'Río de Janeiro'], '35': ['SP', 'São Paulo'],
+    '31': ['MG', 'Minas Gerais'], '32': ['ES', 'Espírito Santo'], '33': ['RJ', T('Río de Janeiro', 'Rio de Janeiro')], '35': ['SP', 'São Paulo'],
     '41': ['PR', 'Paraná'], '42': ['SC', 'Santa Catarina'], '43': ['RS', 'Rio Grande do Sul'], '50': ['MS', 'Mato Grosso do Sul'],
     '51': ['MT', 'Mato Grosso'], '52': ['GO', 'Goiás'], '53': ['DF', 'Distrito Federal'],
   };
@@ -117,7 +124,7 @@
   function programarVivo() {
     clearInterval(timer);
     const e = ELECCIONES.find(x => x.id === st.elec);
-    if (e && e.vivo) { cargarVivo(st.elec); timer = setInterval(() => cargarVivo(st.elec), 15000); }
+    if (e && e.vivo && VIVO_OK) { cargarVivo(st.elec); timer = setInterval(() => cargarVivo(st.elec), 15000); }
   }
 
   /* ---------- construcción del SVG (una sola vez) ---------- */
@@ -209,9 +216,9 @@
   }
 
   /* ---------- panel derecho ---------- */
-  function boton(txt, on, fn, dis) {
+  function boton(txt, on, fn, dis, hint) {
     const b = document.createElement('button'); b.textContent = txt;
-    if (on) b.classList.add('on'); if (dis) b.disabled = true;
+    if (on) b.classList.add('on'); if (dis) b.disabled = true; if (hint) b.title = hint;
     b.addEventListener('click', fn); return b;
   }
   function grupo(lbl, botones) {
@@ -229,24 +236,27 @@
     // encabezado
     const h = document.createElement('div');
     let badge = '';
-    if (E.vivo && D && D.simulacro) badge = '<span class="badge simu">Simulacro · datos ficticios</span>';
-    else if (E.vivo && D && !D.final) badge = '<span class="badge vivo">En vivo</span>';
-    h.innerHTML = `<div class="kicker">Presidente <span class="sep">·</span> ${E.nm} ${badge}</div>
-      <div class="titulo" style="font-size:56px;margin-top:6px">${sg ? UF[st.foco][1] : 'Brasil'}</div>`;
+    if (E.vivo && D && D.simulacro) badge = `<span class="badge simu">${T('Simulacro · datos ficticios', 'Drill · fictitious data')}</span>`;
+    else if (E.vivo && D && !D.final) badge = `<span class="badge vivo">${T('En vivo', 'Live')}</span>`;
+    h.innerHTML = `<div class="kicker">${T('Presidente', 'President')} <span class="sep">·</span> ${E.nm} ${badge}</div>
+      <div class="titulo" style="font-size:56px;margin-top:6px">${sg ? UF[st.foco][1] : T('Brasil', 'Brazil')}</div>`;
     P.appendChild(h);
 
     // controles
-    const ctr = document.createElement('div'); ctr.style.cssText = 'display:flex;flex-wrap:wrap;gap:14px 22px';
-    ctr.appendChild(grupo('Elección', ELECCIONES.map(e => boton(e.corto, e.id === st.elec, () => { st.elec = e.id; programarVivo(); pintar(); syncHash(); }))));
-    ctr.appendChild(grupo('Nivel', [
-      boton('Estados', st.nivel === 'uf', () => { st.nivel = 'uf'; pintar(); syncHash(); }),
-      boton('Municipios', st.nivel === 'mun', () => { st.nivel = 'mun'; pintar(); syncHash(); }),
+    // controles (clase no-png: no salen en la imagen descargada)
+    const ctr = document.createElement('div'); ctr.className = 'no-png'; ctr.style.cssText = 'display:flex;flex-wrap:wrap;gap:14px 22px';
+    const espera = T('A la espera de resultados', 'Awaiting results');
+    ctr.appendChild(grupo(T('Elección', 'Election') + (VIVO_OK ? '' : ` <span style="text-transform:none;letter-spacing:0;font-weight:500">· 2026: ${espera.toLowerCase()}</span>`),
+      ELECCIONES.map(e => boton(e.corto, e.id === st.elec, () => { st.elec = e.id; programarVivo(); pintar(); syncHash(); }, e.vivo && !VIVO_OK, e.vivo && !VIVO_OK ? espera : null))));
+    ctr.appendChild(grupo(T('Nivel', 'Level'), [
+      boton(T('Estados', 'States'), st.nivel === 'uf', () => { st.nivel = 'uf'; pintar(); syncHash(); }),
+      boton(T('Municipios', 'Municipalities'), st.nivel === 'mun', () => { st.nivel = 'mun'; pintar(); syncHash(); }),
     ]));
     const modos = [
-      boton('Ganador', st.modo === 'ganador', () => { st.modo = 'ganador'; pintar(); syncHash(); }),
-      boton('% candidato', st.modo === 'cand', () => { st.modo = 'cand'; pintar(); syncHash(); }),
+      boton(T('Ganador', 'Winner'), st.modo === 'ganador', () => { st.modo = 'ganador'; pintar(); syncHash(); }),
+      boton(T('% candidato', '% candidate'), st.modo === 'cand', () => { st.modo = 'cand'; pintar(); syncHash(); }),
     ];
-    if (E.vivo) modos.push(boton('Cambio vs 2022', st.modo === 'delta', () => { st.modo = 'delta'; if (!['13', '22'].includes(st.cand)) st.cand = '13'; pintar(); syncHash(); }));
+    if (E.vivo) modos.push(boton(T('Cambio vs 2022', 'Change vs 2022'), st.modo === 'delta', () => { st.modo = 'delta'; if (!['13', '22'].includes(st.cand)) st.cand = '13'; pintar(); syncHash(); }));
     ctr.appendChild(grupo('Color', modos));
     if (D && st.modo !== 'ganador') {
       const s = document.createElement('select'); s.className = 'sel';
@@ -256,7 +266,7 @@
         if (c.n === st.cand) o.selected = true; s.appendChild(o);
       });
       s.addEventListener('change', () => { st.cand = s.value; pintar(); syncHash(); });
-      const d = document.createElement('div'); d.innerHTML = '<div class="ctrl-lbl">Candidato</div>'; d.appendChild(s); ctr.appendChild(d);
+      const d = document.createElement('div'); d.innerHTML = `<div class="ctrl-lbl">${T('Candidato', 'Candidate')}</div>`; d.appendChild(s); ctr.appendChild(d);
     }
     P.appendChild(ctr);
 
@@ -265,8 +275,9 @@
       const a = document.createElement('div'); a.className = 'aviso';
       const enLaWeb = /^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
       a.innerHTML = enLaWeb
-        ? 'El escrutinio en vivo se ve en la versión local: bajá la carpeta del proyecto y hacé doble clic en <code>EN_VIVO_1ra_vuelta.bat</code> (lee al TSE cada 30 segundos). Instrucciones en LEEME.md.'
-        : 'Esperando datos del TSE. Tiene que estar abierta la ventana de <code>EN_VIVO_1ra_vuelta.bat</code> (o <code>python vivo.py</code>); el mapa se actualiza solo cada 15 segundos.';
+        ? T('A la espera de resultados.', 'Awaiting results.')
+        : T('Esperando datos del TSE. Tiene que estar abierta la ventana de <code>EN_VIVO_1ra_vuelta.bat</code> (o <code>python vivo.py</code>); el mapa se actualiza solo cada 15 segundos.',
+          'Waiting for TSE data. The <code>EN_VIVO_1ra_vuelta.bat</code> window (or <code>python vivo.py</code>) must be running; the map refreshes every 15 seconds.');
       P.appendChild(a); leyenda(P, D); return;
     }
     if (!D) return;
@@ -281,19 +292,20 @@
       const r = document.createElement('div'); r.className = 'res-fila';
       r.innerHTML = `<div class="res-nom">${c.nm}<small>${c.p || ''}</small></div><div class="res-pct" style="color:${colorDe(c.n)}">${val ? fmt(p, 1) + '%' : '–'}</div>
         <div class="res-bar"><i style="width:${p}%;background:${colorDe(c.n)}"></i>${D.turno === 1 ? '<b class="m50"></b>' : ''}</div>
-        <div class="res-vot">${v.toLocaleString('es-AR')} votos</div>`;
+        <div class="res-vot">${num(v)} ${T('votos', 'votes')}</div>`;
       res.appendChild(r);
     });
     if (val && orden.length > 1) {
       const a = fila.v[orden[0]], b2 = fila.v[orden[1]];
       const r = document.createElement('div'); r.className = 'res-vot'; r.style.cssText = 'font-size:19px;margin:-2px 0 4px;color:#4A4A4A';
-      r.innerHTML = `Diferencia entre los dos primeros: <b>${fmt(100 * (a - b2) / val, 1)} pts</b> (${(a - b2).toLocaleString('es-AR')} votos)`;
+      r.innerHTML = T(`Diferencia entre los dos primeros: <b>${fmt(100 * (a - b2) / val, 1)} pts</b> (${num(a - b2)} votos)`, `Gap between the top two: <b>${fmt(100 * (a - b2) / val, 1)} pts</b> (${num(a - b2)} votes)`);
       res.appendChild(r);
     }
     if (orden.length > nMostrar && val) {
       const resto = orden.slice(nMostrar).reduce((a, i) => a + fila.v[i], 0);
       const r = document.createElement('div'); r.className = 'res-vot'; r.style.cssText = 'font-size:19px;margin:-4px 0 4px';
-      r.textContent = `Otros ${orden.length - nMostrar} candidatos: ${fmt(100 * resto / val, 1)}%` + (D.turno === 1 ? ' · la marca vertical indica el 50% para ganar en 1ª vuelta' : '');
+      r.textContent = T(`Otros ${orden.length - nMostrar} candidatos: ${fmt(100 * resto / val, 1)}%`, `${orden.length - nMostrar} other candidates: ${fmt(100 * resto / val, 1)}%`) +
+        (D.turno === 1 ? T(' · la marca vertical indica el 50% para ganar en 1ª vuelta', ' · the vertical mark is the 50% needed to win outright') : '');
       res.appendChild(r);
     }
     P.appendChild(res);
@@ -303,14 +315,15 @@
     const pct = fila && fila.pct != null ? fila.pct : 0;
     const part = fila && fila.apt ? 100 * fila.com / fila.apt : null;
     if (E.vivo) {
-      pr.innerHTML = `<b>${fmt(pct, 2)}%</b> de las secciones escrutadas${D.actualizado ? ` · ${D.simulacro ? 'simulacro' : 'TSE'} ${D.actualizado.slice(-8)}` : ''}<div class="pb"><i style="width:${pct}%"></i></div>`;
+      pr.innerHTML = `<b>${fmt(pct, 2)}%</b> ${T('de las secciones escrutadas', 'of polling stations counted')}${D.actualizado ? ` · ${D.simulacro ? T('simulacro', 'drill') : 'TSE'} ${D.actualizado.slice(-8)}` : ''}<div class="pb"><i style="width:${pct}%"></i></div>`;
     } else {
-      pr.innerHTML = `Resultado oficial final · votos válidos ${val.toLocaleString('es-AR')}${part ? ` · participación ${fmt(part, 1)}%` : ''}`;
+      pr.innerHTML = T(`Resultado oficial final · votos válidos ${num(val)}${part ? ` · participación ${fmt(part, 1)}%` : ''}`, `Final official result · ${num(val)} valid votes${part ? ` · turnout ${fmt(part, 1)}%` : ''}`);
     }
     P.appendChild(pr);
     leyenda(P, D);
     const f = document.createElement('div'); f.className = 'fuente'; f.style.marginTop = 'auto';
-    f.innerHTML = `<b>Fuente:</b> ${D.anio === 2022 ? 'TSE, resultados oficiales (datos abiertos).' : D.fuente} Porcentajes sobre votos válidos.`;
+    f.innerHTML = T(`<b>Fuente:</b> ${D.anio === 2022 ? 'TSE, resultados oficiales (datos abiertos).' : D.fuente} Porcentajes sobre votos válidos.`,
+      `<b>Source:</b> ${D.anio === 2022 ? 'TSE (Superior Electoral Court), official results (open data).' : 'TSE (Superior Electoral Court), official results feed.'} Percentages of valid votes.`);
     P.appendChild(f);
   }
 
@@ -318,16 +331,20 @@
     const L = document.createElement('div'); L.className = 'leyenda' + (st.modo === 'ganador' ? ' grid' : '');
     if (!D) { P.appendChild(L); return; }
     if (st.modo === 'ganador') {
-      const top = ordenCands(D).slice(0, D.cands.length <= 2 ? 2 : 4).map(i => D.cands[i]);
-      L.innerHTML = '<div class="ctrl-lbl">Ganador · intensidad = % del ganador</div>' + top.map(c =>
-        `<div class="fila"><div class="rampa">${[0.38, 0.5, 0.62, 0.74, 0.86].map(s => `<i style="background:${rampGanador(colorDe(c.n), s)}"></i>`).join('')}</div> ${c.nm}</div>`).join('') +
-        '<div class="ejes"><span>40%</span><span>60%</span><span>80%+</span></div>';
+      const dos = D.cands.length <= 2;
+      const top = ordenCands(D).slice(0, dos ? 2 : 4).map(i => D.cands[i]);
+      // en un mano a mano el ganador siempre tiene más de 50%: la escala arranca ahí
+      const pasos = dos ? [0.5, 0.575, 0.65, 0.725, 0.8] : [0.38, 0.5, 0.62, 0.74, 0.86];
+      const ejes = dos ? ['50%', '65%', '80%+'] : ['40%', '60%', '80%+'];
+      L.innerHTML = `<div class="ctrl-lbl">${T('Ganador · más oscuro = ganó con más %', 'Winner · darker = larger vote share')}</div>` + top.map(c =>
+        `<div class="fila"><div class="rampa">${pasos.map(s => `<i style="background:${rampGanador(colorDe(c.n), s)}"></i>`).join('')}</div> ${c.nm}</div>`).join('') +
+        `<div class="ejes"><span>${ejes[0]}</span><span>${ejes[1]}</span><span>${ejes[2]}</span></div>`;
     } else if (st.modo === 'cand') {
       const c = D.cands.find(k => k.n === st.cand);
-      L.innerHTML = `<div class="ctrl-lbl">% de votos válidos · ${c ? c.nm : ''}</div><div class="rampa">${[0, .15, .3, .45, .6, .75, .9].map(s => `<i style="background:${rampCand(colorDe(st.cand), s)}"></i>`).join('')}</div><div class="ejes"><span>0%</span><span>45%</span><span>90%</span></div>`;
+      L.innerHTML = `<div class="ctrl-lbl">${T('% de votos válidos', '% of valid votes')} · ${c ? c.nm : ''}</div><div class="rampa">${[0, .15, .3, .45, .6, .75, .9].map(s => `<i style="background:${rampCand(colorDe(st.cand), s)}"></i>`).join('')}</div><div class="ejes"><span>0%</span><span>45%</span><span>90%</span></div>`;
     } else {
       const c = D.cands.find(k => k.n === st.cand);
-      L.innerHTML = `<div class="ctrl-lbl">${c ? c.nm : ''}: cambio vs 2022 (puntos)</div><div class="rampa">${[-15, -10, -5, 0, 5, 10, 15].map(d => `<i style="background:${rampDelta(st.cand, d)}"></i>`).join('')}</div><div class="ejes"><span>−15</span><span>0</span><span>+15</span></div>`;
+      L.innerHTML = `<div class="ctrl-lbl">${c ? c.nm : ''}: ${T('cambio vs 2022 (puntos)', 'change vs 2022 (points)')}</div><div class="rampa">${[-15, -10, -5, 0, 5, 10, 15].map(d => `<i style="background:${rampDelta(st.cand, d)}"></i>`).join('')}</div><div class="ejes"><span>−15</span><span>0</span><span>+15</span></div>`;
     }
     P.appendChild(L);
   }
@@ -347,7 +364,7 @@
         const c = t.getAttribute('data-u'); nombre = UF[c][1]; fila = filaUF(D, UF[c][0]);
       } else { tip.hide(); return; }
       let html = `<div class="t-h">${nombre}</div>`;
-      if (!D || !fila || !fila.val) html += '<div class="t-m">Sin votos escrutados todavía</div>';
+      if (!D || !fila || !fila.val) html += `<div class="t-m">${T('Sin votos escrutados todavía', 'No votes counted yet')}</div>`;
       else {
         ordenCands(D, fila).slice(0, 3).forEach(i => {
           html += `<div class="t-r"><span><i class="sw" style="background:${colorDe(D.cands[i].n)}"></i>${D.cands[i].nm}</span><b>${fmt(100 * fila.v[i] / fila.val, 1)}%</b></div>`;
@@ -355,10 +372,10 @@
         if (st.modo === 'delta') {
           const B = baseDelta(), prev = t.classList.contains('mun') ? filaMun(B, t.getAttribute('data-c')) : filaUF(B, UF[t.getAttribute('data-u')][0]);
           const s = share(D, fila, st.cand), s0 = share(B, prev, st.cand);
-          if (s != null && s0 != null) extra += `<div class="t-m">${D.cands.find(c => c.n === st.cand).nm}: ${fmt(100 * s0, 1)}% en 2022 → ${(100 * (s - s0) >= 0 ? '+' : '') + fmt(100 * (s - s0), 1)} pts</div>`;
+          if (s != null && s0 != null) extra += `<div class="t-m">${D.cands.find(c => c.n === st.cand).nm}: ${fmt(100 * s0, 1)}% ${T('en', 'in')} 2022 → ${(100 * (s - s0) >= 0 ? '+' : '') + fmt(100 * (s - s0), 1)} pts</div>`;
         }
-        if (D.final === false && fila.pct != null) extra += `<div class="t-m">Escrutado: ${fmt(fila.pct, 1)}%</div>`;
-        extra += `<div class="t-m">${fila.val.toLocaleString('es-AR')} votos válidos</div>`;
+        if (D.final === false && fila.pct != null) extra += `<div class="t-m">${T('Escrutado', 'Counted')}: ${fmt(fila.pct, 1)}%</div>`;
+        extra += `<div class="t-m">${num(fila.val)} ${T('votos válidos', 'valid votes')}</div>`;
       }
       const r = box.getBoundingClientRect(), k = r.width / box.offsetWidth;
       tip.show(html + extra, (ev.clientX - r.left) / k, (ev.clientY - r.top) / k, box.offsetWidth);
@@ -377,6 +394,7 @@
   function leerHash() {
     const q = new URLSearchParams((location.hash.split('?')[1] || ''));
     if (q.get('e') && ELECCIONES.some(e => e.id === q.get('e'))) st.elec = q.get('e');
+    if (!VIVO_OK && st.elec.startsWith('2026')) st.elec = '2022-1';
     if (['uf', 'mun'].includes(q.get('n'))) st.nivel = q.get('n');
     if (['ganador', 'cand', 'delta'].includes(q.get('m'))) st.modo = q.get('m');
     if (q.get('c')) st.cand = q.get('c');
@@ -403,7 +421,7 @@
     box.appendChild(cache.svg);
     if (!cache.wired) { wireTooltip(box); cache.wired = true; cache.box = box; }
     else { box.appendChild(cache.box.querySelector('.tip') || document.createElement('div')); }
-    const vuelta = document.createElement('button'); vuelta.className = 'volver'; vuelta.textContent = '← Brasil';
+    const vuelta = document.createElement('button'); vuelta.className = 'volver'; vuelta.textContent = T('← Brasil', '← Brazil');
     vuelta.addEventListener('click', () => enfocar(null)); box.appendChild(vuelta);
     const G = window.GEO_BR;
     vbActual = null; cache.svg.setAttribute('viewBox', `0 0 ${G.w} ${G.h}`);
@@ -414,7 +432,39 @@
     vuelta.style.display = st.foco ? '' : 'none';
   }
   function desmontar() { clearInterval(timer); raiz = null; }
+
+  /* ---------- descargas: CSV de lo que se ve (estados, o municipios si el nivel es municipal o hay zoom) ---------- */
+  function nombreArchivo() {
+    const e = st.elec.replace('-1', T('-1ra-vuelta', '-1st-round')).replace('-2', T('-balotaje', '-runoff'));
+    const verMun = st.nivel === 'mun' || st.foco;
+    return T('mapa-', 'map-') + e + (verMun ? T('-municipios', '-municipalities') : T('-estados', '-states')) + (st.foco ? '-' + UF[st.foco][0].toLowerCase() : '');
+  }
+  function datosCSV() {
+    const D = datos(st.elec);
+    if (!D) return { archivo: nombreArchivo(), cols: [T('sin_datos', 'no_data')], filas: [] };
+    const orden = ordenCands(D);
+    const cands = orden.map(i => D.cands[i]);
+    const colsCand = cands.flatMap(c => [`${c.nm} (${T('votos', 'votes')})`, `${c.nm} (%)`]);
+    const verMun = st.nivel === 'mun' || st.foco;
+    const extra = [T('votos_validos', 'valid_votes'), T('blancos_y_nulos', 'blank_and_null'), T('electores', 'registered_voters'), T('comparecencia', 'turnout_votes')];
+    const fila = (f, id) => {
+      if (!f || !f.val) return [...id, ...cands.flatMap(() => [null, null]), null, null, null, null];
+      const vs = orden.flatMap(i => [f.v[i], Math.round(10000 * f.v[i] / f.val) / 100]);
+      return [...id, ...vs, f.val, f.bn != null ? f.bn : (f.bra || 0) + (f.nul || 0), f.apt, f.com];
+    };
+    if (!verMun) {
+      const filas = Object.keys(UF).sort((a, b) => UF[a][1].localeCompare(UF[b][1])).map(c => fila(filaUF(D, UF[c][0]), [UF[c][0], UF[c][1]]));
+      if (D.uf.ZZ) filas.push(fila(D.uf.ZZ, ['ZZ', T('Exterior', 'Abroad')]));
+      filas.push(fila(D.nac, ['BR', T('Brasil', 'Brazil')]));
+      return { archivo: nombreArchivo(), cols: [T('uf', 'state_code'), T('estado', 'state'), ...colsCand, ...extra], filas };
+    }
+    const nombres = window.MUN_NOMES || {};
+    const filas = Object.keys(D.mun).filter(ib => !st.foco || ib.slice(0, 2) === st.foco)
+      .sort((a, b) => ((nombres[a] || [''])[0]).localeCompare((nombres[b] || [''])[0]))
+      .map(ib => fila(filaMun(D, ib), [ib, (nombres[ib] || [ib])[0], (nombres[ib] || ['', ''])[1]]));
+    return { archivo: nombreArchivo(), cols: [T('codigo_ibge', 'ibge_code'), T('municipio', 'municipality'), 'uf', ...colsCand, ...extra], filas };
+  }
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && raiz && st.foco) enfocar(null); });
 
-  window.Mapa = { montar, desmontar, st, COLOR };
+  window.Mapa = { montar, desmontar, st, COLOR, datos: datosCSV, nombreArchivo };
 })();

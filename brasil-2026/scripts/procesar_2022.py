@@ -29,6 +29,9 @@ d = pd.read_csv(os.path.join(RAW, 'detalhe_votacao_munzona_2022_BR.csv'), sep=';
 d = d[d.CD_CARGO == '1'].copy()
 for c in ['QT_APTOS', 'QT_COMPARECIMENTO', 'QT_ABSTENCOES', 'QT_VOTOS_BRANCOS', 'QT_TOTAL_VOTOS_NULOS']:
     d[c] = d[c].astype(int)
+# los códigos de municipio vienen con ceros adelante en una tabla ("09717") y sin ellos en la otra ("9717")
+v['CD_MUNICIPIO'] = v['CD_MUNICIPIO'].str.zfill(5)
+d['CD_MUNICIPIO'] = d['CD_MUNICIPIO'].str.zfill(5)
 
 cm = json.load(open(os.path.join(RAW, 'ele2026_6257_config_mun-e006257-cm.json'), encoding='utf-8'))
 tse2ibge = {mu['cd']: mu['cdi'] for a in cm['abr'] for mu in a['mu'] if mu['cdi']}
@@ -70,15 +73,16 @@ for turno in ['1', '2']:
         uf[sg] = bloque(g, dt[dt.SG_UF == sg])
     mun = {}
     sin_mapa = []
+    det = {cod: g for cod, g in dt.groupby('CD_MUNICIPIO')}
     for cod, g in vt.groupby('CD_MUNICIPIO'):
         sg = g.SG_UF.iloc[0]
         if sg == 'ZZ':
             continue
-        ib = tse2ibge.get(cod.zfill(5))
+        ib = tse2ibge.get(cod)
         if not ib:
             sin_mapa.append(cod)
             continue
-        b = bloque(g, dt[dt.CD_MUNICIPIO == cod])
+        b = bloque(g, det[cod])
         mun[ib] = [b['v'], b['val'], b['bra'] + b['nul'], b['apt'], b['com']]
     out[f'2022-{turno}'] = {
         'id': f'2022-{turno}', 'anio': 2022, 'turno': int(turno),

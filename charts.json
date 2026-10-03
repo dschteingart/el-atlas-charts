@@ -1,6 +1,6 @@
 {
   "descripcion": "Catálogo de los gráficos publicados de El Atlas. Lo usan (a futuro) la galería de revisión y las sesiones de Claude Code como mapa del repo. Actualizar al agregar un chart (parte del checklist de integración).",
-  "actualizado": "2026-08-17",
+  "actualizado": "2026-10-03",
   "numeros": [
     {
       "numero": "1",
@@ -278,6 +278,76 @@
           "tema": "discriminación vivida por color de piel (World Risk Poll 2023, 138 países): experiencia propia declarada y de por vida, no opinión sobre terceros",
           "motor": "lib/grapher.js + clones de vdem-rank.js y vdem-mapa.js",
           "formatoPng": "worldmap"
+        }
+      ]
+    },
+    {
+      "numero": "especial",
+      "slug": "elecciones-brasil",
+      "carpeta": "brasil-2026",
+      "titulo": "Elecciones Brasil",
+      "en": "selector ES/EN en la barra inferior + ?lang=en; para COMPARTIR en inglés, index-en.html (OG en inglés + redirect que conserva la placa del link)",
+      "formato": "placas 16:9 (1920×1080) en una sola página, una placa por hash (#pib, #mapa...); CSV y PNG por placa desde la barra; vivo.py lee el escrutinio del TSE en la copia local",
+      "charts": [
+        {
+          "archivo": "index.html#pib",
+          "tipo": "barras",
+          "tema": "crecimiento del PIB 2010-2025 y proyección 2026"
+        },
+        {
+          "archivo": "index.html#desempleo",
+          "tipo": "línea",
+          "tema": "tasa de desocupación (trimestres móviles)"
+        },
+        {
+          "archivo": "index.html#empleo",
+          "tipo": "áreas apiladas al 100% + línea",
+          "tema": "composición del empleo por tipo y sector, informalidad"
+        },
+        {
+          "archivo": "index.html#pobreza",
+          "tipo": "líneas",
+          "tema": "pobreza y pobreza extrema (SIS/IBGE)"
+        },
+        {
+          "archivo": "index.html#ingreso",
+          "tipo": "línea",
+          "tema": "ingreso real del trabajo"
+        },
+        {
+          "archivo": "index.html#gini",
+          "tipo": "línea",
+          "tema": "Gini del ingreso domiciliario per cápita"
+        },
+        {
+          "archivo": "index.html#homicidios",
+          "tipo": "líneas",
+          "tema": "tasa de homicidios (SIM y FBSP)"
+        },
+        {
+          "archivo": "index.html#consumo",
+          "tipo": "barras + línea",
+          "tema": "consumo de los hogares"
+        },
+        {
+          "archivo": "index.html#fiscal",
+          "tipo": "líneas",
+          "tema": "resultado primario y financiero del sector público"
+        },
+        {
+          "archivo": "index.html#comercio",
+          "tipo": "barras apiladas + línea",
+          "tema": "comercio bilateral Brasil-Argentina"
+        },
+        {
+          "archivo": "index.html#encuestas",
+          "tipo": "puntos + promedio móvil",
+          "tema": "agregador de encuestas 1ª vuelta y balotaje 2026"
+        },
+        {
+          "archivo": "index.html#mapa",
+          "tipo": "mapa coroplético (estados/municipios)",
+          "tema": "resultados 2022 y escrutinio 2026 en vivo"
         }
       ]
     }

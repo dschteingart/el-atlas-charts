@@ -28,8 +28,10 @@
     if (parent) parent.appendChild(e);
     return e;
   }
+  // formato de números según el idioma de la página (window.LANG lo fija index.html)
+  const LOC = () => (window.LANG === 'en' ? 'en-US' : 'es-AR');
   const fmt = (v, d = 1) => (v == null || isNaN(v)) ? '–' :
-    v.toLocaleString('es-AR', { minimumFractionDigits: d, maximumFractionDigits: d }).replace(/^-/, '−');
+    v.toLocaleString(LOC(), { minimumFractionDigits: d, maximumFractionDigits: d }).replace(/^-/, '−');
   const fmtSigno = (v, d = 1) => (v > 0 ? '+' : '') + fmt(v, d);
 
   function lineLen(pts) {
@@ -312,5 +314,5 @@
     },
   };
 
-  window.Charts = { dibujarTiempo, el, fmt, fmtSigno, C, SANS, SERIF, GOBIERNOS, tooltip, svgPoint, patron };
+  window.Charts = { dibujarTiempo, el, fmt, fmtSigno, C, SANS, SERIF, GOBIERNOS, tooltip, svgPoint, patron, LOC };
 })();

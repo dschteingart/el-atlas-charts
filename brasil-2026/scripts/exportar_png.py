@@ -40,9 +40,10 @@ def main():
     base = 'file:///' + os.path.join(RAIZ, 'index.html').replace(os.sep, '/')
 
     def captura(item):
-        nombre, hash_ = item
-        dest = os.path.join(SALIDA, nombre + '.png')
-        url = f'{base}?png=1#{hash_}'
+        (nombre, hash_), (sub, lang) = item
+        os.makedirs(os.path.join(SALIDA, sub), exist_ok=True)
+        dest = os.path.join(SALIDA, sub, nombre + '.png')
+        url = f'{base}?png=1{lang}#{hash_}'
         for _ in range(3):
             perfil = tempfile.mkdtemp(prefix='placas_chrome_')  # perfil nuevo por captura, fuera de MEGAsync
             if os.path.exists(dest):
@@ -60,10 +61,22 @@ def main():
             if os.path.exists(dest) and os.path.getsize(dest) > 60000:
                 break
         ok = os.path.exists(dest)
-        print(nombre, 'ok' if ok else 'FALLÓ', os.path.getsize(dest) if ok else '', flush=True)
+        print(sub or 'es', nombre, 'ok' if ok else 'FALLÓ', flush=True)
 
+    idiomas = [('', ''), ('en', '&lang=en')]
     with ThreadPoolExecutor(3) as ex:
-        list(ex.map(captura, PLACAS))
+        list(ex.map(captura, [(p, l) for l in idiomas for p in PLACAS]))
+    # tarjetas para redes (og:image 1200×630): el mapa del balotaje 2022 por municipio + título (scripts/og.html)
+    os.makedirs(os.path.join(RAIZ, 'thumbs'), exist_ok=True)
+    og = 'file:///' + os.path.join(RAIZ, 'scripts', 'og.html').replace(os.sep, '/')
+    for lang, sufijo in [('', ''), ('?lang=en', '.en')]:
+        perfil = tempfile.mkdtemp(prefix='placas_chrome_')
+        subprocess.run([nav, '--headless', '--disable-gpu', '--hide-scrollbars', '--force-device-scale-factor=1', '--no-first-run',
+                        '--allow-file-access-from-files', f'--user-data-dir={perfil}', '--window-size=1200,630', '--virtual-time-budget=4000',
+                        '--screenshot=' + os.path.join(RAIZ, 'thumbs', f'og-balotaje-2022{sufijo}.png'), og + lang],
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=60)
+        shutil.rmtree(perfil, ignore_errors=True)
+    print('tarjetas ok')
 
 
 if __name__ == '__main__':

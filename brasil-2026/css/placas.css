@@ -80,7 +80,7 @@ body.cursor-oculto, body.cursor-oculto * { cursor: none !important; }
 @keyframes dibujar { to { stroke-dashoffset: 0; } }
 @keyframes crecer { to { transform: scaleY(1); } }
 @keyframes aparecer { to { opacity: 1; } }
-body.sin-anim .anim-linea, body.sin-anim .anim-barra, body.sin-anim .anim-fade { animation: none !important; stroke-dashoffset: 0; transform: none; opacity: 1; }
+.sin-anim .anim-linea, .sin-anim .anim-barra, .sin-anim .anim-fade { animation: none !important; stroke-dashoffset: 0; transform: none; opacity: 1; }
 
 /* ---------- tooltip oscuro de la casa (agrandado para pantalla) ---------- */
 .tip {
@@ -121,6 +121,15 @@ body.sin-anim .anim-linea, body.sin-anim .anim-barra, body.sin-anim .anim-fade {
 #nav button:hover { background: rgba(255,255,255,.15); }
 #nav button.on { background: #BE5D32; }
 #nav .ayuda { color: #C9C2B2; padding: 0 8px; }
+#nav .sep-nav { width: 1px; align-self: stretch; background: rgba(255,255,255,.22); margin: 2px 6px; }
+#nav a.casa { color: #fff; text-decoration: none; font-weight: 700; padding: 4px 9px; letter-spacing: .3px; }
+#nav a.casa:hover { color: #F2C9A4; }
+#nav button.idioma { font-weight: 600; letter-spacing: .6px; color: #C9C2B2; }
+#nav button.idioma.on { background: transparent; color: #fff; text-decoration: underline; text-decoration-color: #BE5D32; text-underline-offset: 4px; text-decoration-thickness: 2px; }
+/* botones de descarga con la estética de El Atlas (.download), en versión clara sobre la barra oscura */
+#nav button.dl { background: #FAF8F3; color: #1A1A1A; border-radius: 3px; text-transform: uppercase; letter-spacing: .5px; font-size: 11px; font-weight: 600; padding: 6px 12px; margin-left: 4px; }
+#nav button.dl:hover { background: #fff; }
+#nav button.dl:disabled { opacity: .55; cursor: wait; }
 /* teléfono: barra que entra en pantalla, sin la ayuda de teclado */
 @media (max-width: 760px) {
   #nav { max-width: calc(100vw - 16px); overflow-x: auto; padding: 5px 6px; gap: 2px; bottom: 10px; }
@@ -193,3 +202,6 @@ body.sin-anim .anim-linea, body.sin-anim .anim-barra, body.sin-anim .anim-fade {
 .volver { position: absolute; left: 0; top: 0; font-family: var(--sans); font-size: 19px; font-weight: 600; background: #fff; border: 1.5px solid var(--rule-strong); border-radius: 6px; padding: 8px 14px; cursor: pointer; color: var(--ink-soft); }
 .volver:hover { border-color: var(--ink); color: var(--ink); }
 select.sel { font-family: var(--sans); font-size: 20px; font-weight: 600; padding: 8px 12px; border: 1.5px solid var(--rule-strong); border-radius: 6px; background: #fff; color: var(--ink); }
+
+/* lo que no va en las imágenes exportadas (controles del mapa) */
+.sin-anim .no-png { display: none !important; }
