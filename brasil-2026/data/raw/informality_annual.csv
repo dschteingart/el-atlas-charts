@@ -1,0 +1,14 @@
+year,rate_pct,type,variant,period_label,rate_qavg_pct,source,note
+2015,,partial,single_quarter_only,2015-T4 only,38.3,IBGE SIDRA t8529 (series starts 2015-T4),Only 2015-T4 available; no annual figure. Do not chart as an annual value.
+2016,39.1,observed,ibge_annual_estimate,2016 (annual),38.62,IBGE SIDRA t4708 v12466 (PNADC anual); rate_qavg_pct = mean of 4 quarters from t8529,
+2017,40.6,observed,ibge_annual_estimate,2017 (annual),39.9,IBGE SIDRA t4708 v12466 (PNADC anual); rate_qavg_pct = mean of 4 quarters from t8529,
+2018,40.9,observed,ibge_annual_estimate,2018 (annual),40.5,IBGE SIDRA t4708 v12466 (PNADC anual); rate_qavg_pct = mean of 4 quarters from t8529,
+2019,41.0,observed,ibge_annual_estimate,2019 (annual),40.78,IBGE SIDRA t4708 v12466 (PNADC anual); rate_qavg_pct = mean of 4 quarters from t8529,
+2020,37.7,observed,ibge_annual_estimate,2020 (annual),38.35,IBGE SIDRA t4708 v12466 (PNADC anual); rate_qavg_pct = mean of 4 quarters from t8529,2020-2022 annual uses 5th visits.
+2021,39.6,observed,ibge_annual_estimate,2021 (annual),40.2,IBGE SIDRA t4708 v12466 (PNADC anual); rate_qavg_pct = mean of 4 quarters from t8529,2020-2022 annual uses 5th visits.
+2022,39.5,observed,ibge_annual_estimate,2022 (annual),39.65,IBGE SIDRA t4708 v12466 (PNADC anual); rate_qavg_pct = mean of 4 quarters from t8529,2020-2022 annual uses 5th visits.
+2023,39.2,observed,ibge_annual_estimate,2023 (annual),39.12,IBGE SIDRA t4708 v12466 (PNADC anual); rate_qavg_pct = mean of 4 quarters from t8529,
+2024,39.0,observed,ibge_annual_estimate,2024 (annual),38.75,IBGE SIDRA t4708 v12466 (PNADC anual); rate_qavg_pct = mean of 4 quarters from t8529,
+2025,38.1,observed,ibge_annual_estimate,2025 (annual),37.8,IBGE SIDRA t4708 v12466 (PNADC anual); rate_qavg_pct = mean of 4 quarters from t8529,
+2026,37.35,partial,avg_available_quarters,2026 T1-T2 average,37.35,IBGE SIDRA t8529 v12466,Mean of 2026-T1 and 2026-T2.
+2026,37.5,partial,latest_moving_quarter,jun-jul-ago 2026,,IBGE SIDRA t8513 v12466 (released 2026-09-29),Same moving quarter one year earlier (jun-jul-ago 2025) = 38.0%.

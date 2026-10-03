@@ -1,0 +1,17 @@
+year,gini_ibge,gini_ibge_cv_pct,gini_ibge_sis2025_check,gini_worldbank,note
+2010,,,,,No PNAD in 2010 (Census year): neither IBGE PNADC nor World Bank has a value.
+2011,,,,0.529,WB value based on old PNAD (pre-PNADC survey); IBGE PNADC series starts 2012. Splice with caution.
+2012,0.54,0.6,0.5398,0.534,
+2013,0.532,0.6,0.5323,0.527,
+2014,0.526,0.6,0.5259,0.521,
+2015,0.524,0.7,0.5242,0.519,
+2016,0.537,0.8,0.5374,0.534,
+2017,0.539,0.7,0.5388,0.533,
+2018,0.545,0.9,0.5454,0.539,
+2019,0.543,0.7,0.5433,0.535,
+2020,0.523,0.8,0.5231,0.488,IBGE uses accumulated 5th visits (pandemic).
+2021,0.543,0.6,0.5434,0.529,IBGE uses accumulated 5th visits (pandemic).
+2022,0.517,0.6,0.517,0.519,IBGE uses accumulated 5th visits (pandemic).
+2023,0.517,0.7,0.5165,0.515,
+2024,0.504,0.6,0.5044,0.503,
+2025,0.511,0.6,,,IBGE 2025 released 2026-05-08; WB not yet available.

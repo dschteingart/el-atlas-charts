@@ -1,0 +1,18 @@
+year,primary_pct_gdp,nominal_pct_gdp,interest_pct_gdp,primary_nfsp_raw,nominal_nfsp_raw,interest_nfsp_raw,period_label,type,note
+2010,2.62,-2.41,-5.03,-2.62,2.41,5.03,2010,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2011,2.94,-2.47,-5.41,-2.94,2.47,5.41,2011,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2012,2.18,-2.26,-4.44,-2.18,2.26,4.44,2012,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2013,1.71,-2.96,-4.67,-1.71,2.96,4.67,2013,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2014,-0.56,-5.95,-5.39,0.56,5.95,5.39,2014,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2015,-1.86,-10.22,-8.37,1.86,10.22,8.37,2015,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2016,-2.48,-8.98,-6.49,2.48,8.98,6.49,2016,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2017,-1.68,-7.77,-6.09,1.68,7.77,6.09,2017,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2018,-1.55,-6.96,-5.41,1.55,6.96,5.41,2018,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2019,-0.84,-5.81,-4.97,0.84,5.81,4.97,2019,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2020,-9.24,-13.34,-4.11,9.24,13.34,4.11,2020,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2021,0.72,-4.26,-4.98,-0.72,4.26,4.98,2021,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2022,1.25,-4.57,-5.82,-1.25,4.57,5.82,2022,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2023,-2.28,-8.84,-6.56,2.28,8.84,6.56,2023,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2024,-0.4,-8.47,-8.07,0.4,8.47,8.07,2024,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2025,-0.43,-8.34,-7.91,0.43,8.34,7.91,2025,observed,Dezembro do fluxo acumulado em 12 meses (= ano-calendario)
+2026,-0.62,-9.48,-8.86,0.62,9.48,8.86,12 meses a ago-2026,partial,"Ultimos 12 meses (set/2025 a ago/2026); Nota de Estatisticas Fiscais do BCB de 30/09/2026. Focus 25/09/2026 espera para o ano de 2026: primario -0,41% e nominal -8,90% do PIB"

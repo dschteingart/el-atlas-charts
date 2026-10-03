@@ -1,0 +1,420 @@
+/* Mapa electoral de Brasil (presidente): 2022 histórico + 2026 en vivo.
+   Datos: window.ELEC['2022-1'|'2022-2'] (data/elecciones-2022.js) y, para 2026,
+   data/vivo/2026-<turno>.json que escribe vivo.py leyendo al TSE.
+   Geometría: window.GEO_BR (js/geo-br.js), proyección Albers, viewBox 1000×910.
+   Estado compartible en el hash: #mapa?e=2022-2&n=mun&m=cand&c=13 */
+(function () {
+  const { el, fmt } = window.Charts;
+  const BG = '#FAF8F3', SIN = '#E3DED0';
+
+  // Colores por número de urna (mismo número = mismo color en 2022 y 2026)
+  const COLOR = {
+    '13': '#C8372D', // Lula (PT)
+    '22': '#234B85', // Jair Bolsonaro 2022 / Flávio Bolsonaro 2026 (PL)
+    '15': '#C9A227', // Simone Tebet 2022 (MDB)
+    '12': '#2D6A3D', // Ciro Gomes 2022 (PDT)
+    '44': '#6B3D8B', // Soraya Thronicke 2022
+    '30': '#E07A23', // Novo: Felipe d'Avila 2022 / Romeu Zema 2026
+    '55': '#2C8484', // Ronaldo Caiado 2026 (PSD)
+    '14': '#6B3D8B', // Renan Santos 2026 (Missão)
+    '70': '#C9A227', // Augusto Cury 2026 (Avante)
+  };
+  const OTROS = '#8A8579';
+  const colorDe = n => COLOR[n] || OTROS;
+
+  const ELECCIONES = [
+    { id: '2022-1', nm: '2022 · 1ª vuelta', corto: '2022 1ª' },
+    { id: '2022-2', nm: '2022 · 2ª vuelta', corto: '2022 2ª' },
+    { id: '2026-1', nm: '2026 · 1ª vuelta', corto: '2026 1ª', vivo: true },
+    { id: '2026-2', nm: '2026 · 2ª vuelta', corto: '2026 2ª', vivo: true },
+  ];
+  const UF = {
+    '11': ['RO', 'Rondônia'], '12': ['AC', 'Acre'], '13': ['AM', 'Amazonas'], '14': ['RR', 'Roraima'],
+    '15': ['PA', 'Pará'], '16': ['AP', 'Amapá'], '17': ['TO', 'Tocantins'], '21': ['MA', 'Maranhão'],
+    '22': ['PI', 'Piauí'], '23': ['CE', 'Ceará'], '24': ['RN', 'Rio Grande do Norte'], '25': ['PB', 'Paraíba'],
+    '26': ['PE', 'Pernambuco'], '27': ['AL', 'Alagoas'], '28': ['SE', 'Sergipe'], '29': ['BA', 'Bahia'],
+    '31': ['MG', 'Minas Gerais'], '32': ['ES', 'Espírito Santo'], '33': ['RJ', 'Río de Janeiro'], '35': ['SP', 'São Paulo'],
+    '41': ['PR', 'Paraná'], '42': ['SC', 'Santa Catarina'], '43': ['RS', 'Rio Grande do Sul'], '50': ['MS', 'Mato Grosso do Sul'],
+    '51': ['MT', 'Mato Grosso'], '52': ['GO', 'Goiás'], '53': ['DF', 'Distrito Federal'],
+  };
+  const SG2COD = Object.fromEntries(Object.entries(UF).map(([c, v]) => [v[0], c]));
+  const ORDEN_2026 = ['13', '22', '55', '30', '14', '70', '27', '21', '16', '80', '35', '28', '29'];
+
+  const st = { elec: '2022-1', nivel: 'uf', modo: 'ganador', cand: '13', foco: null };
+  const vivo = {};          // id -> datos 2026 cargados
+  let estadoVivo = {};      // id -> 'ok' | 'sin-servidor' | 'esperando'
+  let timer = null, raiz = null, cache = null;
+
+  /* ---------- color ---------- */
+  function hex2rgb(h) { return [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)); }
+  function mix(a, b, t) {
+    const A = hex2rgb(a), B = hex2rgb(b);
+    return '#' + A.map((x, i) => Math.round(x + (B[i] - x) * t).toString(16).padStart(2, '0')).join('');
+  }
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const rampGanador = (col, share) => mix(BG, col, 0.24 + 0.76 * clamp((share - 0.38) / 0.42, 0, 1));
+  const rampCand = (col, share) => mix('#F1EDE2', col, clamp(share / 0.85, 0, 1) ** 0.9);
+  function rampDelta(n, d) { // d en puntos porcentuales
+    const pos = colorDe(n), neg = n === '13' ? COLOR['22'] : n === '22' ? COLOR['13'] : '#6E6A60';
+    const t = clamp(Math.abs(d) / 15, 0, 1) ** 0.85;
+    return d >= 0 ? mix('#F1EDE2', pos, t) : mix('#F1EDE2', neg, t);
+  }
+
+  /* ---------- datos ---------- */
+  const datos = id => (id.startsWith('2022') ? window.ELEC[id] : vivo[id]);
+  function filaUF(D, sg) { return D && D.uf[sg] ? D.uf[sg] : null; }
+  function filaMun(D, ib) {
+    const r = D && D.mun[ib];
+    return r ? { v: r[0], val: r[1], bn: r[2], apt: r[3], com: r[4], pct: r[5] != null ? r[5] : (D.final ? 100 : null) } : null;
+  }
+  function ordenCands(D, fila) {
+    const f = fila || D.nac;
+    const idx = D.cands.map((c, i) => i);
+    idx.sort((a, b) => (f.v[b] || 0) - (f.v[a] || 0) || ORDEN_2026.indexOf(D.cands[a].n) - ORDEN_2026.indexOf(D.cands[b].n));
+    return idx;
+  }
+  function share(D, fila, n) {
+    const i = D.cands.findIndex(c => c.n === n);
+    return i < 0 || !fila || !fila.val ? null : fila.v[i] / fila.val;
+  }
+  function baseDelta() { return window.ELEC[st.elec === '2026-2' ? '2022-2' : '2022-1']; }
+
+  function fillDe(D, fila, filaPrev) {
+    if (!fila || !fila.val) return SIN;
+    if (st.modo === 'ganador') {
+      let bi = 0; fila.v.forEach((x, i) => { if (x > fila.v[bi]) bi = i; });
+      return rampGanador(colorDe(D.cands[bi].n), fila.v[bi] / fila.val);
+    }
+    if (st.modo === 'cand') {
+      const s = share(D, fila, st.cand);
+      return s == null ? SIN : rampCand(colorDe(st.cand), s);
+    }
+    if (st.modo === 'delta') {
+      const s = share(D, fila, st.cand), B = baseDelta(), s0 = filaPrev ? share(B, filaPrev, st.cand) : null;
+      return s == null || s0 == null ? SIN : rampDelta(st.cand, 100 * (s - s0));
+    }
+  }
+
+  /* ---------- carga en vivo ---------- */
+  // vivo.py escribe data/vivo/<id>.js (window.VIVO[id] = {...}); se relee inyectando un <script>,
+  // que funciona abriendo index.html directo del disco (sin servidor) y también por http.
+  function cargarVivo(id) {
+    const s = document.createElement('script');
+    s.src = `data/vivo/${id}.js?_=${Date.now()}`;
+    s.onload = () => {
+      s.remove();
+      const D = window.VIVO && window.VIVO[id];
+      if (D) { vivo[id] = D; estadoVivo[id] = 'ok'; } else estadoVivo[id] = 'esperando';
+      if (st.elec === id && raiz) pintar();
+    };
+    s.onerror = () => {
+      s.remove();
+      if (!vivo[id]) estadoVivo[id] = 'esperando';  // si ya había datos, se mantiene la última foto
+      if (st.elec === id && raiz) pintar();
+    };
+    document.head.appendChild(s);
+  }
+  function programarVivo() {
+    clearInterval(timer);
+    const e = ELECCIONES.find(x => x.id === st.elec);
+    if (e && e.vivo) { cargarVivo(st.elec); timer = setInterval(() => cargarVivo(st.elec), 15000); }
+  }
+
+  /* ---------- construcción del SVG (una sola vez) ---------- */
+  function construirSVG() {
+    const G = window.GEO_BR;
+    const svg = el('svg', { viewBox: `0 0 ${G.w} ${G.h}`, preserveAspectRatio: 'xMidYMid meet' });
+    const gMun = el('g', { class: 'g-mun' }, svg);
+    const gUF = el('g', { class: 'g-uf' }, svg);
+    const gBord = el('g', { class: 'g-bord' }, svg);
+    const gSig = el('g', { class: 'g-sig' }, svg);
+    const mun = {}, uf = {}, bord = {};
+    G.mun.forEach(m => { mun[m.c] = el('path', { d: m.d, class: 'mun', 'data-c': m.c }, gMun); });
+    G.uf.forEach(u => {
+      uf[u.c] = el('path', { d: u.d, class: 'uf', 'data-u': u.c }, gUF);
+      bord[u.c] = el('path', { d: u.d, class: 'ufb' }, gBord);
+    });
+    const sig = {};
+    Object.entries(G.ufc).forEach(([c, p]) => {
+      const off = { '53': [0, 0], '28': [8, 4], '27': [16, 2], '25': [26, 0], '24': [18, -4], '26': [36, 2], '32': [10, 6], '33': [8, 8] }[c] || [0, 0];
+      sig[c] = el('text', { x: p[0] + off[0], y: p[1] + off[1], class: 'sig' }, gSig, UF[c][0]);
+    });
+    const marca = el('text', { x: G.w / 2, y: G.h / 2, 'text-anchor': 'middle', 'font-family': '"Source Sans 3", sans-serif', 'font-weight': 800, 'font-size': 64, fill: '#C9A227', 'fill-opacity': .35, transform: `rotate(-24 ${G.w / 2} ${G.h / 2})`, 'pointer-events': 'none', display: 'none' }, svg, 'SIMULACRO · DATOS FICTICIOS');
+    return { svg, gMun, gUF, gBord, gSig, mun, uf, bord, sig, marca };
+  }
+
+  /* ---------- zoom ---------- */
+  let vbActual = null;
+  function animarViewBox(svg, dest) {
+    const G = window.GEO_BR, ini = vbActual || [0, 0, G.w, G.h], t0 = performance.now(), dur = 650;
+    function paso(now) {
+      const k = clamp((now - t0) / dur, 0, 1), e = k < .5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
+      const v = ini.map((x, i) => x + (dest[i] - x) * e);
+      svg.setAttribute('viewBox', v.join(' ')); vbActual = v;
+      if (k < 1) requestAnimationFrame(paso);
+    }
+    if (document.body.classList.contains('sin-anim')) { svg.setAttribute('viewBox', dest.join(' ')); vbActual = dest; return; }
+    requestAnimationFrame(paso);
+  }
+  function enfocar(cod) {
+    st.foco = cod;
+    const G = window.GEO_BR;
+    if (!cod) { animarViewBox(cache.svg, [0, 0, G.w, G.h]); }
+    else {
+      const b = cache.uf[cod].getBBox(), pad = Math.max(b.width, b.height) * 0.08;
+      let w = b.width + 2 * pad, h = b.height + 2 * pad;
+      const asp = G.w / G.h; if (w / h > asp) h = w / asp; else w = h * asp;
+      animarViewBox(cache.svg, [b.x + b.width / 2 - w / 2, b.y + b.height / 2 - h / 2, w, h]);
+    }
+    pintar(); syncHash();
+  }
+
+  /* ---------- pintado ---------- */
+  function pintar() {
+    if (!raiz) return;
+    const D = datos(st.elec), B = baseDelta();
+    const verMun = st.nivel === 'mun' || st.foco;
+    cache.gMun.style.display = verMun ? '' : 'none';
+    cache.gUF.style.display = verMun ? 'none' : '';
+    Object.entries(cache.bord).forEach(([c, p]) => {
+      p.classList.toggle('fuerte', !!verMun);
+      p.style.display = verMun ? '' : 'none';
+    });
+    cache.gSig.style.display = st.foco ? 'none' : '';
+    cache.marca.setAttribute('display', D && D.simulacro ? 'inline' : 'none');
+    if (st.modo === 'delta' && !st.elec.startsWith('2026')) st.modo = 'ganador';
+    if (D && !D.cands.some(c => c.n === st.cand)) st.cand = D.cands[ordenCands(D)[0]].n;
+
+    if (verMun) {
+      for (const ib in cache.mun) {
+        const p = cache.mun[ib];
+        const fuera = st.foco && ib.slice(0, 2) !== st.foco;
+        p.setAttribute('fill', fillDe(D, filaMun(D, ib), filaMun(B, ib)));
+        p.style.opacity = fuera ? 0.18 : 1;
+      }
+    } else {
+      for (const c in cache.uf) {
+        const sg = UF[c][0];
+        cache.uf[c].setAttribute('fill', fillDe(D, filaUF(D, sg), filaUF(B, sg)));
+      }
+    }
+    // siglas: blancas sobre colores oscuros
+    for (const c in cache.sig) {
+      const f = verMun ? null : cache.uf[c].getAttribute('fill');
+      const dark = f && f !== SIN && hex2rgb(f).reduce((a, x) => a + x, 0) < 330;
+      cache.sig[c].setAttribute('fill', dark ? '#FFFFFF' : '#1A1A1A');
+      cache.sig[c].style.stroke = dark ? 'rgba(26,26,26,.35)' : 'rgba(250,248,243,.85)';
+    }
+    panel();
+  }
+
+  /* ---------- panel derecho ---------- */
+  function boton(txt, on, fn, dis) {
+    const b = document.createElement('button'); b.textContent = txt;
+    if (on) b.classList.add('on'); if (dis) b.disabled = true;
+    b.addEventListener('click', fn); return b;
+  }
+  function grupo(lbl, botones) {
+    const d = document.createElement('div');
+    d.innerHTML = `<div class="ctrl-lbl">${lbl}</div>`;
+    const t = document.createElement('div'); t.className = 'toggle'; botones.forEach(b => t.appendChild(b)); d.appendChild(t);
+    return d;
+  }
+  function panel() {
+    const P = raiz.querySelector('.mapa-panel'); P.innerHTML = '';
+    const E = ELECCIONES.find(x => x.id === st.elec), D = datos(st.elec);
+    const sg = st.foco ? UF[st.foco][0] : null;
+    const fila = D ? (sg ? filaUF(D, sg) : D.nac) : null;
+
+    // encabezado
+    const h = document.createElement('div');
+    let badge = '';
+    if (E.vivo && D && D.simulacro) badge = '<span class="badge simu">Simulacro · datos ficticios</span>';
+    else if (E.vivo && D && !D.final) badge = '<span class="badge vivo">En vivo</span>';
+    h.innerHTML = `<div class="kicker">Presidente <span class="sep">·</span> ${E.nm} ${badge}</div>
+      <div class="titulo" style="font-size:56px;margin-top:6px">${sg ? UF[st.foco][1] : 'Brasil'}</div>`;
+    P.appendChild(h);
+
+    // controles
+    const ctr = document.createElement('div'); ctr.style.cssText = 'display:flex;flex-wrap:wrap;gap:14px 22px';
+    ctr.appendChild(grupo('Elección', ELECCIONES.map(e => boton(e.corto, e.id === st.elec, () => { st.elec = e.id; programarVivo(); pintar(); syncHash(); }))));
+    ctr.appendChild(grupo('Nivel', [
+      boton('Estados', st.nivel === 'uf', () => { st.nivel = 'uf'; pintar(); syncHash(); }),
+      boton('Municipios', st.nivel === 'mun', () => { st.nivel = 'mun'; pintar(); syncHash(); }),
+    ]));
+    const modos = [
+      boton('Ganador', st.modo === 'ganador', () => { st.modo = 'ganador'; pintar(); syncHash(); }),
+      boton('% candidato', st.modo === 'cand', () => { st.modo = 'cand'; pintar(); syncHash(); }),
+    ];
+    if (E.vivo) modos.push(boton('Cambio vs 2022', st.modo === 'delta', () => { st.modo = 'delta'; if (!['13', '22'].includes(st.cand)) st.cand = '13'; pintar(); syncHash(); }));
+    ctr.appendChild(grupo('Color', modos));
+    if (D && st.modo !== 'ganador') {
+      const s = document.createElement('select'); s.className = 'sel';
+      const lista = st.modo === 'delta' ? D.cands.filter(c => window.ELEC[st.elec === '2026-2' ? '2022-2' : '2022-1'].cands.some(k => k.n === c.n)) : D.cands;
+      ordenCands(D).map(i => D.cands[i]).filter(c => lista.includes(c)).forEach(c => {
+        const o = document.createElement('option'); o.value = c.n; o.textContent = c.nm + (st.modo === 'delta' && c.n === '22' && st.elec.startsWith('2026') ? ' (vs Jair 2022)' : '');
+        if (c.n === st.cand) o.selected = true; s.appendChild(o);
+      });
+      s.addEventListener('change', () => { st.cand = s.value; pintar(); syncHash(); });
+      const d = document.createElement('div'); d.innerHTML = '<div class="ctrl-lbl">Candidato</div>'; d.appendChild(s); ctr.appendChild(d);
+    }
+    P.appendChild(ctr);
+
+    // estado de datos en vivo
+    if (E.vivo && !D) {
+      const a = document.createElement('div'); a.className = 'aviso';
+      const enLaWeb = /^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+      a.innerHTML = enLaWeb
+        ? 'El escrutinio en vivo se ve en la versión local: bajá la carpeta del proyecto y hacé doble clic en <code>EN_VIVO_1ra_vuelta.bat</code> (lee al TSE cada 30 segundos). Instrucciones en LEEME.md.'
+        : 'Esperando datos del TSE. Tiene que estar abierta la ventana de <code>EN_VIVO_1ra_vuelta.bat</code> (o <code>python vivo.py</code>); el mapa se actualiza solo cada 15 segundos.';
+      P.appendChild(a); leyenda(P, D); return;
+    }
+    if (!D) return;
+
+    // resultados
+    const res = document.createElement('div');
+    const orden = ordenCands(D, fila);
+    const nMostrar = D.cands.length <= 2 ? 2 : (st.modo === 'ganador' ? 5 : 4);
+    const val = fila ? fila.val : 0;
+    orden.slice(0, nMostrar).forEach(i => {
+      const c = D.cands[i], v = fila ? fila.v[i] : 0, p = val ? 100 * v / val : 0;
+      const r = document.createElement('div'); r.className = 'res-fila';
+      r.innerHTML = `<div class="res-nom">${c.nm}<small>${c.p || ''}</small></div><div class="res-pct" style="color:${colorDe(c.n)}">${val ? fmt(p, 1) + '%' : '–'}</div>
+        <div class="res-bar"><i style="width:${p}%;background:${colorDe(c.n)}"></i>${D.turno === 1 ? '<b class="m50"></b>' : ''}</div>
+        <div class="res-vot">${v.toLocaleString('es-AR')} votos</div>`;
+      res.appendChild(r);
+    });
+    if (val && orden.length > 1) {
+      const a = fila.v[orden[0]], b2 = fila.v[orden[1]];
+      const r = document.createElement('div'); r.className = 'res-vot'; r.style.cssText = 'font-size:19px;margin:-2px 0 4px;color:#4A4A4A';
+      r.innerHTML = `Diferencia entre los dos primeros: <b>${fmt(100 * (a - b2) / val, 1)} pts</b> (${(a - b2).toLocaleString('es-AR')} votos)`;
+      res.appendChild(r);
+    }
+    if (orden.length > nMostrar && val) {
+      const resto = orden.slice(nMostrar).reduce((a, i) => a + fila.v[i], 0);
+      const r = document.createElement('div'); r.className = 'res-vot'; r.style.cssText = 'font-size:19px;margin:-4px 0 4px';
+      r.textContent = `Otros ${orden.length - nMostrar} candidatos: ${fmt(100 * resto / val, 1)}%` + (D.turno === 1 ? ' · la marca vertical indica el 50% para ganar en 1ª vuelta' : '');
+      res.appendChild(r);
+    }
+    P.appendChild(res);
+
+    // progreso / participación
+    const pr = document.createElement('div'); pr.className = 'progreso';
+    const pct = fila && fila.pct != null ? fila.pct : 0;
+    const part = fila && fila.apt ? 100 * fila.com / fila.apt : null;
+    if (E.vivo) {
+      pr.innerHTML = `<b>${fmt(pct, 2)}%</b> de las secciones escrutadas${D.actualizado ? ` · ${D.simulacro ? 'simulacro' : 'TSE'} ${D.actualizado.slice(-8)}` : ''}<div class="pb"><i style="width:${pct}%"></i></div>`;
+    } else {
+      pr.innerHTML = `Resultado oficial final · votos válidos ${val.toLocaleString('es-AR')}${part ? ` · participación ${fmt(part, 1)}%` : ''}`;
+    }
+    P.appendChild(pr);
+    leyenda(P, D);
+    const f = document.createElement('div'); f.className = 'fuente'; f.style.marginTop = 'auto';
+    f.innerHTML = `<b>Fuente:</b> ${D.anio === 2022 ? 'TSE, resultados oficiales (datos abiertos).' : D.fuente} Porcentajes sobre votos válidos.`;
+    P.appendChild(f);
+  }
+
+  function leyenda(P, D) {
+    const L = document.createElement('div'); L.className = 'leyenda' + (st.modo === 'ganador' ? ' grid' : '');
+    if (!D) { P.appendChild(L); return; }
+    if (st.modo === 'ganador') {
+      const top = ordenCands(D).slice(0, D.cands.length <= 2 ? 2 : 4).map(i => D.cands[i]);
+      L.innerHTML = '<div class="ctrl-lbl">Ganador · intensidad = % del ganador</div>' + top.map(c =>
+        `<div class="fila"><div class="rampa">${[0.38, 0.5, 0.62, 0.74, 0.86].map(s => `<i style="background:${rampGanador(colorDe(c.n), s)}"></i>`).join('')}</div> ${c.nm}</div>`).join('') +
+        '<div class="ejes"><span>40%</span><span>60%</span><span>80%+</span></div>';
+    } else if (st.modo === 'cand') {
+      const c = D.cands.find(k => k.n === st.cand);
+      L.innerHTML = `<div class="ctrl-lbl">% de votos válidos · ${c ? c.nm : ''}</div><div class="rampa">${[0, .15, .3, .45, .6, .75, .9].map(s => `<i style="background:${rampCand(colorDe(st.cand), s)}"></i>`).join('')}</div><div class="ejes"><span>0%</span><span>45%</span><span>90%</span></div>`;
+    } else {
+      const c = D.cands.find(k => k.n === st.cand);
+      L.innerHTML = `<div class="ctrl-lbl">${c ? c.nm : ''}: cambio vs 2022 (puntos)</div><div class="rampa">${[-15, -10, -5, 0, 5, 10, 15].map(d => `<i style="background:${rampDelta(st.cand, d)}"></i>`).join('')}</div><div class="ejes"><span>−15</span><span>0</span><span>+15</span></div>`;
+    }
+    P.appendChild(L);
+  }
+
+  /* ---------- tooltip ---------- */
+  function wireTooltip(box) {
+    const tip = window.Charts.tooltip(box);
+    const svg = cache.svg;
+    svg.addEventListener('mousemove', ev => {
+      const t = ev.target, D = datos(st.elec);
+      let nombre, fila, extra = '';
+      if (t.classList.contains('mun')) {
+        const ib = t.getAttribute('data-c'), nm = (window.MUN_NOMES || {})[ib];
+        nombre = nm ? `${nm[0]} <span style="color:#C9C2B2;font-weight:400">(${nm[1]})</span>` : ib;
+        fila = filaMun(D, ib);
+      } else if (t.classList.contains('uf')) {
+        const c = t.getAttribute('data-u'); nombre = UF[c][1]; fila = filaUF(D, UF[c][0]);
+      } else { tip.hide(); return; }
+      let html = `<div class="t-h">${nombre}</div>`;
+      if (!D || !fila || !fila.val) html += '<div class="t-m">Sin votos escrutados todavía</div>';
+      else {
+        ordenCands(D, fila).slice(0, 3).forEach(i => {
+          html += `<div class="t-r"><span><i class="sw" style="background:${colorDe(D.cands[i].n)}"></i>${D.cands[i].nm}</span><b>${fmt(100 * fila.v[i] / fila.val, 1)}%</b></div>`;
+        });
+        if (st.modo === 'delta') {
+          const B = baseDelta(), prev = t.classList.contains('mun') ? filaMun(B, t.getAttribute('data-c')) : filaUF(B, UF[t.getAttribute('data-u')][0]);
+          const s = share(D, fila, st.cand), s0 = share(B, prev, st.cand);
+          if (s != null && s0 != null) extra += `<div class="t-m">${D.cands.find(c => c.n === st.cand).nm}: ${fmt(100 * s0, 1)}% en 2022 → ${(100 * (s - s0) >= 0 ? '+' : '') + fmt(100 * (s - s0), 1)} pts</div>`;
+        }
+        if (D.final === false && fila.pct != null) extra += `<div class="t-m">Escrutado: ${fmt(fila.pct, 1)}%</div>`;
+        extra += `<div class="t-m">${fila.val.toLocaleString('es-AR')} votos válidos</div>`;
+      }
+      const r = box.getBoundingClientRect(), k = r.width / box.offsetWidth;
+      tip.show(html + extra, (ev.clientX - r.left) / k, (ev.clientY - r.top) / k, box.offsetWidth);
+    });
+    svg.addEventListener('mouseleave', () => tip.hide());
+    svg.addEventListener('click', ev => {
+      const t = ev.target;
+      const c = t.classList.contains('uf') ? t.getAttribute('data-u') : t.classList.contains('mun') ? t.getAttribute('data-c').slice(0, 2) : null;
+      if (!c) return;
+      tip.hide();
+      enfocar(st.foco === c ? null : c);
+    });
+  }
+
+  /* ---------- hash ---------- */
+  function leerHash() {
+    const q = new URLSearchParams((location.hash.split('?')[1] || ''));
+    if (q.get('e') && ELECCIONES.some(e => e.id === q.get('e'))) st.elec = q.get('e');
+    if (['uf', 'mun'].includes(q.get('n'))) st.nivel = q.get('n');
+    if (['ganador', 'cand', 'delta'].includes(q.get('m'))) st.modo = q.get('m');
+    if (q.get('c')) st.cand = q.get('c');
+    st.foco = q.get('uf') && SG2COD[q.get('uf').toUpperCase()] || null;
+  }
+  function syncHash() {
+    const q = new URLSearchParams();
+    if (st.elec !== '2022-1') q.set('e', st.elec);
+    if (st.nivel !== 'uf') q.set('n', st.nivel);
+    if (st.modo !== 'ganador') { q.set('m', st.modo); q.set('c', st.cand); }
+    if (st.foco) q.set('uf', UF[st.foco][0]);
+    const base = location.hash.split('?')[0] || '#mapa';
+    history.replaceState(null, '', base + (q.toString() ? '?' + q : ''));
+  }
+
+  /* ---------- entrada desde las placas ---------- */
+  function montar(cont, opciones) {
+    if (!cache) cache = construirSVG();
+    leerHash();
+    if (opciones && !location.hash.includes('?')) Object.assign(st, opciones);
+    raiz = cont;
+    cont.innerHTML = '<div class="mapa-wrap"><div class="mapa-svg-box"></div><div class="mapa-panel"></div></div>';
+    const box = cont.querySelector('.mapa-svg-box');
+    box.appendChild(cache.svg);
+    if (!cache.wired) { wireTooltip(box); cache.wired = true; cache.box = box; }
+    else { box.appendChild(cache.box.querySelector('.tip') || document.createElement('div')); }
+    const vuelta = document.createElement('button'); vuelta.className = 'volver'; vuelta.textContent = '← Brasil';
+    vuelta.addEventListener('click', () => enfocar(null)); box.appendChild(vuelta);
+    const G = window.GEO_BR;
+    vbActual = null; cache.svg.setAttribute('viewBox', `0 0 ${G.w} ${G.h}`);
+    const obs = new MutationObserver(() => { vuelta.style.display = st.foco ? '' : 'none'; });
+    obs.observe(cont.querySelector('.mapa-panel'), { childList: true });
+    programarVivo();
+    if (st.foco) { const f = st.foco; st.foco = null; enfocar(f); } else pintar();
+    vuelta.style.display = st.foco ? '' : 'none';
+  }
+  function desmontar() { clearInterval(timer); raiz = null; }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && raiz && st.foco) enfocar(null); });
+
+  window.Mapa = { montar, desmontar, st, COLOR };
+})();

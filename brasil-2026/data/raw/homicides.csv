@@ -1,0 +1,17 @@
+year,rate_sim_atlas,homicides_sim_atlas,rate_mvi_fbsp,mvi_fbsp,note,rate_sim_atlas2026_pub
+2010,27.22,53016,,,MVI (FBSP) series starts in 2012,
+2011,26.92,52807,,,MVI (FBSP) series starts in 2012,
+2012,28.86,57045,27.67,54694,MVI 2012 computed retroactively by FBSP,
+2013,28.81,57396,28.03,55844,,
+2014,30.11,60474,29.75,59739,,30.2
+2015,29.19,59080,28.87,58437,,29.3
+2016,30.66,62517,30.22,61600,,30.8
+2017,31.97,65602,31.23,64079,Peak of SIM series,32.1
+2018,28.06,57956,27.89,57592,,28.2
+2019,21.89,45503,22.97,47765,,22.0
+2020,23.84,49868,24.12,50448,,23.9
+2021,22.77,47847,22.98,48286,,22.8
+2022,22.01,46409,22.75,47963,,22.1
+2023,21.61,45747,21.94,46441,,21.7
+2024,20.03,42590,20.8,44220,Atlas 2026 published headline rate = 20.1 (PNADc pop.); API value uses different pop. denominator; Atlas warns 2024 drop partly reflects worse data quality (MVCI +23.8%); estimated rate incl. hidden homicides = 23.4,20.1
+2025,,,19.11,40775,SIM/Atlas data for 2025 not yet published (Atlas 2026 covers up to 2024),

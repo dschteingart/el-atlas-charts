@@ -1,0 +1,7 @@
+source,publication_date,value_pct,note
+"BCB Focus - Relatorio de Mercado (mediana, ultimos 30 dias)",2026-09-25,1.86,"Data-base 25/09/2026 (sexta); o relatorio semanal costuma ser divulgado na segunda seguinte (28/09/2026). Mediana API=1.8603, media=1.8641, 106 respondentes. Mediana 5 dias uteis = 1.85 (39 resp.). Proximo Focus (data-base 02/10/2026) so sai em 05/10, depois da eleicao"
+"BCB Focus - Relatorio de Mercado (mediana, 1 semana antes)",2026-09-18,1.88,"Mediana API=1.8805, 111 resp."
+"BCB Focus - Relatorio de Mercado (mediana, 4 semanas antes)",2026-08-28,1.92,"Mediana API=1.9233, 110 resp. Confere com a coluna 'Ha 4 semanas' do relatorio de 25/09/2026 (1,92)"
+"BCB Relatorio de Politica Monetaria, v.2 n.3, setembro 2026",2026-09-24,1.8,"Revisada de 2,0% (RPM jun/2026). Informacoes ate a 281a reuniao do Copom (15-16/09/2026). Projecao 2027: 1,4%. A mesma Tabela 1 projeta consumo das familias 2026 em 1,2% (antes 2,1%)"
+"IMF World Economic Outlook Update, July 2026 (Table 1)",2026-07-08,2.4,"+0,5 p.p. vs WEO abr/2026; 2027: 2,2%. Data segundo o titulo da transcricao da coletiva do FMI (8/7/2026); PDF com metadata de 06/07/2026. O DataMapper segue com o WEO de abril. WEO de outubro/2026 previsto para 13/10/2026 (ainda nao publicado)"
+"IMF World Economic Outlook, April 2026 (DataMapper API NGDP_RPCH)",2026-04-14,1.9,"DataMapper indica fonte 'World Economic Outlook (April 2026)', last-modified 2026-04-08; publicacao do WEO em 14/04/2026 (coletiva Spring Meetings). Superada pela atualizacao de julho"
