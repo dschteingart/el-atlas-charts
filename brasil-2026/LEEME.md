@@ -98,11 +98,13 @@ Detalle de cada serie (tablas, códigos, advertencias metodológicas): `data/raw
 
 ## Versión web (El Atlas)
 - Está en el índice de El Atlas como "Especial · Elecciones Brasil": https://dschteingart.github.io/el-atlas-charts/brasil-2026/ (en inglés: `index-en.html`, que es la que conviene compartir porque trae la tarjeta en inglés).
+- En la web, `index.html` sin `#placa` abre primero una **portada** como la de las otras entregas (título, bajada y una tarjeta por gráfico con miniatura, número y título); cada tarjeta lleva a su placa y "Ver todos los gráficos" vuelve a la portada. Los links a una placa (`index.html#mapa`, etc.) siguen entrando directo. En la copia local (streaming) no hay portada: abre la placa 1.
 - En la web lleva el chrome de El Atlas: barra superior (EL ATLAS · ELECCIONES BRASIL, suscripción, ES/EN) y abajo los botones **Descargar datos (CSV)** / **Descargar PNG** (de la vista que se está mirando) y la navegación ← GRÁFICO N / 12 →. En la copia local (streaming) no hay barras. `?modo=web` o `?modo=stream` fuerzan una u otra.
 - En la web los botones 2026 del mapa están deshabilitados ("A la espera de resultados"); en la copia local siguen andando para el streaming.
 
 ## Para actualizar algo
 - Después de tocar `css/placas.css` o `fonts/fonts.css`: `python scripts/armar_estilos.py` (arma `js/estilos.js`, que usa la página y la descarga en PNG).
+- Miniaturas de la portada (`thumbs/<placa>.png` y `.en.png`): salen de `png/`, así que después de `python scripts/exportar_png.py` correr `python scripts/armar_thumbs.py` (y subir `THUMB_V` en `js/placas.js`).
 - Sumar una encuesta nueva: agregar la fila en `data/raw/polls_first_round.csv` (o `polls_second_round.csv`) y correr `python scripts/agregar_encuestas.py`. El título de la placa se recalcula solo con el último promedio.
 - Cambiar un dato: editar el CSV en `data/raw/` y correr `python scripts/armar_series.py`.
 - Títulos, bajadas y notas de cada placa: `js/placas.js` (arriba de todo está la firma, `MARCA`).

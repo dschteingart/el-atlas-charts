@@ -2,6 +2,8 @@
    Teclas: ← → (o PageUp/PageDown del clicker) cambian de placa · G índice ·
    F pantalla completa · T cambia la vista de la placa (si tiene) · Esc sale del zoom del mapa.
    Cada placa tiene su URL: index.html#pib, #desempleo, ..., #mapa (para escenas de OBS).
+   En la web, index.html sin #placa abre la portada (índice de gráficos con miniaturas de thumbs/,
+   que arma scripts/armar_thumbs.py); en la copia local abre directo la primera placa.
    ?lang=en pasa todo a inglés. ?png=1 saca animaciones y navegación (para exportar imágenes). */
 (function () {
   const { dibujarTiempo, fmt, fmtSigno, C, LOC } = window.Charts;
@@ -754,6 +756,7 @@
     history.replaceState(null, '', location.pathname + location.search + '#' + P.id + (v && P.vistas && v !== P.vistas[0].id ? '?vista=' + v : ''));
   }
   function ir(i) {
+    salirPortada();
     i = (i + PLACAS.length) % PLACAS.length;
     actual = i;
     const P = PLACAS[i];
@@ -768,7 +771,87 @@
     const q = new URLSearchParams(location.hash.split('?')[1] || '');
     const i = PLACAS.findIndex(p => p.id === h);
     if (i >= 0 && q.get('vista')) vistaDe[PLACAS[i].id] = q.get('vista');
-    return i >= 0 ? i : 0;
+    // sin placa en el link: en la web va la portada; en la copia local (streaming), la primera placa
+    return i >= 0 ? i : MODO_WEB ? -1 : 0;
+  }
+
+  /* ---------- portada (versión web): el índice de gráficos, como el de cada entrega de El Atlas ---------- */
+  const THUMB_V = 1;
+  let enPortada = false, scrollPortada = 0;
+  function tituloTarjeta(P) {
+    if (P.mapa) return T('El mapa electoral, municipio por municipio', 'The election map, municipality by municipality');
+    const V = P.vistas ? P.vistas[0] : P;
+    return typeof V.titulo === 'function' ? V.titulo() : V.titulo;
+  }
+  function armarPortada() {
+    const p = document.createElement('div'); p.id = 'portada';
+    p.innerHTML = `<div class="wrap-idx">
+      <header>
+        <div class="top-bar">
+          <div class="brand"><a class="atlas-home brand-em" href="../" title="${T('Inicio de El Atlas', 'The Atlas home')}">${MARCA.f1}</a> · <span class="brand-topic">${T('Elecciones Brasil', 'Brazil Elections')}</span></div>
+          <div class="atlas-top-right">
+            <a class="atlas-top-sub" href="${SUBS[EN ? 'en' : 'es']}" target="_blank" rel="noopener">${T('Suscribite gratis', 'Subscribe for free')} →</a>
+            <div class="lang-toggle"><button data-lang="es"${EN ? '' : ' class="active"'}>ES</button><button data-lang="en"${EN ? ' class="active"' : ''}>EN</button></div>
+          </div>
+        </div>
+        <h1>${T('Elecciones en Brasil', 'Elections in Brazil')}</h1>
+        <p class="lede">${T('Cómo llega Brasil a las urnas. Doce gráficos sobre la economía, el empleo, la pobreza, la desigualdad, la violencia, el comercio con Argentina, las encuestas y el mapa de 2022 municipio por municipio.',
+          'How Brazil heads into the vote. Twelve charts on the economy, jobs, poverty, inequality, violence, trade with Argentina, the polls and the 2022 map, municipality by municipality.')}</p>
+        <div class="accent-rule"></div>
+      </header>
+      <div class="idx-section-label">${T('Gráficos interactivos', 'Interactive charts')}</div>
+      <div class="idx-grid">${PLACAS.map((P, k) => `
+        <a class="idx-card" href="#${P.id}">
+          <img class="idx-thumb" src="thumbs/${P.id}${EN ? '.en' : ''}.png?v=${THUMB_V}" alt="" loading="lazy">
+          <span class="idx-card-num">${T('Gráfico', 'Chart')} ${k + 1}</span>
+          <h2>${tituloTarjeta(P)}</h2>
+          <span class="idx-card-go">${T('Ver gráfico', 'See chart')} →</span>
+        </a>`).join('')}
+      </div>
+      <div class="idx-footer">${MARCA.f1} · ${MARCA.f2} · 2026</div>
+      <div class="idx-cta"><a class="atlas-cta" href="${SUBS[EN ? 'en' : 'es']}" target="_blank" rel="noopener">
+        <span class="atlas-cta-eyebrow">${T('El Atlas · Newsletter', 'The Atlas · Newsletter')}</span>
+        <span class="atlas-cta-pitch">${T('Cartografías del desarrollo de América Latina y el mundo, con datos y gráficos interactivos.', 'Mapping development in Latin America and the world, with data and interactive charts.')}</span>
+        <span class="atlas-cta-go">${T('Suscribite gratis', 'Subscribe for free')} →</span></a></div>
+    </div>`;
+    p.querySelectorAll('.lang-toggle [data-lang]').forEach(b => b.addEventListener('click', () => {
+      const l = b.getAttribute('data-lang'); if ((l === 'en') !== EN) cambiarIdioma(l);
+    }));
+    // miniatura que no llega: un reintento (algunos antivirus cortan descargas locales) y si no, el recuadro vacío
+    p.querySelectorAll('.idx-thumb').forEach(img => img.addEventListener('error', () => {
+      if (!img.dataset.r) { img.dataset.r = 1; setTimeout(() => { img.src += '&r=1'; }, 400); }
+      else { const d = document.createElement('div'); d.className = 'idx-thumb'; img.replaceWith(d); }
+    }));
+    document.body.appendChild(p);
+  }
+  function mostrarPortada() {
+    if (window.Mapa) window.Mapa.desmontar();
+    clearInterval(timerVivo); timerVivo = null;
+    esc.innerHTML = ''; actual = -1;
+    enPortada = true;
+    document.documentElement.classList.add('en-portada');
+    document.getElementById('indice')?.classList.remove('on');
+    scrollTo(0, scrollPortada);
+  }
+  function salirPortada() {
+    if (!enPortada) return;
+    scrollPortada = scrollY;
+    enPortada = false;
+    document.documentElement.classList.remove('en-portada');
+    scrollTo(0, 0);
+    escalar();
+  }
+  // "Ver todos los gráficos" es una navegación más, como el link al índice en las otras entregas:
+  // el botón Atrás del navegador vuelve al gráfico donde se estaba
+  function irPortada() {
+    if (enPortada) return;
+    history.pushState(null, '', location.pathname + location.search);
+    mostrarPortada();
+  }
+  function rutear() {
+    const i = desdeHash();
+    if (i < 0) { if (!enPortada) mostrarPortada(); return; }
+    if (i !== actual) ir(i);
   }
 
   /* ---------- descargas ---------- */
@@ -817,7 +900,7 @@
     pie.querySelector('[data-dl="csv"]').addEventListener('click', descargarCSV);
     const bp = pie.querySelector('[data-dl="png"]'); bp.addEventListener('click', () => descargarPNG(bp));
     pie.querySelectorAll('[data-dir]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); if (!a.classList.contains('is-off')) ir(actual + +a.dataset.dir); }));
-    document.querySelectorAll('[data-indice]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); document.getElementById('indice').classList.add('on'); }));
+    document.querySelectorAll('[data-indice]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); irPortada(); }));
   }
   function actualizarNavAtlas() {
     const pie = document.getElementById('atlas-pie'); if (!pie) return;
@@ -834,7 +917,7 @@
   }
   function armarNav() {
     if (modoPNG) return;
-    if (MODO_WEB) armarChromeAtlas();
+    if (MODO_WEB) { armarChromeAtlas(); armarPortada(); }
     const nav = document.createElement('div'); nav.id = 'nav';
     if (MODO_WEB) nav.style.display = 'none';
     const casa = document.createElement('a'); casa.className = 'casa'; casa.href = '../'; casa.textContent = MARCA.f1; casa.title = T('Volver a El Atlas', 'Back to The Atlas');
@@ -876,14 +959,14 @@
   let toque = null;
   addEventListener('touchstart', e => { if (e.touches.length === 1) toque = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
   addEventListener('touchend', e => {
-    if (!toque || modoPNG) return;
+    if (!toque || modoPNG || enPortada) return;
     const t = e.changedTouches[0], dx = t.clientX - toque.x, dy = t.clientY - toque.y;
     toque = null;
     if (Math.abs(dx) > 60 && Math.abs(dx) > 1.5 * Math.abs(dy)) ir(actual + (dx < 0 ? 1 : -1));
   }, { passive: true });
 
   addEventListener('keydown', e => {
-    if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
+    if (e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT' || enPortada) return;
     const k = e.key;
     if (['ArrowRight', 'PageDown', ' '].includes(k)) { e.preventDefault(); ir(actual + 1); }
     else if (['ArrowLeft', 'PageUp'].includes(k)) { e.preventDefault(); ir(actual - 1); }
@@ -898,7 +981,8 @@
     }
   });
   addEventListener('resize', escalar);
-  addEventListener('hashchange', () => { const i = desdeHash(); if (i !== actual) ir(i); });
+  addEventListener('hashchange', rutear);
+  addEventListener('popstate', rutear);
 
   document.documentElement.lang = EN ? 'en' : 'es';
   if (EN) document.title = 'Brazil elections — The Atlas';
@@ -910,10 +994,10 @@
     '600 20px "Source Sans 3"', '700 24px "Source Sans 3"', 'italic 400 20px "Source Sans 3"',
   ].map(f => document.fonts.load(f))).catch(() => null) : Promise.resolve();
   Promise.race([fuentes, new Promise(r => setTimeout(r, 2500))]).then(() => {
-    ir(desdeHash());
+    rutear();
     // red de seguridad: si la tipografía llegó tarde (conexión lenta), se re-acomoda la placa una vez
     if (document.fonts && !document.fonts.check('700 58px "Source Serif 4"')) {
-      document.fonts.addEventListener('loadingdone', () => render(actual), { once: true });
+      document.fonts.addEventListener('loadingdone', () => { if (actual >= 0) render(actual); }, { once: true });
     }
   });
   window.PLACAS = PLACAS;
