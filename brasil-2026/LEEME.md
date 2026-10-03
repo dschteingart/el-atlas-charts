@@ -71,7 +71,7 @@ Detalle de cada serie (tablas, códigos, advertencias metodológicas): `data/raw
 
 ## Versión web (El Atlas)
 - Está en el índice de El Atlas como "Especial · Elecciones Brasil": https://dschteingart.github.io/el-atlas-charts/brasil-2026/ (en inglés: `index-en.html`, que es la que conviene compartir porque trae la tarjeta en inglés).
-- La barra de abajo tiene ES/EN y los botones **Descargar datos (CSV)** y **Descargar PNG** de la placa que se está viendo (con la vista, el zoom y el modo del mapa incluidos).
+- En la web lleva el chrome de El Atlas: barra superior (EL ATLAS · ELECCIONES BRASIL, suscripción, ES/EN) y abajo los botones **Descargar datos (CSV)** / **Descargar PNG** (de la vista que se está mirando) y la navegación ← GRÁFICO N / 12 →. En la copia local (streaming) no hay barras. `?modo=web` o `?modo=stream` fuerzan una u otra.
 - En la web los botones 2026 del mapa están deshabilitados ("A la espera de resultados"); en la copia local siguen andando para el streaming.
 
 ## Para actualizar algo

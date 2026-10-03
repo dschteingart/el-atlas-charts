@@ -65,6 +65,67 @@
       T(`. Encuestas del ${fechaLarga(E.desde)} al ${fechaLarga(E.hasta)}.`, `. Polls from ${fechaLarga(E.desde)} to ${fechaLarga(E.hasta)}.`);
   }
 
+  function graficoEncuesta(box, vista, compacto, yComun) {
+    const E = window.ENCUESTAS[vista];
+    const cands = E.cands.filter(c => E.agregado[c.c]);
+    const COLS = { lula: '#C8372D', flavio: AZUL, caiado: '#2C8484', zema: '#E07A23', renan_santos: '#6B3D8B', augusto_cury: '#C9A227' };
+    const vals = E.encuestas.flatMap(p => cands.map(c => p[c.c])).filter(v => v != null);
+    // en el panel, las dos mitades comparten escala (si no, el balotaje exagera sus vaivenes)
+    const ymin = yComun ? 0 : vista === '2v' ? Math.max(0, Math.floor((Math.min(...vals) - 1) / 5) * 5) : 0;
+    const ymax = yComun || Math.ceil((Math.max(...vals) + 2) / 5) * 5;
+    const ticks = []; for (let v = ymin; v <= ymax; v += (ymax - ymin > 30 ? 10 : 5)) ticks.push(v);
+    const t0 = Math.min(...E.encuestas.map(p => p.t)), t1 = Math.max(...E.encuestas.map(p => p.t));
+    const meses = [];
+    for (let y = 2025; y <= 2026; y++) for (let m = 0; m < 12; m++) {
+      const ini = y + (new Date(y, m, 1) - new Date(y, 0, 1)) / ((new Date(y + 1, 0, 1) - new Date(y, 0, 1)));
+      if (ini > t0 - 0.012 && ini < t1 + 0.012) {
+        // en el panel (la mitad de ancho) se rotula un mes sí y otro no
+        if (compacto && (m % 2 === 0)) { meses.push({ t: ini }); continue; }
+        meses.push({ t: ini, lbl: MESES[m] + (m === 0 && !compacto ? ` ${y}` : '') });
+      }
+    }
+    const capas = [];
+    // puntos solo para los dos protagonistas (los chicos quedan como línea, para no ensuciar)
+    cands.filter(c => c.c === 'lula' || c.c === 'flavio').forEach(c => capas.push({ tipo: 'puntos', datos: E.encuestas.filter(p => p[c.c] != null).map(p => ({ t: p.t, v: p[c.c] })), color: COLS[c.c], r: compacto ? 5.5 : 6.5 }));
+    cands.forEach((c, k) => {
+      const ag = E.agregado[c.c], ult = ag[ag.length - 1];
+      const prota = c.c === 'lula' || c.c === 'flavio';
+      capas.push({ tipo: 'linea', datos: ag.map(p => ({ t: p.t, v: p.v })), color: COLS[c.c], grosor: prota ? 6 : 3.5, delay: k * 120,
+        etiquetaFinal: [fmt(ult.v, 1) + '%', c.nm.replace('Flávio Bolsonaro', 'Flávio').replace('Ronaldo ', '').replace('Romeu ', '').replace('Augusto ', '')], tamFinal: prota ? 30 : 22 });
+    });
+    const fechaTxt = f => { const [, m, d] = f.split('-'); return T(`${+d} de ${MESES[+m - 1]}`, `${MESES[+m - 1]} ${+d}`); };
+    const serieT = E.agregado[cands[0].c];
+    dibujarTiempo(box, {
+      x: [t0 - 0.01, t1 + 0.012], y: { min: ymin, max: ymax, ticks, fmt: v => v + '%' }, gob: false,
+      xticksPos: meses, m: { r: compacto ? 205 : 250, t: 24, l: compacto ? 80 : 96 }, capas, gapFinal: vista === '1v' ? 32 : 40,
+      tips: serieT.map(p => p.t),
+      tip: t => {
+        const i = serieT.findIndex(p => p.t === t), f = serieT[i].f;
+        const filas = cands.map(c => { const p = E.agregado[c.c].find(z => z.t === t); return p ? { nm: c.nm, val: fmt(p.v, 1) + '%', color: COLS[c.c] } : null; }).filter(Boolean);
+        const cerca = E.encuestas.filter(p => Math.abs(p.t - t) <= 3.5 / 365).slice(-4)
+          .map(p => `${p.enc} (${p.campo}): Lula ${fmt(p.lula, 0)} · Flávio ${fmt(p.flavio, 0)}`);
+        return { html: tipHTML(T(`Promedio al ${fechaTxt(f)}`, `Average as of ${fechaTxt(f)}`), filas, cerca.length ? cerca.join('<br>') : null), puntos: filas.map((r, k) => ({ v: E.agregado[cands[k].c].find(z => z.t === t).v, color: r.color })) };
+      },
+    });
+  }
+  // título del panel: sale de los dos promedios (cierto en cualquier momento)
+  function tituloPanel() {
+    if (!window.ENCUESTAS) return T('Encuestas', 'Polls');
+    const d1 = ultimoProm('1v', 'lula') - ultimoProm('1v', 'flavio'), d2 = ultimoProm('2v', 'lula') - ultimoProm('2v', 'flavio');
+    if (Math.abs(d1) < 1.5 && Math.abs(d2) < 1.5) return T('Lula y Flávio Bolsonaro llegan a la elección empatados según las encuestas', 'Lula and Flávio Bolsonaro head into the election tied in the polls');
+    if (Math.abs(d2) < 1.5) {
+      const pts = fmt(Math.abs(d1), 1).replace(/[.,]0$/, ''), a = d1 > 0 ? 'Lula' : 'Flávio Bolsonaro';
+      return T(`${a} llega ${pts} puntos arriba en primera vuelta, pero en un balotaje están empatados`, `${a} leads the first round by ${pts} points, but a runoff is tied`);
+    }
+    return T('Lula y Flávio Bolsonaro llegan parejos a la elección según las encuestas', 'Lula and Flávio Bolsonaro head into the election neck and neck in the polls');
+  }
+  function bajadaPanel() {
+    if (!window.ENCUESTAS) return '';
+    const E = window.ENCUESTAS['1v'];
+    return T(`Intención de voto para presidente, en % del total de entrevistados: primera vuelta (izquierda) y balotaje entre Lula y Flávio Bolsonaro (derecha). Encuestas del ${fechaLarga(E.desde)} al ${fechaLarga(E.hasta)}.`,
+      `Voting intention for president, % of all respondents: first round (left) and a Lula vs. Flávio Bolsonaro runoff (right). Polls from ${fechaLarga(E.desde)} to ${fechaLarga(E.hasta)}.`);
+  }
+
   /* ================= placas ================= */
   const PLACAS = [
     {
@@ -432,63 +493,46 @@
     {
       id: 'encuestas', kicker: T('Elecciones', 'Elections'), corto: T('Encuestas', 'Polls'),
       vistas: [
+        { id: 'ambas', nm: T('Ambas vueltas', 'Both rounds'), titulo: () => tituloPanel(), bajada: () => bajadaPanel() },
         { id: '1v', nm: T('1ª vuelta', '1st round'), titulo: () => tituloEncuestas('1v'), bajada: () => bajadaEncuestas('1v') },
         { id: '2v', nm: T('2ª vuelta', '2nd round'), titulo: () => tituloEncuestas('2v'), bajada: () => bajadaEncuestas('2v') },
       ],
       fuente: v => {
         const E = window.ENCUESTAS; if (!E) return '';
-        return T(`<b>Fuente:</b> ${E[v].encuestadoras.join(', ')} (${E[v].n_encuestas} encuestas). Cada punto es una encuesta; la línea es el promedio ponderado por cercanía en el tiempo y tamaño de muestra, donde las encuestadoras que publican más seguido pesan menos.`,
-          `<b>Source:</b> ${E[v].encuestadoras.join(', ')} (${E[v].n_encuestas} polls). Each dot is a poll; the line is an average weighted by recency and sample size, in which pollsters that publish more often weigh less.`) +
-          (v === '1v' ? T(' Hasta marzo, algunos escenarios incluían candidatos que finalmente no se presentaron.', ' Until March, some scenarios included candidates who ultimately did not run.') : '');
+        const vs = v === 'ambas' ? ['1v', '2v'] : [v];
+        const encs = [...new Set(vs.flatMap(k => E[k].encuestadoras))].sort();
+        const n = vs.map(k => E[k].n_encuestas);
+        const cuantas = v === 'ambas' ? T(`${n[0]} y ${n[1]} encuestas`, `${n[0]} and ${n[1]} polls`) : T(`${n[0]} encuestas`, `${n[0]} polls`);
+        return T(`<b>Fuente:</b> ${encs.join(', ')} (${cuantas}). Cada punto es una encuesta; la línea es el promedio ponderado por cercanía en el tiempo y tamaño de muestra, donde las encuestadoras que publican más seguido pesan menos.`,
+          `<b>Source:</b> ${encs.join(', ')} (${cuantas}). Each dot is a poll; the line is an average weighted by recency and sample size, in which pollsters that publish more often weigh less.`) +
+          (v !== '2v' ? T(' Hasta marzo, algunos escenarios de primera vuelta incluían candidatos que finalmente no se presentaron.', ' Until March, some first-round scenarios included candidates who ultimately did not run.') : '');
       },
       datos: v => {
-        const E = window.ENCUESTAS[v];
-        const cands = E.cands.map(c => c.c);
-        const cols = [T('tipo', 'type'), T('encuestadora', 'pollster'), T('trabajo_de_campo', 'fieldwork'), T('fecha_media_del_campo', 'fieldwork_midpoint'), T('muestra', 'sample_size'), ...cands.map(c => c + '_pct')];
+        const vs = v === 'ambas' ? ['1v', '2v'] : [v];
+        const todos = [...new Set(vs.flatMap(k => window.ENCUESTAS[k].cands.map(c => c.c)))];
+        const cols = [...(v === 'ambas' ? [T('vuelta', 'round')] : []), T('tipo', 'type'), T('encuestadora', 'pollster'), T('trabajo_de_campo', 'fieldwork'), T('fecha_media_del_campo', 'fieldwork_midpoint'), T('muestra', 'sample_size'), ...todos.map(c => c + '_pct')];
         const dia = t => { const y = Math.floor(t), d = new Date(Date.UTC(y, 0, 1) + Math.round((t - y) * 365.25) * 864e5); return d.toISOString().slice(0, 10); };
-        const filas = E.encuestas.map(p => [T('encuesta', 'poll'), p.enc, p.campo, dia(p.t), p.n, ...cands.map(c => p[c])]);
-        const fechas = E.agregado[cands[0]].map(p => p.f);
-        fechas.forEach((f, i) => filas.push([T('promedio', 'average'), '', '', f, '', ...cands.map(c => (E.agregado[c] && E.agregado[c][i] ? E.agregado[c][i].v : null))]));
-        return { archivo: v === '1v' ? T('encuestas-primera-vuelta', 'polls-first-round') : T('encuestas-balotaje', 'polls-runoff'), cols, filas };
+        const filas = [];
+        vs.forEach(k => {
+          const E = window.ENCUESTAS[k], pre = v === 'ambas' ? [k === '1v' ? T('primera', 'first') : T('balotaje', 'runoff')] : [];
+          E.encuestas.forEach(p => filas.push([...pre, T('encuesta', 'poll'), p.enc, p.campo, dia(p.t), p.n, ...todos.map(c => (p[c] != null ? p[c] : null))]));
+          const base = E.agregado[E.cands[0].c];
+          base.forEach((pt, i) => filas.push([...pre, T('promedio', 'average'), '', '', pt.f, '', ...todos.map(c => (E.agregado[c] && E.agregado[c][i] ? E.agregado[c][i].v : null))]));
+        });
+        const arch = { ambas: T('encuestas-ambas-vueltas', 'polls-both-rounds'), '1v': T('encuestas-primera-vuelta', 'polls-first-round'), '2v': T('encuestas-balotaje', 'polls-runoff') };
+        return { archivo: arch[v], cols, filas };
       },
       render(box, vista) {
-        const E = window.ENCUESTAS && window.ENCUESTAS[vista];
-        if (!E) { box.innerHTML = `<div class="aviso">${T('Datos de encuestas pendientes.', 'Poll data pending.')}</div>`; return; }
-        const cands = E.cands.filter(c => E.agregado[c.c]);
-        const COLS = { lula: '#C8372D', flavio: AZUL, caiado: '#2C8484', zema: '#E07A23', renan_santos: '#6B3D8B', augusto_cury: '#C9A227' };
-        const vals = E.encuestas.flatMap(p => cands.map(c => p[c.c])).filter(v => v != null);
-        const ymin = vista === '2v' ? Math.max(0, Math.floor((Math.min(...vals) - 1) / 5) * 5) : 0;
-        const ymax = Math.ceil((Math.max(...vals) + 2) / 5) * 5;
-        const ticks = []; for (let v = ymin; v <= ymax; v += (ymax - ymin > 30 ? 10 : 5)) ticks.push(v);
-        const t0 = Math.min(...E.encuestas.map(p => p.t)), t1 = Math.max(...E.encuestas.map(p => p.t));
-        const meses = [];
-        for (let y = 2025; y <= 2026; y++) for (let m = 0; m < 12; m++) {
-          const ini = y + (new Date(y, m, 1) - new Date(y, 0, 1)) / ((new Date(y + 1, 0, 1) - new Date(y, 0, 1)));
-          if (ini > t0 - 0.012 && ini < t1 + 0.012) meses.push({ t: ini, lbl: MESES[m] + (m === 0 ? ` ${y}` : '') });
-        }
-        const capas = [];
-        // puntos solo para los dos protagonistas (los chicos quedan como línea, para no ensuciar)
-        cands.filter(c => c.c === 'lula' || c.c === 'flavio').forEach(c => capas.push({ tipo: 'puntos', datos: E.encuestas.filter(p => p[c.c] != null).map(p => ({ t: p.t, v: p[c.c] })), color: COLS[c.c], r: 6.5 }));
-        cands.forEach((c, k) => {
-          const ag = E.agregado[c.c], ult = ag[ag.length - 1];
-          const prota = c.c === 'lula' || c.c === 'flavio';
-          capas.push({ tipo: 'linea', datos: ag.map(p => ({ t: p.t, v: p.v })), color: COLS[c.c], grosor: prota ? 6 : 3.5, delay: k * 120,
-            etiquetaFinal: [fmt(ult.v, 1) + '%', c.nm.replace('Flávio Bolsonaro', 'Flávio').replace('Ronaldo ', '').replace('Romeu ', '').replace('Augusto ', '')], tamFinal: prota ? 30 : 22 });
-        });
-        const fechaTxt = f => { const [, m, d] = f.split('-'); return T(`${+d} de ${MESES[+m - 1]}`, `${MESES[+m - 1]} ${+d}`); };
-        const serieT = E.agregado[cands[0].c];
-        dibujarTiempo(box, {
-          x: [t0 - 0.01, t1 + 0.012], y: { min: ymin, max: ymax, ticks, fmt: v => v + '%' }, gob: false,
-          xticksPos: meses, m: { r: 250, t: 24 }, capas, gapFinal: vista === '1v' ? 32 : 40,
-          tips: serieT.map(p => p.t),
-          tip: t => {
-            const i = serieT.findIndex(p => p.t === t), f = serieT[i].f;
-            const filas = cands.map(c => { const p = E.agregado[c.c].find(z => z.t === t); return p ? { nm: c.nm, val: fmt(p.v, 1) + '%', color: COLS[c.c] } : null; }).filter(Boolean);
-            const cerca = E.encuestas.filter(p => Math.abs(p.t - t) <= 3.5 / 365).slice(-4)
-              .map(p => `${p.enc} (${p.campo}): Lula ${fmt(p.lula, 0)} · Flávio ${fmt(p.flavio, 0)}`);
-            return { html: tipHTML(T(`Promedio al ${fechaTxt(f)}`, `Average as of ${fechaTxt(f)}`), filas, cerca.length ? cerca.join('<br>') : null), puntos: filas.map((r, k) => ({ v: E.agregado[cands[k].c].find(z => z.t === t).v, color: r.color })) };
-          },
-        });
+        if (!window.ENCUESTAS) { box.innerHTML = `<div class="aviso">${T('Datos de encuestas pendientes.', 'Poll data pending.')}</div>`; return; }
+        if (vista !== 'ambas') { graficoEncuesta(box, vista, false); return; }
+        // panel: primera vuelta a la izquierda, balotaje a la derecha, con un solo título
+        box.innerHTML = '<div style="position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;gap:64px">' +
+          `<div style="position:relative;display:flex;flex-direction:column"><div class="sub-panel">${T('Primera vuelta', 'First round')}</div><div class="c-1v" style="position:relative;flex:1"></div></div>` +
+          `<div style="position:relative;display:flex;flex-direction:column"><div class="sub-panel">${T('Balotaje entre los dos', 'Runoff between the two')}</div><div class="c-2v" style="position:relative;flex:1"></div></div></div>`;
+        const maxTodo = Math.max(...['1v', '2v'].flatMap(k => window.ENCUESTAS[k].encuestas.flatMap(p => [p.lula, p.flavio])).filter(v => v != null));
+        const yComun = Math.ceil((maxTodo + 2) / 5) * 5;
+        graficoEncuesta(box.querySelector('.c-1v'), '1v', true, yComun);
+        graficoEncuesta(box.querySelector('.c-2v'), '2v', true, yComun);
       },
     },
     { id: 'mapa', kicker: T('Elecciones', 'Elections'), corto: T('Mapa de resultados', 'Results map'), mapa: true },
@@ -502,16 +546,19 @@
   // en la web la barra queda siempre visible (para encontrar las descargas); en la copia local
   // (streaming) se esconde sola para no ensuciar la pantalla
   const EN_LA_WEB = /^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-  const BARRA_FIJA = EN_LA_WEB && !modoPNG;
+  // ?modo=web | ?modo=stream fuerzan uno u otro (p. ej. para ensayar la versión web en local)
+  const MODO_WEB = !modoPNG && (params.get('modo') ? params.get('modo') === 'web' : EN_LA_WEB);
   let actual = -1, vistaDe = {};
 
   function escalar() {
-    const reserva = BARRA_FIJA ? 62 : 0;
-    const h = innerHeight - reserva;
+    const arriba = MODO_WEB ? (document.getElementById('atlas-top') || { offsetHeight: 0 }).offsetHeight : 0;
+    const abajo = MODO_WEB ? (document.getElementById('atlas-pie') || { offsetHeight: 0 }).offsetHeight : 0;
+    const h = innerHeight - arriba - abajo;
     const s = Math.min(innerWidth / 1920, h / 1080);
     esc.style.transform = `scale(${s})`;
     esc.style.left = (innerWidth - 1920 * s) / 2 + 'px';
-    esc.style.top = Math.max(0, (h - 1080 * s) / 2) + 'px';
+    esc.style.top = arriba + Math.max(0, (h - 1080 * s) / 2) + 'px';
+    const g = document.getElementById('girar'); if (g) g.style.top = (arriba + 10) + 'px';
   }
 
   function vistaActual(P) { return P.vistas ? (vistaDe[P.id] || P.vistas[0].id) : null; }
@@ -532,7 +579,7 @@
     sec.className = 'placa';
     sec.innerHTML = `
       <div class="kicker">${T('Brasil 2026', 'Brazil 2026')} <span class="sep">·</span> ${P.kicker}</div>
-      <h1 class="titulo">${typeof V.titulo === 'function' ? V.titulo() : V.titulo}</h1>
+      <h1 class="titulo">${modoPNG && params.get('titulo') ? params.get('titulo') : (typeof V.titulo === 'function' ? V.titulo() : V.titulo)}</h1>
       <p class="bajada">${typeof V.bajada === 'function' ? V.bajada() : V.bajada}</p>
       <div class="cuerpo"></div>
       <div class="pie"><div class="fuente">${P.fuente(vista)}</div>
@@ -572,6 +619,7 @@
     render(i);
     syncHash();
     document.querySelectorAll('#nav .np').forEach((b, k) => b.classList.toggle('on', k === i));
+    actualizarNavAtlas();
   }
   function desdeHash() {
     const h = location.hash.slice(1).split('?')[0];
@@ -596,13 +644,44 @@
   const RESPALDO = {
     pib: '01-pib', desempleo: '02-desempleo', 'empleo:tipo': '03a-empleo-tipo', 'empleo:sector': '03b-empleo-sector', 'empleo:informalidad': '03c-informalidad',
     pobreza: '04-pobreza', ingreso: '05-ingreso-real', gini: '06-gini', homicidios: '07-homicidios', 'consumo:var': '08a-consumo-variacion', 'consumo:nivel': '08b-consumo-nivel',
-    fiscal: '09-fiscal', comercio: '10-comercio-argentina', 'encuestas:1v': '11a-encuestas-1ra-vuelta', 'encuestas:2v': '11b-encuestas-2da-vuelta', mapa: '12d-mapa-2022-2v-municipios',
+    fiscal: '09-fiscal', comercio: '10-comercio-argentina', 'encuestas:ambas': '11-encuestas-ambas-vueltas', 'encuestas:1v': '11a-encuestas-1ra-vuelta', 'encuestas:2v': '11b-encuestas-2da-vuelta', mapa: '12d-mapa-2022-2v-municipios',
   };
   async function descargarPNG(btn) {
     const P = PLACAS[actual], v = vistaActual(P);
     const r = RESPALDO[P.id + (v ? ':' + v : '')] || RESPALDO[P.id];
     btn.disabled = true;
     try { await window.Exportar.png(nombreArchivo(P), r ? `png/${EN ? 'en/' : ''}${r}.png` : null); } finally { btn.disabled = false; }
+  }
+
+  /* ---------- chrome de El Atlas (versión web) ---------- */
+  const SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
+  function armarChromeAtlas() {
+    const top = document.createElement('header'); top.id = 'atlas-top';
+    top.innerHTML = `<div class="top-bar">
+        <div class="brand"><a class="atlas-home brand-em" href="../" title="${T('Inicio de El Atlas', 'The Atlas home')}">${MARCA.f1}</a> · <a class="atlas-home brand-topic" href="#" data-indice>${T('Elecciones Brasil', 'Brazil Elections')}</a></div>
+        <div class="atlas-top-right">
+          <a class="atlas-top-sub" href="${SUBS[EN ? 'en' : 'es']}" target="_blank" rel="noopener">${T('Suscribite gratis', 'Subscribe for free')} →</a>
+          <div class="lang-toggle"><button data-lang="es"${EN ? '' : ' class="active"'}>ES</button><button data-lang="en"${EN ? ' class="active"' : ''}>EN</button></div>
+        </div></div>`;
+    document.body.appendChild(top);
+    top.querySelectorAll('.lang-toggle [data-lang]').forEach(b => b.addEventListener('click', () => {
+      const l = b.getAttribute('data-lang'); if ((l === 'en') !== EN) cambiarIdioma(l);
+    }));
+    const pie = document.createElement('footer'); pie.id = 'atlas-pie';
+    pie.innerHTML = `<div class="pie-dl"><button class="download" data-dl="csv">${T('Descargar datos (CSV)', 'Download data (CSV)')}</button><button class="download" data-dl="png">${T('Descargar PNG', 'Download PNG')}</button></div>
+      <div class="atlas-nav"><a class="atlas-nav-arrow" href="#" data-dir="-1" aria-label="${T('Gráfico anterior', 'Previous chart')}">←</a><a class="atlas-nav-count" href="#" data-indice title="${T('Ver todos los gráficos', 'See all charts')}"></a><a class="atlas-nav-arrow" href="#" data-dir="1" aria-label="${T('Gráfico siguiente', 'Next chart')}">→</a></div>
+      <div class="pie-todos"><a class="atlas-nav-all" href="#" data-indice>${T('Ver todos los gráficos', 'See all charts')} →</a></div>`;
+    document.body.appendChild(pie);
+    pie.querySelector('[data-dl="csv"]').addEventListener('click', descargarCSV);
+    const bp = pie.querySelector('[data-dl="png"]'); bp.addEventListener('click', () => descargarPNG(bp));
+    pie.querySelectorAll('[data-dir]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); if (!a.classList.contains('is-off')) ir(actual + +a.dataset.dir); }));
+    document.querySelectorAll('[data-indice]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); document.getElementById('indice').classList.add('on'); }));
+  }
+  function actualizarNavAtlas() {
+    const pie = document.getElementById('atlas-pie'); if (!pie) return;
+    pie.querySelector('.atlas-nav-count').textContent = `${T('Gráfico', 'Chart')} ${actual + 1} / ${PLACAS.length}`;
+    pie.querySelector('[data-dir="-1"]').classList.toggle('is-off', actual === 0);
+    pie.querySelector('[data-dir="1"]').classList.toggle('is-off', actual === PLACAS.length - 1);
   }
 
   /* ---------- navegación (barra inferior + índice) ---------- */
@@ -613,7 +692,9 @@
   }
   function armarNav() {
     if (modoPNG) return;
+    if (MODO_WEB) armarChromeAtlas();
     const nav = document.createElement('div'); nav.id = 'nav';
+    if (MODO_WEB) nav.style.display = 'none';
     const casa = document.createElement('a'); casa.className = 'casa'; casa.href = '../'; casa.textContent = MARCA.f1; casa.title = T('Volver a El Atlas', 'Back to The Atlas');
     nav.appendChild(casa);
     const sep = () => { const s = document.createElement('span'); s.className = 'sep-nav'; nav.appendChild(s); };
@@ -626,14 +707,17 @@
     sep();
     const bc = document.createElement('button'); bc.className = 'dl'; bc.textContent = T('Descargar datos (CSV)', 'Download data (CSV)'); bc.onclick = descargarCSV; nav.appendChild(bc);
     const bp = document.createElement('button'); bp.className = 'dl'; bp.textContent = T('Descargar PNG', 'Download PNG'); bp.onclick = () => descargarPNG(bp); nav.appendChild(bp);
-    if (!EN_LA_WEB) { const ay = document.createElement('span'); ay.className = 'ayuda'; ay.textContent = T('G índice · F pantalla completa · T vista', 'G index · F full screen · T view'); nav.appendChild(ay); }
+    if (!MODO_WEB) { const ay = document.createElement('span'); ay.className = 'ayuda'; ay.textContent = T('G índice · F pantalla completa · T vista', 'G index · F full screen · T view'); nav.appendChild(ay); }
     document.body.appendChild(nav);
     const ind = document.createElement('div'); ind.id = 'indice';
-    ind.innerHTML = `<h2>${T('Placas · Brasil 2026', 'Charts · Brazil 2026')}</h2><div class="g">` + PLACAS.map((p, k) =>
+    ind.innerHTML = `<button class="cerrar" aria-label="${T('Cerrar', 'Close')}">×</button><h2>${T('Elecciones Brasil · todos los gráficos', 'Brazil Elections · all charts')}</h2><div class="g">` + PLACAS.map((p, k) =>
       `<a href="#${p.id}" data-k="${k}"><small>${k + 1} · ${p.kicker}</small>${p.corto}</a>`).join('') + '</div>';
-    ind.addEventListener('click', e => { const a = e.target.closest('a'); if (a) { e.preventDefault(); ind.classList.remove('on'); ir(+a.dataset.k); } });
+    ind.addEventListener('click', e => {
+      if (e.target.closest('.cerrar') || e.target === ind) { ind.classList.remove('on'); return; }
+      const a = e.target.closest('a'); if (a) { e.preventDefault(); ind.classList.remove('on'); ir(+a.dataset.k); }
+    });
     document.body.appendChild(ind);
-    if (!BARRA_FIJA) {
+    if (!MODO_WEB) {
       let tm = null;
       const mostrar = () => {
         nav.classList.remove('oculto'); document.body.classList.remove('cursor-oculto');
@@ -664,6 +748,7 @@
     else if (k === 'Home') ir(0);
     else if (k === 'End') ir(PLACAS.length - 1);
     else if (k === 'g' || k === 'G') document.getElementById('indice')?.classList.toggle('on');
+    else if (k === 'Escape') document.getElementById('indice')?.classList.remove('on');
     else if (k === 'f' || k === 'F') { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }
     else if ((k === 't' || k === 'T') && PLACAS[actual].vistas) {
       const P = PLACAS[actual], vs = P.vistas.map(v => v.id), cur = vistaDe[P.id] || vs[0];
@@ -675,8 +760,8 @@
 
   document.documentElement.lang = EN ? 'en' : 'es';
   if (EN) document.title = 'Brazil elections — The Atlas';
-  escalar();
   armarNav();
+  escalar();
   // cargar las fuentes ANTES de medir (si no, el gráfico se mide con la tipografía de reemplazo)
   const fuentes = document.fonts ? Promise.all([
     '700 62px "Source Serif 4"', 'italic 400 31px "Source Serif 4"', '400 24px "Source Sans 3"',
