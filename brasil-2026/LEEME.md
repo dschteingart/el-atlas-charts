@@ -23,7 +23,7 @@ Los `.bat` de vivo abren el mapa en el navegador y dejan una ventana negra que c
 
 ### En OBS / vMix
 Lo más simple es capturar la ventana del navegador en pantalla completa (`F`). Si usás fuente de navegador (1920×1080), la URL es la ruta del archivo más la placa:
-`file:///C:/ruta/a/la/carpeta/index.html#pib`, y lo mismo con `#desempleo`, `#empleo`, `#pobreza`, `#ingreso`, `#gini`, `#homicidios`, `#consumo`, `#fiscal`, `#comercio`, `#encuestas` (`#encuestas?vista=2v` para el balotaje), `#mapa`, `#proyeccion` (`#proyeccion?vista=2` para el balotaje).
+`file:///C:/ruta/a/la/carpeta/index.html#pib`, y lo mismo con `#desempleo`, `#empleo`, `#pobreza`, `#ingreso`, `#gini`, `#homicidios`, `#consumo`, `#fiscal`, `#comercio`, `#encuestas` (`#encuestas?vista=2v` para el balotaje), `#mapa`, `#proyeccion` (`#proyeccion?vista=2` para el balotaje), `#sociedad` (`?vista=ingreso`, `raza`, `religion`, `vivo`).
 El mapa acepta su estado en la URL, para tener escenas listas:
 - `#mapa?e=2022-2&n=mun` → 2ª vuelta 2022 por municipio
 - `#mapa?e=2026-1` → escrutinio en vivo 1ª vuelta (estados)
@@ -76,6 +76,10 @@ Mientras corre `EN_VIVO_…bat`, `vivo.py` calcula además una **proyección del
 En el peor caso que probé (dentro de cada estado entran primero los municipios donde menos cambió el voto, con un sesgo fuerte), la proyección del margen erró 4,9 pts con 10% escrutado y 1 pt con 50%: **en los primeros minutos hay que leerla con cuidado**. El "±" de la placa sale de esta prueba (percentil 90), con un piso prudente.
 
 **Ensayo.** `SIMULACRO_ensayo.bat` también genera la proyección. El simulacro ahora mueve votos de Lula a Flávio (más en el Nordeste) y hace que el Nordeste y el Norte se cuenten más tarde, así el conteo parcial engaña como en 2022: con 25% escrutado el conteo daba Flávio +9 y la proyección Lula +1,0 (resultado final del simulacro: Lula +1,0 a +1,3).
+
+## Quién votó a quién (placa 14 en la copia local, 13 en la web, `#sociedad`)
+
+Cruza el balotaje 2022 municipio por municipio con cuatro indicadores: familias con Auxílio Brasil (hoy Bolsa Família) cada 100 hogares, ingreso por persona del hogar (Censo 2022), % de blancos y % de evangélicos. A la izquierda, barras de Lula y Bolsonaro en diez grupos de municipios con la misma cantidad de votos; a la derecha, cada municipio es un punto (con buscador). La vista **"En vivo 2026"** (solo en la copia local) muestra, mientras corre `EN_VIVO_…bat`, cuánto sube o baja Lula respecto de 2022 en esos mismos grupos. Fuentes y correlaciones: `data/raw/socio_sources.md`; datos: `python scripts/armar_socio.py`.
 
 ## Datos y fuentes (bajados el 2/10/2026)
 

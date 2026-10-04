@@ -242,6 +242,232 @@
     document.head.appendChild(s);
   }
 
+  /* ================= quién votó a quién: indicadores sociales y voto por municipio ================= */
+  const ROJO = '#C8372D';
+  const REG_COL = { 1: '#2C8484', 2: '#E07A23', 3: '#6B3D8B', 4: '#2D6A3D', 5: '#C9A227' };   // 1er dígito del código IBGE
+  const REG_NM = { 1: T('Norte', 'North'), 2: T('Nordeste', 'Northeast'), 3: T('Sudeste', 'Southeast'), 4: T('Sur', 'South'), 5: T('Centro-Oeste', 'Center-West') };
+  const IND_SOCIO = {
+    bf: { i: 0, nm: T('Bolsa Família', 'Bolsa Família'), eje: T('Familias con Auxílio Brasil (hoy Bolsa Família) cada 100 hogares, octubre de 2022', 'Families on Auxílio Brasil (now Bolsa Família) per 100 households, October 2022'),
+      orden: T('de menos a más Bolsa Família', 'from least to most Bolsa Família'), corto: v => fmt(v, 0), largo: v => fmt(v, 0) + T(' cada 100 hogares', ' per 100 households'), ticks: [0, 25, 50, 75, 100, 125, 150] },
+    ingreso: { i: 1, nm: T('Ingreso', 'Income'), log: true, eje: T('Ingreso mensual por persona del hogar (mediana, en reales), Censo 2022', 'Monthly household income per person (median, reais), 2022 Census'),
+      orden: T('de menor a mayor ingreso', 'from lowest to highest income'), corto: v => num(Math.round(v)), largo: v => 'R$ ' + num(Math.round(v)), ticks: [250, 500, 1000, 2000] },
+    raza: { i: 2, nm: T('Raza', 'Race'), eje: T('% de población blanca, Censo 2022', '% white population, 2022 Census'),
+      orden: T('de menos a más población blanca', 'from least to most white population'), corto: v => fmt(v, 0) + '%', largo: v => fmt(v, 1) + T('% blancos', '% white'), ticks: [0, 25, 50, 75, 100] },
+    religion: { i: 3, nm: T('Religión', 'Religion'), eje: T('% de evangélicos (10 años y más), Censo 2022', '% evangelicals (aged 10+), 2022 Census'),
+      orden: T('de menos a más evangélicos', 'from fewest to most evangelicals'), corto: v => fmt(v, 0) + '%', largo: v => fmt(v, 1) + T('% evangélicos', '% evangelicals'), ticks: [0, 25, 50, 75, 100] },
+  };
+  let baseSocio = null;
+  function filasSocio() {
+    if (baseSocio) return baseSocio;
+    const E = window.ELEC['2022-2'], E1 = window.ELEC['2022-1'];
+    const iL = E.cands.findIndex(c => c.n === '13'), iB = E.cands.findIndex(c => c.n === '22'), iL1 = E1.cands.findIndex(c => c.n === '13');
+    baseSocio = Object.entries((window.SOCIO || { mun: {} }).mun).filter(([ib]) => E.mun[ib]).map(([ib, x]) => {
+      const r = E.mun[ib], r1 = E1.mun[ib];
+      return { ib, x, val: r[1], lula: r[0][iL], bolso: r[0][iB], val1: r1 ? r1[1] : 0, lula1: r1 ? r1[0][iL1] : 0 };
+    });
+    return baseSocio;
+  }
+  // 10 grupos de municipios con la misma cantidad de votos (balotaje 2022), ordenados por el indicador
+  const gruposCache = {};
+  function gruposSocio(k) {
+    if (gruposCache[k]) return gruposCache[k];
+    const j = IND_SOCIO[k].i;
+    const F = filasSocio().filter(f => f.x[j] != null).sort((a, b) => a.x[j] - b.x[j]);
+    const tot = F.reduce((a, f) => a + f.val, 0);
+    const G = Array.from({ length: 10 }, () => ({ mun: [], val: 0, lula: 0, bolso: 0 }));
+    let acc = 0;
+    F.forEach(f => {
+      const g = G[Math.min(9, Math.floor((acc + f.val / 2) / tot * 10))];
+      acc += f.val; f.grupo = f.grupo || {}; g.mun.push(f); g.val += f.val; g.lula += f.lula; g.bolso += f.bolso;
+    });
+    G.forEach((g, n) => {
+      g.mun.forEach(f => { f.grupo[k] = n + 1; });
+      const xs = g.mun.map(f => f.x[j]);
+      g.med = xs[Math.floor(xs.length / 2)]; g.min = xs[0]; g.max = xs[xs.length - 1];
+      g.pl = 100 * g.lula / g.val; g.pb = 100 * g.bolso / g.val;
+    });
+    return (gruposCache[k] = G);
+  }
+  function tituloSocio(k) {
+    if (!window.SOCIO) return T('Quién votó a quién', 'Who voted for whom');
+    const G = gruposSocio(k);
+    if (k === 'bf') return T('Cuanto más Bolsa Família, más votos para Lula', 'The more Bolsa Família, the more votes for Lula');
+    if (k === 'ingreso') return T(`En los municipios más pobres, Lula sacó ${fmt(G[0].pl, 0)}% de los votos`, `In the poorest municipalities, Lula won ${fmt(G[0].pl, 0)}% of the vote`);
+    if (k === 'raza') return T('Cuanto más blanco el municipio, más votos para Bolsonaro', 'The whiter the municipality, the more votes for Bolsonaro');
+    return T('Donde hay más evangélicos, a Lula le fue peor', 'Where there are more evangelicals, Lula did worse');
+  }
+  function bajadaSocio(k) {
+    const I = IND_SOCIO[k];
+    let b = T(`Balotaje 2022, % de votos válidos. A la izquierda, los municipios agrupados en diez grupos con la misma cantidad de votos, ordenados ${I.orden}; a la derecha, cada municipio es un punto.`,
+      `2022 runoff, % of valid votes. Left: municipalities in ten groups with the same number of votes, ordered ${I.orden}; right: each municipality is a dot.`);
+    if (k === 'religion') b += T(' La relación es más fuerte dentro del Nordeste.', ' The relationship is stronger within the Northeast.');
+    return b;
+  }
+  function barrasSocio(box, k) {
+    const G = gruposSocio(k), I = IND_SOCIO[k];
+    const notas = G.flatMap((g, n) => [
+      { t: n + 1.5, v: g.pl, dy: 34, anchor: 'middle', texto: fmt(g.pl, 0), color: '#FFFFFF', size: 24, peso: 700, halo: false },
+      { t: n + 1.5, v: 100, dy: 34, anchor: 'middle', texto: fmt(g.pb, 0), color: '#FFFFFF', size: 24, peso: 700, halo: false },
+    ]);
+    dibujarTiempo(box, {
+      x: [1, 11], y: { min: 0, max: 100, ticks: [0, 25, 50, 75, 100], fmt: v => v + '%' }, gob: false, m: { l: 74, r: 8, t: 14, b: 50 },
+      xticksPos: G.map((g, n) => ({ t: n + 1.5, lbl: I.corto(g.med) })),
+      capas: [
+        { tipo: 'barras', datos: G.map((g, n) => ({ t: n + 1, v: 100, color: AZUL })), valores: false, ancho: 0.8 },
+        { tipo: 'barras', datos: G.map((g, n) => ({ t: n + 1, v: g.pl, color: ROJO })), valores: false, ancho: 0.8 },
+        { tipo: 'linea', datos: [{ t: 1, v: 50 }, { t: 11, v: 50 }], color: '#1A1A1A', grosor: 2.5, punteada: true },
+      ],
+      notas,
+      tips: G.map((g, n) => n + 1.5),
+      tip: t => {
+        const g = G[Math.round(t - 1.5)];
+        return {
+          html: tipHTML(T(`Grupo ${Math.round(t - 0.5)}: ${num(g.mun.length)} municipios`, `Group ${Math.round(t - 0.5)}: ${num(g.mun.length)} municipalities`),
+            [{ nm: 'Lula', val: fmt(g.pl, 1) + '%', color: ROJO }, { nm: 'Jair Bolsonaro', val: fmt(g.pb, 1) + '%', color: AZUL }],
+            T(`Entre ${I.largo(g.min)} y ${I.largo(g.max)} (típico: ${I.largo(g.med)})<br>${num(g.val)} votos válidos`, `From ${I.largo(g.min)} to ${I.largo(g.max)} (typical: ${I.largo(g.med)})<br>${num(g.val)} valid votes`)),
+          puntos: [{ v: g.pl, color: ROJO }],
+        };
+      },
+    });
+  }
+  function dispersionSocio(box, k, marcado) {
+    const { el } = window.Charts;
+    const I = IND_SOCIO[k], j = I.i;
+    box.querySelectorAll(':scope > svg').forEach(x => x.remove());
+    const F = filasSocio().filter(f => f.x[j] != null);
+    const W = box.offsetWidth, H = box.offsetHeight, m = { l: 74, r: 14, t: 14, b: 50 };
+    const sx = I.log ? v => Math.log(v) : v => v;
+    const xs = F.map(f => f.x[j]);
+    let a = I.log ? Math.log(Math.min(...xs) * 0.92) : 0, b = I.log ? Math.log(Math.max(...xs) * 1.05) : Math.max(...xs) * 1.02;
+    if (!I.log && k !== 'bf') b = 100;
+    const X = v => m.l + (sx(v) - a) / (b - a) * (W - m.l - m.r), Y = p => m.t + (100 - p) / 100 * (H - m.t - m.b);
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H }); box.appendChild(svg);
+    [0, 25, 50, 75, 100].forEach(v => {
+      el('line', { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), stroke: v === 50 ? '#1A1A1A' : C.grid, 'stroke-width': v === 50 ? 2 : 1.5, 'stroke-dasharray': v === 50 ? '8 7' : null, opacity: v === 50 ? 0.7 : 1 }, svg);
+      el('text', { x: m.l - 16, y: Y(v) + 8, class: 'tick tick-y' }, svg, v + '%');
+    });
+    I.ticks.filter(t => sx(t) >= a && sx(t) <= b).forEach(t => {
+      el('line', { x1: X(t), x2: X(t), y1: H - m.b, y2: H - m.b + 8, stroke: C.ruleStrong, 'stroke-width': 1.5 }, svg);
+      el('text', { x: X(t), y: H - m.b + 38, class: 'tick', 'text-anchor': 'middle' }, svg, I.corto(t));
+    });
+    const maxV = Math.max(...F.map(f => f.val));
+    const R = f => 1.4 + 15 * Math.sqrt(f.val / maxV);
+    const g = el('g', null, svg);
+    F.slice().sort((p, q) => q.val - p.val).forEach(f => {
+      el('circle', { cx: X(f.x[j]).toFixed(1), cy: Y(100 * f.lula / f.val).toFixed(1), r: R(f).toFixed(1), fill: REG_COL[f.ib[0]], 'fill-opacity': 0.5, stroke: REG_COL[f.ib[0]], 'stroke-opacity': 0.7, 'stroke-width': 0.6 }, g);
+    });
+    // las ciudades más grandes, con nombre
+    const nom = ib => ((window.MUN_NOMES || {})[ib] || [ib])[0];
+    const grandes = F.slice().sort((p, q) => q.val - p.val).slice(0, 5);
+    if (marcado && !grandes.some(f => f.ib === marcado)) { const f = F.find(z => z.ib === marcado); if (f) grandes.push(f); }
+    // contorno de las grandes (si no, quedan tapadas por los puntos chicos) y nombres sin pisarse
+    const labs = grandes.map(f => {
+      const cx = X(f.x[j]), cy = Y(100 * f.lula / f.val), r = R(f), es = f.ib === marcado;
+      el('circle', { cx, cy, r, fill: 'none', stroke: '#1A1A1A', 'stroke-width': es ? 3 : 1.6, 'stroke-opacity': es ? 1 : 0.75 }, svg);
+      if (es) el('circle', { cx, cy, r: r + 7, fill: 'none', stroke: '#1A1A1A', 'stroke-width': 3 }, svg);
+      return { f, cx, cy, r, es, y: cy, izq: cx > W - 210 };
+    });
+    for (let it = 0; it < 60; it++) {
+      labs.sort((p, q) => p.y - q.y);
+      for (let i = 1; i < labs.length; i++) { const d = labs[i].y - labs[i - 1].y; if (d < 24) { labs[i].y += (24 - d) / 2; labs[i - 1].y -= (24 - d) / 2; } }
+    }
+    labs.forEach(l => {
+      const x = l.cx + (l.izq ? -(l.r + 10) : l.r + 10);
+      if (Math.abs(l.y - l.cy) > 6) el('path', { d: `M${l.cx + (l.izq ? -l.r : l.r)} ${l.cy}L${x + (l.izq ? 4 : -4)} ${l.y}`, stroke: '#4A4A4A', 'stroke-width': 1.2, fill: 'none' }, svg);
+      el('text', { x, y: l.y + 6, 'text-anchor': l.izq ? 'end' : 'start', class: 'lbl', 'font-size': l.es ? 21 : 18, 'font-weight': l.es ? 700 : 600, fill: '#1A1A1A' }, svg, nom(l.f.ib));
+    });
+    // tooltip: el municipio más cercano al cursor
+    const tip = window.Charts.tooltip(box);
+    svg.addEventListener('mousemove', ev => {
+      const pt = window.Charts.svgPoint(svg, ev);
+      let best = null, bd = 18 * 18;
+      F.forEach(f => { const dx = X(f.x[j]) - pt.x, dy = Y(100 * f.lula / f.val) - pt.y, d = dx * dx + dy * dy; if (d < bd) { bd = d; best = f; } });
+      if (!best) { tip.hide(); return; }
+      const nm = (window.MUN_NOMES || {})[best.ib] || [best.ib, ''];
+      tip.show(tipHTML(`${nm[0]} <span style="color:#C9C2B2;font-weight:400">(${nm[1]})</span>`,
+        [{ nm: 'Lula', val: fmt(100 * best.lula / best.val, 1) + '%', color: ROJO }, { nm: 'Jair Bolsonaro', val: fmt(100 * best.bolso / best.val, 1) + '%', color: AZUL }],
+        `${I.largo(best.x[j])}<br>${num(best.val)} ${T('votos válidos', 'valid votes')} · ${REG_NM[best.ib[0]]}`), X(best.x[j]), Y(100 * best.lula / best.val), W);
+    });
+    svg.addEventListener('mouseleave', () => tip.hide());
+  }
+  // buscador de municipio para la dispersión (lo marca en el gráfico)
+  const sinTildes = x => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  function buscadorSocio(alElegir) {
+    const w = document.createElement('div'); w.className = 'so-buscar no-png';
+    w.innerHTML = `<input type="search" autocomplete="off" spellcheck="false" placeholder="${T('Buscar municipio…', 'Find a municipality…')}"><div class="mb-lista"></div>`;
+    const inp = w.querySelector('input'), lista = w.querySelector('.mb-lista');
+    const idx = filasSocio().map(f => { const nm = (window.MUN_NOMES || {})[f.ib] || [f.ib, '']; return { ib: f.ib, nm: nm[0], uf: nm[1], k: sinTildes(nm[0]), val: f.val }; });
+    let res = [], k = 0;
+    const dibujar = () => { lista.innerHTML = res.map((e, i) => `<div class="mb-it${i === k ? ' on' : ''}" data-i="${i}"><span>${e.nm}</span><small>${e.uf}</small></div>`).join(''); };
+    const elegir = e => { inp.value = ''; res = []; dibujar(); inp.blur(); alElegir(e.ib); };
+    inp.addEventListener('input', () => {
+      const q = sinTildes(inp.value.trim()); k = 0;
+      const nota = e => (e.k === q ? 0 : e.k.startsWith(q) ? 1 : e.k.includes(q) ? 2 : 9);
+      res = q ? idx.map(e => [nota(e), e]).filter(x => x[0] < 9).sort((p, r) => p[0] - r[0] || r[1].val - p[1].val).slice(0, 6).map(x => x[1]) : [];
+      dibujar();
+    });
+    inp.addEventListener('keydown', ev => {
+      ev.stopPropagation();
+      if (ev.key === 'ArrowDown') { ev.preventDefault(); k = Math.min(k + 1, res.length - 1); dibujar(); }
+      else if (ev.key === 'ArrowUp') { ev.preventDefault(); k = Math.max(k - 1, 0); dibujar(); }
+      else if (ev.key === 'Enter' && res[k]) elegir(res[k]);
+      else if (ev.key === 'Escape') { inp.value = ''; res = []; dibujar(); inp.blur(); }
+    });
+    lista.addEventListener('mousedown', ev => { const it = ev.target.closest('.mb-it'); if (it) { ev.preventDefault(); elegir(res[+it.dataset.i]); } });
+    inp.addEventListener('blur', () => setTimeout(() => { res = []; dibujar(); }, 150));
+    return w;
+  }
+  let marcadoSocio = null;
+  function placaSocio(box, k) {
+    if (!window.SOCIO) { box.innerHTML = `<div class="aviso">${T('Faltan los datos (data/socio.js).', 'Data missing (data/socio.js).')}</div>`; return; }
+    const I = IND_SOCIO[k];
+    box.innerHTML = `<div class="so-wrap">
+      <div class="so-col"><div class="so-ley"><span><i style="background:${ROJO}"></i>Lula</span><span><i style="background:${AZUL}"></i>Jair Bolsonaro</span><span><i class="ln"></i>50%</span></div>
+        <div class="so-graf so-barras"></div><div class="so-eje">${T('Valor típico de cada grupo', 'Typical value in each group')}: ${I.eje.charAt(0).toLowerCase() + I.eje.slice(1)}</div></div>
+      <div class="so-col"><div class="so-ley">${Object.keys(REG_COL).map(r => `<span><i style="background:${REG_COL[r]};border-radius:50%"></i>${REG_NM[r]}</span>`).join('')}</div>
+        <div class="so-graf so-puntos"></div><div class="so-eje">${I.eje}${I.log ? T(' · escala logarítmica', ' · log scale') : ''} · ${T('% de Lula (eje vertical)', 'Lula % (vertical axis)')}</div></div></div>`;
+    barrasSocio(box.querySelector('.so-barras'), k);
+    const pts = box.querySelector('.so-puntos');
+    dispersionSocio(pts, k, marcadoSocio);
+    if (!modoPNG) pts.appendChild(buscadorSocio(ib => { marcadoSocio = ib; dispersionSocio(pts, k, ib); }));
+  }
+  // en vivo (solo en la copia local): cambio del % de Lula respecto de 2022 en los mismos grupos
+  const turnoHoy = () => (new Date() >= new Date(2026, 9, 20) ? '2' : '1');
+  function placaSocioVivo(box) {
+    const v = turnoHoy(), D = vivoDe(v);
+    if (!D) {
+      box.innerHTML = `<div class="aviso" style="max-width:1100px">${T('Esperando datos del TSE (tiene que estar abierta la ventana de EN_VIVO). Esta vista se actualiza sola cada 15 segundos.', 'Waiting for TSE data (the EN_VIVO window must be running). This view refreshes every 15 seconds.')}</div>`;
+      return;
+    }
+    const iL = D.cands.findIndex(c => c.n === '13');
+    box.innerHTML = '<div class="so-vivo">' + Object.keys(IND_SOCIO).map(k => `<div class="so-col"><div class="sub-panel" style="padding-left:74px">${IND_SOCIO[k].nm} · <span style="text-transform:none;letter-spacing:0;font-weight:500">${IND_SOCIO[k].orden}</span></div><div class="so-graf" data-k="${k}"></div></div>`).join('') + '</div>';
+    Object.keys(IND_SOCIO).forEach(k => {
+      const G = gruposSocio(k);
+      const datos = G.map((g, n) => {
+        let v26 = 0, l26 = 0, v22 = 0, l22 = 0, nmun = 0;
+        g.mun.forEach(f => {
+          const r = D.mun[f.ib]; if (!r || !r[1]) return;
+          nmun++; v26 += r[1]; l26 += r[0][iL];
+          if (v === '1') { v22 += f.val1; l22 += f.lula1; } else { v22 += f.val; l22 += f.lula; }
+        });
+        return { t: n + 1, v: v26 && v22 ? 100 * l26 / v26 - 100 * l22 / v22 : null, nmun, cob: g.val ? v26 / (v === '1' ? g.mun.reduce((a, f) => a + f.val1, 0) : g.val) : 0 };
+      });
+      const vals = datos.filter(d => d.v != null).map(d => Math.abs(d.v));
+      const lim = Math.max(5, Math.ceil((Math.max(0, ...vals) + 1) / 5) * 5);
+      dibujarTiempo(box.querySelector(`[data-k="${k}"]`), {
+        x: [1, 11], y: { min: -lim, max: lim, ticks: [-lim, 0, lim], fmt: t => fmtSigno(t, 0) }, gob: false, m: { l: 74, r: 8, t: 36, b: 44 },
+        xticksPos: G.map((g, n) => ({ t: n + 1.5, lbl: IND_SOCIO[k].corto(g.med) })),
+        capas: [{ tipo: 'barras', datos, color: ROJO, colorNeg: AZUL, ancho: 0.8, fmtValor: x => fmtSigno(x, 1), tamValor: 19 }],
+        tips: datos.map(d => d.t + 0.5),
+        tip: t => {
+          const d = datos[Math.round(t - 1.5)];
+          return { html: tipHTML(T(`Grupo ${d.t}`, `Group ${d.t}`), [{ nm: T('Lula, cambio vs 2022', 'Lula, change vs 2022'), val: d.v == null ? '–' : fmtSigno(d.v, 1) + ' pts', color: ROJO }],
+            T(`${num(d.nmun)} municipios con datos · ~${fmt(100 * d.cob, 0)}% de los votos del grupo contados`, `${num(d.nmun)} municipalities reporting · ~${fmt(100 * d.cob, 0)}% of the group's votes counted`)) };
+        },
+      });
+    });
+  }
+
   /* ================= placas ================= */
   const PLACAS = [
     {
@@ -669,6 +895,33 @@
       },
       render(box, vista) { placaProyeccion(box, vista); },
     },
+    {
+      id: 'sociedad', kicker: T('Elecciones', 'Elections'), corto: T('Quién votó a quién', 'Who voted for whom'),
+      vistas: [
+        { id: 'bf', nm: T('Bolsa Família', 'Bolsa Família'), titulo: () => tituloSocio('bf'), bajada: () => bajadaSocio('bf') },
+        { id: 'ingreso', nm: T('Ingreso', 'Income'), titulo: () => tituloSocio('ingreso'), bajada: () => bajadaSocio('ingreso') },
+        { id: 'raza', nm: T('Raza', 'Race'), titulo: () => tituloSocio('raza'), bajada: () => bajadaSocio('raza') },
+        { id: 'religion', nm: T('Religión', 'Religion'), titulo: () => tituloSocio('religion'), bajada: () => bajadaSocio('religion') },
+        { id: 'vivo', nm: T('En vivo 2026', 'Live 2026'), vivo: true, turno: turnoHoy,
+          titulo: () => T('En vivo: dónde gana y dónde pierde votos Lula respecto de 2022', 'Live: where Lula is gaining and losing votes compared with 2022'),
+          bajada: () => { const D = vivoDe(turnoHoy()); return T(`Cambio en el % de Lula respecto de la misma vuelta de 2022, en los mismos diez grupos de municipios de cada indicador (solo los municipios que ya informaron)${D ? `. Con ${fmt(D.nac.pct || 0, 1)}% de las secciones escrutadas` : ''}.`, `Change in Lula's % from the same round in 2022, in the same ten groups of municipalities for each indicator (only municipalities already reporting)${D ? `. With ${fmt(D.nac.pct || 0, 1)}% of polling stations counted` : ''}.`); } },
+      ],
+      fuente: v => (v === 'vivo'
+        ? T('<b>Fuente:</b> TSE (escrutinio en vivo y resultados 2022 por municipio); IBGE, Censo 2022; Portal da Transparência. Grupos de municipios con la misma cantidad de votos en 2022. Rojo: Lula sube; azul: baja.', '<b>Source:</b> TSE (live count and 2022 results by municipality); IBGE, 2022 Census; Portal da Transparência. Groups of municipalities with the same number of votes in 2022. Red: Lula up; blue: down.')
+        : T(`<b>Fuente:</b> TSE (balotaje 2022 por municipio); IBGE, Censo 2022 (ingreso, raza, religión, hogares); Portal da Transparência (familias con Auxílio Brasil, octubre de 2022${v === 'bf' ? '; en unos pocos municipios superan los 100 cada 100 hogares, porque para el programa una familia no es lo mismo que un hogar del censo' : ''}). Son municipios, no personas: muestra dónde se votó qué, no quién votó qué.`,
+          `<b>Source:</b> TSE (2022 runoff by municipality); IBGE, 2022 Census (income, race, religion, households); Portal da Transparência (families on Auxílio Brasil, October 2022${v === 'bf' ? '; in a few municipalities they exceed 100 per 100 households, since a program family is not the same as a census household' : ''}). These are municipalities, not people: it shows where people voted what, not who voted what.`)),
+      datos: v => {
+        if (v === 'vivo') return { archivo: T('quien-voto-a-quien-en-vivo', 'who-voted-for-whom-live'), cols: [T('indicador', 'indicator'), T('grupo', 'group'), T('cambio_lula_pts', 'lula_change_pts')], filas: [] };
+        const I = IND_SOCIO[v], j = I.i; gruposSocio(v);
+        const nm = ib => (window.MUN_NOMES || {})[ib] || [ib, ''];
+        return {
+          archivo: T(`quien-voto-a-quien-${v}`, `who-voted-for-whom-${v}`),
+          cols: [T('codigo_ibge', 'ibge_code'), T('municipio', 'municipality'), 'uf', I.eje, T('grupo_1_a_10', 'group_1_to_10'), T('votos_validos_balotaje_2022', 'valid_votes_2022_runoff'), 'lula_pct', 'bolsonaro_pct'],
+          filas: filasSocio().filter(f => f.x[j] != null).map(f => [f.ib, nm(f.ib)[0], nm(f.ib)[1], f.x[j], f.grupo[v], f.val, Math.round(10000 * f.lula / f.val) / 100, Math.round(10000 * f.bolso / f.val) / 100]),
+        };
+      },
+      render(box, vista) { if (vista === 'vivo') placaSocioVivo(box); else placaSocio(box, vista); },
+    },
   ];
 
   /* ================= montaje ================= */
@@ -682,7 +935,10 @@
   // ?modo=web | ?modo=stream fuerzan uno u otro (p. ej. para ensayar la versión web en local)
   const MODO_WEB = !modoPNG && (params.get('modo') ? params.get('modo') === 'web' : EN_LA_WEB);
   let actual = -1, vistaDe = {};
-  if (MODO_WEB || modoPNG) PLACAS.splice(PLACAS.findIndex(p => p.id === 'proyeccion'), 1);
+  if (MODO_WEB || modoPNG) {
+    PLACAS.splice(PLACAS.findIndex(p => p.id === 'proyeccion'), 1);
+    PLACAS.forEach(p => { if (p.vistas) p.vistas = p.vistas.filter(v => !v.vivo); });
+  }
   let timerVivo = null, firmaVivo = '';
 
   function escalar() {
@@ -702,9 +958,11 @@
     const P = PLACAS[i];
     if (window.Mapa) window.Mapa.desmontar();
     clearInterval(timerVivo); timerVivo = null;
-    if (P.vivo) {
+    const vistaV = P.vistas ? P.vistas.find(x => x.id === vistaActual(P)) : null;
+    const enVivo = P.vivo || (vistaV && vistaV.vivo);
+    if (enVivo) {
       // datos que escribe vivo.py: se releen cada 15 s y la placa se redibuja si cambiaron
-      const v = vistaActual(P), firma = () => { const D = vivoDe(v); return (D ? D.consultado : 'nada') + '|' + v; };
+      const v = P.vivo ? vistaActual(P) : vistaV.turno(), firma = () => { const D = vivoDe(v); return (D ? D.consultado : 'nada') + '|' + v; };
       const tick = () => recargarVivo(v, () => { if (actual === i && firma() !== firmaVivo) { firmaVivo = firma(); render(i); } });
       timerVivo = setInterval(tick, 15000);
       if (!vivoDe(v)) setTimeout(tick, 50);
@@ -720,7 +978,7 @@
     }
     const vista = vistaActual(P);
     const V = P.vistas ? P.vistas.find(v => v.id === vista) : P;
-    sec.className = 'placa' + (P.vivo ? ' sin-anim' : '');
+    sec.className = 'placa' + (P.vivo || (P.vistas && (P.vistas.find(x => x.id === vistaActual(P)) || {}).vivo) ? ' sin-anim' : '');
     sec.innerHTML = `
       <div class="kicker">${T('Brasil 2026', 'Brazil 2026')} <span class="sep">·</span> ${P.kicker}</div>
       <h1 class="titulo">${modoPNG && params.get('titulo') ? params.get('titulo') : (typeof V.titulo === 'function' ? V.titulo() : V.titulo)}</h1>
@@ -871,6 +1129,7 @@
     pib: '01-pib', desempleo: '02-desempleo', 'empleo:tipo': '03a-empleo-tipo', 'empleo:sector': '03b-empleo-sector', 'empleo:informalidad': '03c-informalidad',
     pobreza: '04-pobreza', ingreso: '05-ingreso-real', gini: '06-gini', homicidios: '07-homicidios', 'consumo:var': '08a-consumo-variacion', 'consumo:nivel': '08b-consumo-nivel',
     fiscal: '09-fiscal', comercio: '10-comercio-argentina', 'encuestas:ambas': '11-encuestas-ambas-vueltas', 'encuestas:1v': '11a-encuestas-1ra-vuelta', 'encuestas:2v': '11b-encuestas-2da-vuelta', mapa: '12d-mapa-2022-2v-municipios',
+    'sociedad:bf': '13a-quien-voto-bolsa-familia', 'sociedad:ingreso': '13b-quien-voto-ingreso', 'sociedad:raza': '13c-quien-voto-raza', 'sociedad:religion': '13d-quien-voto-religion',
   };
   async function descargarPNG(btn) {
     const P = PLACAS[actual], v = vistaActual(P);
