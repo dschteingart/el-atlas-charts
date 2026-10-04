@@ -252,7 +252,7 @@
     ingreso: { i: 1, nm: T('Ingreso', 'Income'), log: true, eje: T('Ingreso mensual por persona del hogar (mediana, en reales), Censo 2022', 'Monthly household income per person (median, reais), 2022 Census'),
       orden: T('de menor a mayor ingreso', 'from lowest to highest income'), corto: v => num(Math.round(v)), largo: v => 'R$ ' + num(Math.round(v)), ticks: [250, 500, 1000, 2000] },
     raza: { i: 2, nm: T('Raza', 'Race'), eje: T('% de población blanca, Censo 2022', '% white population, 2022 Census'),
-      orden: T('de menos a más población blanca', 'from least to most white population'), corto: v => fmt(v, 0) + '%', largo: v => fmt(v, 1) + T('% blancos', '% white'), ticks: [0, 25, 50, 75, 100] },
+      orden: T('de menos a más población blanca', 'from least to most white population'), corto: v => fmt(v, 0) + '%', largo: v => fmt(v, 1) + T('% de población blanca', '% white population'), ticks: [0, 25, 50, 75, 100] },
     religion: { i: 3, nm: T('Religión', 'Religion'), eje: T('% de evangélicos (10 años y más), Censo 2022', '% evangelicals (aged 10+), 2022 Census'),
       orden: T('de menos a más evangélicos', 'from fewest to most evangelicals'), corto: v => fmt(v, 0) + '%', largo: v => fmt(v, 1) + T('% evangélicos', '% evangelicals'), ticks: [0, 25, 50, 75, 100] },
   };
@@ -293,7 +293,7 @@
     const G = gruposSocio(k);
     if (k === 'bf') return T('Cuanto más Bolsa Família, más votos para Lula', 'The more Bolsa Família, the more votes for Lula');
     if (k === 'ingreso') return T(`En los municipios más pobres, Lula sacó ${fmt(G[0].pl, 0)}% de los votos`, `In the poorest municipalities, Lula won ${fmt(G[0].pl, 0)}% of the vote`);
-    if (k === 'raza') return T('Cuanto más blanco el municipio, más votos para Bolsonaro', 'The whiter the municipality, the more votes for Bolsonaro');
+    if (k === 'raza') return T('Donde hay más población blanca, a Bolsonaro le fue mejor', 'Where more of the population is white, Bolsonaro did better');
     return T('Donde hay más evangélicos, a Lula le fue peor', 'Where there are more evangelicals, Lula did worse');
   }
   function bajadaSocio(k) {
@@ -474,7 +474,7 @@
   const FACTORES = [
     { nm: T('Bolsa Família', 'Bolsa Família'), alto: T('hay más Bolsa Família', 'there is more Bolsa Família'), x: f => (f.s ? f.s[0] : null) },
     { nm: T('Ingreso', 'Income'), alto: T('el ingreso es más alto', 'income is higher'), x: f => (f.s && f.s[1] ? Math.log(f.s[1]) : null) },
-    { nm: T('% blancos', '% white'), alto: T('hay más población blanca', 'the population is whiter'), x: f => (f.s ? f.s[2] : null) },
+    { nm: T('% población blanca', '% white population'), alto: T('hay más población blanca', 'more of the population is white'), x: f => (f.s ? f.s[2] : null) },
     { nm: T('% evangélicos', '% evangelicals'), alto: T('hay más evangélicos', 'there are more evangelicals'), x: f => (f.s ? f.s[3] : null) },
     { nm: T('Voto a Lula en 2022', 'Lula vote in 2022'), alto: T('Lula había sacado más en 2022', 'Lula did better in 2022'), x: f => f.l22 },
     { nm: T('Tamaño del municipio', 'Municipality size'), alto: T('el municipio es más grande', 'the municipality is bigger'), x: f => Math.log(Math.max(f.apt, 1)) },
