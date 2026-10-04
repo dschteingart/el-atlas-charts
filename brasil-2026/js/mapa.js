@@ -13,6 +13,8 @@
   // ahí los botones 2026 quedan deshabilitados "a la espera de resultados".
   const EN_LA_WEB = /^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
   const VIVO_OK = !EN_LA_WEB;
+  // pantallas táctiles (celular, tablet): zoom sin animación, que con miles de polígonos se traba
+  const LIGERO = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
 
   // Colores por número de urna (mismo número = mismo color en 2022 y 2026)
   const COLOR = {
@@ -165,7 +167,7 @@
       svg.setAttribute('viewBox', v.join(' ')); vbActual = v;
       if (k < 1) requestAnimationFrame(paso);
     }
-    if (document.body.classList.contains('sin-anim')) { svg.setAttribute('viewBox', dest.join(' ')); vbActual = dest; return; }
+    if (LIGERO || document.body.classList.contains('sin-anim')) { svg.setAttribute('viewBox', dest.join(' ')); vbActual = dest; return; }
     requestAnimationFrame(paso);
   }
   function enfocar(cod) {
@@ -196,7 +198,9 @@
     const D = datos(st.elec), B = baseDelta();
     const verMun = st.nivel === 'mun' || st.foco;
     cache.gMun.style.display = verMun ? '' : 'none';
-    cache.gUF.style.display = verMun ? 'none' : '';
+    // con zoom a un estado se dibujan solo sus municipios; el resto del país va con los polígonos
+    // de estado atenuados (27 en vez de 5.570: mucho más liviano, sobre todo en el celular)
+    cache.gUF.style.display = !verMun || st.foco ? '' : 'none';
     Object.entries(cache.bord).forEach(([c, p]) => {
       p.classList.toggle('fuerte', !!verMun);
       p.style.display = verMun ? '' : 'none';
@@ -209,14 +213,18 @@
     if (verMun) {
       for (const ib in cache.mun) {
         const p = cache.mun[ib];
-        const fuera = st.foco && ib.slice(0, 2) !== st.foco;
+        if (st.foco && ib.slice(0, 2) !== st.foco) { if (p.style.display !== 'none') p.style.display = 'none'; continue; }
+        if (p.style.display) p.style.display = '';
         p.setAttribute('fill', fillDe(D, filaMun(D, ib), filaMun(B, ib)));
-        p.style.opacity = fuera ? 0.18 : 1;
       }
-    } else {
+    }
+    if (!verMun || st.foco) {
       for (const c in cache.uf) {
-        const sg = UF[c][0];
-        cache.uf[c].setAttribute('fill', fillDe(D, filaUF(D, sg), filaUF(B, sg)));
+        const sg = UF[c][0], u = cache.uf[c];
+        if (st.foco === c) { u.style.display = 'none'; continue; }
+        u.style.display = '';
+        u.setAttribute('fill', fillDe(D, filaUF(D, sg), filaUF(B, sg)));
+        u.style.opacity = st.foco ? 0.25 : 1;
       }
     }
     // municipio elegido: contorno + un anillo (para encontrarlo aunque sea chiquito)

@@ -18,12 +18,12 @@ Los `.bat` de vivo abren el mapa en el navegador y dejan una ventana negra que c
 ### Teclas
 - `←` `→` (o PageUp/PageDown de un clicker): placa anterior / siguiente
 - `G`: índice de placas · `F`: pantalla completa · `T`: cambia la vista (empleo, consumo)
-- En el mapa: clic en un estado para acercarse; clic en un municipio para ver sus datos (resultado, cambio vs 2022 o comparación con Brasil). Buscador arriba a la derecha (estados y municipios, sin importar tildes). `Esc` o el botón de arriba a la izquierda vuelven un paso (municipio → estado → Brasil)
+- En el mapa (en el celular el zoom es instantáneo y con un estado elegido se dibujan solo sus municipios): clic en un estado para acercarse; clic en un municipio para ver sus datos (resultado, cambio vs 2022 o comparación con Brasil). Buscador arriba a la derecha (estados y municipios, sin importar tildes). `Esc` o el botón de arriba a la izquierda vuelven un paso (municipio → estado → Brasil)
 - La barra de navegación y el cursor se ocultan solos a los 2,5 s
 
 ### En OBS / vMix
 Lo más simple es capturar la ventana del navegador en pantalla completa (`F`). Si usás fuente de navegador (1920×1080), la URL es la ruta del archivo más la placa:
-`file:///C:/ruta/a/la/carpeta/index.html#pib`, y lo mismo con `#desempleo`, `#empleo`, `#pobreza`, `#ingreso`, `#gini`, `#homicidios`, `#consumo`, `#fiscal`, `#comercio`, `#encuestas` (`#encuestas?vista=2v` para el balotaje), `#mapa`, `#proyeccion` (`#proyeccion?vista=2` para el balotaje), `#sociedad` (`?vista=ingreso`, `raza`, `religion`, `vivo`).
+`file:///C:/ruta/a/la/carpeta/index.html#pib`, y lo mismo con `#desempleo`, `#empleo`, `#pobreza`, `#ingreso`, `#gini`, `#homicidios`, `#consumo`, `#fiscal`, `#comercio`, `#encuestas` (`#encuestas?vista=2v` para el balotaje), `#mapa`, `#proyeccion` (`#proyeccion?vista=2` para el balotaje), `#sociedad` (`?vista=ingreso`, `raza`, `religion`, `vivo`), `#swing` (en vivo).
 El mapa acepta su estado en la URL, para tener escenas listas:
 - `#mapa?e=2022-2&n=mun` → 2ª vuelta 2022 por municipio
 - `#mapa?e=2026-1` → escrutinio en vivo 1ª vuelta (estados)
@@ -80,6 +80,12 @@ En el peor caso que probé (dentro de cada estado entran primero los municipios 
 ## Quién votó a quién (placa 14 en la copia local, 13 en la web, `#sociedad`)
 
 Cruza el balotaje 2022 municipio por municipio con cuatro indicadores: familias con Auxílio Brasil (hoy Bolsa Família) cada 100 hogares, ingreso por persona del hogar (Censo 2022), % de blancos y % de evangélicos. A la izquierda, barras de Lula y Bolsonaro en diez grupos de municipios con la misma cantidad de votos; a la derecha, cada municipio es un punto (con buscador). La vista **"En vivo 2026"** (solo en la copia local) muestra, mientras corre `EN_VIVO_…bat`, cuánto sube o baja Lula respecto de 2022 en esos mismos grupos. Fuentes y correlaciones: `data/raw/socio_sources.md`; datos: `python scripts/armar_socio.py`.
+
+## Dónde se mueve el voto (placa 15, solo en la copia local, `#swing`)
+
+Mientras corre `EN_VIVO_…bat`, compara cada municipio con al menos 20% de las urnas contadas con lo que votó en la misma vuelta de 2022: cambio de Lula por estado, las ciudades grandes (más de 100 mil electores, al menos 30% contado) donde más sube y más baja, a dónde va el voto (Lula, Flávio contra Jair, el resto, blancos y nulos, participación) y qué factores acompañan el cambio (correlación con Bolsa Família, ingreso, raza, religión, voto a Lula en 2022 y tamaño). El título sale solo: si un factor tiene una relación clara (|r| ≥ 0,3), lo dice; si no, da el cambio promedio.
+
+**Análisis en la consola**: `python analisis_vivo.py` (en otra ventana, mientras vivo.py sigue corriendo) imprime en segundos el cambio por región y por estado, las ciudades que más se mueven, las correlaciones y una regresión con todos los factores juntos (con y sin efectos de región, para separar lo que va junto, como pobreza y religión en el Nordeste). Opciones: `--uf BA` (un estado), `--cand 55` (dónde le va mejor a Caiado; 30 Zema, 14 Renan Santos), `--min-pct 50`, `--turno 2`.
 
 ## Datos y fuentes (bajados el 2/10/2026)
 

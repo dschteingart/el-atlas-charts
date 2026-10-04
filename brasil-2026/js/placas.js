@@ -468,6 +468,122 @@
     });
   }
 
+  /* ================= dónde se mueve el voto (en vivo, solo en la copia local) ================= */
+  const MIN_PCT = 20;          // % de urnas contadas para usar un municipio
+  const UF_SG = { 11: 'RO', 12: 'AC', 13: 'AM', 14: 'RR', 15: 'PA', 16: 'AP', 17: 'TO', 21: 'MA', 22: 'PI', 23: 'CE', 24: 'RN', 25: 'PB', 26: 'PE', 27: 'AL', 28: 'SE', 29: 'BA', 31: 'MG', 32: 'ES', 33: 'RJ', 35: 'SP', 41: 'PR', 42: 'SC', 43: 'RS', 50: 'MS', 51: 'MT', 52: 'GO', 53: 'DF' };
+  const FACTORES = [
+    { nm: T('Bolsa Família', 'Bolsa Família'), alto: T('hay más Bolsa Família', 'there is more Bolsa Família'), x: f => (f.s ? f.s[0] : null) },
+    { nm: T('Ingreso', 'Income'), alto: T('el ingreso es más alto', 'income is higher'), x: f => (f.s && f.s[1] ? Math.log(f.s[1]) : null) },
+    { nm: T('% blancos', '% white'), alto: T('hay más población blanca', 'the population is whiter'), x: f => (f.s ? f.s[2] : null) },
+    { nm: T('% evangélicos', '% evangelicals'), alto: T('hay más evangélicos', 'there are more evangelicals'), x: f => (f.s ? f.s[3] : null) },
+    { nm: T('Voto a Lula en 2022', 'Lula vote in 2022'), alto: T('Lula había sacado más en 2022', 'Lula did better in 2022'), x: f => f.l22 },
+    { nm: T('Tamaño del municipio', 'Municipality size'), alto: T('el municipio es más grande', 'the municipality is bigger'), x: f => Math.log(Math.max(f.apt, 1)) },
+  ];
+  function datosSwing(v) {
+    const D = vivoDe(v);
+    if (!D || !window.ELEC) return null;
+    const B = window.ELEC['2022-' + v], SO = (window.SOCIO || {}).mun || {};
+    const i26 = n => D.cands.findIndex(c => c.n === n), i22 = n => B.cands.findIndex(c => c.n === n);
+    const L = i26('13'), F = i26('22'), L0 = i22('13'), J0 = i22('22');
+    const filas = [];
+    for (const ib in D.mun) {
+      const r = D.mun[ib], b = B.mun[ib];
+      if (!r || !b || !r[1] || !b[1] || (r[5] || 0) < MIN_PCT) continue;
+      const l26 = 100 * r[0][L] / r[1], l22 = 100 * b[0][L0] / b[1];
+      const f26 = F >= 0 ? 100 * r[0][F] / r[1] : null, j22 = 100 * b[0][J0] / b[1];
+      filas.push({ ib, val: r[1], pct: r[5], apt: b[3], l22, l26, dl: l26 - l22, df: f26 == null ? null : f26 - j22, s: SO[ib], r, b });
+    }
+    return { D, B, filas, L, F, L0, J0 };
+  }
+  function wcorr(xs, ys, ws) {
+    let sw = 0, mx = 0, my = 0;
+    xs.forEach((x, i) => { sw += ws[i]; mx += ws[i] * x; my += ws[i] * ys[i]; });
+    mx /= sw; my /= sw;
+    let cxy = 0, cxx = 0, cyy = 0;
+    xs.forEach((x, i) => { const a = x - mx, b = ys[i] - my; cxy += ws[i] * a * b; cxx += ws[i] * a * a; cyy += ws[i] * b * b; });
+    return cxx && cyy ? cxy / Math.sqrt(cxx * cyy) : 0;
+  }
+  function correlacionesSwing(S) {
+    return FACTORES.map(f => {
+      const ok = S.filas.filter(z => f.x(z) != null && isFinite(f.x(z)));
+      return { ...f, n: ok.length, r: ok.length > 20 ? wcorr(ok.map(f.x), ok.map(z => z.dl), ok.map(z => z.val)) : null };
+    });
+  }
+  const promSwing = (F, k) => { let a = 0, w = 0; F.forEach(z => { if (z[k] != null) { a += z.val * z[k]; w += z.val; } }); return w ? a / w : null; };
+  function tituloSwing(v) {
+    const S = datosSwing(v);
+    if (!S || S.filas.length < 30) return T('Dónde se mueve el voto respecto de 2022', 'Where the vote is moving compared with 2022');
+    const C = correlacionesSwing(S).filter(c => c.r != null).sort((a, b) => Math.abs(b.r) - Math.abs(a.r))[0];
+    if (C && Math.abs(C.r) >= 0.3 && C.n >= 100)
+      return T(`A Lula le va ${C.r > 0 ? 'mejor' : 'peor'} que en 2022 donde ${C.alto}`, `Lula is doing ${C.r > 0 ? 'better' : 'worse'} than in 2022 where ${C.alto}`);
+    const d = promSwing(S.filas, 'dl');
+    return T(`Lula ${d >= 0 ? 'sube' : 'baja'} ${fmt(Math.abs(d), 1)} puntos respecto de 2022 en los municipios ya contados`, `Lula is ${d >= 0 ? 'up' : 'down'} ${fmt(Math.abs(d), 1)} points from 2022 in the municipalities counted so far`);
+  }
+  function bajadaSwing(v) {
+    const S = datosSwing(v), vuelta = v === '1' ? T('Primera vuelta', 'First round') : T('Balotaje', 'Runoff');
+    const n = S ? S.filas.length : 0, pct = S ? S.D.nac.pct || 0 : 0;
+    return T(`${vuelta} 2026 contra la misma vuelta de 2022, comparando los mismos municipios (${num(n)} con al menos ${MIN_PCT}% de las urnas contadas; ${fmt(pct, 1)}% de las secciones escrutadas en el país). Rojo: a Lula le va mejor; azul: peor.`,
+      `${vuelta} 2026 vs. the same round in 2022, comparing the same municipalities (${num(n)} with at least ${MIN_PCT}% of ballot boxes counted; ${fmt(pct, 1)}% of polling stations counted nationwide). Red: Lula doing better; blue: worse.`);
+  }
+  function barrasH(box, filas, lim, opts) {
+    // barras horizontales divergentes desde 0: filas [{nm, v, sub, tip}]
+    const { el } = window.Charts;
+    const W = box.offsetWidth, H = box.offsetHeight, m = { l: opts.l || 70, r: 70, t: 6, b: 34 };
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H }); box.appendChild(svg);
+    const X = x => m.l + (x + lim) / (2 * lim) * (W - m.l - m.r), alto = (H - m.t - m.b) / Math.max(filas.length, 1);
+    [-lim, 0, lim].forEach(t => {
+      el('line', { x1: X(t), x2: X(t), y1: m.t, y2: H - m.b, stroke: t === 0 ? '#B3AC9C' : C.grid, 'stroke-width': t === 0 ? 2 : 1.5 }, svg);
+      el('text', { x: X(t), y: H - m.b + 26, class: 'tick', 'text-anchor': 'middle', 'font-size': 18 }, svg, opts.fmtEje(t));
+    });
+    filas.forEach((f, i) => {
+      const y = m.t + i * alto, h = Math.min(alto * 0.72, 30), yc = y + alto / 2;
+      if (f.v == null) return;
+      const x0 = X(0), x1 = X(Math.max(-lim, Math.min(lim, f.v)));
+      el('rect', { x: Math.min(x0, x1), y: yc - h / 2, width: Math.max(1.5, Math.abs(x1 - x0)), height: h, fill: f.v >= 0 ? ROJO : AZUL, rx: 2 }, svg);
+      el('text', { x: m.l - 12, y: yc + 6, 'text-anchor': 'end', class: 'tick', 'font-size': opts.tamNom || 18, 'font-weight': 600, fill: '#1A1A1A' }, svg, f.nm);
+      el('text', { x: x1 + (f.v >= 0 ? 8 : -8), y: yc + 6, 'text-anchor': f.v >= 0 ? 'start' : 'end', class: 'lbl', 'font-size': 17, 'font-weight': 700, fill: f.v >= 0 ? ROJO : AZUL }, svg, opts.fmtVal(f.v));
+    });
+  }
+  function placaSwing(box, v) {
+    const S = datosSwing(v);
+    const bat = `EN_VIVO_${v === '1' ? '1ra' : '2da'}_vuelta.bat`;
+    if (!S) { box.innerHTML = `<div class="aviso" style="max-width:1100px">${T(`Esperando datos del TSE. Tiene que estar abierta la ventana de <code>${bat}</code>; esta placa se actualiza sola cada 15 segundos.`, `Waiting for TSE data. The <code>${bat}</code> window must be running; this chart refreshes every 15 seconds.`)}</div>`; return; }
+    if (S.filas.length < 30) { box.innerHTML = `<div class="aviso" style="max-width:1100px">${T(`Todavía hay pocos municipios con al menos ${MIN_PCT}% de las urnas contadas (${S.filas.length}). La placa se arma sola apenas haya 30.`, `Too few municipalities with at least ${MIN_PCT}% of ballot boxes counted (${S.filas.length}). The chart builds itself once there are 30.`)}</div>`; return; }
+    const F = S.filas;
+    // 1) estados
+    const porUF = {};
+    F.forEach(z => { const u = z.ib.slice(0, 2); (porUF[u] = porUF[u] || []).push(z); });
+    const ufs = Object.entries(porUF).filter(([, zs]) => zs.length >= 3).map(([u, zs]) => ({ u, nm: UF_SG[u], v: promSwing(zs, 'dl'), vf: promSwing(zs, 'df'), n: zs.length })).sort((a, b) => b.v - a.v);
+    // 2) ciudades grandes
+    const nomM = ib => { const n = (window.MUN_NOMES || {})[ib]; return n ? `${n[0]} <span>${n[1]}</span>` : ib; };
+    const grandes = F.filter(z => z.apt >= 100000 && z.pct >= 30).sort((a, b) => b.dl - a.dl);
+    const fila = z => `<div class="sw-c"><span class="n">${nomM(z.ib)}</span><b style="color:${z.dl >= 0 ? ROJO : AZUL}">${fmtSigno(z.dl, 1)}</b><small>${fmt(z.pct, 0)}%</small></div>`;
+    const sube = grandes.slice(0, 4), baja = grandes.slice(-4).reverse();
+    // 3) a dónde va el voto (mismos municipios)
+    const sum = (f) => F.reduce((a, z) => a + f(z), 0);
+    const v26 = sum(z => z.r[1]), v22 = sum(z => z.b[1]);
+    const pc26 = i => 100 * sum(z => (i >= 0 ? z.r[0][i] : 0)) / v26, pc22 = i => 100 * sum(z => (i >= 0 ? z.b[0][i] : 0)) / v22;
+    const dL = pc26(S.L) - pc22(S.L0), dF = pc26(S.F) - pc22(S.J0);
+    const bn26 = 100 * sum(z => z.r[2]) / (v26 + sum(z => z.r[2])), bn22 = 100 * sum(z => z.b[2]) / (v22 + sum(z => z.b[2]));
+    const part26 = 100 * sum(z => z.r[4]) / sum(z => z.r[3] * (z.pct / 100)), part22 = 100 * sum(z => z.b[4]) / sum(z => z.b[3]);
+    const filasDesc = [[T('Lula', 'Lula'), dL], [T('Flávio (vs Jair)', 'Flávio (vs Jair)'), dF]];
+    if (v === '1') filasDesc.push([T('Resto de los candidatos', 'Other candidates'), -(dL + dF)]);
+    filasDesc.push([T('Blancos y nulos*', 'Blank and null*'), bn26 - bn22], [T('Participación*', 'Turnout*'), part26 - part22]);
+    box.innerHTML = `<div class="sw-wrap">
+      <div class="sw-col"><div class="sub-panel sw-h">${T('Lula, por estado', 'Lula, by state')}</div><div class="sw-graf sw-uf"></div></div>
+      <div class="sw-col"><div class="sub-panel sw-h">${T('Ciudades grandes: dónde más sube…', 'Big cities: where Lula gains most…')}</div>${sube.map(fila).join('')}
+        <div class="sub-panel sw-h" style="margin-top:12px">${T('…y dónde más baja Lula', '…and where he loses most')}</div>${baja.map(fila).join('')}
+        <div class="sw-nota">${T('Más de 100 mil electores y al menos 30% contado (a la derecha, % contado).', 'Over 100,000 voters and at least 30% counted (right: % counted).')}</div>
+        <div class="sub-panel sw-h" style="margin-top:14px">${T('¿A dónde va el voto?', 'Where is the vote going?')}</div>
+        <div class="sw-desc">${filasDesc.map(([n, x]) => `<div><span>${n}</span><b style="color:${x >= 0 ? '#1A1A1A' : '#6E6A60'}">${fmtSigno(x, 1)} pts</b></div>`).join('')}</div>
+        <div class="sw-nota">${T('Mismos municipios que en 2022, en puntos. *Sobre votos emitidos y sobre electores.', 'Same municipalities as in 2022, in points. *Of votes cast and of registered voters.')}</div></div>
+      <div class="sw-col"><div class="sub-panel sw-h">${T('Qué acompaña al cambio de Lula', 'What goes with Lula\'s change')}</div><div class="sw-graf sw-fac"></div>
+        <div class="sw-nota">${T('Correlación entre municipios (ponderada por votos): a la derecha, a Lula le va mejor donde el factor es alto; a la izquierda, peor. Describe dónde se mueve el voto, no por qué.', 'Correlation across municipalities (vote-weighted): right, Lula does better where the factor is high; left, worse. Describes where the vote moves, not why.')}</div></div></div>`;
+    const lim = Math.max(4, Math.ceil(Math.max(...ufs.map(u => Math.abs(u.v))) + 0.5));
+    barrasH(box.querySelector('.sw-uf'), ufs, lim, { l: 52, fmtEje: t => fmtSigno(t, 0), fmtVal: x => fmtSigno(x, 1) });
+    barrasH(box.querySelector('.sw-fac'), correlacionesSwing(S).map(c => ({ nm: c.nm, v: c.r })), 1, { l: 220, tamNom: 19, fmtEje: t => fmtSigno(t, 0), fmtVal: x => fmtSigno(x, 2) });
+  }
+
   /* ================= placas ================= */
   const PLACAS = [
     {
@@ -922,6 +1038,25 @@
       },
       render(box, vista) { if (vista === 'vivo') placaSocioVivo(box); else placaSocio(box, vista); },
     },
+    {
+      // solo en la copia local (streaming): análisis en vivo del cambio respecto de 2022
+      id: 'swing', kicker: T('Elecciones · en vivo', 'Elections · live'), corto: T('Dónde se mueve el voto', 'Where the vote is moving'), vivo: true,
+      vistas: [
+        { id: '1', nm: T('1ª vuelta', '1st round'), titulo: () => tituloSwing('1'), bajada: () => bajadaSwing('1') },
+        { id: '2', nm: T('2ª vuelta', '2nd round'), titulo: () => tituloSwing('2'), bajada: () => bajadaSwing('2') },
+      ],
+      fuente: () => T('<b>Fuente:</b> TSE (escrutinio en vivo y resultados 2022 por municipio); IBGE, Censo 2022; Portal da Transparência. Solo municipios con al menos 20% de las urnas contadas; los resultados parciales de un municipio pueden no ser representativos de todo el municipio.',
+        '<b>Source:</b> TSE (live count and 2022 results by municipality); IBGE, 2022 Census; Portal da Transparência. Only municipalities with at least 20% of ballot boxes counted; partial results may not represent the whole municipality.'),
+      datos: v => {
+        const S = datosSwing(v), nm = ib => (window.MUN_NOMES || {})[ib] || [ib, ''];
+        return {
+          archivo: T(`donde-se-mueve-el-voto-${v}v`, `where-the-vote-moves-${v}`),
+          cols: [T('codigo_ibge', 'ibge_code'), T('municipio', 'municipality'), 'uf', T('pct_contado', 'pct_counted'), 'lula_2022', 'lula_2026', T('cambio_lula', 'lula_change'), T('cambio_flavio_vs_jair', 'flavio_vs_jair_change')],
+          filas: S ? S.filas.map(z => [z.ib, nm(z.ib)[0], nm(z.ib)[1], z.pct, Math.round(z.l22 * 100) / 100, Math.round(z.l26 * 100) / 100, Math.round(z.dl * 100) / 100, z.df == null ? null : Math.round(z.df * 100) / 100]) : [],
+        };
+      },
+      render(box, vista) { placaSwing(box, vista); },
+    },
   ];
 
   /* ================= montaje ================= */
@@ -936,7 +1071,7 @@
   const MODO_WEB = !modoPNG && (params.get('modo') ? params.get('modo') === 'web' : EN_LA_WEB);
   let actual = -1, vistaDe = {};
   if (MODO_WEB || modoPNG) {
-    PLACAS.splice(PLACAS.findIndex(p => p.id === 'proyeccion'), 1);
+    for (let i = PLACAS.length - 1; i >= 0; i--) if (PLACAS[i].vivo) PLACAS.splice(i, 1);
     PLACAS.forEach(p => { if (p.vistas) p.vistas = p.vistas.filter(v => !v.vivo); });
   }
   let timerVivo = null, firmaVivo = '';
