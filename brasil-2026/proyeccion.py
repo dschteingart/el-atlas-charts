@@ -165,7 +165,7 @@ class Proyector:
             'contado': float(n.sum() / max(E.sum(), 1)),        # fracción de los votos esperados ya contada
             'esperados': float(E.sum()),
             'n_mun': int(vis.sum()),
-            'n_uf': int(len(set(self.uf[vis]))),
+            'n_uf': int(len(set(self.uf[vis]) - {'ZZ'})),   # estados con datos (el exterior no cuenta como estado)
         }
 
 
@@ -198,6 +198,9 @@ class ProyeccionEnVivo:
             for j, x in enumerate(v):
                 base[i, min(blo[j], self.B - 1)] += x
         self.modelo = Proyector(unidades, jer, base, base.sum(1))
+        # para medir el sesgo del conteo (solo municipios: el exterior se cuenta aparte y distorsiona el final)
+        es_mun = np.array([k != 'ZZ' for k in unidades], float)
+        self.base_lula, self.base_val = base[:, 0] * es_mun, base.sum(1) * es_mun
         self.hist = []
 
     def banda(self, contado):
@@ -228,9 +231,15 @@ class ProyeccionEnVivo:
             f[M.idx['ZZ']] = zz['pct'] / 100.0
         bloque_de = np.array([0 if n == '13' else 1 if n == '22' else 2 for n, _, _ in cands])
         bloque_de = np.minimum(bloque_de, self.B - 1)
+        # sesgo del conteo: cómo votó en 2022 (a Lula) lo ya contado y lo que falta contar
+        cont = float((f * self.base_val).sum())
+        l22c = 100 * float((f * self.base_lula).sum()) / cont if cont else None
+        falta = float(((1 - f) * self.base_val).sum())
+        # cuando lo que falta es menos del 2% de los votos, su composición es ruido: no se informa
+        l22f = 100 * float(((1 - f) * self.base_lula).sum()) / falta if falta > 0.02 * (falta + cont) else None
         r = M.proyectar(O, f, bloque_de, extra)
         if r is None:
-            return {'ok': False, 'motivo': 'pocos datos', 'hist': self.hist}
+            return {'ok': False, 'motivo': 'pocos datos', 'hist': self.hist, 'l22c': l22c, 'l22f': l22f}
         b_cand, b_marg = self.banda(r['contado'])
         proy = [round(float(x), 2) for x in r['proy']]
         bandas = [round(max(0.15, b_cand * float(np.sqrt(p / 100 * (1 - p / 100)) / 0.5)), 2) for p in proy]
@@ -240,8 +249,9 @@ class ProyeccionEnVivo:
             'proy': proy, 'banda': bandas, 'banda_margen': round(b_marg, 2),
             'conteo': [round(float(x), 2) for x in r['conteo']],
             'contado': round(r['contado'], 4), 'pct': pct_nac, 'n_mun': r['n_mun'], 'n_uf': r['n_uf'],
+            'l22c': None if l22c is None else round(l22c, 2), 'l22f': None if l22f is None else round(l22f, 2),
         }
         if ok and (not self.hist or abs(self.hist[-1]['pct'] - pct_nac) > 1e-9):
-            self.hist.append({'pct': pct_nac, 'p': out['proy'], 'b': out['banda'], 'c': out['conteo']})
+            self.hist.append({'pct': pct_nac, 'p': out['proy'], 'b': out['banda'], 'c': out['conteo'], 'l22c': out['l22c'], 'l22f': out['l22f']})
         out['hist'] = self.hist
         return out

@@ -26,8 +26,8 @@
   // Carga en orden y reintenta si un archivo falla (algunos antivirus cortan descargas locales).
   // estilos.js va primero: inyecta las tipografías y el CSS (los reusa la descarga en PNG).
   (function () {
-    const V = 43;
-    const archivos = ['js/estilos.js', 'data/series.js', 'data/encuestas.js', 'data/elecciones-2022.js', 'data/socio.js', 'js/geo-br.js', 'js/charts.js', 'js/exportar.js', 'js/mapa.js', 'js/placas.js'];
+    const V = 48;
+    const archivos = ['js/estilos.js', 'data/series.js', 'data/encuestas.js', 'data/elecciones-2022.js', 'data/socio.js', 'data/exterior.js', 'js/geo-br.js', 'js/charts.js', 'js/exportar.js', 'js/mapa.js', 'js/placas.js'];
     function cargar(i, intento) {
       if (i >= archivos.length) return;
       const s = document.createElement('script');
@@ -36,7 +36,7 @@
       s.onerror = () => {
         s.remove();
         if (intento < 6) setTimeout(() => cargar(i, intento + 1), 300 * (intento + 1));
-        else if (archivos[i] === 'data/encuestas.js') cargar(i + 1, 0);  // opcional: sin encuestas, sigue
+        else if (archivos[i] === 'data/encuestas.js' || archivos[i] === 'data/exterior.js') cargar(i + 1, 0);  // opcionales: sin ellos, sigue
         else document.body.insertAdjacentHTML('beforeend', `<p style="font:20px sans-serif;padding:30px">No se pudo cargar ${archivos[i]}. Recargá la página (F5).</p>`);
       };
       document.body.appendChild(s);

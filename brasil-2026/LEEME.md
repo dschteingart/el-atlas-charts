@@ -19,7 +19,7 @@ Los `.bat` de vivo abren el mapa en el navegador y dejan una ventana negra que c
 - `←` `→` (o PageUp/PageDown de un clicker): placa anterior / siguiente
 - `G`: índice de placas · `F`: pantalla completa · `T`: cambia la vista (empleo, consumo)
 - En el mapa (en el celular el zoom es instantáneo y con un estado elegido se dibujan solo sus municipios): clic en un estado para acercarse; clic en un municipio para ver sus datos (resultado, cambio vs 2022 o comparación con Brasil). Buscador arriba a la derecha (estados y municipios, sin importar tildes). `Esc` o el botón de arriba a la izquierda vuelven un paso (municipio → estado → Brasil)
-- La barra de navegación y el cursor se ocultan solos a los 2,5 s
+- La barra de navegación es lateral (derecha) y está cerrada: se abre y cierra con la tecla `B` o con la pestaña "☰ barra" del borde derecho (la pestaña y el cursor se ocultan solos a los 2,5 s, así no aparecen al aire)
 
 ### En OBS / vMix
 Lo más simple es capturar la ventana del navegador en pantalla completa (`F`). Si usás fuente de navegador (1920×1080), la URL es la ruta del archivo más la placa:
@@ -50,6 +50,10 @@ El navegador no puede leerlos directo (el TSE no habilita CORS), así que `vivo.
 - Opciones: `python vivo.py --intervalo 20` (consultar más seguido); `--servir` levanta además http://localhost:8026 si alguna vez hace falta.
 - El simulacro escribe el mismo archivo pero marcado: el mapa muestra "SIMULACRO · DATOS FICTICIOS" en grande. Al arrancar el modo real, el archivo del simulacro se borra solo.
 - Boa Esperança do Norte (MT) vota por primera vez en 2026 y no está en la malla del IBGE: sus votos cuentan en MT y en Brasil, pero no se dibuja.
+
+## Sitio público en vivo
+
+**https://dschteingart.github.io/brasil-2026-vivo/** (fuera del índice de El Atlas): mapa 2026, proyección, cómo viene el escrutinio, dónde se mueve el voto y quién votó a quién (en vivo). `EN_VIVO_…bat` corre `vivo.py --publicar`, que cada ~75 s copia los datos al repo `brasil-2026-vivo` (carpeta `~/Documents/el-atlas-worktrees/brasil-2026-vivo`) y lo empuja; una GitHub Action republica el sitio en ~35 s. Para actualizar el código del sitio: `python scripts/armar_sitio_vivo.py --push`.
 
 ## La proyección en vivo (placa 13, `#proyeccion`)
 
@@ -85,7 +89,15 @@ Cruza el balotaje 2022 municipio por municipio con cuatro indicadores: familias 
 
 Mientras corre `EN_VIVO_…bat`, compara cada municipio con al menos 20% de las urnas contadas con lo que votó en la misma vuelta de 2022: cambio de Lula por estado, las ciudades grandes (más de 100 mil electores, al menos 30% contado) donde más sube y más baja, a dónde va el voto (Lula, Flávio contra Jair, el resto, blancos y nulos, participación) y qué factores acompañan el cambio (correlación con Bolsa Família, ingreso, raza, religión, voto a Lula en 2022 y tamaño). El título sale solo: si un factor tiene una relación clara (|r| ≥ 0,3), lo dice; si no, da el cambio promedio.
 
-**Análisis en la consola**: `python analisis_vivo.py` (en otra ventana, mientras vivo.py sigue corriendo) imprime en segundos el cambio por región y por estado, las ciudades que más se mueven, las correlaciones y una regresión con todos los factores juntos (con y sin efectos de región, para separar lo que va junto, como pobreza y religión en el Nordeste). Opciones: `--uf BA` (un estado), `--cand 55` (dónde le va mejor a Caiado; 30 Zema, 14 Renan Santos), `--min-pct 50`, `--turno 2`.
+**Cómo viene el escrutinio (placa 16, uso interno, `#conteo`)**: % escrutado por estado (barras por región, con el total nacional, y a la derecha la participación en lo ya contado contra la de 2022 en ese estado, en naranja si se mueve 3 puntos o más), % escrutado de cada municipio según su ingreso (con el promedio por grupos de ingreso) y "lo que falta contar": cómo votó en 2022 lo ya contado y lo que falta (con su evolución durante la noche) y los estados con más votos por contar. Sirve para saber cuánto engaña el conteo crudo en cada momento.
+
+**Análisis en la consola**: `python analisis_vivo.py` (en otra ventana, mientras vivo.py sigue corriendo) imprime en segundos cómo viene el escrutinio por región y por quintil de ingreso (y cómo votó en 2022 lo que falta contar), el cambio por región y por estado, las ciudades que más se mueven, las correlaciones y una regresión con todos los factores juntos (con y sin efectos de región, para separar lo que va junto, como pobreza y religión en el Nordeste). Opciones: `--uf BA` (un estado), `--cand 55` (dónde le va mejor a Caiado; 30 Zema, 14 Renan Santos), `--min-pct 50`, `--turno 2`.
+
+**De dónde sale la ventaja (placa 17, solo copia local, `#ventaja`)**: cascada con la diferencia de votos entre Lula y Flávio estado por estado, agrupada por región (de la que más le da a Lula a la que menos, el exterior al final) y la barra del total. En vivo muestra abajo el % escrutado de cada estado; los botones de 2022 muestran el resultado final de la 1ª vuelta y del balotaje (`?vista=22-2`).
+
+**Brasileños en el exterior (placa 18, solo copia local, `#exterior`)**: el TSE trata a cada ciudad con consulado como un municipio (186 ciudades, 916.534 electores en 2026); `vivo.py` las baja aparte (`ext` en `data/vivo/2026-N.json`). La placa muestra Argentina (Buenos Aires, Córdoba, Mendoza…) y la diferencia Lula − Flávio en los 21 países con más electores, con la marca de 2022. El país de cada ciudad y los resultados 2022 por ciudad salen de `data/exterior.js` (`python scripts/armar_exterior.py`, datos en `data/raw/exterior/`). La comparación con 2022 va por país porque hay ciudades nuevas que salen de partir otras (Edimburgo, Marsella, Orlando).
+
+La placa 15 y `analisis_vivo.py` suman como factor el % de universitarios (25 años y más, Censo 2022, quinto dato de `data/socio.js`). Ojo al leerlo: en el balotaje 2022, entre municipios de igual ingreso, más universitarios iba con más voto a Lula (+0,42), pero buena parte es el efecto de las grandes ciudades (controlando tamaño, raza y religión baja a +0,15).
 
 ## Datos y fuentes (bajados el 2/10/2026)
 

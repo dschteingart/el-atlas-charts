@@ -130,6 +130,7 @@
 
   /* ================= proyección en vivo ================= */
   // vivo.py escribe data/vivo/2026-<turno>.js con el escrutinio y la proyección (proyeccion.py)
+  const ESPERA_PUB = T('A la espera de los primeros resultados del TSE (desde las 17 h de Brasilia). La página se actualiza sola cada 15 segundos.', 'Waiting for the first TSE results (from 5 p.m. Brasília time). The page refreshes itself every 15 seconds.');
   const vivoDe = v => (window.VIVO && window.VIVO['2026-' + v]) || null;
   const colorCand = n => ((window.Mapa && window.Mapa.COLOR[n]) || '#8A8579');
   const nomCorto = nm => nm.replace('Flávio Bolsonaro', 'Flávio').replace('Ronaldo ', '').replace('Romeu ', '').replace('Augusto ', '');
@@ -170,7 +171,7 @@
     const D = vivoDe(v);
     if (!D) {
       const bat = `EN_VIVO_${v === '1' ? '1ra' : '2da'}_vuelta.bat`;
-      box.innerHTML = `<div class="aviso" style="max-width:1100px">${T(`Esperando datos del TSE. Tiene que estar abierta la ventana de <code>${bat}</code> (o <code>python vivo.py${v === '2' ? ' --turno 2' : ''}</code>); esta placa se actualiza sola cada 15 segundos.`,
+      box.innerHTML = `<div class="aviso" style="max-width:1100px">${window.VIVO_PUBLICO ? ESPERA_PUB : T(`Esperando datos del TSE. Tiene que estar abierta la ventana de <code>${bat}</code> (o <code>python vivo.py${v === '2' ? ' --turno 2' : ''}</code>); esta placa se actualiza sola cada 15 segundos.`,
         `Waiting for TSE data. The <code>${bat}</code> window must be running; this chart refreshes every 15 seconds.`)}</div>`;
       return;
     }
@@ -436,7 +437,7 @@
   function placaSocioVivo(box) {
     const v = turnoHoy(), D = vivoDe(v);
     if (!D) {
-      box.innerHTML = `<div class="aviso" style="max-width:1100px">${T('Esperando datos del TSE (tiene que estar abierta la ventana de EN_VIVO). Esta vista se actualiza sola cada 15 segundos.', 'Waiting for TSE data (the EN_VIVO window must be running). This view refreshes every 15 seconds.')}</div>`;
+      box.innerHTML = `<div class="aviso" style="max-width:1100px">${window.VIVO_PUBLICO ? ESPERA_PUB : T('Esperando datos del TSE (tiene que estar abierta la ventana de EN_VIVO). Esta vista se actualiza sola cada 15 segundos.', 'Waiting for TSE data (the EN_VIVO window must be running). This view refreshes every 15 seconds.')}</div>`;
       return;
     }
     const iL = D.cands.findIndex(c => c.n === '13');
@@ -471,12 +472,25 @@
   /* ================= dónde se mueve el voto (en vivo, solo en la copia local) ================= */
   const MIN_PCT = 20;          // % de urnas contadas para usar un municipio
   const UF_SG = { 11: 'RO', 12: 'AC', 13: 'AM', 14: 'RR', 15: 'PA', 16: 'AP', 17: 'TO', 21: 'MA', 22: 'PI', 23: 'CE', 24: 'RN', 25: 'PB', 26: 'PE', 27: 'AL', 28: 'SE', 29: 'BA', 31: 'MG', 32: 'ES', 33: 'RJ', 35: 'SP', 41: 'PR', 42: 'SC', 43: 'RS', 50: 'MS', 51: 'MT', 52: 'GO', 53: 'DF' };
+  const UF_NOMBRE = { RO: 'Rondônia', AC: 'Acre', AM: 'Amazonas', RR: 'Roraima', PA: 'Pará', AP: 'Amapá', TO: 'Tocantins', MA: 'Maranhão', PI: 'Piauí', CE: 'Ceará', RN: 'Rio Grande do Norte', PB: 'Paraíba', PE: 'Pernambuco', AL: 'Alagoas', SE: 'Sergipe', BA: 'Bahia', MG: 'Minas Gerais', ES: 'Espírito Santo', RJ: T('Río de Janeiro', 'Rio de Janeiro'), SP: 'São Paulo', PR: 'Paraná', SC: 'Santa Catarina', RS: 'Rio Grande do Sul', MS: 'Mato Grosso do Sul', MT: 'Mato Grosso', GO: 'Goiás', DF: 'Distrito Federal' };
+  // tooltip para barras horizontales: la fila bajo el cursor
+  function tipFilas(box, svg, filas, y0, alto, W, html) {
+    const tip = window.Charts.tooltip(box);
+    svg.addEventListener('mousemove', ev => {
+      const pt = window.Charts.svgPoint(svg, ev), i = Math.floor((pt.y - y0) / alto);
+      if (i < 0 || i >= filas.length || filas[i] == null) { tip.hide(); return; }
+      const h = html(filas[i]); if (!h) { tip.hide(); return; }
+      tip.show(h, pt.x, pt.y, W);
+    });
+    svg.addEventListener('mouseleave', () => tip.hide());
+  }
   const FACTORES = [
     { nm: T('Bolsa Família', 'Bolsa Família'), alto: T('hay más Bolsa Família', 'there is more Bolsa Família'), x: f => (f.s ? f.s[0] : null) },
     { nm: T('Ingreso', 'Income'), alto: T('el ingreso es más alto', 'income is higher'), x: f => (f.s && f.s[1] ? Math.log(f.s[1]) : null) },
     { nm: T('% población blanca', '% white population'), alto: T('hay más población blanca', 'more of the population is white'), x: f => (f.s ? f.s[2] : null) },
     { nm: T('% evangélicos', '% evangelicals'), alto: T('hay más evangélicos', 'there are more evangelicals'), x: f => (f.s ? f.s[3] : null) },
-    { nm: T('Voto a Lula en 2022', 'Lula vote in 2022'), alto: T('Lula había sacado más en 2022', 'Lula did better in 2022'), x: f => f.l22 },
+    { nm: T('% universitarios', '% college graduates'), alto: T('hay más universitarios', 'there are more college graduates'), x: f => (f.s && f.s[4] != null ? f.s[4] : null) },
+    { nm: T('Voto a Lula en 2022', 'Lula vote in 2022'), alto: T('había sacado más', 'he had done better'), x: f => f.l22 },
     { nm: T('Tamaño del municipio', 'Municipality size'), alto: T('el municipio es más grande', 'the municipality is bigger'), x: f => Math.log(Math.max(f.apt, 1)) },
   ];
   function datosSwing(v) {
@@ -543,11 +557,12 @@
       el('text', { x: m.l - 12, y: yc + 6, 'text-anchor': 'end', class: 'tick', 'font-size': opts.tamNom || 18, 'font-weight': 600, fill: '#1A1A1A' }, svg, f.nm);
       el('text', { x: x1 + (f.v >= 0 ? 8 : -8), y: yc + 6, 'text-anchor': f.v >= 0 ? 'start' : 'end', class: 'lbl', 'font-size': 17, 'font-weight': 700, fill: f.v >= 0 ? ROJO : AZUL }, svg, opts.fmtVal(f.v));
     });
+    if (opts.tip) tipFilas(box, svg, filas, m.t, alto, W, opts.tip);
   }
   function placaSwing(box, v) {
     const S = datosSwing(v);
     const bat = `EN_VIVO_${v === '1' ? '1ra' : '2da'}_vuelta.bat`;
-    if (!S) { box.innerHTML = `<div class="aviso" style="max-width:1100px">${T(`Esperando datos del TSE. Tiene que estar abierta la ventana de <code>${bat}</code>; esta placa se actualiza sola cada 15 segundos.`, `Waiting for TSE data. The <code>${bat}</code> window must be running; this chart refreshes every 15 seconds.`)}</div>`; return; }
+    if (!S) { box.innerHTML = `<div class="aviso" style="max-width:1100px">${window.VIVO_PUBLICO ? ESPERA_PUB : T(`Esperando datos del TSE. Tiene que estar abierta la ventana de <code>${bat}</code>; esta placa se actualiza sola cada 15 segundos.`, `Waiting for TSE data. The <code>${bat}</code> window must be running; this chart refreshes every 15 seconds.`)}</div>`; return; }
     if (S.filas.length < 30) { box.innerHTML = `<div class="aviso" style="max-width:1100px">${T(`Todavía hay pocos municipios con al menos ${MIN_PCT}% de las urnas contadas (${S.filas.length}). La placa se arma sola apenas haya 30.`, `Too few municipalities with at least ${MIN_PCT}% of ballot boxes counted (${S.filas.length}). The chart builds itself once there are 30.`)}</div>`; return; }
     const F = S.filas;
     // 1) estados
@@ -579,9 +594,431 @@
         <div class="sw-nota">${T('Mismos municipios que en 2022, en puntos. *Sobre votos emitidos y sobre electores.', 'Same municipalities as in 2022, in points. *Of votes cast and of registered voters.')}</div></div>
       <div class="sw-col"><div class="sub-panel sw-h">${T('Qué acompaña al cambio de Lula', 'What goes with Lula\'s change')}</div><div class="sw-graf sw-fac"></div>
         <div class="sw-nota">${T('Correlación entre municipios (ponderada por votos): a la derecha, a Lula le va mejor donde el factor es alto; a la izquierda, peor. Describe dónde se mueve el voto, no por qué.', 'Correlation across municipalities (vote-weighted): right, Lula does better where the factor is high; left, worse. Describes where the vote moves, not why.')}</div></div></div>`;
-    const lim = Math.max(4, Math.ceil(Math.max(...ufs.map(u => Math.abs(u.v))) + 0.5));
-    barrasH(box.querySelector('.sw-uf'), ufs, lim, { l: 52, fmtEje: t => fmtSigno(t, 0), fmtVal: x => fmtSigno(x, 1) });
-    barrasH(box.querySelector('.sw-fac'), correlacionesSwing(S).map(c => ({ nm: c.nm, v: c.r })), 1, { l: 220, tamNom: 19, fmtEje: t => fmtSigno(t, 0), fmtVal: x => fmtSigno(x, 2) });
+    const lim = Math.max(4, Math.ceil(Math.max(...ufs.map(u => Math.abs(u.v))) * 1.2 + 0.8));
+    barrasH(box.querySelector('.sw-uf'), ufs, lim, { l: 52, fmtEje: t => fmtSigno(t, 0), fmtVal: x => fmtSigno(x, 1),
+      tip: u => tipHTML(UF_NOMBRE[u.nm] || u.nm, [
+        { nm: T('Lula, cambio vs 2022', 'Lula, change vs 2022'), val: fmtSigno(u.v, 1) + ' pts', color: u.v >= 0 ? ROJO : AZUL },
+        { nm: T('Flávio vs Jair 2022', 'Flávio vs Jair 2022'), val: u.vf == null ? '–' : fmtSigno(u.vf, 1) + ' pts', color: AZUL }],
+        T(`${num(u.n)} municipios con al menos ${MIN_PCT}% contado`, `${num(u.n)} municipalities with at least ${MIN_PCT}% counted`)) });
+    barrasH(box.querySelector('.sw-fac'), correlacionesSwing(S).map(c => ({ nm: c.nm, v: c.r, n: c.n, alto: c.alto })), 1, { l: 220, tamNom: 19, fmtEje: t => fmtSigno(t, 0), fmtVal: x => fmtSigno(x, 2),
+      tip: c => (c.v == null ? null : tipHTML(c.nm, [{ nm: T('Correlación con el cambio de Lula', 'Correlation with Lula\'s change'), val: fmtSigno(c.v, 2), color: c.v >= 0 ? ROJO : AZUL }],
+        T(`A Lula le va ${c.v >= 0 ? 'mejor' : 'peor'} donde ${c.alto} · ${num(c.n)} municipios`, `Lula does ${c.v >= 0 ? 'better' : 'worse'} where ${c.alto} · ${num(c.n)} municipalities`))) });
+  }
+
+  /* ================= cómo viene el escrutinio (en vivo, uso interno, solo copia local) ================= */
+  function datosConteo(v) {
+    const D = vivoDe(v);
+    if (!D || !window.ELEC) return null;
+    const B = window.ELEC['2022-' + v], iL = B.cands.findIndex(c => c.n === '13'), SO = (window.SOCIO || {}).mun || {};
+    const muns = Object.keys(B.mun).map(ib => {
+      const b = B.mun[ib], r = D.mun[ib];
+      return { ib, f: r ? Math.min(1, (r[5] || 0) / 100) : 0, apt: b[3], val22: b[1], l22: b[0][iL], ing: SO[ib] ? SO[ib][1] : null };
+    });
+    const porUF = {};
+    muns.forEach(m => { (porUF[m.ib.slice(0, 2)] = porUF[m.ib.slice(0, 2)] || []).push(m); });
+    const ufs = Object.entries(UF_SG).map(([c, sg]) => {
+      const ms = porUF[c] || [], u = D.uf[sg];
+      const falta = ms.reduce((a, m) => a + (1 - m.f) * m.val22, 0);
+      const b22 = B.uf[sg], p22 = b22 && b22.apt ? 100 * b22.com / b22.apt : null;
+      const part = u && u.est ? u.part : null;
+      return { c, sg, pct: u ? u.pct || 0 : 0, falta, lf: falta ? 100 * ms.reduce((a, m) => a + (1 - m.f) * m.l22, 0) / falta : null, part, p22, dpart: part != null && p22 != null ? part - p22 : null };
+    });
+    const cont = muns.reduce((a, m) => a + m.f * m.val22, 0), falta = muns.reduce((a, m) => a + (1 - m.f) * m.val22, 0);
+    const l22c = cont ? 100 * muns.reduce((a, m) => a + m.f * m.l22, 0) / cont : null;
+    // cuando lo que falta es menos del 2% de los votos, su composición es ruido: no se informa
+    const l22f = falta > 0.02 * (cont + falta) ? 100 * muns.reduce((a, m) => a + (1 - m.f) * m.l22, 0) / falta : null;
+    const l22n = 100 * B.nac.v[iL] / B.nac.val;
+    const part = D.nac.est ? D.nac.part : null, part22 = 100 * B.nac.com / B.nac.apt;
+    return { D, muns, ufs, l22c, l22f, l22n, falta, part, part22 };
+  }
+  function tituloConteo(v) {
+    const C = datosConteo(v);
+    if (!C || !C.D.nac.pct) return T('Cómo viene el escrutinio', 'How the count is going');
+    if (C.l22f == null || C.D.nac.pct >= 99.5) return T('El escrutinio está prácticamente terminado', 'The count is practically finished');
+    const d = C.l22f - C.l22c;
+    if (d > 2) return T(`Falta contar el Brasil más lulista: ahí Lula sacó ${fmt(C.l22f, 0)}% en 2022`, `The most pro-Lula Brazil is still to be counted: Lula got ${fmt(C.l22f, 0)}% there in 2022`);
+    if (d < -2) return T(`Falta contar el Brasil más bolsonarista: ahí Lula sacó ${fmt(C.l22f, 0)}% en 2022`, `The most pro-Bolsonaro Brazil is still to be counted: Lula got ${fmt(C.l22f, 0)}% there in 2022`);
+    return T('El escrutinio avanza parejo: lo que falta votó parecido a lo ya contado', 'The count is even: what remains voted like what has been counted');
+  }
+  function bajadaConteo(v) {
+    const C = datosConteo(v);
+    if (!C) return '';
+    return T(`${fmt(C.D.nac.pct || 0, 1)}% de las secciones escrutadas. Lo ya contado votó ${fmt(C.l22c, 1)}% a Lula en ${v === '1' ? 'la primera vuelta de ' : 'el balotaje de '}2022; ${C.l22f == null ? 'lo que falta es menos del 2% de los votos' : `lo que falta, ${fmt(C.l22f, 1)}%`} (en todo Brasil: ${fmt(C.l22n, 1)}%).${C.part != null ? ` Participación en lo contado: ${fmt(C.part, 1)}% (2022: ${fmt(C.part22, 1)}%).` : ''}`,
+      `${fmt(C.D.nac.pct || 0, 1)}% of polling stations counted. What has been counted voted ${fmt(C.l22c, 1)}% for Lula in the 2022 ${v === '1' ? 'first round' : 'runoff'}; ${C.l22f == null ? 'less than 2% of the vote remains' : `what remains, ${fmt(C.l22f, 1)}%`} (all of Brazil: ${fmt(C.l22n, 1)}%).${C.part != null ? ` Turnout in the counted part: ${fmt(C.part, 1)}% (2022: ${fmt(C.part22, 1)}%).` : ''}`);
+  }
+  function placaConteo(box, v) {
+    const C = datosConteo(v);
+    const bat = `EN_VIVO_${v === '1' ? '1ra' : '2da'}_vuelta.bat`;
+    if (!C) { box.innerHTML = `<div class="aviso" style="max-width:1100px">${window.VIVO_PUBLICO ? ESPERA_PUB : T(`Esperando datos del TSE. Tiene que estar abierta la ventana de <code>${bat}</code>; esta placa se actualiza sola cada 15 segundos.`, `Waiting for TSE data (<code>${bat}</code> must be running).`)}</div>`; return; }
+    const { el } = window.Charts;
+    const faltan = C.ufs.filter(u => u.falta > 1000).sort((a, b) => b.falta - a.falta).slice(0, 7);
+    const mill = x => (x >= 1e6 ? T(`${fmt(x / 1e6, 1)} millones`, `${fmt(x / 1e6, 1)} million`) : T(`${num(Math.round(x / 1000))} mil`, `${num(Math.round(x / 1000))}k`));
+    box.innerHTML = `<div class="ct-wrap">
+      <div class="sw-col"><div class="sub-panel sw-h ct-h2"><span>${T('% escrutado por estado', '% counted by state')}</span><span>${T('Particip. vs 2022', 'Turnout vs 2022')}</span></div><div class="sw-graf ct-uf"></div></div>
+      <div class="sw-col"><div class="sub-panel sw-h">${T('% escrutado según el ingreso del municipio', '% counted by municipal income')}</div>
+        <div class="so-ley" style="padding-left:70px">${Object.keys(REG_COL).map(r => `<span><i style="background:${REG_COL[r]};border-radius:50%"></i>${REG_NM[r]}</span>`).join('')}<span><i class="ln" style="border-top:3px solid #1A1A1A"></i>${T('promedio', 'average')}</span></div>
+        <div class="sw-graf ct-sc"></div><div class="sw-nota" style="padding-left:70px">${T('Ingreso mensual por persona del hogar (mediana, R$, Censo 2022), escala logarítmica. Cada punto es un municipio; la línea, el promedio de diez grupos con la misma cantidad de electores.', 'Monthly household income per person (median, R$, 2022 Census), log scale. Each dot is a municipality; the line, the average of ten groups with the same number of voters.')}</div></div>
+      <div class="sw-col"><div class="sub-panel sw-h">${T('Cómo votó en 2022 lo contado y lo que falta', 'How the counted and the remaining voted in 2022')}</div>
+        <div class="ct-big"><div><small>${T('Ya contado', 'Counted')}</small><b>${fmt(C.l22c, 1)}%</b></div><div><small>${T('Falta contar', 'Remaining')}</small><b style="color:${C.l22f > C.l22c ? ROJO : AZUL}">${fmt(C.l22f, 1)}%</b></div><div><small>${T('Todo Brasil', 'All Brazil')}</small><b class="g">${fmt(C.l22n, 1)}%</b></div></div>
+        <div class="sw-nota">${T('% de Lula en 2022 (misma vuelta) en lo ya contado y en lo que falta.', 'Lula % in 2022 (same round) in the counted and in the remaining.')}</div>
+        <div class="sw-graf ct-hist"></div>
+        <div class="sub-panel sw-h" style="margin-top:8px">${T('Dónde quedan más votos por contar', 'Where most votes remain')}</div>
+        ${faltan.map(u => `<div class="sw-c"><span class="n">${u.sg} <span>${fmt(u.pct, 0)}% ${T('contado', 'counted')}</span></span><b>${mill(u.falta)}</b><small style="color:${u.lf >= 50 ? ROJO : AZUL}">${u.lf == null ? '' : fmt(u.lf, 0) + '%'}</small></div>`).join('')}
+        <div class="sw-nota">${T('Votos válidos por contar (aproximado, con los de 2022) y % de Lula en 2022 en esa parte.', 'Valid votes still to count (approx., using 2022) and Lula % in 2022 in that part.')}</div></div></div>`;
+
+    // 1) estados
+    const bx = box.querySelector('.ct-uf'), W = bx.offsetWidth, H = bx.offsetHeight, m = { l: 46, r: 118, t: 4, b: 30 };
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H }); bx.appendChild(svg);
+    const X = x => m.l + x / 100 * (W - m.l - m.r), U = C.ufs.slice().sort((a, b) => b.pct - a.pct), alto = (H - m.t - m.b) / U.length;
+    [0, 50, 100].forEach(t => { el('line', { x1: X(t), x2: X(t), y1: m.t, y2: H - m.b, stroke: '#ECE7D8', 'stroke-width': 1.5 }, svg); el('text', { x: X(t), y: H - m.b + 24, class: 'tick', 'text-anchor': 'middle', 'font-size': 17 }, svg, t + '%'); });
+    U.forEach((u, i) => {
+      const yc = m.t + i * alto + alto / 2, h = Math.min(alto * 0.72, 26);
+      el('rect', { x: X(0), y: yc - h / 2, width: Math.max(1, X(Math.min(100, u.pct)) - X(0)), height: h, fill: REG_COL[u.c[0]], rx: 2 }, svg);
+      el('text', { x: m.l - 8, y: yc + 6, 'text-anchor': 'end', class: 'tick', 'font-size': 17, 'font-weight': 600, fill: '#1A1A1A' }, svg, u.sg);
+      el('text', { x: X(u.pct) + 6, y: yc + 6, class: 'lbl', 'font-size': 16, 'font-weight': 700, fill: '#4A4A4A' }, svg, fmt(u.pct, 0) + '%');
+      // participación en lo ya contado, contra la de 2022 en el mismo estado (resaltada si se mueve 3 puntos o más)
+      if (u.dpart != null) el('text', { x: W - 2, y: yc + 6, 'text-anchor': 'end', class: 'lbl', 'font-size': 16, 'font-weight': Math.abs(u.dpart) >= 3 ? 800 : 600, fill: Math.abs(u.dpart) >= 3 ? TERRA : '#8A8579' }, svg, fmtSigno(u.dpart, 1));
+    });
+    tipFilas(bx, svg, U, m.t, alto, W, u => tipHTML(UF_NOMBRE[u.sg] || u.sg, [
+      { nm: T('Escrutado', 'Counted'), val: fmt(u.pct, 1) + '%' },
+      { nm: T('Votos por contar (aprox.)', 'Votes left (approx.)'), val: mill(u.falta) },
+      { nm: T('Lula 2022 en lo que falta', 'Lula 2022 in what remains'), val: u.lf == null ? '–' : fmt(u.lf, 1) + '%', color: ROJO },
+      { nm: T('Participación hoy (2022)', 'Turnout now (2022)'), val: u.part == null ? '–' : `${fmt(u.part, 1)}% (${fmt(u.p22, 1)}%)` }]));
+    const xn = X(C.D.nac.pct || 0);
+    el('line', { x1: xn, x2: xn, y1: m.t, y2: H - m.b, stroke: '#1A1A1A', 'stroke-width': 2, 'stroke-dasharray': '6 5' }, svg);
+    el('text', { x: xn + 4, y: H - m.b - 4, class: 'lbl', 'font-size': 15, 'font-weight': 700, fill: '#1A1A1A' }, svg, T('Brasil', 'Brazil'));
+
+    // 2) ingreso vs % escrutado
+    const sx = box.querySelector('.ct-sc'), W2 = sx.offsetWidth, H2 = sx.offsetHeight, m2 = { l: 70, r: 10, t: 8, b: 36 };
+    const M = C.muns.filter(z => z.ing);
+    const a = Math.log(150), b = Math.log(2700);
+    const X2 = v2 => m2.l + (Math.log(v2) - a) / (b - a) * (W2 - m2.l - m2.r), Y2 = p2 => m2.t + (1 - p2) * (H2 - m2.t - m2.b);
+    const svg2 = el('svg', { viewBox: `0 0 ${W2} ${H2}`, width: W2, height: H2 }); sx.appendChild(svg2);
+    [0, 0.25, 0.5, 0.75, 1].forEach(t => { el('line', { x1: m2.l, x2: W2 - m2.r, y1: Y2(t), y2: Y2(t), stroke: '#ECE7D8', 'stroke-width': 1.5 }, svg2); el('text', { x: m2.l - 12, y: Y2(t) + 7, class: 'tick tick-y', 'font-size': 18 }, svg2, Math.round(t * 100) + '%'); });
+    [250, 500, 1000, 2000].forEach(t => el('text', { x: X2(t), y: H2 - m2.b + 28, class: 'tick', 'text-anchor': 'middle', 'font-size': 18 }, svg2, num(t)));
+    const maxA = Math.max(...M.map(z => z.apt));
+    const g2 = el('g', null, svg2);
+    // un poco de dispersión vertical para que los municipios en 0% y 100% no queden en una sola línea
+    const posM = [];
+    M.slice().sort((p1, p2) => p2.apt - p1.apt).forEach(z => {
+      const jit = (z.f <= 0 || z.f >= 1) ? ((parseInt(z.ib.slice(-3), 10) % 17) - 8) * 0.0025 : 0;
+      const cx = X2(z.ing), cy = Y2(Math.max(-0.02, Math.min(1.02, z.f + jit)));
+      posM.push([cx, cy, z]);
+      el('circle', { cx: cx.toFixed(1), cy: cy.toFixed(1), r: (1.2 + 12 * Math.sqrt(z.apt / maxA)).toFixed(1), fill: REG_COL[z.ib[0]], 'fill-opacity': 0.45 }, g2);
+    });
+    const tip2 = window.Charts.tooltip(sx);
+    svg2.addEventListener('mousemove', ev => {
+      const pt = window.Charts.svgPoint(svg2, ev);
+      let best = null, bd = 16 * 16;
+      posM.forEach(q => { const d2 = (q[0] - pt.x) ** 2 + (q[1] - pt.y) ** 2; if (d2 < bd) { bd = d2; best = q; } });
+      if (!best) { tip2.hide(); return; }
+      const z = best[2], nm = (window.MUN_NOMES || {})[z.ib] || [z.ib, ''];
+      tip2.show(tipHTML(`${nm[0]} <span style="color:#C9C2B2;font-weight:400">(${nm[1]})</span>`, [
+        { nm: T('Escrutado', 'Counted'), val: fmt(100 * z.f, 1) + '%' },
+        { nm: T('Electores', 'Voters'), val: num(z.apt) },
+        { nm: T('Ingreso por persona', 'Income per person'), val: 'R$ ' + num(Math.round(z.ing)) },
+        { nm: T('Lula en 2022', 'Lula in 2022'), val: fmt(100 * z.l22 / z.val22, 1) + '%', color: ROJO }], REG_NM[z.ib[0]]), best[0], best[1], W2);
+    });
+    svg2.addEventListener('mouseleave', () => tip2.hide());
+    const ord = M.slice().sort((p1, p2) => p1.ing - p2.ing), tot = ord.reduce((s2, z) => s2 + z.apt, 0);
+    const grupos = Array.from({ length: 10 }, () => ({ w: 0, f: 0, xs: [] }));
+    let acc = 0;
+    ord.forEach(z => { const g = grupos[Math.min(9, Math.floor((acc + z.apt / 2) / tot * 10))]; acc += z.apt; g.w += z.apt; g.f += z.apt * z.f; g.xs.push(z.ing); });
+    const pts = grupos.filter(g => g.w).map(g => [X2(g.xs[Math.floor(g.xs.length / 2)]), Y2(g.f / g.w)]);
+    el('path', { d: 'M' + pts.map(q => q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join('L'), fill: 'none', stroke: '#FAF8F3', 'stroke-width': 9, 'stroke-linejoin': 'round' }, svg2);
+    el('path', { d: 'M' + pts.map(q => q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join('L'), fill: 'none', stroke: '#1A1A1A', 'stroke-width': 4, 'stroke-linejoin': 'round' }, svg2);
+    pts.forEach(q => el('circle', { cx: q[0], cy: q[1], r: 5, fill: '#1A1A1A' }, svg2));
+
+    // 3) cómo votó lo contado y lo que falta, a medida que avanzó el escrutinio
+    const Hs = ((C.D.proy || {}).hist || []).filter(h => h.l22c != null), Hf = Hs.filter(h => h.l22f != null);
+    const hx = box.querySelector('.ct-hist');
+    if (Hs.length >= 2) {
+      const vals = Hs.map(h => h.l22c).concat(Hf.map(h => h.l22f), [C.l22n]);
+      const y0 = Math.floor((Math.min(...vals) - 1) / 5) * 5, y1 = Math.ceil((Math.max(...vals) + 1) / 5) * 5;
+      dibujarTiempo(hx, {
+        x: [0, 100], y: { min: y0, max: y1, ticks: [y0, (y0 + y1) / 2, y1], fmt: t => fmt(t, 0) + '%' }, gob: false, m: { l: 60, r: 120, t: 8, b: 34 },
+        xticksPos: [0, 50, 100].map(t => ({ t, lbl: t + '%' })), gapFinal: 24,
+        tips: Hs.map(h => h.pct),
+        tip: t => {
+          const h = Hs.find(z => z.pct === t);
+          return { html: tipHTML(T(`Con ${fmt(t, 1)}% escrutado`, `With ${fmt(t, 1)}% counted`), [
+            { nm: T('Lo contado: Lula 2022', 'Counted: Lula 2022'), val: fmt(h.l22c, 1) + '%', color: '#4A4A4A' },
+            { nm: T('Lo que falta: Lula 2022', 'Remaining: Lula 2022'), val: h.l22f == null ? '–' : fmt(h.l22f, 1) + '%', color: ROJO }]),
+            puntos: [{ v: h.l22c, color: '#4A4A4A' }].concat(h.l22f == null ? [] : [{ v: h.l22f, color: ROJO }]) };
+        },
+        capas: [
+          { tipo: 'linea', datos: [{ t: 0, v: C.l22n }, { t: 100, v: C.l22n }], color: '#8A8579', grosor: 2, punteada: true },
+          { tipo: 'linea', datos: Hs.map(h => ({ t: h.pct, v: h.l22c })), color: '#4A4A4A', grosor: 4, etiquetaFinal: [fmt(Hs[Hs.length - 1].l22c, 1) + '%', T('contado', 'counted')], tamFinal: 18 },
+          ...(Hf.length >= 2 ? [{ tipo: 'linea', datos: Hf.map(h => ({ t: h.pct, v: h.l22f })), color: ROJO, grosor: 4, etiquetaFinal: [fmt(Hf[Hf.length - 1].l22f, 1) + '%', T('falta', 'remaining')], tamFinal: 18 }] : []),
+        ],
+      });
+    } else {
+      hx.innerHTML = `<div class="sw-nota" style="padding-top:20px">${T('Acá se va a ver cómo cambia esto a medida que avanza el escrutinio.', 'This will show how it changes as the count advances.')}</div>`;
+    }
+  }
+
+  /* ================= de dónde sale la ventaja: cascada estado por estado (solo copia local) ================= */
+  // vistas: '1' y '2' = 2026 en vivo; '22-1' y '22-2' = resultado final de 2022
+  const esVivoV = v => v === '1' || v === '2';
+  const UF_COD = Object.fromEntries(Object.entries(UF_SG).map(([c, s]) => [s, c]));
+  // votos en millones (1 decimal) o en miles
+  const fmtVotos = x => (Math.abs(x) >= 950000 ? fmt(x / 1e6, 1) + T(' M', 'M') : num(Math.round(x / 1000)) + T(' mil', 'k'));
+  const fmtVotosLargo = x => (Math.abs(x) >= 950000 ? fmt(x / 1e6, 1) + T(' millones', ' million') : num(Math.round(x / 1000)) + T(' mil votos', 'k votes'));
+  function avisoVivo(box, v) {
+    const bat = `EN_VIVO_${v === '1' ? '1ra' : '2da'}_vuelta.bat`;
+    box.innerHTML = `<div class="aviso" style="max-width:1100px">${window.VIVO_PUBLICO ? ESPERA_PUB : T(`Esperando datos del TSE. Tiene que estar abierta la ventana de <code>${bat}</code>; esta placa se actualiza sola cada 15 segundos.`, `Waiting for TSE data (<code>${bat}</code> must be running).`)}</div>`;
+  }
+  function datosCascada(v) {
+    const vivo = esVivoV(v), E = vivo ? vivoDe(v) : (window.ELEC || {})['20' + v];
+    if (!E) return null;
+    const iA = E.cands.findIndex(c => c.n === '13'), iB = E.cands.findIndex(c => c.n === '22');
+    const nomB = vivo ? 'Flávio' : 'Bolsonaro';
+    const filas = [];
+    for (const sg in E.uf) {
+      const u = E.uf[sg];
+      if (!u || !u.val || (sg !== 'ZZ' && !UF_COD[sg])) continue;
+      const a = iA >= 0 ? u.v[iA] || 0 : 0, b = iB >= 0 ? u.v[iB] || 0 : 0;
+      filas.push({ sg, reg: sg === 'ZZ' ? 'ZZ' : UF_COD[sg][0], a, b, d: a - b, pct: vivo ? u.pct || 0 : 100 });
+    }
+    // regiones de la que más le da a Lula a la que más le da al segundo; el exterior al final
+    const net = {};
+    filas.forEach(f => { net[f.reg] = (net[f.reg] || 0) + f.d; });
+    const regs = Object.keys(net).filter(r => r !== 'ZZ').sort((x, y) => net[y] - net[x]).concat(net.ZZ != null ? ['ZZ'] : []);
+    const orden = regs.flatMap(r => filas.filter(f => f.reg === r).sort((x, y) => y.d - x.d));
+    let acc = 0;
+    orden.forEach(f => { f.desde = acc; acc += f.d; f.hasta = acc; });
+    const ne = net['2'] || 0, total = acc;
+    return { E, vivo, nomB, filas: orden, regs: regs.map(r => ({ reg: r, net: net[r] })), total, ne, resto: total - ne, pct: vivo ? E.nac.pct || 0 : 100 };
+  }
+  function tituloCascada(v) {
+    const C = datosCascada(v);
+    if (!C || !C.filas.length) return T('De dónde sale la ventaja: la diferencia de votos estado por estado', 'Where the lead comes from: the vote gap state by state');
+    const quien = x => (x >= 0 ? 'Lula' : C.nomB), verbo = C.vivo && !C.E.final ? T('saca', 'is up by') : T('sacó', 'won by');
+    const M = x => fmtVotosLargo(Math.abs(x));
+    // la unidad del segundo número se omite solo si es la misma que la del primero ("12,6 millones…; Bolsonaro, 10,4")
+    const ambosM = Math.abs(C.ne) >= 950000 && Math.abs(C.resto) >= 950000;
+    if (C.ne * C.resto < 0)
+      return T(`${quien(C.ne)} ${verbo} ${M(C.ne)} de ventaja en el Nordeste; ${quien(C.resto)}, ${ambosM ? M(C.resto).replace(' millones', '') : M(C.resto)} en el resto`,
+        `${quien(C.ne)} ${verbo} ${M(C.ne)} in the Northeast; ${quien(C.resto)}, by ${ambosM ? M(C.resto).replace(' million', '') : M(C.resto)} elsewhere`);
+    return T(`${quien(C.total)} ${verbo} ventaja en el Nordeste (${M(C.ne)}) y también en el resto (${M(C.resto)})`,
+      `${quien(C.total)} leads both in the Northeast (${M(C.ne)}) and elsewhere (${M(C.resto)})`);
+  }
+  function bajadaCascada(v) {
+    const C = datosCascada(v), vivo = esVivoV(v);
+    const nomB = vivo ? 'Flávio Bolsonaro' : 'Jair Bolsonaro';
+    const cuando = vivo ? (C ? (C.pct >= 99.5 ? T(` Con ${fmt(C.pct, 1)}% de las secciones escrutadas.`, ` With ${fmt(C.pct, 1)}% of polling stations counted.`)
+      : T(` Con ${fmt(C.pct, 1)}% escrutado; abajo, el % de cada estado.`, ` With ${fmt(C.pct, 1)}% counted; below, each state's %.`)) : '')
+      : T(` Resultado final ${v === '22-1' ? 'de la primera vuelta' : 'del balotaje'} de 2022.`, ` Final result of the 2022 ${v === '22-1' ? 'first round' : 'runoff'}.`);
+    const simu = C && C.E.simulacro ? T('SIMULACRO, DATOS FICTICIOS. ', 'DRILL, FICTITIOUS DATA. ') : '';
+    return simu + T(`Diferencia de votos entre Lula y ${nomB} en cada estado, sumada de izquierda a derecha (rojo: Lula adelante; azul: ${vivo ? 'Flávio' : 'Bolsonaro'} adelante).${cuando}`,
+      `Vote gap between Lula and ${nomB} in each state, added up from left to right (red: Lula ahead; blue: ${vivo ? 'Flávio' : 'Bolsonaro'} ahead).${cuando}`);
+  }
+  function placaCascada(box, v) {
+    const C = datosCascada(v);
+    if (!C) { avisoVivo(box, v); return; }
+    if (!C.filas.length) { box.innerHTML = `<div class="aviso" style="max-width:1100px">${T('Todavía no hay votos contados.', 'No votes counted yet.')}</div>`; return; }
+    const { el } = window.Charts;
+    const W = box.offsetWidth, H = box.offsetHeight, m = { l: 92, r: 20, t: 58, b: C.vivo ? 74 : 48 };
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H }); box.appendChild(svg);
+    const F = C.filas, nReg = C.regs.length;
+    // ancho: barras de los estados + la del total, con un hueco extra entre regiones
+    const hueco = 26, paso = (W - m.l - m.r - hueco * nReg) / (F.length + 1.4), anchoB = paso * 0.74;
+    let x = m.l;
+    F.forEach((f, i) => { if (i && f.reg !== F[i - 1].reg) x += hueco; f.x = x; x += paso; });
+    const xTot = x + hueco + paso * 0.2;
+    const ys = F.flatMap(f => [f.desde, f.hasta]).concat([0]);
+    const lo = Math.min(...ys), hi = Math.max(...ys), rango = Math.max(hi - lo, 1);
+    const pasoY = [0.25e6, 0.5e6, 1e6, 2e6, 2.5e6, 5e6, 10e6].find(p => rango / p <= 7) || 20e6;
+    const y0 = Math.floor(lo / pasoY) * pasoY, y1 = Math.ceil(hi / pasoY) * pasoY;
+    const Y = val => m.t + (1 - (val - y0) / (y1 - y0 || 1)) * (H - m.t - m.b);
+    for (let t = y0; t <= y1 + 1; t += pasoY) {
+      el('line', { x1: m.l - 10, x2: W - m.r, y1: Y(t), y2: Y(t), stroke: t === 0 ? '#8A8579' : C.grid, 'stroke-width': t === 0 ? 2 : 1.5 }, svg);
+      el('text', { x: m.l - 16, y: Y(t) + 7, class: 'tick tick-y', 'text-anchor': 'end', 'font-size': 19 }, svg, (t > 0 ? '+' : '') + fmt(t / 1e6, pasoY < 1e6 ? 1 : 0));
+    }
+    el('text', { x: m.l - 16, y: m.t - 44, class: 'tick', 'text-anchor': 'end', style: 'font-size:17px' }, svg, T('millones', 'million'));
+    el('text', { x: m.l - 16, y: m.t - 26, class: 'tick', 'text-anchor': 'end', style: 'font-size:17px' }, svg, T('de votos', 'votes'));
+    const colorD = d => (d >= 0 ? ROJO : AZUL);
+    // regiones: nombre y saldo arriba del grupo
+    C.regs.forEach(r => {
+      const fs = F.filter(f => f.reg === r.reg), xa = fs[0].x, xb = fs[fs.length - 1].x + anchoB;
+      const top = Math.min(...fs.map(f => Math.min(Y(f.desde), Y(f.hasta))));
+      const nm = r.reg === 'ZZ' ? T('Exterior', 'Abroad') : REG_NM[r.reg];
+      const yl = Math.max(22, top - 34);
+      el('line', { x1: xa, x2: xb, y1: yl + 8, y2: yl + 8, stroke: r.reg === 'ZZ' ? '#8A8579' : REG_COL[r.reg], 'stroke-width': 4 }, svg);
+      const lbl = el('text', { x: (xa + xb) / 2, y: yl, 'text-anchor': 'middle', class: 'lbl', 'font-size': fs.length > 2 ? 19 : 15, 'font-weight': 700, fill: '#1A1A1A' }, svg, nm.toUpperCase());
+      if (fs.length > 2 || Math.abs(r.net) >= 1e5) el('tspan', { fill: colorD(r.net), dx: 8 }, lbl, (r.net >= 0 ? 'Lula +' : C.nomB + ' +') + fmtVotos(Math.abs(r.net)));
+    });
+    // barras de los estados, con conectores
+    F.forEach((f, i) => {
+      const ya = Y(Math.max(f.desde, f.hasta)), yb = Y(Math.min(f.desde, f.hasta));
+      el('rect', { x: f.x, y: ya, width: anchoB, height: Math.max(1.5, yb - ya), fill: colorD(f.d), rx: 2 }, svg);
+      if (i < F.length - 1) el('line', { x1: f.x + anchoB, x2: F[i + 1].x, y1: Y(f.hasta), y2: Y(f.hasta), stroke: '#8A8579', 'stroke-width': 1.2, 'stroke-dasharray': '3 3' }, svg);
+      if (Math.abs(f.d) >= Math.max(1.2e5, (y1 - y0) * 0.035))
+        el('text', { x: f.x + anchoB / 2, y: f.d >= 0 ? ya - 7 : yb + 19, 'text-anchor': 'middle', class: 'lbl', 'font-size': 15, 'font-weight': 700, fill: colorD(f.d) }, svg, fmtVotos(Math.abs(f.d)));
+      const yE = H - m.b + 26;
+      el('text', { x: f.x + anchoB / 2, y: yE, 'text-anchor': 'middle', class: 'tick', style: `font-size:${f.sg === 'ZZ' ? 17 : 21}px;font-weight:700;fill:#1A1A1A` }, svg, f.sg === 'ZZ' ? T('EXT', 'ABR') : f.sg);
+      // % escrutado de cada estado, solo mientras falta contar
+      if (C.vivo && f.pct < 99.5) el('text', { x: f.x + anchoB / 2, y: yE + 22, 'text-anchor': 'middle', class: 'tick', style: `font-size:15px;font-weight:700;fill:${TERRA}` }, svg, fmt(f.pct, 0) + '%');
+    });
+    // total
+    const yT0 = Y(0), yT1 = Y(C.total);
+    el('line', { x1: F[F.length - 1].x + anchoB, x2: xTot, y1: yT1, y2: yT1, stroke: '#8A8579', 'stroke-width': 1.2, 'stroke-dasharray': '3 3' }, svg);
+    el('rect', { x: xTot, y: Math.min(yT0, yT1), width: anchoB * 1.25, height: Math.max(2, Math.abs(yT1 - yT0)), fill: colorD(C.total), rx: 2 }, svg);
+    el('rect', { x: xTot, y: Math.min(yT0, yT1), width: anchoB * 1.25, height: Math.max(2, Math.abs(yT1 - yT0)), fill: 'none', stroke: '#1A1A1A', 'stroke-width': 2, rx: 2 }, svg);
+    const tTot = el('text', { x: xTot + anchoB * 0.62, y: C.total >= 0 ? yT1 - 30 : yT1 + 22, 'text-anchor': 'middle', class: 'lbl', 'font-size': 17, 'font-weight': 800, fill: colorD(C.total) }, svg, C.total >= 0 ? 'Lula' : C.nomB);
+    el('tspan', { x: xTot + anchoB * 0.62, dy: 19 }, tTot, '+' + fmtVotos(Math.abs(C.total)));
+    el('text', { x: xTot + anchoB * 0.62, y: H - m.b + 26, 'text-anchor': 'middle', class: 'tick', style: 'font-size:21px;font-weight:800;fill:#1A1A1A' }, svg, T('Brasil', 'Brazil'));
+    // tooltip por columna
+    const tip = window.Charts.tooltip(box);
+    svg.addEventListener('mousemove', ev => {
+      const pt = window.Charts.svgPoint(svg, ev);
+      const f = F.find(z => pt.x >= z.x - (paso - anchoB) / 2 && pt.x <= z.x + anchoB + (paso - anchoB) / 2);
+      if (!f) { tip.hide(); return; }
+      tip.show(tipHTML(f.sg === 'ZZ' ? T('Exterior', 'Abroad') : UF_NOMBRE[f.sg] || f.sg, [
+        { nm: 'Lula', val: num(f.a), color: ROJO },
+        { nm: C.nomB, val: num(f.b), color: AZUL },
+        { nm: T('Diferencia', 'Gap'), val: (f.d >= 0 ? 'Lula +' : C.nomB + ' +') + num(Math.abs(f.d)) },
+        { nm: T('Acumulado', 'Running total'), val: (f.hasta >= 0 ? 'Lula +' : C.nomB + ' +') + fmtVotos(Math.abs(f.hasta)) }],
+        C.vivo ? T(`${fmt(f.pct, 1)}% escrutado`, `${fmt(f.pct, 1)}% counted`) : ''), pt.x, pt.y, W);
+    });
+    svg.addEventListener('mouseleave', () => tip.hide());
+  }
+
+  /* ================= brasileños en el exterior (solo copia local) ================= */
+  // data/exterior.js (scripts/armar_exterior.py): ciudad -> país y resultados 2022; vivo.py deja el escrutinio en D.ext
+  function datosExterior(v) {
+    const X = window.EXTERIOR;
+    if (!X) return null;
+    const vivo = esVivoV(v), t = vivo ? v : v.slice(-1), k22 = t === '1' ? 3 : 4;
+    const D = vivo ? vivoDe(v) : null, ext = (D && D.ext) || {};
+    const iA = D ? D.cands.findIndex(c => c.n === '13') : -1, iB = D ? D.cands.findIndex(c => c.n === '22') : -1;
+    const hay = vivo && Object.values(ext).some(r => r[1] > 0);   // ya hay votos del exterior en 2026
+    const paises = {}, ciud = [];
+    for (const cd in X.ciud) {
+      const f = X.ciud[cd], r22 = f[k22], r = ext[cd];
+      const z = { cd, nm: f[0], p: f[1], te: f[2] || 0,
+        a22: r22 ? r22[0] : 0, b22: r22 ? r22[1] : 0, val22: r22 ? r22[2] : 0, apt22: r22 ? r22[4] : 0, com22: r22 ? r22[5] : 0 };
+      if (hay) Object.assign(z, { a: r ? r[0][iA] || 0 : 0, b: r ? r[0][iB] || 0 : 0, val: r ? r[1] : 0, com: r ? r[4] : 0, pct: r ? r[5] : 0, apt: r ? r[3] : z.te });
+      else Object.assign(z, { a: z.a22, b: z.b22, val: z.val22, com: z.com22, pct: 100, apt: z.apt22 });
+      ciud.push(z);
+      const P = paises[f[1]] = paises[f[1]] || { p: f[1], nm: (X.paises[f[1]] || [f[1], f[1]])[EN ? 1 : 0], te: 0, a: 0, b: 0, val: 0, a22: 0, b22: 0, val22: 0, contado: 0, ciud: [] };
+      ['te', 'a', 'b', 'val', 'a22', 'b22', 'val22'].forEach(k => { P[k] += z[k]; });
+      P.contado += z.te * (z.pct || 0) / 100;
+      P.ciud.push(z);
+    }
+    const suma = (zs, k) => zs.reduce((s, z) => s + (z[k] || 0), 0);
+    const tot = { a: suma(ciud, 'a'), b: suma(ciud, 'b'), val: suma(ciud, 'val'), a22: suma(ciud, 'a22'), b22: suma(ciud, 'b22'), val22: suma(ciud, 'val22'),
+      te: suma(ciud, 'te'), apt22: suma(ciud, 'apt22'), com22: suma(ciud, 'com22'), com: suma(ciud, 'com'),
+      // electores de lo ya contado (aprox.: electores de cada ciudad por su % escrutado)
+      estc: hay ? ciud.reduce((s, z) => s + (z.apt || 0) * (z.pct || 0) / 100, 0) : suma(ciud, 'apt22') };
+    tot.pct = hay ? (D.uf && D.uf.ZZ ? D.uf.ZZ.pct || 0 : 100 * ciud.reduce((s, z) => s + z.te * (z.pct || 0) / 100, 0) / (tot.te || 1)) : 100;
+    const lista = Object.values(paises);
+    lista.forEach(P => { P.pct = P.te ? 100 * P.contado / P.te : 0; });
+    return { vivo, hay, t, D, paises, lista, ciud, tot, nomB: vivo ? 'Flávio' : 'Bolsonaro', ar: paises.AR };
+  }
+  const pctDe = (x, val) => (val ? 100 * x / val : null);
+  function tituloExterior(v) {
+    const X = datosExterior(v);
+    if (!X) return T('Brasileños en el exterior', 'Brazilians abroad');
+    if (X.vivo && !X.hay) return T(`Todavía no hay votos del exterior: así votaron en ${X.t === '1' ? 'la 1ª vuelta' : 'el balotaje'} de 2022`, `No votes from abroad yet: this is how they voted in the 2022 ${X.t === '1' ? 'first round' : 'runoff'}`);
+    const usarAR = X.ar && X.ar.val >= 100, Z = usarAR ? X.ar : X.tot;
+    const pa = pctDe(Z.a, Z.val), pb = pctDe(Z.b, Z.val), lid = pa >= pb ? ['Lula', pa, X.nomB, pb] : [X.nomB, pb, 'Lula', pa];
+    if (X.hay) return usarAR
+      ? T(`Entre los brasileños en Argentina, ${lid[0]} saca ${fmt(lid[1], 0)}% y ${lid[2]} ${fmt(lid[3], 0)}%`, `Among Brazilians in Argentina, ${lid[0]} has ${fmt(lid[1], 0)}% and ${lid[2]} ${fmt(lid[3], 0)}%`)
+      : T(`Entre los brasileños en el exterior, ${lid[0]} saca ${fmt(lid[1], 0)}% y ${lid[2]} ${fmt(lid[3], 0)}%`, `Among Brazilians abroad, ${lid[0]} has ${fmt(lid[1], 0)}% and ${lid[2]} ${fmt(lid[3], 0)}%`);
+    return T(`En ${X.t === '1' ? 'la 1ª vuelta' : 'el balotaje'} 2022, ${lid[0]} sacó ${fmt(lid[1], 0)}% entre los brasileños en Argentina`, `In the 2022 ${X.t === '1' ? 'first round' : 'runoff'}, ${lid[0]} got ${fmt(lid[1], 0)}% among Brazilians in Argentina`);
+  }
+  function bajadaExterior(v) {
+    const X = datosExterior(v);
+    if (!X) return '';
+    const nb = X.vivo ? 'Flávio Bolsonaro' : 'Jair Bolsonaro';
+    if (X.hay) return T(`% de los votos válidos. Hay ${num(X.tot.te)} brasileños empadronados en ${X.lista.filter(P => P.te).length} países (cada consulado vota como si fuera un municipio). ${fmt(X.tot.pct, 1)}% escrutado en el exterior. La marca negra es 2022 (Lula contra Jair Bolsonaro).`,
+      `% of valid votes. There are ${num(X.tot.te)} Brazilians registered in ${X.lista.filter(P => P.te).length} countries (each consulate votes as if it were a municipality). ${fmt(X.tot.pct, 1)}% counted abroad. The black mark is 2022 (Lula vs Jair Bolsonaro).`);
+    return T(`% de los votos válidos de los brasileños que votaron en el exterior en ${X.t === '1' ? 'la primera vuelta' : 'el balotaje'} de 2022 (${num(X.tot.apt22)} empadronados; cada consulado vota como si fuera un municipio). A la derecha, la diferencia entre Lula y ${nb} en los países con más electores.`,
+      `% of valid votes of Brazilians who voted abroad in the 2022 ${X.t === '1' ? 'first round' : 'runoff'} (${num(X.tot.apt22)} registered; each consulate votes as if it were a municipality). Right: the gap between Lula and ${nb} in the countries with the most voters.`);
+  }
+  function placaExterior(box, v) {
+    const X = datosExterior(v);
+    if (!X) { box.innerHTML = `<div class="aviso">${T('Faltan los datos (data/exterior.js).', 'Data missing (data/exterior.js).')}</div>`; return; }
+    if (X.vivo && !X.D) { avisoVivo(box, v); return; }
+    const { el } = window.Charts;
+    const cmp = X.hay;   // con 2026 en vivo se compara contra 2022
+    const nb22 = 'Bolsonaro';
+    // bloque de dos barras (Lula / segundo) con su 2022
+    const duo = (Z, grande) => {
+      const pa = pctDe(Z.a, Z.val), pb = pctDe(Z.b, Z.val), pa22 = pctDe(Z.a22, Z.val22), pb22 = pctDe(Z.b22, Z.val22);
+      if (pa == null) return `<div class="sw-nota">${T('Todavía sin votos contados.', 'No votes counted yet.')}</div>`;
+      const fila = (nm, p, p22, col) => `<div class="ex-f${grande ? ' g' : ''}"><span>${nm}</span><b style="color:${col}">${fmt(p, 1)}%</b>
+        <div class="ex-bar"><i style="width:${p}%;background:${col}"></i>${cmp && p22 != null ? `<em style="left:${p22}%"></em>` : ''}</div></div>`;
+      return fila('Lula', pa, pa22, ROJO) + fila(X.nomB, pb, pb22, AZUL) +
+        (cmp && pa22 != null ? `<div class="sw-nota">${T(`2022: Lula ${fmt(pa22, 1)}% · ${nb22} ${fmt(pb22, 1)}% (la marca negra)`, `2022: Lula ${fmt(pa22, 1)}% · ${nb22} ${fmt(pb22, 1)}% (black mark)`)}</div>` : '');
+    };
+    const AR = X.ar;
+    const arCiud = AR ? AR.ciud.slice().sort((p, q) => q.te - p.te) : [];
+    const chicas = arCiud.filter(z => z.te < 200), grandes = arCiud.filter(z => z.te >= 200);
+    const filasAR = grandes.map(z => [z.nm, z]).concat(chicas.length ? [[chicas.map(z => z.nm).join(T(' y ', ' and ')), {
+      te: chicas.reduce((s, z) => s + z.te, 0), a: chicas.reduce((s, z) => s + z.a, 0), b: chicas.reduce((s, z) => s + z.b, 0), val: chicas.reduce((s, z) => s + z.val, 0),
+      a22: chicas.reduce((s, z) => s + z.a22, 0), val22: chicas.reduce((s, z) => s + z.val22, 0), pct: null }]] : []);
+    const filaCiudad = ([nm, z]) => {
+      const pa = pctDe(z.a, z.val), pb = pctDe(z.b, z.val), pa22 = pctDe(z.a22, z.val22);
+      const pocos = z.val > 0 && z.val < 50;
+      return `<div class="ex-c"><span class="n">${nm} <span>${num(z.te)}</span></span>${pocos ? `<small class="pocos">${num(z.val)} ${T('votos válidos', 'valid votes')}</small>`
+        : `<b style="color:${ROJO}">${pa == null ? '–' : fmt(pa, 0) + '%'}</b><b style="color:${AZUL}">${pb == null ? '–' : fmt(pb, 0) + '%'}</b>`}<small>${cmp && pa22 != null && z.val22 >= 50 ? fmt(pa22, 0) + '%' : ''}</small></div>`;
+    };
+    const part = X.tot.estc ? 100 * X.tot.com / X.tot.estc : null, part22 = X.tot.apt22 ? 100 * X.tot.com22 / X.tot.apt22 : null;
+    // países: los de más electores (2026), Argentina siempre
+    let P = X.lista.slice().sort((p, q) => q.te - p.te).slice(0, 21);
+    if (AR && !P.includes(AR)) P[P.length - 1] = AR;
+    P = P.map(p => ({ ...p, d: p.val ? 100 * (p.a - p.b) / p.val : null, d22: p.val22 ? 100 * (p.a22 - p.b22) / p.val22 : null }))
+      .sort((p, q) => (q.d == null ? -999 : q.d) - (p.d == null ? -999 : p.d));
+    const badge = X.D && X.D.simulacro ? ` <span class="badge simu">${T('Simulacro', 'Drill')}</span>` : '';
+    box.innerHTML = `<div class="ex-wrap">
+      <div class="sw-col">
+        <div class="sub-panel sw-h">${T('Brasileños en Argentina', 'Brazilians in Argentina')}${badge}</div>
+        ${AR ? duo(AR, true) : ''}
+        <div class="ex-c ex-cab"><span class="n">${T('Ciudad · electores', 'City · voters')}</span><b>Lula</b><b>${X.nomB}</b><small>${cmp ? T('Lula 2022', 'Lula 2022') : ''}</small></div>
+        ${filasAR.map(filaCiudad).join('')}
+        <div class="sub-panel sw-h" style="margin-top:22px">${T('Todo el exterior', 'All voters abroad')}</div>
+        ${duo(X.tot, false)}
+        <div class="sw-nota">${X.vivo ? T(`${num(X.tot.te)} electores · ${fmt(X.tot.pct, 1)}% escrutado`, `${num(X.tot.te)} voters · ${fmt(X.tot.pct, 1)}% counted`) + (part != null && X.tot.estc > 1000 ? T(` · votó ${fmt(part, 0)}% (2022: ${fmt(part22, 0)}%)`, ` · turnout ${fmt(part, 0)}% (2022: ${fmt(part22, 0)}%)`) : '')
+          : T(`${num(X.tot.apt22)} electores · votó ${fmt(part22, 0)}%`, `${num(X.tot.apt22)} voters · turnout ${fmt(part22, 0)}%`)}</div>
+      </div>
+      <div class="sw-col"><div class="sub-panel sw-h">${T(`Diferencia entre Lula y ${X.nomB} por país (puntos)`, `Gap between Lula and ${X.nomB} by country (points)`)}</div>
+        <div class="sw-graf ex-paises"></div>
+        <div class="sw-nota">${T(`Los ${P.length} países con más electores. A la derecha, el número de electores${cmp ? '; la marca negra, la diferencia entre Lula y Jair Bolsonaro en 2022; más claras, las barras de países con votos sin contar' : ''}.`, `The ${P.length} countries with the most voters. Right: number of voters${cmp ? '; black mark: the gap between Lula and Jair Bolsonaro in 2022; lighter bars: countries with votes still uncounted' : ''}.`)}</div></div></div>`;
+    const bx = box.querySelector('.ex-paises'), W = bx.offsetWidth, H = bx.offsetHeight, m = { l: 230, r: 96, t: 4, b: 56 };
+    const svg = el('svg', { viewBox: `0 0 ${W} ${H}`, width: W, height: H }); bx.appendChild(svg);
+    const lim = Math.min(100, Math.max(20, Math.ceil(Math.max(...P.flatMap(p => [Math.abs(p.d || 0), cmp ? Math.abs(p.d22 || 0) : 0])) / 10) * 10));
+    const Xs = d => m.l + (d + lim) / (2 * lim) * (W - m.l - m.r), alto = (H - m.t - m.b) / P.length;
+    [-lim, -lim / 2, 0, lim / 2, lim].forEach(t => {
+      el('line', { x1: Xs(t), x2: Xs(t), y1: m.t, y2: H - m.b, stroke: t === 0 ? '#B3AC9C' : C.grid, 'stroke-width': t === 0 ? 2 : 1.5 }, svg);
+      el('text', { x: Xs(t), y: H - m.b + 26, class: 'tick', 'text-anchor': 'middle', 'font-size': 17 }, svg, fmtSigno(t, 0));
+    });
+    el('text', { x: Xs(lim / 2), y: H - 4, 'text-anchor': 'middle', class: 'lbl', 'font-size': 16, 'font-weight': 700, fill: ROJO }, svg, T('gana Lula →', 'Lula ahead →'));
+    el('text', { x: Xs(-lim / 2), y: H - 4, 'text-anchor': 'middle', class: 'lbl', 'font-size': 16, 'font-weight': 700, fill: AZUL }, svg, T(`← gana ${X.nomB}`, `← ${X.nomB} ahead`));
+    P.forEach((p, i) => {
+      const y = m.t + i * alto, yc = y + alto / 2, h = Math.min(alto * 0.7, 24), esAR = p.p === 'AR';
+      if (esAR) el('rect', { x: 0, y: y + 1, width: W, height: alto - 2, fill: '#F1E4D2', rx: 3 }, svg);
+      el('text', { x: m.l - 12, y: yc + 7, 'text-anchor': 'end', class: 'tick', style: `font-size:21px;font-weight:${esAR ? 800 : 600};fill:#1A1A1A` }, svg, p.nm);
+      el('text', { x: W - 4, y: yc + 6, 'text-anchor': 'end', class: 'tick', style: 'font-size:18px' }, svg, num(p.te));
+      if (p.d == null) { el('text', { x: Xs(0) + 8, y: yc + 6, class: 'tick', style: 'font-size:17px' }, svg, T('sin votos contados', 'no votes counted')); return; }
+      const x0 = Xs(0), x1 = Xs(Math.max(-lim, Math.min(lim, p.d)));
+      el('rect', { x: Math.min(x0, x1), y: yc - h / 2, width: Math.max(1.5, Math.abs(x1 - x0)), height: h, fill: p.d >= 0 ? ROJO : AZUL, rx: 2, 'fill-opacity': X.vivo && p.pct < 99.5 ? 0.55 : 1 }, svg);
+      let xl = x1;
+      if (cmp && p.d22 != null) {
+        const xm = Xs(Math.max(-lim, Math.min(lim, p.d22)));
+        el('line', { x1: xm, x2: xm, y1: yc - h / 2 - 4, y2: yc + h / 2 + 4, stroke: '#1A1A1A', 'stroke-width': 3 }, svg);
+        xl = p.d >= 0 ? Math.max(x1, xm) : Math.min(x1, xm);   // la etiqueta va más allá de la marca si la marca queda afuera
+      }
+      const dr = Math.round(p.d);
+      el('text', { x: xl + (p.d >= 0 ? 8 : -8), y: yc + 6, 'text-anchor': p.d >= 0 ? 'start' : 'end', class: 'lbl', 'font-size': 17, 'font-weight': 700, fill: p.d >= 0 ? ROJO : AZUL }, svg, dr === 0 ? '0' : fmtSigno(dr, 0));
+    });
+    tipFilas(bx, svg, P, m.t, alto, W, p => tipHTML(p.nm, [
+      { nm: 'Lula', val: p.val ? fmt(100 * p.a / p.val, 1) + '%' : '–', color: ROJO },
+      { nm: X.nomB, val: p.val ? fmt(100 * p.b / p.val, 1) + '%' : '–', color: AZUL },
+      ...(cmp ? [{ nm: T(`2022: Lula / ${nb22}`, `2022: Lula / ${nb22}`), val: p.val22 ? `${fmt(100 * p.a22 / p.val22, 0)}% / ${fmt(100 * p.b22 / p.val22, 0)}%` : '–' }] : []),
+      { nm: T('Votos válidos', 'Valid votes'), val: num(p.val) }],
+      `${num(p.te)} ${T('electores', 'voters')}${X.vivo ? ' · ' + fmt(p.pct, 0) + T('% escrutado', '% counted') : ''} · ${p.ciud.map(z => z.nm).join(', ')}`));
   }
 
   /* ================= placas ================= */
@@ -1057,6 +1494,61 @@
       },
       render(box, vista) { placaSwing(box, vista); },
     },
+    {
+      // uso interno, solo en la copia local: dónde viene más rápido el escrutinio y qué falta contar
+      id: 'conteo', kicker: window.VIVO_PUBLICO ? T('Escrutinio · en vivo', 'Count · live') : T('Escrutinio · uso interno', 'Count · internal'), corto: T('Cómo viene el escrutinio', 'How the count is going'), vivo: true,
+      vistas: [
+        { id: '1', nm: T('1ª vuelta', '1st round'), titulo: () => tituloConteo('1'), bajada: () => bajadaConteo('1') },
+        { id: '2', nm: T('2ª vuelta', '2nd round'), titulo: () => tituloConteo('2'), bajada: () => bajadaConteo('2') },
+      ],
+      fuente: () => T('<b>Fuente:</b> TSE (escrutinio en vivo: % de secciones escrutadas por estado y municipio; resultados 2022 por municipio); IBGE, Censo 2022. "Falta contar" supone que cada municipio tiene por delante la parte de sus votos de 2022 que todavía no se escrutó.',
+        '<b>Source:</b> TSE (live count and 2022 results by municipality); IBGE, 2022 Census. "Remaining" assumes each municipality still has ahead the share of its 2022 votes not yet counted.'),
+      datos: v => {
+        const C = datosConteo(v), nm = ib => (window.MUN_NOMES || {})[ib] || [ib, ''];
+        return {
+          archivo: T(`escrutinio-${v}v`, `count-${v}`),
+          cols: [T('codigo_ibge', 'ibge_code'), T('municipio', 'municipality'), 'uf', T('pct_escrutado', 'pct_counted'), T('electores_2022', 'voters_2022'), T('ingreso_mediano', 'median_income'), 'lula_2022_pct'],
+          filas: C ? C.muns.map(z => [z.ib, nm(z.ib)[0], nm(z.ib)[1], Math.round(z.f * 1000) / 10, z.apt, z.ing, Math.round(10000 * z.l22 / z.val22) / 100]) : [],
+        };
+      },
+      render(box, vista) { placaConteo(box, vista); },
+    },
+    {
+      // solo en la copia local: de dónde sale la ventaja, estado por estado (2026 en vivo y 2022)
+      id: 'ventaja', kicker: T('Elecciones', 'Elections'), corto: T('De dónde sale la ventaja', 'Where the lead comes from'), soloLocal: true,
+      vistas: [
+        { id: '1', nm: T('1ª vuelta 2026', '2026 1st round'), vivo: true, turno: () => '1', titulo: () => tituloCascada('1'), bajada: () => bajadaCascada('1') },
+        { id: '2', nm: T('Balotaje 2026', '2026 runoff'), vivo: true, turno: () => '2', titulo: () => tituloCascada('2'), bajada: () => bajadaCascada('2') },
+        { id: '22-1', nm: T('1ª vuelta 2022', '2022 1st round'), titulo: () => tituloCascada('22-1'), bajada: () => bajadaCascada('22-1') },
+        { id: '22-2', nm: T('Balotaje 2022', '2022 runoff'), titulo: () => tituloCascada('22-2'), bajada: () => bajadaCascada('22-2') },
+      ],
+      fuente: v => T(`<b>Fuente:</b> TSE (${esVivoV(v) ? 'escrutinio en vivo por estado' : 'resultados 2022 por estado, datos abiertos'}). Diferencia de votos válidos entre Lula y ${esVivoV(v) ? 'Flávio' : 'Jair'} Bolsonaro; las regiones van de la que más le da a Lula a la que menos, y el exterior al final.`,
+        `<b>Source:</b> TSE (${esVivoV(v) ? 'live count by state' : '2022 results by state, open data'}). Gap in valid votes between Lula and ${esVivoV(v) ? 'Flávio' : 'Jair'} Bolsonaro; regions go from the most to the least favorable to Lula, with voters abroad last.`),
+      datos: v => {
+        const Cd = datosCascada(v);
+        return { archivo: T(`ventaja-por-estado-${v}`, `lead-by-state-${v}`), cols: ['uf', T('region', 'region'), 'lula', esVivoV(v) ? 'flavio' : 'bolsonaro', T('diferencia', 'gap'), T('acumulado', 'running_total'), T('pct_escrutado', 'pct_counted')],
+          filas: Cd ? Cd.filas.map(f => [f.sg, f.reg === 'ZZ' ? T('Exterior', 'Abroad') : REG_NM[f.reg], f.a, f.b, f.d, f.hasta, f.pct]) : [] };
+      },
+      render(box, vista) { placaCascada(box, vista); },
+    },
+    {
+      // solo en la copia local: cómo votan los brasileños en el exterior, con foco en Argentina
+      id: 'exterior', kicker: T('Elecciones', 'Elections'), corto: T('Brasileños en el exterior', 'Brazilians abroad'), soloLocal: true,
+      vistas: [
+        { id: '1', nm: T('1ª vuelta 2026', '2026 1st round'), vivo: true, turno: () => '1', titulo: () => tituloExterior('1'), bajada: () => bajadaExterior('1') },
+        { id: '2', nm: T('Balotaje 2026', '2026 runoff'), vivo: true, turno: () => '2', titulo: () => tituloExterior('2'), bajada: () => bajadaExterior('2') },
+        { id: '22-1', nm: T('1ª vuelta 2022', '2022 1st round'), titulo: () => tituloExterior('22-1'), bajada: () => bajadaExterior('22-1') },
+        { id: '22-2', nm: T('Balotaje 2022', '2022 runoff'), titulo: () => tituloExterior('22-2'), bajada: () => bajadaExterior('22-2') },
+      ],
+      fuente: () => T('<b>Fuente:</b> TSE (escrutinio en vivo de las secciones del exterior y resultados 2022 por ciudad, datos abiertos). El TSE trata a cada ciudad con consulado como un municipio; el país lo agregamos nosotros. Hay ciudades nuevas que salen de partir otras (Edimburgo, Marsella, Orlando): por eso la comparación con 2022 va por país.',
+        '<b>Source:</b> TSE (live count of polling stations abroad and 2022 results by city, open data). The TSE treats each consulate city as a municipality; we added the country. Some cities are new splits of others (Edinburgh, Marseille, Orlando), so the comparison with 2022 is by country.'),
+      datos: v => {
+        const Xd = datosExterior(v);
+        return { archivo: T(`brasilenos-en-el-exterior-${v}`, `brazilians-abroad-${v}`), cols: [T('codigo_tse', 'tse_code'), T('ciudad', 'city'), T('pais', 'country'), T('electores_2026', 'voters_2026'), 'lula', Xd && Xd.vivo ? 'flavio' : 'bolsonaro', T('validos', 'valid'), T('pct_escrutado', 'pct_counted'), 'lula_2022', 'bolsonaro_2022', T('validos_2022', 'valid_2022')],
+          filas: Xd ? Xd.ciud.map(z => [z.cd, z.nm, Xd.paises[z.p].nm, z.te, z.a, z.b, z.val, z.pct, z.a22, z.b22, z.val22]) : [] };
+      },
+      render(box, vista) { placaExterior(box, vista); },
+    },
   ];
 
   /* ================= montaje ================= */
@@ -1070,8 +1562,15 @@
   // ?modo=web | ?modo=stream fuerzan uno u otro (p. ej. para ensayar la versión web en local)
   const MODO_WEB = !modoPNG && (params.get('modo') ? params.get('modo') === 'web' : EN_LA_WEB);
   let actual = -1, vistaDe = {};
-  if (MODO_WEB || modoPNG) {
-    for (let i = PLACAS.length - 1; i >= 0; i--) if (PLACAS[i].vivo) PLACAS.splice(i, 1);
+  // sitio público en vivo (window.VIVO_PUBLICO, lo arma scripts/armar_sitio_vivo.py): solo las placas en vivo
+  const VIVO_PUBLICO = !!window.VIVO_PUBLICO && !modoPNG;
+  if (VIVO_PUBLICO) {
+    const orden = ['mapa', 'proyeccion', 'conteo', 'swing', 'sociedad'];
+    const quedan = orden.map(id => PLACAS.find(p => p.id === id)).filter(Boolean);
+    PLACAS.splice(0, PLACAS.length, ...quedan);
+    vistaDe.sociedad = 'vivo';
+  } else if (MODO_WEB || modoPNG) {
+    for (let i = PLACAS.length - 1; i >= 0; i--) if (PLACAS[i].vivo || PLACAS[i].soloLocal) PLACAS.splice(i, 1);
     PLACAS.forEach(p => { if (p.vistas) p.vistas = p.vistas.filter(v => !v.vivo); });
   }
   let timerVivo = null, firmaVivo = '';
@@ -1165,7 +1664,7 @@
     const i = PLACAS.findIndex(p => p.id === h);
     if (i >= 0 && q.get('vista')) vistaDe[PLACAS[i].id] = q.get('vista');
     // sin placa en el link: en la web va la portada; en la copia local (streaming), la primera placa
-    return i >= 0 ? i : MODO_WEB ? -1 : 0;
+    return i >= 0 ? i : MODO_WEB && !VIVO_PUBLICO ? -1 : 0;
   }
 
   /* ---------- portada (versión web): el índice de gráficos, como el de cada entrega de El Atlas ---------- */
@@ -1182,7 +1681,7 @@
     p.innerHTML = `<div class="wrap-idx">
       <header>
         <div class="top-bar">
-          <div class="brand"><a class="atlas-home brand-em" href="../" title="${T('Inicio de El Atlas', 'The Atlas home')}">${MARCA.f1}</a> · <span class="brand-topic">${T('Elecciones Brasil', 'Brazil Elections')}</span></div>
+          <div class="brand"><a class="atlas-home brand-em" href="${window.VIVO_PUBLICO ? 'https://dschteingart.github.io/el-atlas-charts/' : '../'}" title="${T('Inicio de El Atlas', 'The Atlas home')}">${MARCA.f1}</a> · <span class="brand-topic">${T('Elecciones Brasil', 'Brazil Elections')}</span></div>
           <div class="atlas-top-right">
             <a class="atlas-top-sub" href="${SUBS[EN ? 'en' : 'es']}" target="_blank" rel="noopener">${T('Suscribite gratis', 'Subscribe for free')} →</a>
             <div class="lang-toggle"><button data-lang="es"${EN ? '' : ' class="active"'}>ES</button><button data-lang="en"${EN ? ' class="active"' : ''}>EN</button></div>
@@ -1278,7 +1777,7 @@
   function armarChromeAtlas() {
     const top = document.createElement('header'); top.id = 'atlas-top';
     top.innerHTML = `<div class="top-bar">
-        <div class="brand"><a class="atlas-home brand-em" href="../" title="${T('Inicio de El Atlas', 'The Atlas home')}">${MARCA.f1}</a> · <a class="atlas-home brand-topic" href="#" data-indice>${T('Elecciones Brasil', 'Brazil Elections')}</a></div>
+        <div class="brand"><a class="atlas-home brand-em" href="${window.VIVO_PUBLICO ? 'https://dschteingart.github.io/el-atlas-charts/' : '../'}" title="${T('Inicio de El Atlas', 'The Atlas home')}">${MARCA.f1}</a> · <a class="atlas-home brand-topic" href="#" data-indice>${T('Elecciones Brasil', 'Brazil Elections')}</a></div>
         <div class="atlas-top-right">
           <a class="atlas-top-sub" href="${SUBS[EN ? 'en' : 'es']}" target="_blank" rel="noopener">${T('Suscribite gratis', 'Subscribe for free')} →</a>
           <div class="lang-toggle"><button data-lang="es"${EN ? '' : ' class="active"'}>ES</button><button data-lang="en"${EN ? ' class="active"' : ''}>EN</button></div>
@@ -1295,7 +1794,10 @@
     pie.querySelector('[data-dl="csv"]').addEventListener('click', descargarCSV);
     const bp = pie.querySelector('[data-dl="png"]'); bp.addEventListener('click', () => descargarPNG(bp));
     pie.querySelectorAll('[data-dir]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); if (!a.classList.contains('is-off')) ir(actual + +a.dataset.dir); }));
-    document.querySelectorAll('[data-indice]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); irPortada(); }));
+    document.querySelectorAll('[data-indice]').forEach(a => a.addEventListener('click', e => {
+      e.preventDefault();
+      if (VIVO_PUBLICO) document.getElementById('indice')?.classList.add('on'); else irPortada();
+    }));
   }
   function actualizarNavAtlas() {
     const pie = document.getElementById('atlas-pie'); if (!pie) return;
@@ -1310,9 +1812,10 @@
     if (lang === 'en') q.set('lang', 'en'); else q.delete('lang');
     location.href = location.pathname + (q.toString() ? '?' + q : '') + location.hash;
   }
+  let alternarNav = null;
   function armarNav() {
     if (modoPNG) return;
-    if (MODO_WEB) { armarChromeAtlas(); armarPortada(); }
+    if (MODO_WEB) { armarChromeAtlas(); if (!VIVO_PUBLICO) armarPortada(); }
     const nav = document.createElement('div'); nav.id = 'nav';
     if (MODO_WEB) nav.style.display = 'none';
     const casa = document.createElement('a'); casa.className = 'casa'; casa.href = '../'; casa.textContent = MARCA.f1; casa.title = T('Volver a El Atlas', 'Back to The Atlas');
@@ -1327,7 +1830,7 @@
     sep();
     const bc = document.createElement('button'); bc.className = 'dl'; bc.textContent = T('Descargar datos (CSV)', 'Download data (CSV)'); bc.onclick = descargarCSV; nav.appendChild(bc);
     const bp = document.createElement('button'); bp.className = 'dl'; bp.textContent = T('Descargar PNG', 'Download PNG'); bp.onclick = () => descargarPNG(bp); nav.appendChild(bp);
-    if (!MODO_WEB) { const ay = document.createElement('span'); ay.className = 'ayuda'; ay.textContent = T('G índice · F pantalla completa · T vista', 'G index · F full screen · T view'); nav.appendChild(ay); }
+    if (!MODO_WEB) { const ay = document.createElement('span'); ay.className = 'ayuda'; ay.textContent = T('B barra · G índice · F pantalla completa · T vista', 'B bar · G index · F full screen · T view'); nav.appendChild(ay); }
     document.body.appendChild(nav);
     const ind = document.createElement('div'); ind.id = 'indice';
     ind.innerHTML = `<button class="cerrar" aria-label="${T('Cerrar', 'Close')}">×</button><h2>${T('Elecciones Brasil · todos los gráficos', 'Brazil Elections · all charts')}</h2><div class="g">` + PLACAS.map((p, k) =>
@@ -1338,10 +1841,23 @@
     });
     document.body.appendChild(ind);
     if (!MODO_WEB) {
+      // streaming: barra lateral a la derecha, cerrada por defecto (no aparece sola al mover el mouse, así no
+      // tapa la placa al aire). Se abre y cierra con la pestaña del borde derecho o con la tecla B. La pestaña
+      // y el cursor se esconden solos a los 2,5 s sin mover el mouse.
+      nav.classList.add('lateral');
+      const tab = document.createElement('button'); tab.id = 'pestana'; tab.textContent = T('☰ barra', '☰ bar');
+      tab.title = T('Mostrar u ocultar la barra (tecla B)', 'Show or hide the bar (B key)');
+      const alternar = abrir => {
+        const a = abrir != null ? abrir : !nav.classList.contains('abierta');
+        nav.classList.toggle('abierta', a); document.body.classList.toggle('nav-abierta', a);
+      };
+      tab.addEventListener('click', () => alternar());
+      document.body.appendChild(tab);
+      alternarNav = alternar;
       let tm = null;
       const mostrar = () => {
-        nav.classList.remove('oculto'); document.body.classList.remove('cursor-oculto');
-        clearTimeout(tm); tm = setTimeout(() => { nav.classList.add('oculto'); document.body.classList.add('cursor-oculto'); }, 2500);
+        tab.classList.remove('oculto'); document.body.classList.remove('cursor-oculto');
+        clearTimeout(tm); tm = setTimeout(() => { if (!nav.classList.contains('abierta')) tab.classList.add('oculto'); document.body.classList.add('cursor-oculto'); }, 2500);
       };
       addEventListener('mousemove', mostrar); addEventListener('touchstart', mostrar, { passive: true }); mostrar();
     }
@@ -1374,6 +1890,7 @@
     else if (['ArrowLeft', 'PageUp'].includes(k)) { e.preventDefault(); ir(actual - 1); }
     else if (k === 'Home') ir(0);
     else if (k === 'End') ir(PLACAS.length - 1);
+    else if ((k === 'b' || k === 'B') && alternarNav) alternarNav();
     else if (k === 'g' || k === 'G') document.getElementById('indice')?.classList.toggle('on');
     else if (k === 'Escape') document.getElementById('indice')?.classList.remove('on');
     else if (k === 'f' || k === 'F') { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); }

@@ -12,7 +12,7 @@
   // En la web (GitHub Pages) el escrutinio 2026 no se puede leer (lo hace vivo.py en la copia local):
   // ahí los botones 2026 quedan deshabilitados "a la espera de resultados".
   const EN_LA_WEB = /^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-  const VIVO_OK = !EN_LA_WEB;
+  const VIVO_OK = !EN_LA_WEB || !!window.VIVO_PUBLICO;   // en el sitio público en vivo, el escrutinio sí se lee
   // pantallas táctiles (celular, tablet): zoom sin animación, que con miles de polígonos se traba
   const LIGERO = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
 
@@ -49,7 +49,7 @@
   const SG2COD = Object.fromEntries(Object.entries(UF).map(([c, v]) => [v[0], c]));
   const ORDEN_2026 = ['13', '22', '55', '30', '14', '70', '27', '21', '16', '80', '35', '28', '29'];
 
-  const st = { elec: '2022-1', nivel: 'uf', modo: 'ganador', cand: '13', foco: null, mun: null };
+  const st = { elec: window.VIVO_PUBLICO ? '2026-1' : '2022-1', nivel: 'uf', modo: 'ganador', cand: '13', foco: null, mun: null };
   const nomMun = ib => (window.MUN_NOMES || {})[ib] || null;   // [nombre, sigla del estado]
   const vivo = {};          // id -> datos 2026 cargados
   let estadoVivo = {};      // id -> 'ok' | 'sin-servidor' | 'esperando'
@@ -63,7 +63,9 @@
   }
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const rampGanador = (col, share) => mix(BG, col, 0.24 + 0.76 * clamp((share - 0.38) / 0.42, 0, 1));
-  const rampCand = (col, share) => mix('#F1EDE2', col, clamp(share / 0.85, 0, 1) ** 0.9);
+  // % de un candidato: la escala va de 0 al máximo de ese candidato (si no, los chicos quedan del color del fondo)
+  let escCand = 0.85;
+  const rampCand = (col, share, max = escCand) => mix('#F1EDE2', col, clamp(share / max, 0, 1) ** 0.9);
   function rampDelta(n, d) { // d en puntos porcentuales
     const pos = colorDe(n), neg = n === '13' ? COLOR['22'] : n === '22' ? COLOR['13'] : '#6E6A60';
     const t = clamp(Math.abs(d) / 15, 0, 1) ** 0.85;
@@ -97,7 +99,7 @@
     }
     if (st.modo === 'cand') {
       const s = share(D, fila, st.cand);
-      return s == null ? SIN : rampCand(colorDe(st.cand), s);
+      return s == null ? SIN : rampCand(colorDe(st.cand), s, escCand);
     }
     if (st.modo === 'delta') {
       const s = share(D, fila, st.cand), B = baseDelta(), s0 = filaPrev ? share(B, filaPrev, st.cand) : null;
@@ -197,6 +199,14 @@
     if (!raiz) return;
     const D = datos(st.elec), B = baseDelta();
     const verMun = st.nivel === 'mun' || st.foco;
+    escCand = 0.85;
+    if (st.modo === 'cand' && D) {
+      // tope de la escala: el percentil 98 del candidato en lo que se ve (redondeado a 5 puntos)
+      const xs = [];
+      if (verMun) { for (const ib in D.mun) { if (st.foco && ib.slice(0, 2) !== st.foco) continue; const x = share(D, filaMun(D, ib), st.cand); if (x != null) xs.push(x); } }
+      else { for (const c in UF) { const x = share(D, filaUF(D, UF[c][0]), st.cand); if (x != null) xs.push(x); } }
+      if (xs.length) { xs.sort((a, b) => a - b); escCand = Math.min(0.9, Math.max(0.05, Math.ceil(xs[Math.floor(0.98 * (xs.length - 1))] / 0.05) * 0.05)); }
+    }
     cache.gMun.style.display = verMun ? '' : 'none';
     // con zoom a un estado se dibujan solo sus municipios; el resto del país va con los polígonos
     // de estado atenuados (27 en vez de 5.570: mucho más liviano, sobre todo en el celular)
@@ -429,7 +439,7 @@
         `<div class="ejes"><span>${ejes[0]}</span><span>${ejes[1]}</span><span>${ejes[2]}</span></div>`;
     } else if (st.modo === 'cand') {
       const c = D.cands.find(k => k.n === st.cand);
-      L.innerHTML = `<div class="ctrl-lbl">${T('% de votos válidos', '% of valid votes')} · ${c ? c.nm : ''}</div><div class="rampa">${[0, .15, .3, .45, .6, .75, .9].map(s => `<i style="background:${rampCand(colorDe(st.cand), s)}"></i>`).join('')}</div><div class="ejes"><span>0%</span><span>45%</span><span>90%</span></div>`;
+      L.innerHTML = `<div class="ctrl-lbl">${T('% de votos válidos', '% of valid votes')} · ${c ? c.nm : ''}</div><div class="rampa">${[0, 1, 2, 3, 4, 5, 6].map(k => `<i style="background:${rampCand(colorDe(st.cand), k / 6 * escCand, escCand)}"></i>`).join('')}</div><div class="ejes"><span>0%</span><span>${fmt(50 * escCand, 0)}%</span><span>${fmt(100 * escCand, 0)}%+</span></div>`;
     } else {
       const c = D.cands.find(k => k.n === st.cand);
       L.innerHTML = `<div class="ctrl-lbl">${c ? c.nm : ''}: ${T('cambio vs 2022 (puntos)', 'change vs 2022 (points)')}</div><div class="rampa">${[-15, -10, -5, 0, 5, 10, 15].map(d => `<i style="background:${rampDelta(st.cand, d)}"></i>`).join('')}</div><div class="ejes"><span>−15</span><span>0</span><span>+15</span></div>`;

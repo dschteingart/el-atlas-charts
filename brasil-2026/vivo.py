@@ -26,7 +26,7 @@ En cada ciclo también calcula una PROYECCIÓN del resultado final (proyeccion.p
 el voto respecto de 2022 en los municipios ya contados y lo estima para los que faltan. Se ve en la
 placa "Proyección" (index.html#proyeccion). Prueba y márgenes de error: scripts/probar_proyeccion.py.
 """
-import argparse, json, os, random, ssl, sys, threading, time, urllib.request, urllib.error
+import argparse, json, os, random, shutil, ssl, subprocess, sys, threading, time, urllib.request, urllib.error
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -105,6 +105,8 @@ def leer_u(d):
         # el TSE calcula el % de cada candidato sobre 'vvc' (válidos + votos de candidaturas anuladas)
         'val': num(v.get('vvc')) or num(v.get('vv')), 'bra': num(v.get('vb')), 'nul': num(v.get('tvn')),
         'apt': num(e.get('te')), 'com': num(e.get('c')), 'pct': pct(s.get('pst')),
+        # electores de las secciones ya escrutadas y participación en ellas (comparecencia / esos electores)
+        'est': num(e.get('est')), 'part': pct(e.get('pc')),
         'hora': f"{d.get('dg', '')} {d.get('hg', '')}".strip(),
     }
     return votos, info, tot
@@ -117,6 +119,7 @@ class Escrutinio:
         self.cfg = None          # municipios: tse -> (uf, ibge)
         self.st_mun = {}         # tse -> secciones escrutadas la última vez
         self.mun = {}            # ibge -> fila
+        self.ext = {}            # ciudades del exterior: código TSE -> fila (placa "exterior")
         self.uf = {}
         self.nac = None
         self.cands = []          # orden fijo [(n, nombre, partido)]
@@ -185,7 +188,7 @@ class Escrutinio:
                     self.uf[uf.upper()] = self.fila(v, t)
             cambiaron = []
             for uf, ab in ex.map(uf_ab, UFS):
-                if not ab or uf == 'zz':
+                if not ab:
                     continue
                 for m in ab.get('abr', []):
                     if m.get('tpabr') != 'mun':
@@ -204,11 +207,15 @@ class Escrutinio:
                     if not dm:
                         continue
                     ib = self.cfg.get(cd, ('', ''))[1]
-                    if not ib:
+                    if not ib and uf != 'zz':
                         continue
                     v, _, t = leer_u(dm)
                     f = self.fila(v, t)
-                    self.mun[ib] = [f['v'], f['val'], f['bra'] + f['nul'], f['apt'], f['com'], f['pct']]
+                    fila = [f['v'], f['val'], f['bra'] + f['nul'], f['apt'], f['com'], f['pct']]
+                    if uf == 'zz':  # ciudades del exterior (cada consulado vota como un municipio): van aparte
+                        self.ext[cd] = fila
+                    else:
+                        self.mun[ib] = fila
                     self.st_mun[cd] = st
         log(f"{tot['hora']} TSE · {tot['pct']:.2f}% escrutado · {len(cambiaron)} municipios actualizados")
         return True
@@ -222,7 +229,7 @@ class Escrutinio:
             'fuente': ('SIMULACRO: datos FICTICIOS de ensayo, armados con los resultados municipales de 2022.' if simulacro
                        else 'TSE, divulgación oficial de resultados (resultados.tse.jus.br).'),
             'cands': [{'n': n, 'nm': nm, 'p': p} for n, nm, p in self.cands],
-            'nac': self.nac, 'uf': self.uf, 'mun': self.mun, 'proy': self.proyectar(simulacro),
+            'nac': self.nac, 'uf': self.uf, 'mun': self.mun, 'ext': self.ext, 'proy': self.proyectar(simulacro),
             'final': self.nac.get('pct', 0) >= 100, 'actualizado': self.nac.get('hora', ''),
             'consultado': datetime.now().strftime('%d/%m/%Y %H:%M:%S'), 'simulacro': simulacro,
         }
@@ -241,6 +248,46 @@ class Escrutinio:
                     time.sleep(0.2)
 
 
+class Publicador:
+    """Sube los datos al sitio público en vivo (repo de GitHub Pages, ver scripts/armar_sitio_vivo.py):
+    copia data/vivo/2026-<turno>.js/.json al repo, rehace su único commit y lo empuja. Corre en segundo
+    plano y como mucho cada `cada` segundos, para no frenar la lectura del TSE (GitHub tarda ~1 min en publicar)."""
+
+    def __init__(self, repo, cada=75):
+        self.repo, self.cada = repo, cada
+        self.ultimo, self.ocupado = 0.0, False
+        self.ok = os.path.isdir(os.path.join(repo, '.git'))
+        if not self.ok:
+            log(f'aviso: no encuentro el repo del sitio en vivo ({repo}); no se publica online')
+
+    def git(self, *args):
+        return subprocess.run(['git', *args], cwd=self.repo, capture_output=True, text=True, timeout=120)
+
+    def publicar(self, turno):
+        if not self.ok or self.ocupado or time.time() - self.ultimo < self.cada:
+            return
+        self.ocupado, self.ultimo = True, time.time()
+
+        def tarea():
+            try:
+                dest = os.path.join(self.repo, 'data', 'vivo')
+                os.makedirs(dest, exist_ok=True)
+                for ext in ('js', 'json'):
+                    shutil.copyfile(os.path.join(SALIDA, f'2026-{turno}.{ext}'), os.path.join(dest, f'2026-{turno}.{ext}'))
+                self.git('add', '-A')
+                c = self.git('commit', '-q', '--amend', '-m', f'datos en vivo {datetime.now():%H:%M:%S}')
+                p = self.git('push', '-q', '-f', 'origin', 'HEAD:main')
+                if p.returncode == 0:
+                    log('publicado online (aparece en ~1 minuto)')
+                else:
+                    log('aviso: no pude publicar online:', (p.stderr or c.stderr or '').strip()[:200])
+            except Exception as ex:
+                log('aviso: no pude publicar online:', repr(ex))
+            finally:
+                self.ocupado = False
+        threading.Thread(target=tarea, daemon=True).start()
+
+
 class Simulacro(Escrutinio):
     """Escrutinio FICTICIO para ensayar: parte de los resultados 2022 por
     municipio, les cambia los nombres y les mete ruido, y va 'abriendo urnas'."""
@@ -254,7 +301,7 @@ class Simulacro(Escrutinio):
                 k = linea.split("'")[1]
                 base[k] = json.loads(linea.split(' = ', 1)[1].rstrip(';'))
         self.b = base[f'2022-{turno}']
-        mapa = {'13': '13', '22': '22', '15': '55', '12': '30', '44': '14', '30': '70'}
+        mapa = {'13': '13', '22': '22', '15': '55', '12': '30', '44': '14', '30': '70', '14': '28'}  # sin números repetidos
         self.cands = [(mapa.get(c['n'], c['n']), NOMBRES.get(mapa.get(c['n'], c['n']), c['nm']), '')
                       for c in self.b['cands']]
         self.prog = {ib: 0.0 for ib in self.b['mun']}
@@ -272,6 +319,15 @@ class Simulacro(Escrutinio):
         self.arranca = {ib: demora.get(reg[ib], 1) + random.randint(0, 2) for ib in self.b['mun']}
         self.n_ciclo = 0
         self.t0 = time.time()
+        try:  # exterior: ciudades con resultados 2022 (data/exterior.js), Lula -> segundo con ruido
+            txt = open(os.path.join(RAIZ, 'data', 'exterior.js'), encoding='utf-8').read()
+            ciud = json.loads(txt[txt.index('window.EXTERIOR = ') + 18:].strip().rstrip(';'))['ciud']
+            k = 3 if turno == 1 else 4
+            self.b_ext = {cd: f[k] for cd, f in ciud.items() if f[k] and f[2]}
+        except (OSError, ValueError):
+            self.b_ext = {}
+        self.prog_ext = {cd: 0.0 for cd in self.b_ext}
+        self.ruido_ext = {cd: random.uniform(-0.02, 0.10) for cd in self.b_ext}
 
     def ciclo(self):
         # avanza: capitales y ciudades grandes primero, el resto después (Nordeste y Norte arrancan más tarde)
@@ -300,20 +356,46 @@ class Simulacro(Escrutinio):
             val = sum(vv)
             self.mun[ib] = [vv, val, int(row[2] * p), row[3], int(row[4] * p), round(100 * p, 2)]
             uf = UF_COD.get(ib[:2], ib[:2])
-            u = ufs.setdefault(uf, [[0] * len(v), 0, 0, 0, 0])
+            u = ufs.setdefault(uf, [[0] * len(v), 0, 0, 0, 0, 0])
             for i, x in enumerate(vv):
                 u[0][i] += x
                 nac[i] += x
-            u[1] += val; u[2] += int(row[2] * p); u[3] += row[3]; u[4] += int(row[4] * p)
+            u[1] += val; u[2] += int(row[2] * p); u[3] += row[3]; u[4] += int(row[4] * p); u[5] += row[3] * p
         apt_tot = sum(r[3] for r in self.b['mun'].values())
         com_tot = sum(r[4] for r in self.mun.values())
         done = sum(r[4] for r in self.b['mun'].values())
         p_nac = round(100 * com_tot / done, 2) if done else 0
         hora = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+        est_tot = sum(self.b['mun'][ib][3] * self.prog[ib] for ib in self.mun)
         self.nac = {'v': nac, 'val': sum(nac), 'bra': 0, 'nul': sum(r[2] for r in self.mun.values()),
-                    'apt': apt_tot, 'com': com_tot, 'pct': p_nac, 'hora': hora}
+                    'apt': apt_tot, 'com': com_tot, 'pct': p_nac, 'hora': hora,
+                    'est': int(est_tot), 'part': round(100 * com_tot / est_tot, 2) if est_tot else 0}
         self.uf = {uf: {'v': u[0], 'val': u[1], 'bra': 0, 'nul': u[2], 'apt': u[3], 'com': u[4],
-                        'pct': round(100 * u[4] / max(1, u[3] * 0.8), 2)} for uf, u in ufs.items()}
+                        'pct': min(100.0, round(100 * u[5] / max(1, u[3]), 2)), 'est': int(u[5]),
+                        'part': round(100 * u[4] / u[5], 2) if u[5] else 0} for uf, u in ufs.items()}
+        # exterior: arranca en el tercer ciclo; las ciudades se cuentan de a saltos
+        self.ext = {}
+        zz = [[0] * len(self.cands), 0, 0, 0, 0, 0]
+        for cd, (l, b, val, bn, apt, com) in self.b_ext.items():
+            if self.n_ciclo >= 3 and self.prog_ext[cd] < 1 and random.random() < 0.3:
+                self.prog_ext[cd] = min(1.0, self.prog_ext[cd] + random.choice([0.25, 0.5, 1.0]))
+            p = self.prog_ext[cd]
+            zz[3] += apt
+            if p <= 0:
+                continue
+            mov = int(l * self.ruido_ext[cd])
+            vv = [0] * len(self.cands)
+            vv[0], vv[1] = int((l - mov) * p), int((b + mov) * p)
+            if len(vv) > 2:
+                vv[2] = int((val - l - b) * p)
+            self.ext[cd] = [vv, sum(vv), int(bn * p), apt, int(com * p), round(100 * p, 2)]
+            for i, x in enumerate(vv):
+                zz[0][i] += x
+            zz[1] += sum(vv); zz[2] += int(bn * p); zz[4] += int(com * p); zz[5] += apt * p
+        if zz[1]:
+            self.uf['ZZ'] = {'v': zz[0], 'val': zz[1], 'bra': 0, 'nul': zz[2], 'apt': zz[3], 'com': zz[4],
+                             'pct': round(100 * zz[5] / max(1, zz[3]), 2), 'est': int(zz[5]),
+                             'part': round(100 * zz[4] / zz[5], 2) if zz[5] else 0}
         log(f'SIMULACRO · {p_nac:.1f}% escrutado')
         return True
 
@@ -379,6 +461,8 @@ def main():
     ap.add_argument('--simulacro', action='store_true', help='escrutinio ficticio para ensayar')
     ap.add_argument('--servir', action='store_true', help='además servir la carpeta en http://localhost:PUERTO')
     ap.add_argument('--solo-servir', action='store_true', help='no consultar al TSE, solo servir la carpeta')
+    ap.add_argument('--publicar', nargs='?', const=os.path.join(os.path.expanduser('~'), 'Documents', 'el-atlas-worktrees', 'brasil-2026-vivo'),
+                    default=None, help='además subir los datos al sitio público en vivo (repo de GitHub; por defecto ~/Documents/el-atlas-worktrees/brasil-2026-vivo)')
     a = ap.parse_args()
     if not a.simulacro and not a.solo_servir:
         # que un archivo de ensayo viejo no quede a la vista cuando arranca el modo real
@@ -398,12 +482,17 @@ def main():
         while True:
             time.sleep(3600)
     esc = Simulacro(a.turno) if a.simulacro else Escrutinio(a.turno)
+    pub = Publicador(a.publicar) if a.publicar else None
+    if pub and pub.ok:
+        log('Publicando online también: https://dschteingart.github.io/brasil-2026-vivo/')
     if a.simulacro:
         log('MODO SIMULACRO: los números son FICTICIOS. No usar al aire como resultados.')
     while True:
         try:
             if esc.ciclo():
                 esc.guardar(simulacro=a.simulacro)
+                if pub:
+                    pub.publicar(a.turno)
         except KeyboardInterrupt:
             raise
         except Exception as ex:

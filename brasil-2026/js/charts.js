@@ -48,8 +48,17 @@
       show(html, x, y, W) {
         t.innerHTML = html; t.classList.add('on');
         const w = t.offsetWidth, h = t.offsetHeight;
-        let left = x + 26; if (left + w > W - 4) left = x - w - 26;
-        let top = y - h / 2; if (top < 0) top = 0;
+        // límites: el lienzo entero (no solo el recuadro del gráfico), para que el tooltip nunca quede afuera
+        let minL = -Infinity, maxR = W - 4, minT = 0, maxB = Infinity;
+        const esc = document.getElementById('escenario');
+        if (esc && esc.contains(box)) {
+          const rb = box.getBoundingClientRect(), re = esc.getBoundingClientRect(), k = rb.width / (box.offsetWidth || 1) || 1;
+          minL = (re.left - rb.left) / k + 6; maxR = (re.right - rb.left) / k - 6;
+          minT = (re.top - rb.top) / k + 6; maxB = (re.bottom - rb.top) / k - 6;
+        }
+        let left = x + 26 + w <= maxR ? x + 26 : x - w - 26;   // a la derecha del cursor si entra; si no, a la izquierda
+        left = Math.max(minL, Math.min(maxR - w, left));
+        const top = Math.max(minT, Math.min(maxB - h, y - h / 2));
         t.style.left = left + 'px'; t.style.top = top + 'px';
       },
       hide() { t.classList.remove('on'); },

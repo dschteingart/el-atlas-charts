@@ -79,7 +79,7 @@ def main():
         if a.uf and UF.get(ib[:2]) != a.uf.upper():
             continue
         v26, v22 = np.array(r[0], float), np.array(b[0], float)
-        s = SO.get(ib, [None] * 4)
+        s = (SO.get(ib) or []) + [None] * 5
         filas.append(dict(
             ib=ib, nombre=nombres.get(ib, [ib, ''])[0], uf=UF.get(ib[:2], '?'), region=REG.get(ib[0], '?'),
             pct=r[5], val=r[1], apt=b[3],
@@ -87,8 +87,25 @@ def main():
             jair22=100 * v22[J0] / b[1], flavio26=100 * v26[F] / r[1],
             resto22=100 * (b[1] - v22[L0] - v22[J0]) / b[1], resto26=100 * (r[1] - v26[L] - v26[F]) / r[1],
             cand=(100 * v26[c26.index(a.cand)] / r[1]) if a.cand and a.cand in c26 else np.nan,
-            bf=s[0], ingreso=np.log(s[1]) if s[1] else np.nan, blancos=s[2], evang=s[3]))
+            bf=s[0], ingreso=np.log(s[1]) if s[1] else np.nan, blancos=s[2], evang=s[3], univ=s[4]))
     T = pd.DataFrame(filas)
+    # escrutinio: qué tan avanzada viene cada región y cómo votó en 2022 lo contado y lo que falta
+    esc = []
+    for ib, b in B['mun'].items():
+        r = D['mun'].get(ib)
+        fr = min(1.0, (r[5] or 0) / 100) if r else 0.0
+        esc.append(dict(region=REG.get(ib[0], '?'), f=fr, val=b[1], lula=b[0][L0], ing=(SO.get(ib) or [None, None])[1]))
+    ES = pd.DataFrame(esc)
+    ES['cont'], ES['falta'] = ES.f * ES.val, (1 - ES.f) * ES.val
+    l22c = 100 * (ES.f * ES.lula).sum() / ES.cont.sum() if ES.cont.sum() else float('nan')
+    l22f = 100 * ((1 - ES.f) * ES.lula).sum() / ES.falta.sum() if ES.falta.sum() else float('nan')
+    print(f"\nEscrutinio: lo ya contado votó {l22c:.1f}% a Lula en 2022; lo que falta, {l22f:.1f}% (todo Brasil: {100 * B['nac']['v'][L0] / B['nac']['val']:.1f}%)")
+    reg = ES.groupby('region').apply(lambda d: pd.Series({'% contado': 100 * d.cont.sum() / d.val.sum(), 'faltan (millones)': d.falta.sum() / 1e6,
+                                                          'Lula 2022 en lo que falta': 100 * ((1 - d.f) * d.lula).sum() / max(d.falta.sum(), 1)}), include_groups=False)
+    print(reg.sort_values('% contado').round(1).to_string())
+    ES['q_ing'] = pd.qcut(ES.ing.rank(method='first'), 5, labels=['más pobre', '2', '3', '4', 'más rico'])
+    q = ES.groupby('q_ing', observed=True).apply(lambda d: 100 * d.cont.sum() / d.val.sum(), include_groups=False)
+    print('% contado por quintil de ingreso del municipio: ' + ' · '.join(f'{k} {v:.0f}%' for k, v in q.items()))
     print(f"\n=== {D.get('fuente', '')[:60]} · {D['nac'].get('pct', 0):.2f}% de las secciones escrutadas · dato {D.get('actualizado', '')}")
     if D.get('simulacro'):
         print('*** SIMULACRO: DATOS FICTICIOS ***')
@@ -129,7 +146,7 @@ def main():
     print('\nQué acompaña al cambio de Lula (correlación entre municipios, ponderada por votos):')
     T['logapt'] = np.log(T.apt.clip(lower=1))
     facs = [('bf', 'Bolsa Família (familias c/100 hogares)'), ('ingreso', 'Ingreso por persona (log)'), ('blancos', '% blancos'),
-            ('evang', '% evangélicos'), ('lula22', 'Voto a Lula en 2022'), ('logapt', 'Tamaño (log electores)')]
+            ('evang', '% evangélicos'), ('univ', '% universitarios (25+)'), ('lula22', 'Voto a Lula en 2022'), ('logapt', 'Tamaño (log electores)')]
     for k, nmf in facs:
         r, n = wcorr(T[k].values.astype(float), T.dl.values, w)
         print(f'  {nmf:42s} r = {r:+.2f}   (n={n})')
