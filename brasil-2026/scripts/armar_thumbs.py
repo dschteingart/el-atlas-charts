@@ -14,7 +14,7 @@ FUENTES = {
     'pib': '01-pib', 'desempleo': '02-desempleo', 'empleo': '03a-empleo-tipo', 'pobreza': '04-pobreza',
     'ingreso': '05-ingreso-real', 'gini': '06-gini', 'homicidios': '07-homicidios', 'consumo': '08a-consumo-variacion',
     'fiscal': '09-fiscal', 'comercio': '10-comercio-argentina', 'encuestas': '11-encuestas-ambas-vueltas',
-    'mapa': '12d-mapa-2022-2v-municipios',
+    'mapa': '12d-mapa-2022-2v-municipios', 'sociedad': '13a-quien-voto-ingreso',
 }
 CUERPO = (60, 960)                             # márgenes laterales y fin del cuerpo (arriba de la fuente) en el lienzo 1920×1080
 MAPA, PANEL = (50, 45, 1035, 1040), (1120, 140, 1880, 300)  # el mapa entero y las barras de los dos candidatos

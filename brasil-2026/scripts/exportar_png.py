@@ -30,8 +30,8 @@ PLACAS = [
     ('12b-mapa-2022-1v-municipios', 'mapa?n=mun'),
     ('12c-mapa-2022-2v-estados', 'mapa?e=2022-2'),
     ('12d-mapa-2022-2v-municipios', 'mapa?e=2022-2&n=mun'),
-    ('13a-quien-voto-bolsa-familia', 'sociedad'),
-    ('13b-quien-voto-ingreso', 'sociedad?vista=ingreso'),
+    ('13a-quien-voto-ingreso', 'sociedad'),
+    ('13b-quien-voto-bolsa-familia', 'sociedad?vista=bf'),
     ('13c-quien-voto-raza', 'sociedad?vista=raza'),
     ('13d-quien-voto-religion', 'sociedad?vista=religion'),
 ]

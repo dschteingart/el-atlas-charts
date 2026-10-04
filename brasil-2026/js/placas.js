@@ -1014,8 +1014,8 @@
     {
       id: 'sociedad', kicker: T('Elecciones', 'Elections'), corto: T('Quién votó a quién', 'Who voted for whom'),
       vistas: [
-        { id: 'bf', nm: T('Bolsa Família', 'Bolsa Família'), titulo: () => tituloSocio('bf'), bajada: () => bajadaSocio('bf') },
         { id: 'ingreso', nm: T('Ingreso', 'Income'), titulo: () => tituloSocio('ingreso'), bajada: () => bajadaSocio('ingreso') },
+        { id: 'bf', nm: T('Bolsa Família', 'Bolsa Família'), titulo: () => tituloSocio('bf'), bajada: () => bajadaSocio('bf') },
         { id: 'raza', nm: T('Raza', 'Race'), titulo: () => tituloSocio('raza'), bajada: () => bajadaSocio('raza') },
         { id: 'religion', nm: T('Religión', 'Religion'), titulo: () => tituloSocio('religion'), bajada: () => bajadaSocio('religion') },
         { id: 'vivo', nm: T('En vivo 2026', 'Live 2026'), vivo: true, turno: turnoHoy,
@@ -1189,8 +1189,8 @@
           </div>
         </div>
         <h1>${T('Elecciones en Brasil', 'Elections in Brazil')}</h1>
-        <p class="lede">${T(`Cómo llega Brasil a las urnas. ${cuantos(PLACAS.length)} gráficos sobre la economía, la composición del empleo por categoría ocupacional y por sector, la pobreza, la desigualdad, la violencia, las encuestas y el mapa de 2022 municipio por municipio.`,
-          `How Brazil heads into the vote. ${cuantos(PLACAS.length)} charts on the economy, the makeup of employment by occupational category and by sector, poverty, inequality, violence, the polls and the 2022 map, municipality by municipality.`)}</p>
+        <p class="lede">${T(`Cómo llega Brasil a las urnas. ${cuantos(PLACAS.length)} gráficos sobre la economía, la composición del empleo por categoría ocupacional y por sector, la pobreza, la desigualdad, la violencia, las encuestas, el mapa de 2022 municipio por municipio y quién votó a quién.`,
+          `How Brazil heads into the vote. ${cuantos(PLACAS.length)} charts on the economy, the makeup of employment by occupational category and by sector, poverty, inequality, violence, the polls, the 2022 map municipality by municipality and who voted for whom.`)}</p>
         <div class="accent-rule"></div>
       </header>
       <div class="idx-section-label">${T('Gráficos interactivos', 'Interactive charts')}</div>
@@ -1264,7 +1264,7 @@
     pib: '01-pib', desempleo: '02-desempleo', 'empleo:tipo': '03a-empleo-tipo', 'empleo:sector': '03b-empleo-sector', 'empleo:informalidad': '03c-informalidad',
     pobreza: '04-pobreza', ingreso: '05-ingreso-real', gini: '06-gini', homicidios: '07-homicidios', 'consumo:var': '08a-consumo-variacion', 'consumo:nivel': '08b-consumo-nivel',
     fiscal: '09-fiscal', comercio: '10-comercio-argentina', 'encuestas:ambas': '11-encuestas-ambas-vueltas', 'encuestas:1v': '11a-encuestas-1ra-vuelta', 'encuestas:2v': '11b-encuestas-2da-vuelta', mapa: '12d-mapa-2022-2v-municipios',
-    'sociedad:bf': '13a-quien-voto-bolsa-familia', 'sociedad:ingreso': '13b-quien-voto-ingreso', 'sociedad:raza': '13c-quien-voto-raza', 'sociedad:religion': '13d-quien-voto-religion',
+    'sociedad:ingreso': '13a-quien-voto-ingreso', 'sociedad:bf': '13b-quien-voto-bolsa-familia', 'sociedad:raza': '13c-quien-voto-raza', 'sociedad:religion': '13d-quien-voto-religion',
   };
   async function descargarPNG(btn) {
     const P = PLACAS[actual], v = vistaActual(P);
@@ -1351,12 +1351,19 @@
   }
 
   // teléfono: deslizar a los costados cambia de placa (un toque sigue funcionando como siempre)
+  // (no cuenta si hay dos dedos, que es zoom; ni con la página ampliada, que es mover la vista; ni sobre el
+  // mapa o la dispersión, donde arrastrar es explorar; y tiene que ser un gesto rápido)
   let toque = null;
-  addEventListener('touchstart', e => { if (e.touches.length === 1) toque = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }, { passive: true });
+  addEventListener('touchstart', e => {
+    const sobreGrafico = e.target.closest && e.target.closest('.mapa-svg-box, .so-puntos, input');
+    toque = e.touches.length === 1 && !sobreGrafico ? { x: e.touches[0].clientX, y: e.touches[0].clientY, t: Date.now() } : null;
+  }, { passive: true });
+  addEventListener('touchmove', e => { if (e.touches.length > 1) toque = null; }, { passive: true });
   addEventListener('touchend', e => {
     if (!toque || modoPNG || enPortada) return;
-    const t = e.changedTouches[0], dx = t.clientX - toque.x, dy = t.clientY - toque.y;
+    const t = e.changedTouches[0], dx = t.clientX - toque.x, dy = t.clientY - toque.y, rapido = Date.now() - toque.t < 700;
     toque = null;
+    if (e.touches.length > 0 || (window.visualViewport && visualViewport.scale > 1.05) || !rapido) return;
     if (Math.abs(dx) > 60 && Math.abs(dx) > 1.5 * Math.abs(dy)) ir(actual + (dx < 0 ? 1 : -1));
   }, { passive: true });
 
