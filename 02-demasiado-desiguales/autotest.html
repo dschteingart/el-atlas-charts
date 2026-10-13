@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>¿Dónde estás en la distribución del ingreso? · El Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=4">
+<style>
+  /* === Autotest (página oculta de clase, Escuela UNSAM 2026) === */
+  html, body { overflow-x: hidden; }
+  .at-wrap { max-width: 640px; }
+  .at-wrap header { margin-bottom: 18px; }
+  .at-wrap h1 { font-size: 28px; }
+  .at-wrap .lede { font-size: 16px; }
+
+  /* --- Formulario --- */
+  .at-form { margin: 0; }
+  .at-field { margin: 0 0 22px; }
+  .at-label {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 1.3;
+    margin: 0 0 8px;
+    color: var(--ink);
+  }
+  .at-num {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 700;
+    position: relative;
+    top: -2px;
+  }
+  .at-help {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+    margin: -2px 0 10px 34px;
+  }
+  .at-control { margin-left: 34px; }
+
+  /* El buscador de la casa, con tipografía de 16px para que iOS no haga zoom */
+  .at-wrap .m-search-wrap { max-width: 100%; margin: 0; }
+  .at-wrap .m-search-input,
+  .at-input {
+    width: 100%;
+    font-family: var(--sans);
+    font-size: 17px;
+    padding: 11px 12px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--ink);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .at-wrap .m-search-input:focus, .at-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(190,93,50,0.15); }
+  .at-wrap .m-search-results { max-height: 264px; }
+  .at-wrap .m-search-result { font-size: 16px; padding: 10px 12px; align-items: baseline; }
+  .at-wrap .m-search-region { font-size: 13px; }
+  .at-search-hint {
+    padding: 6px 12px;
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    background: var(--bg-soft);
+    border-bottom: 1px solid var(--grid);
+  }
+  .at-money { position: relative; }
+  .at-money .at-prefix {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    font-family: var(--sans);
+    font-size: 17px;
+    color: var(--ink-muted);
+    pointer-events: none;
+  }
+  .at-money .at-input { padding-left: 52px; }
+  .at-stepper { display: flex; align-items: stretch; gap: 8px; max-width: 220px; }
+  .at-stepper .at-input { text-align: center; width: 80px; flex: 0 0 80px; }
+  .at-step {
+    flex: 0 0 48px;
+    border: 1px solid var(--rule-strong);
+    background: var(--bg-soft);
+    border-radius: 6px;
+    font-family: var(--sans);
+    font-size: 22px;
+    line-height: 1;
+    color: var(--ink);
+    cursor: pointer;
+    padding: 0;
+  }
+  .at-step:active { background: var(--rule); }
+  .at-error {
+    margin: 6px 0 0 34px;
+    font-family: var(--sans);
+    font-size: 14px;
+    color: #8B3F1E;
+    line-height: 1.4;
+  }
+  .at-error[hidden] { display: none; }
+  .at-submit {
+    display: block;
+    width: 100%;
+    margin: 6px 0 0;
+    padding: 14px 18px;
+    background: var(--ink);
+    color: var(--bg);
+    border: 0;
+    border-radius: 6px;
+    font-family: var(--sans);
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+  }
+  .at-submit:hover { background: #000; }
+
+  /* --- Resultado --- */
+  .at-result {
+    margin: 30px 0 0;
+    padding-top: 22px;
+    border-top: 2.5px solid var(--accent);
+    scroll-margin-top: 12px;
+  }
+  .at-result[hidden] { display: none; }
+  .at-result h2 {
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    margin: 0 0 14px;
+  }
+  .at-big { margin: 0 0 26px; }
+  .at-big-head {
+    font-family: var(--serif);
+    font-size: 22px;
+    line-height: 1.15;
+    color: var(--ink);
+    margin: 0;
+  }
+  .at-big-head .at-big-val {
+    font-size: 56px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .at-big-text {
+    font-family: var(--serif);
+    font-size: 16.5px;
+    color: var(--ink-soft);
+    line-height: 1.45;
+    margin: 4px 0 0;
+  }
+  .at-strip { margin: 10px 0 2px; }
+  .at-strip svg { width: 100%; height: auto; overflow: visible; }
+  .at-nodist {
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.45;
+    color: var(--ink-soft);
+    background: var(--bg-soft);
+    border-left: 3px solid var(--rule-strong);
+    padding: 10px 12px;
+    margin: 0 0 24px;
+  }
+  .at-ppp {
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.5;
+    margin: 0 0 22px;
+    padding: 12px 14px;
+    background: var(--bg-soft);
+    border-radius: 6px;
+  }
+  .at-ppp strong { color: var(--ink); font-weight: 700; white-space: nowrap; }
+  .at-compare h3 {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 600;
+    margin: 0 0 6px;
+  }
+  .at-compare table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--sans);
+    font-size: 16px;
+  }
+  .at-compare td {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--grid);
+    vertical-align: baseline;
+  }
+  .at-compare td.at-c-val {
+    text-align: right;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    padding-left: 12px;
+  }
+  .at-compare .at-c-tag {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+    margin-left: 6px;
+  }
+  .at-notes {
+    margin: 20px 0 0;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink-muted);
+    line-height: 1.5;
+  }
+  .at-notes p { margin: 0 0 6px; }
+  .at-sent {
+    margin: 14px 0 0;
+    font-family: var(--sans);
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .at-sent[hidden] { display: none; }
+  .at-sent::before { content: '✓ '; color: var(--accent); font-weight: 700; }
+  .at-testflag {
+    font-family: var(--sans);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #fff;
+    background: #8B3F1E;
+    padding: 4px 10px;
+    border-radius: 3px;
+    display: inline-block;
+    margin: 0 0 12px;
+  }
+
+  @media (max-width: 540px) {
+    .at-wrap h1 { font-size: 24px; }
+    .at-label { font-size: 17px; }
+    .at-help, .at-control, .at-error { margin-left: 0; }
+    .at-help { margin-top: 0; }
+    .at-big-head .at-big-val { font-size: 50px; }
+    .at-big-head { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap at-wrap">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em">El Atlas</span> · <span class="brand-topic">Escuela UNSAM 2026</span></div>
+    </div>
+    <div id="at-testflag"></div>
+    <h1>¿Dónde estás en la distribución del ingreso?</h1>
+    <p class="lede">Tres preguntas, anónimas. Tu resultado aparece al instante.</p>
+    <div class="accent-rule"></div>
+  </header>
+
+  <form id="at-form" class="at-form" novalidate autocomplete="off">
+    <div class="at-field">
+      <label class="at-label" for="at-country"><span class="at-num">1</span><span>¿En qué país vivís?</span></label>
+      <div class="at-control">
+        <div class="m-search-wrap">
+          <input type="text" id="at-country" class="m-search-input" placeholder="Escribí o elegí tu país" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="at-country-results">
+          <div id="at-country-results" class="m-search-results" role="listbox"></div>
+        </div>
+      </div>
+      <p class="at-error" id="at-country-err" hidden></p>
+    </div>
+
+    <div class="at-field">
+      <label class="at-label" for="at-income"><span class="at-num">2</span><span>Ingreso mensual total de tu hogar, en dólares</span></label>
+      <p class="at-help">Neto (lo que efectivamente entra), sumando a todos los miembros y todas las fuentes. Si cobrás en tu moneda, convertilo al tipo de cambio de hoy. Un número redondo alcanza.</p>
+      <div class="at-control">
+        <div class="at-money">
+          <span class="at-prefix">US$</span>
+          <input type="text" id="at-income" class="at-input" inputmode="decimal" placeholder="Por ejemplo, 2.500" autocomplete="off">
+        </div>
+      </div>
+      <p class="at-error" id="at-income-err" hidden></p>
+    </div>
+
+    <div class="at-field">
+      <label class="at-label" for="at-persons"><span class="at-num">3</span><span>¿Cuántas personas viven en tu hogar, contándote?</span></label>
+      <div class="at-control">
+        <div class="at-stepper">
+          <button type="button" class="at-step" id="at-persons-minus" aria-label="Una persona menos">−</button>
+          <input type="text" id="at-persons" class="at-input" inputmode="numeric" pattern="[0-9]*" maxlength="2" autocomplete="off">
+          <button type="button" class="at-step" id="at-persons-plus" aria-label="Una persona más">+</button>
+        </div>
+      </div>
+      <p class="at-error" id="at-persons-err" hidden></p>
+    </div>
+
+    <button type="submit" class="at-submit" id="at-go">Ver dónde estoy</button>
+  </form>
+
+  <section class="at-result" id="at-result" hidden aria-live="polite">
+    <h2>Tu resultado</h2>
+    <div id="at-country-block"></div>
+    <div id="at-world-block"></div>
+    <p class="at-ppp" id="at-ppp"></p>
+    <div class="at-compare" id="at-compare"></div>
+    <div class="at-notes" id="at-notes"></div>
+    <p class="at-sent" id="at-sent" hidden>Tu respuesta anónima quedó registrada.</p>
+  </section>
+
+  <div class="footer">
+    <div class="footer-row">
+      <p class="sources">Datos: Banco Mundial, Poverty and Inequality Platform (deciles de ingreso o consumo de la última encuesta de cada país, llevados a 2025) y FMI, World Economic Outlook (niveles de precios 2026).</p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+
+</div>
+
+<script src="../lib/country-names.js?v=2"></script>
+<script src="./data-autotest.js?v=1"></script>
+<script src="./autotest-core.js?v=1"></script>
+<script src="./autotest.js?v=1"></script>
+</body>
+</html>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>La sala en la distribución del ingreso · El Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=4">
+<style>
+  /* === Tablero de la sala (página oculta de clase, Escuela UNSAM 2026) ===
+     Pensado para proyector 16:9: tipografía grande, alto contraste. */
+  html, body { overflow-x: hidden; }
+  .sala-wrap { max-width: 1320px; padding: 18px 28px 36px; }
+  .sala-wrap header { margin-bottom: 18px; padding-bottom: 14px; }
+  .sala-wrap .brand { font-size: 12px; }
+  .sala-wrap h1 { font-size: 34px; }
+  .sala-wrap .lede { font-size: 18px; }
+
+  .sala-demo {
+    display: block;
+    background: #8B3F1E;
+    color: #fff;
+    font-family: var(--sans);
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 0.14em;
+    text-align: center;
+    padding: 7px 10px;
+    border-radius: 4px;
+    margin: 0 0 14px;
+  }
+  .sala-demo[hidden] { display: none; }
+
+  /* --- Carga de datos --- */
+  .sala-load {
+    font-family: var(--sans);
+    background: var(--bg-soft);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    margin: 0 0 18px;
+  }
+  .sala-load > summary {
+    cursor: pointer;
+    padding: 12px 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    list-style: none;
+  }
+  .sala-load > summary::-webkit-details-marker { display: none; }
+  .sala-load > summary::before { content: '+ '; color: var(--accent); font-weight: 700; }
+  .sala-load[open] > summary::before { content: '− '; }
+  .sala-load-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding: 0 16px 16px;
+  }
+  .sala-drop {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 150px;
+    border: 2px dashed var(--rule-strong);
+    border-radius: 8px;
+    background: var(--bg);
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--ink-soft);
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .sala-drop strong { color: var(--ink); font-size: 17px; }
+  .sala-drop.drag { border-color: var(--accent); background: #F7EDE6; }
+  .sala-drop input[type=file] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .sala-paste { display: flex; flex-direction: column; gap: 8px; }
+  .sala-paste textarea {
+    width: 100%;
+    min-height: 110px;
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 13px;
+    padding: 8px 10px;
+    border: 1px solid var(--rule-strong);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--ink);
+    resize: vertical;
+  }
+  .sala-btn {
+    align-self: flex-start;
+    background: var(--ink);
+    color: var(--bg);
+    border: 0;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .sala-btn:hover { background: #000; }
+  .sala-btn.ghost { background: transparent; color: var(--accent); border: 1.5px solid var(--accent); }
+  .sala-btn.ghost:hover { background: var(--accent); color: #fff; }
+  .sala-load-help {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--ink-muted);
+    line-height: 1.5;
+  }
+  .sala-load-help code { font-size: 12.5px; background: var(--bg); padding: 1px 4px; border-radius: 3px; }
+
+  .sala-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 18px;
+    font-family: var(--sans);
+    font-size: 15px;
+    color: var(--ink-soft);
+    margin: 0 0 18px;
+  }
+  .sala-status:empty { display: none; }
+  .sala-status .err { color: #8B3F1E; font-weight: 600; }
+
+  /* --- Contenido --- */
+  .sala-main[hidden] { display: none; }
+  .sala-empty {
+    font-family: var(--serif);
+    font-size: 22px;
+    color: var(--ink-muted);
+    text-align: center;
+    padding: 50px 10px;
+  }
+  .sala-empty[hidden] { display: none; }
+  .sala-headline { margin: 4px 0 24px; }
+  .sala-insight {
+    font-family: var(--serif);
+    font-size: 40px;
+    line-height: 1.18;
+    font-weight: 600;
+    letter-spacing: -0.4px;
+    margin: 0;
+    color: var(--ink);
+  }
+  .sala-insight b { color: var(--accent); font-weight: 700; }
+  .sala-n {
+    font-family: var(--sans);
+    font-size: 18px;
+    color: var(--ink-muted);
+    margin: 8px 0 0;
+  }
+  .sala-section { margin: 0 0 30px; }
+  .sala-section h2 {
+    font-family: var(--serif);
+    font-size: 25px;
+    font-weight: 700;
+    margin: 0 0 2px;
+    line-height: 1.25;
+  }
+  .sala-section .sala-sub {
+    font-family: var(--serif);
+    font-size: 17px;
+    color: var(--ink-soft);
+    margin: 0 0 6px;
+  }
+  .sala-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 22px;
+    font-family: var(--sans);
+    font-size: 16px;
+    color: var(--ink-soft);
+    margin: 4px 0 0;
+  }
+  .sala-legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .sala-legend i { display: inline-block; width: 13px; height: 13px; border-radius: 50%; }
+  .sala-chart svg { width: 100%; height: auto; overflow: visible; display: block; }
+  .sala-chart-note {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--ink-muted);
+    margin: 2px 0 0;
+  }
+  .sala-chart-note:empty { display: none; }
+
+  .sala-tiles {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin: 0 0 34px;
+  }
+  .sala-tile {
+    background: var(--bg-soft);
+    border-top: 3px solid var(--accent);
+    border-radius: 0 0 8px 8px;
+    padding: 16px 18px 18px;
+  }
+  .sala-tile-val {
+    font-family: var(--serif);
+    font-size: 60px;
+    line-height: 1;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -1px;
+    font-variant-numeric: tabular-nums;
+  }
+  .sala-tile-val small { font-size: 26px; font-weight: 600; letter-spacing: 0; }
+  .sala-tile-lab {
+    font-family: var(--sans);
+    font-size: 18px;
+    line-height: 1.35;
+    color: var(--ink-soft);
+    margin: 10px 0 0;
+  }
+
+  /* --- La torta --- */
+  .sala-torta { border-top: 2.5px solid var(--accent); padding-top: 18px; }
+  .sala-torta h2 { font-size: 32px; }
+  .torta-lede {
+    font-family: var(--serif);
+    font-size: 21px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+    margin: 4px 0 18px;
+    max-width: 1050px;
+  }
+  .torta-lede b { color: var(--ink); }
+  .torta-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 1.05fr) 1fr 1fr;
+    gap: 0;
+    font-family: var(--sans);
+    border-top: 1px solid var(--rule);
+  }
+  .torta-grid > div { padding: 14px 16px; border-bottom: 1px solid var(--rule); }
+  .torta-colhead {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.3;
+    display: flex;
+    align-items: flex-end;
+  }
+  .torta-colhead .sw { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 8px; flex-shrink: 0; position: relative; top: -3px; }
+  .torta-rowhead {
+    font-family: var(--serif);
+    font-size: 19px;
+    line-height: 1.3;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+  }
+  .torta-cell .tv {
+    font-family: var(--serif);
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 1.05;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .torta-cell .tm {
+    font-size: 17px;
+    color: var(--ink-soft);
+    margin: 4px 0 8px;
+  }
+  .torta-cell .tm b { font-size: 22px; color: var(--ink); }
+  .torta-bar { position: relative; height: 14px; background: #ECE7D8; border-radius: 2px; }
+  .torta-bar .f { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; }
+  .torta-bar .k { position: absolute; top: -5px; bottom: -5px; width: 3px; margin-left: -1.5px; background: #1A1A1A; }
+  .torta-key {
+    font-family: var(--sans);
+    font-size: 14.5px;
+    color: var(--ink-muted);
+    margin: 8px 0 0;
+  }
+  .torta-key i { display: inline-block; width: 3px; height: 14px; background: #1A1A1A; vertical-align: -2px; margin-right: 6px; }
+  .torta-ref {
+    font-family: var(--sans);
+    font-size: 18px;
+    color: var(--ink-soft);
+    margin: 16px 0 0;
+    line-height: 1.5;
+  }
+  .torta-ref b { color: var(--ink); }
+  .torta-countries { margin: 26px 0 0; }
+  .torta-countries h3 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 4px;
+  }
+  .torta-countries .sala-sub { font-size: 16px; }
+  .torta-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 0; }
+  .torta-chip {
+    font-family: var(--sans);
+    font-size: 17px;
+    background: var(--bg-soft);
+    border: 1px solid var(--rule);
+    border-radius: 16px;
+    padding: 4px 12px;
+    color: var(--ink);
+  }
+  .torta-chip span { color: var(--ink-muted); font-size: 15px; margin-left: 4px; }
+  .torta-none { font-family: var(--serif); font-size: 19px; color: var(--ink-soft); margin: 6px 0 0; }
+  .torta-method {
+    font-family: var(--sans);
+    font-size: 14px;
+    color: var(--ink-muted);
+    line-height: 1.5;
+    margin: 18px 0 0;
+  }
+  .sala-wrap .footer { font-size: 13.5px; }
+
+  @media (max-width: 900px) {
+    .sala-wrap { padding: 16px 14px 28px; }
+    .sala-load-body { grid-template-columns: 1fr; }
+    .sala-insight { font-size: 28px; }
+    .sala-tiles { grid-template-columns: 1fr; gap: 12px; }
+    .sala-tile-val { font-size: 46px; }
+    .torta-grid { grid-template-columns: 1fr 1fr; }
+    .torta-grid .torta-rowhead { grid-column: 1 / -1; border-bottom: 0; padding-bottom: 0; }
+    .torta-grid .torta-corner { display: none; }
+    .torta-cell .tv { font-size: 30px; }
+    .sala-torta h2 { font-size: 26px; }
+    .torta-lede { font-size: 18px; }
+  }
+  @media (max-width: 540px) {
+    .sala-wrap h1 { font-size: 26px; }
+    .sala-insight { font-size: 24px; }
+    .torta-grid { grid-template-columns: 1fr; }
+    .torta-colhead { display: none !important; }
+    .torta-cell .tlabel { display: block !important; }
+  }
+  .torta-cell .tlabel { display: none; font-size: 14px; font-weight: 700; color: var(--ink-soft); margin: 0 0 4px; }
+</style>
+</head>
+<body>
+<div class="wrap sala-wrap">
+
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em">El Atlas</span> · <span class="brand-topic">Escuela UNSAM 2026</span></div>
+    </div>
+    <div class="sala-demo" id="sala-demo" hidden>DATOS DE PRUEBA</div>
+    <h1>La sala en la distribución del ingreso</h1>
+    <p class="lede">Respuestas anónimas del autotest. El ingreso por persona de cada hogar, ubicado en la distribución de su país y en la del mundo.</p>
+  </header>
+
+  <details class="sala-load" id="sala-load" open>
+    <summary>Cargar respuestas</summary>
+    <div class="sala-load-body">
+      <label class="sala-drop" id="sala-drop">
+        <strong>Arrastrá acá el CSV de la hoja</strong>
+        <span>o hacé clic para elegir el archivo</span>
+        <span style="font-size:13px;color:var(--ink-muted)">Google Sheets: Archivo › Descargar › Valores separados por comas (.csv)</span>
+        <input type="file" id="sala-file" accept=".csv,.tsv,.txt,text/csv,text/plain">
+      </label>
+      <div class="sala-paste">
+        <textarea id="sala-text" placeholder="O pegá acá las filas copiadas de la hoja, con la fila de encabezados (Marca temporal, pais, ingreso_usd_mes, personas, calculo)" spellcheck="false"></textarea>
+        <button type="button" class="sala-btn" id="sala-text-go">Cargar lo pegado</button>
+      </div>
+      <p class="sala-load-help">Todo se calcula en este navegador; nada se sube a ningún lado. Para leer la hoja en vivo, publicala como CSV (Archivo › Compartir › Publicar en la web) y abrí esta página con <code>?csv=</code> seguido del enlace. Para ver un ejemplo, <code>?demo=1</code>.</p>
+    </div>
+  </details>
+
+  <div class="sala-status" id="sala-status"></div>
+
+  <p class="sala-empty" id="sala-empty">Cargá las respuestas para ver la sala.</p>
+
+  <main class="sala-main" id="sala-main" hidden>
+    <div class="sala-headline">
+      <p class="sala-insight" id="sala-insight"></p>
+      <p class="sala-n" id="sala-n"></p>
+    </div>
+
+    <section class="sala-section sala-chart">
+      <h2>Cada punto es una persona de la sala, ubicada en la distribución mundial</h2>
+      <p class="sala-sub">Percentil del ingreso por persona de su hogar entre los 8.000 millones de habitantes del mundo. 0 es el más pobre y 100 el más rico.</p>
+      <div class="sala-legend" id="sala-legend-1"></div>
+      <div id="sala-chart-world"></div>
+    </section>
+
+    <section class="sala-section sala-chart">
+      <h2>Y ubicada en la distribución de su propio país</h2>
+      <p class="sala-sub">Percentil del ingreso por persona de su hogar en la población de su país.</p>
+      <div id="sala-chart-country"></div>
+      <p class="sala-chart-note" id="sala-country-note"></p>
+    </section>
+
+    <div class="sala-tiles" id="sala-tiles"></div>
+
+    <section class="sala-section sala-torta" id="sala-torta"></section>
+
+    <div class="footer">
+      <p class="sources" id="sala-sources"></p>
+    </div>
+  </main>
+
+</div>
+
+<script src="../lib/country-names.js?v=2"></script>
+<script src="./data-autotest.js?v=1"></script>
+<script src="./autotest-core.js?v=1"></script>
+<script src="./autotest-sala.js?v=1"></script>
+</body>
+</html>
