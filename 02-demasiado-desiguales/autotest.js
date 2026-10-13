@@ -38,13 +38,17 @@ function atSetupCountrySearch() {
   universe.forEach(c => { byIso[c.iso] = c; });
   const latamList = AT_LATAM_TOP.filter(k => byIso[k]).map(k => byIso[k])
     .concat(universe.filter(c => c.latam && AT_LATAM_TOP.indexOf(c.iso) < 0));
+  // Lista completa para la caja vacía: América Latina primero y después el resto del mundo, en orden alfabético.
+  const restList = universe.filter(c => !c.latam).sort((a, b) => a.name.localeCompare(b.name, 'es'));
+  const browseList = latamList.concat(restList);
+  const nLatam = latamList.length;
   let matches = [];
   let activeIdx = -1;
   let browsing = false;
 
   function getMatches(q) {
     const qn = atNormalize(q);
-    if (!qn) return latamList;
+    if (!qn) return browseList;
     const scored = [];
     universe.forEach(c => {
       let s = null;
@@ -75,7 +79,8 @@ function atSetupCountrySearch() {
     const hint = browsing ? '<div class="at-search-hint">América Latina y el Caribe</div>' : '';
     results.innerHTML = hint + matches.map((c, i) => {
       const cls = 'm-search-result' + (i === activeIdx ? ' m-active' : '') + (c.iso === atState.iso ? ' m-already' : '');
-      return `<div class="${cls}" role="option" data-iso="${c.iso}">${atEsc(c.name)}${browsing ? '' : `<span class="m-search-region">${atEsc(atRegionShort(c.iso))}</span>`}</div>`;
+      const sep = (browsing && i === nLatam) ? '<div class="at-search-hint">Resto del mundo</div>' : '';
+      return sep + `<div class="${cls}" role="option" data-iso="${c.iso}">${atEsc(c.name)}${browsing ? '' : `<span class="m-search-region">${atEsc(atRegionShort(c.iso))}</span>`}</div>`;
     }).join('');
     results.classList.add('open');
     input.setAttribute('aria-expanded', 'true');
@@ -89,7 +94,7 @@ function atSetupCountrySearch() {
 
   function open() {
     browsing = !atNormalize(input.value) || (atState.iso && byIso[atState.iso] && input.value === byIso[atState.iso].name);
-    matches = browsing ? latamList : getMatches(input.value);
+    matches = browsing ? browseList : getMatches(input.value);
     activeIdx = -1;
     render();
   }
