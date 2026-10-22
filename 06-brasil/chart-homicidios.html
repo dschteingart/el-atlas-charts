@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-title-en="Is Brazil more or less violent than before? — The Atlas">¿Brasil es más o menos violento que antes? — El Atlas</title>
+<meta name="description" content="La tasa de homicidios de Brasil desde 1980, por región y frente a otros países.">
+<link rel="alternate" hreflang="en" href="./chart-homicidios-en.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/06-brasil/chart-homicidios.html">
+<meta property="og:title" content="¿Brasil es más o menos violento que antes? — El Atlas">
+<meta property="og:description" content="La tasa de homicidios de Brasil desde 1980, por región y frente a otros países.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/06-brasil/thumbs/chart-homicidios.png">
+<meta property="og:image:alt" content="Tasa de homicidios de Brasil">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="¿Brasil es más o menos violento que antes? — El Atlas">
+<meta name="twitter:description" content="La tasa de homicidios de Brasil desde 1980, por región y frente a otros países.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/06-brasil/thumbs/chart-homicidios.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=74">
+<link rel="stylesheet" href="../lib/editor.css?v=90">
+<link rel="stylesheet" href="./br.css?v=45">
+</head>
+<body>
+<div class="wrap wrap-wide">
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span class="brand-topic" data-i18n="brand-topic">Brasil</span></div>
+      <div class="lang-toggle"><button data-lang="es" class="active">ES</button><button data-lang="en">EN</button></div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="10" data-editor-id="br-homicidios">
+    <h2 class="chart-title" data-i18n="c10-title"></h2>
+    <p class="chart-subtitle"></p>
+    <div class="br-controls"><div class="br-ctrl"><label data-i18n="lbl-vista">x</label><div class="toggle" id="c10-vista"><button type="button" data-v="paises" data-i18n="c10-v-paises">x</button><button type="button" data-v="regiones" data-i18n="c10-v-regiones">x</button></div></div><div class="br-ctrl"><label data-i18n="lbl-periodo">Período</label><div class="anios"><input type="number" id="c10-y0" step="1"><div class="dual"><div class="track"></div><div class="fill" id="c10-fill"></div><input type="range" id="c10-r0" aria-label="Desde"><input type="range" id="c10-r1" aria-label="Hasta"></div><input type="number" id="c10-y1" step="1"></div></div><span id="c10-ctl-paises" style="display:contents"><div class="br-ctrl br-ctrl-sel"><label data-i18n="lbl-paises">Países</label><div class="br-sel"><div class="m-search-wrap"><input type="text" id="c10-search" class="m-search-input" autocomplete="off"><div id="c10-search-results" class="m-search-results"></div></div><div class="m-selected-chips" id="c10-selected-chips"></div></div></div></span></div>
+    <div class="chart-svg-wrap">
+      <svg id="chart10" viewBox="0 0 1100 560" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip10"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p><button class="download" data-chart="10-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="10" data-i18n="footer-download-png">Descargar PNG</button></p>
+    <div class="footer-row">
+      <p class="sources" data-i18n="c10-sources"></p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+</div>
+
+<script src="../lib/i18n.js?v=76"></script>
+<script src="./i18n-issue.js?v=45"></script>
+<script src="../lib/utils.js?v=82"></script>
+<script src="../lib/country-names.js?v=74"></script>
+<script src="./data-homicidios.js?v=45"></script>
+<script src="../lib/editor.js?v=90"></script>
+<script src="./br-motor.js?v=45"></script>
+<script src="./chart-homicidios.js?v=45"></script>
+<script src="../lib/png-export.js?v=80"></script>
+<script>
+  applyI18n();
+  initC10();
+  setupLangToggle(() => { c10_onLang(); });
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=45"></script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-title-en="Has Brazil curbed Amazon deforestation? — The Atlas">¿Brasil frenó la deforestación de la Amazonia? — El Atlas</title>
+<meta name="description" content="Superficie deforestada por año en la Amazonia Legal desde 1988 y en el Cerrado desde 2000.">
+<link rel="alternate" hreflang="en" href="./chart-deforestacion-en.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/06-brasil/chart-deforestacion.html">
+<meta property="og:title" content="¿Brasil frenó la deforestación de la Amazonia? — El Atlas">
+<meta property="og:description" content="Superficie deforestada por año en la Amazonia Legal desde 1988 y en el Cerrado desde 2000.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/06-brasil/thumbs/chart-deforestacion.png">
+<meta property="og:image:alt" content="Deforestación anual en la Amazonia Legal">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="¿Brasil frenó la deforestación de la Amazonia? — El Atlas">
+<meta name="twitter:description" content="Superficie deforestada por año en la Amazonia Legal desde 1988 y en el Cerrado desde 2000.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/06-brasil/thumbs/chart-deforestacion.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=74">
+<link rel="stylesheet" href="../lib/editor.css?v=90">
+<link rel="stylesheet" href="./br.css?v=45">
+</head>
+<body>
+<div class="wrap wrap-wide">
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span class="brand-topic" data-i18n="brand-topic">Brasil</span></div>
+      <div class="lang-toggle"><button data-lang="es" class="active">ES</button><button data-lang="en">EN</button></div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="11" data-editor-id="br-deforestacion">
+    <h2 class="chart-title" data-i18n="c11-title"></h2>
+    <p class="chart-subtitle"></p>
+    <div class="br-controls"><div class="br-ctrl"><label data-i18n="lbl-bioma">x</label><div class="toggle" id="c11-bioma"><button type="button" data-v="amazonia" data-i18n="c11-b-amazonia">x</button><button type="button" data-v="cerrado" data-i18n="c11-b-cerrado">x</button></div></div><div class="br-ctrl"><label data-i18n="lbl-periodo">Período</label><div class="anios"><input type="number" id="c11-y0" step="1"><div class="dual"><div class="track"></div><div class="fill" id="c11-fill"></div><input type="range" id="c11-r0" aria-label="Desde"><input type="range" id="c11-r1" aria-label="Hasta"></div><input type="number" id="c11-y1" step="1"></div></div></div>
+    <div class="chart-svg-wrap">
+      <svg id="chart11" viewBox="0 0 1100 560" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip11"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p><button class="download" data-chart="11-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="11" data-i18n="footer-download-png">Descargar PNG</button></p>
+    <div class="footer-row">
+      <p class="sources" data-i18n="c11-sources"></p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+</div>
+
+<script src="../lib/i18n.js?v=76"></script>
+<script src="./i18n-issue.js?v=45"></script>
+<script src="../lib/utils.js?v=82"></script>
+<script src="../lib/country-names.js?v=74"></script>
+<script src="./data-deforestacion.js?v=45"></script>
+<script src="../lib/editor.js?v=90"></script>
+<script src="./br-motor.js?v=45"></script>
+<script src="./chart-deforestacion.js?v=45"></script>
+<script src="../lib/png-export.js?v=80"></script>
+<script>
+  applyI18n();
+  initC11();
+  setupLangToggle(() => { c11_onLang(); });
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=45"></script>
+</body>
+</html>

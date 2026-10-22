@@ -1,0 +1,57 @@
+/* El Atlas · Brasil — estilos de página compartidos por los gráficos del número.
+   Copiados de las páginas publicadas (controles: 04-intolerancia; slider doble de
+   período: 05-pantheon/evolucion.html). Los chips (.m-selected-chip) y el
+   tooltip NO se redefinen: mandan lib/style.css. */
+.wrap-wide { max-width: 1100px; padding: 6px 20px 10px; }
+.wrap-wide header { padding-bottom: 4px; margin-bottom: 6px; }
+.wrap-wide .chart-block { margin: 4px 0 2px; }
+.wrap-wide .chart-title { margin: 0 0 2px; font-size: 18px; line-height: 1.2; }
+.wrap-wide .chart-subtitle { margin: 0 0 6px; font-size: 13.5px; line-height: 1.35; }
+.chart-svg-wrap { margin-top: 2px; position: relative; }
+.chart-svg-wrap svg { width: 100%; height: auto; display: block; }
+@media (min-width: 769px) { .chart-svg-wrap svg { max-height: calc(100vh - 300px); min-height: 330px; } }
+.footer { margin-top: 6px; }
+.footer p { margin: 2px 0; }
+.footer .download { margin-right: 8px; margin-bottom: 8px; }
+
+.br-controls { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 20px; margin: 4px 0 8px; }
+.br-ctrl { display: flex; flex-direction: column; gap: 4px; }
+.br-ctrl > label, .br-lbl { font-family: var(--sans); font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-muted); font-weight: 600; }
+.br-sel { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+/* buscador + chips: fila propia debajo de los demás controles (rótulo arriba, chips al costado del buscador),
+   así nunca sobresale ni desalinea la fila de toggles y período */
+.br-ctrl-sel { flex: 1 1 100%; }
+.m-select { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 28px 6px 13px; border: 1px solid var(--rule); border-radius: 15px; background-color: var(--bg); color: var(--ink-soft); cursor: pointer; -webkit-appearance: none; appearance: none; outline: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' fill='none' stroke='%238a8378' stroke-width='1.5'/></svg>"); background-repeat: no-repeat; background-position: right 11px center; }
+.m-select:focus { border-color: var(--accent); }
+.toggle { display: inline-flex; border: 1px solid var(--rule); border-radius: 15px; overflow: hidden; background: var(--bg); flex-wrap: wrap; }
+.toggle button { font-family: var(--sans); font-size: 12px; font-weight: 600; padding: 6px 13px; background: var(--bg); color: var(--ink-soft); border: none; cursor: pointer; white-space: nowrap; }
+.toggle button + button { border-left: 1px solid var(--rule); }
+.toggle button.active { background: var(--accent); color: #fff; }
+.m-search-wrap { position: relative; margin: 0; width: 230px; }
+.m-search-input { width: 100%; padding: 7px 10px; border: 1px solid var(--rule); border-radius: 5px; background: var(--bg); font-family: var(--sans); font-size: 13px; color: var(--ink); outline: none; }
+.m-search-input:focus { border-color: var(--accent); }
+.m-selected-chips { margin: 0; }
+/* doble slider de período (mismo patrón que 05-pantheon) */
+.anios { display: flex; align-items: center; gap: 8px; }
+.anios input[type=number] { font-family: var(--sans); font-size: 12.5px; width: 60px; padding: 4px 6px; border: 1px solid var(--rule); border-radius: 7px; background: var(--bg); color: var(--ink); }
+.dual { position: relative; width: 170px; height: 26px; }
+.dual .track { position: absolute; top: 11.5px; left: 0; right: 0; height: 3px; background: var(--rule); border-radius: 2px; }
+.dual .fill { position: absolute; top: 11.5px; height: 3px; background: var(--accent); border-radius: 2px; }
+.dual input[type=range] { position: absolute; left: 0; top: 0; width: 100%; height: 26px; margin: 0; background: none; pointer-events: none; -webkit-appearance: none; appearance: none; }
+.dual input[type=range]::-webkit-slider-runnable-track { height: 3px; background: transparent; }
+.dual input[type=range]::-webkit-slider-thumb { pointer-events: auto; -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--rule); cursor: pointer; margin-top: -6.5px; }
+.dual input[type=range]::-moz-range-track { height: 3px; background: transparent; }
+.dual input[type=range]::-moz-range-thumb { pointer-events: auto; width: 13px; height: 13px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 0 0 1px var(--rule); cursor: pointer; }
+.br-hint { font-family: var(--sans); font-size: 12px; color: var(--ink-muted); }
+@media (max-width: 768px) {
+  .wrap-wide .chart-title { font-size: 19px; font-weight: 700; line-height: 1.2; margin: 0 0 4px; }
+  .wrap-wide .chart-subtitle { font-size: 12px; color: var(--ink-muted); line-height: 1.4; margin: 0 0 8px; }
+  .br-controls { gap: 8px 14px; }
+  .m-search-wrap { width: 100%; max-width: 320px; }
+  .footer .sources, .footer .attribution { font-size: 10.5px; }
+  .footer .download { font-size: 11px; padding: 6px 10px; }
+}
+
+/* Chip de tono claro (p. ej. censos viejos en religión): texto y ✕ oscuros para que se lean. */
+.m-selected-chip.br-chip-light .m-chip-x { color: #1A1A1A; background: rgba(0,0,0,0.10); }
+.m-selected-chip.br-chip-light .m-chip-x:hover { background: rgba(0,0,0,0.20); }

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-title-en="How did the size of Brazilian households change? — The Atlas">¿Cómo cambió el tamaño de los hogares brasileños? — El Atlas</title>
+<meta name="description" content="Hogares según cantidad de integrantes en los censos de 1980 a 2022.">
+<link rel="alternate" hreflang="en" href="./chart-hogares-en.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/06-brasil/chart-hogares.html">
+<meta property="og:title" content="¿Cómo cambió el tamaño de los hogares brasileños? — El Atlas">
+<meta property="og:description" content="Hogares según cantidad de integrantes en los censos de 1980 a 2022.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/06-brasil/thumbs/chart-hogares.png">
+<meta property="og:image:alt" content="Hogares según cantidad de integrantes">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="¿Cómo cambió el tamaño de los hogares brasileños? — El Atlas">
+<meta name="twitter:description" content="Hogares según cantidad de integrantes en los censos de 1980 a 2022.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/06-brasil/thumbs/chart-hogares.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=74">
+<link rel="stylesheet" href="../lib/editor.css?v=90">
+<link rel="stylesheet" href="./br.css?v=45">
+</head>
+<body>
+<div class="wrap wrap-wide">
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span class="brand-topic" data-i18n="brand-topic">Brasil</span></div>
+      <div class="lang-toggle"><button data-lang="es" class="active">ES</button><button data-lang="en">EN</button></div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="7" data-editor-id="br-hogares">
+    <h2 class="chart-title" data-i18n="c7-title"></h2>
+    <p class="chart-subtitle"></p>
+    <div class="br-controls"><div class="br-ctrl"><label data-i18n="lbl-medida">x</label><div class="toggle" id="c7-medida"><button type="button" data-v="pct" data-i18n="c7-m-pct">x</button><button type="button" data-v="abs" data-i18n="c7-m-abs">x</button></div></div></div>
+    <div class="chart-svg-wrap">
+      <svg id="chart7" viewBox="0 0 1100 560" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip7"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p><button class="download" data-chart="7-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="7" data-i18n="footer-download-png">Descargar PNG</button></p>
+    <div class="footer-row">
+      <p class="sources" data-i18n="c7-sources"></p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+</div>
+
+<script src="../lib/i18n.js?v=76"></script>
+<script src="./i18n-issue.js?v=45"></script>
+<script src="../lib/utils.js?v=82"></script>
+<script src="../lib/country-names.js?v=74"></script>
+<script src="./data-hogares.js?v=45"></script>
+<script src="../lib/editor.js?v=90"></script>
+<script src="./br-motor.js?v=45"></script>
+<script src="./chart-hogares.js?v=45"></script>
+<script src="../lib/png-export.js?v=80"></script>
+<script>
+  applyI18n();
+  initC7();
+  setupLangToggle(() => { c7_onLang(); });
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=45"></script>
+</body>
+</html>

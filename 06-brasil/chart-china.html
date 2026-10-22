@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-title-en="How much does Brazil depend on China? — The Atlas">¿Cuánto depende Brasil de China? — El Atlas</title>
+<meta name="description" content="El peso de China, Estados Unidos, la Unión Europea y Argentina en el comercio de Brasil desde 1989, y qué se vende y se compra.">
+<link rel="alternate" hreflang="en" href="./chart-china-en.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/06-brasil/chart-china.html">
+<meta property="og:title" content="¿Cuánto depende Brasil de China? — El Atlas">
+<meta property="og:description" content="El peso de China, Estados Unidos, la Unión Europea y Argentina en el comercio de Brasil desde 1989, y qué se vende y se compra.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/06-brasil/thumbs/chart-china.png">
+<meta property="og:image:alt" content="Participación de cada socio en las exportaciones de Brasil y composición de lo que se le vende a cada uno">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="¿Cuánto depende Brasil de China? — El Atlas">
+<meta name="twitter:description" content="El peso de China, Estados Unidos, la Unión Europea y Argentina en el comercio de Brasil desde 1989, y qué se vende y se compra.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/06-brasil/thumbs/chart-china.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=74">
+<link rel="stylesheet" href="../lib/editor.css?v=90">
+<link rel="stylesheet" href="./br.css?v=45">
+</head>
+<body>
+<div class="wrap wrap-wide">
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span class="brand-topic" data-i18n="brand-topic">Brasil</span></div>
+      <div class="lang-toggle"><button data-lang="es" class="active">ES</button><button data-lang="en">EN</button></div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="3" data-editor-id="br-china">
+    <h2 class="chart-title" data-i18n="c3-title"></h2>
+    <p class="chart-subtitle"></p>
+    <div class="br-controls"><div class="br-ctrl"><label data-i18n="lbl-vista">x</label><div class="toggle" id="c3-vista"><button type="button" data-v="socios" data-i18n="c3-v-socios">x</button><button type="button" data-v="comp" data-i18n="c3-v-comp">x</button></div></div><span id="c3-ctl-socios" style="display:contents"><div class="br-ctrl"><label data-i18n="lbl-flujo">x</label><div class="toggle" id="c3-flujo"><button type="button" data-v="EXP" data-i18n="c3-f-EXP">x</button><button type="button" data-v="IMP" data-i18n="c3-f-IMP">x</button><button type="button" data-v="TOT" data-i18n="c3-f-TOT">x</button></div></div><div class="br-ctrl"><label data-i18n="lbl-periodo">Período</label><div class="anios"><input type="number" id="c3-y0" step="1"><div class="dual"><div class="track"></div><div class="fill" id="c3-fill"></div><input type="range" id="c3-r0" aria-label="Desde"><input type="range" id="c3-r1" aria-label="Hasta"></div><input type="number" id="c3-y1" step="1"></div></div><div class="br-ctrl br-ctrl-sel"><label data-i18n="lbl-socios">Países</label><div class="br-sel"><div class="m-search-wrap"><input type="text" id="c3-search" class="m-search-input" autocomplete="off"><div id="c3-search-results" class="m-search-results"></div></div><div class="m-selected-chips" id="c3-selected-chips"></div></div></div></span><span id="c3-ctl-comp" style="display:none"><div class="br-ctrl"><label data-i18n="lbl-anio">x</label><select class="m-select" id="c3-anio"></select></div></span></div>
+    <div class="chart-svg-wrap">
+      <svg id="chart3" viewBox="0 0 1100 640" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip3"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p><button class="download" data-chart="3-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="3" data-i18n="footer-download-png">Descargar PNG</button></p>
+    <div class="footer-row">
+      <p class="sources" data-i18n="c3-sources"></p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+</div>
+
+<script src="../lib/i18n.js?v=76"></script>
+<script src="./i18n-issue.js?v=45"></script>
+<script src="../lib/utils.js?v=82"></script>
+<script src="../lib/country-names.js?v=74"></script>
+<script src="./data-china.js?v=45"></script>
+<script src="../lib/editor.js?v=90"></script>
+<script src="./br-motor.js?v=45"></script>
+<script src="./chart-china.js?v=45"></script>
+<script src="../lib/png-export.js?v=80"></script>
+<script>
+  applyI18n();
+  initC3();
+  setupLangToggle(() => { c3_onLang(); });
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=45"></script>
+</body>
+</html>

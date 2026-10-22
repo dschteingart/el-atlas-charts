@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-title-en="How much has poverty fallen in Brazil? — The Atlas">¿Cuánto bajó la pobreza en Brasil? — El Atlas</title>
+<meta name="description" content="Pobreza con tres líneas internacionales y desigualdad (Gini) en Brasil, sus vecinos y América Latina, 1981-2024.">
+<link rel="alternate" hreflang="en" href="./chart-pobreza-en.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/06-brasil/chart-pobreza.html">
+<meta property="og:title" content="¿Cuánto bajó la pobreza en Brasil? — El Atlas">
+<meta property="og:description" content="Pobreza con tres líneas internacionales y desigualdad (Gini) en Brasil, sus vecinos y América Latina, 1981-2024.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/06-brasil/thumbs/chart-pobreza.png">
+<meta property="og:image:alt" content="Pobreza en Brasil y América Latina">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="¿Cuánto bajó la pobreza en Brasil? — El Atlas">
+<meta name="twitter:description" content="Pobreza con tres líneas internacionales y desigualdad (Gini) en Brasil, sus vecinos y América Latina, 1981-2024.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/06-brasil/thumbs/chart-pobreza.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=74">
+<link rel="stylesheet" href="../lib/editor.css?v=90">
+<link rel="stylesheet" href="./br.css?v=45">
+</head>
+<body>
+<div class="wrap wrap-wide">
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span class="brand-topic" data-i18n="brand-topic">Brasil</span></div>
+      <div class="lang-toggle"><button data-lang="es" class="active">ES</button><button data-lang="en">EN</button></div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="4" data-editor-id="br-pobreza">
+    <h2 class="chart-title" data-i18n="c4-title"></h2>
+    <p class="chart-subtitle"></p>
+    <div class="br-controls"><div class="br-ctrl"><label data-i18n="lbl-linea">x</label><div class="toggle" id="c4-ind"><button type="button" data-v="8.3" data-i18n="c4-i-8.3">x</button><button type="button" data-v="4.2" data-i18n="c4-i-4.2">x</button><button type="button" data-v="3.0" data-i18n="c4-i-3.0">x</button></div></div><div class="br-ctrl"><label data-i18n="lbl-periodo">Período</label><div class="anios"><input type="number" id="c4-y0" step="1"><div class="dual"><div class="track"></div><div class="fill" id="c4-fill"></div><input type="range" id="c4-r0" aria-label="Desde"><input type="range" id="c4-r1" aria-label="Hasta"></div><input type="number" id="c4-y1" step="1"></div></div><div class="br-ctrl br-ctrl-sel"><label data-i18n="lbl-paises">Países</label><div class="br-sel"><div class="m-search-wrap"><input type="text" id="c4-search" class="m-search-input" autocomplete="off"><div id="c4-search-results" class="m-search-results"></div></div><div class="m-selected-chips" id="c4-selected-chips"></div></div></div></div>
+    <div class="chart-svg-wrap">
+      <svg id="chart4" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltip4"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p><button class="download" data-chart="4-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="4" data-i18n="footer-download-png">Descargar PNG</button></p>
+    <div class="footer-row">
+      <p class="sources" data-i18n="c4-sources"></p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+</div>
+
+<script src="../lib/i18n.js?v=76"></script>
+<script src="./i18n-issue.js?v=45"></script>
+<script src="../lib/utils.js?v=82"></script>
+<script src="../lib/country-names.js?v=74"></script>
+<script src="./data-pobreza.js?v=45"></script>
+<script src="../lib/editor.js?v=90"></script>
+<script src="./br-motor.js?v=45"></script>
+<script src="./chart-pobreza.js?v=45"></script>
+<script src="../lib/png-export.js?v=80"></script>
+<script>
+  applyI18n();
+  initC4();
+  setupLangToggle(() => { c4_onLang(); });
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=45"></script>
+</body>
+</html>
