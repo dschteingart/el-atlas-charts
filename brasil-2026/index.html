@@ -35,8 +35,12 @@
       s.onload = () => cargar(i + 1, 0);
       s.onerror = () => {
         s.remove();
+        const opcional = archivos[i] === 'data/encuestas.js' || archivos[i] === 'data/exterior.js';
+        // En la web, un opcional que falta no se reintenta: exterior.js solo existe en la copia local del streaming,
+        // y los 6 reintentos dejaban la página casi 8 segundos esperando antes de bajar el mapa.
+        if (opcional && location.protocol !== 'file:') { cargar(i + 1, 0); return; }
         if (intento < 6) setTimeout(() => cargar(i, intento + 1), 300 * (intento + 1));
-        else if (archivos[i] === 'data/encuestas.js' || archivos[i] === 'data/exterior.js') cargar(i + 1, 0);  // opcionales: sin ellos, sigue
+        else if (opcional) cargar(i + 1, 0);  // opcionales: sin ellos, sigue
         else document.body.insertAdjacentHTML('beforeend', `<p style="font:20px sans-serif;padding:30px">No se pudo cargar ${archivos[i]}. Recargá la página (F5).</p>`);
       };
       document.body.appendChild(s);
