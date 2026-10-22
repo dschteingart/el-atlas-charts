@@ -11,19 +11,16 @@
 (function () {
   // Los gráficos del número, en el orden del index.
   const CHARTS = [
-    'chart-convergencia.html',
     'chart-mundo.html',
     'chart-exportaciones.html',
     'chart-china.html',
-    'chart-pobreza.html',
-    'chart-educacion.html',
-    'chart-pisa.html',
     'chart-demografia.html',
     'chart-hogares.html',
     'chart-religion.html',
     'chart-valores.html',
-    'chart-homicidios.html',
-    'chart-deforestacion.html'
+    'chart-educacion.html',
+    'chart-pisa.html',
+    'chart-pobreza.html'
   ];
   const INDEX = './index.html';       // índice de esta entrega
   const SITE_HOME = '../index.html';   // inicio del sitio (las 4 entregas)

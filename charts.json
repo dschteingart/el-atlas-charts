@@ -360,11 +360,6 @@
       "formato": "motor propio br-motor.js (líneas, áreas apiladas, columnas y barras apiladas, barras) + un adapter por chart; datos generados por brasil_transformaciones/scripts/web/armar_datos_web.py y páginas por armar_paginas.py",
       "charts": [
         {
-          "archivo": "chart-convergencia.html",
-          "tipo": "líneas (escala lineal o log)",
-          "tema": "PIB per cápita como % del de EE.UU. y en US$ PPA 2011, 1950-2025 (Maddison; 2023-2025 con la variación del Banco Mundial)"
-        },
-        {
           "archivo": "chart-mundo.html",
           "tipo": "dos paneles de líneas (solo Brasil)",
           "tema": "PIB per cápita de Brasil como % del de EE.UU. y participación en el PIB mundial, 1950-2025 (Maddison; 2023-2025 con la variación del Banco Mundial)"
@@ -377,22 +372,7 @@
         {
           "archivo": "chart-china.html",
           "tipo": "líneas + barras apiladas 100%",
-          "tema": "peso de China y otros socios en exportaciones, importaciones e intercambio total; composición tecnológica del comercio con China"
-        },
-        {
-          "archivo": "chart-pobreza.html",
-          "tipo": "líneas con puntos en los años con encuesta",
-          "tema": "pobreza (US$ 3, 4,20 y 8,30 PPA 2021) y Gini, Brasil vs países y regiones (PIP)"
-        },
-        {
-          "archivo": "chart-educacion.html",
-          "tipo": "barras",
-          "tema": "personas de 25 a 29 años con la secundaria completa, censos 1991-2022"
-        },
-        {
-          "archivo": "chart-pisa.html",
-          "tipo": "líneas",
-          "tema": "puntajes PISA por materia, Brasil vs países y promedio OCDE, 2000-2022"
+          "tema": "panel: peso de China, EE.UU., la UE y Argentina en el comercio de Brasil y composición tecnológica (Lall) de lo que se le vende a cada uno; vista aparte del comercio con China"
         },
         {
           "archivo": "chart-demografia.html",
@@ -415,14 +395,19 @@
           "tema": "porcentaje que cree que la homosexualidad, el divorcio, el aborto y la eutanasia nunca se justifican (WVS 1991-2018)"
         },
         {
-          "archivo": "chart-homicidios.html",
-          "tipo": "líneas",
-          "tema": "homicidios por 100.000: Brasil vs países y por región de Brasil"
+          "archivo": "chart-educacion.html",
+          "tipo": "barras",
+          "tema": "personas de 25 a 29 años con la secundaria completa, censos 1991-2022"
         },
         {
-          "archivo": "chart-deforestacion.html",
-          "tipo": "barras de ancho parejo",
-          "tema": "deforestación anual PRODES: Amazonia Legal 1988-2026 y Cerrado 2001-2026 (bienios como una barra)"
+          "archivo": "chart-pisa.html",
+          "tipo": "líneas",
+          "tema": "puntajes PISA en matemática, lectura y ciencias (tres paneles), Brasil vs países y promedio OCDE, 2000-2025"
+        },
+        {
+          "archivo": "chart-pobreza.html",
+          "tipo": "líneas con puntos en los años con encuesta",
+          "tema": "pobreza (US$ 3, 4,20 y 8,30 PPA 2021) y Gini en dos paneles, Brasil vs países y regiones (PIP); Gini de América Latina = promedio de un panel de 16 países"
         }
       ]
     }
