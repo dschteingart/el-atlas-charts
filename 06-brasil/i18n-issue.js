@@ -94,7 +94,7 @@ const ISSUE_I18N = {
     'c1-card': '¿Brasil se está acercando a los países ricos?',
 
     // ---- 2 exportaciones
-    'c2-title': 'En 2000, los productos primarios eran un cuarto de las exportaciones de Brasil; hoy son seis de cada diez',
+    'c2-title': 'En 2000, los productos primarios eran el 25% de las exportaciones de Brasil; hoy son el 61%',
     'c2-v-fator': 'Grado de elaboración', 'c2-v-lall': 'Contenido tecnológico', 'c2-v-productos': 'Productos',
     'c2-m-pct': '% del total', 'c2-m-musd': 'Millones de US$',
     'c2-ytitle-pct': '% de las exportaciones de bienes', 'c2-ytitle-musd': 'Millones de US$ corrientes',
@@ -349,7 +349,7 @@ const ISSUE_I18N = {
     'cat-Aviones': 'Aircraft', 'cat-Maquinaria y equipo eléctrico (SH 84-85)': 'Machinery and electrical equipment',
     'c2-sources': 'Data: Growth Lab (Harvard University), Atlas of Economic Complexity: goods trade in SITC Rev. 2 at 4 digits, 1962-2024, in current dollars. Grouped by the Lall (2000) classification in the Argendata (Fundar) version, which counts ores and gold as primary products. Unclassified are special transactions with no product assigned (SITC 9310) and Other covers items such as electricity, coins or postal packages. Shares are computed over total goods.',
     'c2-png-source': 'Data: Growth Lab (Harvard), Atlas of Economic Complexity; Lall\'s classification of exports by technology content.',
-    'c2-title': 'In 2000, primary products were a quarter of Brazil\'s exports; today they are six in ten',
+    'c2-title': 'In 2000, primary products were 25% of Brazil\'s exports; today they are 61%',
     'lall-ns': 'Unclassified',
     'c2-card': 'What does Brazil sell to the world?',
     'lall-pp': 'Primary products', 'lall-rrnn': 'Resource-based manufactures', 'lall-baja': 'Low-tech manufactures',
