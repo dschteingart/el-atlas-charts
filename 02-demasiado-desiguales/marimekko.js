@@ -55,7 +55,11 @@ function m_getMargins(format) {
   switch (format) {
     case 'public':     return { top: 50, right: 32, bottom: 130, left: 56 };
     case 'newsletter': return { top: 60, right: 30, bottom: 220, left: 70 };
-    case 'square':     return { top: 60, right: 30, bottom: 260, left: 70 };
+    // square: bottom 160 es el piso; el bottom dinámico de drawMarimekko lo
+    // agranda hasta lo que piden los nombres rotados (~170 con los de
+    // fábrica). Con 260 sobraban ~90 unidades bajo los nombres y las barras
+    // quedaban bajas en el PNG cuadrado.
+    case 'square':     return { top: 60, right: 30, bottom: 160, left: 70 };
     // mobile: top reducido (40) — el formato mobile NO renderea tabla
     // regional dentro del SVG (va abajo del chart como HTML colapsable),
     // así que la zona superior solo necesita espacio para el título del
@@ -133,6 +137,10 @@ const M_Y_MAX_DESKTOP = 75;
 // (Sudáfrica ~63 año peor) sin desperdiciar alto — antes 68 dejaba
 // ~17% de plot vacío arriba, ahora ~3%.
 const M_Y_MAX_PORTRAIT = 65;
+// Square (el PNG por defecto): techo en 70, la última línea de la grilla.
+// Con 75 sobraba una banda sin barras arriba; la tabla regional sigue
+// entrando sobre las barras bajas de la derecha.
+const M_Y_MAX_SQUARE = 70;
 // M_Y_MAX se reasigna en drawMarimekko según el formato activo.
 let M_Y_MAX = M_Y_MAX_DESKTOP;
 const M_Y_TICKS = [0, 10, 20, 30, 40, 50, 60, 70];
@@ -461,7 +469,7 @@ function drawMarimekko() {
   // barras llenen el plot vertical y no quede una banda blanca grande entre
   // el techo del plot y la barra más alta. Mobile interactivo (sin editor)
   // y desktop siguen en 75 para no cambiar la versión pública.
-  M_Y_MAX = mobilePng ? M_Y_MAX_PORTRAIT : M_Y_MAX_DESKTOP;
+  M_Y_MAX = mobilePng ? M_Y_MAX_PORTRAIT : square ? M_Y_MAX_SQUARE : M_Y_MAX_DESKTOP;
 
   // === Bottom margin dinámico (P A) ===
   // El bottom default de cada formato (m_getMargins) era una conjetura
@@ -1203,7 +1211,12 @@ window.onBeforePngExport = (svgClone, chartId) => {
     });
   }
 
-  if (!hasSelection) {
+  // En square no se recorta: png-export dibuja el SVG en una caja con la
+  // proporción original y, con el viewBox recortado, lo centraba dejando una
+  // banda vacía arriba del gráfico; los nombres de país igual se veían porque
+  // desbordaban el viewBox. Sin recorte, el SVG llena su caja.
+  const squareFmt = typeof getActivePngFormat === 'function' && getActivePngFormat() === 'square';
+  if (!hasSelection && !squareFmt) {
     // PNG sin selección: solo barras + tabla regional arriba.
     const bottomKeep = M_MARGIN.top + M_PLOT_H + 8;
     const cropFromBottom = Math.max(0, vb.height - bottomKeep);

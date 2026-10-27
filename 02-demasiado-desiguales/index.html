@@ -154,7 +154,7 @@
   // Arranca en ES (el src del HTML) y se cambia al PNG en inglés si LANG==='en'.
   // THUMB_V: cache-busting. Al re-exportar un thumbnail se sobrescribe el MISMO
   // archivo; bumpear este número fuerza recargar todos los thumbnails.
-  var THUMB_V = '3';
+  var THUMB_V = '4';
   function applyThumbLang() {
     var en = (typeof LANG !== 'undefined' && LANG === 'en');
     document.querySelectorAll('.idx-thumb').forEach(function (img) {
