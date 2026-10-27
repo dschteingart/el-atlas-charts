@@ -1,190 +1,263 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>El Atlas — Cartografías del desarrollo</title>
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      font-family: Georgia, "Times New Roman", serif;
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 80px 24px 60px;
-      color: #1a1a1a;
-      line-height: 1.6;
-      background: #fafaf7;
-    }
-    h1 {
-      font-size: 42px;
-      font-weight: 700;
-      margin: 0 0 8px;
-      letter-spacing: -0.5px;
-    }
-    .subtitle {
-      font-size: 20px;
-      color: #555;
-      font-style: italic;
-      margin: 0 0 48px;
-    }
-    .lang-block {
-      margin-bottom: 40px;
-      padding-bottom: 32px;
-      border-bottom: 1px solid #e0ddd5;
-    }
-    .lang-block:last-child {
-      border-bottom: none;
-    }
-    .lang-label {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 11px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: #999;
-      margin-bottom: 12px;
-    }
-    p {
-      margin: 0 0 14px;
-      font-size: 17px;
-    }
-    .author {
-      margin-top: 56px;
-      font-size: 14px;
-      color: #888;
-      text-align: center;
-    }
-    a {
-      color: #1a1a1a;
-      text-decoration: underline;
-      text-decoration-color: #c4b896;
-      text-underline-offset: 3px;
-    }
-    a:hover {
-      text-decoration-color: #1a1a1a;
-    }
-    .issues-heading {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 11px;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: #999;
-      margin: 24px 0 12px;
-    }
-    .issue {
-      margin: 0 0 4px;
-      font-size: 16px;
-      line-height: 1.5;
-    }
-    .issue-num {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 11px;
-      letter-spacing: 1px;
-      color: #be5d32;
-      font-weight: 600;
-      margin-right: 8px;
-    }
-    .issue-lede {
-      display: block;
-      font-style: italic;
-      color: #555;
-      font-size: 15px;
-      margin-top: 4px;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Atlas — Gráficos interactivos y datos abiertos</title>
+<meta name="description" content="Investigaciones con datos sobre en qué es, y en qué no es, excepcional América Latina. Gráficos interactivos y datos para descargar.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/">
+<meta property="og:title" content="El Atlas — Gráficos interactivos y datos abiertos">
+<meta property="og:description" content="En qué es, y en qué no es, excepcional América Latina. Gráficos interactivos y datos para descargar.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/thumbs/portada.png">
+<meta property="og:image:alt" content="El Atlas: cuatro gráficos interactivos sobre fútbol, discriminación, religión en Brasil y el balotaje brasileño">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/thumbs/portada.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #FAF8F3; --bg-soft: #F4F1E8; --ink: #1A1A1A; --ink-soft: #4A4A4A; --ink-muted: #8A8579;
+    --rule: #E0DCC8; --accent: #BE5D32;
+    --serif: 'Source Serif 4', Georgia, "Times New Roman", serif;
+    --sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--serif); line-height: 1.55; }
+  a { color: inherit; }
+  .hub { max-width: 1080px; margin: 0 auto; padding: 18px 24px 64px; }
+  .hub-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--rule); }
+  .hub-brand { font-family: var(--sans); font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+  .hub-brand span { color: var(--ink-muted); font-weight: 600; }
+  .hub-top-right { display: flex; align-items: center; gap: 14px; }
+  .hub-top-sub { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--accent); text-decoration: none; white-space: nowrap; }
+  .hub-lang button { font-family: var(--sans); font-size: 13px; font-weight: 600; letter-spacing: .06em; background: none; border: 0; border-bottom: 2px solid transparent; color: var(--ink-muted); padding: 8px 8px; cursor: pointer; }
+  .hub-lang button.active { color: var(--ink); border-bottom-color: var(--accent); }
+
+  .hub-hero { padding: 44px 0 30px; max-width: 760px; }
+  .hub-hero h1 { font-size: 56px; line-height: 1.02; margin: 0; letter-spacing: -.5px; }
+  .hub-tag { font-style: italic; color: var(--ink-soft); font-size: 22px; margin: 6px 0 22px; }
+  .hub-pitch { font-size: 19px; margin: 0 0 22px; }
+  .hub-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .btn { font-family: var(--sans); font-weight: 700; font-size: 15px; text-decoration: none; border-radius: 24px; padding: 11px 22px; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #A44E28; }
+  .btn-ghost { border: 1px solid var(--rule); color: var(--ink); background: #fff; }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .hub-facts { font-family: var(--sans); font-size: 13px; letter-spacing: .04em; color: var(--ink-muted); margin: 18px 0 0; }
+
+  .hub-label { font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-muted); margin: 18px 0 14px; }
+  .hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 22px; }
+  .issue { background: #fff; border: 1px solid var(--rule); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+  .issue-thumb { display: block; aspect-ratio: 4 / 3; background: var(--bg-soft); overflow: hidden; }
+  .issue-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+  .issue-body { padding: 14px 18px 18px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .issue-kicker { font-family: var(--sans); font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+  .issue h2 { font-size: 21px; line-height: 1.2; margin: 0; }
+  .issue h2 a { text-decoration: none; }
+  .issue h2 a:hover { color: var(--accent); }
+  .issue-lede { font-size: 15.5px; color: var(--ink-soft); margin: 0; }
+  .issue-actions { margin-top: auto; padding-top: 10px; display: flex; flex-wrap: wrap; gap: 8px 16px; font-family: var(--sans); font-size: 14.5px; font-weight: 700; }
+  .issue-actions a { text-decoration: none; color: var(--accent); }
+  .issue-actions a:hover { text-decoration: underline; text-underline-offset: 3px; }
+  .issue-note { display: block; margin: 4px 0 0; font-family: var(--sans); font-size: 14px; line-height: 1.4; color: var(--accent); text-decoration: none; }
+  .issue-note-k { font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .issue-note-t { font-family: var(--serif); font-style: italic; font-size: 15.5px; color: var(--ink-soft); }
+  .issue-note:hover .issue-note-t { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+  .issue-more { font-family: var(--sans); font-size: 13.5px; color: var(--ink-muted); margin: 2px 0 0; }
+  .issue-more a { color: var(--ink-soft); }
+
+  .hub-sub { margin: 48px 0 0; padding: 28px; border: 1px solid var(--rule); border-radius: 14px; background: #fff; display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; }
+  .hub-sub h2 { margin: 0 0 4px; font-size: 24px; }
+  .hub-sub p { margin: 0; color: var(--ink-soft); }
+  .hub-foot { margin-top: 40px; font-family: var(--sans); font-size: 13.5px; color: var(--ink-muted); display: flex; flex-wrap: wrap; gap: 6px 18px; }
+  .hub-foot a { color: var(--ink-soft); }
+
+  @media (max-width: 640px) {
+    .hub { padding: 14px 16px 48px; }
+    .hub-brand span { display: none; }
+    .hub-hero { padding: 30px 0 20px; }
+    .hub-hero h1 { font-size: 42px; }
+    .hub-tag { font-size: 19px; margin-bottom: 16px; }
+    .hub-pitch { font-size: 17px; }
+    .hub-grid { grid-template-columns: 1fr; gap: 18px; }
+    .hub-sub { grid-template-columns: 1fr; padding: 22px; }
+  }
+</style>
 </head>
 <body>
+<div class="hub">
+  <header class="hub-top">
+    <div class="hub-brand">El Atlas <span data-t="brand-sub">· Gráficos interactivos</span></div>
+    <div class="hub-top-right">
+      <a class="hub-top-sub" data-href="subscribe" data-t="sub" href="https://elatlas.substack.com/subscribe">Suscribite gratis →</a>
+      <div class="hub-lang"><button data-lang="es" class="active">ES</button><button data-lang="en">EN</button></div>
+    </div>
+  </header>
 
-  <div class="lang-block">
-    <div class="lang-label">Español</div>
-    <h1>El Atlas</h1>
-    <p class="subtitle">Cartografías del desarrollo</p>
-    <p>Repositorio de visualizaciones interactivas del Substack <em>El Atlas</em>, escrito por Daniel Schteingart. Los gráficos exploran cómo América Latina se compara con el resto del mundo en distintas dimensiones del desarrollo.</p>
-    <p>Cada visualización incluye los datos descargables en formato CSV.</p>
-    <p class="issues-heading">Números publicados</p>
-    <p class="issue">
-      <span class="issue-num">N° 6</span>
-      <a href="./06-brasil/">Brasil: las grandes transformaciones</a>
-      <span class="issue-lede">Cómo se convirtió Brasil en el país que es hoy: una economía que dejó de converger y una sociedad que se transformó como nunca.</span>
-    </p>
-    <p class="issue">
-      <span class="issue-num">Especial</span>
-      <a href="./brasil-2026/">Elecciones Brasil</a>
-      <span class="issue-lede">Cómo llega Brasil a las urnas en trece gráficos: economía, empleo, pobreza, desigualdad, violencia, comercio con Argentina, encuestas, el mapa de 2022 municipio por municipio y quién votó a quién.</span>
-    </p>
-    <p class="issue">
-      <span class="issue-num">N° 5</span>
-      <a href="./05-pantheon/">La geografía de la fama</a>
-      <span class="issue-lede">Quién entra en la memoria del mundo, de dónde viene y qué hizo, con más de 110.000 figuras célebres.</span>
-    </p>
-    <p class="issue">
-      <span class="issue-num">N° 4</span>
-      <a href="./04-intolerancia/">¿El país más racista del mundo?</a>
-      <span class="issue-lede">¿Se puede comparar el racismo entre países? La respuesta cambia con la lente — y es probable que ese país no exista.</span>
-    </p>
-    <p class="issue">
-      <span class="issue-num">N° 3</span>
-      <a href="./03-futbol/">El Atlas del fútbol</a>
-      <span class="issue-lede">Dónde se juega, de dónde salen los jugadores y quién gana: 49.000 partidos de selecciones desde 1872 y un siglo de mundialistas.</span>
-    </p>
-    <p class="issue">
-      <span class="issue-num">N° 2</span>
-      <a href="./02-demasiado-desiguales/">¿Es América Latina realmente la región más desigual del mundo?</a>
-      <span class="issue-lede">La excepcionalidad latinoamericana en desigualdad existe, pero no donde solemos creer.</span>
-    </p>
-    <p class="issue">
-      <span class="issue-num">N° 1</span>
-      <a href="./01-bienestar-violencia/">Más feliz de lo que debería, más violenta de lo tolerable</a>
-      <span class="issue-lede">América Latina se desvía del mundo en dos direcciones a la vez.</span>
-    </p>
-  </div>
+  <section class="hub-hero">
+    <h1 data-t="name">El Atlas</h1>
+    <p class="hub-tag" data-t="tag">Cartografías del desarrollo</p>
+    <p class="hub-pitch" data-t="pitch">Investigaciones con datos sobre en qué es, y en qué no es, excepcional América Latina. Cada número combina una investigación en el newsletter con un conjunto de gráficos para comparar países, descargar los datos y compartir la vista exacta.</p>
+    <div class="hub-actions">
+      <a class="btn btn-primary" data-href="subscribe" data-t="sub-btn" href="https://elatlas.substack.com/subscribe">Suscribite gratis</a>
+      <a class="btn btn-ghost" data-href="archive" data-t="archive" href="https://elatlas.substack.com/archive">Leé las notas</a>
+    </div>
+    <p class="hub-facts" id="hub-facts"></p>
+  </section>
 
-  <div class="lang-block">
-    <div class="lang-label">English</div>
-    <h1>The Atlas</h1>
-    <p class="subtitle">Mapping development</p>
-    <p>Interactive visualizations from <em>The Atlas</em>, a Substack by Daniel Schteingart. The charts explore how Latin America compares to the rest of the world across different dimensions of development.</p>
-    <p>Each visualization includes downloadable data in CSV format.</p>
-    <p class="issues-heading">Published issues</p>
-    <p class="issue">
-      <span class="issue-num">No. 6</span>
-      <a href="./06-brasil/index-en.html">Brazil: the great transformations</a>
-      <span class="issue-lede">How Brazil became the country it is today: an economy that stopped catching up and a society that changed faster than ever.</span>
-    </p>
-    <p class="issue">
-      <span class="issue-num">Special</span>
-      <a href="./brasil-2026/index-en.html">Brazil Elections</a>
-      <span class="issue-lede">How Brazil heads into the vote in thirteen charts: economy, jobs, poverty, inequality, violence, trade with Argentina, polls, the 2022 map municipality by municipality and who voted for whom.</span>
-    </p>
-    <p class="issue">
-      <span class="issue-num">No. 5</span>
-      <a href="./05-pantheon/index.html?lang=en">The geography of fame</a>
-      <span class="issue-lede">Who makes it into the world’s memory, where they came from and what they did, across 110,000-plus notable figures.</span>
-    </p>
-    <p class="issue">
-      <span class="issue-num">No. 4</span>
-      <a href="./04-intolerancia/index-en.html">The most racist country in the world?</a>
-      <span class="issue-lede">Can racism be compared across countries? The answer changes with the lens — and that country probably doesn't exist.</span>
-    </p>
-    <p class="issue">
-      <span class="issue-num">No. 3</span>
-      <a href="./03-futbol/index-en.html">The Atlas of football</a>
-      <span class="issue-lede">Where football is played, where the players come from and who wins: 49,000 international matches since 1872 and a century of World Cup squads.</span>
-    </p>
-    <p class="issue">
-      <span class="issue-num">No. 2</span>
-      <a href="./02-demasiado-desiguales/index-en.html">Is Latin America really the most unequal region in the world?</a>
-      <span class="issue-lede">Latin American exceptionalism in inequality exists, but not where we usually think.</span>
-    </p>
-    <p class="issue">
-      <span class="issue-num">No. 1</span>
-      <a href="./01-bienestar-violencia/index-en.html">Happier than it should be, more violent than tolerable</a>
-      <span class="issue-lede">Latin America deviates from the world in two directions at once.</span>
-    </p>
-  </div>
+  <div class="hub-label" data-t="issues">Números publicados</div>
+  <div class="hub-grid" id="hub-grid"></div>
 
-  <div class="author">
-    Daniel Schteingart · Buenos Aires
-  </div>
+  <section class="hub-sub">
+    <div>
+      <h2 data-t="sub-title">Una investigación por mes, gratis</h2>
+      <p data-t="sub-text">Llega por mail con los gráficos y el link para explorarlos. También existe una edición en inglés con ganchos propios para lectores de afuera.</p>
+    </div>
+    <a class="btn btn-primary" data-href="subscribe" data-t="sub-btn" href="https://elatlas.substack.com/subscribe">Suscribite gratis</a>
+  </section>
 
+  <footer class="hub-foot">
+    <span>Daniel Schteingart · Buenos Aires</span>
+    <a data-href="about" data-t="about" href="https://elatlas.substack.com/about">Sobre El Atlas</a>
+    <a data-href="other" data-t="other" href="https://atlasdevelopment.substack.com">The Atlas, en inglés</a>
+  </footer>
+</div>
+
+<script>
+(function () {
+function boot() {
+  // Los números del sitio. La nota de cada uno sale de lib/articulos.js
+  // (tools/sync_articulos.py), así el título y el link nunca quedan viejos.
+  // El título de la tarjeta es el de la colección de gráficos, que a veces es
+  // más amplia que la nota (el fútbol); por eso la nota va aparte, con su título.
+  // thumb/thumbEn: miniatura de cada idioma. note: fuerza una nota distinta de
+  // la que sale por carpeta (el especial de Brasil muestra la última).
+  var ISSUES = [
+    { folder: '06-brasil', es: './06-brasil/', en: './06-brasil/index-en.html', n: 10,
+      thumb: './06-brasil/thumbs/card/chart-mundo.webp', thumbEn: './06-brasil/thumbs/card/chart-mundo.en.webp',
+      kicker: { es: 'N° 6', en: 'No. 6' },
+      title: { es: 'Brasil: las grandes transformaciones', en: 'Brazil: the great transformations' },
+      lede: { es: 'Una economía que dejó de converger y una sociedad que se transformó como nunca.', en: 'An economy that stopped catching up and a society that changed faster than ever.' } },
+    { folder: 'brasil-2026', es: './brasil-2026/', en: './brasil-2026/index-en.html', n: 13,
+      thumb: './brasil-2026/thumbs/card/balotaje-flechas.webp', thumbEn: './brasil-2026/thumbs/card/balotaje-flechas.en.webp',
+      kicker: { es: 'Especial', en: 'Special' },
+      title: { es: 'Elecciones en Brasil', en: 'Brazil elections' },
+      lede: { es: 'Cómo llegó Brasil a las urnas y cómo votó, del vuelco de la primera vuelta a la remontada de Lula en el balotaje.', en: 'How Brazil headed into the vote and how it voted, from the first-round swing to Lula’s comeback in the runoff.' },
+      note: 'es:la-primera-remontada-de-brasil',
+      more: ['es:un-vuelco-de-siete-puntos-que-llego', 'es:brasil-ante-las-urnas-12-graficos'] },
+    { folder: '05-pantheon', es: './05-pantheon/', en: './05-pantheon/index.html?lang=en', n: 7,
+      thumb: './05-pantheon/thumbs/card/percap-map.webp', thumbEn: './05-pantheon/thumbs/card/percap-map.en.webp',
+      kicker: { es: 'N° 5', en: 'No. 5' },
+      title: { es: 'La geografía de la fama', en: 'The geography of fame' },
+      lede: { es: 'Quién entra en la memoria del mundo, de dónde viene y qué hizo: más de 110.000 figuras célebres.', en: 'Who makes it into the world’s memory, where they came from and what they did: 110,000-plus notable figures.' } },
+    { folder: '04-intolerancia', es: './04-intolerancia/', en: './04-intolerancia/index-en.html', n: 7,
+      thumb: './04-intolerancia/thumbs/card/chart-vecinos.webp', thumbEn: './04-intolerancia/thumbs/card/chart-vecinos.en.webp',
+      kicker: { es: 'N° 4', en: 'No. 4' },
+      title: { es: '¿El país más racista del mundo?', en: 'The World’s Most Racist Country?' },
+      lede: { es: '¿Se puede comparar el racismo entre países? La respuesta cambia con la lente.', en: 'Can racism be compared across countries? The answer changes with the lens.' } },
+    { folder: '03-futbol', es: './03-futbol/', en: './03-futbol/index-en.html', n: 22,
+      thumb: './03-futbol/thumbs/card/chart-elo-pib.webp', thumbEn: './03-futbol/thumbs/card/chart-elo-pib.en.webp',
+      kicker: { es: 'N° 3', en: 'No. 3' },
+      title: { es: 'El Atlas del fútbol', en: 'The Atlas of football' },
+      lede: { es: 'Empezó con una pregunta sobre Sudamérica y creció hasta cubrir el fútbol del mundo: dónde se juega, de dónde salen los jugadores y quién gana, en 49.000 partidos de selecciones desde 1872.', en: 'It began as a question about South America and grew to cover the world’s football: where it is played, where the players come from and who wins, across 49,000 international matches since 1872.' } },
+    { folder: '02-demasiado-desiguales', es: './02-demasiado-desiguales/', en: './02-demasiado-desiguales/index-en.html', n: 4,
+      thumb: './02-demasiado-desiguales/thumbs/card/chart-1.webp', thumbEn: './02-demasiado-desiguales/thumbs/card/chart-1.en.webp',
+      kicker: { es: 'N° 2', en: 'No. 2' },
+      title: { es: '¿Es América Latina realmente la región más desigual del mundo?', en: 'Is Latin America really the world’s most unequal region?' },
+      lede: { es: 'La excepcionalidad latinoamericana en desigualdad existe, pero no donde solemos creer.', en: 'Latin American exceptionalism in inequality exists, but not where we usually think.' } },
+    { folder: '01-bienestar-violencia', es: './01-bienestar-violencia/', en: './01-bienestar-violencia/index-en.html', n: 3,
+      thumb: './01-bienestar-violencia/thumbs/card/chart-1.webp', thumbEn: './01-bienestar-violencia/thumbs/card/chart-1.en.webp',
+      kicker: { es: 'N° 1', en: 'No. 1' },
+      title: { es: 'Más feliz de lo que debería, más violenta de lo tolerable', en: 'Happier than it should be, more violent than tolerable' },
+      lede: { es: 'América Latina se desvía del mundo en dos direcciones a la vez.', en: 'Latin America deviates from the world in two directions at once.' } }
+  ];
+  var SUBS = { es: 'https://elatlas.substack.com', en: 'https://atlasdevelopment.substack.com' };
+  var T = {
+    es: { 'brand-sub': '· Gráficos interactivos', sub: 'Suscribite gratis →', name: 'El Atlas', tag: 'Cartografías del desarrollo',
+          pitch: 'Investigaciones con datos sobre en qué es, y en qué no es, excepcional América Latina. Cada número combina una investigación en el newsletter con un conjunto de gráficos para comparar países, descargar los datos y compartir la vista exacta.',
+          'sub-btn': 'Suscribite gratis', archive: 'Leé las notas', issues: 'Números publicados', note: 'La nota', lastNote: 'La última nota', read: 'Leé la nota →', charts: 'Explorá {N} gráficos →',
+          also: 'Y además:', 'sub-title': 'Una investigación por mes, gratis',
+          'sub-text': 'Llega por mail con los gráficos y el link para explorarlos. También existe una edición en inglés con ganchos propios para lectores de afuera.',
+          about: 'Sobre El Atlas', other: 'The Atlas, en inglés', facts: '{I} números · {C} gráficos interactivos · datos descargables en CSV' },
+    en: { 'brand-sub': '· Interactive charts', sub: 'Subscribe for free →', name: 'The Atlas', tag: 'Mapping development from Latin America',
+          pitch: 'Data-driven essays on where Latin America is, and is not, exceptional. Each issue pairs an essay in the newsletter with a set of charts to compare countries, download the data and share the exact view.',
+          'sub-btn': 'Subscribe for free', archive: 'Read the essays', issues: 'Published issues', note: 'The article', lastNote: 'Latest article', read: 'Read the article →', charts: 'Explore {N} charts →',
+          also: 'Also:', 'sub-title': 'One essay a month, free',
+          'sub-text': 'Delivered by email with the charts and a link to explore them. There is also a Spanish edition, El Atlas.',
+          about: 'About The Atlas', other: 'El Atlas, in Spanish', facts: '{I} issues · {C} interactive charts · downloadable CSV data' }
+  };
+  var A = window.ATLAS_ARTICULOS || { notas: {}, carpetas: {}, pares: {} };
+  var MONTHS = { es: ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'],
+                 en: ['January','February','March','April','May','June','July','August','September','October','November','December'] };
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function track(url, what) { return url + (url.indexOf('?') < 0 ? '?' : '&') + 'utm_source=el-atlas-charts&utm_medium=inicio&utm_campaign=' + what; }
+  function note(slug, L) {
+    if (!slug) return null;
+    if (slug.indexOf(L + ':') !== 0) slug = A.pares[slug] || null;
+    return slug ? A.notas[slug] : null;
+  }
+  // Si la nota se llama igual que la colección, alcanza con "Leé la nota".
+  function same(a, b) { var k = function (x) { return String(x).toLowerCase().replace(/[^a-záéíóúñü0-9]+/g, ''); }; return k(a) === k(b); }
+  function when(n, L) { if (!n) return ''; var d = n.date.split('-'); return MONTHS[L][+d[1] - 1] + ' ' + d[0]; }
+
+  function render(L) {
+    var t = T[L];
+    document.documentElement.lang = L;
+    document.title = L === 'en' ? 'The Atlas — Interactive charts and open data' : 'El Atlas — Gráficos interactivos y datos abiertos';
+    document.querySelectorAll('[data-t]').forEach(function (el) { var k = el.getAttribute('data-t'); if (t[k]) el.textContent = t[k]; });
+    document.querySelectorAll('[data-href]').forEach(function (el) {
+      var k = el.getAttribute('data-href'), base = SUBS[L];
+      el.href = k === 'other' ? SUBS[L === 'en' ? 'es' : 'en'] : track(base + (k === 'subscribe' ? '/subscribe' : '/' + k), 'portada');
+    });
+    document.querySelectorAll('.hub-lang button').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-lang') === L); });
+    var total = 0;
+    document.getElementById('hub-grid').innerHTML = ISSUES.map(function (it) {
+      total += it.n;
+      var n = note(it.note || (A.carpetas[it.folder] || {})[L], L);
+      var kicker = it.kicker[L] + (n ? ' · ' + when(n, L) : '');
+      var more = (it.more || []).map(function (s) { return note(s, L); }).filter(Boolean)
+        .map(function (m) { return '<a href="' + esc(track(m.url, it.folder)) + '" target="_blank" rel="noopener">' + esc(m.title) + '</a>'; });
+      var img = (L === 'en' && it.thumbEn) ? it.thumbEn : it.thumb;
+      return '<article class="issue">'
+        + '<a class="issue-thumb" href="' + it[L] + '"><img src="' + img + '" alt="" loading="lazy"></a>'
+        + '<div class="issue-body"><span class="issue-kicker">' + esc(kicker) + '</span>'
+        + '<h2><a href="' + it[L] + '">' + esc(it.title[L]) + '</a></h2>'
+        + '<p class="issue-lede">' + esc(it.lede[L]) + '</p>'
+        + (n ? '<a class="issue-note" href="' + esc(track(n.url, it.folder)) + '" target="_blank" rel="noopener">'
+            + (same(n.title, it.title[L]) ? '<span class="issue-note-k">' + t.read + '</span>'
+               : '<span class="issue-note-k">' + (it.more ? t.lastNote : t.note) + '</span> <span class="issue-note-t">' + esc(n.title) + '</span> →')
+            + '</a>' : '')
+        + (more.length ? '<p class="issue-more">' + t.also + ' ' + more.join(' · ') + '</p>' : '')
+        + '<div class="issue-actions">'
+        + '<a href="' + it[L] + '">' + t.charts.replace('{N}', it.n) + '</a></div></div></article>';
+    }).join('');
+    document.getElementById('hub-facts').textContent = t.facts.replace('{I}', ISSUES.length).replace('{C}', total);
+  }
+
+  var L = 'es';
+  var q = (location.search.match(/[?&]lang=(es|en)/) || [])[1];
+  try { L = q || localStorage.getItem('atlas-lang') || L; } catch (e) { L = q || L; }
+  if (L !== 'en') L = 'es';
+  render(L);
+  document.querySelectorAll('.hub-lang button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      L = b.getAttribute('data-lang');
+      try { localStorage.setItem('atlas-lang', L); } catch (e) {}
+      render(L);
+    });
+  });
+}
+  // El mapa de notas se pide con un parámetro diario (ver lib/atlas-nav.js):
+  // cambia con cada número y así no hay que tocar este archivo para que llegue.
+  var s = document.createElement('script');
+  s.src = './lib/articulos.js?d=' + new Date().toISOString().slice(0, 10).replace(/-/g, '');
+  s.onload = boot; s.onerror = boot;
+  document.body.appendChild(s);
+})();
+</script>
 </body>
 </html>
