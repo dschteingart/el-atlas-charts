@@ -1,14 +1,15 @@
 // Chart 2 — Exportaciones de bienes por contenido tecnológico (Lall), cualquier país, 1962-2024, en áreas
-// apiladas (patrón 03b-partidos/ts-partidos.js, chart de amistosos). Datos SITC Rev. 2 del Atlas of Economic
-// Complexity (Harvard Growth Lab) agrupados con la clasificación de Lall de Argendata (Fundar), que cuenta
-// minerales y oro como productos primarios. % del total o millones de US$ corrientes.
+// apiladas (patrón 03b-partidos/ts-partidos.js, chart de amistosos). Empalme del Atlas of Economic Complexity
+// (Harvard Growth Lab, SITC Rev. 2) hasta 1994 con BACI (CEPII) desde 2005, promediados en 1995-2004
+// (scripts/eje2_baci_lall.py), agrupados con la clasificación de Lall de Argendata (Fundar), que cuenta
+// minerales y oro como productos primarios. Sin las partidas sin producto (SITC 9310 y 9110). % del total o
+// millones de US$ corrientes.
 // Datos: BR_EXP.atlas (data-exportaciones.js): {years, escala, tot: {iso3: [millones US$]},
 //        g: {iso3: {pp|rrnn|baja|media|alta|otros: [participación × escala]}}}.
 // Paleta: dos familias (pedido de Daniel): verdes para primarios y manufacturas de recursos naturales,
-// azules para media y alta tecnología; baja tecnología en ocre; "otros" y "sin clasificar" en dos grises.
-// "otros" (Lall 9) y "sin clasificar" (operaciones especiales, SITC 9310) en dos grises distintos
-const C2_CATS = [['pp', '#2D6A3D'], ['rrnn', '#6CB04D'], ['baja', '#C9A227'], ['media', '#1F8AC0'], ['alta', '#234B85'], ['otros', '#C9C3B6'], ['ns', '#8A8579']];
-const C2_GRIS = { otros: '#9A9488', ns: '#6E695F' };   // color de la etiqueta (más oscuro que la banda)
+// azules para media y alta tecnología; baja tecnología en ocre; "otros" (Lall 9) en gris.
+const C2_CATS = [['pp', '#2D6A3D'], ['rrnn', '#6CB04D'], ['baja', '#C9A227'], ['media', '#1F8AC0'], ['alta', '#234B85'], ['otros', '#C9C3B6']];
+const C2_GRIS = { otros: '#9A9488' };   // color de la etiqueta (más oscuro que la banda)
 const C2_A = BR_EXP.atlas;
 const C2_MIN = C2_A.years[0], C2_MAX = C2_A.years[C2_A.years.length - 1];
 const C2_DEF = { m: 'pct', p: [C2_MIN, C2_MAX], pais: 'BRA' };
