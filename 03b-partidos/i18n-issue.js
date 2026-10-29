@@ -670,13 +670,23 @@ function applyI18n() {
 }
 
 // Resolver idioma: ?lang=en|es en la URL tiene prioridad; si no, lo último
-// elegido (localStorage), para que el idioma sobreviva a la navegación.
+// elegido (localStorage), pero solo al navegar dentro del sitio. Los links
+// internos son ./chart-X.html pelados, sin ?lang, y sin la preferencia cada
+// página nueva volvía a ES. Quien llega de afuera (una nota, un mail, un link
+// compartido) con la URL pelada abrió la versión en castellano: no se le
+// aplica lo guardado (las notas de El Atlas abrían en inglés a quien alguna
+// vez eligió inglés) y el castellano pasa a ser su preferencia. Por file://
+// no hay referrer, así que ahí se mantiene la preferencia.
 (function initLang() {
   let stored = null;
   try { stored = localStorage.getItem('atlas-lang'); } catch (_) {}
   const urlLang = new URLSearchParams(location.search).get('lang');
+  let internal = location.protocol === 'file:';
+  try { internal = internal || new URL(document.referrer).origin === location.origin; } catch (_) {}
   if (urlLang === 'en' || urlLang === 'es') {
     LANG = urlLang;
+    try { localStorage.setItem('atlas-lang', LANG); } catch (_) {}
+  } else if (!internal) {
     try { localStorage.setItem('atlas-lang', LANG); } catch (_) {}
   } else if (stored === 'en' || stored === 'es') {
     LANG = stored;
