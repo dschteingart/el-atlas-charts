@@ -23,7 +23,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../lib/style.css?v=74">
 <link rel="stylesheet" href="../lib/editor.css?v=90">
-<link rel="stylesheet" href="./br.css?v=48">
+<link rel="stylesheet" href="./br.css?v=49">
 </head>
 <body>
 <div class="wrap wrap-wide">
@@ -37,7 +37,7 @@
   <section class="chart-block" data-chart="2" data-editor-id="br-exportaciones">
     <h2 class="chart-title" data-i18n="c2-title"></h2>
     <p class="chart-subtitle"></p>
-    <div class="br-controls"><div class="br-ctrl"><label data-i18n="lbl-pais">x</label><select class="m-select" id="c2-pais"></select></div><div class="br-ctrl"><label data-i18n="lbl-medida">x</label><div class="toggle" id="c2-medida"><button type="button" data-v="pct" data-i18n="c2-m-pct">x</button><button type="button" data-v="musd" data-i18n="c2-m-musd">x</button></div></div><div class="br-ctrl"><label data-i18n="lbl-periodo">Período</label><div class="anios"><input type="number" id="c2-y0" step="1"><div class="dual"><div class="track"></div><div class="fill" id="c2-fill"></div><input type="range" id="c2-r0" aria-label="Desde"><input type="range" id="c2-r1" aria-label="Hasta"></div><input type="number" id="c2-y1" step="1"></div></div></div>
+    <div class="br-controls"><div class="br-ctrl"><label data-i18n="lbl-pais">x</label><select class="m-select" id="c2-pais"></select></div><div class="br-ctrl"><label data-i18n="lbl-flujo">x</label><div class="toggle" id="c2-flujo"><button type="button" data-v="EXP" data-i18n="c3-f-EXP">x</button><button type="button" data-v="IMP" data-i18n="c3-f-IMP">x</button></div></div><div class="br-ctrl"><label data-i18n="lbl-medida">x</label><div class="toggle" id="c2-medida"><button type="button" data-v="pct" data-i18n="c2-m-pct">x</button><button type="button" data-v="musd" data-i18n="c2-m-musd">x</button></div></div><div class="br-ctrl"><label data-i18n="lbl-periodo">Período</label><div class="anios"><input type="number" id="c2-y0" step="1"><div class="dual"><div class="track"></div><div class="fill" id="c2-fill"></div><input type="range" id="c2-r0" aria-label="Desde"><input type="range" id="c2-r1" aria-label="Hasta"></div><input type="number" id="c2-y1" step="1"></div></div></div>
     <div class="chart-svg-wrap">
       <svg id="chart2" viewBox="0 0 1100 560" preserveAspectRatio="xMidYMid meet"></svg>
       <div class="tooltip" id="tooltip2"></div>
@@ -57,17 +57,17 @@
 <script src="./i18n-issue.js?v=49"></script>
 <script src="../lib/utils.js?v=82"></script>
 <script src="../lib/country-names.js?v=74"></script>
-<script src="./data-exportaciones.js?v=48"></script>
+<script src="./data-exportaciones.js?v=49"></script>
 <script src="../lib/editor.js?v=90"></script>
-<script src="./br-motor.js?v=48"></script>
-<script src="./chart-exportaciones.js?v=48"></script>
-<script src="../lib/png-export.js?v=81"></script>
+<script src="./br-motor.js?v=49"></script>
+<script src="./chart-exportaciones.js?v=49"></script>
+<script src="../lib/png-export.js?v=82"></script>
 <script>
   applyI18n();
   initC2();
   setupLangToggle(() => { c2_onLang(); });
 </script>
 <div id="chart-nav"></div>
-<script src="./nav.js?v=48"></script>
+<script src="./nav.js?v=49"></script>
 </body>
 </html>
