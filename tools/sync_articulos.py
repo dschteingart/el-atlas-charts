@@ -39,13 +39,16 @@ def get_json(url, tries=4):
 
 
 def archive(base):
-    posts, off = [], 0
+    # Desde nov-2026 el archivo devuelve {posts, nextCursor}, acepta hasta 25 por página y no admite offset.
+    posts, cursor = [], None
     while True:
-        page = get_json(f'{base}/api/v1/archive?sort=new&limit=50&offset={off}')
-        posts += page
-        if len(page) < 50:
+        page = get_json(f'{base}/api/v1/archive?sort=new&limit=25' + (f'&cursor={cursor}' if cursor else ''))
+        if isinstance(page, list):  # formato viejo
+            return posts + page
+        posts += page.get('posts', [])
+        cursor = page.get('nextCursor')
+        if not cursor or not page.get('posts'):
             return posts
-        off += 50
 
 
 def chart_key(href):
