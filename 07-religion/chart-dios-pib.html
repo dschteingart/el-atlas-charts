@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-title-en="Does Latin America value God more than its income would predict? — The Atlas">¿América Latina le da a Dios más importancia de la que predice su ingreso? — El Atlas</title>
+<meta name="description" content="Importancia de Dios en la propia vida contra PIB per cápita en 91 países, con la tendencia del resto del mundo como referencia. Elegí países o apagá regiones. Integrated Values Surveys y Banco Mundial, 2017-2023.">
+<link rel="alternate" hreflang="en" href="./chart-dios-pib-en.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/07-religion/chart-dios-pib.html">
+<meta property="og:title" content="¿América Latina le da a Dios más importancia de la que predice su ingreso? — El Atlas">
+<meta property="og:description" content="Importancia de Dios en la propia vida contra PIB per cápita en 91 países, con la tendencia del resto del mundo como referencia. Elegí países o apagá regiones. Integrated Values Surveys y Banco Mundial, 2017-2023.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/07-religion/thumbs/chart-dios-pib.png">
+<meta property="og:image:alt" content="Importancia de Dios y PIB per cápita, 91 países">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="¿América Latina le da a Dios más importancia de la que predice su ingreso? — El Atlas">
+<meta name="twitter:description" content="Importancia de Dios en la propia vida contra PIB per cápita en 91 países, con la tendencia del resto del mundo como referencia. Elegí países o apagá regiones. Integrated Values Surveys y Banco Mundial, 2017-2023.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/07-religion/thumbs/chart-dios-pib.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=74">
+<link rel="stylesheet" href="../lib/editor.css?v=90">
+<link rel="stylesheet" href="./rel.css?v=3">
+<link rel="stylesheet" href="./rel-scatter.css?v=3">
+</head>
+<body>
+<div class="wrap wrap-wide">
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span class="brand-topic" data-i18n="brand-topic">Religión</span></div>
+      <div class="lang-toggle"><button data-lang="es" class="active">ES</button><button data-lang="en">EN</button></div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="diospib" data-editor-id="religion-dios-pib">
+    <h2 class="chart-title" data-i18n="cdp-title">Los latinoamericanos le dan a Dios más importancia de la esperable para su ingreso</h2>
+    <p class="chart-subtitle"></p>
+    <div class="br-controls">
+      <div class="br-ctrl br-ctrl-sel"><label data-i18n="sc-lbl-sel">Países</label><div class="br-sel"><div class="m-search-wrap"><input type="text" id="diospib-search" class="m-search-input" autocomplete="off" data-i18n-placeholder="sc-search-ph" placeholder="Agregar país…"><div id="diospib-search-results" class="m-search-results"></div></div><div class="m-selected-chips" id="diospib-selected-chips"></div></div></div>
+    </div>
+    <div class="chart-svg-wrap">
+      <svg id="chartdiospib" viewBox="0 0 1100 520" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltipdiospib"></div>
+    </div>
+    <div class="s-banner" id="diospib-banner"></div>
+    <p class="sc-hint"><span data-i18n="sc-legend-hint">Pasá el mouse por una región de la leyenda para ver los nombres de sus países; hacé clic (o tocá) para apagarla y sacarla de la línea.</span><button type="button" id="diospib-show-all" class="sc-linkbtn" data-i18n="sc-show-all" hidden>Ver todas las regiones</button></p>
+  </section>
+
+  <div class="footer">
+    <p><button class="download" data-chart="diospib-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="diospib" data-i18n="footer-download-png">Descargar PNG</button></p>
+    <div class="footer-row">
+      <p class="sources" data-i18n="cdp-sources"></p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+</div>
+
+<script src="../lib/regions.js?v=74"></script>
+<script src="../lib/i18n.js?v=76"></script>
+<script src="./i18n-issue.js?v=3"></script>
+<script src="./i18n-scatter.js?v=3"></script>
+<script src="./i18n-dios-pib.js?v=3"></script>
+<script src="../lib/utils.js?v=82"></script>
+<script src="../lib/country-names.js?v=74"></script>
+<script src="../lib/scatter-render.js?v=74"></script>
+<script src="./data-dios-pib.js?v=3"></script>
+<script src="../lib/editor.js?v=90"></script>
+<script src="./rel-motor.js?v=3"></script>
+<script src="./rel-scatter.js?v=3"></script>
+<script src="./chart-dios-pib.js?v=3"></script>
+<script src="../lib/png-export.js?v=84"></script>
+<script>
+  applyI18n();
+  initCdp();
+  setupLangToggle(() => { cdp_onLang(); });
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=3"></script>
+</body>
+</html>

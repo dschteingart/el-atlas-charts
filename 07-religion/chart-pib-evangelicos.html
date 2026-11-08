@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-title-en="Where did evangelicals grow the most in Latin America? — The Atlas">¿Dónde crecieron más los evangélicos en América Latina? — El Atlas</title>
+<meta name="description" content="Cambio en el porcentaje de adultos evangélicos entre 1996 y 2024 contra el PIB per cápita de 1996, en 17 países de América Latina. Pasá el mouse o tocá un punto para ver el detalle de cada país. Latinobarómetro y Banco Mundial.">
+<link rel="alternate" hreflang="en" href="./chart-pib-evangelicos-en.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/07-religion/chart-pib-evangelicos.html">
+<meta property="og:title" content="¿Dónde crecieron más los evangélicos en América Latina? — El Atlas">
+<meta property="og:description" content="Cambio en el porcentaje de adultos evangélicos entre 1996 y 2024 contra el PIB per cápita de 1996, en 17 países de América Latina. Pasá el mouse o tocá un punto para ver el detalle de cada país. Latinobarómetro y Banco Mundial.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/07-religion/thumbs/chart-pib-evangelicos.png">
+<meta property="og:image:alt" content="PIB per cápita de 1996 y cambio en evangélicos, 17 países de América Latina">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="¿Dónde crecieron más los evangélicos en América Latina? — El Atlas">
+<meta name="twitter:description" content="Cambio en el porcentaje de adultos evangélicos entre 1996 y 2024 contra el PIB per cápita de 1996, en 17 países de América Latina. Pasá el mouse o tocá un punto para ver el detalle de cada país. Latinobarómetro y Banco Mundial.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/07-religion/thumbs/chart-pib-evangelicos.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=74">
+<link rel="stylesheet" href="../lib/editor.css?v=90">
+<link rel="stylesheet" href="./rel.css?v=3">
+<link rel="stylesheet" href="./rel-scatter.css?v=3">
+</head>
+<body>
+<div class="wrap wrap-wide">
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span class="brand-topic" data-i18n="brand-topic">Religión</span></div>
+      <div class="lang-toggle"><button data-lang="es" class="active">ES</button><button data-lang="en">EN</button></div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="pibev" data-editor-id="religion-pib-evangelicos">
+    <h2 class="chart-title" data-i18n="cpe-title">Los evangélicos crecieron más en los países que eran más pobres</h2>
+    <p class="chart-subtitle"></p>
+    <div class="chart-svg-wrap">
+      <svg id="chartpibev" viewBox="0 0 1100 480" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltippibev"></div>
+    </div>
+    <div class="s-banner" id="pibev-banner"></div>
+  </section>
+
+  <div class="footer">
+    <p><button class="download" data-chart="pibev-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="pibev" data-i18n="footer-download-png">Descargar PNG</button></p>
+    <div class="footer-row">
+      <p class="sources" data-i18n="cpe-sources"></p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+</div>
+
+<script src="../lib/regions.js?v=74"></script>
+<script src="../lib/i18n.js?v=76"></script>
+<script src="./i18n-issue.js?v=3"></script>
+<script src="./i18n-scatter.js?v=3"></script>
+<script src="./i18n-pib-evangelicos.js?v=3"></script>
+<script src="../lib/utils.js?v=82"></script>
+<script src="../lib/country-names.js?v=74"></script>
+<script src="../lib/scatter-render.js?v=74"></script>
+<script src="./data-pib-evangelicos.js?v=3"></script>
+<script src="../lib/editor.js?v=90"></script>
+<script src="./rel-motor.js?v=3"></script>
+<script src="./rel-scatter.js?v=3"></script>
+<script src="./chart-pib-evangelicos.js?v=3"></script>
+<script src="../lib/png-export.js?v=84"></script>
+<script>
+  applyI18n();
+  initCpe();
+  setupLangToggle(() => { cpe_onLang(); });
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=3"></script>
+</body>
+</html>

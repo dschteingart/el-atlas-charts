@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-title-en="Do people with no religion believe in God? — The Atlas">¿Creen en Dios los que no tienen religión? — El Atlas</title>
+<meta name="description" content="Porcentaje que cree en Dios entre quienes no tienen religión, en 53 países, con la última encuesta de cada uno (Integrated Values Surveys, 2016-2022). Elegí qué países comparar.">
+<link rel="alternate" hreflang="en" href="./chart-sin-religion-creyentes-en.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/07-religion/chart-sin-religion-creyentes.html">
+<meta property="og:title" content="¿Creen en Dios los que no tienen religión? — El Atlas">
+<meta property="og:description" content="Porcentaje que cree en Dios entre quienes no tienen religión, en 53 países, con la última encuesta de cada uno (Integrated Values Surveys, 2016-2022). Elegí qué países comparar.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/07-religion/thumbs/chart-sin-religion-creyentes.png">
+<meta property="og:image:alt" content="Creencia en Dios entre quienes no tienen religión, por país, 2016-2022">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="¿Creen en Dios los que no tienen religión? — El Atlas">
+<meta name="twitter:description" content="Porcentaje que cree en Dios entre quienes no tienen religión, en 53 países, con la última encuesta de cada uno (Integrated Values Surveys, 2016-2022). Elegí qué países comparar.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/07-religion/thumbs/chart-sin-religion-creyentes.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=74">
+<link rel="stylesheet" href="../lib/editor.css?v=90">
+<link rel="stylesheet" href="./rel.css?v=3">
+<style>
+  /* Leyenda de regiones: copia de la de 04-intolerancia/chart-vecinos.html (#rk-legend). Hover atenúa las otras
+     regiones; clic oculta o vuelve a mostrar la región. */
+  #sinrel-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 0 4px; }
+  .rk-leg-item { display: inline-flex; align-items: center; gap: 6px; font-family: var(--sans); font-size: 11.5px; color: var(--ink-soft); cursor: pointer; user-select: none; padding: 2px 4px; border-radius: 6px; transition: background 0.12s ease, opacity 0.15s ease; }
+  .rk-leg-item:hover { background: var(--bg-soft); }
+  .rk-leg-item.rk-leg-off { opacity: 0.38; text-decoration: line-through; text-decoration-thickness: 1px; }
+  .rk-leg-item.rk-leg-off .rk-leg-dot { background: var(--grid) !important; }
+  .rk-leg-dot { width: 10px; height: 10px; border-radius: 50%; flex: 0 0 auto; }
+  /* desplegable del buscador: el nombre de la región ("Europa del Este y Asia Central") no entra en los 230 px del
+     buscador de rel.css; el desplegable se ensancha hasta lo que pide el texto */
+  #sinrel-search-results { width: max-content; min-width: 100%; max-width: calc(100vw - 40px); overflow-x: hidden; scrollbar-gutter: stable; }
+</style>
+</head>
+<body>
+<div class="wrap wrap-wide">
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span class="brand-topic" data-i18n="brand-topic">Religión</span></div>
+      <div class="lang-toggle"><button data-lang="es" class="active">ES</button><button data-lang="en">EN</button></div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="sinrel" data-editor-id="religion-sin-religion-creyentes">
+    <h2 class="chart-title" data-i18n="csinrel-title">En América Latina, hasta los que no tienen religión creen en Dios</h2>
+    <p class="chart-subtitle"></p>
+    <div class="br-controls">
+      <div class="br-ctrl br-ctrl-sel"><label data-i18n="lbl-paises">Países</label><div class="br-sel"><div class="m-search-wrap"><input type="text" id="sinrel-search" class="m-search-input" autocomplete="off" data-i18n-placeholder="sinrel-search-ph" placeholder="Agregar país…"><div id="sinrel-search-results" class="m-search-results"></div></div><div class="m-selected-chips" id="sinrel-selected-chips"></div></div></div>
+    </div>
+    <div id="sinrel-legend"></div>
+    <!-- Sin el tope ni el piso de alto de rel.css: el alto lo dan las filas (26 barras crecen y la página se scrollea,
+         como el ranking de vecinos; tres barras no quedan flotando en un recuadro de 330 px) -->
+    <div class="chart-svg-wrap">
+      <svg id="chartsinrel" viewBox="0 0 1100 715" preserveAspectRatio="xMidYMid meet" style="max-height:none;min-height:0"></svg>
+      <div class="tooltip" id="tooltipsinrel"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p><button class="download" data-chart="sinrel-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="sinrel" data-i18n="footer-download-png">Descargar PNG</button></p>
+    <div class="footer-row">
+      <p class="sources" data-i18n="csinrel-sources"></p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+</div>
+
+<script src="../lib/regions.js?v=74"></script>
+<script src="../lib/i18n.js?v=76"></script>
+<script src="./i18n-issue.js?v=3"></script>
+<script src="./i18n-sin-religion-creyentes.js?v=3"></script>
+<script src="../lib/utils.js?v=82"></script>
+<script src="../lib/country-names.js?v=74"></script>
+<script src="./data-sin-religion-creyentes.js?v=3"></script>
+<script src="../lib/editor.js?v=90"></script>
+<script src="./rel-motor.js?v=3"></script>
+<script src="./chart-sin-religion-creyentes.js?v=3"></script>
+<script src="../lib/png-export.js?v=84"></script>
+<script>
+  applyI18n();
+  initCsinrel();
+  setupLangToggle(() => { csinrel_onLang(); });
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=3"></script>
+</body>
+</html>

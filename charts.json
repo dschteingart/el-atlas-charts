@@ -1,6 +1,6 @@
 {
   "descripcion": "Catálogo de los gráficos publicados de El Atlas. Lo usan (a futuro) la galería de revisión y las sesiones de Claude Code como mapa del repo. Actualizar al agregar un chart (parte del checklist de integración).",
-  "actualizado": "2026-10-21",
+  "actualizado": "2026-11-07",
   "numeros": [
     {
       "numero": "1",
@@ -408,6 +408,56 @@
           "archivo": "chart-pobreza.html",
           "tipo": "líneas con puntos en los años con encuesta",
           "tema": "pobreza (US$ 3, 4,20 y 8,30 PPA 2021) y Gini en dos paneles, Brasil vs países y regiones (PIP); Gini de América Latina = promedio de un panel de 16 países"
+        }
+      ]
+    },
+    {
+      "numero": "7",
+      "slug": "religion",
+      "carpeta": "07-religion",
+      "titulo": "¿Qué queda de la América Latina católica?",
+      "en": "index-en.html + toggle + ?lang=en; para COMPARTIR en inglés, landings chart-<slug>-en.html (OG en inglés + redirect que conserva los parámetros del link)",
+      "formato": "motor rel-motor.js (copia del br-motor.js del N°6 + relStack para áreas apiladas por país) y motor de scatters rel-scatter.js (port de 04-intolerancia/desarrollo.js sobre lib/scatter-render.js); un adapter y un i18n-<slug>.js por página; datos generados por 07-religion/data-sources/build_*.py",
+      "charts": [
+        {
+          "archivo": "chart-siglo.html",
+          "tipo": "líneas con slider de período",
+          "tema": "porcentaje de católicos en América Latina, 1872-2024: Pew para la región (1910-1970 y 2014), Latinobarómetro (16 países, 1996-2024) y censos de Brasil, México y Chile"
+        },
+        {
+          "archivo": "chart-rutas.html",
+          "tipo": "scatter + áreas apiladas por país (dos vistas)",
+          "tema": "las dos rutas de salida del catolicismo: cambio en evangélicos contra cambio en sin religión entre 1996-1998 y 2023-2024 (Latinobarómetro, 18 países), y composición religiosa de cada país ola por ola"
+        },
+        {
+          "archivo": "chart-pib-evangelicos.html",
+          "tipo": "scatter",
+          "tema": "PIB per cápita de 1996 (Banco Mundial, PPA 2021) contra el cambio en evangélicos entre 1996 y 2024 (Latinobarómetro, 17 países)"
+        },
+        {
+          "archivo": "chart-practicantes.html",
+          "tipo": "áreas apiladas (paneles por país o región)",
+          "tema": "adultos practicantes según religión (católicos, evangélicos, otras), Latinobarómetro 1996-2024, América Latina, América Latina sin Brasil y cada país"
+        },
+        {
+          "archivo": "chart-sin-religion-creyentes.html",
+          "tipo": "ranking de barras",
+          "tema": "porcentaje que cree en Dios entre quienes no tienen religión, 53 países, última encuesta de las Integrated Values Surveys (2016-2022)"
+        },
+        {
+          "archivo": "chart-creencia.html",
+          "tipo": "líneas (una por país) + recuadro de cambio típico",
+          "tema": "creencia en Dios en América Latina y Europa occidental, encuesta por encuesta de las Integrated Values Surveys, 1990-2022"
+        },
+        {
+          "archivo": "chart-dios-pib.html",
+          "tipo": "scatter",
+          "tema": "importancia de Dios en la propia vida (1 a 10) contra PIB per cápita PPA, IVS ola 7 (2017-2023), 91 países, con el ajuste del resto del mundo"
+        },
+        {
+          "archivo": "chart-dios-religion.html",
+          "tipo": "scatter",
+          "tema": "importancia de Dios (1 a 10) contra el porcentaje para quienes la religión es muy importante, IVS ola 7 (2017-2023), 91 países, con el ajuste del resto del mundo"
         }
       ]
     }
