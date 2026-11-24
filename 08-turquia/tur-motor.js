@@ -52,11 +52,14 @@ const BR_C = {
 // mismo país tenga el mismo color en todos los gráficos del número.
 const BR_PALETTE = ['#234B85', '#2D6A3D', '#C9A227', '#6B3D8B', '#2C8484', '#7A2A3F',
                     '#1F8AC0', '#6CB04D', '#E07A23', '#B5639E', '#8A5A35', '#5A7A4F'];
-// N°8: Turquía, la protagonista, toma el primer color de la paleta; Polonia y Rumania, los comparadores de la
-// vista de fábrica, el verde y el ciruela; Mundo, el carbón de la casa. América Latina y el Caribe y sus países
-// van siempre en terracota (tur_color, al final). El resto se reparte de la paleta según la selección.
+// N°8: Turquía, la protagonista, toma el primer color de la paleta; Europa oriental, Polonia y Rumania, el verde,
+// el petróleo y el ciruela; Mundo, el carbón de la casa. Los agregados latinoamericanos (América Latina y el Caribe,
+// y la mediana de seis del gráfico de inflación) van en terracota. Los países latinoamericanos tienen cada uno su
+// color, el mismo en todos los gráficos del número (pedido de Daniel del 23-11-2026: si van todos en terracota, el
+// interactivo queda todo marrón). El resto se reparte de la paleta según la selección.
 const BR_FIXED = {
-  TUR: '#234B85', EUE: '#2D6A3D', POL: '#2C8484', ROU: '#6B3D8B', WLD: '#33312C', LCN: '#BE5D32', LA6: '#BE5D32'
+  TUR: '#234B85', EUE: '#2D6A3D', POL: '#2C8484', ROU: '#6B3D8B', WLD: '#33312C', LCN: '#BE5D32', LA6: '#BE5D32',
+  ARG: '#1F8AC0', BRA: '#C9A227', MEX: '#6CB04D', CHL: '#7A2A3F', COL: '#B5639E'
 };
 // Nombres de agregados y entidades que no están en lib/country-names.js.
 const BR_NAMES = {
@@ -97,16 +100,20 @@ function br_measure(text, fs, w) {
   br_measure._c.font = (w || 400) + ' ' + fs + 'px "Source Sans 3", system-ui, sans-serif';
   return br_measure._c.measureText(String(text)).width;
 }
-// Color estable por clave: fijo si el país lo tiene; si no, el primer color de
-// la paleta que no use otra serie de la selección (se guarda en el state).
+// Color estable por clave: fijo si el país lo tiene; si no, el primer color de la paleta que no use otra serie de
+// la selección (se guarda en el state). N°8: con st.sel solo se reservan los colores fijos de los países elegidos
+// (hay muchos fijos y, si se reservaran todos, quedarían pocos libres); si después se suma un país cuyo color fijo
+// ya tenía otro, ese otro cambia de color.
 function br_color(st, key) {
   if (BR_FIXED[key]) return BR_FIXED[key];
   if (!st._colors) st._colors = {};
-  if (st._colors[key] == null) {
-    const used = new Set(Object.values(st._colors));
-    Object.keys(BR_FIXED).forEach(k => used.add(BR_FIXED[k]));
+  const sel = Array.isArray(st.sel) ? st.sel : null;
+  const used = new Set();
+  if (sel) sel.forEach(k => { if (k !== key && (BR_FIXED[k] || st._colors[k])) used.add(BR_FIXED[k] || st._colors[k]); });
+  else { Object.values(st._colors).forEach(c => used.add(c)); Object.keys(BR_FIXED).forEach(k => used.add(BR_FIXED[k])); }
+  if (st._colors[key] == null || (sel && used.has(st._colors[key]))) {
     let c = BR_PALETTE.find(p => !used.has(p));
-    if (!c) c = BR_PALETTE[Object.keys(st._colors).length % BR_PALETTE.length];
+    if (!c) c = BR_PALETTE[Math.max(0, sel ? sel.indexOf(key) : Object.keys(st._colors).length) % BR_PALETTE.length];
     st._colors[key] = c;
   }
   return st._colors[key];
@@ -1038,31 +1045,16 @@ function rel_layout(id) {
 //   marks?: { CLAVE: [[año, 'top' | 'right'], ...] } valores rotulados cuando esa serie es la única a la vista,
 //   marksWith?: [claves que pueden acompañar a esa serie sin apagar los rótulos], aggTag? (todos los agregados),
 //   aggTags?: { CLAVE: clave i18n del renglón gris } (por agregado), csvName?: { CLAVE: { es, en } },
-//   latamTones?: true = cada latinoamericano en un estilo distinto de la familia terracota (tur_style),
 //   extra?: { data: () => [{ k, y, m, v }], label(e) => texto de la etiqueta, tt(e) => html del tooltip,
 //             csvMeasure: { col: { es, en }, serie: { es, en }, extra(e): { es, en } } }: puntos sueltos que NO son de la serie
 //             (el último dato mensual de Turquía en chart-inflacion): punto hueco unido al último dato por una línea de
 //             puntos, con su etiqueta; se ven si su país está elegido y el período llega al final de la serie,
 //   pngSource?(sel, extraVisible) => nota del PNG según la selección, markFmt?(v), phKey?: clave del placeholder del buscador, csv: { col: { es, en }, file: { es, en }, dec }
 // }
-const TUR_LATAM = '#BE5D32';   // América Latina y el Caribe y sus países: siempre terracota (regla de la casa)
-
-function tur_isLatam(D, k) { return k === 'LCN' || k === 'LA6' || !!(D.reg && D.reg[k] === 'LCN'); }
-function tur_color(st, D, k) { return tur_isLatam(D, k) ? TUR_LATAM : br_color(st, k); }
-// N°8 (chart-iyd): con cfg.latamTones, cada latinoamericano de la selección toma un estilo distinto de la familia
-// terracota (la regla de la casa se respeta: todos son terracota), en el orden en que están elegidos: terracota, terracota
-// oscuro, terracota claro (etiqueta en un tono más oscuro, para que se lea sobre crema) y los mismos tres punteados.
-// En chart-creencia (N°7) y en chart-complejidad los latinoamericanos van todos en el mismo terracota.
-const TUR_LATAM_TONES = [
-  { color: '#BE5D32' }, { color: '#7A3417' }, { color: '#D89968', label: '#A35E2E' },
-  { color: '#BE5D32', dash: true }, { color: '#7A3417', dash: true }, { color: '#D89968', label: '#A35E2E', dash: true }
-];
-function tur_style(cfg, st, D, k) {
-  if (!tur_isLatam(D, k)) return { color: br_color(st, k) };
-  if (!cfg.latamTones) return { color: TUR_LATAM };
-  const i = st.sel.filter(x => tur_isLatam(D, x)).indexOf(k);
-  return TUR_LATAM_TONES[Math.max(0, i) % TUR_LATAM_TONES.length];
-}
+// Color de cada serie: los agregados latinoamericanos (LCN y LA6) en terracota por BR_FIXED; los países, latinoamericanos
+// o no, con su color fijo o uno libre de la paleta (br_color). Hasta el 23-11-2026 los países latinoamericanos iban todos
+// en terracota (en chart-iyd, en tonos de esa familia); el PNG de I+D que está en la nota se exportó así.
+function tur_style(cfg, st, D, k) { return { color: br_color(st, k) }; }
 // Etiqueta final en hasta tres renglones: el nombre en uno o dos (br_wrap2) y el valor al lado si entra, o debajo.
 function tur_wrap3(name, value, fs, w, capW) {
   const fits = (tx) => br_measure(tx, fs, w) <= capW;
