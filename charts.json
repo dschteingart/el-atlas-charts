@@ -1,6 +1,6 @@
 {
   "descripcion": "Catálogo de los gráficos publicados de El Atlas. Lo usan (a futuro) la galería de revisión y las sesiones de Claude Code como mapa del repo. Actualizar al agregar un chart (parte del checklist de integración).",
-  "actualizado": "2026-11-07",
+  "actualizado": "2026-11-19",
   "numeros": [
     {
       "numero": "1",
@@ -458,6 +458,56 @@
           "archivo": "chart-dios-religion.html",
           "tipo": "scatter",
           "tema": "importancia de Dios (1 a 10) contra el porcentaje para quienes la religión es muy importante, IVS ola 7 (2017-2023), 91 países, con el ajuste del resto del mundo"
+        }
+      ]
+    },
+    {
+      "numero": "8",
+      "slug": "turquia",
+      "carpeta": "08-turquia",
+      "titulo": "Turquía nos pasó",
+      "en": "index-en.html + toggle + ?lang=en; para COMPARTIR en inglés, landings chart-<slug>-en.html (OG en inglés + redirect que conserva los parámetros del link)",
+      "formato": "motor tur-motor.js (copia del rel-motor.js del N°7 hasta rel_layout + turSeries, el adapter común de series anuales por país: buscador + chips, slider de período, vista en la URL, CSV; y relStack del N°7 para los paneles de áreas apiladas de la canasta); un chart-<slug>.js de configuración por página y todas las claves en i18n-issue.js; datos generados por insumos/#8 - Turquia/scripts/build_datos.py",
+      "charts": [
+        {
+          "archivo": "chart-pib.html",
+          "tipo": "líneas anuales con buscador de países y slider de período",
+          "tema": "PIB per cápita a PPA en dólares constantes de 2021 (Banco Mundial), 1990-2025; de fábrica, Turquía y América Latina y el Caribe"
+        },
+        {
+          "archivo": "chart-lall.html",
+          "tipo": "áreas apiladas al 100% (paneles por país) con slider de período",
+          "tema": "exportaciones de bienes por contenido tecnológico (Lall), la base del gráfico de exportaciones del N°6 (Atlas SITC Rev. 2 empalmado con BACI), 1962-2024; de fábrica, Turquía, México, Brasil y Argentina, 1980-2024"
+        },
+        {
+          "archivo": "chart-iyd.html",
+          "tipo": "líneas anuales con buscador de países y slider de período",
+          "tema": "gasto en investigación y desarrollo como porcentaje del PIB (Banco Mundial, con datos de la UNESCO), 1996-2024; de fábrica, Turquía, Argentina, Brasil, Chile y México, los latinoamericanos en tonos de terracota"
+        },
+        {
+          "archivo": "chart-agro.html",
+          "tipo": "líneas anuales con buscador de países y slider de período",
+          "tema": "empleo en la agricultura como porcentaje del empleo total (Banco Mundial, estimación modelada de la OIT), 1991-2025; de fábrica, Turquía y México"
+        },
+        {
+          "archivo": "chart-canasta.html",
+          "tipo": "áreas apiladas al 100% (paneles por país)",
+          "tema": "composición de las exportaciones de bienes en ocho rubros (capítulos HS92 agrupados; Growth Lab de Harvard), 1995-2024, 196 países; de fábrica, Turquía, México, Brasil y Argentina"
+        },
+        {
+          "archivo": "chart-complejidad.html",
+          "tipo": "líneas anuales con eje invertido (ranking), buscador de países y slider de período",
+          "tema": "puesto en el ranking de complejidad económica del Growth Lab de Harvard (serie HS92), 1995-2024, 145 países; de fábrica, Turquía, México, Brasil y Argentina"
+        },
+        {
+          "archivo": "chart-inflacion.html",
+          "tipo": "líneas anuales con buscador de países y slider de período",
+          "tema": "inflación anual de precios al consumidor, promedio del año (Banco Mundial), 1990-2025; de fábrica, Turquía (con los valores de 1994, 2004 y 2022 rotulados) y América Latina, que es un agregado propio: la mediana de Brasil, Chile, Colombia, México, Perú y Uruguay; más un punto aparte para Turquía en 2026, la inflación interanual de octubre (TurkStat), que no se empalma con la serie"
+        },
+        {
+          "archivo": "chart-convergencia.html",
+          "tipo": "líneas anuales con buscador de países y slider de período",
+          "tema": "PIB per cápita a PPA como porcentaje del de Estados Unidos (Banco Mundial), 1990-2025; de fábrica, Turquía, Europa oriental (agregado propio: 11 miembros de la UE de Europa central y oriental, ponderados por población) y América Latina y el Caribe"
         }
       ]
     }

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title data-title-en="How much does each country invest in research and development? — The Atlas">¿Cuánto invierte cada país en investigación y desarrollo? — El Atlas</title>
+<meta name="description" content="Gasto en investigación y desarrollo como porcentaje del PIB en Turquía, América Latina y unos 160 países. Elegí países y período. Banco Mundial y UNESCO, 1996-2024.">
+<link rel="alternate" hreflang="en" href="./chart-iyd-en.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="El Atlas · Cartografías del desarrollo">
+<meta property="og:locale" content="es_AR">
+<meta property="og:url" content="https://dschteingart.github.io/el-atlas-charts/08-turquia/chart-iyd.html">
+<meta property="og:title" content="¿Cuánto invierte cada país en investigación y desarrollo? — El Atlas">
+<meta property="og:description" content="Gasto en investigación y desarrollo como porcentaje del PIB en Turquía, América Latina y unos 160 países. Elegí países y período. Banco Mundial y UNESCO, 1996-2024.">
+<meta property="og:image" content="https://dschteingart.github.io/el-atlas-charts/08-turquia/thumbs/chart-iyd.png">
+<meta property="og:image:alt" content="Gasto en investigación y desarrollo de Turquía, Argentina, Brasil, Chile y México, 1996-2024">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="¿Cuánto invierte cada país en investigación y desarrollo? — El Atlas">
+<meta name="twitter:description" content="Gasto en investigación y desarrollo como porcentaje del PIB en Turquía, América Latina y unos 160 países. Elegí países y período. Banco Mundial y UNESCO, 1996-2024.">
+<meta name="twitter:image" content="https://dschteingart.github.io/el-atlas-charts/08-turquia/thumbs/chart-iyd.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;0,8..60,700;1,8..60,400&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../lib/style.css?v=74">
+<link rel="stylesheet" href="../lib/editor.css?v=90">
+<link rel="stylesheet" href="./tur.css?v=11">
+</head>
+<body>
+<div class="wrap wrap-wide">
+  <header>
+    <div class="top-bar">
+      <div class="brand"><span class="brand-em" data-i18n="brand-name">El Atlas</span> · <span class="brand-topic" data-i18n="brand-topic">Turquía</span></div>
+      <div class="lang-toggle"><button data-lang="es" class="active">ES</button><button data-lang="en">EN</button></div>
+    </div>
+  </header>
+
+  <section class="chart-block" data-chart="iyd" data-editor-id="turquia-iyd">
+    <h2 class="chart-title" data-i18n="ciyd-title">Turquía triplicó su inversión en I+D y hoy supera a todos los países latinoamericanos</h2>
+    <p class="chart-subtitle"></p>
+    <div class="br-controls">
+      <div class="br-ctrl"><label data-i18n="lbl-periodo">Período</label><div class="anios"><input type="number" id="iyd-y0" step="1" aria-label="Desde" data-i18n-aria="tur-desde"><div class="dual"><div class="track"></div><div class="fill" id="iyd-fill"></div><input type="range" id="iyd-r0" aria-label="Desde" data-i18n-aria="tur-desde"><input type="range" id="iyd-r1" aria-label="Hasta" data-i18n-aria="tur-hasta"></div><input type="number" id="iyd-y1" step="1" aria-label="Hasta" data-i18n-aria="tur-hasta"></div></div>
+      <div class="br-ctrl br-ctrl-sel"><label data-i18n="lbl-sel">Países o regiones</label><div class="br-sel"><div class="m-search-wrap"><input type="text" id="iyd-search" class="m-search-input" autocomplete="off" data-i18n-placeholder="tur-search-ph" placeholder="Agregar país o región…"><div id="iyd-search-results" class="m-search-results"></div></div><div class="m-selected-chips" id="iyd-selected-chips"></div></div></div>
+    </div>
+    <div class="chart-svg-wrap">
+      <svg id="chartiyd" viewBox="0 0 1100 560" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="tooltip" id="tooltipiyd"></div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <p><button class="download" data-chart="iyd-csv" data-i18n="footer-download">Descargar datos (CSV)</button> <button class="download" data-png="iyd" data-i18n="footer-download-png">Descargar PNG</button></p>
+    <div class="footer-row">
+      <p class="sources" data-i18n="ciyd-sources"></p>
+      <a class="attribution" href="https://elatlas.substack.com" target="_blank" rel="noopener" data-i18n="attribution-text" data-i18n-href="attribution-href">El Atlas · Daniel Schteingart</a>
+    </div>
+  </div>
+</div>
+
+<script src="../lib/i18n.js?v=76"></script>
+<script src="./i18n-issue.js?v=14"></script>
+<script src="../lib/utils.js?v=82"></script>
+<script src="../lib/country-names.js?v=74"></script>
+<script src="./data-iyd.js?v=11"></script>
+<script src="../lib/editor.js?v=90"></script>
+<script src="./tur-motor.js?v=14"></script>
+<script src="./chart-iyd.js?v=11"></script>
+<script src="../lib/png-export.js?v=88"></script>
+<script>
+  applyI18n();
+  initCiyd();
+  setupLangToggle(() => { ciyd_onLang(); });
+</script>
+<div id="chart-nav"></div>
+<script src="./nav.js?v=11"></script>
+</body>
+</html>
